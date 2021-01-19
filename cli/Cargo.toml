@@ -1,0 +1,10 @@
+[package]
+name = "cli"
+version = "0.0.0"
+license = "GPL-3.0"
+authors = ["John Wass <wassj@ctc.com>"]
+edition = "2018"
+
+[dependencies]
+core = { path = "../core" }
+clap = "3.0.0-beta.2"
