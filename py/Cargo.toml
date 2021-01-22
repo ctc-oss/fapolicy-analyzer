@@ -1,0 +1,16 @@
+[package]
+name = "fapolicy-analyzer-py"
+version = "0.0.0"
+authors = ["John Wass <wassj@ctc.com>"]
+edition = "2018"
+
+[lib]
+name = "fapolicy_analyzer"
+crate-type = ["cdylib"]
+
+[dependencies.fapolicyd-trust]
+path = "../crates/trust"
+
+[dependencies.pyo3]
+version = "0.12.1"
+features = [ "extension-module",]
