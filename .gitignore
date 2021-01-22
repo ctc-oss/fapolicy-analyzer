@@ -2,3 +2,7 @@
 *.iml
 .local
 target
+
+venv
+*.so
+*.pyc
