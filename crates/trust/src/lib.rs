@@ -26,37 +26,30 @@ impl FromStr for TrustEntry {
 }
 
 pub struct FileTrustDB {
-    path: String,
     entries: Vec<TrustEntry>,
 }
 
 impl FileTrustDB {
-    pub fn new(p: &String) -> FileTrustDB {
-        FileTrustDB {
-            path: p.clone(),
-            entries: vec![],
-        }
+    pub fn new(p: &str) -> FileTrustDB {
+        FileTrustDB::from(p)
     }
 
-    pub fn from(p: &String) -> FileTrustDB {
+    pub fn from(p: &str) -> FileTrustDB {
         let v = Self::read_entries(&p);
-        FileTrustDB {
-            path: p.clone(),
-            entries: v,
-        }
+        FileTrustDB { entries: v }
     }
 
     pub fn entries(self: FileTrustDB) -> Vec<TrustEntry> {
         self.entries
     }
 
-    fn read_entries(path: &String) -> Vec<TrustEntry> {
+    fn read_entries(path: &str) -> Vec<TrustEntry> {
         let f = File::open(path).unwrap();
         let r = BufReader::new(f);
 
         r.lines()
             .map(|r| r.unwrap())
-            .filter(|s| !s.is_empty() && !s.starts_with("#"))
+            .filter(|s| !s.is_empty() && !s.starts_with('#'))
             .map(|l| TrustEntry::from_str(&l).unwrap())
             .collect()
     }
