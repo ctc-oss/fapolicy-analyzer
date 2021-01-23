@@ -1,6 +1,5 @@
 use clap::Clap;
 
-use fapolicyd_trust;
 use fapolicyd_trust::FileTrustDB;
 
 #[derive(Clap)]
