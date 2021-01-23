@@ -3,7 +3,7 @@ from setuptools_rust import RustExtension
 
 setup(
     name="fapolicy-analyzer",
-    version="0.0.0",
+    version="0.0.1",
     packages=["fapolicy_analyzer"] + find_namespace_packages(include=['fapolicy_analyzer.*']),
     rust_extensions=[RustExtension("fapolicy_analyzer.fapolicy_analyzer")],
     setup_requires=["setuptools", "setuptools_rust"],

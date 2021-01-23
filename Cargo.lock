@@ -57,7 +57,7 @@ dependencies = [
 
 [[package]]
 name = "fapolicy-analyzer"
-version = "0.0.0"
+version = "0.0.1"
 dependencies = [
  "clap",
  "fapolicyd-trust",
@@ -65,7 +65,7 @@ dependencies = [
 
 [[package]]
 name = "fapolicyd-trust"
-version = "0.0.0"
+version = "0.0.1"
 
 [[package]]
 name = "hashbrown"

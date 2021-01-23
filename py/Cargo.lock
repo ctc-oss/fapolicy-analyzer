@@ -18,7 +18,7 @@ dependencies = [
 
 [[package]]
 name = "fapolicy-analyzer-py"
-version = "0.0.0"
+version = "0.0.1"
 dependencies = [
  "fapolicyd-trust",
  "pyo3",
@@ -26,7 +26,7 @@ dependencies = [
 
 [[package]]
 name = "fapolicyd-trust"
-version = "0.0.0"
+version = "0.0.1"
 
 [[package]]
 name = "ghost"
