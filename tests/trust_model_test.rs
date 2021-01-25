@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use fapolicyd_trust::TrustEntry;
+use fapolicyd::trust::TrustEntry;
 
 #[test]
 fn deserialize_entry() {

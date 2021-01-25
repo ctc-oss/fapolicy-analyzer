@@ -3,7 +3,7 @@ use pyo3::wrap_pyfunction;
 
 use std::str::FromStr;
 
-use fapolicyd_trust::TrustEntry;
+use fapolicyd::trust::TrustEntry;
 
 #[pyclass]
 struct PyTrustEntry {

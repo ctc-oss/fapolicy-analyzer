@@ -1,7 +1,6 @@
 [package]
 name = "fapolicy-analyzer"
 version = "0.0.1"
-license = "GPL-3.0"
 authors = ["John Wass <wassj@ctc.com>"]
 edition = "2018"
 
@@ -15,8 +14,12 @@ path = "tests/trust_model_test.rs"
 
 [workspace]
 exclude = ["py"]
-members = ["crates/trust"]
+members = [
+    "crates/common",
+    "crates/fapolicyd"
+]
 
 [dependencies]
 clap = "3.0.0-beta.2"
-fapolicyd-trust = { version = "0.0.1", path = "crates/trust" }
+fapolicyd = { version = "0.0.1", path = "crates/fapolicyd" }
+fapolicy-common = { version = "0.0.1", path = "crates/common" }

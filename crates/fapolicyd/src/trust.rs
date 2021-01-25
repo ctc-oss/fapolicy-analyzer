@@ -13,8 +13,8 @@ impl FromStr for TrustEntry {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let xx: Vec<&str> = s.split(' ').collect();
-        match xx.as_slice() {
+        let v: Vec<&str> = s.split(' ').collect();
+        match v.as_slice() {
             [f, sz, sha] => Ok(TrustEntry {
                 path: f.to_string(),
                 size: sz.parse().unwrap(),
@@ -26,6 +26,7 @@ impl FromStr for TrustEntry {
 }
 
 pub struct FileTrustDB {
+    pub path: String,
     entries: Vec<TrustEntry>,
 }
 
@@ -35,8 +36,11 @@ impl FileTrustDB {
     }
 
     pub fn from(p: &str) -> FileTrustDB {
-        let v = Self::read_entries(&p);
-        FileTrustDB { entries: v }
+        let entries = Self::read_entries(&p);
+        FileTrustDB {
+            path: String::from(p),
+            entries,
+        }
     }
 
     pub fn entries(self: FileTrustDB) -> Vec<TrustEntry> {

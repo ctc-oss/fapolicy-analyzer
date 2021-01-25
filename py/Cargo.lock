@@ -20,12 +20,12 @@ dependencies = [
 name = "fapolicy-analyzer-py"
 version = "0.0.1"
 dependencies = [
- "fapolicyd-trust",
+ "fapolicyd",
  "pyo3",
 ]
 
 [[package]]
-name = "fapolicyd-trust"
+name = "fapolicyd"
 version = "0.0.1"
 
 [[package]]

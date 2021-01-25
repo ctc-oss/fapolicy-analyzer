@@ -1,6 +1,6 @@
 use clap::Clap;
 
-use fapolicyd_trust::FileTrustDB;
+use fapolicyd::trust::FileTrustDB;
 
 #[derive(Clap)]
 #[clap(version = "v0.2.0")]

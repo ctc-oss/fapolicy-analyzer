@@ -23,3 +23,4 @@ https://github.com/linux-application-whitelisting/fapolicyd
 
 ## other bits
 - layout inspired by [ripgrep](https://github.com/BurntSushi/ripgrep)
+- [fapolicyd application whitelisting](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/security_hardening/configuring-and-managing-application-whitelists_security-hardening)
