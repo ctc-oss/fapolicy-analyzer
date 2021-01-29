@@ -1,0 +1,12 @@
+[package]
+name = "rpm"
+version = "0.1.0"
+authors = ["John Wass <wassj@ctc.com>"]
+edition = "2018"
+
+[[bin]]
+name = "rpmz"
+path = "src/main.rs"
+
+[dependencies]
+nom = "6.1.0"
