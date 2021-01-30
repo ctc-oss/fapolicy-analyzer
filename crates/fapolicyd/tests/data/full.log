@@ -1,0 +1,112 @@
+Loaded 17 rules
+Changed to uid 994
+Initializing the database
+fapolicyd integrity is 0
+backend rpmdb registered
+backend file registered
+Loading rpmdb backend
+Loading file backend
+Checking database
+Importing data from rpmdb backend
+Importing data from file backend
+Database checks OK
+added /dev/shm mount point
+added / mount point
+added /boot mount point
+added /home mount point
+added /run/user/1000 mount point
+added /run/user/1003 mount point
+Starting to listen for events
+rule=9 dec=allow perm=execute auid=1003 pid=5555 exe=/usr/bin/bash : path=/usr/bin/vi ftype=application/x-executable
+rule=17 dec=allow perm=open auid=1003 pid=5555 exe=/usr/bin/bash : path=/usr/bin/vi ftype=application/x-executable
+rule=9 dec=allow perm=execute auid=1003 pid=5555 exe=/usr/bin/bash : path=/usr/lib64/ld-2.28.so ftype=application/x-sharedlib
+rule=7 dec=allow perm=open auid=1003 pid=5555 exe=/usr/bin/bash : path=/usr/lib64/ld-2.28.so ftype=application/x-sharedlib
+rule=17 dec=allow perm=open auid=1003 pid=5555 exe=/usr/bin/vi : path=/etc/ld.so.cache ftype=application/octet-stream
+rule=7 dec=allow perm=open auid=1003 pid=5555 exe=/usr/bin/vi : path=/usr/lib64/libselinux.so.1 ftype=application/x-sharedlib
+rule=7 dec=allow perm=open auid=1003 pid=5555 exe=/usr/bin/vi : path=/usr/lib64/libtinfo.so.6.1 ftype=application/x-sharedlib
+rule=7 dec=allow perm=open auid=1003 pid=5555 exe=/usr/bin/vi : path=/usr/lib64/libacl.so.1.1.2253 ftype=application/x-sharedlib
+rule=7 dec=allow perm=open auid=1003 pid=5555 exe=/usr/bin/vi : path=/usr/lib64/libc-2.28.so ftype=application/x-sharedlib
+rule=7 dec=allow perm=open auid=1003 pid=5555 exe=/usr/bin/vi : path=/usr/lib64/libpcre2-8.so.0.7.1 ftype=application/x-sharedlib
+rule=7 dec=allow perm=open auid=1003 pid=5555 exe=/usr/bin/vi : path=/usr/lib64/libdl-2.28.so ftype=application/x-sharedlib
+rule=7 dec=allow perm=open auid=1003 pid=5555 exe=/usr/bin/vi : path=/usr/lib64/libattr.so.1.1.2448 ftype=application/x-sharedlib
+rule=7 dec=allow perm=open auid=1003 pid=5555 exe=/usr/bin/vi : path=/usr/lib64/libpthread-2.28.so ftype=application/x-sharedlib
+rule=17 dec=allow perm=open auid=1003 pid=5555 exe=/usr/bin/vi : path=/usr/share/locale/locale.alias ftype=text/plain
+rule=17 dec=allow perm=open auid=1003 pid=5555 exe=/usr/bin/vi : path=/usr/lib/locale/en_US.utf8/LC_IDENTIFICATION ftype=application/octet-stream
+rule=17 dec=allow perm=open auid=1003 pid=5555 exe=/usr/bin/vi : path=/usr/lib64/gconv/gconv-modules.cache ftype=application/octet-stream
+rule=17 dec=allow perm=open auid=1003 pid=5555 exe=/usr/bin/vi : path=/usr/lib/locale/en_US.utf8/LC_MEASUREMENT ftype=application/octet-stream
+rule=17 dec=allow perm=open auid=1003 pid=5555 exe=/usr/bin/vi : path=/usr/lib/locale/en_US.utf8/LC_TELEPHONE ftype=application/octet-stream
+rule=17 dec=allow perm=open auid=1003 pid=5555 exe=/usr/bin/vi : path=/usr/lib/locale/en_US.utf8/LC_ADDRESS ftype=application/octet-stream
+rule=17 dec=allow perm=open auid=1003 pid=5555 exe=/usr/bin/vi : path=/usr/lib/locale/en_US.utf8/LC_NAME ftype=application/octet-stream
+rule=17 dec=allow perm=open auid=1003 pid=5555 exe=/usr/bin/vi : path=/usr/lib/locale/en_US.utf8/LC_PAPER ftype=application/octet-stream
+rule=17 dec=allow perm=open auid=1003 pid=5555 exe=/usr/bin/vi : path=/usr/lib/locale/en_US.utf8/LC_MESSAGES/SYS_LC_MESSAGES ftype=application/octet-stream
+rule=17 dec=allow perm=open auid=1003 pid=5555 exe=/usr/bin/vi : path=/usr/lib/locale/en_US.utf8/LC_MONETARY ftype=application/octet-stream
+rule=17 dec=allow perm=open auid=1003 pid=5555 exe=/usr/bin/vi : path=/usr/lib/locale/en_US.utf8/LC_COLLATE ftype=application/octet-stream
+rule=17 dec=allow perm=open auid=1003 pid=5555 exe=/usr/bin/vi : path=/usr/lib/locale/en_US.utf8/LC_TIME ftype=application/octet-stream
+rule=17 dec=allow perm=open auid=1003 pid=5555 exe=/usr/bin/vi : path=/usr/lib/locale/en_US.utf8/LC_NUMERIC ftype=application/octet-stream
+rule=17 dec=allow perm=open auid=1003 pid=5555 exe=/usr/bin/vi : path=/usr/lib/locale/en_US.utf8/LC_CTYPE ftype=application/octet-stream
+rule=17 dec=allow perm=open auid=1003 pid=5555 exe=/usr/bin/vi : path=/usr/share/terminfo/x/xterm ftype=application/x-terminfo
+rule=17 dec=allow perm=open auid=1003 pid=5555 exe=/usr/bin/vi : path=/etc/virc ftype=text/plain
+rule=17 dec=allow perm=open auid=1003 pid=5555 exe=/usr/bin/vi : path=/etc/nsswitch.conf ftype=text/plain
+rule=17 dec=allow perm=open auid=1003 pid=5555 exe=/usr/bin/vi : path=/etc/ld.so.cache ftype=application/octet-stream
+rule=7 dec=allow perm=open auid=1003 pid=5555 exe=/usr/bin/vi : path=/usr/lib64/libnss_sss.so.2 ftype=application/x-sharedlib
+rule=17 dec=allow perm=open auid=1003 pid=5555 exe=/usr/bin/vi : path=/var/lib/sss/mc/passwd ftype=application/octet-stream
+rule=17 dec=allow perm=open auid=1003 pid=5555 exe=/usr/bin/vi : path=/home/alice/.test.txt.swp ftype=application/x-empty
+rule=17 dec=allow perm=open auid=1003 pid=5555 exe=/usr/bin/vi : path=/home/alice/.test.txt.swx ftype=application/x-empty
+rule=17 dec=allow perm=open auid=1003 pid=5555 exe=/usr/bin/vi : path=/home/alice/.test.txt.swp ftype=application/x-empty
+rule=17 dec=allow perm=open auid=1003 pid=5555 exe=/usr/bin/vi : path=/home/alice/test.txt ftype=application/x-empty
+rule=9 dec=allow perm=execute auid=1003 pid=5558 exe=/usr/bin/bash : path=/usr/bin/gzip ftype=application/x-executable
+rule=17 dec=allow perm=open auid=1003 pid=5558 exe=/usr/bin/bash : path=/usr/bin/gzip ftype=application/x-executable
+rule=9 dec=allow perm=execute auid=1003 pid=5558 exe=/usr/bin/bash : path=/usr/lib64/ld-2.28.so ftype=application/x-sharedlib
+rule=7 dec=allow perm=open auid=1003 pid=5558 exe=/usr/bin/bash : path=/usr/lib64/ld-2.28.so ftype=application/x-sharedlib
+rule=17 dec=allow perm=open auid=1003 pid=5558 exe=/usr/bin/gzip : path=/etc/ld.so.cache ftype=application/octet-stream
+rule=7 dec=allow perm=open auid=1003 pid=5558 exe=/usr/bin/gzip : path=/usr/lib64/libc-2.28.so ftype=application/x-sharedlib
+rule=17 dec=allow perm=open auid=1003 pid=5558 exe=/usr/bin/gzip : path=/home/alice/test.txt ftype=text/plain
+rule=17 dec=allow perm=open auid=1003 pid=5559 exe=/usr/bin/bash : path=/home/alice/test.gzip ftype=application/x-empty
+rule=9 dec=allow perm=execute auid=1003 pid=5559 exe=/usr/bin/bash : path=/usr/bin/gzip ftype=application/x-executable
+rule=17 dec=allow perm=open auid=1003 pid=5559 exe=/usr/bin/bash : path=/usr/bin/gzip ftype=application/x-executable
+rule=9 dec=allow perm=execute auid=1003 pid=5559 exe=/usr/bin/bash : path=/usr/lib64/ld-2.28.so ftype=application/x-sharedlib
+rule=7 dec=allow perm=open auid=1003 pid=5559 exe=/usr/bin/bash : path=/usr/lib64/ld-2.28.so ftype=application/x-sharedlib
+rule=17 dec=allow perm=open auid=1003 pid=5559 exe=/usr/bin/gzip : path=/etc/ld.so.cache ftype=application/octet-stream
+rule=7 dec=allow perm=open auid=1003 pid=5559 exe=/usr/bin/gzip : path=/usr/lib64/libc-2.28.so ftype=application/x-sharedlib
+rule=17 dec=allow perm=open auid=1003 pid=5559 exe=/usr/bin/gzip : path=/home/alice/test.txt ftype=text/plain
+rule=9 dec=allow perm=execute auid=1003 pid=5560 exe=/usr/bin/bash : path=/usr/bin/find ftype=application/x-executable
+rule=17 dec=allow perm=open auid=1003 pid=5560 exe=/usr/bin/bash : path=/usr/bin/find ftype=application/x-executable
+rule=9 dec=allow perm=execute auid=1003 pid=5560 exe=/usr/bin/bash : path=/usr/lib64/ld-2.28.so ftype=application/x-sharedlib
+rule=7 dec=allow perm=open auid=1003 pid=5560 exe=/usr/bin/bash : path=/usr/lib64/ld-2.28.so ftype=application/x-sharedlib
+rule=17 dec=allow perm=open auid=1003 pid=5560 exe=/usr/bin/find : path=/etc/ld.so.cache ftype=application/octet-stream
+rule=7 dec=allow perm=open auid=1003 pid=5560 exe=/usr/bin/find : path=/usr/lib64/libselinux.so.1 ftype=application/x-sharedlib
+rule=7 dec=allow perm=open auid=1003 pid=5560 exe=/usr/bin/find : path=/usr/lib64/libm-2.28.so ftype=application/x-sharedlib
+rule=7 dec=allow perm=open auid=1003 pid=5560 exe=/usr/bin/find : path=/usr/lib64/libc-2.28.so ftype=application/x-sharedlib
+rule=7 dec=allow perm=open auid=1003 pid=5560 exe=/usr/bin/find : path=/usr/lib64/libpcre2-8.so.0.7.1 ftype=application/x-sharedlib
+rule=7 dec=allow perm=open auid=1003 pid=5560 exe=/usr/bin/find : path=/usr/lib64/libdl-2.28.so ftype=application/x-sharedlib
+rule=7 dec=allow perm=open auid=1003 pid=5560 exe=/usr/bin/find : path=/usr/lib64/libpthread-2.28.so ftype=application/x-sharedlib
+rule=17 dec=allow perm=open auid=1003 pid=5560 exe=/usr/bin/find : path=/usr/share/locale/locale.alias ftype=text/plain
+rule=17 dec=allow perm=open auid=1003 pid=5560 exe=/usr/bin/find : path=/usr/lib/locale/en_US.utf8/LC_IDENTIFICATION ftype=application/octet-stream
+rule=17 dec=allow perm=open auid=1003 pid=5560 exe=/usr/bin/find : path=/usr/lib64/gconv/gconv-modules.cache ftype=application/octet-stream
+rule=17 dec=allow perm=open auid=1003 pid=5560 exe=/usr/bin/find : path=/usr/lib/locale/en_US.utf8/LC_MEASUREMENT ftype=application/octet-stream
+rule=17 dec=allow perm=open auid=1003 pid=5560 exe=/usr/bin/find : path=/usr/lib/locale/en_US.utf8/LC_TELEPHONE ftype=application/octet-stream
+rule=17 dec=allow perm=open auid=1003 pid=5560 exe=/usr/bin/find : path=/usr/lib/locale/en_US.utf8/LC_ADDRESS ftype=application/octet-stream
+rule=17 dec=allow perm=open auid=1003 pid=5560 exe=/usr/bin/find : path=/usr/lib/locale/en_US.utf8/LC_NAME ftype=application/octet-stream
+rule=17 dec=allow perm=open auid=1003 pid=5560 exe=/usr/bin/find : path=/usr/lib/locale/en_US.utf8/LC_PAPER ftype=application/octet-stream
+rule=17 dec=allow perm=open auid=1003 pid=5560 exe=/usr/bin/find : path=/usr/lib/locale/en_US.utf8/LC_MESSAGES/SYS_LC_MESSAGES ftype=application/octet-stream
+rule=17 dec=allow perm=open auid=1003 pid=5560 exe=/usr/bin/find : path=/usr/lib/locale/en_US.utf8/LC_MONETARY ftype=application/octet-stream
+rule=17 dec=allow perm=open auid=1003 pid=5560 exe=/usr/bin/find : path=/usr/lib/locale/en_US.utf8/LC_COLLATE ftype=application/octet-stream
+rule=17 dec=allow perm=open auid=1003 pid=5560 exe=/usr/bin/find : path=/usr/lib/locale/en_US.utf8/LC_TIME ftype=application/octet-stream
+rule=17 dec=allow perm=open auid=1003 pid=5560 exe=/usr/bin/find : path=/usr/lib/locale/en_US.utf8/LC_NUMERIC ftype=application/octet-stream
+rule=17 dec=allow perm=open auid=1003 pid=5560 exe=/usr/bin/find : path=/usr/lib/locale/en_US.utf8/LC_CTYPE ftype=application/octet-stream
+shutting down...
+Inter-thread max queue depth 1
+Allowed accesses: 77
+Denied accesses: 0
+Database max pages: 10240
+Database pages in use: 973 (9%)
+Subject cache size: 1549
+Subject slots in use: 4 (0%)
+Subject hits: 73
+Subject misses: 5
+Subject evictions: 1 (1%)
+Object cache size: 8191
+Object slots in use: 39 (0%)
+Object hits: 38
+Object misses: 39
+Object evictions: 0 (0%)

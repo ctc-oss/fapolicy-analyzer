@@ -1,0 +1,19 @@
+Loaded 17 rules
+Changed to uid 994
+Initializing the database
+fapolicyd integrity is 0
+backend rpmdb registered
+backend file registered
+Loading rpmdb backend
+Loading file backend
+Checking database
+Importing data from rpmdb backend
+Importing data from file backend
+Database checks OK
+added /dev/shm mount point
+added / mount point
+added /boot mount point
+added /home mount point
+added /run/user/1000 mount point
+added /run/user/1003 mount point
+Starting to listen for events
