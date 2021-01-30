@@ -6,8 +6,3 @@ edition = "2018"
 [dependencies]
 data-encoding = "2.3.1"
 ring = "0.16.19"
-
-[dependencies.librpm]
-# need https://github.com/rpm-software-management/librpm.rs/pull/14
-git = "https://github.com/rpm-software-management/librpm.rs"
-branch = "master"
