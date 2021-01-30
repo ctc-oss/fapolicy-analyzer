@@ -1,0 +1,16 @@
+shutting down...
+Inter-thread max queue depth 1
+Allowed accesses: 77
+Denied accesses: 0
+Database max pages: 10240
+Database pages in use: 973 (9%)
+Subject cache size: 1549
+Subject slots in use: 4 (0%)
+Subject hits: 73
+Subject misses: 5
+Subject evictions: 1 (1%)
+Object cache size: 8191
+Object slots in use: 39 (0%)
+Object hits: 38
+Object misses: 39
+Object evictions: 0 (0%)

@@ -134,6 +134,9 @@ dependencies = [
 [[package]]
 name = "fapolicyd"
 version = "0.0.1"
+dependencies = [
+ "nom",
+]
 
 [[package]]
 name = "funty"
