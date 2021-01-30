@@ -5,8 +5,8 @@ authors = ["John Wass <wassj@ctc.com>"]
 edition = "2018"
 
 [[bin]]
-path = "crates/core/main.rs"
-name = "fa"
+path = "crates/cli/main.rs"
+name = "faa"
 
 [[test]]
 name = "integration"
@@ -16,10 +16,17 @@ path = "tests/trust_model_test.rs"
 exclude = ["py"]
 members = [
     "crates/common",
-    "crates/fapolicyd"
+    "crates/core",
+    "crates/fapolicyd",
+    "crates/rpm"
 ]
+
+[lib]
+path = "crates/core/src/lib.rs"
 
 [dependencies]
 clap = "3.0.0-beta.2"
+core = { version = "0.0.1", path = "crates/core" }
+common = { version = "0.0.1", path = "crates/common" }
 fapolicyd = { version = "0.0.1", path = "crates/fapolicyd" }
-fapolicy-common = { version = "0.0.1", path = "crates/common" }
+rpm = { version = "0.0.1", path = "crates/rpm" }

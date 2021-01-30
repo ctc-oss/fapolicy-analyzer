@@ -1,7 +1,6 @@
 [package]
-name = "fapolicy-common"
+name = "common"
 version = "0.0.1"
-authors = ["John Wass <wassj@ctc.com>"]
 edition = "2018"
 
 [dependencies]

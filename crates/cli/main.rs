@@ -9,13 +9,22 @@ struct Opts {
     /// path to trust database
     #[clap(long, default_value = "/etc/fapolicyd/fapolicyd.trust")]
     db: String,
+
+    #[clap(long)]
+    cmd: String,
 }
 
 fn main() {
     let opts: Opts = Opts::parse();
 
-    let db = FileTrustDB::new(&opts.db);
-    for e in db.entries() {
-        println!("{} {} {}", e.path, e.size, e.hash)
+    match opts.cmd.as_str() {
+        "trust" => {
+            let db = FileTrustDB::new(&opts.db);
+            for e in db.entries() {
+                println!("{} {} {}", e.path, e.size, e.hash)
+            }
+        }
+        "rpm" => {}
+        _ => panic!("invalid command"),
     }
 }
