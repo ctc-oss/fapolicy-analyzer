@@ -25,14 +25,14 @@ impl Database {
         }
     }
 
-    fn parse(s: &String) -> Vec<File> {
-        iterator(s.as_str(), terminated(parse_line, line_ending)).collect()
+    fn parse(s: &str) -> Vec<File> {
+        iterator(s, terminated(parse_line, line_ending)).collect()
     }
 }
 
-struct Package {
-    path: String,
-    version: String,
+pub struct Package {
+    pub path: String,
+    pub version: String,
 }
 
 #[derive(Debug)]
@@ -126,12 +126,6 @@ pub fn parse_line(i: &str) -> nom::IResult<&str, File> {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn parse_executable() {
-        let qa = "/usr/bin/hostname 21664 1557584275 26532eeae676157e70231d911474e48d31085b5f2e511ce908349dbb02f0f69c 0100755 root root 0 0 0 X\n";
-        assert_eq!(2 + 2, 4);
-    }
 
     static A: &str = "/usr/bin/hostname 21664 1557584275 26532eeae676157e70231d911474e48d31085b5f2e511ce908349dbb02f0f69c 0100755 root root 0 0 0 X";
     static B: &str = "/usr/share/man/man1/dnsdomainname.1.gz 13 1557584275 0000000000000000000000000000000000000000000000000000000000000000 0120777 root root 0 1 0 hostname.1.gz";
