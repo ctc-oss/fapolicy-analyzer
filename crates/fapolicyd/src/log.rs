@@ -16,12 +16,12 @@ use nom::tag;
 use nom::take_while;
 
 pub struct LogObj {
-    path: String,
-    ftype: String,
+    pub path: String,
+    pub ftype: String,
 }
 
 impl LogObj {
-    fn from_file(path: &str) -> Vec<LogObj> {
+    pub fn from_file(path: &str) -> Vec<LogObj> {
         let f = File::open(path).unwrap();
         let r = BufReader::new(f);
 
