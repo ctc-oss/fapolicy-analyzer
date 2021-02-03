@@ -1,9 +1,7 @@
 use std::fs::File;
 use std::io::{prelude::*, BufReader};
-use std::str::FromStr;
 
 use api::TrustSource;
-use api::TrustSource::Ancillary;
 
 pub fn load_ancillary_trust(path: &str) -> Vec<api::Trust> {
     let f = File::open(path).unwrap();

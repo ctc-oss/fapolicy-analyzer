@@ -121,6 +121,7 @@ version = "0.0.1"
 dependencies = [
  "api",
  "clap",
+ "common",
  "fapolicyd",
  "nom",
 ]

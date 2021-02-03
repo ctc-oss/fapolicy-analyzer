@@ -1,2 +1,2 @@
-mod rpm;
+pub mod rpm;
 pub mod sys;

@@ -15,4 +15,6 @@ fn main() {
     let sys = fapolicy_analyzer::sys::System::boot(fapolicy_analyzer::sys::SystemCfg {
         ancillary_trust_path: opts.db,
     });
+
+    println!("Loaded {} trust records", sys.trust.len())
 }

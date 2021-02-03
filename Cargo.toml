@@ -26,6 +26,7 @@ members = [
 [dependencies]
 clap = "3.0.0-beta.2"
 api = { path = "crates/api" }
+common = { path = "crates/common" }
 fapolicyd = { path = "crates/fapolicyd" }
 
 [dependencies.nom]
