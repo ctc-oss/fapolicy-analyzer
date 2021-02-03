@@ -9,3 +9,6 @@ path = "src/main.rs"
 
 [dependencies]
 nom = "6.1.0"
+
+[dependencies.api]
+path = "../api"

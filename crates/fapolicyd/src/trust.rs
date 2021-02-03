@@ -2,6 +2,9 @@ use std::fs::File;
 use std::io::{prelude::*, BufReader};
 use std::str::FromStr;
 
+use api::TrustSource;
+use api::TrustSource::Ancillary;
+
 #[derive(Clone)]
 pub struct TrustEntry {
     pub path: String,
@@ -17,6 +20,24 @@ impl TrustEntry {
             size,
             hash: hash.to_string(),
         }
+    }
+}
+
+impl api::Trust for TrustEntry {
+    fn size(self: &Self) -> i64 {
+        self.size
+    }
+
+    fn path(self: &Self) -> String {
+        self.path.clone()
+    }
+
+    fn hash(self: &Self) -> String {
+        self.hash.clone()
+    }
+
+    fn source(self: &Self) -> TrustSource {
+        TrustSource::Ancillary
     }
 }
 

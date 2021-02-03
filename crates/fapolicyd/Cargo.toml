@@ -5,3 +5,6 @@ edition = "2018"
 
 [dependencies]
 nom = "6.1.0"
+
+[dependencies.api]
+path = "../api"

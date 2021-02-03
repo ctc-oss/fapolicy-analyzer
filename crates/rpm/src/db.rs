@@ -1,3 +1,4 @@
+use api::TrustSource;
 use nom::character::complete::alphanumeric1;
 use nom::character::complete::digit1;
 use nom::character::complete::line_ending;
@@ -40,6 +41,27 @@ pub struct File {
     pub path: String,
     pub size: i64,
     pub digest: Option<String>,
+}
+
+impl api::Trust for File {
+    fn size(self: &Self) -> i64 {
+        self.size
+    }
+
+    fn path(self: &Self) -> String {
+        self.path.clone()
+    }
+
+    fn hash(self: &Self) -> String {
+        match self.digest.as_ref() {
+            Some(s) => s.clone(),
+            None => String::new(),
+        }
+    }
+
+    fn source(self: &Self) -> TrustSource {
+        TrustSource::System
+    }
 }
 
 fn filepath(i: &str) -> nom::IResult<&str, &str> {

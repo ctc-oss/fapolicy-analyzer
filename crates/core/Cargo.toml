@@ -3,11 +3,8 @@ name = "core"
 version = "0.0.1"
 edition = "2018"
 
-[dependencies.common]
-path = "../common"
-
-[dependencies.fapolicyd]
-path = "../fapolicyd"
-
-[dependencies.rpm]
-path = "../rpm"
+[dependencies]
+api = { path = "../api" }
+common = { path = "../common" }
+fapolicyd = { path = "../fapolicyd" }
+rpm = { path = "../rpm" }
