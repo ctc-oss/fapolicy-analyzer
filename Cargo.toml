@@ -8,6 +8,9 @@ edition = "2018"
 path = "crates/cli/main.rs"
 name = "faa"
 
+[lib]
+path = "crates/core/src/lib.rs"
+
 [[test]]
 name = "integration"
 path = "tests/trust_model_test.rs"
@@ -17,18 +20,13 @@ exclude = ["py"]
 members = [
     "crates/api",
     "crates/common",
-    "crates/core",
     "crates/fapolicyd",
-    "crates/rpm"
 ]
-
-[lib]
-path = "crates/core/src/lib.rs"
 
 [dependencies]
 clap = "3.0.0-beta.2"
 api = { path = "crates/api" }
-core = { path = "crates/core" }
-common = { path = "crates/common" }
 fapolicyd = { path = "crates/fapolicyd" }
-rpm = { path = "crates/rpm" }
+
+[dependencies.nom]
+version = "6.1.0"

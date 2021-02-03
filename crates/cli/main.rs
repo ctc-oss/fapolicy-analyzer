@@ -1,7 +1,5 @@
 use clap::Clap;
 
-use fapolicyd::trust::FileTrustDB;
-
 #[derive(Clap)]
 #[clap(version = "v0.2.0")]
 /// File Access Policy Analyzer
@@ -14,7 +12,7 @@ struct Opts {
 fn main() {
     let opts: Opts = Opts::parse();
 
-    let sys = core::System::boot(core::SystemCfg {
+    let sys = fapolicy_analyzer::sys::System::boot(fapolicy_analyzer::sys::SystemCfg {
         ancillary_trust_path: opts.db,
     });
 }

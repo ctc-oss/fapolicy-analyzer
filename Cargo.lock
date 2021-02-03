@@ -110,16 +110,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "core"
-version = "0.0.1"
-dependencies = [
- "api",
- "common",
- "fapolicyd",
- "rpm",
-]
-
-[[package]]
 name = "data-encoding"
 version = "2.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -131,10 +121,8 @@ version = "0.0.1"
 dependencies = [
  "api",
  "clap",
- "common",
- "core",
  "fapolicyd",
- "rpm",
+ "nom",
 ]
 
 [[package]]
@@ -319,14 +307,6 @@ dependencies = [
  "untrusted",
  "web-sys",
  "winapi",
-]
-
-[[package]]
-name = "rpm"
-version = "0.0.1"
-dependencies = [
- "api",
- "nom",
 ]
 
 [[package]]

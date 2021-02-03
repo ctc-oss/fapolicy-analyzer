@@ -5,88 +5,47 @@ use std::str::FromStr;
 use api::TrustSource;
 use api::TrustSource::Ancillary;
 
-#[derive(Clone)]
-pub struct TrustEntry {
-    pub path: String,
-    /* size is an off_t */
-    pub size: i64,
-    pub hash: String,
+pub fn load_ancillary_trust(path: &str) -> Vec<api::Trust> {
+    let f = File::open(path).unwrap();
+    let r = BufReader::new(f);
+
+    r.lines()
+        .map(|r| r.unwrap())
+        .filter(|s| !s.is_empty() && !s.starts_with('#'))
+        .map(|l| parse_trust_record(&l).unwrap())
+        .collect()
 }
 
-impl TrustEntry {
-    pub fn new(path: &str, size: i64, hash: &str) -> TrustEntry {
-        TrustEntry {
-            path: path.to_string(),
-            size,
-            hash: hash.to_string(),
-        }
-    }
-}
-
-impl api::Trust for TrustEntry {
-    fn size(self: &Self) -> i64 {
-        self.size
-    }
-
-    fn path(self: &Self) -> String {
-        self.path.clone()
-    }
-
-    fn hash(self: &Self) -> String {
-        self.hash.clone()
-    }
-
-    fn source(self: &Self) -> TrustSource {
-        TrustSource::Ancillary
+// todo;; non-pub
+pub fn parse_trust_record(s: &str) -> Result<api::Trust, String> {
+    let v: Vec<&str> = s.split(' ').collect();
+    match v.as_slice() {
+        [f, sz, sha] => Ok(api::Trust {
+            path: f.to_string(),
+            size: sz.parse().unwrap(),
+            hash: Some(sha.to_string()),
+            source: TrustSource::Ancillary,
+        }),
+        _ => Err(String::from("failed to read record")),
     }
 }
 
-impl FromStr for TrustEntry {
-    type Err = String;
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let v: Vec<&str> = s.split(' ').collect();
-        match v.as_slice() {
-            [f, sz, sha] => Ok(TrustEntry {
-                path: f.to_string(),
-                size: sz.parse().unwrap(),
-                hash: sha.to_string(),
-            }),
-            _ => Err(String::from("failed to read record")),
-        }
-    }
-}
-
-pub struct FileTrustDB {
-    pub path: String,
-    entries: Vec<TrustEntry>,
-}
-
-impl FileTrustDB {
-    pub fn new(p: &str) -> FileTrustDB {
-        FileTrustDB::from(p)
-    }
-
-    pub fn from(p: &str) -> FileTrustDB {
-        let entries = Self::read_entries(&p);
-        FileTrustDB {
-            path: String::from(p),
-            entries,
-        }
-    }
-
-    pub fn entries(self: FileTrustDB) -> Vec<TrustEntry> {
-        self.entries
-    }
-
-    fn read_entries(path: &str) -> Vec<TrustEntry> {
-        let f = File::open(path).unwrap();
-        let r = BufReader::new(f);
-
-        r.lines()
-            .map(|r| r.unwrap())
-            .filter(|s| !s.is_empty() && !s.starts_with('#'))
-            .map(|l| TrustEntry::from_str(&l).unwrap())
-            .collect()
+    #[test]
+    fn deserialize_entry() {
+        let s =
+            "/home/user/my-ls 157984 61a9960bf7d255a85811f4afcac51067b8f2e4c75e21cf4f2af95319d4ed1b87";
+        let e = parse_trust_record(s).unwrap();
+        assert_eq!(e.path, "/home/user/my-ls");
+        assert_eq!(e.size, 157984);
+        assert_eq!(
+            e.hash,
+            Some(String::from(
+                "61a9960bf7d255a85811f4afcac51067b8f2e4c75e21cf4f2af95319d4ed1b87"
+            ))
+        );
     }
 }

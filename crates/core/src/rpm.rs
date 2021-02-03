@@ -8,60 +8,19 @@ use nom::sequence::terminated;
 use nom::InputIter;
 use std::process::Command;
 
-pub struct Database {
-    pub files: Vec<File>,
+pub fn load_system_trust() -> Vec<api::Trust> {
+    let res = Command::new("rpm")
+        .arg("-qa")
+        .arg("--dump")
+        .output()
+        .expect("failed to execute process");
+
+    let clean = String::from_utf8(res.stdout).unwrap();
+    parse(&clean)
 }
 
-impl Database {
-    pub fn load() -> Database {
-        let res = Command::new("rpm")
-            .arg("-qa")
-            .arg("--dump")
-            .output()
-            .expect("failed to execute process");
-
-        let clean = String::from_utf8(res.stdout).unwrap();
-        Database {
-            files: Database::parse(&clean),
-        }
-    }
-
-    fn parse(s: &str) -> Vec<File> {
-        iterator(s, terminated(parse_line, line_ending)).collect()
-    }
-}
-
-pub struct Package {
-    pub path: String,
-    pub version: String,
-}
-
-#[derive(Debug)]
-pub struct File {
-    pub path: String,
-    pub size: i64,
-    pub digest: Option<String>,
-}
-
-impl api::Trust for File {
-    fn size(self: &Self) -> i64 {
-        self.size
-    }
-
-    fn path(self: &Self) -> String {
-        self.path.clone()
-    }
-
-    fn hash(self: &Self) -> String {
-        match self.digest.as_ref() {
-            Some(s) => s.clone(),
-            None => String::new(),
-        }
-    }
-
-    fn source(self: &Self) -> TrustSource {
-        TrustSource::System
-    }
+fn parse(s: &str) -> Vec<api::Trust> {
+    iterator(s, terminated(parse_line, line_ending)).collect()
 }
 
 fn filepath(i: &str) -> nom::IResult<&str, &str> {
@@ -81,7 +40,7 @@ fn digest_or_not(i: &str) -> Option<&str> {
 }
 
 /// path size mtime digest mode owner group isconfig isdoc rdev symlink
-pub fn parse_line(i: &str) -> nom::IResult<&str, File> {
+pub fn parse_line(i: &str) -> nom::IResult<&str, api::Trust> {
     match nom::combinator::complete(nom::sequence::tuple((
         filepath,
         space1,
@@ -133,10 +92,11 @@ pub fn parse_line(i: &str) -> nom::IResult<&str, File> {
             ),
         )) => Ok((
             remaining_input,
-            File {
+            api::Trust {
                 path: path.to_string(),
                 size: size.parse().unwrap(),
-                digest: digest_or_not(digest).map(|s| s.to_string()),
+                hash: digest_or_not(digest).map(|s| s.to_string()),
+                source: TrustSource::System,
             },
         )),
         Err(e) => Err(e),
@@ -155,49 +115,52 @@ mod tests {
 
     #[test]
     fn parse_a() {
-        let expected = File {
+        let expected = api::Trust {
             path: "/usr/bin/hostname".to_string(),
             size: 21664,
-            digest: Some(
+            hash: Some(
                 "26532eeae676157e70231d911474e48d31085b5f2e511ce908349dbb02f0f69c".to_string(),
             ),
+            source: TrustSource::System,
         };
         let (_, actual) = parse_line(A).unwrap();
         println!("{:?}", actual);
 
         assert_eq!(actual.path, expected.path);
         assert_eq!(actual.size, expected.size);
-        assert_eq!(actual.digest, expected.digest);
+        assert_eq!(actual.hash, expected.hash);
     }
 
     #[test]
     fn parse_b() {
-        let expected = File {
+        let expected = api::Trust {
             path: "/usr/share/man/man1/dnsdomainname.1.gz".to_string(),
             size: 13,
-            digest: None,
+            hash: None,
+            source: TrustSource::System,
         };
         let (_, actual) = parse_line(B).unwrap();
         println!("{:?}", actual);
 
         assert_eq!(actual.path, expected.path);
         assert_eq!(actual.size, expected.size);
-        assert_eq!(actual.digest, expected.digest);
+        assert_eq!(actual.hash, expected.hash);
     }
 
     #[test]
     fn parse_c() {
-        let expected = File {
+        let expected = api::Trust {
             path: "/usr/lib/.build-id/a8/a7ee9d5002492edfc62e3e2e44149e981f9866".to_string(),
             size: 28,
-            digest: None,
+            hash: None,
+            source: TrustSource::System,
         };
         let (_, actual) = parse_line(C).unwrap();
         println!("{:?}", actual);
 
         assert_eq!(actual.path, expected.path);
         assert_eq!(actual.size, expected.size);
-        assert_eq!(actual.digest, expected.digest);
+        assert_eq!(actual.hash, expected.hash);
     }
 
     #[test]
@@ -210,7 +173,7 @@ mod tests {
         abc.push_str(C);
         abc.push('\n');
 
-        let files: Vec<File> = Database::parse(&abc);
+        let files: Vec<api::Trust> = parse(&abc);
 
         assert_eq!(files.len(), 3);
         for x in files {

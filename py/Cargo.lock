@@ -54,6 +54,7 @@ dependencies = [
 name = "fapolicy-analyzer-py"
 version = "0.0.1"
 dependencies = [
+ "api",
  "fapolicyd",
  "pyo3",
 ]
