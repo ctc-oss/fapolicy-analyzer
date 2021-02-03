@@ -1,4 +1,4 @@
-import fapolicy_analyzer as fa
+import fapolicy_analyzer.trust as fa
 from fapolicy_analyzer import util
 
 s = util.example_trust_entry()

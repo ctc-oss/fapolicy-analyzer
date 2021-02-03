@@ -2,11 +2,22 @@ use std::fs::File;
 use std::io::{prelude::*, BufReader};
 use std::str::FromStr;
 
+#[derive(Clone)]
 pub struct TrustEntry {
     pub path: String,
     /* size is an off_t */
     pub size: i64,
     pub hash: String,
+}
+
+impl TrustEntry {
+    pub fn new(path: &str, size: i64, hash: &str) -> TrustEntry {
+        TrustEntry {
+            path: path.to_string(),
+            size,
+            hash: hash.to_string(),
+        }
+    }
 }
 
 impl FromStr for TrustEntry {
