@@ -3,7 +3,7 @@ use std::str::FromStr;
 use pyo3::prelude::*;
 use pyo3::wrap_pyfunction;
 
-#[pyclass(module = "fapolicy_analyzer", name=Trust)]
+#[pyclass(module = "trust", name=Trust)]
 #[derive(Clone)]
 pub struct PyTrust {
     e: api::Trust,

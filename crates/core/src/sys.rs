@@ -5,6 +5,8 @@ use fapolicyd::trust::load_ancillary_trust;
 pub struct SystemCfg {
     pub ancillary_trust_path: String,
 }
+
+#[derive(Clone)]
 pub struct System {
     pub trust: Vec<Trust>,
 }
