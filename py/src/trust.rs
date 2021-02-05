@@ -1,7 +1,4 @@
-use std::str::FromStr;
-
 use pyo3::prelude::*;
-use pyo3::wrap_pyfunction;
 
 #[pyclass(module = "trust", name=Trust)]
 #[derive(Clone)]
@@ -44,7 +41,7 @@ impl PyTrust {
 
     #[getter]
     fn get_hash(&self) -> PyResult<Option<&str>> {
-        Ok(self.e.hash.as_ref().map(|s| s.as_str()))
+        Ok(self.e.hash.as_deref())
     }
 }
 

@@ -6,14 +6,19 @@ use clap::Clap;
 struct Opts {
     /// path to ancillary trust database
     #[clap(long, default_value = "/etc/fapolicyd/fapolicyd.trust")]
-    db: String,
+    trustdb: String,
+
+    /// path to system trust database
+    #[clap(long)]
+    rpmdb: Option<String>,
 }
 
 fn main() {
     let opts: Opts = Opts::parse();
 
     let sys = fapolicy_analyzer::sys::System::boot(fapolicy_analyzer::sys::SystemCfg {
-        ancillary_trust_path: opts.db,
+        system_trust_path: opts.rpmdb,
+        ancillary_trust_path: opts.trustdb,
     });
 
     println!("Loaded {} trust records", sys.trust.len())

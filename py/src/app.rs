@@ -1,6 +1,6 @@
 use pyo3::prelude::*;
-use pyo3::wrap_pyfunction;
 
+use super::trust::PyTrust;
 use fapolicy_analyzer::sys;
 
 #[pyclass(module = "app", name=System)]
@@ -22,8 +22,9 @@ impl From<PySystem> for sys::System {
 #[pymethods]
 impl PySystem {
     #[new]
-    fn new(ancillary_trust_path: &str) -> PySystem {
+    fn new(ancillary_trust_path: &str, system_trust_path: Option<String>) -> PySystem {
         sys::System::boot(sys::SystemCfg {
+            system_trust_path,
             ancillary_trust_path: ancillary_trust_path.to_string(),
         })
         .into()
@@ -34,10 +35,15 @@ impl PySystem {
             println!("{:?}", t);
         }
     }
-    // #[getter]
-    // fn get_trust(&self) -> PyResult<Vec<PyTrust>> {
-    //     Ok(self.s.trust.iter().ma.clone())
-    // }
+
+    fn trust(&self) -> PyResult<Vec<PyTrust>> {
+        Ok(self
+            .s
+            .trust
+            .iter()
+            .map(|t| PyTrust::from(t.clone()))
+            .collect())
+    }
 }
 
 #[pymodule]

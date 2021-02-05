@@ -8,10 +8,21 @@ use nom::sequence::terminated;
 use nom::InputIter;
 use std::process::Command;
 
-pub fn load_system_trust() -> Vec<api::Trust> {
+pub fn load_system_trust(rpmdb: &Option<String>) -> Vec<api::Trust> {
+    let mut args = Vec::new();
+    args.push("-qa");
+    args.push("--dump");
+
+    // todo;; for now we are always setting this to support ubuntu dev environments
+    args.push("--dbpath");
+    if let Some(rpmdb_path) = rpmdb {
+        args.push(rpmdb_path);
+    } else {
+        args.push("/var/lib/rpm")
+    }
+
     let res = Command::new("rpm")
-        .arg("-qa")
-        .arg("--dump")
+        .args(args)
         .output()
         .expect("failed to execute process");
 
