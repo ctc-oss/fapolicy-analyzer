@@ -3,6 +3,9 @@
 .local
 target
 
-venv
 *.so
 *.pyc
+*.egg-info
+venv
+build
+dist
