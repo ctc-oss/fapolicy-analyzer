@@ -1,0 +1,10 @@
+[package]
+name = "fapolicy-analyzer-cli"
+version = "0.0.1"
+edition = "2018"
+
+[dependencies]
+clap = "3.0.0-beta.2"
+
+[dependencies.fapolicy-analyzer]
+path = ".."

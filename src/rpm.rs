@@ -1,4 +1,4 @@
-use api::TrustSource;
+use crate::api;
 use nom::character::complete::alphanumeric1;
 use nom::character::complete::digit1;
 use nom::character::complete::line_ending;
@@ -107,7 +107,7 @@ pub fn parse_line(i: &str) -> nom::IResult<&str, api::Trust> {
                 path: path.to_string(),
                 size: size.parse().unwrap(),
                 hash: digest_or_not(digest).map(|s| s.to_string()),
-                source: TrustSource::System,
+                source: api::TrustSource::System,
             },
         )),
         Err(e) => Err(e),
@@ -132,7 +132,7 @@ mod tests {
             hash: Some(
                 "26532eeae676157e70231d911474e48d31085b5f2e511ce908349dbb02f0f69c".to_string(),
             ),
-            source: TrustSource::System,
+            source: api::TrustSource::System,
         };
         let (_, actual) = parse_line(A).unwrap();
         println!("{:?}", actual);
@@ -148,7 +148,7 @@ mod tests {
             path: "/usr/share/man/man1/dnsdomainname.1.gz".to_string(),
             size: 13,
             hash: None,
-            source: TrustSource::System,
+            source: api::TrustSource::System,
         };
         let (_, actual) = parse_line(B).unwrap();
         println!("{:?}", actual);
@@ -164,7 +164,7 @@ mod tests {
             path: "/usr/lib/.build-id/a8/a7ee9d5002492edfc62e3e2e44149e981f9866".to_string(),
             size: 28,
             hash: None,
-            source: TrustSource::System,
+            source: api::TrustSource::System,
         };
         let (_, actual) = parse_line(C).unwrap();
         println!("{:?}", actual);

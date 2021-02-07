@@ -1,6 +1,6 @@
+use crate::api::Trust;
 use crate::rpm::load_system_trust;
-use api::Trust;
-use fapolicyd::trust::load_ancillary_trust;
+use crate::trust::load_ancillary_trust;
 
 pub struct SystemCfg {
     pub ancillary_trust_path: String,

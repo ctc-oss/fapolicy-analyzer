@@ -1,7 +1,7 @@
 use std::fs::File;
 use std::io::{prelude::*, BufReader};
 
-use api::TrustSource;
+use crate::api;
 
 pub fn load_ancillary_trust(path: &str) -> Vec<api::Trust> {
     let f = File::open(path).unwrap();
@@ -22,7 +22,7 @@ pub fn parse_trust_record(s: &str) -> Result<api::Trust, String> {
             path: f.to_string(),
             size: sz.parse().unwrap(),
             hash: Some(sha.to_string()),
-            source: TrustSource::Ancillary,
+            source: api::TrustSource::Ancillary,
         }),
         _ => Err(String::from("failed to read record")),
     }
