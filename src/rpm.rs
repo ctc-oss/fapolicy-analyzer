@@ -1,4 +1,5 @@
 use crate::api;
+use crate::rpm::RpmError::{Discovery, Execution, NotFound};
 use nom::character::complete::alphanumeric1;
 use nom::character::complete::digit1;
 use nom::character::complete::line_ending;
@@ -190,5 +191,30 @@ mod tests {
         for x in files {
             println!("{:?}", x);
         }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub enum RpmError {
+    Discovery,
+    NotFound,
+    Execution,
+}
+
+// return rpm version
+pub fn check_rpm() -> Result<String, RpmError> {
+    match Command::new("which").arg("rpm").output() {
+        Ok(eo) if eo.status.success() => {
+            let rpmpath = String::from_utf8(eo.stdout).unwrap().trim().to_string();
+            match Command::new(&rpmpath).arg("--version").output() {
+                Ok(vo) if vo.status.success() => {
+                    let rpmver = String::from_utf8(vo.stdout).unwrap().trim().to_string();
+                    Ok(rpmver)
+                }
+                _ => Err(Execution),
+            }
+        }
+        Ok(_) => Err(NotFound),
+        _ => Err(Discovery),
     }
 }
