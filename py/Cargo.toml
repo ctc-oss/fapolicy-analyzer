@@ -7,12 +7,6 @@ edition = "2018"
 [lib]
 crate-type = ["cdylib"]
 
-[dependencies.api]
-path = "../crates/api"
-
-[dependencies.fapolicyd]
-path = "../crates/fapolicyd"
-
 [dependencies.fapolicy-analyzer]
 path = ".."
 

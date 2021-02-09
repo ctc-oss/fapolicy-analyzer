@@ -1,8 +1,0 @@
-[package]
-name = "common"
-version = "0.0.1"
-edition = "2018"
-
-[dependencies]
-data-encoding = "2.3.1"
-ring = "0.16.19"

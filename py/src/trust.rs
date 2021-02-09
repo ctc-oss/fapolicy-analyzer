@@ -1,3 +1,6 @@
+use fapolicy_analyzer::api;
+use fapolicy_analyzer::trust;
+
 use pyo3::prelude::*;
 
 #[pyclass(module = "trust", name=Trust)]
@@ -18,7 +21,7 @@ impl From<PyTrust> for api::Trust {
 
 #[pyfunction]
 pub fn parse_trust_entry(_py: Python, s: &str) -> PyResult<PyTrust> {
-    let e = fapolicyd::trust::parse_trust_record(s).unwrap();
+    let e = trust::parse_trust_record(s).unwrap();
     Ok(PyTrust { e })
 }
 
