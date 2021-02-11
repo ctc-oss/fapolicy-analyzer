@@ -22,10 +22,10 @@ impl From<PySystem> for sys::System {
 #[pymethods]
 impl PySystem {
     #[new]
-    fn new(ancillary_trust_path: &str, system_trust_path: Option<String>) -> PySystem {
+    fn new(ancillary_trust_path: Option<String>, system_trust_path: Option<String>) -> PySystem {
         sys::System::boot(sys::SystemCfg {
             system_trust_path,
-            ancillary_trust_path: ancillary_trust_path.to_string(),
+            ancillary_trust_path,
         })
         .into()
     }
