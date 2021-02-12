@@ -30,16 +30,19 @@ impl PySystem {
         .into()
     }
 
-    fn dump_trust(&self) {
-        for t in &self.s.trust {
-            println!("{:?}", t);
-        }
-    }
-
-    fn trust(&self) -> PyResult<Vec<PyTrust>> {
+    fn system_trust(&self) -> PyResult<Vec<PyTrust>> {
         Ok(self
             .s
-            .trust
+            .system_trust
+            .iter()
+            .map(|t| PyTrust::from(t.clone()))
+            .collect())
+    }
+
+    fn ancillary_trust(&self) -> PyResult<Vec<PyTrust>> {
+        Ok(self
+            .s
+            .ancillary_trust
             .iter()
             .map(|t| PyTrust::from(t.clone()))
             .collect())

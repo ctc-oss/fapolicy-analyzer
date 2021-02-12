@@ -9,17 +9,18 @@ pub struct SystemCfg {
 
 #[derive(Clone)]
 pub struct System {
-    pub trust: Vec<Trust>,
+    pub system_trust: Vec<Trust>,
+    pub ancillary_trust: Vec<Trust>,
 }
 
 impl System {
     pub fn boot(cfg: SystemCfg) -> System {
-        let trust: Vec<Trust> = [
-            load_system_trust(&cfg.system_trust_path),
-            load_ancillary_trust(&cfg.ancillary_trust_path),
-        ]
-        .concat();
+        let system_trust = load_system_trust(&cfg.system_trust_path);
+        let ancillary_trust = load_ancillary_trust(&cfg.ancillary_trust_path);
 
-        System { trust }
+        System {
+            system_trust,
+            ancillary_trust,
+        }
     }
 }

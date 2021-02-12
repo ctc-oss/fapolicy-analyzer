@@ -57,7 +57,11 @@ fn main() {
                 ancillary_trust_path: opts.trustdb,
             });
 
-            println!("Loaded {} trust records", sys.trust.len())
+            println!(
+                "Loaded {}/{} trust records",
+                sys.system_trust.len(),
+                sys.ancillary_trust.len()
+            )
         }
         SubCommands::Daemon(opts) => {
             let daemon = Daemon::new("notfapolicyd.service");
