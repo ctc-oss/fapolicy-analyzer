@@ -1,6 +1,7 @@
 import fapolicy_analyzer.syscheck as syscheck
 from fapolicy_analyzer import util
 from fapolicy_analyzer.trust import Trust
+from fapolicy_analyzer.svc import Daemon
 
 # validate util library
 s = util.example_trust_entry()
@@ -17,3 +18,7 @@ print("- Trust object OK")
 
 # validate rpm
 syscheck.syscheck_rpm()
+
+# daemon binding
+d = Daemon("fakeunit")
+print("- Daemon object OK")

@@ -48,7 +48,6 @@ impl PySystem {
 
 #[pymodule]
 fn app(_py: Python, m: &PyModule) -> PyResult<()> {
-    // m.add_wrapped(pyo3::wrap_pyfunction!(parse_trust_entry))?;
     m.add_class::<PySystem>()?;
     Ok(())
 }

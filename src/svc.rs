@@ -36,6 +36,7 @@ fn msg(m: Method) -> Message {
     .unwrap_or_else(|e| panic!("{}", e))
 }
 
+#[derive(Clone)]
 pub struct Daemon {
     name: String,
 }
