@@ -3,8 +3,12 @@ use std::io::{prelude::*, BufReader};
 
 use crate::api;
 
-pub fn load_ancillary_trust(path: &str) -> Vec<api::Trust> {
-    let f = File::open(path).unwrap();
+pub fn load_ancillary_trust(path: &Option<String>) -> Vec<api::Trust> {
+    let f = File::open(
+        path.as_ref()
+            .unwrap_or(&"/etc/fapolicyd/fapolicyd.trust".to_string()),
+    )
+    .unwrap();
     let r = BufReader::new(f);
 
     r.lines()

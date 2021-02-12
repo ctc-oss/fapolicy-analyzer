@@ -9,5 +9,7 @@ setup(
     zip_safe=False,
     rust_extensions=[RustExtension("fapolicy_analyzer.app"),
                      RustExtension("fapolicy_analyzer.syscheck"),
-                     RustExtension("fapolicy_analyzer.trust")],
+                     RustExtension("fapolicy_analyzer.svc"),
+                     RustExtension("fapolicy_analyzer.trust"),
+                     ],
 )
