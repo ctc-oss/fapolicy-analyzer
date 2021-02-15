@@ -49,28 +49,28 @@ impl Daemon {
     }
 
     pub fn start(&self) -> Result<(), String> {
-        let m = msg(StartUnit).append2(self.name.as_str(), "fail");
+        let m = msg(StartUnit).append2(&self.name, "fail");
         match call(m) {
             Ok(_) => Ok(()),
             Err(e) => Err(e.to_string()),
         }
     }
     pub fn stop(&self) -> Result<(), String> {
-        let m = msg(StopUnit).append2(self.name.as_str(), "fail");
+        let m = msg(StopUnit).append2(&self.name, "fail");
         match call(m) {
             Ok(_) => Ok(()),
             Err(e) => Err(e.to_string()),
         }
     }
     pub fn enable(&self) -> Result<(), String> {
-        let m = msg(EnableUnitFiles).append3(vec![self.name.as_str()], true, false);
+        let m = msg(EnableUnitFiles).append3(vec![&self.name], true, false);
         match call(m) {
             Ok(_) => Ok(()),
             Err(e) => Err(e.to_string()),
         }
     }
     pub fn disable(&self) -> Result<(), String> {
-        let m = msg(DisableUnitFiles).append2(vec![self.name.as_str()], true);
+        let m = msg(DisableUnitFiles).append2(vec![&self.name], true);
         match call(m) {
             Ok(_) => Ok(()),
             Err(e) => Err(e.to_string()),

@@ -39,7 +39,7 @@ impl PyTrust {
 
     #[getter]
     fn get_path(&self) -> PyResult<&str> {
-        Ok(&self.e.path.as_str())
+        Ok(&self.e.path)
     }
 
     #[getter]
