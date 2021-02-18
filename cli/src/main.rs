@@ -1,5 +1,10 @@
 use clap::Clap;
-use fapolicy_analyzer::svc::Daemon;
+use std::fs;
+
+use fapolicy_analyzer::{svc, sys, trust};
+use std::path::Path;
+mod cmd;
+use cmd::*;
 
 #[derive(Clap)]
 #[clap(version = "0.0.1")]
@@ -20,11 +25,15 @@ enum SubCommands {
 /// Trust commands
 #[derive(Clap)]
 struct TrustOpts {
-    /// path to ancillary trust database
+    /// path to ancillary trust database (file)
     #[clap(long)]
-    trustdb: Option<String>,
+    file: Option<String>,
 
-    /// path to system trust database
+    /// path to fapolicyd trust database (lmdb)
+    #[clap(long)]
+    db: Option<String>,
+
+    /// path to system trust database (rpm)
     #[clap(long)]
     rpmdb: Option<String>,
 }
@@ -51,20 +60,29 @@ struct DaemonSubOpts {}
 fn main() {
     let cli: Opts = Opts::parse();
     match cli.subcmd {
-        SubCommands::Trust(opts) => {
-            let sys = fapolicy_analyzer::sys::System::boot(fapolicy_analyzer::sys::SystemCfg {
-                system_trust_path: opts.rpmdb,
-                ancillary_trust_path: opts.trustdb,
+        SubCommands::Trust(trust_opts) => {
+            let sys = sys::System::boot(sys::SystemCfg {
+                system_trust_path: trust_opts.rpmdb,
+                ancillary_trust_path: trust_opts.db,
             });
 
             println!(
-                "Loaded {}/{} trust records",
+                "Loaded {}: system / {}: fapolicyd trust records",
                 sys.system_trust.len(),
                 sys.ancillary_trust.len()
-            )
+            );
+            //
+            // // check
+            // for f in t {
+            //     let meta = fs::metadata(&f.path).unwrap();
+            //     let sz = meta.len();
+            //     if sz != f.size {
+            //         println!("{} wrong size {}, expected {}", f.path, f.size, sz);
+            //     }
+            // }
         }
         SubCommands::Daemon(opts) => {
-            let daemon = Daemon::new("notfapolicyd.service");
+            let daemon = svc::Daemon::new("fapolicyd.service");
             match opts.subcmd {
                 DaemonSubCommands::Start(_) => {
                     println!("daemon start");

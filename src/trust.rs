@@ -2,8 +2,76 @@ use std::fs::File;
 use std::io::{prelude::*, BufReader};
 
 use crate::api;
+use lmdb::{Cursor, Environment, EnvironmentBuilder, Transaction};
+use std::path::Path;
+
+struct TrustKV {
+    k: String,
+    v: String,
+}
+
+impl TrustKV {
+    fn new(b: (&[u8], &[u8])) -> TrustKV {
+        TrustKV {
+            k: String::from_utf8(Vec::from(b.0)).unwrap(),
+            v: String::from_utf8(Vec::from(b.1)).unwrap(),
+        }
+    }
+}
+
+// todo;; https://github.com/rust-lang/rust/issues/74773
+fn str_split_once(s: &str) -> (&str, String) {
+    let mut splits = s.split(' ');
+    let head = splits.next().unwrap();
+    let tail = splits.collect::<Vec<&str>>().join(" ");
+    (head, tail)
+}
+
+impl From<TrustKV> for api::Trust {
+    fn from(kv: TrustKV) -> Self {
+        // todo;; let v = kv.v.split_once(' ').unwrap().1;
+        let v = str_split_once(&kv.v).1;
+        parse_trust_record(format!("{} {}", kv.k, v).as_str()).unwrap()
+    }
+}
+
+const DEFAULT_DB: &str = "/var/lib/fapolicyd";
 
 pub fn load_ancillary_trust(path: &Option<String>) -> Vec<api::Trust> {
+    let dbdir = match path {
+        Some(ref p) => Path::new(p),
+        None => Path::new(DEFAULT_DB),
+    };
+
+    let env = Environment::new()
+        .set_max_dbs(1)
+        .open(dbdir)
+        .expect("load fapolicyd store");
+    let db = env.open_db(Some("trust.db")).expect("load trust.db");
+
+    let s = env
+        .begin_ro_txn()
+        .map(|t| t.stat(db).map(|r| r.entries()))
+        .unwrap()
+        .unwrap();
+
+    println!("entries: {}", s);
+
+    env.begin_ro_txn()
+        .map(|t| {
+            t.open_ro_cursor(db).map(|mut c| {
+                c.iter()
+                    .map(|c| c.unwrap())
+                    .map(TrustKV::new)
+                    .map(|kv| kv.into())
+                    .collect()
+            })
+        })
+        .unwrap()
+        .unwrap()
+}
+
+fn load_file_trust(path: &Option<String>) -> Vec<api::Trust> {
     let f = File::open(
         path.as_ref()
             .unwrap_or(&"/etc/fapolicyd/fapolicyd.trust".to_string()),
