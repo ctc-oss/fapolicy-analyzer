@@ -43,19 +43,16 @@ pub fn load_trust_db(path: &Option<String>) -> Vec<api::Trust> {
         None => Path::new(fapolicyd::TRUST_DB_PATH),
     };
 
-    let env = Environment::new()
-        .set_max_dbs(1)
-        .open(dbdir)
-        .expect("load fapolicyd store");
+    let env = Environment::new().set_max_dbs(1).open(dbdir);
+    let env = match env {
+        Ok(e) => e,
+        _ => {
+            println!("WARN: fapolicyd trust db was not found");
+            return vec![];
+        }
+    };
+
     let db = env.open_db(Some("trust.db")).expect("load trust.db");
-
-    let s = env
-        .begin_ro_txn()
-        .map(|t| t.stat(db).map(|r| r.entries()))
-        .unwrap()
-        .unwrap();
-
-    println!("entries: {}", s);
 
     env.begin_ro_txn()
         .map(|t| {
@@ -88,6 +85,7 @@ pub fn load_ancillary_trust(path: &Option<String>) -> Vec<api::Trust> {
 
 // todo;; non-pub
 pub fn parse_trust_record(s: &str) -> Result<api::Trust, String> {
+    println!("parsing trust record {}", s);
     let v: Vec<&str> = s.split(' ').collect();
     match v.as_slice() {
         [f, sz, sha] => Ok(api::Trust {

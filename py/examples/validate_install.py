@@ -17,8 +17,8 @@ assert pt.size == int(ts[1])
 assert pt.hash == ts[2]
 print("- Trust object OK")
 
-# validate Trust stores
-s = System("../tests/data/fapolicyd.trust", None)
+# validate default Trust stores
+s = System(None, None, "tests/data/one.trust")
 print(f"- System Trust OK ({len(s.system_trust())})")
 print(f"- Ancillary Trust OK ({len(s.ancillary_trust())})")
 

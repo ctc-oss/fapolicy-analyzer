@@ -17,8 +17,8 @@ pub struct System {
 }
 
 impl System {
-    pub fn boot(cfg: &SystemCfg) -> System {
-        let trust_db = trust::load_trust_db(&cfg.system_trust_path);
+    pub fn boot(cfg: SystemCfg) -> System {
+        let trust_db = trust::load_trust_db(&cfg.trust_db_path);
         let system_trust = rpm::load_system_trust(&cfg.system_trust_path);
         let ancillary_trust = trust::load_ancillary_trust(&cfg.ancillary_trust_path);
 
