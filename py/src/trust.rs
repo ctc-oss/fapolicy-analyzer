@@ -28,12 +28,12 @@ pub fn parse_trust_entry(_py: Python, s: &str) -> PyResult<PyTrust> {
 #[pymethods]
 impl PyTrust {
     #[new]
-    fn new(path: &str, size: i64, hash: &str) -> PyTrust {
+    fn new(path: &str, size: u64, hash: &str) -> PyTrust {
         api::Trust::new(path, size, hash, api::TrustSource::Ancillary).into()
     }
 
     #[getter]
-    fn get_size(&self) -> PyResult<i64> {
+    fn get_size(&self) -> PyResult<u64> {
         Ok(self.e.size)
     }
 

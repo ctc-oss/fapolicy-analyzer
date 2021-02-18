@@ -1,9 +1,11 @@
 use std::fs::File;
 use std::io::{prelude::*, BufReader};
+use std::path::Path;
+
+use lmdb::{Cursor, Environment, Transaction};
 
 use crate::api;
-use lmdb::{Cursor, Environment, EnvironmentBuilder, Transaction};
-use std::path::Path;
+use crate::fapolicyd;
 
 struct TrustKV {
     k: String,
@@ -35,12 +37,10 @@ impl From<TrustKV> for api::Trust {
     }
 }
 
-const DEFAULT_DB: &str = "/var/lib/fapolicyd";
-
-pub fn load_ancillary_trust(path: &Option<String>) -> Vec<api::Trust> {
+pub fn load_trust_db(path: &Option<String>) -> Vec<api::Trust> {
     let dbdir = match path {
         Some(ref p) => Path::new(p),
-        None => Path::new(DEFAULT_DB),
+        None => Path::new(fapolicyd::TRUST_DB_PATH),
     };
 
     let env = Environment::new()
@@ -71,10 +71,10 @@ pub fn load_ancillary_trust(path: &Option<String>) -> Vec<api::Trust> {
         .unwrap()
 }
 
-fn load_file_trust(path: &Option<String>) -> Vec<api::Trust> {
+pub fn load_ancillary_trust(path: &Option<String>) -> Vec<api::Trust> {
     let f = File::open(
         path.as_ref()
-            .unwrap_or(&"/etc/fapolicyd/fapolicyd.trust".to_string()),
+            .unwrap_or(&fapolicyd::TRUST_FILE_PATH.to_string()),
     )
     .unwrap();
     let r = BufReader::new(f);

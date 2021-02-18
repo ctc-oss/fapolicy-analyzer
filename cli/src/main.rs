@@ -1,10 +1,8 @@
 use clap::Clap;
-use std::fs;
 
-use fapolicy_analyzer::{svc, sys, trust};
-use std::path::Path;
+use fapolicy_analyzer::{svc, sys};
+
 mod cmd;
-use cmd::*;
 
 #[derive(Clap)]
 #[clap(version = "0.0.1")]
@@ -62,8 +60,9 @@ fn main() {
     match cli.subcmd {
         SubCommands::Trust(trust_opts) => {
             let sys = sys::System::boot(sys::SystemCfg {
+                trust_db_path: trust_opts.db,
                 system_trust_path: trust_opts.rpmdb,
-                ancillary_trust_path: trust_opts.db,
+                ancillary_trust_path: trust_opts.file,
             });
 
             println!(
