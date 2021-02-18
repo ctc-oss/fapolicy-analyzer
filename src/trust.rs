@@ -83,8 +83,7 @@ pub fn load_ancillary_trust(path: &Option<String>) -> Vec<api::Trust> {
         .collect()
 }
 
-// todo;; non-pub
-pub fn parse_trust_record(s: &str) -> Result<api::Trust, String> {
+fn parse_trust_record(s: &str) -> Result<api::Trust, String> {
     println!("parsing trust record {}", s);
     let v: Vec<&str> = s.split(' ').collect();
     match v.as_slice() {
