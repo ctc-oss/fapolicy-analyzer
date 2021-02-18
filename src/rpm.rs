@@ -13,7 +13,7 @@ use std::process::Command;
 #[derive(Debug)]
 struct RpmDbEntry {
     pub path: String,
-    pub size: i64,
+    pub size: u64,
     pub hash: Option<String>,
     pub mode: String,
 }
