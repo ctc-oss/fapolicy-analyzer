@@ -3,6 +3,7 @@ from fapolicy_analyzer import util
 from fapolicy_analyzer.app import System
 from fapolicy_analyzer.svc import Daemon
 from fapolicy_analyzer.trust import Trust
+from fapolicy_analyzer.util import fs
 
 # validate util library
 s = util.example_trust_entry()
@@ -28,3 +29,8 @@ syscheck.syscheck_rpm()
 # daemon binding
 d = Daemon("fakeunit")
 print("- Daemon object OK")
+
+# fs utils
+stat_str = fs.stat(__file__)
+print("- Stat OK")
+print(stat_str)
