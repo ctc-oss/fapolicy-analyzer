@@ -72,8 +72,15 @@ pub fn load_ancillary_trust(path: &Option<String>) -> Vec<api::Trust> {
     let f = File::open(
         path.as_ref()
             .unwrap_or(&fapolicyd::TRUST_FILE_PATH.to_string()),
-    )
-    .unwrap();
+    );
+    let f = match f {
+        Ok(e) => e,
+        _ => {
+            println!("WARN: fapolicyd trust file was not found");
+            return vec![];
+        }
+    };
+
     let r = BufReader::new(f);
 
     r.lines()

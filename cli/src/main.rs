@@ -2,8 +2,6 @@ use clap::Clap;
 
 use fapolicy_analyzer::{svc, sys};
 
-mod cmd;
-
 #[derive(Clap)]
 #[clap(version = "0.0.1")]
 /// File Access Policy Analyzer
@@ -66,7 +64,8 @@ fn main() {
             });
 
             println!(
-                "Loaded {}: system / {}: fapolicyd trust records",
+                "Loaded {}: db / {}: system / {}: file records",
+                sys.trust_db.len(),
                 sys.system_trust.len(),
                 sys.ancillary_trust.len()
             );
