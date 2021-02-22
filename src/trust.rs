@@ -1,4 +1,3 @@
-use std::fs::metadata;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
@@ -27,14 +26,11 @@ pub enum Status {
 
 pub fn check(t: api::Trust) -> Result<Status, String> {
     match File::open(&t.path) {
-        Ok(f) => {
-            let meta = metadata(Path::new(&t.path));
-            match sha256_digest(BufReader::new(f)) {
-                Ok(sha) if sha == t.hash => Ok(Status::Trusted(t)),
-                Ok(sha) => Ok(Status::Untrusted(t, sha)),
-                Err(e) => Err(format!("sha failed")),
-            }
-        }
+        Ok(f) => match sha256_digest(BufReader::new(f)) {
+            Ok(sha) if sha == t.hash => Ok(Status::Trusted(t)),
+            Ok(sha) => Ok(Status::Untrusted(t, sha)),
+            Err(e) => Err(format!("sha256 op failed, {}", e)),
+        },
         _ => Err(format!("WARN: {} not found", t.path)),
     }
 }
@@ -129,7 +125,7 @@ fn parse_trust_record(s: &str) -> Result<api::Trust, String> {
         [f, sz, sha] => Ok(api::Trust {
             path: f.to_string(),
             size: sz.parse().unwrap(),
-            hash: Some(sha.to_string()),
+            hash: sha.to_string(),
             source: api::TrustSource::Ancillary,
         }),
         _ => Err(String::from("failed to read record")),
@@ -147,11 +143,6 @@ mod tests {
         let e = parse_trust_record(s).unwrap();
         assert_eq!(e.path, "/home/user/my-ls");
         assert_eq!(e.size, 157984);
-        assert_eq!(
-            e.hash,
-            Some(String::from(
-                "61a9960bf7d255a85811f4afcac51067b8f2e4c75e21cf4f2af95319d4ed1b87"
-            ))
-        );
+        assert_eq!(e.hash, s.to_string());
     }
 }

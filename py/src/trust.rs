@@ -37,7 +37,7 @@ impl PyTrust {
 
     #[getter]
     fn get_hash(&self) -> PyResult<Option<&str>> {
-        Ok(self.e.hash.as_deref())
+        Ok(Some(&self.e.hash))
     }
 }
 

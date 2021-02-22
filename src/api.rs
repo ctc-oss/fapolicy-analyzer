@@ -11,7 +11,7 @@ pub enum TrustSource {
 pub struct Trust {
     pub path: String,
     pub size: u64,
-    pub hash: Option<String>,
+    pub hash: String,
     pub source: TrustSource,
 }
 
@@ -20,7 +20,7 @@ impl Trust {
         Trust {
             path: path.to_string(),
             size,
-            hash: Some(hash.to_string()),
+            hash: hash.to_string(),
             source,
         }
     }
