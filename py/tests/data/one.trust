@@ -1,6 +1,1 @@
-# This file contains a list of trusted files
-#
-#  FULL PATH        SIZE                             SHA256
-# /home/user/my-ls 157984 61a9960bf7d255a85811f4afcac51067b8f2e4c75e21cf4f2af95319d4ed1b87
-
-/home/user/my-ls 157984 61a9960bf7d255a85811f4afcac51067b8f2e4c75e21cf4f2af95319d4ed1b87
+/bin/ls 133792 0d06f9724af41b13cdacea133530b9129a48450230feef9632d53d5bbb837c8c

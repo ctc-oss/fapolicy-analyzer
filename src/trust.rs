@@ -13,6 +13,7 @@ use crate::sha;
 
 /// Trust status tag
 /// T / U / unk
+#[derive(Clone)]
 pub enum Status {
     /// No entry in database
     Unknown(api::Trust),
@@ -24,11 +25,11 @@ pub enum Status {
     // todo;; what about file does not exist?
 }
 
-pub fn check(t: api::Trust) -> Result<Status, String> {
+pub fn check(t: &api::Trust) -> Result<Status, String> {
     match File::open(&t.path) {
         Ok(f) => match sha256_digest(BufReader::new(f)) {
-            Ok(sha) if sha == t.hash => Ok(Status::Trusted(t)),
-            Ok(sha) => Ok(Status::Untrusted(t, sha)),
+            Ok(sha) if sha == t.hash => Ok(Status::Trusted(t.clone())),
+            Ok(sha) => Ok(Status::Untrusted(t.clone(), sha)),
             Err(e) => Err(format!("sha256 op failed, {}", e)),
         },
         _ => Err(format!("WARN: {} not found", t.path)),

@@ -1,6 +1,6 @@
 use std::io::{Read, Result};
 
-use data_encoding::HEXUPPER;
+use data_encoding::HEXLOWER;
 use ring::digest::{Context, SHA256};
 
 // sha example from cookbook
@@ -16,5 +16,5 @@ pub fn sha256_digest<R: Read>(mut reader: R) -> Result<String> {
         context.update(&buffer[..count]);
     }
 
-    Ok(HEXUPPER.encode(context.finish().as_ref()))
+    Ok(HEXLOWER.encode(context.finish().as_ref()))
 }
