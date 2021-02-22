@@ -4,6 +4,9 @@ pub enum TrustSource {
     Ancillary,
 }
 
+// todo;; from 0,1,2 for TrustSource
+
+// intent to match up with the fapolicyd trust db
 #[derive(Clone, Debug)]
 pub struct Trust {
     pub path: String,
