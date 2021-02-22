@@ -6,12 +6,9 @@ edition = "2018"
 [lib]
 path = "src/lib.rs"
 
-[[test]]
-name = "integration"
-path = "tests/trust_model_test.rs"
-
 [dependencies]
 data-encoding = "2.3.1"
-dbus = "0.9.1"
-nom = "6.1.0"
 ring = "0.16.19"
+nom = "6.1.0"
+dbus = "0.9.1"
+lmdb-rkv = "0.14.0"
