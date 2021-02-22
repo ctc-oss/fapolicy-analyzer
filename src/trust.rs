@@ -1,11 +1,43 @@
+use std::fs::metadata;
 use std::fs::File;
-use std::io::{prelude::*, BufReader};
+use std::io::prelude::*;
+use std::io::BufReader;
 use std::path::Path;
 
 use lmdb::{Cursor, Environment, Transaction};
 
+use sha::sha256_digest;
+
 use crate::api;
 use crate::fapolicyd;
+use crate::sha;
+
+/// Trust status tag
+/// T / U / unk
+pub enum Status {
+    /// No entry in database
+    Unknown(api::Trust),
+    /// filesystem matches database
+    Trusted(api::Trust),
+    /// filesystem does not match database
+    /// lhs expected, rhs actual
+    Untrusted(api::Trust, String),
+    // todo;; what about file does not exist?
+}
+
+pub fn check(t: api::Trust) -> Result<Status, String> {
+    match File::open(&t.path) {
+        Ok(f) => {
+            let meta = metadata(Path::new(&t.path));
+            match sha256_digest(BufReader::new(f)) {
+                Ok(sha) if sha == t.hash => Ok(Status::Trusted(t)),
+                Ok(sha) => Ok(Status::Untrusted(t, sha)),
+                Err(e) => Err(format!("sha failed")),
+            }
+        }
+        _ => Err(format!("WARN: {} not found", t.path)),
+    }
+}
 
 struct TrustKV {
     k: String,
