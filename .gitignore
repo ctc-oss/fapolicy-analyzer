@@ -13,3 +13,5 @@ dist
 .vscode/
 
 *.glade~
+
+src/bin

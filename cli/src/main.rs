@@ -3,7 +3,7 @@ use clap::Clap;
 use fapolicy_analyzer::{svc, sys};
 
 #[derive(Clap)]
-#[clap(version = "0.0.1")]
+#[clap(version = "0.0.3")]
 /// File Access Policy Analyzer
 struct Opts {
     #[clap(subcommand)]
@@ -13,7 +13,7 @@ struct Opts {
 #[derive(Clap)]
 enum SubCommands {
     /// fapolicyd service commands
-    #[clap(version = "0.0.1")]
+    #[clap(version = "0.0.3")]
     Daemon(DaemonOpts),
     Trust(TrustOpts),
 }

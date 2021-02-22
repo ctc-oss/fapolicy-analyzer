@@ -121,7 +121,7 @@ dependencies = [
 
 [[package]]
 name = "fapolicy-analyzer"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "data-encoding",
  "dbus",
@@ -132,7 +132,7 @@ dependencies = [
 
 [[package]]
 name = "fapolicy-analyzer-cli"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "clap",
  "fapolicy-analyzer",

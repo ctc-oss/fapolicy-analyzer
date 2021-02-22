@@ -1,7 +1,6 @@
 [package]
 name = "fapolicy-analyzer-python"
-version = "0.0.1"
-authors = ["John Wass <wassj@ctc.com>"]
+version = "0.0.3"
 edition = "2018"
 
 [lib]

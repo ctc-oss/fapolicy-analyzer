@@ -53,12 +53,19 @@ fn parse(s: &str) -> Vec<api::Trust> {
         .iter()
         .flatten()
         .filter(|e| is_executable(e))
-        .map(|e| api::Trust {
-            path: e.path.clone(),
-            size: e.size,
-            hash: e.hash.clone(),
-            source: api::TrustSource::System,
+        .map(|e| {
+            if let Some(hash) = &e.hash {
+                Some(api::Trust {
+                    path: e.path.clone(),
+                    size: e.size,
+                    hash: hash.to_string(),
+                    source: api::TrustSource::System,
+                })
+            } else {
+                None
+            }
         })
+        .flatten()
         .collect()
 }
 

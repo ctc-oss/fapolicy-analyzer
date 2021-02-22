@@ -1,11 +1,40 @@
 use std::fs::File;
-use std::io::{prelude::*, BufReader};
+use std::io::prelude::*;
+use std::io::BufReader;
 use std::path::Path;
 
 use lmdb::{Cursor, Environment, Transaction};
 
+use sha::sha256_digest;
+
 use crate::api;
 use crate::fapolicyd;
+use crate::sha;
+
+/// Trust status tag
+/// T / U / unk
+#[derive(Clone)]
+pub enum Status {
+    /// No entry in database
+    Unknown(api::Trust),
+    /// filesystem matches database
+    Trusted(api::Trust),
+    /// filesystem does not match database
+    /// lhs expected, rhs actual
+    Untrusted(api::Trust, String),
+    // todo;; what about file does not exist?
+}
+
+pub fn check(t: &api::Trust) -> Result<Status, String> {
+    match File::open(&t.path) {
+        Ok(f) => match sha256_digest(BufReader::new(f)) {
+            Ok(sha) if sha == t.hash => Ok(Status::Trusted(t.clone())),
+            Ok(sha) => Ok(Status::Untrusted(t.clone(), sha)),
+            Err(e) => Err(format!("sha256 op failed, {}", e)),
+        },
+        _ => Err(format!("WARN: {} not found", t.path)),
+    }
+}
 
 struct TrustKV {
     k: String,
@@ -97,7 +126,7 @@ fn parse_trust_record(s: &str) -> Result<api::Trust, String> {
         [f, sz, sha] => Ok(api::Trust {
             path: f.to_string(),
             size: sz.parse().unwrap(),
-            hash: Some(sha.to_string()),
+            hash: sha.to_string(),
             source: api::TrustSource::Ancillary,
         }),
         _ => Err(String::from("failed to read record")),
@@ -117,9 +146,7 @@ mod tests {
         assert_eq!(e.size, 157984);
         assert_eq!(
             e.hash,
-            Some(String::from(
-                "61a9960bf7d255a85811f4afcac51067b8f2e4c75e21cf4f2af95319d4ed1b87"
-            ))
+            "61a9960bf7d255a85811f4afcac51067b8f2e4c75e21cf4f2af95319d4ed1b87"
         );
     }
 }
