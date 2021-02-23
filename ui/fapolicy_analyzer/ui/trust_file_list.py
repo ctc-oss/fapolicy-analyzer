@@ -6,7 +6,7 @@ from events import Events
 
 
 class TrustFileList(Events):
-    __events__ = ("on_list_selection_change", "on_selected_file_change")
+    __events__ = "on_file_selection_change"
 
     def __init__(self, locationAction=Gtk.FileChooserAction.OPEN, defaultLocation=None):
         super(TrustFileList, self).__init__()
@@ -19,9 +19,12 @@ class TrustFileList(Events):
         self.databaseFileChooser.set_filename(defaultLocation)
 
         self.trustView = self.builder.get_object("trustView")
-        for i, column in enumerate(["trust", "path"]):
-            cell = Gtk.CellRendererText()
-            self.trustView.append_column(Gtk.TreeViewColumn(column, cell, text=i))
+        self.trustView.append_column(
+            Gtk.TreeViewColumn("trust", Gtk.CellRendererText(), markup=0)
+        )
+        self.trustView.append_column(
+            Gtk.TreeViewColumn("path", Gtk.CellRendererText(), text=1)
+        )
 
     def get_content(self):
         return self.builder.get_object("trustFileList")
@@ -38,4 +41,4 @@ class TrustFileList(Events):
     def __on_trust_view_selection_changed(self, selection):
         model, treeiter = selection.get_selected()
         trust = model[treeiter][2] if treeiter is not None else {}
-        self.on_list_selection_change(trust)
+        self.on_file_selection_change(trust)

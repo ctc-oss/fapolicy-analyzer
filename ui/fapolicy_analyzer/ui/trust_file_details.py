@@ -15,3 +15,6 @@ class TrustFileDetails:
 
     def set_In_Database_View(self, text):
         self.builder.get_object("inDatabaseView").get_buffer().set_text(text)
+
+    def set_On_File_System_View(self, text):
+        self.builder.get_object("onFileSystemView").get_buffer().set_text(text)

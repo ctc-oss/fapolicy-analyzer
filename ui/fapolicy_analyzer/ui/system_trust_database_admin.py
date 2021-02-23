@@ -3,6 +3,7 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from fapolicy_analyzer.app import System
+from fapolicy_analyzer.util import fs
 from trust_file_list import TrustFileList
 from trust_file_details import TrustFileDetails
 
@@ -18,7 +19,7 @@ class SystemTrustDatabaseAdmin:
         self.trustFileList = TrustFileList(
             Gtk.FileChooserAction.SELECT_FOLDER, systemDb
         )
-        self.trustFileList.on_list_selection_change += (
+        self.trustFileList.on_file_selection_change += (
             self.on_trust_list_selection_change
         )
         self.builder.get_object("leftBox").pack_start(
@@ -30,6 +31,9 @@ class SystemTrustDatabaseAdmin:
             self.trustFileDetails.get_content(), True, True, 0
         )
 
+    def __build_status_markup(self, status):
+        return "<b><u>T</u></b>" if status.lower() == "t" else "T"
+
     def get_content(self):
         return self.builder.get_object("systemTrustDatabaseAdmin")
 
@@ -38,7 +42,7 @@ class SystemTrustDatabaseAdmin:
         trust = s.system_trust()
         trustStore = Gtk.ListStore(str, str, object)
         for i, e in enumerate(trust):
-            trustStore.append([e.status, e.path, e])
+            trustStore.append([self.__build_status_markup(e.status), e.path, e])
 
         self.trustFileList.set_list_store(trustStore)
 
@@ -50,3 +54,4 @@ Size: {trust.size}
 SHA256: {trust.hash}
 """
             )
+            self.trustFileDetails.set_On_File_System_View(fs.stat(trust.path))
