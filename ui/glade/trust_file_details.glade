@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.38.2 -->
+<interface>
+  <requires lib="gtk+" version="3.22"/>
+  <object class="GtkBox" id="trustFileDetails">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="margin-left">5</property>
+    <property name="margin-start">5</property>
+    <property name="margin-bottom">5</property>
+    <property name="orientation">vertical</property>
+    <child>
+      <object class="GtkFrame">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="margin-end">5</property>
+        <property name="label-xalign">0</property>
+        <property name="shadow-type">in</property>
+        <child>
+          <object class="GtkAlignment">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="left-padding">12</property>
+            <child>
+              <object class="GtkTextView" id="inDatabaseView">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="margin-end">10</property>
+                <property name="margin-bottom">10</property>
+                <property name="editable">False</property>
+                <property name="wrap-mode">char</property>
+                <property name="cursor-visible">False</property>
+                <property name="accepts-tab">False</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child type="label">
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">In Database</property>
+          </object>
+        </child>
+      </object>
+      <packing>
+        <property name="expand">True</property>
+        <property name="fill">True</property>
+        <property name="position">0</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkFrame">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="margin-end">5</property>
+        <property name="label-xalign">0</property>
+        <property name="shadow-type">in</property>
+        <child>
+          <object class="GtkAlignment">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="left-padding">12</property>
+            <child>
+              <object class="GtkTextView" id="onFileSystemView">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="margin-bottom">10</property>
+                <property name="pixels-below-lines">10</property>
+                <property name="editable">False</property>
+                <property name="wrap-mode">char</property>
+                <property name="cursor-visible">False</property>
+                <property name="accepts-tab">False</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child type="label">
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">On File System</property>
+          </object>
+        </child>
+      </object>
+      <packing>
+        <property name="expand">True</property>
+        <property name="fill">True</property>
+        <property name="position">1</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkFrame">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="margin-end">5</property>
+        <property name="label-xalign">0</property>
+        <property name="shadow-type">in</property>
+        <child>
+          <object class="GtkAlignment">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="left-padding">12</property>
+            <child>
+              <object class="GtkTextView" id="fileTrustStatusView">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="margin-end">9</property>
+                <property name="margin-bottom">10</property>
+                <property name="editable">False</property>
+                <property name="wrap-mode">char</property>
+                <property name="cursor-visible">False</property>
+                <property name="accepts-tab">False</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child type="label">
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">File Strust Status</property>
+          </object>
+        </child>
+      </object>
+      <packing>
+        <property name="expand">True</property>
+        <property name="fill">True</property>
+        <property name="position">2</property>
+      </packing>
+    </child>
+  </object>
+</interface>

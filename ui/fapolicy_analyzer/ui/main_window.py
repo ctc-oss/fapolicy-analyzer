@@ -2,7 +2,7 @@ import gi
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
-from trust_database_page import TrustDatabasePage
+from database_admin_page import DatabaseAdminPage
 from analyzer_selection_dialog import AnalyzerSelectionDialog, ANALYZER_SELECTION
 
 
@@ -30,7 +30,7 @@ class MainWindow:
         analyserSelectionDialog.hide()
 
         if ANALYZER_SELECTION(response) == ANALYZER_SELECTION.TRUST_DATABASE_ADMIN:
-            page = TrustDatabasePage().get_content()
+            page = DatabaseAdminPage().get_content()
         else:
             raise Exception("Bad Selection")
 
