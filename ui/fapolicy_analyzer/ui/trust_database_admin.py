@@ -5,7 +5,8 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from enum import Enum
 
-trustFile = "/home/addorschs/fapolicy-analyzer/tests/data/fapolicyd.trust"
+trustDb = "/home/addorschs/fapolicy-analyzer/py/tests/data/one.trust"
+systemDb = "/var/lib/rpm"
 
 
 class Trust_Database_Type(Enum):
@@ -23,17 +24,17 @@ class TrustDatabaseAdmin:
         self.databaseFileChooser = self.builder.get_object("databaseFileChooser")
         if self.trustDatabaseType == Trust_Database_Type.SYSTEM:
             self.databaseFileChooser.set_action(Gtk.FileChooserAction.SELECT_FOLDER)
-            self.databaseFileChooser.set_filename("/var/lib/rpm")
+            self.databaseFileChooser.set_filename(systemDb)
         else:
             self.databaseFileChooser.set_action(Gtk.FileChooserAction.OPEN)
-            self.databaseFileChooser.set_filename(trustFile)
+            self.databaseFileChooser.set_filename(trustDb)
 
     def __get_trust(self, file):
         if self.trustDatabaseType == Trust_Database_Type.SYSTEM:
-            s = System(trustFile, file)
+            s = System(None, file, None)
             return s.system_trust()
         elif self.trustDatabaseType == Trust_Database_Type.ANCILLARY:
-            s = System(file, None)
+            s = System(None, None, file)
             return s.ancillary_trust()
         else:
             return []
@@ -45,10 +46,7 @@ class TrustDatabaseAdmin:
         trust = self.__get_trust(self.databaseFileChooser.get_filename())
         trustStore = Gtk.ListStore(str, str, object)
         for i, e in enumerate(trust):
-            trustStore.append(["T/U", e.path, e])
-            # the treeview breaks with too many entries, need to figure out some paging mechanism
-            # if i == 100:
-            #     break
+            trustStore.append([e.status, e.path, e])
 
         trustView = self.builder.get_object("trustView")
         trustView.set_model(trustStore)
