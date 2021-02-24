@@ -51,7 +51,9 @@ class SystemTrustDatabaseAdmin:
             self.trustFileDetails.set_In_Database_View(
                 f"""File: {trust.path}
 Size: {trust.size}
-SHA256: {trust.hash}
-"""
+SHA256: {trust.hash}"""
             )
-            self.trustFileDetails.set_On_File_System_View(fs.stat(trust.path))
+            self.trustFileDetails.set_On_File_System_View(
+                f"""{fs.stat(trust.path)}
+SHA256: {fs.sha(trust.path)}"""
+            )

@@ -25,7 +25,6 @@
               <object class="GtkTextView" id="inDatabaseView">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
-                <property name="margin-end">10</property>
                 <property name="margin-bottom">10</property>
                 <property name="editable">False</property>
                 <property name="wrap-mode">char</property>
@@ -105,7 +104,6 @@
               <object class="GtkTextView" id="fileTrustStatusView">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
-                <property name="margin-end">9</property>
                 <property name="margin-bottom">10</property>
                 <property name="editable">False</property>
                 <property name="wrap-mode">char</property>
