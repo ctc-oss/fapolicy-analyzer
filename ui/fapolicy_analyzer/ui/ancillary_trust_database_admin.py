@@ -1,13 +1,15 @@
 import gi
 
 gi.require_version("Gtk", "3.0")
+import os
 from gi.repository import Gtk
 from fapolicy_analyzer.app import System
 from fapolicy_analyzer.util import fs
 from trust_file_list import TrustFileList
 from trust_file_details import TrustFileDetails
+from deploy_confirm_dialog import DeployConfirmDialog
 
-trustDb = "/home/addorschs/fapolicy-analyzer/py/tests/data/one.trust"
+trustDb = "../../py/tests/data/one.trust"
 
 
 class AncillaryTrustDatabaseAdmin:
@@ -15,6 +17,7 @@ class AncillaryTrustDatabaseAdmin:
         self.builder = Gtk.Builder()
         self.builder.add_from_file("../glade/ancillary_trust_database_admin.glade")
         self.builder.connect_signals(self)
+        self.content = self.builder.get_object("ancillaryTrustDatabaseAdmin")
 
         self.trustFileList = TrustFileList(Gtk.FileChooserAction.OPEN, trustDb)
         self.trustFileList.on_file_selection_change += self.on_file_selection_change
@@ -36,7 +39,7 @@ class AncillaryTrustDatabaseAdmin:
         return "T/U"
 
     def get_content(self):
-        return self.builder.get_object("ancillaryTrustDatabaseAdmin")
+        return self.content
 
     def on_realize(self, *args):
         s = System(None, None, self.trustFileList.get_selected_location())
@@ -58,3 +61,10 @@ SHA256: {trust.hash}"""
                 f"""{fs.stat(trust.path)}
 SHA256: {fs.sha(trust.path)}"""
             )
+
+    def on_deployBtn_clicked(self, *args):
+        deployConfirmDialog = DeployConfirmDialog(
+            self.content.get_toplevel()
+        ).get_content()
+        deployConfirmDialog.run()
+        deployConfirmDialog.hide()
