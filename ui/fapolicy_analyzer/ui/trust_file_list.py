@@ -6,7 +6,7 @@ from events import Events
 
 
 class TrustFileList(Events):
-    __events__ = "on_file_selection_change"
+    __events__ = ("on_file_selection_change", "on_database_selection_change")
 
     def __init__(self, locationAction=Gtk.FileChooserAction.OPEN, defaultLocation=None):
         super(TrustFileList, self).__init__()
@@ -16,7 +16,8 @@ class TrustFileList(Events):
 
         self.databaseFileChooser = self.builder.get_object("databaseFileChooser")
         self.databaseFileChooser.set_action(locationAction)
-        self.databaseFileChooser.set_filename(defaultLocation)
+        if defaultLocation:
+            self.databaseFileChooser.set_filename(defaultLocation)
 
         self.trustView = self.builder.get_object("trustView")
         self.trustView.append_column(
@@ -32,8 +33,14 @@ class TrustFileList(Events):
     def get_selected_location(self):
         return self.databaseFileChooser.get_filename()
 
-    def set_list_store(self, store):
-        self.trustView.set_model(store)
+    def on_databaseFileChooser_selection_changed(self, *args):
+        self.on_database_selection_change(self.databaseFileChooser.get_filename())
+
+    def set_trust(self, trust, markup_func=None):
+        trustStore = Gtk.ListStore(str, str, object)
+        for i, e in enumerate(trust):
+            trustStore.append([markup_func(e.status) if markup_func else e.status, e.path, e])
+        self.trustView.set_model(trustStore)
         self.trustView.get_selection().connect(
             "changed", self.__on_trust_view_selection_changed
         )

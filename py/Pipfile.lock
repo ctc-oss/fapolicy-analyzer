@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "b91ad20ebe8e8fb9f4d7f885a15452346c4245702f4e012ebb7045c711fcd059"
+            "sha256": "176e3c244bf4cc99c7e08b6235463a41f1c663bfa449a13ba4104a97b3ccaa7f"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -16,13 +16,6 @@
         ]
     },
     "default": {
-        "events": {
-            "hashes": [
-                "sha256:01d9dd2a061f908d74a89fa5c8f07baa694f02a2a5974983663faaf7a97180f5"
-            ],
-            "index": "pypi",
-            "version": "==0.4"
-        },
         "pycairo": {
             "hashes": [
                 "sha256:2088100a099c09c5e90bf247409ce6c98f51766b53bd13f96d6aac7addaa3e66",

@@ -2,14 +2,14 @@ import gi
 
 gi.require_version("Gtk", "3.0")
 import os
-from gi.repository import Gtk
+from gi.repository import Gtk, GLib
+from threading import Thread
+from time import sleep
 from fapolicy_analyzer.app import System
 from fapolicy_analyzer.util import fs
 from trust_file_list import TrustFileList
 from trust_file_details import TrustFileDetails
 from deploy_confirm_dialog import DeployConfirmDialog
-
-trustDb = "../../py/tests/data/one.trust"
 
 
 class AncillaryTrustDatabaseAdmin:
@@ -19,8 +19,11 @@ class AncillaryTrustDatabaseAdmin:
         self.builder.connect_signals(self)
         self.content = self.builder.get_object("ancillaryTrustDatabaseAdmin")
 
-        self.trustFileList = TrustFileList(Gtk.FileChooserAction.OPEN, trustDb)
+        self.trustFileList = TrustFileList(Gtk.FileChooserAction.OPEN)
         self.trustFileList.on_file_selection_change += self.on_file_selection_change
+        self.trustFileList.on_database_selection_change += (
+            self.on_database_selection_change
+        )
         self.builder.get_object("leftBox").pack_start(
             self.trustFileList.get_content(), True, True, 0
         )
@@ -38,17 +41,18 @@ class AncillaryTrustDatabaseAdmin:
 
         return "T/U"
 
+    def __get_trust(self, database):
+        sleep(1)
+        s = System(None, None, database)
+        trust = s.ancillary_trust()
+        GLib.idle_add(self.trustFileList.set_trust, trust, self.__build_status_markup)
+
     def get_content(self):
         return self.content
 
     def on_realize(self, *args):
-        s = System(None, None, self.trustFileList.get_selected_location())
-        trust = s.ancillary_trust()
-        trustStore = Gtk.ListStore(str, str, object)
-        for i, e in enumerate(trust):
-            trustStore.append([self.__build_status_markup(e.status), e.path, e])
-
-        self.trustFileList.set_list_store(trustStore)
+        if path := self.trustFileList.get_selected_location():
+            self.on_database_selection_change(path)
 
     def on_file_selection_change(self, trust):
         if trust:
@@ -61,6 +65,11 @@ SHA256: {trust.hash}"""
                 f"""{fs.stat(trust.path)}
 SHA256: {fs.sha(trust.path)}"""
             )
+
+    def on_database_selection_change(self, database):
+        thread = Thread(target=self.__get_trust, args=(database,))
+        thread.daemon = True
+        thread.start()
 
     def on_deployBtn_clicked(self, *args):
         deployConfirmDialog = DeployConfirmDialog(
