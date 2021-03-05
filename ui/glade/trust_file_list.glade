@@ -45,7 +45,6 @@
           <object class="GtkTreeView" id="trustView">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="headers-visible">False</property>
             <child internal-child="selection">
               <object class="GtkTreeSelection"/>
             </child>
