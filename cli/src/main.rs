@@ -1,6 +1,9 @@
-use clap::Clap;
+use std::io::Write;
 
-use fapolicy_analyzer::{svc, sys};
+use clap::Clap;
+use std::fs::OpenOptions;
+
+use fapolicy_analyzer::{svc, sys, trust};
 
 #[derive(Clap)]
 #[clap(version = "0.0.3")]
@@ -21,10 +24,6 @@ enum SubCommands {
 /// Trust commands
 #[derive(Clap)]
 struct TrustOpts {
-    /// path to ancillary trust database (file)
-    #[clap(long)]
-    file: Option<String>,
-
     /// path to fapolicyd trust database (lmdb)
     #[clap(long)]
     db: Option<String>,
@@ -32,6 +31,9 @@ struct TrustOpts {
     /// path to system trust database (rpm)
     #[clap(long)]
     rpmdb: Option<String>,
+
+    #[clap(subcommand)]
+    cmd: TrustSubCommands,
 }
 
 /// Daemon commands
@@ -49,36 +51,63 @@ enum DaemonSubCommands {
     Disable(DaemonSubOpts),
 }
 
-/// A subcommand for controlling testing
+#[derive(Clap)]
+enum TrustSubCommands {
+    List(TrustSubOpts),
+    Add(TrustAddOpts),
+}
+
 #[derive(Clap)]
 struct DaemonSubOpts {}
+
+#[derive(Clap)]
+struct TrustSubOpts {
+    /// path to ancillary trust database (file)
+    #[clap(long)]
+    file: Option<String>,
+}
+
+#[derive(Clap)]
+struct TrustAddOpts {
+    /// path to ancillary trust database (file)
+    #[clap(short, long)]
+    file: Option<String>,
+
+    hash: String,
+    path: String,
+}
 
 fn main() {
     let cli: Opts = Opts::parse();
     match cli.subcmd {
-        SubCommands::Trust(trust_opts) => {
-            let sys = sys::System::boot(sys::SystemCfg {
-                trust_db_path: trust_opts.db,
-                system_trust_path: trust_opts.rpmdb,
-                ancillary_trust_path: trust_opts.file,
-            });
+        SubCommands::Trust(trust_opts) => match trust_opts.cmd {
+            TrustSubCommands::List(subopts) => {
+                let sys = sys::System::boot(sys::SystemCfg {
+                    trust_db_path: trust_opts.db,
+                    system_trust_path: trust_opts.rpmdb,
+                    ancillary_trust_path: subopts.file,
+                });
 
-            println!(
-                "Loaded {}: db / {}: system / {}: file records",
-                sys.trust_db.len(),
-                sys.system_trust.len(),
-                sys.ancillary_trust.len()
-            );
-            //
-            // // check
-            // for f in t {
-            //     let meta = fs::metadata(&f.path).unwrap();
-            //     let sz = meta.len();
-            //     if sz != f.size {
-            //         println!("{} wrong size {}, expected {}", f.path, f.size, sz);
-            //     }
-            // }
-        }
+                println!(
+                    "Loaded {}: db / {}: system / {}: file records",
+                    sys.trust_db.len(),
+                    sys.system_trust.len(),
+                    sys.ancillary_trust.len()
+                );
+            }
+            TrustSubCommands::Add(add_op_opts) => {
+                let t = trust::new_trust_record(&add_op_opts.path, &add_op_opts.hash).unwrap();
+                let mut file = OpenOptions::new()
+                    .write(true)
+                    .append(true)
+                    .create(true)
+                    .open(add_op_opts.file.unwrap())
+                    .unwrap();
+
+                file.write_all(format!("{} {} {}\n", t.path, t.size, t.hash).as_bytes())
+                    .unwrap()
+            }
+        },
         SubCommands::Daemon(opts) => {
             let daemon = svc::Daemon::new("fapolicyd.service");
             match opts.subcmd {
