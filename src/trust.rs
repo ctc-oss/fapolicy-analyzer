@@ -1,3 +1,4 @@
+use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
@@ -8,6 +9,7 @@ use lmdb::{Cursor, Environment, Transaction};
 use sha::sha256_digest;
 
 use crate::api;
+use crate::api::TrustSource;
 use crate::fapolicyd;
 use crate::sha;
 
@@ -131,6 +133,15 @@ fn parse_trust_record(s: &str) -> Result<api::Trust, String> {
         }),
         _ => Err(String::from("failed to read record")),
     }
+}
+
+pub fn new_trust_record(path: &str, hash: &str) -> Result<api::Trust, String> {
+    Ok(api::Trust {
+        path: path.to_string(),
+        size: fs::metadata(path).unwrap().len(),
+        hash: hash.to_string(),
+        source: TrustSource::Ancillary,
+    })
 }
 
 #[cfg(test)]
