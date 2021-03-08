@@ -20,11 +20,13 @@ class TrustFileList(Events):
             self.databaseFileChooser.set_filename(defaultLocation)
 
         self.trustView = self.builder.get_object("trustView")
+        trustCell = Gtk.CellRendererText()
+        trustCell.set_property("background", "light gray")
+        self.trustView.append_column(Gtk.TreeViewColumn("Trust", trustCell, markup=0))
         self.trustView.append_column(
-            Gtk.TreeViewColumn("trust", Gtk.CellRendererText(), markup=0)
-        )
-        self.trustView.append_column(
-            Gtk.TreeViewColumn("path", Gtk.CellRendererText(), text=1)
+            Gtk.TreeViewColumn(
+                "File", Gtk.CellRendererText(), text=1, cell_background=3
+            )
         )
 
     def get_content(self):
@@ -37,9 +39,11 @@ class TrustFileList(Events):
         self.on_database_selection_change(self.databaseFileChooser.get_filename())
 
     def set_trust(self, trust, markup_func=None):
-        trustStore = Gtk.ListStore(str, str, object)
+        trustStore = Gtk.ListStore(str, str, object, str)
         for i, e in enumerate(trust):
-            trustStore.append([markup_func(e.status) if markup_func else e.status, e.path, e])
+            status, *rest = markup_func(e.status) if markup_func else (e.status,)
+            bgColor = rest[0] if rest else "white"
+            trustStore.append([status, e.path, e, bgColor])
         self.trustView.set_model(trustStore)
         self.trustView.get_selection().connect(
             "changed", self.__on_trust_view_selection_changed

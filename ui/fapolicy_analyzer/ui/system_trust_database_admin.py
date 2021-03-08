@@ -34,21 +34,21 @@ class SystemTrustDatabaseAdmin:
             self.trustFileDetails.get_content(), True, True, 0
         )
 
-    def __build_status_markup(self, status):
-        return "<b><u>T</u></b>" if status.lower() == "t" else "T"
+    def __status_markup(self, status):
+        return (
+            ("<b><u>T</u></b>", "light green")
+            if status.lower() == "t"
+            else ("T", "light red")
+        )
 
     def __get_trust(self, database):
         sleep(1)
         s = System(None, database, None)
         trust = s.system_trust()
-        GLib.idle_add(self.trustFileList.set_trust, trust, self.__build_status_markup)
+        GLib.idle_add(self.trustFileList.set_trust, trust, self.__status_markup)
 
     def get_content(self):
         return self.builder.get_object("systemTrustDatabaseAdmin")
-
-    def on_realize(self, *args):
-        if path := self.trustFileList.get_selected_location():
-            self.on_database_selection_change(path)
 
     def on_file_selection_change(self, trust):
         if trust:

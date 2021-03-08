@@ -33,26 +33,24 @@ class AncillaryTrustDatabaseAdmin:
             self.trustFileDetails.get_content(), True, True, 0
         )
 
-    def __build_status_markup(self, status):
-        if status.lower() == "t":
-            return "<b><u>T</u></b>/U"
-        elif status.lower() == "u":
-            return "T/<b><u>U</u></b>"
-
-        return "T/U"
+    def __status_markup(self, status):
+        s = status.lower()
+        return (
+            ("<b><u>T</u></b>/U", "light green")
+            if s == "t"
+            else ("T/<b><u>U</u></b>",)
+            if s == "u"
+            else ("T/U", "light red")
+        )
 
     def __get_trust(self, database):
         sleep(1)
         s = System(None, None, database)
         trust = s.ancillary_trust()
-        GLib.idle_add(self.trustFileList.set_trust, trust, self.__build_status_markup)
+        GLib.idle_add(self.trustFileList.set_trust, trust, self.__status_markup)
 
     def get_content(self):
         return self.content
-
-    def on_realize(self, *args):
-        if path := self.trustFileList.get_selected_location():
-            self.on_database_selection_change(path)
 
     def on_file_selection_change(self, trust):
         if trust:
