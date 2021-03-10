@@ -42,7 +42,7 @@ class SystemTrustDatabaseAdmin:
         )
 
     def __get_trust(self, database):
-        sleep(1)
+        sleep(0.1)
         s = System(None, database, None)
         trust = s.system_trust()
         GLib.idle_add(self.trustFileList.set_trust, trust, self.__status_markup)
@@ -61,8 +61,12 @@ SHA256: {trust.hash}"""
                 f"""{fs.stat(trust.path)}
 SHA256: {fs.sha(trust.path)}"""
             )
+            self.trustFileDetails.set_trust_status(
+                f"This file is {'trusted' if trust.status.lower() == 't' else 'untrusted'}."
+            )
 
     def on_database_selection_change(self, database):
+        self.trustFileList.set_loading(True)
         thread = Thread(target=self.__get_trust, args=(database,))
         thread.daemon = True
         thread.start()

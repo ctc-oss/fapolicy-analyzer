@@ -38,13 +38,13 @@ class AncillaryTrustDatabaseAdmin:
         return (
             ("<b><u>T</u></b>/U", "light green")
             if s == "t"
-            else ("T/<b><u>U</u></b>",)
+            else ("T/<b><u>U</u></b>", "gold")
             if s == "u"
             else ("T/U", "light red")
         )
 
     def __get_trust(self, database):
-        sleep(1)
+        sleep(0.1)
         s = System(None, None, database)
         trust = s.ancillary_trust()
         GLib.idle_add(self.trustFileList.set_trust, trust, self.__status_markup)
@@ -63,8 +63,17 @@ SHA256: {trust.hash}"""
                 f"""{fs.stat(trust.path)}
 SHA256: {fs.sha(trust.path)}"""
             )
+            status = trust.status.lower()
+            self.trustFileDetails.set_trust_status(
+                "This file is trusted."
+                if status == "t"
+                else "This file is untrusted."
+                if status == "u"
+                else "The trust status of this file is unknown."
+            )
 
     def on_database_selection_change(self, database):
+        self.trustFileList.set_loading(True)
         thread = Thread(target=self.__get_trust, args=(database,))
         thread.daemon = True
         thread.start()
