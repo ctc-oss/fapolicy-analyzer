@@ -1,11 +1,7 @@
 import gi
 
 gi.require_version("Gtk", "3.0")
-import os
-from gi.repository import Gtk, GLib
-from threading import Thread
-from time import sleep
-from fapolicy_analyzer.app import System
+from gi.repository import Gtk
 from fapolicy_analyzer.util import fs
 from trust_file_list import TrustFileList
 from trust_file_details import TrustFileDetails
@@ -19,11 +15,8 @@ class AncillaryTrustDatabaseAdmin:
         self.builder.connect_signals(self)
         self.content = self.builder.get_object("ancillaryTrustDatabaseAdmin")
 
-        self.trustFileList = TrustFileList(Gtk.FileChooserAction.OPEN)
+        self.trustFileList = TrustFileList(markup_func=self.__status_markup)
         self.trustFileList.on_file_selection_change += self.on_file_selection_change
-        self.trustFileList.on_database_selection_change += (
-            self.on_database_selection_change
-        )
         self.builder.get_object("leftBox").pack_start(
             self.trustFileList.get_content(), True, True, 0
         )
@@ -42,12 +35,6 @@ class AncillaryTrustDatabaseAdmin:
             if s == "u"
             else ("T/U", "light red")
         )
-
-    def __get_trust(self, database):
-        sleep(0.1)
-        s = System(None, None, database)
-        trust = s.ancillary_trust()
-        GLib.idle_add(self.trustFileList.set_trust, trust, self.__status_markup)
 
     def get_content(self):
         return self.content
@@ -71,12 +58,6 @@ SHA256: {fs.sha(trust.path)}"""
                 if status == "u"
                 else "The trust status of this file is unknown."
             )
-
-    def on_database_selection_change(self, database):
-        self.trustFileList.set_loading(True)
-        thread = Thread(target=self.__get_trust, args=(database,))
-        thread.daemon = True
-        thread.start()
 
     def on_deployBtn_clicked(self, *args):
         deployConfirmDialog = DeployConfirmDialog(
