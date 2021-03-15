@@ -18,3 +18,6 @@ class TrustFileDetails:
 
     def set_On_File_System_View(self, text):
         self.builder.get_object("onFileSystemView").get_buffer().set_text(text)
+
+    def set_trust_status(self, text):
+        self.builder.get_object("fileTrustStatusView").get_buffer().set_text(text)

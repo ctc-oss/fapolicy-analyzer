@@ -117,7 +117,7 @@
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="label" translatable="yes">File Strust Status</property>
+            <property name="label" translatable="yes">File Trust Status</property>
           </object>
         </child>
       </object>

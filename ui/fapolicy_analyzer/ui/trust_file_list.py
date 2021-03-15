@@ -1,7 +1,7 @@
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
+from gi.repository import Gtk, GdkPixbuf
 from events import Events
 
 
@@ -29,6 +29,20 @@ class TrustFileList(Events):
             )
         )
 
+        loader = self.builder.get_object("trustViewLoader")
+        loader.set_from_animation(
+            GdkPixbuf.PixbufAnimation.new_from_file(
+                "../resources/filled_fading_balls.gif"
+            )
+        )
+        self.viewSwitcher = self.builder.get_object("trustViewStack")
+
+    def set_loading(self, loading):
+        if loading:
+            self.viewSwitcher.set_visible_child_name("trustViewLoader")
+        else:
+            self.viewSwitcher.set_visible_child_name("trustView")
+
     def get_content(self):
         return self.builder.get_object("trustFileList")
 
@@ -48,6 +62,7 @@ class TrustFileList(Events):
         self.trustView.get_selection().connect(
             "changed", self.__on_trust_view_selection_changed
         )
+        self.set_loading(False)
 
     def __on_trust_view_selection_changed(self, selection):
         model, treeiter = selection.get_selected()
