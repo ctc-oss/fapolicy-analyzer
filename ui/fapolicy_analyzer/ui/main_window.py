@@ -2,16 +2,14 @@ import gi
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
-from database_admin_page import DatabaseAdminPage
-from analyzer_selection_dialog import AnalyzerSelectionDialog, ANALYZER_SELECTION
+from .ui_widget import UIWidget
+from .database_admin_page import DatabaseAdminPage
+from .analyzer_selection_dialog import AnalyzerSelectionDialog, ANALYZER_SELECTION
 
 
-class MainWindow:
+class MainWindow(UIWidget):
     def __init__(self):
-        self.builder = Gtk.Builder()
-        self.builder.add_from_file("../glade/main_window.glade")
-        self.builder.connect_signals(self)
-
+        super().__init__()
         self.window = self.builder.get_object("mainWindow")
         self.window.show_all()
 

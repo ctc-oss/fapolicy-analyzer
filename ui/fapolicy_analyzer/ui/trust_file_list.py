@@ -6,9 +6,10 @@ from threading import Thread
 from time import sleep
 from events import Events
 from fapolicy_analyzer.app import System
+from .ui_widget import UIWidget
 
 
-class TrustFileList(Events):
+class TrustFileList(UIWidget, Events):
     __events__ = "on_file_selection_change"
 
     def __init__(
@@ -18,12 +19,11 @@ class TrustFileList(Events):
         trust_func=lambda x: System(None, None, x).ancillary_trust(),
         markup_func=None,
     ):
-        super(TrustFileList, self).__init__()
+        # super(TrustFileList, self).__init__()
+        UIWidget.__init__(self)
+        Events.__init__(self)
         self.trust_func = trust_func
         self.markup_func = markup_func
-        self.builder = Gtk.Builder()
-        self.builder.add_from_file("../glade/trust_file_list.glade")
-        self.builder.connect_signals(self)
 
         self.databaseFileChooser = self.builder.get_object("databaseFileChooser")
         self.databaseFileChooser.set_action(locationAction)

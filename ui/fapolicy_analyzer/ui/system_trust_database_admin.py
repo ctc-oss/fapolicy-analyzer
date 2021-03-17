@@ -4,17 +4,16 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from fapolicy_analyzer.app import System
 from fapolicy_analyzer.util import fs
-from trust_file_list import TrustFileList
-from trust_file_details import TrustFileDetails
+from .trust_file_list import TrustFileList
+from .trust_file_details import TrustFileDetails
+from .ui_widget import UIWidget
 
 systemDb = "/var/lib/rpm"
 
 
-class SystemTrustDatabaseAdmin:
+class SystemTrustDatabaseAdmin(UIWidget):
     def __init__(self):
-        self.builder = Gtk.Builder()
-        self.builder.add_from_file("../glade/system_trust_database_admin.glade")
-        self.builder.connect_signals(self)
+        super().__init__()
 
         self.trustFileList = TrustFileList(
             locationAction=Gtk.FileChooserAction.SELECT_FOLDER,

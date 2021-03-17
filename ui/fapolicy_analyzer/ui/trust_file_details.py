@@ -1,15 +1,7 @@
-import gi
-
-gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
+from .ui_widget import UIWidget
 
 
-class TrustFileDetails:
-    def __init__(self):
-        self.builder = Gtk.Builder()
-        self.builder.add_from_file("../glade/trust_file_details.glade")
-        self.builder.connect_signals(self)
-
+class TrustFileDetails(UIWidget):
     def get_content(self):
         return self.builder.get_object("trustFileDetails")
 

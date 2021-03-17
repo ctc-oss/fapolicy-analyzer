@@ -4,13 +4,12 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, GLib
 from threading import Thread
 from time import sleep
+from .ui_widget import UIWidget
 
 
-class DeployConfirmDialog:
+class DeployConfirmDialog(UIWidget):
     def __init__(self, parent=None):
-        self.builder = Gtk.Builder()
-        self.builder.add_from_file("../glade/deploy_confirm_dialog.glade")
-        self.builder.connect_signals(self)
+        super().__init__()
         self.dialog = self.builder.get_object("deployConfirmDialog")
         if parent:
             self.dialog.set_transient_for(parent)
