@@ -14,5 +14,6 @@ dist
 
 *.glade~
 .coverage
+.env
 
 src/bin

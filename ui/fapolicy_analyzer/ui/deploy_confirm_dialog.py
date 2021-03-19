@@ -8,11 +8,12 @@ from .ui_widget import UIWidget
 
 
 class DeployConfirmDialog(UIWidget):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, cancel_time=15):
         super().__init__()
         self.dialog = self.builder.get_object("deployConfirmDialog")
         if parent:
             self.dialog.set_transient_for(parent)
+        self.cancel_time = cancel_time
 
     def get_content(self):
         return self.dialog
@@ -23,10 +24,10 @@ class DeployConfirmDialog(UIWidget):
         thread.start()
 
     def reset_countdown(self):
-        for i in reversed(range(1, 16)):
+        for i in reversed(range(0, self.cancel_time)):
             GLib.idle_add(
                 self.dialog.format_secondary_text,
-                f"Reverting to previous settings in {i} seconds",
+                f"Reverting to previous settings in {i+1} seconds",
             )
             sleep(1)
         GLib.idle_add(self.dialog.response, Gtk.ResponseType.NO)

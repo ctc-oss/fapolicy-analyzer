@@ -36,12 +36,12 @@ class AncillaryTrustDatabaseAdmin(UIWidget):
 
     def on_file_selection_change(self, trust):
         if trust:
-            self.trustFileDetails.set_In_Database_View(
+            self.trustFileDetails.set_in_databae_view(
                 f"""File: {trust.path}
 Size: {trust.size}
 SHA256: {trust.hash}"""
             )
-            self.trustFileDetails.set_On_File_System_View(
+            self.trustFileDetails.set_on_file_system_view(
                 f"""{fs.stat(trust.path)}
 SHA256: {fs.sha(trust.path)}"""
             )

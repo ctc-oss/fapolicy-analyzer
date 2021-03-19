@@ -19,7 +19,7 @@ class TrustFileList(UIWidget, Events):
         trust_func=lambda x: System(None, None, x).ancillary_trust(),
         markup_func=None,
     ):
-        # super(TrustFileList, self).__init__()
+
         UIWidget.__init__(self)
         Events.__init__(self)
         self.trust_func = trust_func
@@ -43,7 +43,7 @@ class TrustFileList(UIWidget, Events):
         loader = self.builder.get_object("trustViewLoader")
         loader.set_from_animation(
             GdkPixbuf.PixbufAnimation.new_from_file(
-                "../resources/filled_fading_balls.gif"
+                self.absolute_file_path("../../resources/filled_fading_balls.gif")
             )
         )
 

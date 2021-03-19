@@ -14,6 +14,7 @@ class MainWindow(UIWidget):
         self.window.show_all()
 
     def on_destroy(self, *args):
+        print(f"******* {Gtk.main_quit}")
         Gtk.main_quit()
 
     def on_aboutMenu_activate(self, menuitem, data=None):
@@ -27,7 +28,7 @@ class MainWindow(UIWidget):
         response = analyserSelectionDialog.run()
         analyserSelectionDialog.hide()
 
-        if ANALYZER_SELECTION(response) == ANALYZER_SELECTION.TRUST_DATABASE_ADMIN:
+        if response == ANALYZER_SELECTION.TRUST_DATABASE_ADMIN.value:
             page = DatabaseAdminPage().get_content()
         else:
             raise Exception("Bad Selection")

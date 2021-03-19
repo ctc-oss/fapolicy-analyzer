@@ -13,6 +13,7 @@ flake8 = "*"
 black = "*"
 pytest = "*"
 pytest-cov = "*"
+pytest-mock = "*"
 
 [packages]
 pycairo = "1.20.0"
@@ -24,5 +25,5 @@ events = "0.4"
 allow_prereleases = true
 
 [scripts]
-test = "pipenv run xvfb-run -a pytest --cov-report term-missing --cov=ui fapolicy_analyzer/"
+test = "pipenv run xvfb-run -a pytest -s --cov-report term-missing --cov=ui fapolicy_analyzer/"
 run = "pipenv run python -m"
