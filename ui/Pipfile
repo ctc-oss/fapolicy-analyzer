@@ -26,4 +26,3 @@ allow_prereleases = true
 
 [scripts]
 test = "pipenv run xvfb-run -a pytest -s --cov-report term-missing --cov=ui fapolicy_analyzer/"
-run = "pipenv run python -m"
