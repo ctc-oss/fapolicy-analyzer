@@ -1,8 +1,5 @@
-import gi
-
-gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
 from enum import Enum
+from .ui_widget import UIWidget
 
 
 class ANALYZER_SELECTION(Enum):
@@ -11,11 +8,9 @@ class ANALYZER_SELECTION(Enum):
     ANALYZE_FROM_AUDIT = 2
 
 
-class AnalyzerSelectionDialog:
+class AnalyzerSelectionDialog(UIWidget):
     def __init__(self, parent=None):
-        self.builder = Gtk.Builder()
-        self.builder.add_from_file("../glade/analyzer_selection_dialog.glade")
-        self.builder.connect_signals(self)
+        super().__init__()
         self.dialog = self.builder.get_object("analyzerSelectionDialog")
         if parent:
             self.dialog.set_transient_for(parent)

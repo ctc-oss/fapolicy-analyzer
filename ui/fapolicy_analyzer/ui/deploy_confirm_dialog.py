@@ -4,16 +4,16 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, GLib
 from threading import Thread
 from time import sleep
+from .ui_widget import UIWidget
 
 
-class DeployConfirmDialog:
-    def __init__(self, parent=None):
-        self.builder = Gtk.Builder()
-        self.builder.add_from_file("../glade/deploy_confirm_dialog.glade")
-        self.builder.connect_signals(self)
+class DeployConfirmDialog(UIWidget):
+    def __init__(self, parent=None, cancel_time=15):
+        super().__init__()
         self.dialog = self.builder.get_object("deployConfirmDialog")
         if parent:
             self.dialog.set_transient_for(parent)
+        self.cancel_time = cancel_time
 
     def get_content(self):
         return self.dialog
@@ -24,10 +24,10 @@ class DeployConfirmDialog:
         thread.start()
 
     def reset_countdown(self):
-        for i in reversed(range(1, 16)):
+        for i in reversed(range(0, self.cancel_time)):
             GLib.idle_add(
                 self.dialog.format_secondary_text,
-                f"Reverting to previous settings in {i} seconds",
+                f"Reverting to previous settings in {i+1} seconds",
             )
             sleep(1)
         GLib.idle_add(self.dialog.response, Gtk.ResponseType.NO)

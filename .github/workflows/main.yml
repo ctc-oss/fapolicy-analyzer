@@ -39,7 +39,76 @@ jobs:
           override: true
       - uses: actions-rs/cargo@v1
         with:
-          command: test
+          command: 
+  
+  py_build:
+    name: Build Python Bindings
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@v2
+      - name: Install requirements
+        run: |
+          sudo apt-get install libdbus-1-dev
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pipenv
+          cd py
+          pipenv install --dev
+      - name: Build
+        id: build
+        run: |
+          cd py
+          pipenv run python setup.py install
+          echo ::set-output name=virt_env::$(pipenv --venv)
+      - name: Archive packages
+        uses: actions/upload-artifact@v2
+        with:
+          name: fapolicy-analyzer-package
+          path: ${{ steps.build.outputs.virt_env }}/lib/python3.8/site-packages/fapolicy_analyzer*.egg/
+
+  ui_test:
+    name: UI Test Suite
+    needs: py_build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install requirements
+        run: |
+          sudo apt-get install libgtk-3-dev
+          sudo apt-get install libgirepository1.0-dev
+          sudo apt-get install xvfb
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install dependencies
+        id: install_deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install pipenv
+          cd ui
+          pipenv install --dev
+          echo ::set-output name=virt_env::$(pipenv --venv)
+      - name: Download bindings package
+        id: download
+        uses: actions/download-artifact@v2
+        with:
+          name: fapolicy-analyzer-package
+          path: ${{ steps.install_deps.outputs.virt_env }}/lib/python3.8/site-packages/
+      - name: 'Update path'
+        run: |
+          for entry in ${{steps.download.outputs.download-path}}/fapolicy*; 
+            do echo "./$(basename $entry)" >> ${{steps.download.outputs.download-path}}/easy-install.pth; 
+          done
+      - name: Test with pytest
+        run: |
+          cd ui
+          pipenv run test
 
   fmt:
     name: Rustfmt

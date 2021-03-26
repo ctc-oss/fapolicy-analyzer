@@ -13,5 +13,7 @@ dist
 .vscode/
 
 *.glade~
+.coverage
+.env
 
 src/bin

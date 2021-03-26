@@ -1,18 +1,29 @@
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, GdkPixbuf
+from gi.repository import Gtk, GLib, GdkPixbuf
+from threading import Thread
+from time import sleep
 from events import Events
+from fapolicy_analyzer.app import System
+from .ui_widget import UIWidget
 
 
-class TrustFileList(Events):
-    __events__ = ("on_file_selection_change", "on_database_selection_change")
+class TrustFileList(UIWidget, Events):
+    __events__ = "on_file_selection_change"
 
-    def __init__(self, locationAction=Gtk.FileChooserAction.OPEN, defaultLocation=None):
-        super(TrustFileList, self).__init__()
-        self.builder = Gtk.Builder()
-        self.builder.add_from_file("../glade/trust_file_list.glade")
-        self.builder.connect_signals(self)
+    def __init__(
+        self,
+        locationAction=Gtk.FileChooserAction.OPEN,
+        defaultLocation=None,
+        trust_func=lambda x: System(None, None, x).ancillary_trust(),
+        markup_func=None,
+    ):
+
+        UIWidget.__init__(self)
+        Events.__init__(self)
+        self.trust_func = trust_func
+        self.markup_func = markup_func
 
         self.databaseFileChooser = self.builder.get_object("databaseFileChooser")
         self.databaseFileChooser.set_action(locationAction)
@@ -32,39 +43,50 @@ class TrustFileList(Events):
         loader = self.builder.get_object("trustViewLoader")
         loader.set_from_animation(
             GdkPixbuf.PixbufAnimation.new_from_file(
-                "../resources/filled_fading_balls.gif"
+                self.absolute_file_path("../../resources/filled_fading_balls.gif")
             )
         )
-        self.viewSwitcher = self.builder.get_object("trustViewStack")
 
-    def set_loading(self, loading):
-        if loading:
-            self.viewSwitcher.set_visible_child_name("trustViewLoader")
-        else:
-            self.viewSwitcher.set_visible_child_name("trustView")
+    def __get_trust(self, database):
+        sleep(0.1)
+        trust = self.trust_func(database)
 
-    def get_content(self):
-        return self.builder.get_object("trustFileList")
-
-    def get_selected_location(self):
-        return self.databaseFileChooser.get_filename()
-
-    def on_databaseFileChooser_selection_changed(self, *args):
-        self.on_database_selection_change(self.databaseFileChooser.get_filename())
-
-    def set_trust(self, trust, markup_func=None):
         trustStore = Gtk.ListStore(str, str, object, str)
         for i, e in enumerate(trust):
-            status, *rest = markup_func(e.status) if markup_func else (e.status,)
+            status, *rest = (
+                self.markup_func(e.status) if self.markup_func else (e.status,)
+            )
             bgColor = rest[0] if rest else "white"
             trustStore.append([status, e.path, e, bgColor])
+
+        GLib.idle_add(self.__load_trust_store, trustStore)
+
+    def __load_trust_store(self, trustStore):
         self.trustView.set_model(trustStore)
         self.trustView.get_selection().connect(
             "changed", self.__on_trust_view_selection_changed
         )
-        self.set_loading(False)
+        self.__set_loading(False)
+
+    def __set_loading(self, loading):
+        viewSwitcher = self.builder.get_object("trustViewStack")
+        if loading:
+            viewSwitcher.set_visible_child_name("trustViewLoader")
+        else:
+            viewSwitcher.set_visible_child_name("trustView")
 
     def __on_trust_view_selection_changed(self, selection):
         model, treeiter = selection.get_selected()
         trust = model[treeiter][2] if treeiter is not None else {}
         self.on_file_selection_change(trust)
+
+    def get_content(self):
+        return self.builder.get_object("trustFileList")
+
+    def on_databaseFileChooser_selection_changed(self, *args):
+        database = self.databaseFileChooser.get_filename()
+        if database and self.trust_func:
+            self.__set_loading(True)
+            thread = Thread(target=self.__get_trust, args=(database,))
+            thread.daemon = True
+            thread.start()
