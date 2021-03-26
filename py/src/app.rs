@@ -1,6 +1,7 @@
 use pyo3::prelude::*;
 
 use super::trust::PyTrust;
+use fapolicy_analyzer::cfg;
 use fapolicy_analyzer::sys;
 
 #[pyclass(module = "app", name=System)]
@@ -23,26 +24,8 @@ impl From<PySystem> for sys::System {
 impl PySystem {
     #[new]
     fn new() -> PySystem {
-        sys::System::boot(sys::SystemCfg {
-            trust_db_path: None,
-            system_trust_path: None,
-            ancillary_trust_path: None,
-        })
-        .into()
-    }
-
-    #[new]
-    fn new1(
-        trust_db_path: Option<String>,
-        system_trust_path: Option<String>,
-        ancillary_trust_path: Option<String>,
-    ) -> PySystem {
-        sys::System::boot(sys::SystemCfg {
-            trust_db_path: trust_db_path.into(),
-            system_trust_path: system_trust_path.into(),
-            ancillary_trust_path: ancillary_trust_path.into(),
-        })
-        .into()
+        let conf = cfg::load();
+        sys::System::boot(conf).into()
     }
 
     fn system_trust(&self) -> PyResult<Vec<PyTrust>> {

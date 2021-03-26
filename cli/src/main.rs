@@ -1,6 +1,7 @@
 use clap::Clap;
 
 use fapolicy_analyzer::cfg;
+use fapolicy_analyzer::cfg::ApplicationCfg;
 use fapolicy_analyzer::{svc, sys};
 
 #[derive(Clap)]
@@ -65,7 +66,7 @@ fn main() {
                 system_trust_path: trust_opts.rpmdb.unwrap_or(conf.system.system_trust_path),
                 ancillary_trust_path: trust_opts.file.unwrap_or(conf.system.ancillary_trust_path),
             };
-            let sys = sys::System::boot(syscfg);
+            let sys = sys::System::boot(ApplicationCfg { system: syscfg });
 
             println!(
                 "Loaded {}: db / {}: system / {}: file records",
