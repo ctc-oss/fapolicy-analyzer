@@ -1,5 +1,7 @@
 use clap::Clap;
 
+use fapolicy_analyzer::cfg;
+use fapolicy_analyzer::cfg::ApplicationCfg;
 use fapolicy_analyzer::{svc, sys};
 
 #[derive(Clap)]
@@ -55,13 +57,16 @@ struct DaemonSubOpts {}
 
 fn main() {
     let cli: Opts = Opts::parse();
+    let conf = cfg::load();
+
     match cli.subcmd {
         SubCommands::Trust(trust_opts) => {
-            let sys = sys::System::boot(sys::SystemCfg {
-                trust_db_path: trust_opts.db,
-                system_trust_path: trust_opts.rpmdb,
-                ancillary_trust_path: trust_opts.file,
-            });
+            let syscfg = cfg::SystemCfg {
+                trust_db_path: trust_opts.db.unwrap_or(conf.system.trust_db_path),
+                system_trust_path: trust_opts.rpmdb.unwrap_or(conf.system.system_trust_path),
+                ancillary_trust_path: trust_opts.file.unwrap_or(conf.system.ancillary_trust_path),
+            };
+            let sys = sys::System::boot(ApplicationCfg { system: syscfg });
 
             println!(
                 "Loaded {}: db / {}: system / {}: file records",

@@ -8,7 +8,6 @@ use lmdb::{Cursor, Environment, Transaction};
 use sha::sha256_digest;
 
 use crate::api;
-use crate::fapolicyd;
 use crate::sha;
 
 /// Trust status tag
@@ -36,14 +35,14 @@ pub fn check(t: &api::Trust) -> Result<Status, String> {
     }
 }
 
-struct TrustKV {
+struct TrustPair {
     k: String,
     v: String,
 }
 
-impl TrustKV {
-    fn new(b: (&[u8], &[u8])) -> TrustKV {
-        TrustKV {
+impl TrustPair {
+    fn new(b: (&[u8], &[u8])) -> TrustPair {
+        TrustPair {
             k: String::from_utf8(Vec::from(b.0)).unwrap(),
             v: String::from_utf8(Vec::from(b.1)).unwrap(),
         }
@@ -58,21 +57,16 @@ fn str_split_once(s: &str) -> (&str, String) {
     (head, tail)
 }
 
-impl From<TrustKV> for api::Trust {
-    fn from(kv: TrustKV) -> Self {
+impl From<TrustPair> for api::Trust {
+    fn from(kv: TrustPair) -> Self {
         // todo;; let v = kv.v.split_once(' ').unwrap().1;
         let v = str_split_once(&kv.v).1;
         parse_trust_record(format!("{} {}", kv.k, v).as_str()).unwrap()
     }
 }
 
-pub fn load_trust_db(path: &Option<String>) -> Vec<api::Trust> {
-    let dbdir = match path {
-        Some(ref p) => Path::new(p),
-        None => Path::new(fapolicyd::TRUST_DB_PATH),
-    };
-
-    let env = Environment::new().set_max_dbs(1).open(dbdir);
+pub fn load_trust_db(path: &str) -> Vec<api::Trust> {
+    let env = Environment::new().set_max_dbs(1).open(Path::new(path));
     let env = match env {
         Ok(e) => e,
         _ => {
@@ -88,7 +82,7 @@ pub fn load_trust_db(path: &Option<String>) -> Vec<api::Trust> {
             t.open_ro_cursor(db).map(|mut c| {
                 c.iter()
                     .map(|c| c.unwrap())
-                    .map(TrustKV::new)
+                    .map(TrustPair::new)
                     .map(|kv| kv.into())
                     .collect()
             })
@@ -97,11 +91,8 @@ pub fn load_trust_db(path: &Option<String>) -> Vec<api::Trust> {
         .unwrap()
 }
 
-pub fn load_ancillary_trust(path: &Option<String>) -> Vec<api::Trust> {
-    let f = File::open(
-        path.as_ref()
-            .unwrap_or(&fapolicyd::TRUST_FILE_PATH.to_string()),
-    );
+pub fn load_ancillary_trust(path: &str) -> Vec<api::Trust> {
+    let f = File::open(path);
     let f = match f {
         Ok(e) => e,
         _ => {

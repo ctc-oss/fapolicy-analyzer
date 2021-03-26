@@ -1,4 +1,5 @@
 pub mod api;
+pub mod cfg;
 pub mod fapolicyd;
 pub mod log;
 pub mod rpm;
