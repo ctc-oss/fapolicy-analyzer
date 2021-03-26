@@ -8,7 +8,6 @@ use lmdb::{Cursor, Environment, Transaction};
 use sha::sha256_digest;
 
 use crate::api;
-use crate::fapolicyd;
 use crate::sha;
 
 /// Trust status tag
@@ -66,13 +65,8 @@ impl From<TrustKV> for api::Trust {
     }
 }
 
-pub fn load_trust_db(path: &Option<String>) -> Vec<api::Trust> {
-    let dbdir = match path {
-        Some(ref p) => Path::new(p),
-        None => Path::new(fapolicyd::TRUST_DB_PATH),
-    };
-
-    let env = Environment::new().set_max_dbs(1).open(dbdir);
+pub fn load_trust_db(path: &str) -> Vec<api::Trust> {
+    let env = Environment::new().set_max_dbs(1).open(Path::new(path));
     let env = match env {
         Ok(e) => e,
         _ => {
@@ -97,11 +91,8 @@ pub fn load_trust_db(path: &Option<String>) -> Vec<api::Trust> {
         .unwrap()
 }
 
-pub fn load_ancillary_trust(path: &Option<String>) -> Vec<api::Trust> {
-    let f = File::open(
-        path.as_ref()
-            .unwrap_or(&fapolicyd::TRUST_FILE_PATH.to_string()),
-    );
+pub fn load_ancillary_trust(path: &str) -> Vec<api::Trust> {
+    let f = File::open(path);
     let f = match f {
         Ok(e) => e,
         _ => {
