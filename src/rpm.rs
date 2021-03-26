@@ -19,12 +19,7 @@ struct RpmDbEntry {
 }
 
 pub fn load_system_trust(rpmdb: &str) -> Vec<api::Trust> {
-    let mut args = Vec::new();
-    args.push("-qa");
-    args.push("--dump");
-    args.push("--dbpath");
-    args.push(rpmdb);
-
+    let args = vec!["-qa", "--dump", "--dbpath", rpmdb];
     let res = Command::new("rpm")
         .args(args)
         .output()

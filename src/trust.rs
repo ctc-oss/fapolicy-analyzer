@@ -35,14 +35,14 @@ pub fn check(t: &api::Trust) -> Result<Status, String> {
     }
 }
 
-struct TrustKV {
+struct TrustPair {
     k: String,
     v: String,
 }
 
-impl TrustKV {
-    fn new(b: (&[u8], &[u8])) -> TrustKV {
-        TrustKV {
+impl TrustPair {
+    fn new(b: (&[u8], &[u8])) -> TrustPair {
+        TrustPair {
             k: String::from_utf8(Vec::from(b.0)).unwrap(),
             v: String::from_utf8(Vec::from(b.1)).unwrap(),
         }
@@ -57,8 +57,8 @@ fn str_split_once(s: &str) -> (&str, String) {
     (head, tail)
 }
 
-impl From<TrustKV> for api::Trust {
-    fn from(kv: TrustKV) -> Self {
+impl From<TrustPair> for api::Trust {
+    fn from(kv: TrustPair) -> Self {
         // todo;; let v = kv.v.split_once(' ').unwrap().1;
         let v = str_split_once(&kv.v).1;
         parse_trust_record(format!("{} {}", kv.k, v).as_str()).unwrap()
@@ -82,7 +82,7 @@ pub fn load_trust_db(path: &str) -> Vec<api::Trust> {
             t.open_ro_cursor(db).map(|mut c| {
                 c.iter()
                     .map(|c| c.unwrap())
-                    .map(TrustKV::new)
+                    .map(TrustPair::new)
                     .map(|kv| kv.into())
                     .collect()
             })
