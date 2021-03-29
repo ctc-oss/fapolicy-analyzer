@@ -79,26 +79,16 @@ fn digest_or_not(i: &str) -> Option<&str> {
 /// path size mtime digest mode owner group isconfig isdoc rdev symlink
 fn parse_line(i: &str) -> nom::IResult<&str, Option<RpmDbEntry>> {
     match nom::combinator::complete(nom::sequence::tuple((
-        filepath,
-        space1,
-        digit1,
-        space1,
-        digit1,
-        space1,
-        alphanumeric1,
-        space1,
-        modestring,
-        space1,
-        alphanumeric1,
-        space1,
-        alphanumeric1,
-        space1,
-        digit1,
-        space1,
-        digit1,
-        space1,
-        digit1,
-        space1,
+        terminated(filepath, space1),
+        terminated(digit1, space1),
+        terminated(digit1, space1),
+        terminated(alphanumeric1, space1),
+        terminated(modestring, space1),
+        terminated(alphanumeric1, space1),
+        terminated(alphanumeric1, space1),
+        terminated(digit1, space1),
+        terminated(digit1, space1),
+        terminated(digit1, space1),
         filepath,
     )))(i)
     {
@@ -106,24 +96,14 @@ fn parse_line(i: &str) -> nom::IResult<&str, Option<RpmDbEntry>> {
             remaining_input,
             (
                 path,
-                _,
                 size,
-                _,
-                _,
                 _, // mtime
                 digest,
-                _,
                 mode,
-                _, // mode
-                _,
                 _, // owner
-                _,
                 _, // group
-                _,
                 _, // isconfig
-                _,
                 _, // isdoc
-                _,
                 _, // rdev
                 _, // symlink
             ),
