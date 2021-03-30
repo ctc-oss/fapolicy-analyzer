@@ -5,6 +5,7 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from unittest.mock import MagicMock
+from helpers import delayed_gui_action
 from ui.ancillary_trust_database_admin import AncillaryTrustDatabaseAdmin
 
 
@@ -48,14 +49,46 @@ def test_updates_trust_details(widget, mocker):
     widget.trustFileDetails.set_trust_status.assert_called_with("This file is trusted.")
 
 
-def test_on_deployBtn_clicked(widget, mocker):
+def test_on_confirm_deployment(widget, mocker):
     parent = Gtk.Window()
     parent.add(widget.get_content())
-    mock_dialog = MagicMock(run=MagicMock(), hide=MagicMock())
+    mock_confirm_dialog = MagicMock(
+        run=MagicMock(return_value=Gtk.ResponseType.YES), hide=MagicMock()
+    )
+    mock_deploy_dialog = MagicMock(run=MagicMock(), hide=MagicMock())
+    mocker.patch(
+        "ui.ancillary_trust_database_admin.ConfirmDialog.get_content",
+        return_value=mock_confirm_dialog,
+    )
     mocker.patch(
         "ui.ancillary_trust_database_admin.DeployConfirmDialog.get_content",
-        return_value=mock_dialog,
+        return_value=mock_deploy_dialog,
     )
+
     widget.on_deployBtn_clicked()
-    mock_dialog.run.assert_called()
-    mock_dialog.hide.assert_called()
+    mock_confirm_dialog.run.assert_called()
+    mock_confirm_dialog.hide.assert_called()
+    mock_deploy_dialog.run.assert_called()
+    mock_deploy_dialog.hide.assert_called()
+
+
+def test_on_neg_confirm_deployment(widget, mocker):
+    parent = Gtk.Window()
+    parent.add(widget.get_content())
+    mock_confirm_dialog = MagicMock(
+        run=MagicMock(return_value=Gtk.ResponseType.NO), hide=MagicMock()
+    )
+    mock_deploy_dialog = MagicMock(run=MagicMock())
+    mocker.patch(
+        "ui.ancillary_trust_database_admin.ConfirmDialog.get_content",
+        return_value=mock_confirm_dialog,
+    )
+    mocker.patch(
+        "ui.ancillary_trust_database_admin.DeployConfirmDialog.get_content",
+        return_value=mock_deploy_dialog,
+    )
+
+    widget.on_deployBtn_clicked()
+    mock_confirm_dialog.run.assert_called()
+    mock_confirm_dialog.hide.assert_called()
+    mock_deploy_dialog.run.assert_not_called()

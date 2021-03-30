@@ -8,7 +8,7 @@ from .ui_widget import UIWidget
 
 
 class DeployConfirmDialog(UIWidget):
-    def __init__(self, parent=None, cancel_time=15):
+    def __init__(self, parent=None, cancel_time=30):
         super().__init__()
         self.dialog = self.builder.get_object("deployConfirmDialog")
         if parent:

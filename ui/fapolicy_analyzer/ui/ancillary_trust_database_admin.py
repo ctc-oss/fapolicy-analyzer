@@ -1,7 +1,12 @@
+import gi
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
 from fapolicy_analyzer.util import fs
 from .ui_widget import UIWidget
 from .trust_file_list import TrustFileList
 from .trust_file_details import TrustFileDetails
+from .confirmation_dialog import ConfirmDialog
 from .deploy_confirm_dialog import DeployConfirmDialog
 
 
@@ -55,8 +60,16 @@ SHA256: {fs.sha(trust.path)}"""
             )
 
     def on_deployBtn_clicked(self, *args):
-        deployConfirmDialog = DeployConfirmDialog(
-            self.content.get_toplevel()
+        parent = self.content.get_toplevel()
+        confirmDialog = ConfirmDialog(
+            "Deploy Ancillary Trust Changes?",
+            "Are you sure you wish to deploy your changes to the ancillary trust database? "
+            + "This will update the fapolicy trust and restart the service.",
+            parent,
         ).get_content()
-        deployConfirmDialog.run()
-        deployConfirmDialog.hide()
+        response = confirmDialog.run()
+        confirmDialog.hide()
+        if response == Gtk.ResponseType.YES:
+            deployConfirmDialog = DeployConfirmDialog(parent).get_content()
+            deployConfirmDialog.run()
+            deployConfirmDialog.hide()
