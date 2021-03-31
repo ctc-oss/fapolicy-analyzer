@@ -1,4 +1,5 @@
 use crate::api;
+use crate::fapolicyd::keep_entry;
 use crate::rpm::RpmError::{Discovery, Execution, NotFound};
 use nom::bytes::complete::tag;
 use nom::character::complete::alphanumeric1;
@@ -15,7 +16,6 @@ struct RpmDbEntry {
     pub path: String,
     pub size: u64,
     pub hash: Option<String>,
-    pub mode: String,
 }
 
 pub fn load_system_trust(rpmdb: &str) -> Vec<api::Trust> {
@@ -29,11 +29,6 @@ pub fn load_system_trust(rpmdb: &str) -> Vec<api::Trust> {
     parse(&clean)
 }
 
-// todo;; filtering on mode here for now as executable test
-fn is_executable(e: &RpmDbEntry) -> bool {
-    e.mode == "0100755"
-}
-
 fn contains_no_files(s: &str) -> nom::IResult<&str, Option<RpmDbEntry>> {
     delimited(tag("("), tag("contains no files"), tag(")"))(s).map(|x| (x.0, None))
 }
@@ -43,7 +38,7 @@ fn parse(s: &str) -> Vec<api::Trust> {
         .collect::<Vec<Option<RpmDbEntry>>>()
         .iter()
         .flatten()
-        .filter(|e| is_executable(e))
+        .filter(|e| keep_entry(&e.path))
         .map(|e| {
             if let Some(hash) = &e.hash {
                 Some(api::Trust {
@@ -76,6 +71,18 @@ fn digest_or_not(i: &str) -> Option<&str> {
     }
 }
 
+fn int_to_bool(i: &str) -> bool {
+    match i {
+        "0" => false,
+        "1" => true,
+        v => panic!("invalid bool value {}", v),
+    }
+}
+
+fn is_dir(mode: &str) -> bool {
+    mode.starts_with("040")
+}
+
 /// path size mtime digest mode owner group isconfig isdoc rdev symlink
 fn parse_line(i: &str) -> nom::IResult<&str, Option<RpmDbEntry>> {
     match nom::combinator::complete(nom::sequence::tuple((
@@ -86,8 +93,8 @@ fn parse_line(i: &str) -> nom::IResult<&str, Option<RpmDbEntry>> {
         terminated(modestring, space1),
         terminated(alphanumeric1, space1),
         terminated(alphanumeric1, space1),
-        terminated(digit1, space1),
-        terminated(digit1, space1),
+        terminated(digit1, space1).map(int_to_bool),
+        terminated(digit1, space1).map(int_to_bool),
         terminated(digit1, space1),
         filepath,
     )))(i)
@@ -102,20 +109,20 @@ fn parse_line(i: &str) -> nom::IResult<&str, Option<RpmDbEntry>> {
                 mode,
                 _, // owner
                 _, // group
-                _, // isconfig
-                _, // isdoc
+                is_cfg,
+                is_doc,
                 _, // rdev
                 _, // symlink
             ),
-        )) => Ok((
+        )) if !is_cfg && !is_doc && !is_dir(mode) => Ok((
             remaining_input,
             Some(RpmDbEntry {
                 path: path.to_string(),
                 size: size.parse().unwrap(),
                 hash: digest_or_not(digest).map(|s| s.to_string()),
-                mode: mode.to_string(),
             }),
         )),
+        Ok((remaining_input, _)) => Ok((remaining_input, None)),
         Err(e) => Err(e),
     }
 }
@@ -150,28 +157,20 @@ mod tests {
             hash: Some(
                 "26532eeae676157e70231d911474e48d31085b5f2e511ce908349dbb02f0f69c".to_string(),
             ),
-            mode: "0100755".to_string(),
         };
         let (_, actual) = parse_line(A).unwrap();
 
-        assert_eq!(actual.as_ref().unwrap().path, expected.path);
-        assert_eq!(actual.as_ref().unwrap().size, expected.size);
-        assert_eq!(actual.as_ref().unwrap().hash, expected.hash);
+        let e = actual.as_ref().unwrap();
+        assert_eq!(e.path, expected.path);
+        assert_eq!(e.size, expected.size);
+        assert_eq!(e.hash, expected.hash);
     }
 
     #[test]
     fn parse_b() {
-        let expected = RpmDbEntry {
-            path: "/usr/share/man/man1/dnsdomainname.1.gz".to_string(),
-            size: 13,
-            hash: None,
-            mode: "0120777".to_string(),
-        };
+        // b is doc, filtered out
         let (_, actual) = parse_line(B).unwrap();
-
-        assert_eq!(actual.as_ref().unwrap().path, expected.path);
-        assert_eq!(actual.as_ref().unwrap().size, expected.size);
-        assert_eq!(actual.as_ref().unwrap().hash, expected.hash);
+        assert!(actual.is_none());
     }
 
     #[test]
@@ -180,13 +179,13 @@ mod tests {
             path: "/usr/lib/.build-id/a8/a7ee9d5002492edfc62e3e2e44149e981f9866".to_string(),
             size: 28,
             hash: None,
-            mode: "0120777".to_string(),
         };
         let (_, actual) = parse_line(C).unwrap();
 
-        assert_eq!(actual.as_ref().unwrap().path, expected.path);
-        assert_eq!(actual.as_ref().unwrap().size, expected.size);
-        assert_eq!(actual.as_ref().unwrap().hash, expected.hash);
+        let e = actual.as_ref().unwrap();
+        assert_eq!(e.path, expected.path);
+        assert_eq!(e.size, expected.size);
+        assert_eq!(e.hash, expected.hash);
     }
 
     #[test]
