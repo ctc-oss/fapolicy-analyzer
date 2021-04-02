@@ -33,12 +33,14 @@ class TrustFileList(UIWidget, Events):
         self.trustView = self.builder.get_object("trustView")
         trustCell = Gtk.CellRendererText()
         trustCell.set_property("background", "light gray")
-        self.trustView.append_column(Gtk.TreeViewColumn("Trust", trustCell, markup=0))
-        self.trustView.append_column(
-            Gtk.TreeViewColumn(
-                "File", Gtk.CellRendererText(), text=1, cell_background=3
-            )
+        trustColumn = Gtk.TreeViewColumn("Trust", trustCell, markup=0)
+        trustColumn.set_sort_column_id(0)
+        self.trustView.append_column(trustColumn)
+        fileColumn = Gtk.TreeViewColumn(
+            "File", Gtk.CellRendererText(), text=1, cell_background=3
         )
+        fileColumn.set_sort_column_id(1)
+        self.trustView.append_column(fileColumn)
 
         loader = self.builder.get_object("trustViewLoader")
         loader.set_from_animation(
@@ -62,26 +64,38 @@ class TrustFileList(UIWidget, Events):
         GLib.idle_add(self.__load_trust_store, trustStore)
 
     def __load_trust_store(self, trustStore):
-        self.trustView.set_model(trustStore)
+        self.trustViewFilter = trustStore.filter_new()
+        self.trustViewFilter.set_visible_func(self.__filter_trust_view)
+        self.trustView.set_model(Gtk.TreeModelSort(model=self.trustViewFilter))
         self.trustView.get_selection().connect(
-            "changed", self.__on_trust_view_selection_changed
+            "changed", self.on_trust_view_selection_changed
         )
         self.__set_loading(False)
 
+    def __filter_trust_view(self, model, iter, data):
+        filter = self.builder.get_object("trustViewSearch").get_text()
+        return True if not filter else filter in model[iter][1]
+
     def __set_loading(self, loading):
         viewSwitcher = self.builder.get_object("trustViewStack")
+        trustViewSearch = self.builder.get_object("trustViewSearch")
         if loading:
             viewSwitcher.set_visible_child_name("trustViewLoader")
+            trustViewSearch.set_sensitive(False)
         else:
             viewSwitcher.set_visible_child_name("trustView")
+            trustViewSearch.set_sensitive(True)
 
-    def __on_trust_view_selection_changed(self, selection):
+    def get_content(self):
+        return self.builder.get_object("trustFileList")
+
+    def on_trust_view_selection_changed(self, selection):
         model, treeiter = selection.get_selected()
         trust = model[treeiter][2] if treeiter is not None else {}
         self.on_file_selection_change(trust)
 
-    def get_content(self):
-        return self.builder.get_object("trustFileList")
+    def on_search_changed(self, search):
+        self.trustViewFilter.refilter()
 
     def on_databaseFileChooser_selection_changed(self, *args):
         database = self.databaseFileChooser.get_filename()

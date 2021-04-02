@@ -14,7 +14,6 @@ class MainWindow(UIWidget):
         self.window.show_all()
 
     def on_destroy(self, *args):
-        print(f"******* {Gtk.main_quit}")
         Gtk.main_quit()
 
     def on_aboutMenu_activate(self, menuitem, data=None):

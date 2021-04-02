@@ -16,8 +16,20 @@ def patch(mocker):
 
 
 @pytest.fixture
-def widget(patch):
-    return TrustFileList()
+def trust_func():
+    return MagicMock(
+        return_value=[
+            MagicMock(status="u", path="/tmp/foo"),
+            MagicMock(status="t", path="/tmp/baz"),
+        ]
+    )
+
+
+@pytest.fixture
+def widget(trust_func):
+    widget = TrustFileList(defaultLocation="/foo.db", trust_func=trust_func)
+    refresh_gui()
+    return widget
 
 
 def test_creates_widget(widget):
@@ -34,11 +46,10 @@ def test_sets_defaultLocation(patch):
     assert widget.databaseFileChooser.get_filename() == "/tmp/foo"
 
 
-def test_uses_custom_trust_func(patch):
-    trust_func = MagicMock()
+def test_uses_custom_trust_func(patch, trust_func):
     widget = TrustFileList(trust_func=trust_func)
     widget.databaseFileChooser.set_filename("/foo.db")
-    refresh_gui(0.1)
+    refresh_gui()
     trust_func.assert_called_with("/foo.db")
 
 
@@ -48,3 +59,27 @@ def test_uses_custom_markup_func(patch):
     widget.databaseFileChooser.set_filename("/foo")
     refresh_gui(0.2)
     markup_func.assert_called_with("trusted")
+
+
+def test_sorting_path(patch, widget):
+    trustView = widget.trustView
+    assert ["/tmp/foo", "/tmp/baz"] == [x[1] for x in trustView.get_model()]
+    trustView.get_column(1).clicked()
+    assert ["/tmp/baz", "/tmp/foo"] == [x[1] for x in trustView.get_model()]
+
+
+def test_sorting_status(patch, widget):
+    trustView = widget.trustView
+    assert ["u", "t"] == [x[0] for x in trustView.get_model()]
+    trustView.get_column(0).clicked()
+    assert ["t", "u"] == [x[0] for x in trustView.get_model()]
+
+
+def test_filtering(patch, widget):
+    trustView = widget.trustView
+    trustViewFilter = widget.builder.get_object("trustViewSearch")
+    trustViewFilter.set_text("foo")
+    refresh_gui(0.2)
+    paths = [x[1] for x in trustView.get_model()]
+    assert "/tmp/foo" in paths
+    assert "/tmp/baz" not in paths

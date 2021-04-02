@@ -14,7 +14,7 @@ from ui.system_trust_database_admin import SystemTrustDatabaseAdmin
 def widget(mocker):
     mocker.patch("ui.system_trust_database_admin.System", return_value=mock_System())
     widget = SystemTrustDatabaseAdmin()
-    refresh_gui(0.1)
+    refresh_gui()
     return widget
 
 
