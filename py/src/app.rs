@@ -33,28 +33,26 @@ impl PySystem {
         State::new(&conf.system).into()
     }
 
-    fn system_trust(&self) -> PyResult<Vec<PyTrust>> {
-        Ok(self
-            .state
+    fn system_trust(&self) -> Vec<PyTrust> {
+        self.state
             .trust_db
             .iter()
             .filter(|t| t.source == TrustSource::System)
             .map(trust_status)
             .flatten()
-            .map(|t| PyTrust::from(t.clone()))
-            .collect())
+            .map(PyTrust::from)
+            .collect()
     }
 
-    fn ancillary_trust(&self) -> PyResult<Vec<PyTrust>> {
-        Ok(self
-            .state
+    fn ancillary_trust(&self) -> Vec<PyTrust> {
+        self.state
             .trust_db
             .iter()
             .filter(|t| t.source == TrustSource::Ancillary)
             .map(trust_status)
             .flatten()
-            .map(|t| PyTrust::from(t.clone()))
-            .collect())
+            .map(PyTrust::from)
+            .collect()
     }
 
     fn apply_changeset(&self, change: PyChangeTrust) -> PySystem {

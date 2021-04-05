@@ -50,11 +50,15 @@ impl TrustSet {
     pub fn len(&self) -> usize {
         self.trust.len()
     }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
 }
 
 fn new_trust_record(path: &str) -> Result<Trust, String> {
-    let f = File::open(path).unwrap();
-    let sha = sha256_digest(BufReader::new(&f)).unwrap();
+    let f = File::open(path).map_err(|_| "failed to open file".to_string())?;
+    let sha = sha256_digest(BufReader::new(&f)).map_err(|_| "failed to hash file".to_string())?;
 
     Ok(Trust {
         path: path.to_string(),

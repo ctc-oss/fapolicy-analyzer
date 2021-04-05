@@ -28,8 +28,8 @@ impl From<trust::Status> for PyTrust {
 #[pymethods]
 impl PyTrust {
     #[new]
-    fn new(p: &str, sz: u64, sha: &str) -> PyResult<PyTrust> {
-        Ok(PyTrust {
+    fn new(p: &str, sz: u64, sha: &str) -> PyTrust {
+        PyTrust {
             trust: api::Trust {
                 path: p.to_string(),
                 size: sz,
@@ -37,7 +37,7 @@ impl PyTrust {
                 source: TrustSource::Ancillary,
             },
             status: "_".to_string(),
-        })
+        }
     }
 
     #[getter]
@@ -51,13 +51,13 @@ impl PyTrust {
     }
 
     #[getter]
-    fn get_hash(&self) -> PyResult<&str> {
-        Ok(&self.trust.hash)
+    fn get_hash(&self) -> &str {
+        &self.trust.hash
     }
 
     #[getter]
-    fn get_status(&self) -> PyResult<&str> {
-        Ok(&self.status)
+    fn get_status(&self) -> &str {
+        &self.status
     }
 }
 
@@ -96,6 +96,10 @@ impl PyChangeTrust {
 
     pub fn len(&self) -> usize {
         self.s.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 }
 
