@@ -14,6 +14,7 @@ black = "*"
 pytest = "*"
 pytest-cov = "*"
 pytest-mock = "*"
+pytest-watch = "*"
 
 [packages]
 pycairo = "1.20.0"
@@ -26,3 +27,4 @@ allow_prereleases = true
 
 [scripts]
 test = "pipenv run xvfb-run -a pytest -s --cov-report term-missing --cov=ui fapolicy_analyzer/"
+watch-test = "pipenv run xvfb-run -a pytest-watch fapolicy_analyzer/ -- -s"

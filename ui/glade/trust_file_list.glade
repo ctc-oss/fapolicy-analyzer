@@ -23,12 +23,13 @@
       </packing>
     </child>
     <child>
-      <object class="GtkSearchEntry">
+      <object class="GtkSearchEntry" id="trustViewSearch">
         <property name="visible">True</property>
         <property name="can-focus">True</property>
         <property name="primary-icon-name">edit-find-symbolic</property>
         <property name="primary-icon-activatable">False</property>
         <property name="primary-icon-sensitive">False</property>
+        <signal name="search-changed" handler="on_search_changed" swapped="no"/>
       </object>
       <packing>
         <property name="expand">False</property>
