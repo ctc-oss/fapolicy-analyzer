@@ -3,8 +3,8 @@ use serde::Serialize;
 
 use crate::api::Trust;
 use crate::sys::Config;
-use crate::trust::Changeset;
 use crate::trust::load_trust_db;
+use crate::trust::Changeset;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct State {

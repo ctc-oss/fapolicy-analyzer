@@ -1,6 +1,5 @@
 use std::process::Command;
 
-use nom::{InputIter, Parser};
 use nom::bytes::complete::tag;
 use nom::character::complete::alphanumeric1;
 use nom::character::complete::digit1;
@@ -8,6 +7,7 @@ use nom::character::complete::line_ending;
 use nom::character::complete::space1;
 use nom::combinator::iterator;
 use nom::sequence::{delimited, terminated};
+use nom::{InputIter, Parser};
 
 use crate::api;
 use crate::fapolicyd::keep_entry;
