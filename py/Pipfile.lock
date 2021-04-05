@@ -1,11 +1,11 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "176e3c244bf4cc99c7e08b6235463a41f1c663bfa449a13ba4104a97b3ccaa7f"
+            "sha256": "6975d584eeec0aa81aaf477158ce8c1552d5f7c0b757e26d12292da087731a15"
         },
         "pipfile-spec": 6,
         "requires": {
-            "python_version": "3.6"
+            "python_version": "3.8"
         },
         "sources": [
             {
@@ -31,13 +31,6 @@
             "index": "pypi",
             "version": "==1.20.0"
         },
-        "pygobject": {
-            "hashes": [
-                "sha256:051b950f509f2e9f125add96c1493bde987c527f7a0c15a1f7b69d6d1c3cd8e6"
-            ],
-            "index": "pypi",
-            "version": "==3.38.0"
-        },
         "toml": {
             "hashes": [
                 "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b",
@@ -58,11 +51,11 @@
         },
         "setuptools-rust": {
             "hashes": [
-                "sha256:5acf8cd8e89d57f0cd3cc942f60fa2ccfdede4c7a0b0d4b28eb7ab756df30347",
-                "sha256:a5b5954909cbc5d66b914ee6763f81fa2610916041c7266105a469f504a7c4ca"
+                "sha256:60c9bf1423a725e472c4a2a6274598251f959f3ed5ffe7698526e78bb431b9b7",
+                "sha256:647009e924f0ae439c7f3e0141a184a69ad247ecb9044c511dabde232d3d570e"
             ],
             "index": "pypi",
-            "version": "==0.11.6"
+            "version": "==0.12.1"
         },
         "toml": {
             "hashes": [

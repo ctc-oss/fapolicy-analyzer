@@ -1,8 +1,8 @@
-use fapolicy_analyzer::svc;
-
 use pyo3::prelude::*;
 
-#[pyclass(module = "svc", name=Daemon)]
+use fapolicy_analyzer::svc;
+
+#[pyclass(module = "svc", name = "Daemon")]
 #[derive(Clone)]
 pub struct PyDaemon {
     d: svc::Daemon,

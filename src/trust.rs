@@ -5,10 +5,8 @@ use std::path::Path;
 
 use lmdb::{Cursor, Environment, Transaction};
 
-use sha::sha256_digest;
-
 use crate::api;
-use crate::sha;
+use crate::api::TrustSource;
 
 /// Trust status tag
 /// T / U / unk
@@ -22,17 +20,6 @@ pub enum Status {
     /// lhs expected, rhs actual
     Untrusted(api::Trust, String),
     // todo;; what about file does not exist?
-}
-
-pub fn check(t: &api::Trust) -> Result<Status, String> {
-    match File::open(&t.path) {
-        Ok(f) => match sha256_digest(BufReader::new(f)) {
-            Ok(sha) if sha == t.hash => Ok(Status::Trusted(t.clone())),
-            Ok(sha) => Ok(Status::Untrusted(t.clone(), sha)),
-            Err(e) => Err(format!("sha256 op failed, {}", e)),
-        },
-        _ => Err(format!("WARN: {} not found", t.path)),
-    }
 }
 
 struct TrustPair {
@@ -60,8 +47,8 @@ fn str_split_once(s: &str) -> (&str, String) {
 impl From<TrustPair> for api::Trust {
     fn from(kv: TrustPair) -> Self {
         // todo;; let v = kv.v.split_once(' ').unwrap().1;
-        let v = str_split_once(&kv.v).1;
-        parse_trust_record(format!("{} {}", kv.k, v).as_str()).unwrap()
+        let (t, v) = str_split_once(&kv.v);
+        parse_strtyped_trust_record(format!("{} {}", kv.k, v).as_str(), t).unwrap()
     }
 }
 
@@ -110,14 +97,26 @@ pub fn load_ancillary_trust(path: &str) -> Vec<api::Trust> {
         .collect()
 }
 
+fn parse_strtyped_trust_record(s: &str, t: &str) -> Result<api::Trust, String> {
+    match t {
+        "1" => parse_typed_trust_record(s, TrustSource::System),
+        "2" => parse_typed_trust_record(s, TrustSource::Ancillary),
+        _ => Err("unknown trust type".to_string()),
+    }
+}
+
 fn parse_trust_record(s: &str) -> Result<api::Trust, String> {
+    parse_typed_trust_record(s, TrustSource::Ancillary)
+}
+
+fn parse_typed_trust_record(s: &str, t: api::TrustSource) -> Result<api::Trust, String> {
     let v: Vec<&str> = s.split(' ').collect();
     match v.as_slice() {
         [f, sz, sha] => Ok(api::Trust {
             path: f.to_string(),
             size: sz.parse().unwrap(),
             hash: sha.to_string(),
-            source: api::TrustSource::Ancillary,
+            source: t,
         }),
         _ => Err(String::from("failed to read record")),
     }
