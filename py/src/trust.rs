@@ -2,7 +2,6 @@ use pyo3::prelude::*;
 
 use fapolicy_analyzer::api;
 use fapolicy_analyzer::api::TrustSource;
-use fapolicy_analyzer::change;
 use fapolicy_analyzer::trust;
 
 #[pyclass(module = "trust", name = "Trust")]
@@ -64,16 +63,16 @@ impl PyTrust {
 #[pyclass(module = "trust", name = "Changeset")]
 #[derive(Clone)]
 pub struct PyChangeTrust {
-    s: change::TrustSet,
+    s: trust::Changeset,
 }
 
-impl From<change::TrustSet> for PyChangeTrust {
-    fn from(s: change::TrustSet) -> Self {
+impl From<trust::Changeset> for PyChangeTrust {
+    fn from(s: trust::Changeset) -> Self {
         Self { s }
     }
 }
 
-impl From<PyChangeTrust> for change::TrustSet {
+impl From<PyChangeTrust> for trust::Changeset {
     fn from(s: PyChangeTrust) -> Self {
         s.s
     }
@@ -83,7 +82,7 @@ impl From<PyChangeTrust> for change::TrustSet {
 impl PyChangeTrust {
     #[new]
     pub fn new() -> Self {
-        change::TrustSet::empty().into()
+        trust::Changeset::empty().into()
     }
 
     pub fn add_trust(&mut self, path: &str) -> bool {

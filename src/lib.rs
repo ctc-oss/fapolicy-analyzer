@@ -1,7 +1,6 @@
 pub mod api;
 pub mod app;
 pub mod cfg;
-pub mod change;
 pub mod check;
 pub mod fapolicyd;
 pub mod log;

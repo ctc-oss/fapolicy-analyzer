@@ -1,9 +1,10 @@
+use std::fs::File;
+use std::io::BufReader;
+
 use crate::api::Trust;
 use crate::app::State;
 use crate::sha::sha256_digest;
 use crate::trust::Status;
-use std::fs::File;
-use std::io::BufReader;
 
 /// check for sync between fapolicyd and rpmdb
 /// can return false on the first mismatch

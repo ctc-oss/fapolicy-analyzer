@@ -1,9 +1,8 @@
-use crate::fapolicyd;
-
 use serde::Deserialize;
 use serde::Serialize;
 
 use crate::app::State;
+use crate::fapolicyd;
 
 pub fn deploy_app_state(_state: &State) {
     // todo;; back up trust file

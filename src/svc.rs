@@ -1,8 +1,8 @@
 use std::fmt;
 use std::time::Duration;
 
-use dbus::blocking::{BlockingSender, Connection};
 use dbus::{Error, Message};
+use dbus::blocking::{BlockingSender, Connection};
 
 use crate::svc::Method::{DisableUnitFiles, EnableUnitFiles, StartUnit, StopUnit};
 

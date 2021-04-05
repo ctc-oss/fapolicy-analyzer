@@ -1,12 +1,15 @@
+use std::collections::HashMap;
 use std::fs::File;
-use std::io::prelude::*;
 use std::io::BufReader;
+use std::io::prelude::*;
 use std::path::Path;
 
 use lmdb::{Cursor, Environment, Transaction};
 
 use crate::api;
-use crate::api::TrustSource;
+use crate::api::{Trust, TrustSource};
+use crate::sha::sha256_digest;
+use crate::trust::ChangesetErr::NotFound;
 
 /// Trust status tag
 /// T / U / unk
@@ -120,6 +123,68 @@ fn parse_typed_trust_record(s: &str, t: api::TrustSource) -> Result<api::Trust, 
         }),
         _ => Err(String::from("failed to read record")),
     }
+}
+
+#[derive(Clone, Debug)]
+pub struct Changeset {
+    trust: HashMap<String, Trust>,
+}
+
+pub enum ChangesetErr {
+    NotFound,
+}
+
+impl Changeset {
+    pub fn empty() -> Self {
+        Changeset {
+            trust: HashMap::new(),
+        }
+    }
+
+    pub fn from(init: Vec<Trust>) -> Self {
+        Changeset {
+            trust: init
+                .iter()
+                .map(|t| (t.path.to_string(), t.clone()))
+                .collect(),
+        }
+    }
+
+    pub fn add(&mut self, path: &str) -> Result<(), ChangesetErr> {
+        match new_trust_record(path) {
+            Ok(t) => {
+                self.trust.insert(path.to_string(), t);
+                Ok(())
+            }
+            Err(_) => Ok(()),
+        }
+    }
+    pub fn del(&mut self, path: &str) -> Result<(), ChangesetErr> {
+        match self.trust.remove(path) {
+            Some(_) => Ok(()),
+            None => Err(NotFound),
+        }
+    }
+
+    pub fn len(&self) -> usize {
+        self.trust.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+}
+
+fn new_trust_record(path: &str) -> Result<Trust, String> {
+    let f = File::open(path).map_err(|_| "failed to open file".to_string())?;
+    let sha = sha256_digest(BufReader::new(&f)).map_err(|_| "failed to hash file".to_string())?;
+
+    Ok(Trust {
+        path: path.to_string(),
+        size: f.metadata().unwrap().len(),
+        hash: sha,
+        source: TrustSource::Ancillary,
+    })
 }
 
 #[cfg(test)]
