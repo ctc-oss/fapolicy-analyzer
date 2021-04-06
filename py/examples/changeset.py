@@ -11,6 +11,6 @@ for p in pathlib.Path("/bin").iterdir():
 print(f"adding {xs.len()} trust entries")
 
 s2 = s1.apply_changeset(xs)
-print(f"system2 has {len(s1.ancillary_trust())} trust entries")
+print(f"system2 has {len(s2.ancillary_trust())} trust entries")
 for t in s2.ancillary_trust():
     print(f"{t.status} {t.path} {t.size} {t.hash}")

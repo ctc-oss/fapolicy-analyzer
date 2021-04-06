@@ -82,15 +82,15 @@ impl From<PyChangeTrust> for trust::Changeset {
 impl PyChangeTrust {
     #[new]
     pub fn new() -> Self {
-        trust::Changeset::empty().into()
+        trust::Changeset::new().into()
     }
 
-    pub fn add_trust(&mut self, path: &str) -> bool {
-        self.s.add(path).is_err()
+    pub fn add_trust(&mut self, path: &str) {
+        self.s.add(path)
     }
 
-    pub fn del_trust(&mut self, path: &str) -> bool {
-        self.s.del(path).is_err()
+    pub fn del_trust(&mut self, path: &str) {
+        self.s.del(path)
     }
 
     pub fn len(&self) -> usize {

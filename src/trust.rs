@@ -9,7 +9,7 @@ use lmdb::{Cursor, Environment, Transaction};
 use crate::api;
 use crate::api::{Trust, TrustSource};
 use crate::sha::sha256_digest;
-use crate::trust::ChangesetErr::NotFound;
+use crate::trust::TrustOp::{Add, Del};
 
 /// Trust status tag
 /// T / U / unk
@@ -126,48 +126,58 @@ fn parse_typed_trust_record(s: &str, t: api::TrustSource) -> Result<api::Trust, 
 }
 
 #[derive(Clone, Debug)]
-pub struct Changeset {
-    trust: HashMap<String, Trust>,
+enum TrustOp {
+    Add(String),
+    Del(String),
+}
+
+impl TrustOp {
+    fn run(&self, trust: &mut HashMap<String, Trust>) -> Result<(), String> {
+        match self {
+            TrustOp::Add(path) => match new_trust_record(&path) {
+                Ok(t) => {
+                    trust.insert(path.to_string(), t);
+                    Ok(())
+                }
+                Err(_) => Err("failed to add trust".to_string()),
+            },
+            TrustOp::Del(path) => trust.remove(path).map(|_| ()).ok_or("".to_string()),
+        }
+    }
 }
 
 pub enum ChangesetErr {
     NotFound,
 }
 
+#[derive(Clone, Debug)]
+pub struct Changeset {
+    changes: Vec<TrustOp>,
+}
+
 impl Changeset {
-    pub fn empty() -> Self {
-        Changeset {
-            trust: HashMap::new(),
-        }
+    pub fn new() -> Self {
+        Changeset { changes: vec![] }
     }
 
-    pub fn from(init: Vec<Trust>) -> Self {
-        Changeset {
-            trust: init
-                .iter()
-                .map(|t| (t.path.to_string(), t.clone()))
-                .collect(),
+    pub fn apply(&self, trust: HashMap<String, Trust>) -> HashMap<String, Trust> {
+        let mut modified = trust.clone();
+        for change in self.changes.iter() {
+            change.run(&mut modified).unwrap()
         }
+        modified
     }
 
-    pub fn add(&mut self, path: &str) -> Result<(), ChangesetErr> {
-        match new_trust_record(path) {
-            Ok(t) => {
-                self.trust.insert(path.to_string(), t);
-                Ok(())
-            }
-            Err(_) => Ok(()),
-        }
+    pub fn add(&mut self, path: &str) {
+        self.changes.push(Add(path.to_string()))
     }
-    pub fn del(&mut self, path: &str) -> Result<(), ChangesetErr> {
-        match self.trust.remove(path) {
-            Some(_) => Ok(()),
-            None => Err(NotFound),
-        }
+
+    pub fn del(&mut self, path: &str) {
+        self.changes.push(Del(path.to_string()))
     }
 
     pub fn len(&self) -> usize {
-        self.trust.len()
+        self.changes.len()
     }
 
     pub fn is_empty(&self) -> bool {

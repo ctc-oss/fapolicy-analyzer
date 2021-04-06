@@ -1,7 +1,7 @@
 use serde::Deserialize;
 use serde::Serialize;
 
-use crate::api::Trust;
+use crate::api::{Trust, TrustSource};
 use crate::sys::Config;
 use crate::trust::load_trust_db;
 use crate::trust::Changeset;
@@ -20,11 +20,20 @@ impl State {
         }
     }
 
-    pub fn apply_trust_changes(&self, _changes: Changeset) -> Self {
-        // todo;; apply changeset
+    pub fn apply_trust_changes(&self, changes: Changeset) -> Self {
         println!("applying changeset to current state...");
-        let updated_db = self.trust_db.clone();
-
+        let updated_db = changes.apply(
+            self.trust_db
+                .iter()
+                .filter(|t| t.source == TrustSource::Ancillary)
+                .map(|t| (t.path.clone(), t.clone()))
+                .collect(),
+        );
+        let updated_db = changes
+            .apply(updated_db)
+            .iter()
+            .map(|e| e.1.clone())
+            .collect();
         Self {
             config: self.config.clone(),
             trust_db: updated_db,
