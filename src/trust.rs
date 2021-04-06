@@ -117,7 +117,8 @@ fn parse_trust_record(s: &str) -> Result<api::Trust, String> {
 }
 
 fn parse_typed_trust_record(s: &str, t: api::TrustSource) -> Result<api::Trust, String> {
-    let v: Vec<&str> = s.split(' ').collect();
+    let mut v: Vec<&str> = s.rsplitn(3, ' ').collect();
+    v.reverse();
     match v.as_slice() {
         [f, sz, sha] => Ok(api::Trust {
             path: f.to_string(),
@@ -125,7 +126,7 @@ fn parse_typed_trust_record(s: &str, t: api::TrustSource) -> Result<api::Trust, 
             hash: sha.to_string(),
             source: t,
         }),
-        _ => Err(String::from("failed to read record")),
+        _ => Err(format!("failed to read record; {}", s)),
     }
 }
 
@@ -217,11 +218,24 @@ mod tests {
     use super::*;
 
     #[test]
-    fn deserialize_entry() {
+    fn parse_record() {
         let s =
             "/home/user/my-ls 157984 61a9960bf7d255a85811f4afcac51067b8f2e4c75e21cf4f2af95319d4ed1b87";
         let e = parse_trust_record(s).unwrap();
         assert_eq!(e.path, "/home/user/my-ls");
+        assert_eq!(e.size, 157984);
+        assert_eq!(
+            e.hash,
+            "61a9960bf7d255a85811f4afcac51067b8f2e4c75e21cf4f2af95319d4ed1b87"
+        );
+    }
+
+    #[test]
+    fn parse_record_with_space() {
+        let s =
+            "/home/user/my ls 157984 61a9960bf7d255a85811f4afcac51067b8f2e4c75e21cf4f2af95319d4ed1b87";
+        let e = parse_trust_record(s).unwrap();
+        assert_eq!(e.path, "/home/user/my ls");
         assert_eq!(e.size, 157984);
         assert_eq!(
             e.hash,
