@@ -31,8 +31,8 @@ impl ::std::default::Default for Config {
     fn default() -> Self {
         Self {
             trust_db_path: fapolicyd::TRUST_DB_PATH.to_string(),
-            system_trust_path: fapolicyd::TRUST_FILE_PATH.to_string(),
-            ancillary_trust_path: fapolicyd::RPM_DB_PATH.to_string(),
+            system_trust_path: fapolicyd::RPM_DB_PATH.to_string(),
+            ancillary_trust_path: fapolicyd::TRUST_FILE_PATH.to_string(),
         }
     }
 }
