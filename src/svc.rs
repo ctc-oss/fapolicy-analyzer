@@ -36,6 +36,7 @@ fn msg(m: Method) -> Message {
     .unwrap_or_else(|e| panic!("{}", e))
 }
 
+/// a handle to a service that can be signalled by dbus
 #[derive(Clone)]
 pub struct Daemon {
     name: String,

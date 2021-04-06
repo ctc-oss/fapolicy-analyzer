@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
@@ -5,10 +6,10 @@ use std::path::Path;
 
 use lmdb::{Cursor, Environment, Transaction};
 
-use sha::sha256_digest;
-
 use crate::api;
-use crate::sha;
+use crate::api::{Trust, TrustSource};
+use crate::sha::sha256_digest;
+use crate::trust::TrustOp::{Add, Del};
 
 /// Trust status tag
 /// T / U / unk
@@ -22,17 +23,6 @@ pub enum Status {
     /// lhs expected, rhs actual
     Untrusted(api::Trust, String),
     // todo;; what about file does not exist?
-}
-
-pub fn check(t: &api::Trust) -> Result<Status, String> {
-    match File::open(&t.path) {
-        Ok(f) => match sha256_digest(BufReader::new(f)) {
-            Ok(sha) if sha == t.hash => Ok(Status::Trusted(t.clone())),
-            Ok(sha) => Ok(Status::Untrusted(t.clone(), sha)),
-            Err(e) => Err(format!("sha256 op failed, {}", e)),
-        },
-        _ => Err(format!("WARN: {} not found", t.path)),
-    }
 }
 
 struct TrustPair {
@@ -60,11 +50,13 @@ fn str_split_once(s: &str) -> (&str, String) {
 impl From<TrustPair> for api::Trust {
     fn from(kv: TrustPair) -> Self {
         // todo;; let v = kv.v.split_once(' ').unwrap().1;
-        let v = str_split_once(&kv.v).1;
-        parse_trust_record(format!("{} {}", kv.k, v).as_str()).unwrap()
+        let (t, v) = str_split_once(&kv.v);
+        parse_strtyped_trust_record(format!("{} {}", kv.k, v).as_str(), t).unwrap()
     }
 }
 
+/// load the fapolicyd backend lmdb database
+/// parse the results into trust entries
 pub fn load_trust_db(path: &str) -> Vec<api::Trust> {
     let env = Environment::new().set_max_dbs(1).open(Path::new(path));
     let env = match env {
@@ -91,6 +83,8 @@ pub fn load_trust_db(path: &str) -> Vec<api::Trust> {
         .unwrap()
 }
 
+/// load a fapolicyd ancillary file trust database
+/// used to analyze the fapolicyd trust db for out of sync issues
 pub fn load_ancillary_trust(path: &str) -> Vec<api::Trust> {
     let f = File::open(path);
     let f = match f {
@@ -110,17 +104,113 @@ pub fn load_ancillary_trust(path: &str) -> Vec<api::Trust> {
         .collect()
 }
 
+fn parse_strtyped_trust_record(s: &str, t: &str) -> Result<api::Trust, String> {
+    match t {
+        "1" => parse_typed_trust_record(s, TrustSource::System),
+        "2" => parse_typed_trust_record(s, TrustSource::Ancillary),
+        _ => Err("unknown trust type".to_string()),
+    }
+}
+
 fn parse_trust_record(s: &str) -> Result<api::Trust, String> {
-    let v: Vec<&str> = s.split(' ').collect();
+    parse_typed_trust_record(s, TrustSource::Ancillary)
+}
+
+fn parse_typed_trust_record(s: &str, t: api::TrustSource) -> Result<api::Trust, String> {
+    let mut v: Vec<&str> = s.rsplitn(3, ' ').collect();
+    v.reverse();
     match v.as_slice() {
         [f, sz, sha] => Ok(api::Trust {
             path: f.to_string(),
             size: sz.parse().unwrap(),
             hash: sha.to_string(),
-            source: api::TrustSource::Ancillary,
+            source: t,
         }),
-        _ => Err(String::from("failed to read record")),
+        _ => Err(format!("failed to read record; {}", s)),
     }
+}
+
+#[derive(Clone, Debug)]
+enum TrustOp {
+    Add(String),
+    Del(String),
+}
+
+impl TrustOp {
+    fn run(&self, trust: &mut HashMap<String, Trust>) -> Result<(), String> {
+        match self {
+            TrustOp::Add(path) => match new_trust_record(&path) {
+                Ok(t) => {
+                    trust.insert(path.to_string(), t);
+                    Ok(())
+                }
+                Err(_) => Err("failed to add trust".to_string()),
+            },
+            TrustOp::Del(path) => {
+                trust.remove(path);
+                Ok(())
+            }
+        }
+    }
+}
+
+pub enum ChangesetErr {
+    NotFound,
+}
+
+/// mutable append-only container for change operations
+#[derive(Clone, Debug)]
+pub struct Changeset {
+    changes: Vec<TrustOp>,
+}
+
+impl Changeset {
+    pub fn new() -> Self {
+        Changeset { changes: vec![] }
+    }
+
+    /// generate a modified trust map
+    pub fn apply(&self, trust: HashMap<String, Trust>) -> HashMap<String, Trust> {
+        let mut modified = trust;
+        for change in self.changes.iter() {
+            change.run(&mut modified).unwrap()
+        }
+        modified
+    }
+
+    pub fn add(&mut self, path: &str) {
+        self.changes.push(Add(path.to_string()))
+    }
+
+    pub fn del(&mut self, path: &str) {
+        self.changes.push(Del(path.to_string()))
+    }
+
+    pub fn len(&self) -> usize {
+        self.changes.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+}
+
+impl ::std::default::Default for Changeset {
+    fn default() -> Self {
+        Self { changes: vec![] }
+    }
+}
+
+fn new_trust_record(path: &str) -> Result<Trust, String> {
+    let f = File::open(path).map_err(|_| "failed to open file".to_string())?;
+    let sha = sha256_digest(BufReader::new(&f)).map_err(|_| "failed to hash file".to_string())?;
+
+    Ok(Trust {
+        path: path.to_string(),
+        size: f.metadata().unwrap().len(),
+        hash: sha,
+        source: TrustSource::Ancillary,
+    })
 }
 
 #[cfg(test)]
@@ -128,11 +218,24 @@ mod tests {
     use super::*;
 
     #[test]
-    fn deserialize_entry() {
+    fn parse_record() {
         let s =
             "/home/user/my-ls 157984 61a9960bf7d255a85811f4afcac51067b8f2e4c75e21cf4f2af95319d4ed1b87";
         let e = parse_trust_record(s).unwrap();
         assert_eq!(e.path, "/home/user/my-ls");
+        assert_eq!(e.size, 157984);
+        assert_eq!(
+            e.hash,
+            "61a9960bf7d255a85811f4afcac51067b8f2e4c75e21cf4f2af95319d4ed1b87"
+        );
+    }
+
+    #[test]
+    fn parse_record_with_space() {
+        let s =
+            "/home/user/my ls 157984 61a9960bf7d255a85811f4afcac51067b8f2e4c75e21cf4f2af95319d4ed1b87";
+        let e = parse_trust_record(s).unwrap();
+        assert_eq!(e.path, "/home/user/my ls");
         assert_eq!(e.size, 157984);
         assert_eq!(
             e.hash,

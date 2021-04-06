@@ -1,40 +1,38 @@
-use crate::api::Trust;
-use crate::cfg::ApplicationCfg;
-use crate::rpm;
-use crate::trust;
+use serde::Deserialize;
+use serde::Serialize;
 
-#[derive(Clone)]
-pub struct System {
-    pub trust_db: Vec<Trust>,
-    pub system_trust: Vec<trust::Status>,
-    pub ancillary_trust: Vec<trust::Status>,
+use crate::app::State;
+use crate::fapolicyd;
+
+pub fn deploy_app_state(_state: &State) {
+    // todo;; back up trust file
+    println!("backing up trust file...");
+
+    // todo;; write changeset
+    println!("writing changeset to disk...");
+
+    // todo;; signal fapolicyd update
+    println!("signaling fapolicdy reload...");
+
+    // todo;; return new Application
+    println!("reloading app trust database...");
 }
 
-impl System {
-    pub fn boot(cfg: ApplicationCfg) -> System {
-        // load the auth trust database
-        let trust_db = trust::load_trust_db(&cfg.system.trust_db_path);
+/// host system configuration information
+/// generally loaded from the XDG user configuration
+#[derive(Clone, Serialize, Deserialize)]
+pub struct Config {
+    pub trust_db_path: String,
+    pub system_trust_path: String,
+    pub ancillary_trust_path: String,
+}
 
-        // load the rpm system trust database
-        let system_trust: Vec<trust::Status> =
-            rpm::load_system_trust(&cfg.system.system_trust_path)
-                .iter()
-                .map(trust::check)
-                .flatten()
-                .collect();
-
-        // load the ancillary trust file
-        let ancillary_trust: Vec<trust::Status> =
-            trust::load_ancillary_trust(&cfg.system.ancillary_trust_path)
-                .iter()
-                .map(trust::check)
-                .flatten()
-                .collect();
-
-        System {
-            trust_db,
-            system_trust,
-            ancillary_trust,
+impl ::std::default::Default for Config {
+    fn default() -> Self {
+        Self {
+            trust_db_path: fapolicyd::TRUST_DB_PATH.to_string(),
+            system_trust_path: fapolicyd::RPM_DB_PATH.to_string(),
+            ancillary_trust_path: fapolicyd::TRUST_FILE_PATH.to_string(),
         }
     }
 }

@@ -5,7 +5,7 @@ from gi.repository import Gtk, GLib, GdkPixbuf
 from threading import Thread
 from time import sleep
 from events import Events
-from fapolicy_analyzer.app import System
+from fapolicy_analyzer import System
 from .ui_widget import UIWidget
 
 

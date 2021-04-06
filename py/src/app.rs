@@ -1,22 +1,27 @@
 use pyo3::prelude::*;
 
-use super::trust::PyTrust;
+use fapolicy_analyzer::api::TrustSource;
+use fapolicy_analyzer::app::State;
 use fapolicy_analyzer::cfg;
-use fapolicy_analyzer::sys;
+use fapolicy_analyzer::check::trust_status;
 
-#[pyclass(module = "app", name=System)]
+use super::trust::PyChangeset;
+use super::trust::PyTrust;
+use fapolicy_analyzer::sys::deploy_app_state;
+
+#[pyclass(module = "app", name = "System")]
 #[derive(Clone)]
 pub struct PySystem {
-    s: sys::System,
+    state: State,
 }
-impl From<sys::System> for PySystem {
-    fn from(s: sys::System) -> Self {
-        Self { s }
+impl From<State> for PySystem {
+    fn from(state: State) -> Self {
+        Self { state }
     }
 }
-impl From<PySystem> for sys::System {
+impl From<PySystem> for State {
     fn from(s: PySystem) -> Self {
-        s.s
+        s.state
     }
 }
 
@@ -25,30 +30,46 @@ impl PySystem {
     #[new]
     fn new() -> PySystem {
         let conf = cfg::load();
-        sys::System::boot(conf).into()
+        State::new(&conf.system).into()
     }
 
-    fn system_trust(&self) -> PyResult<Vec<PyTrust>> {
-        Ok(self
-            .s
-            .system_trust
+    fn system_trust(&self) -> Vec<PyTrust> {
+        self.state
+            .trust_db
             .iter()
-            .map(|t| PyTrust::from(t.clone()))
-            .collect())
+            .filter(|t| t.source == TrustSource::System)
+            .map(trust_status)
+            .flatten()
+            .map(PyTrust::from)
+            .collect()
     }
 
-    fn ancillary_trust(&self) -> PyResult<Vec<PyTrust>> {
-        Ok(self
-            .s
-            .ancillary_trust
+    fn ancillary_trust(&self) -> Vec<PyTrust> {
+        self.state
+            .trust_db
             .iter()
-            .map(|t| PyTrust::from(t.clone()))
-            .collect())
+            .filter(|t| t.source == TrustSource::Ancillary)
+            .map(trust_status)
+            .flatten()
+            .map(PyTrust::from)
+            .collect()
+    }
+
+    fn apply_changeset(&self, change: PyChangeset) -> PySystem {
+        self.state.apply_trust_changes(change.into()).into()
+    }
+
+    fn deploy(&self) {
+        deploy_app_state(&self.state);
+    }
+
+    fn is_stale(&self) -> bool {
+        // todo;; check current state againt rpm and file
+        false
     }
 }
 
-#[pymodule]
-fn app(_py: Python, m: &PyModule) -> PyResult<()> {
+pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PySystem>()?;
     Ok(())
 }

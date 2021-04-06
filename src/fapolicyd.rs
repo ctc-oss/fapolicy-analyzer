@@ -12,6 +12,7 @@ const USR_SHARE_ALLOWED_EXTS: [&str; 15] = [
     "elc",
 ];
 
+/// send signal to fapolicyd FIFO pipe to reload the trust database
 pub fn reload_databases() {
     std::fs::OpenOptions::new()
         .write(true)
@@ -22,6 +23,7 @@ pub fn reload_databases() {
         .unwrap();
 }
 
+/// filtering logic as implemented by fapolicyd rpm backend
 pub fn keep_entry(p: &str) -> bool {
     match p {
         s if s.starts_with("/usr/share") => {

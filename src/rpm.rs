@@ -1,6 +1,5 @@
-use crate::api;
-use crate::fapolicyd::keep_entry;
-use crate::rpm::RpmError::{Discovery, Execution, NotFound};
+use std::process::Command;
+
 use nom::bytes::complete::tag;
 use nom::character::complete::alphanumeric1;
 use nom::character::complete::digit1;
@@ -9,7 +8,10 @@ use nom::character::complete::space1;
 use nom::combinator::iterator;
 use nom::sequence::{delimited, terminated};
 use nom::{InputIter, Parser};
-use std::process::Command;
+
+use crate::api;
+use crate::fapolicyd::keep_entry;
+use crate::rpm::RpmError::{Discovery, Execution, NotFound};
 
 #[derive(Debug)]
 struct RpmDbEntry {
@@ -18,6 +20,8 @@ struct RpmDbEntry {
     pub hash: Option<String>,
 }
 
+/// directly load the rpm database
+/// used to analyze the fapolicyd trust db for out of sync issues
 pub fn load_system_trust(rpmdb: &str) -> Vec<api::Trust> {
     let args = vec!["-qa", "--dump", "--dbpath", rpmdb];
     let res = Command::new("rpm")
