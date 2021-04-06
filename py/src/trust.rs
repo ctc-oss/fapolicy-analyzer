@@ -62,24 +62,24 @@ impl PyTrust {
 
 #[pyclass(module = "trust", name = "Changeset")]
 #[derive(Clone)]
-pub struct PyChangeTrust {
+pub struct PyChangeset {
     s: trust::Changeset,
 }
 
-impl From<trust::Changeset> for PyChangeTrust {
+impl From<trust::Changeset> for PyChangeset {
     fn from(s: trust::Changeset) -> Self {
         Self { s }
     }
 }
 
-impl From<PyChangeTrust> for trust::Changeset {
-    fn from(s: PyChangeTrust) -> Self {
+impl From<PyChangeset> for trust::Changeset {
+    fn from(s: PyChangeset) -> Self {
         s.s
     }
 }
 
 #[pymethods]
-impl PyChangeTrust {
+impl PyChangeset {
     #[new]
     pub fn new() -> Self {
         trust::Changeset::new().into()
@@ -104,7 +104,7 @@ impl PyChangeTrust {
 
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyTrust>()?;
-    m.add_class::<PyChangeTrust>()?;
+    m.add_class::<PyChangeset>()?;
     // m.add_wrapped(pyo3::wrap_pyfunction!(apply_trust_change))?;
     Ok(())
 }

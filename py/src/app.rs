@@ -5,7 +5,7 @@ use fapolicy_analyzer::app::State;
 use fapolicy_analyzer::cfg;
 use fapolicy_analyzer::check::trust_status;
 
-use super::trust::PyChangeTrust;
+use super::trust::PyChangeset;
 use super::trust::PyTrust;
 use fapolicy_analyzer::sys::deploy_app_state;
 
@@ -55,7 +55,7 @@ impl PySystem {
             .collect()
     }
 
-    fn apply_changeset(&self, change: PyChangeTrust) -> PySystem {
+    fn apply_changeset(&self, change: PyChangeset) -> PySystem {
         self.state.apply_trust_changes(change.into()).into()
     }
 
