@@ -3,6 +3,7 @@ use serde::Serialize;
 
 use crate::sys;
 
+/// All configuration loaded from the user toml under XDG config dir
 #[derive(Clone, Serialize, Deserialize, Default)]
 pub struct All {
     pub system: sys::Config,

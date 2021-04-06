@@ -18,6 +18,8 @@ pub fn deploy_app_state(_state: &State) {
     println!("reloading app trust database...");
 }
 
+/// host system configuration information
+/// generally loaded from the XDG user configuration
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Config {
     pub trust_db_path: String,

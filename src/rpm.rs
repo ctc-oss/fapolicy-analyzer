@@ -20,6 +20,8 @@ struct RpmDbEntry {
     pub hash: Option<String>,
 }
 
+/// directly load the rpm database
+/// used to analyze the fapolicyd trust db for out of sync issues
 pub fn load_system_trust(rpmdb: &str) -> Vec<api::Trust> {
     let args = vec!["-qa", "--dump", "--dbpath", rpmdb];
     let res = Command::new("rpm")

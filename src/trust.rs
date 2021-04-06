@@ -55,6 +55,8 @@ impl From<TrustPair> for api::Trust {
     }
 }
 
+/// load the fapolicyd backend lmdb database
+/// parse the results into trust entries
 pub fn load_trust_db(path: &str) -> Vec<api::Trust> {
     let env = Environment::new().set_max_dbs(1).open(Path::new(path));
     let env = match env {
@@ -81,6 +83,8 @@ pub fn load_trust_db(path: &str) -> Vec<api::Trust> {
         .unwrap()
 }
 
+/// load a fapolicyd ancillary file trust database
+/// used to analyze the fapolicyd trust db for out of sync issues
 pub fn load_ancillary_trust(path: &str) -> Vec<api::Trust> {
     let f = File::open(path);
     let f = match f {
@@ -153,6 +157,7 @@ pub enum ChangesetErr {
     NotFound,
 }
 
+/// mutable append-only container for change operations
 #[derive(Clone, Debug)]
 pub struct Changeset {
     changes: Vec<TrustOp>,
@@ -163,6 +168,7 @@ impl Changeset {
         Changeset { changes: vec![] }
     }
 
+    /// generate a modified trust map
     pub fn apply(&self, trust: HashMap<String, Trust>) -> HashMap<String, Trust> {
         let mut modified = trust;
         for change in self.changes.iter() {

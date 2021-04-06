@@ -3,7 +3,7 @@ use std::io::{Read, Result};
 use data_encoding::HEXLOWER;
 use ring::digest::{Context, SHA256};
 
-// sha example from cookbook
+/// generate a sha256 hash as a string
 pub fn sha256_digest<R: Read>(mut reader: R) -> Result<String> {
     let mut context = Context::new(&SHA256);
     let mut buffer = [0; 1024];

@@ -6,6 +6,8 @@ use crate::sys::Config;
 use crate::trust::load_trust_db;
 use crate::trust::Changeset;
 
+/// Represents an immutable view of the application state.
+/// Carries along the configuration that provided the state.
 #[derive(Clone, Serialize, Deserialize)]
 pub struct State {
     pub config: Config,
@@ -20,6 +22,7 @@ impl State {
         }
     }
 
+    /// Apply a Changeset to this state, results in a new immutable state
     pub fn apply_trust_changes(&self, changes: Changeset) -> Self {
         println!("applying changeset to current state...");
         let updated_db = changes.apply(
