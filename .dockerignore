@@ -1,0 +1,6 @@
+**/build
+**/dist
+**/target
+.git
+.local
+scripts/Dockerfile
