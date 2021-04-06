@@ -141,7 +141,7 @@ impl TrustOp {
                 }
                 Err(_) => Err("failed to add trust".to_string()),
             },
-            TrustOp::Del(path) => trust.remove(path).map(|_| ()).ok_or("".to_string()),
+            TrustOp::Del(path) => trust.remove(path).map(|_| ()).ok_or_else(|| "".to_string()),
         }
     }
 }
@@ -161,7 +161,7 @@ impl Changeset {
     }
 
     pub fn apply(&self, trust: HashMap<String, Trust>) -> HashMap<String, Trust> {
-        let mut modified = trust.clone();
+        let mut modified = trust;
         for change in self.changes.iter() {
             change.run(&mut modified).unwrap()
         }
