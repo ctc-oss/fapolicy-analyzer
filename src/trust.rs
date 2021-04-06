@@ -141,7 +141,10 @@ impl TrustOp {
                 }
                 Err(_) => Err("failed to add trust".to_string()),
             },
-            TrustOp::Del(path) => trust.remove(path).map(|_| ()).ok_or_else(|| "".to_string()),
+            TrustOp::Del(path) => {
+                trust.remove(path);
+                Ok(())
+            }
         }
     }
 }
