@@ -21,11 +21,15 @@ pub fn file_sync(_app: &State) -> bool {
 /// check status of trust against the filesystem
 pub fn trust_status(t: &Trust) -> Result<Status, String> {
     match File::open(&t.path) {
-        Ok(f) => match sha256_digest(BufReader::new(f)) {
-            Ok(sha) if sha == t.hash => Ok(Status::Trusted(t.clone())),
+        Ok(f) => match sha256_digest(BufReader::new(&f)) {
+            Ok(sha) if sha == t.hash && len(&f) == t.size => Ok(Status::Trusted(t.clone())),
             Ok(sha) => Ok(Status::Untrusted(t.clone(), sha)),
             Err(e) => Err(format!("sha256 op failed, {}", e)),
         },
         _ => Err(format!("WARN: {} not found", t.path)),
     }
+}
+
+fn len(file: &File) -> u64 {
+    file.metadata().unwrap().len()
 }
