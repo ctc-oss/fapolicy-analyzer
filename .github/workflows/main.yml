@@ -57,12 +57,12 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install pipenv
-          cd py
+          cd python
           pipenv install --dev
       - name: Build
         id: build
         run: |
-          cd py
+          cd python
           pipenv run python setup.py install
           echo ::set-output name=virt_env::$(pipenv --venv)
       - name: Archive packages
