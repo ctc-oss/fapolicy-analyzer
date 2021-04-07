@@ -21,7 +21,7 @@ pub enum Status {
     Trusted(api::Trust),
     /// filesystem does not match database
     /// lhs expected, rhs actual
-    Untrusted(api::Trust, String),
+    Discrepancy(api::Trust, String),
     // todo;; what about file does not exist?
 }
 
