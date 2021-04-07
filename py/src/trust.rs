@@ -14,8 +14,8 @@ impl From<trust::Status> for PyTrust {
     fn from(status: trust::Status) -> Self {
         let (trust, tag) = match status {
             trust::Status::Trusted(t) => (t, "T"),
-            trust::Status::Untrusted(t, _) => (t, "U"),
-            trust::Status::Unknown(t) => (t, "_"),
+            trust::Status::Discrepancy(t, _) => (t, "D"),
+            trust::Status::Unknown(t) => (t, "U"),
         };
         Self {
             trust,

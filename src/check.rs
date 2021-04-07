@@ -23,7 +23,7 @@ pub fn trust_status(t: &Trust) -> Result<Status, String> {
     match File::open(&t.path) {
         Ok(f) => match sha256_digest(BufReader::new(&f)) {
             Ok(sha) if sha == t.hash && len(&f) == t.size => Ok(Status::Trusted(t.clone())),
-            Ok(sha) => Ok(Status::Untrusted(t.clone(), sha)),
+            Ok(sha) => Ok(Status::Discrepancy(t.clone(), sha)),
             Err(e) => Err(format!("sha256 op failed, {}", e)),
         },
         _ => Err(format!("WARN: {} not found", t.path)),
