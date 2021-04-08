@@ -17,7 +17,7 @@ RUN pip3 install pipenv
 WORKDIR /opt/app-src
 COPY . .
 
-WORKDIR /opt/app-src/py
+WORKDIR /opt/app-src/python
 RUN pipenv install --system --deploy --dev
 RUN python3 setup.py install
 
@@ -25,10 +25,10 @@ FROM ctcoss/fapolicyd
 
 COPY --from=build /usr/local/lib/python3.8/site-packages/ /usr/local/lib/python3.8/site-packages/
 COPY --from=build /usr/local/lib64/python3.8/site-packages/ /usr/local/lib64/python3.8/site-packages/
-COPY --from=build /opt/app-src/ui/ /opt/app-src/
-COPY --from=build /opt/app-src/py/examples/ /opt/app-src/
+COPY --from=build /opt/app-src/python /opt/app/
 
 RUN dnf install -y dbus-libs \
  && dnf clean all
 
+WORKDIR /opt/app
 ENTRYPOINT ["python3"]
