@@ -9,6 +9,7 @@ RUN curl -o rust.sh https://sh.rustup.rs -sSf \
 RUN ln -s /root/.cargo/bin/* /usr/local/bin
 
 RUN dnf install -y python38 python3-devel python3-pip dbus-devel cairo-devel pkg-config which \
+                   gobject-introspection-devel cairo-gobject-devel \
  && dnf groupinstall -y "Development Tools" \
  && dnf clean all
 
@@ -21,14 +22,17 @@ WORKDIR /opt/app-src/python
 RUN pipenv install --system --deploy --dev
 RUN python3 setup.py install
 
+# ----------------------------------------------
+
 FROM ctcoss/fapolicyd
+
+RUN dnf install -y python38 python3-pip dbus-libs pkg-config which \
+                   gtk-3 xorg-x11-server-Xvfb \
+ && dnf clean all
 
 COPY --from=build /usr/local/lib/python3.8/site-packages/ /usr/local/lib/python3.8/site-packages/
 COPY --from=build /usr/local/lib64/python3.8/site-packages/ /usr/local/lib64/python3.8/site-packages/
 COPY --from=build /opt/app-src/python /opt/app/
-
-RUN dnf install -y dbus-libs \
- && dnf clean all
 
 WORKDIR /opt/app
 ENTRYPOINT ["python3"]
