@@ -3,4 +3,4 @@
 **/target
 .git
 .local
-scripts/Dockerfile
+**/Dockerfile
