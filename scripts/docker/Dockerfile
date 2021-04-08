@@ -3,7 +3,7 @@ FROM ctcoss/fapolicyd as build
 WORKDIR /tmp
 RUN curl -o rust.sh https://sh.rustup.rs -sSf \
  && chmod a+x rust.sh \
- && ./rust.sh -yq --profile minimal \
+ && ./rust.sh -y -q --profile minimal \
  && rm rust.sh
 
 RUN ln -s /root/.cargo/bin/* /usr/local/bin
