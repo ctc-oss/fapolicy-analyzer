@@ -1,24 +1,15 @@
-import gi
-
-gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
-from fapolicy_analyzer import System
 from fapolicy_analyzer.util import fs
 from .trust_file_list import TrustFileList
 from .trust_file_details import TrustFileDetails
 from .ui_widget import UIWidget
 
-systemDb = "/var/lib/rpm"
-
 
 class SystemTrustDatabaseAdmin(UIWidget):
-    def __init__(self):
+    def __init__(self, system):
         super().__init__()
 
         self.trustFileList = TrustFileList(
-            locationAction=Gtk.FileChooserAction.SELECT_FOLDER,
-            defaultLocation=systemDb,
-            trust_func=lambda x: System(None, x, None).system_trust(),
+            trust_func=system.system_trust,
             markup_func=self.__status_markup,
         )
         self.trustFileList.on_file_selection_change += self.on_file_selection_change

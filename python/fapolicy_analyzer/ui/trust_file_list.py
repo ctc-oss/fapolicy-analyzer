@@ -5,30 +5,17 @@ from gi.repository import Gtk, GLib, GdkPixbuf
 from threading import Thread
 from time import sleep
 from events import Events
-from fapolicy_analyzer import System
 from .ui_widget import UIWidget
 
 
 class TrustFileList(UIWidget, Events):
     __events__ = "on_file_selection_change"
 
-    def __init__(
-        self,
-        locationAction=Gtk.FileChooserAction.OPEN,
-        defaultLocation=None,
-        trust_func=lambda x: System(None, None, x).ancillary_trust(),
-        markup_func=None,
-    ):
-
+    def __init__(self, trust_func, markup_func=None):
         UIWidget.__init__(self)
         Events.__init__(self)
         self.trust_func = trust_func
         self.markup_func = markup_func
-
-        self.databaseFileChooser = self.builder.get_object("databaseFileChooser")
-        self.databaseFileChooser.set_action(locationAction)
-        if defaultLocation:
-            self.databaseFileChooser.set_filename(defaultLocation)
 
         self.trustView = self.builder.get_object("trustView")
         trustCell = Gtk.CellRendererText()
@@ -49,9 +36,9 @@ class TrustFileList(UIWidget, Events):
             )
         )
 
-    def __get_trust(self, database):
+    def __get_trust(self):
         sleep(0.1)
-        trust = self.trust_func(database)
+        trust = self.trust_func()
 
         trustStore = Gtk.ListStore(str, str, object, str)
         for i, e in enumerate(trust):
@@ -97,10 +84,9 @@ class TrustFileList(UIWidget, Events):
     def on_search_changed(self, search):
         self.trustViewFilter.refilter()
 
-    def on_databaseFileChooser_selection_changed(self, *args):
-        database = self.databaseFileChooser.get_filename()
-        if database and self.trust_func:
+    def on_trustFileList_realize(self, *args):
+        if self.trust_func:
             self.__set_loading(True)
-            thread = Thread(target=self.__get_trust, args=(database,))
+            thread = Thread(target=self.__get_trust)
             thread.daemon = True
             thread.start()

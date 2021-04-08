@@ -11,11 +11,13 @@ from .deploy_confirm_dialog import DeployConfirmDialog
 
 
 class AncillaryTrustDatabaseAdmin(UIWidget):
-    def __init__(self):
+    def __init__(self, system):
         super().__init__()
         self.content = self.builder.get_object("ancillaryTrustDatabaseAdmin")
 
-        self.trustFileList = TrustFileList(markup_func=self.__status_markup)
+        self.trustFileList = TrustFileList(
+            trust_func=system.ancillary_trust, markup_func=self.__status_markup
+        )
         self.trustFileList.on_file_selection_change += self.on_file_selection_change
         self.builder.get_object("leftBox").pack_start(
             self.trustFileList.get_content(), True, True, 0
