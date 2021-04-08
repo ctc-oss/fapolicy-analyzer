@@ -6,6 +6,8 @@ target
 *.so
 *.pyc
 *.egg-info
+**/.eggs
+python/.cargo
 venv
 build
 dist
