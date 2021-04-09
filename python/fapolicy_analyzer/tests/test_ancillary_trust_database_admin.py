@@ -29,7 +29,7 @@ def test_status_markup(widget):
     )
     assert widget._AncillaryTrustDatabaseAdmin__status_markup("foo") == (
         "T/U",
-        "light red",
+        "#FF3333",
     )
 
 

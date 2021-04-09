@@ -2,6 +2,7 @@ from fapolicy_analyzer.util import fs
 from .trust_file_list import TrustFileList
 from .trust_file_details import TrustFileDetails
 from .ui_widget import UIWidget
+from .configs import Colors
 
 
 class SystemTrustDatabaseAdmin(UIWidget):
@@ -24,9 +25,9 @@ class SystemTrustDatabaseAdmin(UIWidget):
 
     def __status_markup(self, status):
         return (
-            ("<b><u>T</u></b>", "light green")
+            ("<b><u>T</u></b>/D", Colors.LIGHT_GREEN)
             if status.lower() == "t"
-            else ("T", "light red")
+            else ("T/<b><u>D</u></b>", Colors.LIGHT_RED)
         )
 
     def get_content(self):

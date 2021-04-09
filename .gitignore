@@ -14,6 +14,7 @@ dist
 
 .vscode/
 
+\#*.glade\#
 *.glade~
 .coverage
 .env

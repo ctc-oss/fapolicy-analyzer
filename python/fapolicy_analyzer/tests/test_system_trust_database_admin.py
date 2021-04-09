@@ -27,7 +27,7 @@ def test_status_markup(widget):
         "<b><u>T</u></b>",
         "light green",
     )
-    assert widget._SystemTrustDatabaseAdmin__status_markup("foo") == ("T", "light red")
+    assert widget._SystemTrustDatabaseAdmin__status_markup("foo") == ("T", "#FF3333")
 
 
 def test_updates_trust_details(widget, mocker):
