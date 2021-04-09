@@ -36,6 +36,11 @@ class TrustFileList(UIWidget, Events):
             )
         )
 
+        self.__set_loading(True)
+        thread = Thread(target=self.__get_trust)
+        thread.daemon = True
+        thread.start()
+
     def __get_trust(self):
         sleep(0.1)
         trust = self.trust_func()
@@ -85,8 +90,10 @@ class TrustFileList(UIWidget, Events):
         self.trustViewFilter.refilter()
 
     def on_trustFileList_realize(self, *args):
-        if self.trust_func:
-            self.__set_loading(True)
-            thread = Thread(target=self.__get_trust)
-            thread.daemon = True
-            thread.start()
+        return
+        # print("***** on realized")
+        # if self.trust_func:
+        #     self.__set_loading(True)
+        #     thread = Thread(target=self.__get_trust)
+        #     thread.daemon = True
+        #     thread.start()
