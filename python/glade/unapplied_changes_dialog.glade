@@ -14,7 +14,6 @@
     <property name="text" translatable="yes">
 There are unapplied changes.</property>
     <property name="secondary_text" translatable="yes">Your changes will be lost.</property>
-    <signal name="show" handler="on_after_show" after="yes" swapped="no"/>
     <child internal-child="vbox">
       <object class="GtkBox">
         <property name="can_focus">False</property>
