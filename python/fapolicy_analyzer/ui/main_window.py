@@ -5,7 +5,9 @@ from gi.repository import Gtk
 from .ui_widget import UIWidget
 from .database_admin_page import DatabaseAdminPage
 from .analyzer_selection_dialog import AnalyzerSelectionDialog, ANALYZER_SELECTION
+from .unapplied_changes_dialog import UnappliedChangesDialog
 
+#from fapolicy_analyzer import PyChangeSet
 
 class MainWindow(UIWidget):
     def __init__(self):
@@ -14,6 +16,16 @@ class MainWindow(UIWidget):
         self.window.show_all()
 
     def on_destroy(self, *args):
+        # Check backend for unapplied changes
+        if(True):
+            unappliedChangesDlg = UnappliedChangesDialog(self.window).get_content()
+            response = unappliedChangesDlg.run()
+            unappliedChangesDlg.destroy()
+            if response != Gtk.ResponseType.OK:
+                # Otherwise we keep the application open
+                return True
+
+        print('Terminating...')
         Gtk.main_quit()
 
     def on_aboutMenu_activate(self, menuitem, data=None):
