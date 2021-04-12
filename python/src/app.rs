@@ -11,6 +11,8 @@ use fapolicy_analyzer::sys::deploy_app_state;
 
 #[pyclass(module = "app", name = "System")]
 #[derive(Clone)]
+/// An immutable view of host system state.
+/// This only a container for state, it has to be applied to the host system.
 pub struct PySystem {
     state: State,
 }
@@ -33,6 +35,10 @@ impl PySystem {
         State::load(&conf).into()
     }
 
+    /// Obtain a list of trusted files sourced from the system trust database.
+    /// The system trust is generated from the contents of the RPM database.
+    /// This represents state in the current fapolicyd database, not necessarily
+    /// matching what is currently in the RPM database.
     fn system_trust(&self) -> Vec<PyTrust> {
         self.state
             .trust_db
@@ -44,6 +50,9 @@ impl PySystem {
             .collect()
     }
 
+    /// Obtain a list of trusted files sourced from the ancillary trust database.
+    /// This represents state in the current fapolicyd database, not necessarily
+    /// matching what is currently in the ancillary trust file.
     fn ancillary_trust(&self) -> Vec<PyTrust> {
         self.state
             .trust_db
@@ -55,14 +64,17 @@ impl PySystem {
             .collect()
     }
 
+    /// Apply the changeset to the state of this System generating a new System
     fn apply_changeset(&self, change: PyChangeset) -> PySystem {
         self.state.apply_trust_changes(change.into()).into()
     }
 
+    /// Update the host system with this state of this System
     fn deploy(&self) {
         deploy_app_state(&self.state).expect("deployment failed")
     }
 
+    /// Check the host system state against the state of this System
     fn is_stale(&self) -> bool {
         // todo;; check current state againt rpm and file
         false
