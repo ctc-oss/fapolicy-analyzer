@@ -6,8 +6,7 @@ from .ui_widget import UIWidget
 from .database_admin_page import DatabaseAdminPage
 from .analyzer_selection_dialog import AnalyzerSelectionDialog, ANALYZER_SELECTION
 from .unapplied_changes_dialog import UnappliedChangesDialog
-
-#from fapolicy_analyzer import PyChangeSet
+from fapolicy_analyzer import Changeset
 
 class MainWindow(UIWidget):
     def __init__(self):
@@ -17,12 +16,15 @@ class MainWindow(UIWidget):
 
     def on_destroy(self, *args):
         # Check backend for unapplied changes
-        if(True):
-            unappliedChangesDlg = UnappliedChangesDialog(self.window).get_content()
+        if( Changeset().is_empty() == False ):
+            # Warn user pending changes will be lost. 
+            unapplied_changes_dlg = UnappliedChangesDialog(self.window)
+            unappliedChangesDlg = unapplied_changes_dlg.get_content()
             response = unappliedChangesDlg.run()
             unappliedChangesDlg.destroy()
+
+            # User returns to application
             if response != Gtk.ResponseType.OK:
-                # Otherwise we keep the application open
                 return True
 
         print('Terminating...')
