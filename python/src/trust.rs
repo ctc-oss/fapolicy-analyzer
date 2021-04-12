@@ -35,7 +35,7 @@ impl PyTrust {
                 hash: sha.to_string(),
                 source: TrustSource::Ancillary,
             },
-            status: "_".to_string(),
+            status: "U".to_string(),
         }
     }
 
