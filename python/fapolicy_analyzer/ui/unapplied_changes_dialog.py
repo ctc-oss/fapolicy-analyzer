@@ -15,8 +15,3 @@ class UnappliedChangesDialog(UIWidget):
 
     def get_content(self):
         return self.dialog
-
-    # ToDo: Only stubbed here to address thrown exception. Needs research to
-    # correctly code expected functionality.
-    def on_after_show(self, argUnhandled):
-        pass
