@@ -7,7 +7,7 @@ from .ui_widget import UIWidget
 
 
 class UnappliedChangesDialog(UIWidget):
-    def __init__(self, parent=None, cancel_time=30):
+    def __init__(self, parent=None):
         super().__init__()
         self.dialog = self.builder.get_object("unappliedChangesDialog")
         if parent:

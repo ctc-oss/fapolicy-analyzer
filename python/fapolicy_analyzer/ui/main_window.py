@@ -1,5 +1,5 @@
 import gi
-
+import time
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from .ui_widget import UIWidget
@@ -16,7 +16,7 @@ class MainWindow(UIWidget):
 
     def on_destroy(self, *args):
         # Check backend for unapplied changes
-        if( Changeset().is_empty() == False ):
+        if not Changeset().is_empty():
             # Warn user pending changes will be lost. 
             unapplied_changes_dlg = UnappliedChangesDialog(self.window)
             unappliedChangesDlg = unapplied_changes_dlg.get_content()
@@ -26,7 +26,7 @@ class MainWindow(UIWidget):
             # User returns to application
             if response != Gtk.ResponseType.OK:
                 return True
-
+             
         print('Terminating...')
         Gtk.main_quit()
 
