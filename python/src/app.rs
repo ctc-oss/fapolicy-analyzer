@@ -29,8 +29,8 @@ impl From<PySystem> for State {
 impl PySystem {
     #[new]
     fn new() -> PySystem {
-        let conf = cfg::load();
-        State::new(&conf.system).into()
+        let conf = cfg::All::default();
+        State::new(&conf).into()
     }
 
     fn system_trust(&self) -> Vec<PyTrust> {
