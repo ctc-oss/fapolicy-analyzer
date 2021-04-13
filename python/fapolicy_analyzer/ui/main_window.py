@@ -1,5 +1,6 @@
 import gi
 import time
+
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from .ui_widget import UIWidget
@@ -7,6 +8,7 @@ from .database_admin_page import DatabaseAdminPage
 from .analyzer_selection_dialog import AnalyzerSelectionDialog, ANALYZER_SELECTION
 from .unapplied_changes_dialog import UnappliedChangesDialog
 from fapolicy_analyzer import Changeset
+
 
 class MainWindow(UIWidget):
     def __init__(self):
@@ -17,7 +19,7 @@ class MainWindow(UIWidget):
     def on_destroy(self, *args):
         # Check backend for unapplied changes
         if not Changeset().is_empty():
-            # Warn user pending changes will be lost. 
+            # Warn user pending changes will be lost.
             unapplied_changes_dlg = UnappliedChangesDialog(self.window)
             unappliedChangesDlg = unapplied_changes_dlg.get_content()
             response = unappliedChangesDlg.run()
@@ -26,8 +28,8 @@ class MainWindow(UIWidget):
             # User returns to application
             if response != Gtk.ResponseType.OK:
                 return True
-             
-        print('Terminating...')
+
+        print("Terminating...")
         Gtk.main_quit()
 
     def on_aboutMenu_activate(self, menuitem, data=None):
