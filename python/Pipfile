@@ -27,4 +27,5 @@ allow_prereleases = true
 
 [scripts]
 test = "pipenv run xvfb-run -a pytest -s --cov-report term-missing --cov=ui fapolicy_analyzer/"
+lint = "pipenv run flake8 fapolicy_analyzer/"
 watch-test = "pipenv run xvfb-run -a pytest-watch fapolicy_analyzer/ -- -s"
