@@ -29,8 +29,8 @@ impl From<PySystem> for State {
 impl PySystem {
     #[new]
     fn new() -> PySystem {
-        let conf = cfg::load();
-        State::new(&conf.system).into()
+        let conf = cfg::All::default();
+        State::new(&conf).into()
     }
 
     fn system_trust(&self) -> Vec<PyTrust> {
@@ -60,7 +60,7 @@ impl PySystem {
     }
 
     fn deploy(&self) {
-        deploy_app_state(&self.state);
+        deploy_app_state(&self.state).expect("deployment failed")
     }
 
     fn is_stale(&self) -> bool {

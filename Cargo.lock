@@ -155,6 +155,7 @@ dependencies = [
  "confy",
  "data-encoding",
  "dbus",
+ "directories",
  "lmdb-rkv",
  "nom",
  "ring",
