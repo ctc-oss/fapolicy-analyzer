@@ -60,7 +60,7 @@ impl PySystem {
     }
 
     fn deploy(&self) {
-        deploy_app_state(&self.state);
+        deploy_app_state(&self.state).expect("deployment failed")
     }
 
     fn is_stale(&self) -> bool {
