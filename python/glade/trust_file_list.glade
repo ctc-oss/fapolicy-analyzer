@@ -8,20 +8,7 @@
     <property name="margin-right">5</property>
     <property name="margin-end">5</property>
     <property name="orientation">vertical</property>
-    <child>
-      <object class="GtkFileChooserButton" id="databaseFileChooser">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="action">select-folder</property>
-        <property name="title" translatable="yes"/>
-        <signal name="selection-changed" handler="on_databaseFileChooser_selection_changed" swapped="no"/>
-      </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
-        <property name="position">0</property>
-      </packing>
-    </child>
+    <signal name="realize" handler="on_trustFileList_realize" swapped="no"/>
     <child>
       <object class="GtkSearchEntry" id="trustViewSearch">
         <property name="visible">True</property>

@@ -8,14 +8,17 @@ from .trust_file_list import TrustFileList
 from .trust_file_details import TrustFileDetails
 from .confirmation_dialog import ConfirmDialog
 from .deploy_confirm_dialog import DeployConfirmDialog
+from .configs import Colors
 
 
 class AncillaryTrustDatabaseAdmin(UIWidget):
-    def __init__(self):
+    def __init__(self, system):
         super().__init__()
         self.content = self.builder.get_object("ancillaryTrustDatabaseAdmin")
 
-        self.trustFileList = TrustFileList(markup_func=self.__status_markup)
+        self.trustFileList = TrustFileList(
+            trust_func=system.ancillary_trust, markup_func=self.__status_markup
+        )
         self.trustFileList.on_file_selection_change += self.on_file_selection_change
         self.builder.get_object("leftBox").pack_start(
             self.trustFileList.get_content(), True, True, 0
@@ -29,11 +32,11 @@ class AncillaryTrustDatabaseAdmin(UIWidget):
     def __status_markup(self, status):
         s = status.lower()
         return (
-            ("<b><u>T</u></b>/U", "light green")
+            ("<b><u>T</u></b>/D/U", Colors.LIGHT_GREEN)
             if s == "t"
-            else ("T/<b><u>U</u></b>", "gold")
-            if s == "u"
-            else ("T/U", "light red")
+            else ("T/<b><u>D</u></b>/U", Colors.LIGHT_RED)
+            if s == "d"
+            else ("T/D/<b><u>U</u></b>", Colors.LIGHT_YELLOW)
         )
 
     def get_content(self):

@@ -74,6 +74,25 @@ jobs:
           name: fapolicy-analyzer-package
           path: ${{ steps.build.outputs.virt_env }}/lib/python3.8/site-packages/fapolicy_analyzer*.egg/
 
+  ui_lint:
+    name: UI Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install dependencies
+        id: install_deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8
+      - name: Lint with flake8
+        run:  |
+          cd python
+          python -m flake8 ./fapolicy_analyzer
+
   ui_test:
     name: UI Test Suite
     needs: py_build

@@ -6,16 +6,13 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from unittest.mock import MagicMock
 from mocks import mock_System
-from helpers import refresh_gui
 from ui.system_trust_database_admin import SystemTrustDatabaseAdmin
+from ui.configs import Colors
 
 
 @pytest.fixture
-def widget(mocker):
-    mocker.patch("ui.system_trust_database_admin.System", return_value=mock_System())
-    widget = SystemTrustDatabaseAdmin()
-    refresh_gui()
-    return widget
+def widget():
+    return SystemTrustDatabaseAdmin(mock_System())
 
 
 def test_creates_widget(widget):
@@ -24,10 +21,13 @@ def test_creates_widget(widget):
 
 def test_status_markup(widget):
     assert widget._SystemTrustDatabaseAdmin__status_markup("T") == (
-        "<b><u>T</u></b>",
-        "light green",
+        "<b><u>T</u></b>/D",
+        Colors.LIGHT_GREEN,
     )
-    assert widget._SystemTrustDatabaseAdmin__status_markup("foo") == ("T", "light red")
+    assert widget._SystemTrustDatabaseAdmin__status_markup("foo") == (
+        "T/<b><u>D</u></b>",
+        Colors.LIGHT_RED,
+    )
 
 
 def test_updates_trust_details(widget, mocker):

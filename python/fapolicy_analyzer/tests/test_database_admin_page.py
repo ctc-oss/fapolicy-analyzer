@@ -4,12 +4,17 @@ import pytest
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
+from mocks import mock_System
+from helpers import refresh_gui
 from ui.database_admin_page import DatabaseAdminPage
 
 
 @pytest.fixture
-def widget():
-    return DatabaseAdminPage()
+def widget(mocker):
+    mocker.patch("ui.database_admin_page.System", return_value=mock_System())
+    widget = DatabaseAdminPage()
+    refresh_gui()
+    return widget
 
 
 def test_creates_widget(widget):

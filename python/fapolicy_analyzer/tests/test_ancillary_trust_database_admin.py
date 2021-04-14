@@ -5,13 +5,14 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from unittest.mock import MagicMock
-from helpers import delayed_gui_action
+from mocks import mock_System
 from ui.ancillary_trust_database_admin import AncillaryTrustDatabaseAdmin
+from ui.configs import Colors
 
 
 @pytest.fixture
 def widget():
-    return AncillaryTrustDatabaseAdmin()
+    return AncillaryTrustDatabaseAdmin(mock_System())
 
 
 def test_creates_widget(widget):
@@ -20,16 +21,16 @@ def test_creates_widget(widget):
 
 def test_status_markup(widget):
     assert widget._AncillaryTrustDatabaseAdmin__status_markup("T") == (
-        "<b><u>T</u></b>/U",
-        "light green",
+        "<b><u>T</u></b>/D/U",
+        Colors.LIGHT_GREEN,
     )
-    assert widget._AncillaryTrustDatabaseAdmin__status_markup("U") == (
-        "T/<b><u>U</u></b>",
-        "gold",
+    assert widget._AncillaryTrustDatabaseAdmin__status_markup("D") == (
+        "T/<b><u>D</u></b>/U",
+        Colors.LIGHT_RED,
     )
     assert widget._AncillaryTrustDatabaseAdmin__status_markup("foo") == (
-        "T/U",
-        "light red",
+        "T/D/<b><u>U</u></b>",
+        Colors.LIGHT_YELLOW,
     )
 
 
