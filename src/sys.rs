@@ -1,21 +1,30 @@
 use serde::Deserialize;
 use serde::Serialize;
 
+use crate::api::TrustSource;
 use crate::app::State;
 use crate::fapolicyd;
+use std::fs::File;
+use std::io::Write;
 
-pub fn deploy_app_state(_state: &State) {
+pub fn deploy_app_state(state: &State) -> Result<(), String> {
     // todo;; back up trust file
     println!("backing up trust file...");
 
-    // todo;; write changeset
     println!("writing changeset to disk...");
+    let mut tf = File::create(&state.config.system.ancillary_trust_path)
+        .expect("unable to create ancillary trust");
+    for t in &state.trust_db {
+        if t.source == TrustSource::Ancillary {
+            tf.write_all(format!("{} {} {}\n", t.path, t.size.to_string(), t.hash).as_bytes())
+                .expect("unable to write ancillary trust file")
+        }
+    }
 
-    // todo;; signal fapolicyd update
     println!("signaling fapolicdy reload...");
+    fapolicyd::reload_databases();
 
-    // todo;; return new Application
-    println!("reloading app trust database...");
+    Ok(())
 }
 
 /// host system configuration information

@@ -18,9 +18,9 @@ pub fn reload_databases() {
         .write(true)
         .read(false)
         .open(FIFO_PIPE)
-        .unwrap()
+        .expect("unable to open fifo pipe")
         .write_all("1".as_bytes())
-        .unwrap();
+        .expect("unable to write fifo pipe");
 }
 
 /// filtering logic as implemented by fapolicyd rpm backend

@@ -1,16 +1,42 @@
-from fapolicy_analyzer import *
 import pathlib
+import itertools as it
+from fapolicy_analyzer import *
 
 # config is loaded from $HOME/.config/fapolicy-analyzer/fapolicy-analyzer.toml
+
+# a system represents the state of the host sytems
 s1 = System()
 print(f"system1 has {len(s1.ancillary_trust())} trust entries")
 
-xs = Changeset()
-for p in pathlib.Path("/bin").iterdir():
-    xs.add_trust(str(p))
-print(f"adding {xs.len()} trust entries")
+# changeset represents changes to trust
+xs1 = Changeset()
+for p in it.islice(pathlib.Path("/bin").iterdir(), 5):
+    xs1.add_trust(str(p))
+print(f"adding {xs1.len()} trust entries")
 
-s2 = s1.apply_changeset(xs)
+# changesets are inexpensive
+xs2 = Changeset()
+for p in it.islice(pathlib.Path("/bin").iterdir(), 5, 10):
+    xs2.add_trust(str(p))
+print(f"adding {xs2.len()} trust entries")
+
+# changesets get applied to a system, producing a new system
+s2 = s1.apply_changeset(xs1)
 print(f"system2 has {len(s2.ancillary_trust())} trust entries")
-for t in s2.ancillary_trust():
-    print(f"{t.status} {t.path} {t.size} {t.hash}")
+
+# the new system can have changes applied to it
+s3 = s2.apply_changeset(xs2)
+print(f"system3 has {len(s3.ancillary_trust())} trust entries")
+
+# a system is deployed, updating the fapolicyd ancillary trust
+# s2.deploy()
+
+# the output is
+# ==================================
+# system1 has 0 trust entries
+# adding 5 trust entries
+# adding 5 trust entries
+# applying changeset to current state...
+# system2 has 5 trust entries
+# applying changeset to current state...
+# system3 has 10 trust entries
