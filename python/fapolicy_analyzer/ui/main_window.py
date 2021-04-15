@@ -16,21 +16,26 @@ class MainWindow(UIWidget):
         self.window = self.builder.get_object("mainWindow")
         self.window.show_all()
 
-    def on_destroy(self, *args):
+    def __unapplied_changes(self):
         # Check backend for unapplied changes
         if not Changeset().is_empty():
-            # Warn user pending changes will be lost.
-            unapplied_changes_dlg = UnappliedChangesDialog(self.window)
-            unappliedChangesDlg = unapplied_changes_dlg.get_content()
-            response = unappliedChangesDlg.run()
-            unappliedChangesDlg.destroy()
+            return False
 
-            # User returns to application
-            if response != Gtk.ResponseType.OK:
-                return True
+        # Warn user pending changes will be lost.
+        unapplied_changes_dlg = UnappliedChangesDialog(self.window)
+        unappliedChangesDlg = unapplied_changes_dlg.get_content()
+        response = unappliedChangesDlg.run()
+        unappliedChangesDlg.destroy()
+        return response != Gtk.ResponseType.OK
 
-        print("Terminating...")
+    def on_destroy(self, obj, *args):
+        if not isinstance(obj, Gtk.Window) and self.__unapplied_changes():
+            return True
+
         Gtk.main_quit()
+
+    def on_delete_event(self, *args):
+        return self.__unapplied_changes()
 
     def on_aboutMenu_activate(self, menuitem, data=None):
         aboutDialog = self.builder.get_object("aboutDialog")
