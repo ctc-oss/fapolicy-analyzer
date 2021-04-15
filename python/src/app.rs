@@ -30,7 +30,7 @@ impl PySystem {
     #[new]
     fn new() -> PySystem {
         let conf = cfg::All::default();
-        State::new(&conf).into()
+        State::load(&conf).into()
     }
 
     fn system_trust(&self) -> Vec<PyTrust> {

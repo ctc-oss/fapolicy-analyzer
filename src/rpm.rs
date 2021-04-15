@@ -11,7 +11,6 @@ use nom::{InputIter, Parser};
 
 use crate::api;
 use crate::fapolicyd::keep_entry;
-use crate::rpm::RpmError::{Discovery, Execution, NotFound};
 
 #[derive(Debug)]
 struct RpmDbEntry {
@@ -197,30 +196,5 @@ mod tests {
         let abc = format!("{}\n{}\n{}\n{}\n", A, B, C, D);
         let files: Vec<api::Trust> = parse(&abc);
         assert_eq!(files.len(), 2);
-    }
-}
-
-#[derive(Debug, Clone)]
-pub enum RpmError {
-    Discovery,
-    NotFound,
-    Execution,
-}
-
-// return rpm version
-pub fn check_rpm() -> Result<String, RpmError> {
-    match Command::new("which").arg("rpm").output() {
-        Ok(eo) if eo.status.success() => {
-            let rpmpath = String::from_utf8(eo.stdout).unwrap().trim().to_string();
-            match Command::new(&rpmpath).arg("--version").output() {
-                Ok(vo) if vo.status.success() => {
-                    let rpmver = String::from_utf8(vo.stdout).unwrap().trim().to_string();
-                    Ok(rpmver)
-                }
-                _ => Err(Execution),
-            }
-        }
-        Ok(_) => Err(NotFound),
-        _ => Err(Discovery),
     }
 }

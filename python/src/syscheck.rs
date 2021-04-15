@@ -1,6 +1,6 @@
 use pyo3::prelude::*;
 
-use fapolicy_analyzer::rpm::check_rpm;
+use fapolicy_analyzer::check::check_rpm;
 
 #[pyfunction]
 fn syscheck_rpm() {

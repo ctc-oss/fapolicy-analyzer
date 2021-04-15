@@ -17,7 +17,14 @@ pub struct State {
 }
 
 impl State {
-    pub fn new(cfg: &All) -> State {
+    pub fn empty(cfg: &All) -> State {
+        State {
+            config: cfg.clone(),
+            trust_db: vec![],
+        }
+    }
+
+    pub fn load(cfg: &All) -> State {
         State {
             config: cfg.clone(),
             trust_db: load_trust_db(&cfg.system.trust_db_path),
