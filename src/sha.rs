@@ -18,3 +18,5 @@ pub fn sha256_digest<R: Read>(mut reader: R) -> Result<String> {
 
     Ok(HEXLOWER.encode(context.finish().as_ref()))
 }
+
+// tested with integration tests

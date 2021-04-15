@@ -5,6 +5,7 @@ use crate::api::Trust;
 use crate::app::State;
 use crate::sha::sha256_digest;
 use crate::trust::Status;
+use std::process::Command;
 
 /// check for sync between fapolicyd and rpmdb
 /// can return false on the first mismatch
@@ -32,4 +33,29 @@ pub fn trust_status(t: &Trust) -> Result<Status, String> {
 
 fn len(file: &File) -> u64 {
     file.metadata().unwrap().len()
+}
+
+#[derive(Debug, Clone)]
+pub enum RpmError {
+    Discovery,
+    NotFound,
+    Execution,
+}
+
+// return rpm version
+pub fn check_rpm() -> Result<String, RpmError> {
+    match Command::new("which").arg("rpm").output() {
+        Ok(eo) if eo.status.success() => {
+            let rpmpath = String::from_utf8(eo.stdout).unwrap().trim().to_string();
+            match Command::new(&rpmpath).arg("--version").output() {
+                Ok(vo) if vo.status.success() => {
+                    let rpmver = String::from_utf8(vo.stdout).unwrap().trim().to_string();
+                    Ok(rpmver)
+                }
+                _ => Err(RpmError::Execution),
+            }
+        }
+        Ok(_) => Err(RpmError::NotFound),
+        _ => Err(RpmError::Discovery),
+    }
 }
