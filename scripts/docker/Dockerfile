@@ -18,13 +18,17 @@ RUN pip3 install pipenv
 WORKDIR /opt/app-src
 COPY . .
 
+RUN cargo build --examples
+RUN mkdir -p /var/lib/fapolicyd
+RUN target/debug/examples/trustdb --empty /var/lib/fapolicyd
+
 WORKDIR /opt/app-src/python
 RUN pipenv install --system --deploy --dev
 RUN python3 setup.py install
 
 # ----------------------------------------------
 
-FROM ctcoss/fapolicyd
+FROM ctcoss/fapolicyd as main
 
 RUN dnf install -y python38 python3-pip dbus-libs pkg-config which \
                    gtk3 xorg-x11-server-Xvfb \
@@ -33,6 +37,7 @@ RUN dnf install -y python38 python3-pip dbus-libs pkg-config which \
 COPY --from=build /usr/local/lib/python3.8/site-packages/ /usr/local/lib/python3.8/site-packages/
 COPY --from=build /usr/local/lib64/python3.8/site-packages/ /usr/local/lib64/python3.8/site-packages/
 COPY --from=build /opt/app-src/python /opt/app/
+COPY --from=build /var/lib/fapolicyd /var/lib/fapolicyd
 
 WORKDIR /opt/app
 ENTRYPOINT ["python3"]
