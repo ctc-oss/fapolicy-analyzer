@@ -22,6 +22,6 @@ def test_trust_database_admin_selection():
     dialog = ConfirmDialog("foo").get_content()
     for expected in [Gtk.ResponseType.YES, Gtk.ResponseType.NO]:
         button = dialog.get_widget_for_response(expected)
-        delayed_gui_action(button.clicked, delay=1)
+        delayed_gui_action(button.clicked, delay=5)
         response = dialog.run()
         assert response == expected
