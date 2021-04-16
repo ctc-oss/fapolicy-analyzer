@@ -77,6 +77,3 @@ class MainWindow(UIWidget):
             self.set_modified_titlebar(True)
         else:
             self.set_modified_titlebar(False)
-
-
-
