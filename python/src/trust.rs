@@ -4,6 +4,9 @@ use fapolicy_analyzer::api;
 use fapolicy_analyzer::api::TrustSource;
 use fapolicy_analyzer::trust;
 
+/// Trust entry
+///
+/// Includes the path, size, and sha256 hash
 #[pyclass(module = "trust", name = "Trust")]
 #[derive(Clone)]
 pub struct PyTrust {
@@ -35,7 +38,7 @@ impl PyTrust {
                 hash: sha.to_string(),
                 source: TrustSource::Ancillary,
             },
-            status: "_".to_string(),
+            status: "U".to_string(),
         }
     }
 
@@ -54,12 +57,14 @@ impl PyTrust {
         &self.trust.hash
     }
 
+    /// Get a string representation of the TDU status
     #[getter]
     fn get_status(&self) -> &str {
         &self.status
     }
 }
 
+/// A mutable collection of changes
 #[pyclass(module = "trust", name = "Changeset")]
 #[derive(Clone)]
 pub struct PyChangeset {
