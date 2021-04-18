@@ -34,15 +34,12 @@ fn main() {
         let cfg = All::load();
         let sys = load_system_trust(&cfg.system.system_trust_path);
 
-        env.begin_rw_txn()
-            .map(|mut tx| {
-                for trust in sys {
-                    let v = format!("{} {} {}", 1, trust.size, trust.hash);
-                    tx.put(db, &trust.path, &v, WriteFlags::APPEND_DUP)
-                        .expect("unable to write record");
-                }
-                tx.commit().expect("unable to commit trust records")
-            })
-            .unwrap();
+        let mut tx = env.begin_rw_txn().expect("failed to start db transaction");
+        for trust in sys {
+            let v = format!("{} {} {}", 1, trust.size, trust.hash);
+            tx.put(db, &trust.path, &v, WriteFlags::APPEND_DUP)
+                .expect("unable to add trust to db transaction");
+        }
+        tx.commit().expect("failed to commit db transaction")
     }
 }

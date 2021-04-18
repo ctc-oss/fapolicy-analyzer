@@ -21,20 +21,19 @@ fn main() {
         .open_db(Some("trust.db"))
         .expect("failed to load trust.db");
 
-    env.begin_ro_txn()
-        .map(|t| {
-            t.open_ro_cursor(db).map(|mut c| {
-                c.iter()
-                    .map(|c| c.unwrap())
-                    .map(|(k, v)| {
-                        (
-                            String::from_utf8(Vec::from(k)).unwrap(),
-                            String::from_utf8(Vec::from(v)).unwrap(),
-                        )
-                    })
-                    .for_each(|(k, v)| println!("{} {}", k, v))
-            })
+    let tx = env.begin_ro_txn().expect("failed to start transaction");
+
+    tx.open_ro_cursor(db)
+        .map(|mut c| {
+            c.iter()
+                .map(|c| c.unwrap())
+                .map(|(k, v)| {
+                    (
+                        String::from_utf8(Vec::from(k)).unwrap(),
+                        String::from_utf8(Vec::from(v)).unwrap(),
+                    )
+                })
+                .for_each(|(k, v)| println!("{} {}", k, v))
         })
-        .unwrap()
-        .unwrap()
+        .expect("failed to read db")
 }
