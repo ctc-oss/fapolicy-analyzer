@@ -19,8 +19,6 @@ WORKDIR /opt/app-src
 COPY . .
 
 RUN cargo build --examples
-RUN mkdir -p /var/lib/fapolicyd
-RUN target/debug/examples/trustdb --empty /var/lib/fapolicyd
 
 WORKDIR /opt/app-src/python
 RUN pipenv install --system --deploy --dev
@@ -37,7 +35,10 @@ RUN dnf install -y python38 python3-pip dbus-libs pkg-config which \
 COPY --from=build /usr/local/lib/python3.8/site-packages/ /usr/local/lib/python3.8/site-packages/
 COPY --from=build /usr/local/lib64/python3.8/site-packages/ /usr/local/lib64/python3.8/site-packages/
 COPY --from=build /opt/app-src/python /opt/app/
-COPY --from=build /var/lib/fapolicyd /var/lib/fapolicyd
+COPY --from=build /opt/app-src/target/debug/examples /usr/local/bin
+
+RUN mkdir -p /var/lib/fapolicyd \
+ && trustdb_init /var/lib/fapolicyd
 
 WORKDIR /opt/app
 ENTRYPOINT ["python3"]
