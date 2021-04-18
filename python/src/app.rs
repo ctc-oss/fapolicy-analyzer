@@ -29,7 +29,7 @@ impl From<PySystem> for State {
 impl PySystem {
     #[new]
     fn new() -> PySystem {
-        let conf = cfg::All::default();
+        let conf = cfg::All::load();
         State::load(&conf).into()
     }
 
