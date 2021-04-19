@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
 test_name="test_example"
-test_image="fapolicy-analyzer"
+test_image="ctcoss/fapolicy-analyzer"
 podman_cmd="sudo podman"
 voldir=/tmp/$test_name
 bats_test_dir="$BATS_CWD/tests/bats"
