@@ -7,11 +7,9 @@ before_install:
   - sudo apt-get update -qq
   - sudo apt-get -qq -y install --install-recommends podman
 
-  - ls -1 /etc/containers/registries.conf || true
   - sudo mkdir -p /etc/containers
   - echo -e "[registries.search]\nregistries = ['docker.io', 'quay.io']" | sudo tee /etc/containers/registries.conf
 
-  - sudo podman pull --quiet ctcoss/fapolicyd
   - ./scripts/install_bats.sh
 
 script:
