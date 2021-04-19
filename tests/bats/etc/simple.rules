@@ -1,0 +1,2 @@
+deny_log perm=execute all : dir=/deny
+allow perm=open all : all
