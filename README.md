@@ -5,7 +5,9 @@ Tools to assist with the configuration and maintenance of [fapolicyd](https://gi
 
 ### Python bindings
 
-We generate python bindings using [setuptools_rust](https://setuptools-rust.readthedocs.io/en/latest/) from the python directory.
+We write python bindings using [PyO3](https://github.com/PyO3/pyo3) and [setuptools_rust](https://setuptools-rust.readthedocs.io/en/latest/).
+
+To build and install the bindings run the following from the [python](python) directory:
 
 ```
 pipenv install --dev
@@ -18,7 +20,7 @@ python examples/validate_install.py
 
 We write integration tests using [Bats](https://bats-core.readthedocs.io/en/latest/index.html) and [Podman](https://podman.io/).  The integration tests can run locally or in Travis CI.
 
-An example that demonstrates fapolicyd blocking execution, followed by a trust adjustment, followed by successful execution. 
+A Bats test that validates changing the trust database looks like:
 
 ```bash
 @test "trust: add" {
@@ -31,7 +33,7 @@ An example that demonstrates fapolicyd blocking execution, followed by a trust a
   assert_output --partial "applying"
   assert_output --partial "signaling"
 
-  # check the db for the script
+  # check the fapolicyd trust db for the new entry
   run in_container python3 examples/show_ancillary.py
   assert_output --partial "/deny/simple.sh"
 
@@ -44,4 +46,5 @@ An example that demonstrates fapolicyd blocking execution, followed by a trust a
 See the [test/bats](tests/bats) directory for more examples.
 
 ### Developers
+
 See the [Wiki](https://github.com/ctc-oss/fapolicy-analyzer/wiki) for more resources.
