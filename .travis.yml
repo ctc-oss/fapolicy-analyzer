@@ -1,3 +1,7 @@
+branches:
+  only:
+    - master
+
 dist: bionic
 language: minimal
 before_install:
