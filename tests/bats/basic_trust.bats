@@ -13,18 +13,13 @@ setup() {
   run in_container /deny/simple.sh
   assert_output --partial "permission denied"
 
-  # there are no ancillary trust entries
-  run in_container python3 examples/show_ancillary.py --count
-  assert_output $'0\r'
-
   # trust the script
   run in_container python3 examples/add_trust.py /deny/simple.sh
   assert_output --partial "applying"
   assert_output --partial "signaling"
 
-  # the number of trust entries should be exactly 1 now
-  run in_container python3 examples/show_ancillary.py --count
-  assert_output $'1\r'
+  # give fapolicyd a second to update
+  sleep 1
 
   # check the db for the script
   run in_container python3 examples/show_ancillary.py
