@@ -9,79 +9,84 @@ Currently only maintains the Changeset FIFO queue
 
 >>> from state_manager import StateManager
 >>> sm=StateManager()
->>> sm.isDirtyQueue()
+>>> sm.is_dirty_queue()
 False
->>> sm.addChangeSetQ(1)
->>> sm.isDirtyQueue()
+>>> sm.add_changeset_q(1)
+>>> sm.is_dirty_queue()
 True
->>> sm.addChangeSetQ(1)
->>> sm.getChangeSetQ()
+>>> sm.add_changeset_q(1)
+>>> sm.get_changeset_q()
 [1, 1]
->>> sm.delChangeSetQ()
+>>> sm.del_changeset_q()
 False
->>> sm.isDirtyQueue()
+>>> sm.is_dirty_queue()
 False
->>> sm.getChangeSetQ()
+>>> sm.get_changeset_q()
 []
->>> sm.addChangeSetQ(1)
->>> sm.addChangeSetQ(2)
->>> sm.addChangeSetQ(3)
->>> sm.addChangeSetQ(4)
->>> sm.getChangeSetQ()
+>>> sm.add_changeset_q(1)
+>>> sm.add_changeset_q(2)
+>>> sm.add_changeset_q(3)
+>>> sm.add_changeset_q(4)
+>>> sm.get_changeset_q()
 [1, 2, 3, 4]
->>> sm.nextChangeSetQ()
+>>> sm.next_changeset_q()
 1
->>> sm.nextChangeSetQ()
+>>> sm.next_changeset_q()
 2
->>> sm.getChangeSetQ()
+>>> sm.get_changeset_q()
 [3, 4]
->>> sm.dumpState()
+>>> sm.dump_state()
 ([3, 4], [])
->>> sm.redoChangeSetQ()
+>>> sm.redo_changeset_q()
 [3, 4]
->>> sm.dumpState()
+>>> sm.dump_state()
 ([3, 4], [])
->>> sm.addChangeSetQ(10)
->>> sm.getChangeSetQ()
+>>> sm.add_changeset_q(10)
+>>> sm.get_changeset_q()
 [3, 4, 10]
->>> sm.undoChangeSetQ()
+>>> sm.undo_changeset_q()
 [3, 4]
->>> sm.dumpState()
+>>> sm.dump_state()
 ([3, 4], [10])
->>> sm.redoChangeSetQ()
+>>> sm.redo_changeset_q()
 [3, 4, 10]
->>> sm.dumpState()
+>>> sm.dump_state()
 ([3, 4, 10], [])
->>> sm.nextChangeSetQ()
+>>> sm.next_changeset_q()
 3
->>> sm.nextChangeSetQ()
+>>> sm.next_changeset_q()
 4
->>> sm.undoChangeSetQ()
+>>> sm.undo_changeset_q()
 []
->>> sm.dumpState()
+>>> sm.dump_state()
 ([], [10])
->>> sm.redoChangeSetQ()
+>>> sm.redo_changeset_q()
 [10]
->>> sm.dumpState()
+>>> sm.dump_state()
 ([10], [])
->>> sm.isDirtyQueue()
+>>> sm.is_dirty_queue()
 True
->>> sm.undoChangeSetQ()
+>>> sm.undo_changeset_q()
 []
->>> sm.dumpState()
+>>> sm.dump_state()
 ([], [10])
->>> sm.isDirtyQueue()
+>>> sm.is_dirty_queue()
 False
 """
 
-from .configs import StateEvents
+from enum import Enum
+
+class StateEvents(Enum):
+    """enum used to indicate the changed state."""
+    STATE_UNAPPLIED_NONE = 0
+    STATE_UNAPPLIED_CHANGES = 1
 
 class StateManager(object):
     """A singleton wrapper class for maintaining global app state and changesets
     - Changeset FIFO queue
     - Current working Changeset
 
-    A notify object will have its state_event() callback invoked upon state 
+    A notify object will have its state_event() callback invoked upon state
     changes occuring in the StateManager instance.
     """
     def __init__(self, notify_list=None):
@@ -89,79 +94,79 @@ class StateManager(object):
         self.listChangeset = [] #FIFO queue
         self.listUndoChangeset = [] # Undo Stack
         self.bDirtyQ = False
-        
+
         # Populate notification list
         if notify_list:
-            self.listNotifyObjs.append(notify_list);
+            self.listNotifyObjs.append(notify_list)
 
-    def addChangeSetQ(self, change_set):
+    def add_changeset_q(self, change_set):
         """Add the change_set argument to the end of the FIFO queue"""
         self.listChangeset.append(change_set)
-        self.updateDirtyQueue()
+        self.update_dirty_queue()
 
-    def nextChangeSetQ(self):
-        """Remove the next change_set from the front of the FIFO queue"""
+    def next_changeset_q(self):
+        """Remove the next changeset from the front of the FIFO queue"""
         retChangeSet = self.listChangeset.pop(0)
-        self.updateDirtyQueue()
+        self.update_dirty_queue()
         return retChangeSet
 
-    def delChangeSetQ(self):
+    def del_changeset_q(self):
         """Delete the current Changeset FIFO queue"""
         self.listChangeset.clear()
-        return self.updateDirtyQueue()
+        return self.update_dirty_queue()
 
-    def getChangeSetQ(self):
+    def get_changeset_q(self):
         """Returns the current change_set"""
         return self.listChangeset
 
-    def dumpState(self):
+    def dump_state(self):
         """Returns the current complete state of the StateManager instance."""
         return (self.listChangeset, self.listUndoChangeset)
 
-    def undoChangeSetQ(self):
-        """Removes the last change_set from the back of the queue"""
-        if len(self.listChangeset) != 0:
+    def undo_changeset_q(self):
+        """Removes the last changeset from the back of the queue"""
+        if self.listChangeset:
             csTemp = self.listChangeset.pop()
-            self.listUndoChangeset.append(csTemp);
-            self.updateDirtyQueue()
-        return self.getChangeSetQ()
+            self.listUndoChangeset.append(csTemp)
+            self.update_dirty_queue()
+        return self.get_changeset_q()
 
-    def redoChangeSetQ(self):
+    def redo_changeset_q(self):
         """Adds previously undone changes back into the FIFO queue"""
-        if len(self.listUndoChangeset) != 0:
-            csTemp = self.listUndoChangeset.pop();
+        if self.listUndoChangeset:
+            csTemp = self.listUndoChangeset.pop()
             self.listChangeset.append(csTemp)
-            self.updateDirtyQueue()
-        return self.getChangeSetQ()
+            self.update_dirty_queue()
+        return self.get_changeset_q()
 
-    def addNotificationObj(self, objNotify):
+    def add_notification_obj(self, objNotify):
         """Add an object to the end of the notification list"""
         self.listNotifyObjs.append(objNotify)
 
-    def invokeNotifications(self, event_type):
+    def invoke_notifications(self, event_type):
         """Iterates through the notification list invoking state_event()
         on each object"""
-        
         for o in self.listNotifyObjs:
             o.state_event(event_type)
 
-    def isDirtyQueue(self):
-        if len(self.listChangeset) != 0:
+    def is_dirty_queue(self):
+        """Returns True if the queue size is not zero, otherwise False"""
+        if self.listChangeset:
             return True
         return False
-    
-    def updateDirtyQueue(self):
+
+    def update_dirty_queue(self):
         """Check that DirtyQueue member variable reflects status of changeset
         queue. If variable is not consistent, update and notify subscribers.
         Returns True is there are unapplied changes, False otherwise."""
-        if self.bDirtyQ != self.isDirtyQueue():
-            self.bDirtyQ = self.isDirtyQueue()
+        if self.bDirtyQ != self.is_dirty_queue():
+            self.bDirtyQ = self.is_dirty_queue()
             if self.bDirtyQ:
-                self.invokeNotifications(StateEvents.STATE_UNAPPLIED_CHANGES)
+                self.invoke_notifications(StateEvents.STATE_UNAPPLIED_CHANGES)
             else:
-                self.invokeNotifications(StateEvents.STATE_UNAPPLIED_NONE)
+                self.invoke_notifications(StateEvents.STATE_UNAPPLIED_NONE)
         return self.bDirtyQ
-        
+
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
