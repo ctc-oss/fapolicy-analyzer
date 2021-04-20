@@ -3,7 +3,7 @@ File Access Policy Analyzer
 
 Tools to assist with the configuration and maintenance of [fapolicyd](https://github.com/linux-application-whitelisting/fapolicyd).
 
-### python bindings
+### Python bindings
 
 We generate python bindings using [setuptools_rust](https://github.com/PyO3/setuptools-rust) from the python directory.
 
@@ -14,7 +14,7 @@ python setup.py [develop | install]
 python examples/validate_install.py
 ```
 
-### integration tests
+### Integration tests
 
 We write integration tests using [Bats](https://bats-core.readthedocs.io/en/latest/index.html) and [Podman](https://podman.io/).  The integration tests can run locally or in Travis CI.
 
@@ -43,5 +43,5 @@ An example that demonstrates fapolicyd blocking execution, followed by a trust a
 
 See the [test/bats](tests/bats) directory for more examples.
 
-### developers
+### Developers
 See the [Wiki](https://github.com/ctc-oss/fapolicy-analyzer/wiki) for more resources.
