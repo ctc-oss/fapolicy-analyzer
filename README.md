@@ -5,7 +5,7 @@ Tools to assist with the configuration and maintenance of [fapolicyd](https://gi
 
 ### Python bindings
 
-We generate python bindings using [setuptools_rust](https://github.com/PyO3/setuptools-rust) from the python directory.
+We generate python bindings using [setuptools_rust](https://setuptools-rust.readthedocs.io/en/latest/) from the python directory.
 
 ```
 pipenv install --dev
