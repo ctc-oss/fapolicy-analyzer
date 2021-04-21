@@ -2,6 +2,7 @@ import gi
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
+from fapolicy_analyzer import Changeset, System
 from fapolicy_analyzer.util import fs
 from .ui_widget import UIWidget
 from .trust_file_list import TrustFileList
@@ -9,17 +10,20 @@ from .trust_file_details import TrustFileDetails
 from .confirmation_dialog import ConfirmDialog
 from .deploy_confirm_dialog import DeployConfirmDialog
 from .configs import Colors
+from .state_manager import stateManager
 
 
 class AncillaryTrustDatabaseAdmin(UIWidget):
-    def __init__(self, system):
+    def __init__(self):
         super().__init__()
+        self.system = System()
         self.content = self.builder.get_object("ancillaryTrustDatabaseAdmin")
 
         self.trustFileList = TrustFileList(
-            trust_func=system.ancillary_trust, markup_func=self.__status_markup
+            trust_func=self.system.ancillary_trust, markup_func=self.__status_markup
         )
-        self.trustFileList.on_file_selection_change += self.on_file_selection_change
+        self.trustFileList.file_selection_change += self.on_file_selection_change
+        self.trustFileList.files_added += self.on_files_added
         self.builder.get_object("leftBox").pack_start(
             self.trustFileList.get_content(), True, True, 0
         )
@@ -61,6 +65,18 @@ SHA256: {fs.sha(trust.path)}"""
                 if status == "u"
                 else "The trust status of this file is unknown."
             )
+
+    def on_files_added(self, paths):
+        if not paths:
+            return
+
+        changeset = Changeset()
+        for p in paths:
+            changeset.add_trust(p)
+
+        self.system = self.system.apply_changeset(changeset)
+        stateManager.add_changeset_q(changeset)
+        self.trustFileList.refresh(self.system.ancillary_trust)
 
     def on_deployBtn_clicked(self, *args):
         parent = self.content.get_toplevel()

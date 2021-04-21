@@ -1,3 +1,4 @@
+from fapolicy_analyzer import System
 from fapolicy_analyzer.util import fs
 from .trust_file_list import TrustFileList
 from .trust_file_details import TrustFileDetails
@@ -6,20 +7,22 @@ from .configs import Colors
 
 
 class SystemTrustDatabaseAdmin(UIWidget):
-    def __init__(self, system):
+    def __init__(self):
         super().__init__()
+        self.system = System()
 
         self.trustFileList = TrustFileList(
-            trust_func=system.system_trust,
+            trust_func=self.system.system_trust,
             markup_func=self.__status_markup,
+            read_only=True,
         )
-        self.trustFileList.on_file_selection_change += self.on_file_selection_change
-        self.builder.get_object("leftBox").pack_start(
+        self.trustFileList.file_selection_change += self.on_file_selection_change
+        self.get_object("leftBox").pack_start(
             self.trustFileList.get_content(), True, True, 0
         )
 
         self.trustFileDetails = TrustFileDetails()
-        self.builder.get_object("rightBox").pack_start(
+        self.get_object("rightBox").pack_start(
             self.trustFileDetails.get_content(), True, True, 0
         )
 
@@ -31,7 +34,7 @@ class SystemTrustDatabaseAdmin(UIWidget):
         )
 
     def get_content(self):
-        return self.builder.get_object("systemTrustDatabaseAdmin")
+        return self.get_object("systemTrustDatabaseAdmin")
 
     def on_file_selection_change(self, trust):
         if trust:
