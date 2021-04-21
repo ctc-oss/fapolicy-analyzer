@@ -40,9 +40,10 @@
             <property name="homogeneous">True</property>
             <property name="layout-style">expand</property>
             <child>
-              <object class="GtkButton">
+              <object class="GtkButton" id="addBtn">
                 <property name="label" translatable="yes">Add File To Ancillary Trust Database</property>
                 <property name="visible">True</property>
+                <property name="sensitive">False</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
               </object>

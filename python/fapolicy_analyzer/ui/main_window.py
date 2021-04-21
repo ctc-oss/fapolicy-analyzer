@@ -13,15 +13,13 @@ from fapolicy_analyzer import Changeset
 class MainWindow(UIWidget):
     def __init__(self):
         super().__init__()
-        # self.state_mgr = StateManager(self)
-        # stateManager.add_notification_obj(self)
-        stateManager.changeset_queue_updated += self.state_event
+        stateManager.changeset_queue_updated += self.on_changeset_updated
         self.window = self.builder.get_object("mainWindow")
         self.window.show_all()
 
     def __unapplied_changes(self):
         # Check backend for unapplied changes
-        if not Changeset().is_empty():
+        if not stateManager.is_dirty_queue():
             return False
 
         # Warn user pending changes will be lost.
@@ -59,20 +57,10 @@ class MainWindow(UIWidget):
         mainContent = self.builder.get_object("mainContent")
         mainContent.pack_start(page, True, True, 0)
 
-    def state_event(self):
+    def on_changeset_updated(self):
         """The callback function invoked from the StateManager when
         state changes."""
         if stateManager.is_dirty_queue():
             print("main_window -> There are undeployed changes!")
         else:
             print("main_window -> There are no undeployed changes...")
-        # if event_type == StateEvents.STATE_UNAPPLIED_NONE:
-        #     # In issue-54_unapplied_indication.
-        #     # self.set_modified_titlebar(False)
-        #     print("main_window received STATE_UNAPPLIED_NONE")
-        # elif event_type == StateEvents.STATE_UNAPPLIED_CHANGES:
-        #     # In issue-54_unapplied_indication.
-        #     # self.set_modified_titlebar()
-        #     print("main_window received STATE_UNAPPLIED_CHANGES")
-        # else:
-        #     print("main_window received Unknown event_type notification")

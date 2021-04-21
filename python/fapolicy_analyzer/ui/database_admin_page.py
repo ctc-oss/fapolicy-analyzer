@@ -2,7 +2,6 @@ import gi
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
-from fapolicy_analyzer import System
 from .ancillary_trust_database_admin import AncillaryTrustDatabaseAdmin
 from .system_trust_database_admin import SystemTrustDatabaseAdmin
 

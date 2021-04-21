@@ -49,7 +49,7 @@ class TrustFileList(UIWidget, Events):
         self.refresh(trust_func)
 
     def __get_trust(self):
-        sleep(0.5)
+        sleep(1)
         trust = self.trust_func()
 
         trustStore = Gtk.ListStore(str, str, object, str)
