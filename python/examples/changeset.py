@@ -11,7 +11,6 @@ print(f"system1 has {len(s1.ancillary_trust())} trust entries")
 # changeset represents changes to trust
 xs1 = Changeset()
 for p in it.islice(pathlib.Path("/bin").iterdir(), 5):
-    print(p)
     xs1.add_trust(str(p))
 print(f"adding {xs1.len()} trust entries")
 
