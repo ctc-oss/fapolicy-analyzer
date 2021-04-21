@@ -7,7 +7,6 @@ from .database_admin_page import DatabaseAdminPage
 from .analyzer_selection_dialog import AnalyzerSelectionDialog, ANALYZER_SELECTION
 from .unapplied_changes_dialog import UnappliedChangesDialog
 from .state_manager import stateManager
-from fapolicy_analyzer import Changeset
 
 
 class MainWindow(UIWidget):
