@@ -6,12 +6,14 @@ from .ui_widget import UIWidget
 from .database_admin_page import DatabaseAdminPage
 from .analyzer_selection_dialog import AnalyzerSelectionDialog, ANALYZER_SELECTION
 from .unapplied_changes_dialog import UnappliedChangesDialog
+from .state_manager import StateManager, StateEvents
 from fapolicy_analyzer import Changeset
 
 
 class MainWindow(UIWidget):
     def __init__(self):
         super().__init__()
+        self.state_mgr = StateManager(self)
         self.window = self.builder.get_object("mainWindow")
         self.window.show_all()
 
@@ -54,3 +56,17 @@ class MainWindow(UIWidget):
 
         mainContent = self.builder.get_object("mainContent")
         mainContent.pack_start(page, True, True, 0)
+
+    def state_event(self, event_type):
+        """The callback function invoked from the StateManager when 
+        state changes."""
+        if event_type == StateEvents.STATE_UNAPPLIED_NONE:
+            # In issue-54_unapplied_indication.
+            # self.set_modified_titlebar(False)
+            print("main_window received STATE_UNAPPLIED_NONE")
+        elif event_type == StateEvents.STATE_UNAPPLIED_CHANGES:
+            # In issue-54_unapplied_indication.
+            # self.set_modified_titlebar()
+            print("main_window received STATE_UNAPPLIED_CHANGES")
+        else:
+            print("main_window received Unknown event_type notification")
