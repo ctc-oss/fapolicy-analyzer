@@ -5,14 +5,13 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from unittest.mock import MagicMock
-from mocks import mock_System
 from ui.system_trust_database_admin import SystemTrustDatabaseAdmin
 from ui.configs import Colors
 
 
 @pytest.fixture
 def widget():
-    return SystemTrustDatabaseAdmin(mock_System())
+    return SystemTrustDatabaseAdmin()
 
 
 def test_creates_widget(widget):
