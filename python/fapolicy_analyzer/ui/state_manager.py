@@ -76,10 +76,12 @@ False
 
 from enum import Enum
 
+
 class StateEvents(Enum):
     """enum used to indicate the changed state."""
     STATE_UNAPPLIED_NONE = 0
     STATE_UNAPPLIED_CHANGES = 1
+
 
 class StateManager(object):
     """A singleton wrapper class for maintaining global app state and changesets
@@ -91,8 +93,8 @@ class StateManager(object):
     """
     def __init__(self, notify_list=None):
         self.listNotifyObjs = []
-        self.listChangeset = [] #FIFO queue
-        self.listUndoChangeset = [] # Undo Stack
+        self.listChangeset = []  # FIFO queue
+        self.listUndoChangeset = []  # Undo Stack
         self.bDirtyQ = False
 
         # Populate notification list
@@ -166,6 +168,7 @@ class StateManager(object):
             else:
                 self.invoke_notifications(StateEvents.STATE_UNAPPLIED_NONE)
         return self.bDirtyQ
+
 
 if __name__ == "__main__":
     import doctest
