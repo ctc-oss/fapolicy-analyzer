@@ -4,17 +4,21 @@ import pytest
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
-from mocks import mock_System
-from helpers import refresh_gui
+from unittest.mock import MagicMock
 from ui.database_admin_page import DatabaseAdminPage
 
 
 @pytest.fixture
 def widget(mocker):
-    mocker.patch("ui.database_admin_page.System", return_value=mock_System())
-    widget = DatabaseAdminPage()
-    refresh_gui()
-    return widget
+    mocker.patch(
+        "ui.database_admin_page.AncillaryTrustDatabaseAdmin",
+        return_value=MagicMock(get_content=MagicMock(return_value=Gtk.Box())),
+    )
+    mocker.patch(
+        "ui.database_admin_page.SystemTrustDatabaseAdmin",
+        return_value=MagicMock(get_content=MagicMock(return_value=Gtk.Box())),
+    )
+    return DatabaseAdminPage()
 
 
 def test_creates_widget(widget):

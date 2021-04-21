@@ -22,7 +22,7 @@ def trust_func():
 @pytest.fixture
 def widget(trust_func):
     widget = TrustFileList(trust_func=trust_func)
-    refresh_gui(0.2)
+    refresh_gui(1.5)
     return widget
 
 
@@ -37,7 +37,7 @@ def test_uses_custom_trust_func(widget, trust_func):
 def test_uses_custom_markup_func(trust_func):
     markup_func = MagicMock(return_value="t")
     TrustFileList(trust_func=trust_func, markup_func=markup_func)
-    refresh_gui(0.2)
+    refresh_gui(1.5)
     markup_func.assert_called_with("t")
 
 
@@ -59,7 +59,7 @@ def test_filtering(widget):
     trustView = widget.trustView
     trustViewFilter = widget.builder.get_object("trustViewSearch")
     trustViewFilter.set_text("foo")
-    refresh_gui(0.2)
+    refresh_gui(1.5)
     paths = [x[1] for x in trustView.get_model()]
     assert "/tmp/foo" in paths
     assert "/tmp/baz" not in paths

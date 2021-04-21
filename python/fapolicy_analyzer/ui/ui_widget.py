@@ -25,3 +25,6 @@ class UIWidget(ABC):
                 os.path.dirname(sys.modules[self.__module__].__file__), relativePath
             )
         )
+
+    def get_object(self, name):
+        return self.builder.get_object(name)

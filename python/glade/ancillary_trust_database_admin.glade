@@ -46,9 +46,10 @@
                 <property name="homogeneous">True</property>
                 <property name="layout-style">expand</property>
                 <child>
-                  <object class="GtkButton">
+                  <object class="GtkButton" id="trustBtn">
                     <property name="label" translatable="yes">Trust</property>
                     <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">True</property>
                   </object>
@@ -59,9 +60,10 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkButton">
+                  <object class="GtkButton" id="untrustBtn">
                     <property name="label" translatable="yes">Untrust</property>
                     <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">True</property>
                   </object>
@@ -97,6 +99,7 @@
       <object class="GtkButton" id="deployBtn">
         <property name="label" translatable="yes">Deploy Ancillary Trust</property>
         <property name="visible">True</property>
+        <property name="sensitive">False</property>
         <property name="can-focus">True</property>
         <property name="receives-default">True</property>
         <property name="margin-start">50</property>
