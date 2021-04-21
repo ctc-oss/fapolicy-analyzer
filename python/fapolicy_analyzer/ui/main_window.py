@@ -58,7 +58,7 @@ class MainWindow(UIWidget):
         mainContent.pack_start(page, True, True, 0)
 
     def state_event(self, event_type):
-        """The callback function invoked from the StateManager when 
+        """The callback function invoked from the StateManager when
         state changes."""
         if event_type == StateEvents.STATE_UNAPPLIED_NONE:
             # In issue-54_unapplied_indication.
