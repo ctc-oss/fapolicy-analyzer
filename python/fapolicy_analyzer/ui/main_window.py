@@ -65,7 +65,7 @@ class MainWindow(UIWidget):
         """Adds leading '*' to titlebar text with True or default argument"""
         if bModified:
             # Prefix title with '*'
-            self.windowTopLevel.set_title("*"+self.strTopLevelTitle)
+            self.windowTopLevel.set_title("*" + self.strTopLevelTitle)
         else:
             # Reset title to original text
             self.windowTopLevel.set_title(self.strTopLevelTitle)
