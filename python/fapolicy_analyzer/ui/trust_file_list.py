@@ -1,10 +1,8 @@
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, GLib, GdkPixbuf
+from gi.repository import Gtk, GdkPixbuf
 from os import path
-from threading import Thread
-from time import sleep
 from events import Events
 from .ui_widget import UIWidget
 
@@ -48,25 +46,15 @@ class TrustFileList(UIWidget, Events):
 
         self.refresh(trust_func)
 
-    def __get_trust(self):
-        sleep(1)
-        trust = self.trust_func()
-
+    def __load_trust_store(self, trust):
         trustStore = Gtk.ListStore(str, str, object, str)
         for i, t in enumerate(trust):
-            self.__append_trust(t, trustStore)
+            status, *rest = (
+                self.markup_func(t.status) if self.markup_func else (t.status,)
+            )
+            bgColor = rest[0] if rest else "white"
+            trustStore.append([status, t.path, t, bgColor])
 
-        GLib.idle_add(self.__load_trust_store, trustStore)
-
-    def __append_trust(self, trust, trustStore=None):
-        store = trustStore if trustStore else self.trustView.get_model()
-        status, *rest = (
-            self.markup_func(trust.status) if self.markup_func else (trust.status,)
-        )
-        bgColor = rest[0] if rest else "white"
-        store.append([status, trust.path, trust, bgColor])
-
-    def __load_trust_store(self, trustStore):
         self.trustViewFilter = trustStore.filter_new()
         self.trustViewFilter.set_visible_func(self.__filter_trust_view)
         self.trustView.set_model(Gtk.TreeModelSort(model=self.trustViewFilter))
@@ -94,10 +82,7 @@ class TrustFileList(UIWidget, Events):
 
     def refresh(self, trust_func):
         self.__set_loading(True)
-        self.trust_func = trust_func
-        thread = Thread(target=self.__get_trust)
-        thread.daemon = True
-        thread.start()
+        trust_func(self.__load_trust_store)
 
     def on_trust_view_selection_changed(self, selection):
         model, treeiter = selection.get_selected()

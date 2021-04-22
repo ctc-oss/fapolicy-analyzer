@@ -1,6 +1,12 @@
+import gi
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import GLib
+from events import Events
+from threading import Thread
+from time import sleep
 from fapolicy_analyzer import System
 from fapolicy_analyzer.util import fs
-from events import Events
 from .trust_file_list import TrustFileList
 from .trust_file_details import TrustFileDetails
 from .ui_widget import UIWidget
@@ -17,7 +23,7 @@ class SystemTrustDatabaseAdmin(UIWidget, Events):
         self.system = System()
 
         self.trustFileList = TrustFileList(
-            trust_func=self.system.system_trust,
+            trust_func=self.__load_trust,
             markup_func=self.__status_markup,
             read_only=True,
         )
@@ -37,6 +43,16 @@ class SystemTrustDatabaseAdmin(UIWidget, Events):
             if status.lower() == "t"
             else ("T/<b><u>D</u></b>", Colors.LIGHT_RED)
         )
+
+    def __load_trust(self, callback):
+        def get_trust():
+            sleep(1)
+            trust = self.system.system_trust()
+            GLib.idle_add(callback, trust)
+
+        thread = Thread(target=get_trust)
+        thread.daemon = True
+        thread.start()
 
     def get_content(self):
         return self.get_object("systemTrustDatabaseAdmin")

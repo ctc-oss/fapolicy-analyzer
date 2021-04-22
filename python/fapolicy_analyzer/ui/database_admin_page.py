@@ -10,21 +10,22 @@ class DatabaseAdminPage:
     def __init__(self):
         self.notebook = Gtk.Notebook()
 
+        self.ancillaryTrustDbAdmin = AncillaryTrustDatabaseAdmin()
         self.systemTrustDbAdmin = SystemTrustDatabaseAdmin()
         self.systemTrustDbAdmin.file_added_to_ancillary_trust += (
             self.on_added_to_ancillary_trust
         )
+
         self.notebook.append_page(
             self.systemTrustDbAdmin.get_content(),
             Gtk.Label(label="System Trust Database"),
         )
-
-        self.ancillaryTrustDbAdmin = AncillaryTrustDatabaseAdmin()
         self.notebook.append_page(
             self.ancillaryTrustDbAdmin.get_content(),
             Gtk.Label(label="Ancillary Trust Database"),
         )
 
+        self.notebook.set_current_page(1)
         self.notebook.show_all()
 
     def get_content(self):
