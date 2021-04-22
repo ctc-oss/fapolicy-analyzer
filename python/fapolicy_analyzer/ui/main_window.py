@@ -42,22 +42,6 @@ class MainWindow(UIWidget):
     def on_delete_event(self, *args):
         return self.__unapplied_changes()
 
-    def on_quitMenu_activate(self, menuItem, data=None):
-        print("on_quitMenu_activate()")
-        # Check backend for unapplied changes
-        if not Changeset().is_empty():
-            # Warn user pending changes will be lost.
-            unapplied_changes_dlg = UnappliedChangesDialog(self.window)
-            unappliedChangesDlg = unapplied_changes_dlg.get_content()
-            response = unappliedChangesDlg.run()
-            unappliedChangesDlg.destroy()
-
-            # User returns to application
-            if response != Gtk.ResponseType.OK:
-                return True
-        print("Terminating with unapplied changes...")
-        return False
-
     def on_aboutMenu_activate(self, menuitem, data=None):
         aboutDialog = self.builder.get_object("aboutDialog")
         aboutDialog.set_transient_for(self.window)
