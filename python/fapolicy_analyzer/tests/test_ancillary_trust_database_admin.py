@@ -20,15 +20,15 @@ def test_creates_widget(widget):
 
 def test_status_markup(widget):
     assert widget._AncillaryTrustDatabaseAdmin__status_markup("T") == (
-        "<b><u>T</u></b>/D/U",
+        "<b><u>T</u></b>/D",
         Colors.LIGHT_GREEN,
     )
     assert widget._AncillaryTrustDatabaseAdmin__status_markup("D") == (
-        "T/<b><u>D</u></b>/U",
+        "T/<b><u>D</u></b>",
         Colors.LIGHT_RED,
     )
     assert widget._AncillaryTrustDatabaseAdmin__status_markup("foo") == (
-        "T/D/<b><u>U</u></b>",
+        "T/D",
         Colors.LIGHT_YELLOW,
     )
 

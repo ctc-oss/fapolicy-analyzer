@@ -38,11 +38,11 @@ class AncillaryTrustDatabaseAdmin(UIWidget):
     def __status_markup(self, status):
         s = status.lower()
         return (
-            ("<b><u>T</u></b>/D/U", Colors.LIGHT_GREEN)
+            ("<b><u>T</u></b>/D", Colors.LIGHT_GREEN)
             if s == "t"
-            else ("T/<b><u>D</u></b>/U", Colors.LIGHT_RED)
+            else ("T/<b><u>D</u></b>", Colors.LIGHT_RED)
             if s == "d"
-            else ("T/D/<b><u>U</u></b>", Colors.LIGHT_YELLOW)
+            else ("T/D", Colors.LIGHT_YELLOW)
         )
 
     def get_content(self):
@@ -80,8 +80,8 @@ SHA256: {fs.sha(trust.path)}"""
             self.trustFileDetails.set_trust_status(
                 "This file is trusted."
                 if trusted
-                else "This file is untrusted."
-                if status == "u"
+                else "There is a discrepancy with this file."
+                if status == "d"
                 else "The trust status of this file is unknown."
             )
         else:
@@ -90,7 +90,7 @@ SHA256: {fs.sha(trust.path)}"""
 
     def on_files_added(self, files):
         if files:
-            self.add_trusted_files(files)
+            self.add_trusted_files(*files)
 
     def on_deployBtn_clicked(self, *args):
         parent = self.content.get_toplevel()

@@ -59,7 +59,11 @@ SHA256: {trust.hash}"""
 SHA256: {fs.sha(trust.path)}"""
             )
             self.trustFileDetails.set_trust_status(
-                f"This file is {'trusted' if trusted else 'untrusted'}."
+                "This file is trusted."
+                if trusted
+                else "There is a discrepancy with this file."
+                if status == "d"
+                else "The trust status of this file is unknown."
             )
         else:
             addBtn.set_sensitive(False)
