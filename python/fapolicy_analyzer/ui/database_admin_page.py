@@ -9,15 +9,26 @@ from .system_trust_database_admin import SystemTrustDatabaseAdmin
 class DatabaseAdminPage:
     def __init__(self):
         self.notebook = Gtk.Notebook()
+
+        self.systemTrustDbAdmin = SystemTrustDatabaseAdmin()
+        self.systemTrustDbAdmin.file_added_to_ancillary_trust += (
+            self.on_added_to_ancillary_trust
+        )
         self.notebook.append_page(
-            SystemTrustDatabaseAdmin().get_content(),
+            self.systemTrustDbAdmin.get_content(),
             Gtk.Label(label="System Trust Database"),
         )
+
+        self.ancillaryTrustDbAdmin = AncillaryTrustDatabaseAdmin()
         self.notebook.append_page(
-            AncillaryTrustDatabaseAdmin().get_content(),
+            self.ancillaryTrustDbAdmin.get_content(),
             Gtk.Label(label="Ancillary Trust Database"),
         )
+
         self.notebook.show_all()
 
     def get_content(self):
         return self.notebook
+
+    def on_added_to_ancillary_trust(self, file):
+        self.ancillaryTrustDbAdmin.add_trusted_files(file)

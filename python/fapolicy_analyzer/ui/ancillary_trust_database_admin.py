@@ -38,15 +38,24 @@ class AncillaryTrustDatabaseAdmin(UIWidget):
     def __status_markup(self, status):
         s = status.lower()
         return (
-            ("<b><u>T</u></b>/D/U", Colors.LIGHT_GREEN)
+            ("<b><u>T</u></b>/D", Colors.LIGHT_GREEN)
             if s == "t"
-            else ("T/<b><u>D</u></b>/U", Colors.LIGHT_RED)
+            else ("T/<b><u>D</u></b>", Colors.LIGHT_RED)
             if s == "d"
-            else ("T/D/<b><u>U</u></b>", Colors.LIGHT_YELLOW)
+            else ("T/D", Colors.LIGHT_YELLOW)
         )
 
     def get_content(self):
         return self.content
+
+    def add_trusted_files(self, *files):
+        changeset = Changeset()
+        for f in files:
+            changeset.add_trust(f)
+
+        self.system = self.system.apply_changeset(changeset)
+        stateManager.add_changeset_q(changeset)
+        self.trustFileList.refresh(self.system.ancillary_trust)
 
     def on_file_selection_change(self, trust):
         trustBtn = self.get_object("trustBtn")
@@ -71,25 +80,17 @@ SHA256: {fs.sha(trust.path)}"""
             self.trustFileDetails.set_trust_status(
                 "This file is trusted."
                 if trusted
-                else "This file is untrusted."
-                if status == "u"
+                else "There is a discrepancy with this file."
+                if status == "d"
                 else "The trust status of this file is unknown."
             )
         else:
             trustBtn.set_sensitive(False)
             untrustBtn.set_sensitive(False)
 
-    def on_files_added(self, paths):
-        if not paths:
-            return
-
-        changeset = Changeset()
-        for p in paths:
-            changeset.add_trust(p)
-
-        self.system = self.system.apply_changeset(changeset)
-        stateManager.add_changeset_q(changeset)
-        self.trustFileList.refresh(self.system.ancillary_trust)
+    def on_files_added(self, files):
+        if files:
+            self.add_trusted_files(*files)
 
     def on_deployBtn_clicked(self, *args):
         parent = self.content.get_toplevel()
