@@ -48,6 +48,15 @@ class AncillaryTrustDatabaseAdmin(UIWidget):
     def get_content(self):
         return self.content
 
+    def add_trusted_files(self, *files):
+        changeset = Changeset()
+        for f in files:
+            changeset.add_trust(f)
+
+        self.system = self.system.apply_changeset(changeset)
+        stateManager.add_changeset_q(changeset)
+        self.trustFileList.refresh(self.system.ancillary_trust)
+
     def on_file_selection_change(self, trust):
         trustBtn = self.get_object("trustBtn")
         untrustBtn = self.get_object("untrustBtn")
@@ -79,17 +88,9 @@ SHA256: {fs.sha(trust.path)}"""
             trustBtn.set_sensitive(False)
             untrustBtn.set_sensitive(False)
 
-    def on_files_added(self, paths):
-        if not paths:
-            return
-
-        changeset = Changeset()
-        for p in paths:
-            changeset.add_trust(p)
-
-        self.system = self.system.apply_changeset(changeset)
-        stateManager.add_changeset_q(changeset)
-        self.trustFileList.refresh(self.system.ancillary_trust)
+    def on_files_added(self, files):
+        if files:
+            self.add_trusted_files(files)
 
     def on_deployBtn_clicked(self, *args):
         parent = self.content.get_toplevel()

@@ -1,14 +1,19 @@
 from fapolicy_analyzer import System
 from fapolicy_analyzer.util import fs
+from events import Events
 from .trust_file_list import TrustFileList
 from .trust_file_details import TrustFileDetails
 from .ui_widget import UIWidget
 from .configs import Colors
 
 
-class SystemTrustDatabaseAdmin(UIWidget):
+class SystemTrustDatabaseAdmin(UIWidget, Events):
+    __events__ = ["file_added_to_ancillary_trust"]
+    selectedFile = None
+
     def __init__(self):
-        super().__init__()
+        UIWidget.__init__(self)
+        Events.__init__(self)
         self.system = System()
 
         self.trustFileList = TrustFileList(
@@ -37,7 +42,13 @@ class SystemTrustDatabaseAdmin(UIWidget):
         return self.get_object("systemTrustDatabaseAdmin")
 
     def on_file_selection_change(self, trust):
+        self.selectedFile = trust
+        addBtn = self.get_object("addBtn")
         if trust:
+            status = trust.status.lower()
+            trusted = status == "t"
+            addBtn.set_sensitive(not trusted)
+
             self.trustFileDetails.set_in_databae_view(
                 f"""File: {trust.path}
 Size: {trust.size}
@@ -48,5 +59,11 @@ SHA256: {trust.hash}"""
 SHA256: {fs.sha(trust.path)}"""
             )
             self.trustFileDetails.set_trust_status(
-                f"This file is {'trusted' if trust.status.lower() == 't' else 'untrusted'}."
+                f"This file is {'trusted' if trusted else 'untrusted'}."
             )
+        else:
+            addBtn.set_sensitive(False)
+
+    def on_addBtn_clicked(self, *args):
+        if self.selectedFile:
+            self.file_added_to_ancillary_trust(self.selectedFile.path)
