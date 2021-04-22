@@ -16,6 +16,7 @@ class MainWindow(UIWidget):
         self.window = self.builder.get_object("mainWindow")
         self.window.show_all()
 
+<<<<<<< HEAD
     def __unapplied_changes(self):
         # Check backend for unapplied changes
         if not stateManager.is_dirty_queue():
@@ -32,6 +33,30 @@ class MainWindow(UIWidget):
         if not isinstance(obj, Gtk.Window) and self.__unapplied_changes():
             return True
 
+=======
+        # To support unapplied/unsaved changeset status in UI
+        # Maintain original title, toplevel reference, register rate and fcn.
+        self.windowTopLevel = self.window.get_toplevel()
+        self.strTopLevelTitle = self.windowTopLevel.get_title()
+        GLib.timeout_add_seconds(1, self.poll_backend_changeset)
+
+    def poll_backend_changeset(self):
+        if not Changeset().is_empty():
+            self.set_modified_titlebar();
+        else:
+            self.set_modified_titlebar(False);
+        return True
+
+    def set_modified_titlebar(self, bModified = True):
+        if(bModified):
+            # Prefix title with '*'
+            self.windowTopLevel.set_title("*"+self.strTopLevelTitle)
+        else:
+            # Reset title to original text
+            self.windowTopLevel.set_title(self.strTopLevelTitle)
+
+    def on_destroy(self, *args):
+>>>>>>> Added polling to check for unapplied changes queue, and update titlebar appropriately.
         Gtk.main_quit()
 
     def on_delete_event(self, *args):
