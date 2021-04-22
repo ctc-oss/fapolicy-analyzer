@@ -16,7 +16,11 @@ class MainWindow(UIWidget):
         self.window = self.builder.get_object("mainWindow")
         self.window.show_all()
 
-<<<<<<< HEAD
+        # To support unapplied/unsaved changeset status in UI
+        # Maintain original title, toplevel reference
+        self.windowTopLevel = self.window.get_toplevel()
+        self.strTopLevelTitle = self.windowTopLevel.get_title()
+
     def __unapplied_changes(self):
         # Check backend for unapplied changes
         if not stateManager.is_dirty_queue():
@@ -33,34 +37,26 @@ class MainWindow(UIWidget):
         if not isinstance(obj, Gtk.Window) and self.__unapplied_changes():
             return True
 
-=======
-        # To support unapplied/unsaved changeset status in UI
-        # Maintain original title, toplevel reference, register rate and fcn.
-        self.windowTopLevel = self.window.get_toplevel()
-        self.strTopLevelTitle = self.windowTopLevel.get_title()
-        GLib.timeout_add_seconds(1, self.poll_backend_changeset)
-
-    def poll_backend_changeset(self):
-        if not Changeset().is_empty():
-            self.set_modified_titlebar();
-        else:
-            self.set_modified_titlebar(False);
-        return True
-
-    def set_modified_titlebar(self, bModified = True):
-        if(bModified):
-            # Prefix title with '*'
-            self.windowTopLevel.set_title("*"+self.strTopLevelTitle)
-        else:
-            # Reset title to original text
-            self.windowTopLevel.set_title(self.strTopLevelTitle)
-
-    def on_destroy(self, *args):
->>>>>>> Added polling to check for unapplied changes queue, and update titlebar appropriately.
         Gtk.main_quit()
 
     def on_delete_event(self, *args):
         return self.__unapplied_changes()
+
+    def on_quitMenu_activate(self, menuItem, data=None):
+        print("on_quitMenu_activate()")
+        # Check backend for unapplied changes
+        if not Changeset().is_empty():
+            # Warn user pending changes will be lost.
+            unapplied_changes_dlg = UnappliedChangesDialog(self.window)
+            unappliedChangesDlg = unapplied_changes_dlg.get_content()
+            response = unappliedChangesDlg.run()
+            unappliedChangesDlg.destroy()
+
+            # User returns to application
+            if response != Gtk.ResponseType.OK:
+                return True
+        print("Terminating with unapplied changes...")
+        return False
 
     def on_aboutMenu_activate(self, menuitem, data=None):
         aboutDialog = self.builder.get_object("aboutDialog")
@@ -81,10 +77,22 @@ class MainWindow(UIWidget):
         mainContent = self.builder.get_object("mainContent")
         mainContent.pack_start(page, True, True, 0)
 
+    def set_modified_titlebar(self, bModified=True):
+        """Adds leading '*' to titlebar text with True or default argument"""
+        if bModified:
+            # Prefix title with '*'
+            self.windowTopLevel.set_title("*"+self.strTopLevelTitle)
+        else:
+            # Reset title to original text
+            self.windowTopLevel.set_title(self.strTopLevelTitle)
+
     def on_changeset_updated(self):
         """The callback function invoked from the StateManager when
         state changes."""
         if stateManager.is_dirty_queue():
-            print("main_window -> There are undeployed changes!")
+            self.set_modified_titlebar(True)
         else:
-            print("main_window -> There are no undeployed changes...")
+            self.set_modified_titlebar(False)
+
+
+
