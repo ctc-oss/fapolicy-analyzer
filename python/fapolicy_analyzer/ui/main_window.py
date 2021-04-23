@@ -73,7 +73,4 @@ class MainWindow(UIWidget):
     def on_changeset_updated(self):
         """The callback function invoked from the StateManager when
         state changes."""
-        if stateManager.is_dirty_queue():
-            self.set_modified_titlebar(True)
-        else:
-            self.set_modified_titlebar(False)
+        self.set_modified_titlebar(stateManager.is_dirty_queue())
