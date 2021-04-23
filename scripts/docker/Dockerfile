@@ -29,7 +29,7 @@ RUN python3 setup.py install
 FROM ctcoss/fapolicyd as main
 
 RUN dnf install -y python38 python3-pip dbus-libs pkg-config which \
-                   gtk3 xorg-x11-server-Xvfb \
+                   gtk3 xorg-x11-server-Xvfb nano \
  && dnf clean all
 
 COPY --from=build /usr/local/lib/python3.8/site-packages/ /usr/local/lib/python3.8/site-packages/
