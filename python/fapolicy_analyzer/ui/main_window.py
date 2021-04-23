@@ -16,6 +16,11 @@ class MainWindow(UIWidget):
         self.window = self.builder.get_object("mainWindow")
         self.window.show_all()
 
+        # To support unapplied/unsaved changeset status in UI
+        # Maintain original title, toplevel reference
+        self.windowTopLevel = self.window.get_toplevel()
+        self.strTopLevelTitle = self.windowTopLevel.get_title()
+
     def __unapplied_changes(self):
         # Check backend for unapplied changes
         if not stateManager.is_dirty_queue():
@@ -56,10 +61,16 @@ class MainWindow(UIWidget):
         mainContent = self.builder.get_object("mainContent")
         mainContent.pack_start(page, True, True, 0)
 
+    def set_modified_titlebar(self, bModified=True):
+        """Adds leading '*' to titlebar text with True or default argument"""
+        if bModified:
+            # Prefix title with '*'
+            self.windowTopLevel.set_title("*" + self.strTopLevelTitle)
+        else:
+            # Reset title to original text
+            self.windowTopLevel.set_title(self.strTopLevelTitle)
+
     def on_changeset_updated(self):
         """The callback function invoked from the StateManager when
         state changes."""
-        if stateManager.is_dirty_queue():
-            print("main_window -> There are undeployed changes!")
-        else:
-            print("main_window -> There are no undeployed changes...")
+        self.set_modified_titlebar(stateManager.is_dirty_queue())
