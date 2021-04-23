@@ -9,10 +9,9 @@ from helpers import refresh_gui
 from ui.trust_file_list import TrustFileList
 
 
-@pytest.fixture
-def trust_func():
-    return MagicMock(
-        return_value=[
+def _trust_func(callback):
+    callback(
+        [
             MagicMock(status="u", path="/tmp/foo"),
             MagicMock(status="t", path="/tmp/baz"),
         ]
@@ -20,9 +19,8 @@ def trust_func():
 
 
 @pytest.fixture
-def widget(trust_func):
-    widget = TrustFileList(trust_func=trust_func)
-    refresh_gui(1.5)
+def widget():
+    widget = TrustFileList(trust_func=_trust_func)
     return widget
 
 
@@ -30,14 +28,15 @@ def test_creates_widget(widget):
     assert type(widget.get_content()) is Gtk.Box
 
 
-def test_uses_custom_trust_func(widget, trust_func):
+def test_uses_custom_trust_func():
+    trust_func = MagicMock()
+    TrustFileList(trust_func=trust_func)
     trust_func.assert_called()
 
 
-def test_uses_custom_markup_func(trust_func):
+def test_uses_custom_markup_func():
     markup_func = MagicMock(return_value="t")
-    TrustFileList(trust_func=trust_func, markup_func=markup_func)
-    refresh_gui(1.5)
+    TrustFileList(trust_func=_trust_func, markup_func=markup_func)
     markup_func.assert_called_with("t")
 
 
@@ -59,7 +58,7 @@ def test_filtering(widget):
     trustView = widget.trustView
     trustViewFilter = widget.builder.get_object("trustViewSearch")
     trustViewFilter.set_text("foo")
-    refresh_gui(1.5)
+    refresh_gui()
     paths = [x[1] for x in trustView.get_model()]
     assert "/tmp/foo" in paths
     assert "/tmp/baz" not in paths

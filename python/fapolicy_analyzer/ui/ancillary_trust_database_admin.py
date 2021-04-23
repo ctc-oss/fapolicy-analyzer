@@ -20,7 +20,7 @@ class AncillaryTrustDatabaseAdmin(UIWidget):
         self.content = self.get_object("ancillaryTrustDatabaseAdmin")
 
         self.trustFileList = TrustFileList(
-            trust_func=self.system.ancillary_trust, markup_func=self.__status_markup
+            trust_func=self.__load_trust, markup_func=self.__status_markup
         )
         self.trustFileList.file_selection_change += self.on_file_selection_change
         self.trustFileList.files_added += self.on_files_added
@@ -45,6 +45,9 @@ class AncillaryTrustDatabaseAdmin(UIWidget):
             else ("T/D", Colors.LIGHT_YELLOW)
         )
 
+    def __load_trust(self, callback):
+        callback(self.system.ancillary_trust())
+
     def get_content(self):
         return self.content
 
@@ -55,7 +58,7 @@ class AncillaryTrustDatabaseAdmin(UIWidget):
 
         self.system = self.system.apply_changeset(changeset)
         stateManager.add_changeset_q(changeset)
-        self.trustFileList.refresh(self.system.ancillary_trust)
+        self.trustFileList.refresh(self.__load_trust)
 
     def on_file_selection_change(self, trust):
         trustBtn = self.get_object("trustBtn")
