@@ -3,14 +3,20 @@ use std::path::Path;
 use clap::Clap;
 use lmdb::{Cursor, Environment, Transaction};
 
+use fapolicy_analyzer::cfg::All;
+
 #[derive(Clap)]
 struct Opts {
-    path: String,
+    path: Option<String>,
 }
 
 fn main() {
     let opts: Opts = Opts::parse();
-    let path = Path::new(&opts.path);
+    let path = match opts.path {
+        Some(p) => p.clone(),
+        None => All::load().system.trust_db_path,
+    };
+    let path = Path::new(&path);
 
     let env = Environment::new()
         .set_max_dbs(1)

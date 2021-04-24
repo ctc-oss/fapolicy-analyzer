@@ -50,4 +50,5 @@ setup_with_rules() {
 teardown() {
   podman kill "$test_name"
   rm -rf "$voldir"
+  sleep 1
 }

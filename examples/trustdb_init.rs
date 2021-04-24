@@ -21,12 +21,17 @@ struct Opts {
     size: usize,
 
     /// Directory in which to create the database
-    dbdir: String,
+    dbdir: Option<String>,
 }
 
 fn main() {
     let opts: Opts = Opts::parse();
-    let path = Path::new(&opts.dbdir);
+    let path = match opts.dbdir {
+        Some(p) => p.clone(),
+        None => All::load().system.trust_db_path,
+    };
+    let path = Path::new(&path);
+
     if !path.exists() {
         panic!("dbdir does not exist")
     } else if !path.is_dir() {
