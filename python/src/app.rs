@@ -50,6 +50,10 @@ impl PySystem {
             .collect()
     }
 
+    fn system_trust_allow_threads(&self, py: Python) -> Vec<PyTrust> {
+        py.allow_threads(|| self.system_trust())
+    }
+
     /// Obtain a list of trusted files sourced from the ancillary trust database.
     /// This represents state in the current fapolicyd database, not necessarily
     /// matching what is currently in the ancillary trust file.
