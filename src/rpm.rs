@@ -46,7 +46,7 @@ fn parse(s: &str) -> Vec<api::Trust> {
             e.hash.as_ref().map(|hash| api::Trust {
                 path: e.path.clone(),
                 size: e.size,
-                hash: hash.clone().to_string(),
+                hash: hash.clone(),
                 source: api::TrustSource::System,
             })
         })
