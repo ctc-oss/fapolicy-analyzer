@@ -20,6 +20,7 @@ class AncillaryTrustDatabaseAdmin(UIWidget):
         self.system = System()
         self.content = self.get_object("ancillaryTrustDatabaseAdmin")
         self.executor = ThreadPoolExecutor(max_workers=1)
+        self.selectedFile = None
 
         self.trustFileList = TrustFileList(
             trust_func=self.__load_trust, markup_func=self.__status_markup
@@ -54,6 +55,11 @@ class AncillaryTrustDatabaseAdmin(UIWidget):
 
         self.executor.submit(get_trust)
 
+    def __apply_changeset(self, changeset):
+        self.system = self.system.apply_changeset(changeset)
+        stateManager.add_changeset_q(changeset)
+        self.trustFileList.refresh(self.__load_trust)
+
     def get_content(self):
         return self.content
 
@@ -61,12 +67,16 @@ class AncillaryTrustDatabaseAdmin(UIWidget):
         changeset = Changeset()
         for f in files:
             changeset.add_trust(f)
+        self.__apply_changeset(changeset)
 
-        self.system = self.system.apply_changeset(changeset)
-        stateManager.add_changeset_q(changeset)
-        self.trustFileList.refresh(self.__load_trust)
+    def delete_trusted_files(self, *files):
+        changeset = Changeset()
+        for f in files:
+            changeset.del_trust(f)
+        self.__apply_changeset(changeset)
 
     def on_file_selection_change(self, trust):
+        self.selectedFile = trust.path if trust else None
         trustBtn = self.get_object("trustBtn")
         untrustBtn = self.get_object("untrustBtn")
         if trust:
@@ -100,6 +110,14 @@ SHA256: {fs.sha(trust.path)}"""
     def on_files_added(self, files):
         if files:
             self.add_trusted_files(*files)
+
+    def on_trustBtn_clicked(self, *args):
+        if self.selectedFile:
+            self.add_trusted_files(self.selectedFile)
+
+    def on_untrustBtn_clicked(self, *args):
+        if self.selectedFile:
+            self.delete_trusted_files(self.selectedFile)
 
     def on_deployBtn_clicked(self, *args):
         parent = self.content.get_toplevel()

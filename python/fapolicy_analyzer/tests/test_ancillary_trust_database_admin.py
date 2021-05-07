@@ -5,13 +5,27 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from unittest.mock import MagicMock
+import tempfile
 from ui.ancillary_trust_database_admin import AncillaryTrustDatabaseAdmin
 from ui.configs import Colors
+from ui.state_manager import stateManager
 
 
 @pytest.fixture
-def widget():
+def mock_util(mocker):
+    mocker.patch("ui.ancillary_trust_database_admin.fs.sha", return_value="abc")
+
+
+@pytest.fixture
+def widget(mock_util):
     return AncillaryTrustDatabaseAdmin()
+
+
+@pytest.fixture
+def state():
+    stateManager.del_changeset_q()
+    yield stateManager
+    stateManager.del_changeset_q()
 
 
 def test_creates_widget(widget):
@@ -37,7 +51,6 @@ def test_updates_trust_details(widget, mocker):
     mocker.patch.object(widget.trustFileDetails, "set_in_databae_view")
     mocker.patch.object(widget.trustFileDetails, "set_on_file_system_view")
     mocker.patch.object(widget.trustFileDetails, "set_trust_status")
-    mocker.patch("ui.ancillary_trust_database_admin.fs.sha", return_value="abc")
     trust = MagicMock(status="T", path="/tmp/foo", size=1, hash="abc")
     widget.on_file_selection_change(trust)
     widget.trustFileDetails.set_in_databae_view.assert_called_with(
@@ -92,3 +105,66 @@ def test_on_neg_confirm_deployment(widget, mocker):
     mock_confirm_dialog.run.assert_called()
     mock_confirm_dialog.hide.assert_called()
     mock_deploy_dialog.run.assert_not_called()
+
+
+def test_add_trusted_files(widget, state):
+    assert len(state.get_changeset_q()) == 0
+    tmpFile = tempfile.NamedTemporaryFile()
+    widget.add_trusted_files(tmpFile.name)
+    assert len(state.get_changeset_q()) == 1
+    changeset = state.next_changeset_q()
+    assert changeset.len() == 1
+
+
+def test_delete_trusted_files(widget, state):
+    assert len(state.get_changeset_q()) == 0
+    tmpFile = tempfile.NamedTemporaryFile()
+    widget.delete_trusted_files(tmpFile.name)
+    assert len(state.get_changeset_q()) == 1
+    changeset = state.next_changeset_q()
+    assert changeset.len() == 1
+
+
+def test_on_trustBtn_clicked(widget, state):
+    assert len(state.get_changeset_q()) == 0
+    tmpFile = tempfile.NamedTemporaryFile()
+    tmpFile.seek(0, 2)
+    trust = MagicMock(status="T", path=tmpFile.name, size=tmpFile.tell(), hash="abc")
+    widget.on_file_selection_change(trust)
+    widget.on_trustBtn_clicked()
+    assert len(state.get_changeset_q()) == 1
+
+
+def test_on_trustBtn_clicked_empty(widget, state):
+    assert len(state.get_changeset_q()) == 0
+    widget.on_trustBtn_clicked()
+    assert len(state.get_changeset_q()) == 0
+
+
+def test_on_untrustBtn_clicked(widget, state):
+    assert len(state.get_changeset_q()) == 0
+    tmpFile = tempfile.NamedTemporaryFile()
+    tmpFile.seek(0, 2)
+    trust = MagicMock(status="T", path=tmpFile.name, size=tmpFile.tell(), hash="abc")
+    widget.on_file_selection_change(trust)
+    widget.on_untrustBtn_clicked()
+    assert len(state.get_changeset_q()) == 1
+
+
+def test_on_untrustBtn_clicked_empty(widget, state):
+    assert len(state.get_changeset_q()) == 0
+    widget.on_untrustBtn_clicked()
+    assert len(state.get_changeset_q()) == 0
+
+
+def test_on_file_added(widget, state):
+    assert len(state.get_changeset_q()) == 0
+    tmpFile = tempfile.NamedTemporaryFile()
+    widget.trustFileList.files_added([tmpFile.name])
+    assert len(state.get_changeset_q()) == 1
+
+
+def test_on_file_added_empty(widget, state):
+    assert len(state.get_changeset_q()) == 0
+    widget.on_files_added(None)
+    assert len(state.get_changeset_q()) == 0
