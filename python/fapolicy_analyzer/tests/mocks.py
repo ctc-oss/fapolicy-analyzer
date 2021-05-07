@@ -7,5 +7,11 @@ class mock_System:
     def ancillary_trust(self):
         return [self.mock_trust]
 
+    def ancillary_trust_async(self):
+        return [self.mock_trust]
+
     def system_trust(self):
+        return [self.mock_trust]
+
+    def system_trust_async(self):
         return [self.mock_trust]
