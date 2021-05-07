@@ -59,7 +59,9 @@ jobs:
       - name: Set up Rust Stable
         uses: actions-rs/toolchain@v1
         with:
+          profile: minimal
           toolchain: stable
+          override: true
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
