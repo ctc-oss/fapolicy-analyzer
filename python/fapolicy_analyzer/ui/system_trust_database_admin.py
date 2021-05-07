@@ -3,8 +3,7 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import GLib
 from events import Events
-from threading import Thread
-from time import sleep
+from concurrent.futures import ThreadPoolExecutor
 from fapolicy_analyzer import System
 from fapolicy_analyzer.util import fs
 from .trust_file_list import TrustFileList
@@ -21,6 +20,7 @@ class SystemTrustDatabaseAdmin(UIWidget, Events):
         UIWidget.__init__(self)
         Events.__init__(self)
         self.system = System()
+        self.executor = ThreadPoolExecutor(max_workers=1)
 
         self.trustFileList = TrustFileList(
             trust_func=self.__load_trust,
@@ -46,13 +46,10 @@ class SystemTrustDatabaseAdmin(UIWidget, Events):
 
     def __load_trust(self, callback):
         def get_trust():
-            sleep(1)
-            trust = self.system.system_trust()
+            trust = self.system.system_trust_async()
             GLib.idle_add(callback, trust)
 
-        thread = Thread(target=get_trust)
-        thread.daemon = True
-        thread.start()
+        self.executor.submit(get_trust)
 
     def get_content(self):
         return self.get_object("systemTrustDatabaseAdmin")

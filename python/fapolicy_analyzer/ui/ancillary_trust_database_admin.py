@@ -1,7 +1,8 @@
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
+from gi.repository import Gtk, GLib
+from concurrent.futures import ThreadPoolExecutor
 from fapolicy_analyzer import Changeset, System
 from fapolicy_analyzer.util import fs
 from .ui_widget import UIWidget
@@ -18,6 +19,7 @@ class AncillaryTrustDatabaseAdmin(UIWidget):
         super().__init__()
         self.system = System()
         self.content = self.get_object("ancillaryTrustDatabaseAdmin")
+        self.executor = ThreadPoolExecutor(max_workers=1)
 
         self.trustFileList = TrustFileList(
             trust_func=self.__load_trust, markup_func=self.__status_markup
@@ -46,7 +48,11 @@ class AncillaryTrustDatabaseAdmin(UIWidget):
         )
 
     def __load_trust(self, callback):
-        callback(self.system.ancillary_trust())
+        def get_trust():
+            trust = self.system.ancillary_trust_async()
+            GLib.idle_add(callback, trust)
+
+        self.executor.submit(get_trust)
 
     def get_content(self):
         return self.content
