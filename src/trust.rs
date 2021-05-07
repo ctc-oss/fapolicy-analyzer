@@ -39,18 +39,9 @@ impl TrustPair {
     }
 }
 
-// todo;; https://github.com/rust-lang/rust/issues/74773
-fn str_split_once(s: &str) -> (&str, String) {
-    let mut splits = s.split(' ');
-    let head = splits.next().unwrap();
-    let tail = splits.collect::<Vec<&str>>().join(" ");
-    (head, tail)
-}
-
 impl From<TrustPair> for api::Trust {
     fn from(kv: TrustPair) -> Self {
-        // todo;; let v = kv.v.split_once(' ').unwrap().1;
-        let (t, v) = str_split_once(&kv.v);
+        let (t, v) = kv.v.split_once(' ').unwrap();
         parse_strtyped_trust_record(format!("{} {}", kv.k, v).as_str(), t).unwrap()
     }
 }
@@ -263,6 +254,23 @@ mod tests {
         assert_eq!(e.size, 157984);
         assert_eq!(
             e.hash,
+            "61a9960bf7d255a85811f4afcac51067b8f2e4c75e21cf4f2af95319d4ed1b87"
+        );
+    }
+
+    #[test]
+    // todo;; additional coverage for type 2 and invalid type
+    fn parse_trust_pair() {
+        let tp = TrustPair::new((
+            "/home/user/my-ls".as_bytes(),
+            "1 157984 61a9960bf7d255a85811f4afcac51067b8f2e4c75e21cf4f2af95319d4ed1b87".as_bytes(),
+        ));
+        let t: Trust = tp.into();
+
+        assert_eq!(t.path, "/home/user/my-ls");
+        assert_eq!(t.size, 157984);
+        assert_eq!(
+            t.hash,
             "61a9960bf7d255a85811f4afcac51067b8f2e4c75e21cf4f2af95319d4ed1b87"
         );
     }

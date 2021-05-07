@@ -42,19 +42,14 @@ fn parse(s: &str) -> Vec<api::Trust> {
         .iter()
         .flatten()
         .filter(|e| keep_entry(&e.path))
-        .map(|e| {
-            if let Some(hash) = &e.hash {
-                Some(api::Trust {
-                    path: e.path.clone(),
-                    size: e.size,
-                    hash: hash.to_string(),
-                    source: api::TrustSource::System,
-                })
-            } else {
-                None
-            }
+        .flat_map(|e| {
+            e.hash.as_ref().map(|hash| api::Trust {
+                path: e.path.clone(),
+                size: e.size,
+                hash: hash.clone(),
+                source: api::TrustSource::System,
+            })
         })
-        .flatten()
         .collect()
 }
 

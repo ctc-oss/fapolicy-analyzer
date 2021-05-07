@@ -45,6 +45,12 @@ A Bats test that validates changing the trust database looks like:
 
 See the [test/bats](tests/bats) directory for more examples.
 
+### Requirements
+
+- fapolicyd 1.0
+- Python 3.8
+- Rust 1.52
+
 ### Developers
 
 See the [Wiki](https://github.com/ctc-oss/fapolicy-analyzer/wiki) for more resources.

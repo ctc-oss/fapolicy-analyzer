@@ -27,7 +27,7 @@ struct Opts {
 fn main() {
     let opts: Opts = Opts::parse();
     let path = match opts.dbdir {
-        Some(p) => p.clone(),
+        Some(p) => p,
         None => All::load().system.trust_db_path,
     };
     let path = Path::new(&path);
