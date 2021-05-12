@@ -130,6 +130,7 @@ SHA256: {fs.sha(trust.path)}"""
         confirm_resp = confirmDialog.run()
         confirmDialog.hide()
         if confirm_resp == Gtk.ResponseType.YES:
+            self.system.deploy()
             deployConfirmDialog = DeployConfirmDialog(parent).get_content()
             revert_resp = deployConfirmDialog.run()
             deployConfirmDialog.hide()
