@@ -1,24 +1,44 @@
 import context  # noqa: F401
 import pytest
+import tempfile
 import gi
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
-from unittest.mock import MagicMock
-import tempfile
+from unittest.mock import MagicMock, patch
 from ui.ancillary_trust_database_admin import AncillaryTrustDatabaseAdmin
 from ui.configs import Colors
 from ui.state_manager import stateManager
 
 
 @pytest.fixture
-def mock_util(mocker):
+def widget(mocker):
     mocker.patch("ui.ancillary_trust_database_admin.fs.sha", return_value="abc")
+    return AncillaryTrustDatabaseAdmin()
 
 
 @pytest.fixture
-def widget(mock_util):
-    return AncillaryTrustDatabaseAdmin()
+def confirm_dialog(confirm_resp, mocker):
+    mock_confirm_dialog = MagicMock(
+        run=MagicMock(return_value=confirm_resp), hide=MagicMock()
+    )
+    mocker.patch(
+        "ui.ancillary_trust_database_admin.ConfirmDialog.get_content",
+        return_value=mock_confirm_dialog,
+    )
+    return mock_confirm_dialog
+
+
+@pytest.fixture
+def revert_dialog(revert_resp, mocker):
+    mock_revert_dialog = MagicMock(
+        run=MagicMock(return_value=revert_resp), hide=MagicMock()
+    )
+    mocker.patch(
+        "ui.ancillary_trust_database_admin.DeployConfirmDialog.get_content",
+        return_value=mock_revert_dialog,
+    )
+    return mock_revert_dialog
 
 
 @pytest.fixture
@@ -62,49 +82,63 @@ def test_updates_trust_details(widget, mocker):
     widget.trustFileDetails.set_trust_status.assert_called_with("This file is trusted.")
 
 
-def test_on_confirm_deployment(widget, mocker):
+@pytest.mark.parametrize("confirm_resp", [Gtk.ResponseType.YES])
+@pytest.mark.parametrize("revert_resp", [Gtk.ResponseType.NO])
+def test_on_confirm_deployment(widget, confirm_dialog, revert_dialog):
     parent = Gtk.Window()
     parent.add(widget.get_content())
-    mock_confirm_dialog = MagicMock(
-        run=MagicMock(return_value=Gtk.ResponseType.YES), hide=MagicMock()
-    )
-    mock_deploy_dialog = MagicMock(run=MagicMock(), hide=MagicMock())
-    mocker.patch(
-        "ui.ancillary_trust_database_admin.ConfirmDialog.get_content",
-        return_value=mock_confirm_dialog,
-    )
-    mocker.patch(
-        "ui.ancillary_trust_database_admin.DeployConfirmDialog.get_content",
-        return_value=mock_deploy_dialog,
-    )
+    with patch("fapolicy_analyzer.System") as mock:
+        instance = mock.return_value
+        widget.system = instance
+        widget.on_deployBtn_clicked()
 
-    widget.on_deployBtn_clicked()
-    mock_confirm_dialog.run.assert_called()
-    mock_confirm_dialog.hide.assert_called()
-    mock_deploy_dialog.run.assert_called()
-    mock_deploy_dialog.hide.assert_called()
+        confirm_dialog.run.assert_called()
+        confirm_dialog.hide.assert_called()
+        instance.deploy.assert_called()
 
 
-def test_on_neg_confirm_deployment(widget, mocker):
+@pytest.mark.parametrize("confirm_resp", [Gtk.ResponseType.NO])
+def test_on_neg_confirm_deployment(widget, confirm_dialog):
     parent = Gtk.Window()
     parent.add(widget.get_content())
-    mock_confirm_dialog = MagicMock(
-        run=MagicMock(return_value=Gtk.ResponseType.NO), hide=MagicMock()
-    )
-    mock_deploy_dialog = MagicMock(run=MagicMock())
-    mocker.patch(
-        "ui.ancillary_trust_database_admin.ConfirmDialog.get_content",
-        return_value=mock_confirm_dialog,
-    )
-    mocker.patch(
-        "ui.ancillary_trust_database_admin.DeployConfirmDialog.get_content",
-        return_value=mock_deploy_dialog,
-    )
+    with patch("fapolicy_analyzer.System") as mock:
+        instance = mock.return_value
+        widget.system = instance
+        widget.on_deployBtn_clicked()
 
-    widget.on_deployBtn_clicked()
-    mock_confirm_dialog.run.assert_called()
-    mock_confirm_dialog.hide.assert_called()
-    mock_deploy_dialog.run.assert_not_called()
+        confirm_dialog.run.assert_called()
+        confirm_dialog.hide.assert_called()
+        instance.deploy.assert_not_called()
+
+
+@pytest.mark.parametrize("confirm_resp", [Gtk.ResponseType.YES])
+@pytest.mark.parametrize("revert_resp", [Gtk.ResponseType.NO])
+def test_on_revert_deployment(widget, confirm_dialog, revert_dialog, state):
+    parent = Gtk.Window()
+    parent.add(widget.get_content())
+    with patch("fapolicy_analyzer.System") as mock:
+        widget.system = mock.return_value
+        state.add_changeset_q("foo")
+        assert len(state.get_changeset_q()) == 1
+        widget.on_deployBtn_clicked()
+        assert len(state.get_changeset_q()) == 1
+        revert_dialog.run.assert_called()
+        revert_dialog.hide.assert_called()
+
+
+@pytest.mark.parametrize("confirm_resp", [Gtk.ResponseType.YES])
+@pytest.mark.parametrize("revert_resp", [Gtk.ResponseType.YES])
+def test_on_neg_revert_deployment(widget, confirm_dialog, revert_dialog, state):
+    parent = Gtk.Window()
+    parent.add(widget.get_content())
+    with patch("fapolicy_analyzer.System") as mock:
+        widget.system = mock.return_value
+        state.add_changeset_q("foo")
+        assert len(state.get_changeset_q()) == 1
+        widget.on_deployBtn_clicked()
+        assert len(state.get_changeset_q()) == 0
+        revert_dialog.run.assert_called()
+        revert_dialog.hide.assert_called()
 
 
 def test_add_trusted_files(widget, state):

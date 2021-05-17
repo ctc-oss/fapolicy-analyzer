@@ -15,3 +15,6 @@ class mock_System:
 
     def system_trust_async(self):
         return [self.mock_trust]
+
+    def deploy(self):
+        pass
