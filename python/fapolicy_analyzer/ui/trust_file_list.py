@@ -1,10 +1,12 @@
 import gi
+import re
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, GdkPixbuf
 from os import path
 from events import Events
 from .ui_widget import UIWidget
+from .confirmation_dialog import ConfirmDialog
 
 
 class TrustFileList(UIWidget, Events):
@@ -106,8 +108,39 @@ class TrustFileList(UIWidget, Events):
         )
         fcd.set_select_multiple(True)
         response = fcd.run()
+        fcd.hide()
         if response == Gtk.ResponseType.OK:
             files = [f for f in fcd.get_filenames() if path.isfile(f)]
+
+            ##### Filter to address fapolicyd embeded whitspace in path issue
+            #     Current fapolicyd VT.B.D. When fixed remove this block
+            #
+            # Detect and remove file paths w/embedded spaces. Alert user w/dlg
+            print ("Filtering out paths with embedded whitespace")
+            listTmp = []
+            for e in files:
+                if not re.search(r"\s", e):
+                    listTmp.append(e)
+                else:
+                    dlgWhitespaceInfo = Gtk.MessageDialog(
+                        transient_for=self.trustFileList.get_toplevel(),
+                        flags=0,
+                        message_type=Gtk.MessageType.INFO,
+                        buttons=Gtk.ButtonsType.OK,
+                        text="File path contains embedded whitespace.",
+                    )
+                    dlgWhitespaceInfo.format_secondary_text(
+                        f"{e}, contains whitespace.\nfapolicyd "+
+                        "currently does not support paths containing spaces.\n"+
+                        "\nPath will not be added to the Trusted Files List."+
+                        "(fapolicyd: VTBD)"
+                    )
+                    dlgWhitespaceInfo.run()
+                    dlgWhitespaceInfo.destroy()
+            files = listTmp
+            #     Remove this filter block if fapolicyd bug #TBD is fixed
+            #################################################################
+            
             if files:
                 self.files_added(files)
         fcd.destroy()
