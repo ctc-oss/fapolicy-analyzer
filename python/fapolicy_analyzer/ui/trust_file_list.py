@@ -6,7 +6,6 @@ from gi.repository import Gtk, GdkPixbuf
 from os import path
 from events import Events
 from .ui_widget import UIWidget
-from .confirmation_dialog import ConfirmDialog
 
 
 class TrustFileList(UIWidget, Events):
@@ -140,7 +139,7 @@ class TrustFileList(UIWidget, Events):
             files = listTmp
             #     Remove this filter block if fapolicyd bug #TBD is fixed
             #################################################################
-            
+
             if files:
                 self.files_added(files)
         fcd.destroy()
