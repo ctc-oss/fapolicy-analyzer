@@ -1,5 +1,6 @@
 import context  # noqa: F401
 import pytest
+import locale
 import gi
 
 gi.require_version("Gtk", "3.0")
@@ -27,6 +28,13 @@ class StubMainWindow(MainWindow):
 @pytest.fixture
 def mainWindow():
     return StubMainWindow()
+
+
+@pytest.fixture
+def es_locale():
+    locale.setlocale(locale.LC_ALL, "es_ES.UTF-8")
+    yield
+    locale.setlocale(locale.LC_ALL, "")
 
 
 def test_displays_window(mainWindow):
@@ -69,3 +77,11 @@ def test_raises_bad_selection_error(mainWindow, mocker):
     )
     with pytest.raises(Exception, match="Bad Selection"):
         mainWindow.original_on_start()
+
+
+def test_localization(es_locale):
+    mainWindow = StubMainWindow()
+    assert type(mainWindow.window) is Gtk.Window
+    assert (
+        mainWindow.window.get_title() == "Analizador de políticas de acceso a archivos"
+    )

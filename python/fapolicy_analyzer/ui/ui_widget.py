@@ -1,10 +1,18 @@
 import os
 import sys
+import locale
 import gi
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from abc import ABC
+
+domain = "fapolicy_analyzer"
+locale_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "../../locale")
+locale.setlocale(locale.LC_ALL, locale.getlocale())
+locale.bindtextdomain(domain, locale_path)
+locale.textdomain(domain)
+# translate = gettext.translation("", localedir, fallback=True)
 
 
 class UIWidget(ABC):
@@ -13,6 +21,7 @@ class UIWidget(ABC):
             f"../../glade/{self.__module__.split('.')[-1]}.glade"
         )
         self.builder = Gtk.Builder()
+        self.builder.set_translation_domain(domain)
         self.builder.add_from_file(gladeFile)
         self.builder.connect_signals(self)
 

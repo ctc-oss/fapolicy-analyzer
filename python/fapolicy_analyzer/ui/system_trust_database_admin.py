@@ -5,7 +5,9 @@ from gi.repository import GLib
 from events import Events
 from concurrent.futures import ThreadPoolExecutor
 from fapolicy_analyzer import System
-from fapolicy_analyzer.util import fs
+from locale import gettext as _
+from fapolicy_analyzer.util.format import f
+from fapolicy_analyzer.util import fs  # noqa: F401
 from .trust_file_list import TrustFileList
 from .trust_file_details import TrustFileDetails
 from .ui_widget import UIWidget
@@ -63,20 +65,28 @@ class SystemTrustDatabaseAdmin(UIWidget, Events):
             addBtn.set_sensitive(not trusted)
 
             self.trustFileDetails.set_in_databae_view(
-                f"""File: {trust.path}
+                f(
+                    _(
+                        """File: {trust.path}
 Size: {trust.size}
 SHA256: {trust.hash}"""
+                    )
+                )
             )
             self.trustFileDetails.set_on_file_system_view(
-                f"""{fs.stat(trust.path)}
+                f(
+                    _(
+                        """{fs.stat(trust.path)}
 SHA256: {fs.sha(trust.path)}"""
+                    )
+                )
             )
             self.trustFileDetails.set_trust_status(
-                "This file is trusted."
+                _("This file is trusted.")
                 if trusted
-                else "There is a discrepancy with this file."
+                else _("There is a discrepancy with this file.")
                 if status == "d"
-                else "The trust status of this file is unknown."
+                else _("The trust status of this file is unknown.")
             )
         else:
             addBtn.set_sensitive(False)
