@@ -116,27 +116,26 @@ class TrustFileList(UIWidget, Events):
             #
             # Detect and remove file paths w/embedded spaces. Alert user w/dlg
             print("Filtering out paths with embedded whitespace")
-            listTmp = []
-            for e in files:
-                if not re.search(r"\s", e):
-                    listTmp.append(e)
-                else:
+            listAccepted = [e for e in files if not re.search(r"\s", e)]
+            listRejected = [e+"\n" for e in files if re.search(r"\s", e)]
+            if listRejected:
                     dlgWhitespaceInfo = Gtk.MessageDialog(
                         transient_for=self.trustFileList.get_toplevel(),
                         flags=0,
                         message_type=Gtk.MessageType.INFO,
                         buttons=Gtk.ButtonsType.OK,
-                        text="File path contains embedded whitespace.",
+                        text="File path(s) contains embedded whitespace.",
                     )
                     dlgWhitespaceInfo.format_secondary_text(
-                        f"{e}, contains whitespace.\nfapolicyd "
-                        + "currently does not support paths containing spaces."
-                        + "\n\nPath will not be added to the Trusted Files "
-                        + "List. (fapolicyd: VTBD)"
-                    )
+                        f"""The following paths contains whitespace and
+will not be added to the Trusted Files List
+fapolicyd currently does not support paths containing spaces.
+(fapolicyd: VTBD)
+
+                        """+listRejected)
                     dlgWhitespaceInfo.run()
                     dlgWhitespaceInfo.destroy()
-            files = listTmp
+            files = listAccepted
             #     Remove this filter block if fapolicyd bug #TBD is fixed
             # ----------------------------------------------------------------
 
