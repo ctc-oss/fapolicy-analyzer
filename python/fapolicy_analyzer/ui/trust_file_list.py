@@ -125,14 +125,13 @@ class TrustFileList(UIWidget, Events):
                     flags=0,
                     message_type=Gtk.MessageType.INFO,
                     buttons=Gtk.ButtonsType.OK,
-                    text="File path(s) contains embedded whitespace.",
-                    )
+                    text="File path(s) contains embedded whitespace.")
 
                 # Convert list of paths to a single string
-                strListRejected="\n".join(listRejected)
-                
+                strListRejected = "\n".join(listRejected)
+
                 dlgWhitespaceInfo.format_secondary_text(
-                    "  fapolicyd currently does not support paths containing\n" 
+                    "  fapolicyd currently does not support paths containing\n"
                     "    spaces. The following paths will not be added to the\n"
                     "            Trusted Files List.(fapolicyd: V TBD)\n\n"
                     + strListRejected)
