@@ -132,7 +132,7 @@ will not be added to the Trusted Files List
 fapolicyd currently does not support paths containing spaces.
 (fapolicyd: VTBD)
 
-                        """+listRejected)
+                        """ + listRejected)
                     dlgWhitespaceInfo.run()
                     dlgWhitespaceInfo.destroy()
             files = listAccepted
