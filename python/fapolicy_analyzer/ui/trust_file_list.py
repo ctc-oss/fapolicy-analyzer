@@ -1,3 +1,4 @@
+
 import gi
 import re
 
@@ -119,20 +120,18 @@ class TrustFileList(UIWidget, Events):
             listAccepted = [e for e in files if not re.search(r"\s", e)]
             listRejected = [e+"\n" for e in files if re.search(r"\s", e)]
             if listRejected:
-                    dlgWhitespaceInfo = Gtk.MessageDialog(
-                        transient_for=self.trustFileList.get_toplevel(),
-                        flags=0,
-                        message_type=Gtk.MessageType.INFO,
-                        buttons=Gtk.ButtonsType.OK,
-                        text="File path(s) contains embedded whitespace.",
+                dlgWhitespaceInfo = Gtk.MessageDialog(
+                    transient_for=self.trustFileList.get_toplevel(),
+                    flags=0,
+                    message_type=Gtk.MessageType.INFO,
+                    buttons=Gtk.ButtonsType.OK,
+                    text="File path(s) contains embedded whitespace.",
                     )
                     dlgWhitespaceInfo.format_secondary_text(
-                        f"""The following paths contains whitespace and
-will not be added to the Trusted Files List
-fapolicyd currently does not support paths containing spaces.
-(fapolicyd: VTBD)
-
-                        """ + listRejected)
+                        """The following paths contains whitespace and
+                        will not be added to the Trusted Files List. fapolicyd
+                        currently does not support paths containing spaces.
+                        (fapolicyd: VTBD)""".join(listRejected))
                     dlgWhitespaceInfo.run()
                     dlgWhitespaceInfo.destroy()
             files = listAccepted
