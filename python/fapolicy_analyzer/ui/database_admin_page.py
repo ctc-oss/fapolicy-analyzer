@@ -1,8 +1,8 @@
 import gi
+import ui.strings as strings
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
-from locale import gettext as _
 from .ancillary_trust_database_admin import AncillaryTrustDatabaseAdmin
 from .system_trust_database_admin import SystemTrustDatabaseAdmin
 
@@ -19,11 +19,11 @@ class DatabaseAdminPage:
 
         self.notebook.append_page(
             self.systemTrustDbAdmin.get_content(),
-            Gtk.Label(label=_("System Trust Database")),
+            Gtk.Label(label=strings.SYSTEM_TRUST_TAB_LABEL),
         )
         self.notebook.append_page(
             self.ancillaryTrustDbAdmin.get_content(),
-            Gtk.Label(label=_("Ancillary Trust Database")),
+            Gtk.Label(label=strings.ANCILLARY_TRUST_TAB_LABEL),
         )
 
         self.notebook.set_current_page(1)

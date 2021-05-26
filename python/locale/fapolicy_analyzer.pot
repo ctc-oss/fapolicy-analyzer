@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fapolicy-analyzer 0.0.4\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-05-25 10:59-0400\n"
+"POT-Creation-Date: 2021-05-26 11:27-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,80 +18,78 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.9.1\n"
 
-#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:92
-#: fapolicy_analyzer/ui/system_trust_database_admin.py:69
+#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:93
+#: fapolicy_analyzer/ui/system_trust_database_admin.py:70
 msgid ""
 "File: {trust.path}\n"
 "Size: {trust.size}\n"
 "SHA256: {trust.hash}"
 msgstr ""
 
-#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:102
-#: fapolicy_analyzer/ui/system_trust_database_admin.py:78
+#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:103
+#: fapolicy_analyzer/ui/system_trust_database_admin.py:79
 msgid ""
 "{fs.stat(trust.path)}\n"
 "SHA256: {fs.sha(trust.path)}"
-msgstr ""
-
-#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:110
-#: fapolicy_analyzer/ui/system_trust_database_admin.py:85
-msgid "This file is trusted."
-msgstr ""
-
-#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:112
-#: fapolicy_analyzer/ui/system_trust_database_admin.py:87
-msgid "There is a discrepancy with this file."
-msgstr ""
-
-#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:114
-#: fapolicy_analyzer/ui/system_trust_database_admin.py:89
-msgid "The trust status of this file is unknown."
-msgstr ""
-
-#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:135
-msgid "Deploy Ancillary Trust Changes?"
-msgstr ""
-
-#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:136
-msgid ""
-"Are you sure you wish to deploy your changes to the ancillary trust "
-"database? This will update the fapolicy trust and restart the service."
-msgstr ""
-
-#: fapolicy_analyzer/ui/database_admin_page.py:22
-msgid "System Trust Database"
-msgstr ""
-
-#: fapolicy_analyzer/ui/database_admin_page.py:26
-msgid "Ancillary Trust Database"
 msgstr ""
 
 #: fapolicy_analyzer/ui/deploy_confirm_dialog.py:32
 msgid "Reverting to previous settings in {i+1} seconds"
 msgstr ""
 
-#: fapolicy_analyzer/ui/trust_file_list.py:20
+#: fapolicy_analyzer/ui/strings.py:3
+msgid "Deploy Ancillary Trust Changes?"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:4
+msgid ""
+"Are you sure you wish to deploy your changes to the ancillary trust "
+"database?\n"
+" This will update the fapolicy trust and restart the service."
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:9
+msgid "This file is trusted."
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:10
+msgid "There is a discrepancy with this file."
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:11
+msgid "The trust status of this file is unknown."
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:13
+msgid "System Trust Database"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:14
+msgid "Ancillary Trust Database"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:16
 #: glade/ancillary_trust_database_admin.glade:50
 msgid "Trust"
 msgstr ""
 
-#: fapolicy_analyzer/ui/trust_file_list.py:24
+#: fapolicy_analyzer/ui/strings.py:17
 msgid "File"
 msgstr ""
 
-#: fapolicy_analyzer/ui/trust_file_list.py:99
+#: fapolicy_analyzer/ui/strings.py:19
 msgid "Add File"
 msgstr ""
 
-#: fapolicy_analyzer/ui/trust_file_list.py:128
+#: fapolicy_analyzer/ui/strings.py:21
 msgid "File path(s) contains embedded whitespace."
 msgstr ""
 
-#: fapolicy_analyzer/ui/trust_file_list.py:135
+#: fapolicy_analyzer/ui/strings.py:22
 msgid ""
-"  fapolicyd currently does not support paths containing\n"
-"    spaces. The following paths will not be added to the\n"
-"            Trusted Files List.(fapolicyd: V TBD)\n"
+"fapolicyd currently does not support paths containing spaces. The "
+"following paths will not be added to the Trusted Files List.\n"
+"(fapolicyd: V TBD)\n"
 "\n"
 msgstr ""
 

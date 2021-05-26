@@ -1,5 +1,3 @@
-#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:92
-#: fapolicy_analyzer/ui/system_trust_database_admin.py:69
 msgid ""
 "File: {trust.path}\n"
 "Size: {trust.size}\n"
@@ -9,26 +7,18 @@ msgstr ""
 "Tamaño: {trust.size}\n"
 "SHA256: {trust.hash}"
 
-#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:110
-#: fapolicy_analyzer/ui/system_trust_database_admin.py:85
 msgid "This file is trusted."
 msgstr "Este archivo es de confianza."
 
-#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:112
-#: fapolicy_analyzer/ui/system_trust_database_admin.py:87
 msgid "There is a discrepancy with this file."
 msgstr "Existe una discrepancia con este archivo."
 
-#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:114
-#: fapolicy_analyzer/ui/system_trust_database_admin.py:89
 msgid "The trust status of this file is unknown."
 msgstr "Se desconoce el estado de confianza de este archivo."
 
-#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:126
 msgid "Deploy Ancillary Trust Changes?"
 msgstr "¿Implementar cambios de confianza complementarios?"
 
-#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:127
 msgid ""
 "Are you sure you wish to deploy your changes to the ancillary trust "
 "database? This will update the fapolicy trust and restart the service."
@@ -36,129 +26,98 @@ msgstr ""
 "¿Está seguro de que desea implementar sus cambios en el fideicomiso auxiliar "
 "base de datos? Esto actualizará la confianza de fapolicy y reiniciará el servicio."
 
-#: fapolicy_analyzer/ui/database_admin_page.py:22
 msgid "System Trust Database"
 msgstr "Base de datos de confianza del sistema"
 
-#: fapolicy_analyzer/ui/database_admin_page.py:26
 msgid "Ancillary Trust Database"
 msgstr "Base de datos de confianza auxiliar"
 
-#: fapolicy_analyzer/ui/deploy_confirm_dialog.py:30
 msgid "Reverting to previous settings in {i+1} seconds"
 msgstr "Volviendo a la configuración anterior en {i+1} segundos"
 
-
-#: fapolicy_analyzer/ui/trust_file_list.py:23
 msgid "File"
 msgstr "Fichero"
 
-#: fapolicy_analyzer/ui/trust_file_list.py:98
 msgid "Add File"
 msgstr "Agregar Fichero"
 
-#: fapolicy_analyzer/ui/trust_file_list.py:128
 msgid "File path(s) contains embedded whitespace."
 msgstr "Las rutas de fichero contienen espacios en blanco incrustados."
 
-#: fapolicy_analyzer/ui/trust_file_list.py:135
 msgid ""
-"  fapolicyd currently does not support paths containing\n"
-"    spaces. The following paths will not be added to the\n"
-"            Trusted Files List.(fapolicyd: V TBD)\n"
+"fapolicyd currently does not support paths containing spaces. The "
+"following paths will not be added to the Trusted Files List.\n"
+"(fapolicyd: V TBD)\n"
 "\n"
 msgstr ""
-"  fapolicyd actualmente no admite rutas que contengan\n"
-"    espacios. Las siguientes rutas no se agregarán a la\n"
-"            Lista de archivos de confianza (fapolicyd: V TBD)\n"
+"fapolicyd actualmente no admite rutas que contengan espacios. Las "
+"siguientes rutas no se agregarán a la Lista de archivos de confianza.\n"
+"(fapolicyd: V TBD)\n"
 "\n"
 
-#: glade/analyzer_selection_dialog.glade:25
 msgid "Scan System"
 msgstr "Sistema de escaneo"
 
-#: glade/analyzer_selection_dialog.glade:39
 msgid "Administer Trust Databases"
 msgstr "Administrar bases de datos de confianza"
 
-#: glade/analyzer_selection_dialog.glade:61
 msgid "Analyzer Selection"
 msgstr "Selección del analizador"
 
-#: glade/analyzer_selection_dialog.glade:94
 msgid "Analyze From Audit"
 msgstr "Analizar desde auditoría"
 
-#: fapolicy_analyzer/ui/trust_file_list.py:19
-#: glade/ancillary_trust_database_admin.glade:50
 msgid "Trust"
 msgstr "Confianza"
 
-#: glade/ancillary_trust_database_admin.glade:65
 msgid "Untrust"
 msgstr "Desconfianza"
 
-#: glade/ancillary_trust_database_admin.glade:102
 msgid "Deploy Ancillary Trust"
 msgstr "Implementar confianza auxiliar"
 
-#: glade/deploy_confirm_dialog.glade:10
 msgid "Keep these trust changes?"
 msgstr "¿Conservar estos cambios de confianza?"
 
-#: glade/deploy_confirm_dialog.glade:11
 msgid "Reverting to previous settings in 15 seconds."
 msgstr "Volviendo a la configuración anterior en 15 segundos."
 
-#: glade/main_window.glade:7
 msgid "About File Acccess Policy Analyzer"
 msgstr "Acerca del analizador de políticas de acceso a archivos"
 
-#: glade/main_window.glade:54
 msgid "File Access Policy Analyzer"
 msgstr "Analizador de políticas de acceso a archivos"
 
-#: glade/main_window.glade:73
 msgid "_File"
 msgstr "_Archivo"
 
-#: glade/main_window.glade:97
 msgid "_Help"
 msgstr "_Ayudar"
 
-#: glade/system_trust_database_admin.glade:44
 msgid "Add File To Ancillary Trust Database"
 msgstr "Agregar archivo a la base de datos de confianza auxiliar"
 
-#: glade/trust_file_details.glade:41
 msgid "In Database"
 msgstr "En base de datos"
 
-#: glade/trust_file_details.glade:81
 msgid "On File System"
 msgstr "En el sistema de archivos"
 
-#: glade/trust_file_details.glade:120
 msgid "File Trust Status"
 msgstr "Estado de confianza del archivo"
 
-#: glade/trust_file_list.glade:75
 msgid "page0"
 msgstr "página0"
 
-#: glade/trust_file_list.glade:102
 msgid "Loading..."
 msgstr "Cargando..."
 
-#: glade/trust_file_list.glade:117
 msgid "page1"
 msgstr "página1"
 
-#: glade/unapplied_changes_dialog.glade:8
 msgid "Unapplied Changes"
 msgstr "Cambios no aplicados"
 
-#: glade/unapplied_changes_dialog.glade:15
 msgid ""
 "\n"
 "There are unapplied changes."
@@ -166,6 +125,5 @@ msgstr ""
 "\n"
 "Hay cambios sin aplicar."
 
-#: glade/unapplied_changes_dialog.glade:16
 msgid "Your changes will be lost."
 msgstr "Tus cambios se perderán."

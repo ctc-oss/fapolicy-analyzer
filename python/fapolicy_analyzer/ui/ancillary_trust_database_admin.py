@@ -1,4 +1,5 @@
 import gi
+import ui.strings as strings
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, GLib
@@ -107,11 +108,11 @@ SHA256: {fs.sha(trust.path)}"""
             )
 
             self.trustFileDetails.set_trust_status(
-                _("This file is trusted.")
+                strings.TRUSTED_FILE_MESSAGE
                 if trusted
-                else _("There is a discrepancy with this file.")
+                else strings.DISCREPANCY_FILE_MESSAGE
                 if status == "d"
-                else _("The trust status of this file is unknown.")
+                else strings.UNKNOWN_FILE_MESSAGE
             )
         else:
             trustBtn.set_sensitive(False)
@@ -132,11 +133,8 @@ SHA256: {fs.sha(trust.path)}"""
     def on_deployBtn_clicked(self, *args):
         parent = self.content.get_toplevel()
         confirmDialog = ConfirmDialog(
-            _("Deploy Ancillary Trust Changes?"),
-            _(
-                "Are you sure you wish to deploy your changes to the ancillary trust database? "
-                + "This will update the fapolicy trust and restart the service."
-            ),
+            strings.DEPLOY_ANCILLARY_CONFIRM_DIALOG_TITLE,
+            strings.DEPLOY_ANCILLARY_CONFIRM_DIALOG_TEXT,
             parent,
         ).get_content()
         confirm_resp = confirmDialog.run()

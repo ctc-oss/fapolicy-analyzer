@@ -1,4 +1,5 @@
 import gi
+import ui.strings as strings
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import GLib
@@ -82,11 +83,11 @@ SHA256: {fs.sha(trust.path)}"""
                 )
             )
             self.trustFileDetails.set_trust_status(
-                _("This file is trusted.")
+                strings.TRUSTED_FILE_MESSAGE
                 if trusted
-                else _("There is a discrepancy with this file.")
+                else strings.DISCREPANCY_FILE_MESSAGE
                 if status == "d"
-                else _("The trust status of this file is unknown.")
+                else strings.UNKNOWN_FILE_MESSAGE
             )
         else:
             addBtn.set_sensitive(False)
