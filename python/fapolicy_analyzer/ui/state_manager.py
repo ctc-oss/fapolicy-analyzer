@@ -73,5 +73,7 @@ class StateManager(Events):
             self.changeset_queue_updated()
         return self.bDirtyQ
 
+    def get_action_path_list(self):
+        return ["Now is ", "the time..."]
 
 stateManager = StateManager()

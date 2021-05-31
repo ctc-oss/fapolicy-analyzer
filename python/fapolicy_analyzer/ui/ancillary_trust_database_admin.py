@@ -12,7 +12,7 @@ from .confirmation_dialog import ConfirmDialog
 from .deploy_confirm_dialog import DeployConfirmDialog
 from .configs import Colors
 from .state_manager import stateManager
-
+from .confirm_changes_dialog import ConfirmInfoDialog
 
 class AncillaryTrustDatabaseAdmin(UIWidget):
     def __init__(self):
@@ -121,6 +121,11 @@ SHA256: {fs.sha(trust.path)}"""
 
     def on_deployBtn_clicked(self, *args):
         parent = self.content.get_toplevel()
+        dlgDeployList = ConfirmInfoDialog(parent)
+        dlgDeployList.load_action_path_list(stateManager.get_action_path_list())
+        response = dlgDeployList.run()
+        dlgDeployList.hide()
+
         confirmDialog = ConfirmDialog(
             "Deploy Ancillary Trust Changes?",
             "Are you sure you wish to deploy your changes to the ancillary trust database? "
