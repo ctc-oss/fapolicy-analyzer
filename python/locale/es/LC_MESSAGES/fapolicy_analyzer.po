@@ -1,0 +1,129 @@
+msgid ""
+"File: {trust.path}\n"
+"Size: {trust.size}\n"
+"SHA256: {trust.hash}"
+msgstr ""
+"Fichero: {trust.path}\n"
+"Tamaño: {trust.size}\n"
+"SHA256: {trust.hash}"
+
+msgid "This file is trusted."
+msgstr "Este archivo es de confianza."
+
+msgid "There is a discrepancy with this file."
+msgstr "Existe una discrepancia con este archivo."
+
+msgid "The trust status of this file is unknown."
+msgstr "Se desconoce el estado de confianza de este archivo."
+
+msgid "Deploy Ancillary Trust Changes?"
+msgstr "¿Implementar cambios de confianza complementarios?"
+
+msgid ""
+"Are you sure you wish to deploy your changes to the ancillary trust "
+"database? This will update the fapolicy trust and restart the service."
+msgstr ""
+"¿Está seguro de que desea implementar sus cambios en el fideicomiso auxiliar "
+"base de datos? Esto actualizará la confianza de fapolicy y reiniciará el servicio."
+
+msgid "System Trust Database"
+msgstr "Base de datos de confianza del sistema"
+
+msgid "Ancillary Trust Database"
+msgstr "Base de datos de confianza auxiliar"
+
+msgid "Reverting to previous settings in {i+1} seconds"
+msgstr "Volviendo a la configuración anterior en {i+1} segundos"
+
+msgid "File"
+msgstr "Fichero"
+
+msgid "Add File"
+msgstr "Agregar Fichero"
+
+msgid "File path(s) contains embedded whitespace."
+msgstr "Las rutas de fichero contienen espacios en blanco incrustados."
+
+msgid ""
+"fapolicyd currently does not support paths containing spaces. The "
+"following paths will not be added to the Trusted Files List.\n"
+"(fapolicyd: V TBD)\n"
+"\n"
+msgstr ""
+"fapolicyd actualmente no admite rutas que contengan espacios. Las "
+"siguientes rutas no se agregarán a la Lista de archivos de confianza.\n"
+"(fapolicyd: V TBD)\n"
+"\n"
+
+msgid "Scan System"
+msgstr "Sistema de escaneo"
+
+msgid "Administer Trust Databases"
+msgstr "Administrar bases de datos de confianza"
+
+msgid "Analyzer Selection"
+msgstr "Selección del analizador"
+
+msgid "Analyze From Audit"
+msgstr "Analizar desde auditoría"
+
+msgid "Trust"
+msgstr "Confianza"
+
+msgid "Untrust"
+msgstr "Desconfianza"
+
+msgid "Deploy Ancillary Trust"
+msgstr "Implementar confianza auxiliar"
+
+msgid "Keep these trust changes?"
+msgstr "¿Conservar estos cambios de confianza?"
+
+msgid "Reverting to previous settings in 15 seconds."
+msgstr "Volviendo a la configuración anterior en 15 segundos."
+
+msgid "About File Acccess Policy Analyzer"
+msgstr "Acerca del analizador de políticas de acceso a archivos"
+
+msgid "File Access Policy Analyzer"
+msgstr "Analizador de políticas de acceso a archivos"
+
+msgid "_File"
+msgstr "_Archivo"
+
+msgid "_Help"
+msgstr "_Ayudar"
+
+msgid "Add File To Ancillary Trust Database"
+msgstr "Agregar archivo a la base de datos de confianza auxiliar"
+
+msgid "In Database"
+msgstr "En base de datos"
+
+msgid "On File System"
+msgstr "En el sistema de archivos"
+
+msgid "File Trust Status"
+msgstr "Estado de confianza del archivo"
+
+msgid "page0"
+msgstr "página0"
+
+msgid "Loading..."
+msgstr "Cargando..."
+
+msgid "page1"
+msgstr "página1"
+
+msgid "Unapplied Changes"
+msgstr "Cambios no aplicados"
+
+msgid ""
+"\n"
+"There are unapplied changes."
+msgstr ""
+"\n"
+"Hay cambios sin aplicar."
+
+msgid "Your changes will be lost."
+msgstr "Tus cambios se perderán."

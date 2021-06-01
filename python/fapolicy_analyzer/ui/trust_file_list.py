@@ -1,6 +1,7 @@
-
 import gi
 import re
+import ui.strings as strings
+
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, GdkPixbuf
@@ -17,11 +18,16 @@ class TrustFileList(UIWidget, Events):
             self.trustView = self.get_object("trustView")
             trustCell = Gtk.CellRendererText()
             trustCell.set_property("background", "light gray")
-            trustColumn = Gtk.TreeViewColumn("Trust", trustCell, markup=0)
+            trustColumn = Gtk.TreeViewColumn(
+                strings.FILE_LIST_TRUST_HEADER, trustCell, markup=0
+            )
             trustColumn.set_sort_column_id(0)
             self.trustView.append_column(trustColumn)
             fileColumn = Gtk.TreeViewColumn(
-                "File", Gtk.CellRendererText(), text=1, cell_background=3
+                strings.FILE_LIST_FILE_HEADER,
+                Gtk.CellRendererText(),
+                text=1,
+                cell_background=3,
             )
             fileColumn.set_sort_column_id(1)
             self.trustView.append_column(fileColumn)
@@ -96,7 +102,7 @@ class TrustFileList(UIWidget, Events):
 
     def on_addBtn_clicked(self, *args):
         fcd = Gtk.FileChooserDialog(
-            "Add File",
+            strings.ADD_FILE_BUTTON_LABEL,
             self.trustFileList.get_toplevel(),
             Gtk.FileChooserAction.OPEN,
             (
@@ -125,16 +131,15 @@ class TrustFileList(UIWidget, Events):
                     flags=0,
                     message_type=Gtk.MessageType.INFO,
                     buttons=Gtk.ButtonsType.OK,
-                    text="File path(s) contains embedded whitespace.")
+                    text=strings.WHITESPACE_WARNING_DIALOG_TITLE,
+                )
 
                 # Convert list of paths to a single string
                 strListRejected = "\n".join(listRejected)
 
                 dlgWhitespaceInfo.format_secondary_text(
-                    "  fapolicyd currently does not support paths containing\n"
-                    "    spaces. The following paths will not be added to the\n"
-                    "            Trusted Files List.(fapolicyd: V TBD)\n\n"
-                    + strListRejected)
+                    strings.WHITESPACE_WARNING_DIALOG_TEXT + strListRejected
+                )
                 dlgWhitespaceInfo.run()
                 dlgWhitespaceInfo.destroy()
             files = listAccepted
