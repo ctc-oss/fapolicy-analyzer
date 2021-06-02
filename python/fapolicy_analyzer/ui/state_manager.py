@@ -73,7 +73,21 @@ class StateManager(Events):
             self.changeset_queue_updated()
         return self.bDirtyQ
 
-    def get_action_path_list(self):
-        return ["Now is ", "the time..."]
+    def get_path_action_list(self):
+        listReturn = []
+
+        # Iterate through the StateManagers Changeset list
+        for e in self.listChangeset:
+
+            # Each changeset contains a dict with at least one Path/Action pair
+            #print(e.get_path_action_map())
+            for t in e.get_path_action_map().items():
+                listReturn.append(t)
+
+        #print( listReturn)
+        return listReturn
+        #return [("Its the time ","of the season"),("when love", "run high...")]
+        #return ["Now is ", "the time..."]
+        
 
 stateManager = StateManager()

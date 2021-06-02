@@ -15,7 +15,7 @@ class ConfirmInfoDialog(Gtk.Dialog):
                           Gtk.STOCK_OK,
                           Gtk.ResponseType.OK)
 
-        self.set_default_size(150, 200)
+        self.set_default_size(500, 200)
 
         label = Gtk.Label(label="The following changes will be deployed: ")
 
@@ -42,9 +42,10 @@ class ConfirmInfoDialog(Gtk.Dialog):
         
         self.show_all()
 
-    def load_action_path_list(self, listActionPathPairs):
-        if listActionPathPairs:
-            self.changeStore.append(listActionPathPairs)
+    def load_path_action_list(self, listPathActionPairs):
+        if listPathActionPairs:
+            for e in listPathActionPairs:
+                self.changeStore.append(e)
         
 class DialogWindow(Gtk.Window):
     def __init__(self):

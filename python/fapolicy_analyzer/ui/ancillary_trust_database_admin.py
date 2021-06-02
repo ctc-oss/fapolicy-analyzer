@@ -122,7 +122,7 @@ SHA256: {fs.sha(trust.path)}"""
     def on_deployBtn_clicked(self, *args):
         parent = self.content.get_toplevel()
         dlgDeployList = ConfirmInfoDialog(parent)
-        dlgDeployList.load_action_path_list(stateManager.get_action_path_list())
+        dlgDeployList.load_path_action_list(stateManager.get_path_action_list())
         response = dlgDeployList.run()
         dlgDeployList.hide()
 
