@@ -156,6 +156,20 @@ impl TrustOp {
             }
         }
     }
+
+    fn to_string(&self) -> (String, String) {
+	match self {
+	    TrustOp::Add(path) => {
+		( path.to_string(), "Add".to_string() )
+	    }
+	    TrustOp::Del(path) => {
+		( path.to_string(), "Del".to_string())
+	    }
+	    TrustOp::Ins(path, _size, _hash) => {
+		( path.to_string(), "Ins".to_string())
+	    }
+	}
+    }
 }
 
 pub enum ChangesetErr {
@@ -196,6 +210,16 @@ impl Changeset {
 
     pub fn is_empty(&self) -> bool {
         self.changes.is_empty()
+    }
+
+    pub fn get_path_action_map(&self) -> HashMap< String, String> {
+	let mut map_path_action = HashMap::new();
+	for change in self.changes.iter() {
+            println!("{}, {}",change.to_string().0, change.to_string().1);
+	    map_path_action.insert(change.to_string().0,
+				    change.to_string().1);
+        }
+	map_path_action
     }
 }
 
