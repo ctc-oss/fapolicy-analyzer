@@ -131,6 +131,10 @@ SHA256: {fs.sha(trust.path)}"""
             self.delete_trusted_files(self.selectedFile)
 
     def on_deployBtn_clicked(self, *args):
+        # Get list of human-readable undeployed path/operation pairs
+        listPathActionTuples = stateManager.get_path_action_list()
+        print(listPathActionTuples) # TODO: tpa Functional verification 20210607
+                                    # Pls leave in until ui element integration
         parent = self.content.get_toplevel()
         confirmDialog = ConfirmDialog(
             strings.DEPLOY_ANCILLARY_CONFIRM_DIALOG_TITLE,

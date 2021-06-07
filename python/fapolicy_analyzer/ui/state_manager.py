@@ -73,5 +73,15 @@ class StateManager(Events):
             self.changeset_queue_updated()
         return self.bDirtyQ
 
+    def get_path_action_list(self):
+        listReturn = []
+
+        # Iterate through the StateManagers Changeset list
+        for e in self.listChangeset:
+            # Each changeset contains a dict with at least one Path/Action pair
+            for t in e.get_path_action_map().items():
+                listReturn.append(t)
+
+        return listReturn
 
 stateManager = StateManager()
