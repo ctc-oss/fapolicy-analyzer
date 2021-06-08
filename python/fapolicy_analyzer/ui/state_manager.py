@@ -74,15 +74,8 @@ class StateManager(Events):
         return self.bDirtyQ
 
     def get_path_action_list(self):
-        listReturn = []
-
         # Iterate through the StateManagers Changeset list
-        for e in self.listChangeset:
-            # Each changeset contains a dict with at least one Path/Action pair
-            for t in e.get_path_action_map().items():
-                listReturn.append(t)
-
-        return listReturn
-
+        # Each changeset contains a dict with at least one Path/Action pair
+        return [t for e in self.listChangeset for t in e.get_path_action_map().items()]
 
 stateManager = StateManager()
