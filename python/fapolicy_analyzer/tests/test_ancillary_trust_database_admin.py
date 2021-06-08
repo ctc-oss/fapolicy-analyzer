@@ -124,7 +124,7 @@ def test_on_revert_deployment(widget, confirm_dialog, revert_dialog, state):
     
     with patch("fapolicy_analyzer.System") as mock:
         widget.system = mock.return_value
-        #state.add_changeset_q("foo")
+        # state.add_changeset_q("foo")
         state.add_changeset_q(changeset)
         assert len(state.get_changeset_q()) == 1
         widget.on_deployBtn_clicked()
@@ -145,7 +145,7 @@ def test_on_neg_revert_deployment(widget, confirm_dialog, revert_dialog, state):
     
     with patch("fapolicy_analyzer.System") as mock:
         widget.system = mock.return_value
-        #state.add_changeset_q("foo")
+        # state.add_changeset_q("foo")
         state.add_changeset_q(changeset)
         assert len(state.get_changeset_q()) == 1
         widget.on_deployBtn_clicked()
