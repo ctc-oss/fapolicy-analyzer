@@ -1,23 +1,20 @@
-# test_state_manager.py
-"""The embedded Changeset queue is tested with integers although any
- object type can be an element."""
-
+import context  # noqa: F401
 import pytest
-from ui.state_manager import stateManager
+from unittest.mock import MagicMock
+from ui.state_manager import stateManager, NotificationType
 
 
 # Set up; create UUT
 @pytest.fixture
 def uut():
-    # Return existing singleton
+    yield stateManager
     stateManager.del_changeset_q()
-    return stateManager
+    stateManager.systemNotification = None
 
 
 @pytest.fixture
 def populated_queue(uut):
     # Fill it up
-    uut.del_changeset_q()
     uut.add_changeset_q(1)
     uut.add_changeset_q(2)
     uut.add_changeset_q(3)
@@ -41,7 +38,6 @@ def test_add_empty_queue(uut):
 # test: add an element to a populated Q, verify Q contents
 def test_add_populated_queue(populated_queue):
     # Verify populated Q
-    print(populated_queue)
     assert populated_queue.get_changeset_q() == [1, 2, 3, 4]
     assert populated_queue.is_dirty_queue()
 
@@ -116,3 +112,22 @@ def test_is_dirty_queue(uut):
     assert uut.next_changeset_q() == 1
     assert uut.next_changeset_q() == 2
     assert not uut.is_dirty_queue()
+
+
+@pytest.mark.parametrize("notification_type", list(NotificationType))
+def test_system_notification_added(uut, notification_type):
+    mock = MagicMock()
+    uut.system_notification_added += mock
+    uut.add_system_notification("foo", notification_type)
+    mock.assert_called_with(("foo", notification_type))
+    uut.system_notification_added -= mock
+
+
+@pytest.mark.parametrize("notification_type", list(NotificationType))
+def test_system_notification_removed(uut, notification_type):
+    mock = MagicMock()
+    uut.system_notification_removed += mock
+    uut.add_system_notification("foo", notification_type)
+    uut.remove_system_notification()
+    mock.assert_called_with(("foo", notification_type))
+    uut.system_notification_removed -= mock

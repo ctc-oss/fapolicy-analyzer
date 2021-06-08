@@ -1,0 +1,51 @@
+.app-notification {
+  border-style: solid;
+  border-width: 0px 1px 1px;
+}
+.close {
+  font-weight: bold;
+}
+.error {
+  color: #D8000C;
+  background-color: rgba(255, 210, 210, 0.8);
+  border-color: #D8000C;
+}
+.error .close {
+  color: #D8000C;
+}
+.error .close:hover {
+  color: #FFD2D2;
+}
+.warn {
+  color: #9F6000;
+  background-color: rgba(254, 239, 179, 0.8);
+  border-color: #9F6000;
+}
+.warn .close {
+  color: #9F6000;
+}
+.warn .close:hover {
+  color: #FEEFB3;
+}
+.info {
+  color: #00529B;
+  background-color: rgba(189, 229, 248, 0.8);
+  border-color: #00529B;
+}
+.info .close {
+  color: #00529B;
+}
+.info .close:hover {
+  color: #BDE5F8;
+}
+.success {
+  color: #4F8A10;
+  background-color: rgba(223, 242, 191, 0.8);
+  border-color: #4F8A10;
+}
+.success .close {
+  color: #4F8A10;
+}
+.success .close:hover {
+  color: #DFF2BF;
+}
