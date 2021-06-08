@@ -211,7 +211,6 @@ pub fn get_path_action_map(cs: &Changeset) -> HashMap<String, String> {
     cs.changes.iter().map(to_pair).collect()
 }
 
-
 impl ::std::default::Default for Changeset {
     fn default() -> Self {
         Self { changes: vec![] }
