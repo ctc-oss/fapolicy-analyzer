@@ -7,6 +7,7 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from unittest.mock import MagicMock, patch
 from ui.ancillary_trust_database_admin import AncillaryTrustDatabaseAdmin
+from fapolicy_analyzer import Changeset
 from ui.configs import Colors
 from ui.state_manager import stateManager
 
@@ -77,7 +78,7 @@ def test_updates_trust_details(widget, mocker):
         "File: /tmp/foo\nSize: 1\nSHA256: abc"
     )
     widget.trustFileDetails.set_on_file_system_view.assert_called_with(
-        "stat: cannot stat '/tmp/foo': No such file or directory\nSHA256: abc"
+        "stat: cannot statx '/tmp/foo': No such file or directory\nSHA256: abc"
     )
     widget.trustFileDetails.set_trust_status.assert_called_with("This file is trusted.")
 
@@ -116,9 +117,15 @@ def test_on_neg_confirm_deployment(widget, confirm_dialog):
 def test_on_revert_deployment(widget, confirm_dialog, revert_dialog, state):
     parent = Gtk.Window()
     parent.add(widget.get_content())
+
+    # Create and populate a Changeset
+    changeset = Changeset()
+    changeset.add_trust(tempfile.NamedTemporaryFile().name)
+    
     with patch("fapolicy_analyzer.System") as mock:
         widget.system = mock.return_value
-        state.add_changeset_q("foo")
+        #state.add_changeset_q("foo")
+        state.add_changeset_q(changeset)
         assert len(state.get_changeset_q()) == 1
         widget.on_deployBtn_clicked()
         assert len(state.get_changeset_q()) == 1
@@ -131,9 +138,15 @@ def test_on_revert_deployment(widget, confirm_dialog, revert_dialog, state):
 def test_on_neg_revert_deployment(widget, confirm_dialog, revert_dialog, state):
     parent = Gtk.Window()
     parent.add(widget.get_content())
+
+    # Create and populate a Changeset
+    changeset = Changeset()
+    changeset.add_trust(tempfile.NamedTemporaryFile().name)
+    
     with patch("fapolicy_analyzer.System") as mock:
         widget.system = mock.return_value
-        state.add_changeset_q("foo")
+        #state.add_changeset_q("foo")
+        state.add_changeset_q(changeset)
         assert len(state.get_changeset_q()) == 1
         widget.on_deployBtn_clicked()
         assert len(state.get_changeset_q()) == 0
