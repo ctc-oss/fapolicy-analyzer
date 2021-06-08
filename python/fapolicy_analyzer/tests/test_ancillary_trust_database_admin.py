@@ -121,7 +121,7 @@ def test_on_revert_deployment(widget, confirm_dialog, revert_dialog, state):
     # Create and populate a Changeset
     changeset = Changeset()
     changeset.add_trust(tempfile.NamedTemporaryFile().name)
-    
+
     with patch("fapolicy_analyzer.System") as mock:
         widget.system = mock.return_value
         # state.add_changeset_q("foo")
@@ -142,7 +142,7 @@ def test_on_neg_revert_deployment(widget, confirm_dialog, revert_dialog, state):
     # Create and populate a Changeset
     changeset = Changeset()
     changeset.add_trust(tempfile.NamedTemporaryFile().name)
-    
+
     with patch("fapolicy_analyzer.System") as mock:
         widget.system = mock.return_value
         # state.add_changeset_q("foo")
