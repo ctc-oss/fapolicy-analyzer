@@ -14,7 +14,7 @@ from .trust_file_details import TrustFileDetails
 from .confirmation_dialog import ConfirmDialog
 from .deploy_confirm_dialog import DeployConfirmDialog
 from .configs import Colors
-from .state_manager import stateManager
+from .state_manager import stateManager, NotificationType
 
 
 class AncillaryTrustDatabaseAdmin(UIWidget):
@@ -146,7 +146,15 @@ SHA256: {fs.sha(trust.path)}"""
         confirm_resp = confirmDialog.run()
         confirmDialog.hide()
         if confirm_resp == Gtk.ResponseType.YES:
-            self.system.deploy()
+            try:
+                self.system.deploy()
+            except BaseException:  # BaseException to catch pyo3_runtime.PanicException
+                stateManager.add_system_notification(
+                    "An error occurred trying to deploy the changes. Please try again.",
+                    NotificationType.ERROR,
+                )
+                return
+
             deployConfirmDialog = DeployConfirmDialog(parent).get_content()
             revert_resp = deployConfirmDialog.run()
             deployConfirmDialog.hide()

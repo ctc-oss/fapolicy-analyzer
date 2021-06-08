@@ -1,4 +1,12 @@
+from enum import Enum
 from events import Events
+
+
+class NotificationType(Enum):
+    ERROR = "error"
+    WARN = "warn"
+    INFO = "info"
+    SUCCESS = "success"
 
 
 class StateManager(Events):
@@ -10,13 +18,18 @@ class StateManager(Events):
     changes occuring in the StateManager instance.
     """
 
-    __events__ = ["changeset_queue_updated"]
+    __events__ = [
+        "changeset_queue_updated",
+        "system_notification_added",
+        "system_notification_removed",
+    ]
 
     def __init__(self):
         Events.__init__(self)
         self.listChangeset = []  # FIFO queue
         self.listUndoChangeset = []  # Undo Stack
         self.bDirtyQ = False
+        self.systemNotification = None
 
     def add_changeset_q(self, change_set):
         """Add the change_set argument to the end of the FIFO queue"""
@@ -77,5 +90,16 @@ class StateManager(Events):
         # Iterate through the StateManagers Changeset list
         # Each changeset contains a dict with at least one Path/Action pair
         return [t for e in self.listChangeset for t in e.get_path_action_map().items()]
+    
+    def add_system_notification(
+        self, notification: str, notification_type: NotificationType
+    ):
+        self.systemNotification = (notification, notification_type)
+        self.system_notification_added(self.systemNotification)
+
+    def remove_system_notification(self):
+        self.system_notification_removed(self.systemNotification)
+        self.systemNotification = None
+
 
 stateManager = StateManager()
