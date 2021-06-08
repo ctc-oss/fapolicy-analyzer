@@ -108,8 +108,8 @@ impl PyChangeset {
         self.len() == 0
     }
 
-    pub fn get_path_action_map(&self) -> HashMap< String, String> {
-	self.s.get_path_action_map()
+    pub fn get_path_action_map(&self) -> HashMap<String, String> {
+        self.s.get_path_action_map()
     }
 }
 
