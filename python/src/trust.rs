@@ -108,12 +108,8 @@ impl PyChangeset {
         self.len() == 0
     }
 
-    pub fn get_path_action_map(&self) -> HashMap< String, String> {
-	self.s.get_path_action_map()
-	//let mut map_path_action = HashMap::new();
-	//map_path_action.insert("Look at ","the size");
-	//map_path_action.insert("of that ","thing");
-	//map_path_action
+    pub fn get_path_action_map(&self) -> HashMap<String, String> {
+	trust::get_path_action_map(&self.s)
     }
 }
 

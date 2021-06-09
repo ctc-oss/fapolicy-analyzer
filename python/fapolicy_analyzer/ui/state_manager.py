@@ -1,4 +1,12 @@
+from enum import Enum
 from events import Events
+
+
+class NotificationType(Enum):
+    ERROR = "error"
+    WARN = "warn"
+    INFO = "info"
+    SUCCESS = "success"
 
 
 class StateManager(Events):
@@ -10,13 +18,18 @@ class StateManager(Events):
     changes occuring in the StateManager instance.
     """
 
-    __events__ = ["changeset_queue_updated"]
+    __events__ = [
+        "changeset_queue_updated",
+        "system_notification_added",
+        "system_notification_removed",
+    ]
 
     def __init__(self):
         Events.__init__(self)
         self.listChangeset = []  # FIFO queue
         self.listUndoChangeset = []  # Undo Stack
         self.bDirtyQ = False
+        self.systemNotification = None
 
     def add_changeset_q(self, change_set):
         """Add the change_set argument to the end of the FIFO queue"""
@@ -74,20 +87,19 @@ class StateManager(Events):
         return self.bDirtyQ
 
     def get_path_action_list(self):
-        listReturn = []
-
         # Iterate through the StateManagers Changeset list
-        for e in self.listChangeset:
+        # Each changeset contains a dict with at least one Path/Action pair
+        return [t for e in self.listChangeset for t in e.get_path_action_map().items()]
 
-            # Each changeset contains a dict with at least one Path/Action pair
-            #print(e.get_path_action_map())
-            for t in e.get_path_action_map().items():
-                listReturn.append(t)
+    def add_system_notification(
+        self, notification: str, notification_type: NotificationType
+    ):
+        self.systemNotification = (notification, notification_type)
+        self.system_notification_added(self.systemNotification)
 
-        #print( listReturn)
-        return listReturn
-        #return [("Its the time ","of the season"),("when love", "run high...")]
-        #return ["Now is ", "the time..."]
-        
+    def remove_system_notification(self):
+        self.system_notification_removed(self.systemNotification)
+        self.systemNotification = None
+
 
 stateManager = StateManager()

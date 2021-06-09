@@ -14,7 +14,11 @@ black = "*"
 pytest = "*"
 pytest-cov = "*"
 pytest-mock = "*"
+pytest-testmon = "*"
 pytest-watch = "*"
+babel = "*"
+babelgladeextractor = "*"
+flake8-i18n = "*"
 
 [packages]
 pycairo = "1.20.0"
@@ -29,4 +33,6 @@ allow_prereleases = true
 [scripts]
 test = "pipenv run xvfb-run -a pytest -s --cov-report term-missing --cov=ui fapolicy_analyzer/"
 lint = "pipenv run flake8 fapolicy_analyzer/"
-watch-test = "pipenv run xvfb-run -a pytest-watch fapolicy_analyzer/ -- -s"
+watch-test = "pipenv run xvfb-run -a pytest-watch fapolicy_analyzer/ -- --testmon -s"
+extract_messages = "pipenv run python setup.py extract_messages"
+compile_catalog = "pipenv run python setup.py compile_catalog -f"

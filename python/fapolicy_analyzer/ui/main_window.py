@@ -6,6 +6,7 @@ from .ui_widget import UIWidget
 from .database_admin_page import DatabaseAdminPage
 from .analyzer_selection_dialog import AnalyzerSelectionDialog, ANALYZER_SELECTION
 from .unapplied_changes_dialog import UnappliedChangesDialog
+from .notification import Notification
 from .state_manager import stateManager
 
 
@@ -14,12 +15,13 @@ class MainWindow(UIWidget):
         super().__init__()
         stateManager.changeset_queue_updated += self.on_changeset_updated
         self.window = self.builder.get_object("mainWindow")
-        self.window.show_all()
-
-        # To support unapplied/unsaved changeset status in UI
-        # Maintain original title, toplevel reference
         self.windowTopLevel = self.window.get_toplevel()
         self.strTopLevelTitle = self.windowTopLevel.get_title()
+
+        toaster = Notification()
+        self.builder.get_object("overlay").add_overlay(toaster.get_content())
+
+        self.window.show_all()
 
     def __unapplied_changes(self):
         # Check backend for unapplied changes
