@@ -17,6 +17,7 @@ dist
 \#*.glade\#
 *.glade~
 .coverage
+.testmondata
 .env
 *.mo
 
