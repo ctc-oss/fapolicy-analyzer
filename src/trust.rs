@@ -158,6 +158,14 @@ impl TrustOp {
     }
 }
 
+fn to_pair(trust_op: &TrustOp) -> (String, String) {
+    match trust_op {
+        TrustOp::Add(path) => (path.to_string(), "Add".to_string()),
+        TrustOp::Del(path) => (path.to_string(), "Del".to_string()),
+        TrustOp::Ins(path, _size, _hash) => (path.to_string(), "Ins".to_string()),
+    }
+}
+
 pub enum ChangesetErr {
     NotFound,
 }
@@ -197,6 +205,10 @@ impl Changeset {
     pub fn is_empty(&self) -> bool {
         self.changes.is_empty()
     }
+}
+
+pub fn get_path_action_map(cs: &Changeset) -> HashMap<String, String> {
+    cs.changes.iter().map(to_pair).collect()
 }
 
 impl ::std::default::Default for Changeset {
