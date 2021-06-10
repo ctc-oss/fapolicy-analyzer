@@ -16,6 +16,9 @@ before_install:
 
   - ./scripts/install_bats.sh
 
+before_script:
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin docker.io
+
 script:
   - bats tests/bats
 
