@@ -16,11 +16,17 @@ RUN dnf install -y python38 python3-devel python3-pip dbus-devel cairo-devel pkg
 RUN pip3 install pipenv wheel
 
 WORKDIR /opt/app-src
-COPY . .
+COPY src     ./src
+COPY python  ./python
+COPY Cargo.* ./
 
 WORKDIR /opt/app-src/python
 RUN pipenv install --system --deploy --dev
 
+WORKDIR /opt/app-src
+COPY scripts ./scripts
+
 VOLUME /output
 
+WORKDIR /opt/app-src/python
 ENTRYPOINT ["/opt/app-src/scripts/rpm/build.sh"]
