@@ -141,16 +141,9 @@ SHA256: {fs.sha(trust.path)}"""
         parent = self.content.get_toplevel()
         dlgDeployList = ConfirmInfoDialog(parent)
         dlgDeployList.load_path_action_list(stateManager.get_path_action_list())
-        response = dlgDeployList.run()
+        confirm_resp = dlgDeployList.run()
         dlgDeployList.hide()
 
-        confirmDialog = ConfirmDialog(
-            strings.DEPLOY_ANCILLARY_CONFIRM_DIALOG_TITLE,
-            strings.DEPLOY_ANCILLARY_CONFIRM_DIALOG_TEXT,
-            parent,
-        ).get_content()
-        confirm_resp = confirmDialog.run()
-        confirmDialog.hide()
         if confirm_resp == Gtk.ResponseType.YES:
             try:
                 self.system.deploy()
