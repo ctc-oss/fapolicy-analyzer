@@ -1,7 +1,7 @@
 [package]
 name = "fapolicy-analyzer"
 description = "Tools to assist with the configuration and maintenance of fapolicyd"
-license = "LGPL-3.0-only"
+license = "LGPL-3.0-or-later"
 version = "0.0.4"
 edition = "2018"
 
@@ -20,9 +20,3 @@ directories = "2.0.2"
 
 [dev-dependencies]
 clap = "3.0.0-beta.2"
-
-[dependencies.pyo3]
-version = "0.13.2"
-
-[features]
-default = ["pyo3/extension-module"]

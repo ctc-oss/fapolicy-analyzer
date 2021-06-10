@@ -168,7 +168,6 @@ dependencies = [
  "directories",
  "lmdb-rkv",
  "nom",
- "pyo3",
  "ring",
  "serde",
 ]
