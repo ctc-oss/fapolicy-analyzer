@@ -1,4 +1,5 @@
 .*
+*.md
 **/build
 **/dist
 **/target

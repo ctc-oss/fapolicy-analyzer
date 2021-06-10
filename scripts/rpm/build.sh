@@ -13,3 +13,6 @@ rpmbuild -ba "$HOME"/rpmbuild/SPECS/fapolicy-analyzer.spec
 
 # Wrote: /root/rpmbuild/SRPMS/fapolicy-analyzer-0.0.4-1.src.rpm
 # Wrote: /root/rpmbuild/RPMS/x86_64/fapolicy-analyzer-0.0.4-1.x86_64.rpm
+
+mv /root/rpmbuild/RPMS/x86_64/* /output
+mv /root/rpmbuild/SRPMS/* /output

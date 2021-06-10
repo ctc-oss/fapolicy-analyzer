@@ -21,4 +21,6 @@ COPY . .
 WORKDIR /opt/app-src/python
 RUN pipenv install --system --deploy --dev
 
+VOLUME /output
+
 ENTRYPOINT ["/opt/app-src/scripts/rpm/build.sh"]

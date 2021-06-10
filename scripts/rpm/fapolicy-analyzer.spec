@@ -14,6 +14,7 @@ Group: Development/Libraries
 Prefix: %{_prefix}
 Vendor: UNKNOWN <UNKNOWN>
 BuildRequires: python3
+Requires: dbus-libs
 
 %description
 UNKNOWN
