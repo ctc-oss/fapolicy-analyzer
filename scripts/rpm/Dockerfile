@@ -21,6 +21,4 @@ COPY . .
 WORKDIR /opt/app-src/python
 RUN pipenv install --system --deploy --dev
 
-RUN mkdir -p /root/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
-RUN cp -r /opt/app-src/* /root/rpmbuild/BUILD
-
+ENTRYPOINT ["/opt/app-src/scripts/rpm/build.sh"]
