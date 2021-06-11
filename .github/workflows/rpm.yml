@@ -39,8 +39,8 @@ jobs:
           git-rpm-version -v HEAD  > VERSION
           git-rpm-version -r HEAD  > RELEASE
         working-directory: python
-      - name: Build wheel
-        run: ../scripts/rpm/build.sh
+      - name: Build RPM
+        run: ../scripts/rpm/build.sh /tmp
         working-directory: python
 #      - name: Create Release
 #        id: create_release

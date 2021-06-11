@@ -3,6 +3,7 @@
 readonly describe=${DESCRIBE:-$(cat DESCRIBE)}
 readonly version=${VERSION:-$(cat VERSION)}
 readonly release=${RELEASE:-$(cat RELEASE)}
+readonly output_dir=${1:-"/output"}
 
 set_cargo_version() {
   sed -i -e "0,/version = \".*\"/ s/version = \".*\"/version = \"$describe\"/; t" "$1"
@@ -22,8 +23,8 @@ main() {
 
   rpmbuild -ba -D "version $version" -D "release $release" "$HOME"/rpmbuild/SPECS/fapolicy-analyzer.spec
 
-  mv /root/rpmbuild/RPMS/*/* /output
-  mv /root/rpmbuild/SRPMS/* /output
+  mv "$HOME/rpmbuild/RPMS/*/*" "$output_dir"
+  mv "$HOME/rpmbuild/SRPMS/*"  "$output_dir"
 }
 
 main "$@"
