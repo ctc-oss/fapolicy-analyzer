@@ -1,10 +1,9 @@
 on:
   push:
-    # for testing this...
-    branches:
-      - 'release/rpm'
     tags:
       - 'v*'
+    branches:
+      - 'release/*'
 
 name: Create RPM Release
 
@@ -54,21 +53,18 @@ jobs:
         run: |
           echo "Release Notes" >> release-notes
           echo "=============" >> release-notes
-          echo "- todo;; make a release notes script" >> release-notes
 
       - uses: softprops/action-gh-release@v1
         name: Create Release
         id: create_release
-        #if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/v')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: Hacking on rpms
+          name: Release ${{ github.ref }}
           tag_name: ${{ github.ref }}
-          #release_name: Release ${{ github.ref }}
           body_path: release-notes
+          prerelease: ${{ startsWith(github.ref, 'refs/tags/v0') || contains(github.ref, 'rc') }}
           draft: true
-          prerelease: true
-          #prerelease: ${{ startsWith(github.ref, 'refs/tags/v0') || contains(github.ref, 'rc') }}
           files: |
             /tmp/*.rpm
