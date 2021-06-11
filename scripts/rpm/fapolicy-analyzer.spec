@@ -1,5 +1,3 @@
-%define release 1
-
 Name:           fapolicy-analyzer
 Version:        %{version}
 Release:        %{release}

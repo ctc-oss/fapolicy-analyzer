@@ -1,3 +1,13 @@
+FROM buildpack-deps:bionic-scm as tagger
+
+RUN curl -so /usr/local/bin/git-rpm-version https://raw.githubusercontent.com/peterlundgren/git-rpm-version/master/git-rpm-version \
+ && chmod +x /usr/local/bin/git-rpm-version
+
+WORKDIR /tmp
+COPY .git ./.git
+RUN git-rpm-version -v HEAD > VERSION
+RUN git-rpm-version -r HEAD > RELEASE
+
 FROM fedora:32
 
 WORKDIR /tmp
@@ -22,6 +32,7 @@ COPY Cargo.* ./
 
 WORKDIR /opt/app-src/python
 RUN pipenv install --system --deploy --dev
+COPY --from=tagger /tmp/VERSION /tmp/RELEASE ./
 
 WORKDIR /opt/app-src
 COPY scripts ./scripts

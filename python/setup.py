@@ -1,3 +1,4 @@
+import os
 from setuptools import setup, find_packages
 from setuptools_rust import RustExtension
 
@@ -6,7 +7,7 @@ from setuptools_rust import RustExtension
 #
 setup(
     name="fapolicy-analyzer",
-    version="0.0.4",
+    version=os.getenv("VERSION", "snapshot"),
     packages=["glade", "resources"] + find_packages(exclude=("tests",)),
     setup_requires=["setuptools", "setuptools_rust"],
     zip_safe=False,
