@@ -23,8 +23,8 @@ main() {
 
   rpmbuild -ba -D "version $version" -D "release $release" "$HOME"/rpmbuild/SPECS/fapolicy-analyzer.spec
 
-  mv "$HOME/rpmbuild/RPMS/*/*" "$output_dir"
-  mv "$HOME/rpmbuild/SRPMS/*"  "$output_dir"
+  mv "$HOME"/rpmbuild/RPMS/*/* "$output_dir"
+  mv "$HOME"/rpmbuild/SRPMS/*  "$output_dir"
 }
 
 main "$@"
