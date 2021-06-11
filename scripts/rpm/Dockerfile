@@ -5,8 +5,9 @@ RUN curl -so /usr/local/bin/git-rpm-version https://raw.githubusercontent.com/pe
 
 WORKDIR /tmp
 COPY .git ./.git
-RUN git-rpm-version -v HEAD > VERSION
-RUN git-rpm-version -r HEAD > RELEASE
+RUN git describe | cut -c 2- > DESCRIBE
+RUN git-rpm-version -v HEAD  > VERSION
+RUN git-rpm-version -r HEAD  > RELEASE
 
 FROM fedora:32
 
@@ -32,7 +33,7 @@ COPY Cargo.* ./
 
 WORKDIR /opt/app-src/python
 RUN pipenv install --system --deploy --dev
-COPY --from=tagger /tmp/VERSION /tmp/RELEASE ./
+COPY --from=tagger /tmp/DESCRIBE /tmp/VERSION /tmp/RELEASE ./
 
 WORKDIR /opt/app-src
 COPY scripts ./scripts
