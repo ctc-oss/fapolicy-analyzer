@@ -26,6 +26,8 @@ jobs:
       - name: Install pip requirements
         run: pip3 install pipenv wheel
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Pipenv deploy
         run: pipenv install --system --deploy --dev
         working-directory: python
