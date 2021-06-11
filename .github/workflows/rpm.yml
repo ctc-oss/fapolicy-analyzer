@@ -4,9 +4,9 @@ on:
       - master
     tags:
       - 'v*'
-    pull_request:
-      branches:
-        - master
+  pull_request:
+    branches:
+      - master
 
 name: Create RPM Release
 
