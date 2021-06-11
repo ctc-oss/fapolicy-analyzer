@@ -19,9 +19,6 @@ From the root of the project
 
 RPMs will end up in `/tmp` on the host machine.
 
-### test the rpm in a container
-`todo`
+### test installing rpm in a container
 
-### installing the rpm
-
-`dnf install -y fapolicy-analyzer-0.0.4-1.x86_64.rpm`
+`docker run --rm -it -v /tmp:/rpms fedora:32 dnf install -y /rpms/fapolicy-analyzer-*.rpm`
