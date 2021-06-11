@@ -50,20 +50,27 @@ jobs:
         run: ../scripts/rpm/build.sh /tmp
         working-directory: python
 
+      - name: Create Release notes
+        run: |
+          echo "Release Notes" >> release-notes
+          echo "=============" >> release-notes
+          echo "RPM Releases WIP" >> release-notes
+
       - name: Create Release
         id: create_release
         uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
-          body: |
-            Changes in this Release
-            - Create RPM
-            - Upload Source RPM
+          body_path: release-notes
           draft: true
           prerelease: true
+          #prerelease: ${{ startsWith(github.ref, 'refs/tags/v0') || contains(github.ref, 'rc') }}
+          files: |
+            /tmp/*.rpm
 
 #      - name: Upload Release Asset
 #        id: upload-release-asset
