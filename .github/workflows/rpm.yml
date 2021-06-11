@@ -26,6 +26,8 @@ jobs:
         working-directory: python
       - name: Generate tags
         run: |
+          curl -so /usr/local/bin/git-rpm-version https://raw.githubusercontent.com/peterlundgren/git-rpm-version/master/git-rpm-version
+          chmod +x /usr/local/bin/git-rpm-version
           git describe | cut -c 2- > DESCRIBE
           git-rpm-version -v HEAD  > VERSION
           git-rpm-version -r HEAD  > RELEASE
