@@ -23,13 +23,16 @@ jobs:
         run: pip3 install pipenv wheel
       - name: Pipenv deploy
         run: pipenv install --system --deploy --dev
+        working-directory: python
       - name: Generate tags
         run: |
           git describe | cut -c 2- > DESCRIBE
           git-rpm-version -v HEAD  > VERSION
           git-rpm-version -r HEAD  > RELEASE
+        working-directory: python
       - name: Build wheel
-        run: scripts/rpm/build.sh
+        run: ../scripts/rpm/build.sh
+        working-directory: python
 #      - name: Create Release
 #        id: create_release
 #        uses: actions/create-release@latest
