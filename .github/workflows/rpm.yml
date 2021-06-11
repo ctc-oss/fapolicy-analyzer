@@ -14,9 +14,6 @@ jobs:
     container: fedora:32
     name: Create RPM Release
     steps:
-      - uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -24,7 +21,7 @@ jobs:
           override: true
       - name: Install dnf requirements
         run: |
-          dnf install -q -y dbus-devel cairo-devel pkg-config which gobject-introspection-devel cairo-gobject-devel fedora-packager fedora-review
+          dnf install -q -y python38 python3-devel python3-pip dbus-devel cairo-devel pkg-config which gobject-introspection-devel cairo-gobject-devel fedora-packager fedora-review
           dnf groupinstall -q -y "Development Tools"
       - name: Install pip requirements
         run: pip3 install pipenv wheel
