@@ -4,18 +4,26 @@ readonly describe=${DESCRIBE:-$(cat DESCRIBE)}
 readonly version=${VERSION:-$(cat VERSION)}
 readonly release=${RELEASE:-$(cat RELEASE)}
 
-mkdir -p "$HOME"/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
+set_cargo_version() {
+  sed -i -e "0,/version = \".*\"/ s/version = \".*\"/version = \"$describe\"/; t" $1
+}
 
-sed -i -e "0,/version = \".*\"/ s/version = \".*\"/version = \"$describe\"/; t" Cargo.toml
-sed -i -e "0,/version = \".*\"/ s/version = \".*\"/version = \"$describe\"/; t" ../Cargo.toml
-VERSION="$version" python setup.py bdist_wheel
+main() {
+  mkdir -p "$HOME"/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
 
-cp dist/fapolicy_analyzer-*.whl "$HOME"/rpmbuild/SOURCES
+  set_cargo_version Cargo.toml
+  set_cargo_version ../Cargo.toml
+  VERSION="$version" python setup.py bdist_wheel
 
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-cp "$SCRIPT_DIR/fapolicy-analyzer.spec" "$HOME"/rpmbuild/SPECS
+  cp dist/fapolicy_analyzer-*.whl "$HOME"/rpmbuild/SOURCES
 
-rpmbuild -ba -D "version $version" -D "release $release" "$HOME"/rpmbuild/SPECS/fapolicy-analyzer.spec
+  SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+  cp "$SCRIPT_DIR/fapolicy-analyzer.spec" "$HOME"/rpmbuild/SPECS
 
-mv /root/rpmbuild/RPMS/*/* /output
-mv /root/rpmbuild/SRPMS/* /output
+  rpmbuild -ba -D "version $version" -D "release $release" "$HOME"/rpmbuild/SPECS/fapolicy-analyzer.spec
+
+  mv /root/rpmbuild/RPMS/*/* /output
+  mv /root/rpmbuild/SRPMS/* /output
+}
+
+main "$@"
