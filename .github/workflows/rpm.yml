@@ -59,13 +59,13 @@ jobs:
       - uses: softprops/action-gh-release@v1
         name: Create Release
         id: create_release
-        release_name: hacking on rpms
         #if: startsWith(github.ref, 'refs/tags/v')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          release_name: Hacking on rpms
+          #release_name: Release ${{ github.ref }}
           body_path: release-notes
           draft: true
           prerelease: true
