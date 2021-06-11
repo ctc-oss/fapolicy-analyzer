@@ -56,9 +56,10 @@ jobs:
           echo "=============" >> release-notes
           echo "RPM Releases WIP" >> release-notes
 
-      - name: Create Release
+      - uses: softprops/action-gh-release@v1
+        name: Create Release
         id: create_release
-        uses: softprops/action-gh-release@v1
+        release_name: hacking on rpms
         #if: startsWith(github.ref, 'refs/tags/v')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
