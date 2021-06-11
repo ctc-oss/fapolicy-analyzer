@@ -14,13 +14,13 @@ jobs:
     container: fedora:32
     name: Create RPM Release
     steps:
-      - uses: actions/checkout@v2
       - name: Install dnf requirements
         run: |
           dnf install -y python38 python3-devel python3-pip dbus-devel cairo-devel pkg-config which gobject-introspection-devel cairo-gobject-devel fedora-packager fedora-review
           dnf groupinstall -y "Development Tools"
       - name: Install pip requirements
         run: pip3 install pipenv wheel
+      - uses: actions/checkout@v2
       - name: Pipenv deploy
         run: pipenv install --system --deploy --dev
         working-directory: python
