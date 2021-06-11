@@ -54,7 +54,7 @@ jobs:
         run: |
           echo "Release Notes" >> release-notes
           echo "=============" >> release-notes
-          echo "RPM Releases WIP" >> release-notes
+          echo "- todo;; make a release notes script" >> release-notes
 
       - uses: softprops/action-gh-release@v1
         name: Create Release
@@ -63,8 +63,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          name: Hacking on rpms
           tag_name: ${{ github.ref }}
-          release_name: Hacking on rpms
           #release_name: Release ${{ github.ref }}
           body_path: release-notes
           draft: true
@@ -72,14 +72,3 @@ jobs:
           #prerelease: ${{ startsWith(github.ref, 'refs/tags/v0') || contains(github.ref, 'rc') }}
           files: |
             /tmp/*.rpm
-
-#      - name: Upload Release Asset
-#        id: upload-release-asset
-#        uses: actions/upload-release-asset@v1
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        with:
-#          upload_url: ${{ steps.create_release.outputs.upload_url }}
-#          asset_path: ${{ steps.rpm_build.outputs.source_rpm_path }}
-#          asset_name: ${{ steps.rpm_build.outputs.source_rpm_name }}
-#          asset_content_type: ${{ steps.rpm_build.outputs.rpm_content_type }}
