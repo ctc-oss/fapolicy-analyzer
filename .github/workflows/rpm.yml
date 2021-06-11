@@ -1,0 +1,56 @@
+on:
+  push:
+    # for testing this...
+    branches:
+      - 'release/rpm'
+    tags:
+      - 'v*'
+
+name: Create RPM Release
+
+jobs:
+  build:
+    container: fedora:32
+    name: Create RPM Release
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dnf requirements
+        run: dnf install -y python38 python3-devel python3-pip dbus-devel cairo-devel pkg-config which \
+          gobject-introspection-devel cairo-gobject-devel fedora-packager fedora-review \
+          && dnf groupinstall -y "Development Tools"
+      - name: Install pip requirements
+        run: pip3 install pipenv wheel
+      - name: Pipenv deploy
+        run: pipenv install --system --deploy --dev
+      - name: Generate tags
+        run:
+          - git describe | cut -c 2- > DESCRIBE
+          - git-rpm-version -v HEAD  > VERSION
+          - git-rpm-version -r HEAD  > RELEASE
+      - name: Build wheel
+        run: scripts/rpm/build.sh
+#      - name: Create Release
+#        id: create_release
+#        uses: actions/create-release@latest
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          tag_name: ${{ github.ref }}
+#          release_name: Release ${{ github.ref }}
+#          body: |
+#            Changes in this Release
+#            - Create RPM
+#            - Upload Source RPM
+#          draft: false
+#          prerelease: false
+#
+#      - name: Upload Release Asset
+#        id: upload-release-asset
+#        uses: actions/upload-release-asset@v1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+#          asset_path: ${{ steps.rpm_build.outputs.source_rpm_path }}
+#          asset_name: ${{ steps.rpm_build.outputs.source_rpm_name }}
+#          asset_content_type: ${{ steps.rpm_build.outputs.rpm_content_type }}
