@@ -5,7 +5,7 @@ readonly version=${VERSION:-$(cat VERSION)}
 readonly release=${RELEASE:-$(cat RELEASE)}
 
 set_cargo_version() {
-  sed -i -e "0,/version = \".*\"/ s/version = \".*\"/version = \"$describe\"/; t" $1
+  sed -i -e "0,/version = \".*\"/ s/version = \".*\"/version = \"$describe\"/; t" "$1"
 }
 
 main() {
