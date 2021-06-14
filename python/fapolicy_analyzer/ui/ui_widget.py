@@ -1,5 +1,4 @@
 import locale
-import os
 import gi
 
 gi.require_version("Gtk", "3.0")
@@ -9,9 +8,9 @@ from importlib import resources
 
 
 DOMAIN = "fapolicy_analyzer"
-locale_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "../locale")
 locale.setlocale(locale.LC_ALL, locale.getlocale())
-locale.bindtextdomain(DOMAIN, locale_path)
+with resources.path("fapolicy_analyzer", "locale") as path:
+    locale.bindtextdomain(DOMAIN, path)
 locale.textdomain(DOMAIN)
 
 
