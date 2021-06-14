@@ -9,9 +9,10 @@ Source0:        fapolicy_analyzer-%{version}-cp38-cp38-linux_x86_64.whl
 Prefix:         %{_prefix}
 
 BuildArch:      x86_64
-BuildRequires:  python3
-Requires:       python3
+BuildRequires:  python3.8
+Requires:       python3.8
 Requires:       dbus-libs
+AutoReqProv:    no
 
 %description
 GUI and CLI tools to assist with the configuration and maintenance of fapolicyd
