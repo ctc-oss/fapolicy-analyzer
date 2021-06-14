@@ -22,7 +22,5 @@ pip install -v --target %{buildroot}%{python3_sitelib} %{_sourcedir}/fapolicy_an
 
 %files
 %{python3_sitelib}/fapolicy_analyzer*
-%{python3_sitelib}/glade
-%{python3_sitelib}/resources
 
 %defattr(-,root,root)
