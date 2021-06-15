@@ -40,11 +40,11 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
-  
+
   py_build:
     name: Build Python Bindings
     runs-on: ubuntu-latest
-    steps: 
+    steps:
       - uses: actions/checkout@v2
       - name: Install requirements
         run: |
@@ -136,8 +136,8 @@ jobs:
           path: ${{ steps.install_deps.outputs.virt_env }}/lib/python3.8/site-packages/
       - name: 'Update path'
         run: |
-          for entry in ${{steps.download.outputs.download-path}}/fapolicy*; 
-            do echo "./$(basename $entry)" >> ${{steps.download.outputs.download-path}}/easy-install.pth; 
+          for entry in ${{steps.download.outputs.download-path}}/fapolicy*;
+            do echo "./$(basename $entry)" >> ${{steps.download.outputs.download-path}}/easy-install.pth;
           done
       - name: Test with pytest
         run: |

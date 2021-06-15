@@ -5,6 +5,7 @@ import ui.strings as strings
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, GdkPixbuf
+from importlib import resources
 from os import path
 from events import Events
 from .ui_widget import UIWidget
@@ -33,12 +34,13 @@ class TrustFileList(UIWidget, Events):
             self.trustView.append_column(fileColumn)
 
         def setup_loader():
+            with resources.path(
+                "fapolicy_analyzer.resources", "filled_fading_balls.gif"
+            ) as path:
+                animation = GdkPixbuf.PixbufAnimation.new_from_file(path.as_posix())
+
             loader = self.get_object("trustViewLoader")
-            loader.set_from_animation(
-                GdkPixbuf.PixbufAnimation.new_from_file(
-                    self.absolute_file_path("../../resources/filled_fading_balls.gif")
-                )
-            )
+            loader.set_from_animation(animation)
 
         UIWidget.__init__(self)
         Events.__init__(self)

@@ -1,5 +1,7 @@
 [package]
 name = "fapolicy-analyzer-python"
+description = "Python bindings for the fapolicy-analyzer library"
+license = "LGPL-3.0-or-later"
 version = "0.0.4"
 edition = "2018"
 

@@ -1,6 +1,7 @@
+.*
+*.md
 **/build
 **/dist
 **/target
-.git
-.local
 **/Dockerfile
+!.git
