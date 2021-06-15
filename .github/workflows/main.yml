@@ -78,8 +78,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: fapolicy-analyzer-wheel
-          path: dist/fapolicy_analyzer-*.whl
-        working-directory: python
+          path: python/dist/fapolicy_analyzer-*.whl
 
   ui_lint:
     name: UI Lint
