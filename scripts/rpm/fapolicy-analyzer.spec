@@ -10,7 +10,7 @@ Prefix:         %{_prefix}
 
 BuildArch:      x86_64
 BuildRequires:  python3 >= 3.8
-Requires:       python3 >= 3.8
+Requires:       python3 >= 3.8, gtk3, python3-gobject
 Requires:       dbus-libs
 AutoReqProv:    no
 
