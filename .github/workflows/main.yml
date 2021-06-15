@@ -71,6 +71,7 @@ jobs:
       - name: Build
         id: build
         run: |
+          pipenv run compile_catalog
           pipenv run python setup.py bdist_wheel
           echo ::set-output name=virt_env::$(pipenv --venv)
         env:
@@ -126,7 +127,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install pipenv
           pipenv install --dev
-          pipenv run compile_catalog
           echo ::set-output name=virt_env::$(pipenv --venv)
         working-directory: python
       - name: Download bindings package
