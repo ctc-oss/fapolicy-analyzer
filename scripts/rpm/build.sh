@@ -16,13 +16,16 @@ main() {
   set_cargo_version ../Cargo.toml
   VERSION="$version" python setup.py bdist_wheel
 
-  cp bin/fapolicy-analyzer        "$HOME"/rpmbuild/SOURCES
-  cp dist/fapolicy_analyzer-*.whl "$HOME"/rpmbuild/SOURCES
+  readonly wheel=$(cd dist || exit 1; ls fapolicy_analyzer-*.whl)
+  echo "=================== $wheel ==================="
+
+  cp bin/fapolicy-analyzer "$HOME"/rpmbuild/SOURCES
+  cp dist/"$wheel"         "$HOME"/rpmbuild/SOURCES
 
   SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
   cp "$SCRIPT_DIR/fapolicy-analyzer.spec" "$HOME"/rpmbuild/SPECS
 
-  rpmbuild -ba -D "version $version" -D "release $release" "$HOME"/rpmbuild/SPECS/fapolicy-analyzer.spec
+  rpmbuild -ba -D "version $version" -D "releaseid $release" -D "wheel $wheel" "$HOME"/rpmbuild/SPECS/fapolicy-analyzer.spec
 
   mv "$HOME"/rpmbuild/RPMS/*/* "$output_dir"
   mv "$HOME"/rpmbuild/SRPMS/*  "$output_dir"

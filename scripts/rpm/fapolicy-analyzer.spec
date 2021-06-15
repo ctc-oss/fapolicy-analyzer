@@ -1,11 +1,11 @@
 Name:           fapolicy-analyzer
 Version:        %{version}
-Release:        %{release}%{?dist}
+Release:        %{releaseid}%{?dist}
 Summary:        GUI configuration for fapolicyd
 
 License:        GPLv3+
 URL:            https://github.com/ctc-oss/fapolicy-analyzer
-Source0:        fapolicy_analyzer-%{version}-cp38-cp38-linux_x86_64.whl
+Source0:        %{wheel}
 Prefix:         %{_prefix}
 
 BuildArch:      x86_64
@@ -18,7 +18,7 @@ AutoReqProv:    no
 GUI and CLI tools to assist with the configuration and maintenance of fapolicyd
 
 %install
-pip install -v --target %{buildroot}%{python3_sitelib} %{_sourcedir}/fapolicy_analyzer-%{version}-cp38-cp38-linux_x86_64.whl
+pip install -v --target %{buildroot}%{python3_sitelib} %{_sourcedir}/%{wheel}
 install %{_sourcedir}/fapolicy-analyzer %{buildroot}%{_sbindir}/fapolicy-analyzer -D
 
 %files
