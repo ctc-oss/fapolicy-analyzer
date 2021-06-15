@@ -2,6 +2,7 @@ import gi
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gio
+from importlib import resources
 from threading import Timer
 from .ui_widget import UIWidget
 from .state_manager import stateManager, NotificationType
@@ -19,9 +20,9 @@ class Notification(UIWidget):
         self.timer = None
 
         styleProvider = Gtk.CssProvider()
-        styleProvider.load_from_file(
-            Gio.File.new_for_path(self.absolute_file_path("../../css/notification.css"))
-        )
+        with resources.path("fapolicy_analyzer.css", "notification.css") as path:
+            styleProvider.load_from_file(Gio.File.new_for_path(path.as_posix()))
+
         self.style = self.container.get_style_context()
         self.style.add_provider(styleProvider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
         self.closeBtn.get_style_context().add_provider(
