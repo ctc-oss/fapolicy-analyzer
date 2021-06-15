@@ -16,6 +16,7 @@ main() {
   set_cargo_version ../Cargo.toml
   VERSION="$version" python setup.py bdist_wheel
 
+  cp bin/fapolicy-analyzer        "$HOME"/rpmbuild/SOURCES
   cp dist/fapolicy_analyzer-*.whl "$HOME"/rpmbuild/SOURCES
 
   SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"

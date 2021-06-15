@@ -19,8 +19,10 @@ GUI and CLI tools to assist with the configuration and maintenance of fapolicyd
 
 %install
 pip install -v --target %{buildroot}%{python3_sitelib} %{_sourcedir}/fapolicy_analyzer-%{version}-cp38-cp38-linux_x86_64.whl
+install %{_sourcedir}/fapolicy-analyzer %{buildroot}%{_sbindir}/fapolicy-analyzer -D
 
 %files
 %{python3_sitelib}/fapolicy_analyzer*
+%{_sbindir}/fapolicy-analyzer
 
 %defattr(-,root,root)
