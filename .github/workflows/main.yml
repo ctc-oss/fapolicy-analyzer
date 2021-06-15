@@ -135,6 +135,7 @@ jobs:
           path: /tmp
       - name: Install wheel
         run: pipenv install /tmp/fapolicy_analyzer-*.whl
+        working-directory: python
       - name: 'Update path'
         run: |
           for entry in ${{steps.download.outputs.download-path}}/fapolicy*;
