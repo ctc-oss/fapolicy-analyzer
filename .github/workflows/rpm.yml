@@ -12,8 +12,11 @@ name: Create RPM Release
 
 jobs:
   build:
+    strategy:
+      matrix:
+        platform: [ 'fedora:32', 'fedora:34' ]
     runs-on: ubuntu-latest
-    container: fedora:32
+    container: ${{ matrix.platform }}
     name: Create RPM Release
     steps:
       - uses: actions-rs/toolchain@v1
@@ -24,7 +27,7 @@ jobs:
 
       - name: Install dnf requirements
         run: |
-          dnf install -q -y python38 python3-devel python3-pip dbus-devel cairo-devel pkg-config which gobject-introspection-devel cairo-gobject-devel fedora-packager fedora-review
+          dnf install -q -y python3 python3-devel python3-pip dbus-devel cairo-devel pkg-config which gobject-introspection-devel cairo-gobject-devel fedora-packager fedora-review
           dnf groupinstall -q -y "Development Tools"
 
       - name: Install pip requirements
