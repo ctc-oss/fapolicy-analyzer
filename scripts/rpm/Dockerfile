@@ -1,3 +1,4 @@
+ARG platform=fedora:32
 FROM buildpack-deps:bionic-scm as tagger
 
 RUN curl -so /usr/local/bin/git-rpm-version https://raw.githubusercontent.com/peterlundgren/git-rpm-version/master/git-rpm-version \
@@ -9,7 +10,7 @@ RUN git describe | cut -c 2- > DESCRIBE
 RUN git-rpm-version -v HEAD  > VERSION
 RUN git-rpm-version -r HEAD  > RELEASE
 
-FROM fedora:32
+FROM ${platform}
 
 WORKDIR /tmp
 RUN curl -o rust.sh https://sh.rustup.rs -sSf \
@@ -19,7 +20,7 @@ RUN curl -o rust.sh https://sh.rustup.rs -sSf \
 
 RUN ln -s /root/.cargo/bin/* /usr/local/bin
 
-RUN dnf install -y python38 python3-devel python3-pip dbus-devel cairo-devel pkg-config which \
+RUN dnf install -y python3 python3-devel python3-pip dbus-devel cairo-devel pkg-config which \
                    gobject-introspection-devel cairo-gobject-devel fedora-packager fedora-review \
  && dnf groupinstall -y "Development Tools" \
  && dnf clean all
