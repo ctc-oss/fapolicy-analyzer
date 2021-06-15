@@ -137,7 +137,9 @@ jobs:
         run: pipenv install /tmp/fapolicy_analyzer-*.whl
         working-directory: python
       - name: Check the installed wheel
-        run: ls -R /opt/hostedtoolcache/Python/3.8.10/x64/lib
+        run: |
+          pipenv graph
+          pipenv run pip freeze
         working-directory: python
       - name: 'Update path'
         run: |
