@@ -14,6 +14,7 @@ main() {
 
   set_cargo_version Cargo.toml
   set_cargo_version ../Cargo.toml
+  python setup.py compile_catalog -f
   VERSION="$version" python setup.py bdist_wheel
 
   readonly wheel=$(cd dist || exit 1; ls fapolicy_analyzer-*.whl)
