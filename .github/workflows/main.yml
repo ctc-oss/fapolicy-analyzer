@@ -73,6 +73,8 @@ jobs:
         run: |
           pipenv run python setup.py bdist_wheel
           echo ::set-output name=virt_env::$(pipenv --venv)
+        env:
+          VERSION: 0.0.0
         working-directory: python
       - name: Archive wheel
         uses: actions/upload-artifact@v2
