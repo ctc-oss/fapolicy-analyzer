@@ -72,13 +72,13 @@ jobs:
         id: build
         run: |
           cd python
-          pipenv run python setup.py install
+          pipenv run python setup.py bdist_wheel
           echo ::set-output name=virt_env::$(pipenv --venv)
-      - name: Archive packages
+      - name: Archive wheel
         uses: actions/upload-artifact@v2
         with:
-          name: fapolicy-analyzer-package
-          path: ${{ steps.build.outputs.virt_env }}/lib/python3.8/site-packages/fapolicy_analyzer*.egg/
+          name: fapolicy-analyzer-wheel
+          path: dist/fapolicy_analyzer-*.whl
 
   ui_lint:
     name: UI Lint
@@ -132,8 +132,10 @@ jobs:
         id: download
         uses: actions/download-artifact@v2
         with:
-          name: fapolicy-analyzer-package
-          path: ${{ steps.install_deps.outputs.virt_env }}/lib/python3.8/site-packages/
+          name: fapolicy-analyzer-wheel
+          path: /tmp
+      - name: Install wheel
+        run: pipenv install /tmp/fapolicy_analyzer-*.whl
       - name: 'Update path'
         run: |
           for entry in ${{steps.download.outputs.download-path}}/fapolicy*;
