@@ -19,7 +19,7 @@ setup(
     package_data={
         "fapolicy_analyzer.css": ["*.css"],
         "fapolicy_analyzer.glade": ["*.glade"],
-        "fapolicy_analyzer.locale": ["*.pot", "*/*/*.po", "*/*/*.mo"],
+        "fapolicy_analyzer.locale": ["*/*/*.mo"],
         "fapolicy_analyzer.resources": ["*"],
     },
 )
