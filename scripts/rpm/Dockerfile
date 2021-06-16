@@ -28,7 +28,7 @@ RUN dnf install -y python3 python3-devel python3-pip dbus-devel cairo-devel pkg-
 RUN pip3 install pipenv wheel
 
 WORKDIR /opt/app-src
-COPY src     ./src
+COPY rust    ./rust
 COPY python  ./python
 COPY Cargo.* ./
 

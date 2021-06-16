@@ -6,7 +6,7 @@ version = "0.0.4"
 edition = "2018"
 
 [lib]
-path = "src/lib.rs"
+path = "rust/lib.rs"
 
 [dependencies]
 data-encoding = "2.3.1"
