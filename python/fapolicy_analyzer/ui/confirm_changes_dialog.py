@@ -7,7 +7,7 @@ import ui.strings as strings
 class ConfirmInfoDialog(Gtk.Dialog):
     def __init__(self, parent):
         Gtk.Dialog.__init__(self, strings.DEPLOY_ANCILLARY_CONFIRM_DIALOG_TITLE,
-                           transient_for=parent, flags=0)
+                            transient_for=parent, flags=0)
 
         self.add_buttons(Gtk.STOCK_NO,
                          Gtk.ResponseType.NO,
@@ -16,7 +16,7 @@ class ConfirmInfoDialog(Gtk.Dialog):
 
         self.set_default_size(-1, 200)
 
-        label=Gtk.Label(label=strings.DEPLOY_ANCILLARY_CONFIRM_DIALOG_TEXT)
+        label = Gtk.Label(label=strings.DEPLOY_ANCILLARY_CONFIRM_DIALOG_TEXT)
 
         self.scrolled_window = Gtk.ScrolledWindow()
         self.changeStore = Gtk.ListStore(str, str)
