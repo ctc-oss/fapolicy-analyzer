@@ -9,8 +9,6 @@ class ConfirmInfoDialog(Gtk.Dialog):
         Gtk.Dialog.__init__(self, strings.DEPLOY_ANCILLARY_CONFIRM_DIALOG_TITLE,
                            transient_for=parent, flags=0)
 
-        #Gtk.Dialog.__init__(self, title="Confirm Changes to Deploy",
-        #                    transient_for=parent, flags=0)
         self.add_buttons(Gtk.STOCK_NO,
                          Gtk.ResponseType.NO,
                          Gtk.STOCK_YES,
@@ -18,9 +16,6 @@ class ConfirmInfoDialog(Gtk.Dialog):
 
         self.set_default_size(-1, 200)
 
-        #label = Gtk.Label(label="""Are you sure you wish to deploy your changes
-        # to the ancillary trust database?
-        # This will update the fapolicy trust and restart the service.""")
         label=Gtk.Label(label=strings.DEPLOY_ANCILLARY_CONFIRM_DIALOG_TEXT)
 
         self.scrolled_window = Gtk.ScrolledWindow()

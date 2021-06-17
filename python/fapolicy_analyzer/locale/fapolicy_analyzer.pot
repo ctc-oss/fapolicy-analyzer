@@ -7,9 +7,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: fapolicy-analyzer 0.0.4\n"
+"Project-Id-Version: fapolicy-analyzer snapshot\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-05-26 11:27-0400\n"
+"POT-Creation-Date: 2021-06-17 14:42-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -48,44 +48,52 @@ msgid ""
 " This will update the fapolicy trust and restart the service."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:9
-msgid "This file is trusted."
+#: fapolicy_analyzer/ui/strings.py:8
+msgid "Action"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:10
-msgid "There is a discrepancy with this file."
+#: fapolicy_analyzer/ui/strings.py:9
+msgid "File Path"
 msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:11
-msgid "The trust status of this file is unknown."
+msgid "This file is trusted."
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:12
+msgid "There is a discrepancy with this file."
 msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:13
+msgid "The trust status of this file is unknown."
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:15
 msgid "System Trust Database"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:14
+#: fapolicy_analyzer/ui/strings.py:16
 msgid "Ancillary Trust Database"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:16
-#: glade/ancillary_trust_database_admin.glade:50
+#: fapolicy_analyzer/glade/ancillary_trust_database_admin.glade:50
+#: fapolicy_analyzer/ui/strings.py:18
 msgid "Trust"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:17
+#: fapolicy_analyzer/ui/strings.py:19
 msgid "File"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:19
+#: fapolicy_analyzer/ui/strings.py:21
 msgid "Add File"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:21
+#: fapolicy_analyzer/ui/strings.py:23
 msgid "File path(s) contains embedded whitespace."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:22
+#: fapolicy_analyzer/ui/strings.py:24
 msgid ""
 "fapolicyd currently does not support paths containing spaces. The "
 "following paths will not be added to the Trusted Files List.\n"
@@ -93,93 +101,97 @@ msgid ""
 "\n"
 msgstr ""
 
-#: glade/analyzer_selection_dialog.glade:25
+#: fapolicy_analyzer/glade/analyzer_selection_dialog.glade:25
 msgid "Scan System"
 msgstr ""
 
-#: glade/analyzer_selection_dialog.glade:39
+#: fapolicy_analyzer/glade/analyzer_selection_dialog.glade:39
 msgid "Administer Trust Databases"
 msgstr ""
 
-#: glade/analyzer_selection_dialog.glade:61
+#: fapolicy_analyzer/glade/analyzer_selection_dialog.glade:61
 msgid "Analyzer Selection"
 msgstr ""
 
-#: glade/analyzer_selection_dialog.glade:94
+#: fapolicy_analyzer/glade/analyzer_selection_dialog.glade:94
 msgid "Analyze From Audit"
 msgstr ""
 
-#: glade/ancillary_trust_database_admin.glade:65
+#: fapolicy_analyzer/glade/ancillary_trust_database_admin.glade:65
 msgid "Untrust"
 msgstr ""
 
-#: glade/ancillary_trust_database_admin.glade:102
+#: fapolicy_analyzer/glade/ancillary_trust_database_admin.glade:102
 msgid "Deploy Ancillary Trust"
 msgstr ""
 
-#: glade/deploy_confirm_dialog.glade:10
+#: fapolicy_analyzer/glade/deploy_confirm_dialog.glade:10
 msgid "Keep these trust changes?"
 msgstr ""
 
-#: glade/deploy_confirm_dialog.glade:11
+#: fapolicy_analyzer/glade/deploy_confirm_dialog.glade:11
 msgid "Reverting to previous settings in 15 seconds."
 msgstr ""
 
-#: glade/main_window.glade:7
+#: fapolicy_analyzer/glade/main_window.glade:7
 msgid "About File Acccess Policy Analyzer"
 msgstr ""
 
-#: glade/main_window.glade:54
+#: fapolicy_analyzer/glade/main_window.glade:54
 msgid "File Access Policy Analyzer"
 msgstr ""
 
-#: glade/main_window.glade:73
+#: fapolicy_analyzer/glade/main_window.glade:77
 msgid "_File"
 msgstr ""
 
-#: glade/main_window.glade:97
+#: fapolicy_analyzer/glade/main_window.glade:101
 msgid "_Help"
 msgstr ""
 
-#: glade/system_trust_database_admin.glade:44
+#: fapolicy_analyzer/glade/notification.glade:29
+msgid "x"
+msgstr ""
+
+#: fapolicy_analyzer/glade/system_trust_database_admin.glade:44
 msgid "Add File To Ancillary Trust Database"
 msgstr ""
 
-#: glade/trust_file_details.glade:41
+#: fapolicy_analyzer/glade/trust_file_details.glade:41
 msgid "In Database"
 msgstr ""
 
-#: glade/trust_file_details.glade:81
+#: fapolicy_analyzer/glade/trust_file_details.glade:81
 msgid "On File System"
 msgstr ""
 
-#: glade/trust_file_details.glade:120
+#: fapolicy_analyzer/glade/trust_file_details.glade:120
 msgid "File Trust Status"
 msgstr ""
 
-#: glade/trust_file_list.glade:75
+#: fapolicy_analyzer/glade/trust_file_list.glade:75
 msgid "page0"
 msgstr ""
 
-#: glade/trust_file_list.glade:102
+#: fapolicy_analyzer/glade/trust_file_list.glade:102
 msgid "Loading..."
 msgstr ""
 
-#: glade/trust_file_list.glade:117
+#: fapolicy_analyzer/glade/trust_file_list.glade:117
 msgid "page1"
 msgstr ""
 
-#: glade/unapplied_changes_dialog.glade:8
+#: fapolicy_analyzer/glade/unapplied_changes_dialog.glade:8
 msgid "Unapplied Changes"
 msgstr ""
 
-#: glade/unapplied_changes_dialog.glade:15
+#: fapolicy_analyzer/glade/unapplied_changes_dialog.glade:15
 msgid ""
 "\n"
 "There are unapplied changes."
 msgstr ""
 
-#: glade/unapplied_changes_dialog.glade:16
+#: fapolicy_analyzer/glade/unapplied_changes_dialog.glade:16
 msgid "Your changes will be lost."
 msgstr ""
 
