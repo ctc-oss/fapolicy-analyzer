@@ -23,7 +23,7 @@ def confirm_dialog(confirm_resp, mocker):
         run=MagicMock(return_value=confirm_resp), hide=MagicMock()
     )
     mocker.patch(
-        "ui.ancillary_trust_database_admin.ConfirmDialog.get_content",
+        "ui.ancillary_trust_database_admin.ConfirmInfoDialog",
         return_value=mock_confirm_dialog,
     )
     return mock_confirm_dialog
