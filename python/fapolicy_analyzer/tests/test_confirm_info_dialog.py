@@ -25,3 +25,16 @@ def test_dialog_actions_responses():
         delayed_gui_action(button.clicked, delay=5)
         response = dialog.run()
         assert response == expected
+
+
+def test_load_path_action_list():
+    parent = Gtk.Window()
+    widget = ConfirmInfoDialog(parent=parent)
+
+    path_action_list = [("/tmp/fu.txt", "Add"), ("/tmp/bar.txt", "Del")]
+    widget.load_path_action_list(path_action_list)
+
+    # Verify the contents of the ConfirmInfoDialog.ListStore
+    for i, j in zip(widget.changeStore, range(2)):
+        # Note: tuples are reversed when loading Gtk.ListStore for display
+        assert((i[1], i[0]) == path_action_list[j])
