@@ -5,7 +5,7 @@ import ui.strings as strings
 
 
 class ConfirmInfoDialog(Gtk.Dialog):
-    def __init__(self, parent):
+    def __init__(self, parent=None):
         Gtk.Dialog.__init__(self, strings.DEPLOY_ANCILLARY_CONFIRM_DIALOG_TITLE,
                             transient_for=parent, flags=0)
 
