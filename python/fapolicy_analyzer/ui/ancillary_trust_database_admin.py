@@ -21,7 +21,6 @@ class AncillaryTrustDatabaseAdmin(UIWidget):
     def __init__(self):
         super().__init__()
         self.system = System()
-        self.content = self.get_object("ancillaryTrustDatabaseAdmin")
         self.executor = ThreadPoolExecutor(max_workers=1)
         self.selectedFile = None
 
@@ -31,12 +30,12 @@ class AncillaryTrustDatabaseAdmin(UIWidget):
         self.trustFileList.file_selection_change += self.on_file_selection_change
         self.trustFileList.files_added += self.on_files_added
         self.get_object("leftBox").pack_start(
-            self.trustFileList.get_content(), True, True, 0
+            self.trustFileList.get_ref(), True, True, 0
         )
 
         self.trustFileDetails = TrustFileDetails()
         self.get_object("rightBox").pack_start(
-            self.trustFileDetails.get_content(), True, True, 0
+            self.trustFileDetails.get_ref(), True, True, 0
         )
 
         stateManager.changeset_queue_updated += self.on_changeset_updated
@@ -62,9 +61,6 @@ class AncillaryTrustDatabaseAdmin(UIWidget):
         self.system = self.system.apply_changeset(changeset)
         stateManager.add_changeset_q(changeset)
         self.trustFileList.refresh(self.__load_trust)
-
-    def get_content(self):
-        return self.content
 
     def add_trusted_files(self, *files):
         changeset = Changeset()
@@ -137,7 +133,7 @@ SHA256: {fs.sha(trust.path)}"""
         # TODO: 20210607 tpa Functional verification. Pls leave in until ui
         # element integration
         print(listPathActionTuples)
-        parent = self.content.get_toplevel()
+        parent = self.get_ref().get_toplevel()
         dlgDeployList = ConfirmInfoDialog(parent)
         dlgDeployList.load_path_action_list(stateManager.get_path_action_list())
         confirm_resp = dlgDeployList.run()
@@ -153,7 +149,7 @@ SHA256: {fs.sha(trust.path)}"""
                 )
                 return
 
-            deployConfirmDialog = DeployConfirmDialog(parent).get_content()
+            deployConfirmDialog = DeployConfirmDialog(parent).get_ref()
             revert_resp = deployConfirmDialog.run()
             deployConfirmDialog.hide()
             if revert_resp == Gtk.ResponseType.YES:

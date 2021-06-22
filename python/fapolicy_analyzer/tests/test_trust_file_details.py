@@ -13,11 +13,11 @@ def widget():
 
 
 def test_creates_widget(widget):
-    assert type(widget.get_content()) is Gtk.Box
+    assert type(widget.get_ref()) is Gtk.Box
 
 
 def test_sets_In_Database_View(widget):
-    textView = widget.builder.get_object("inDatabaseView")
+    textView = widget.get_object("inDatabaseView")
     textBuffer = textView.get_buffer()
     widget.set_in_databae_view("foo")
     assert (
@@ -29,7 +29,7 @@ def test_sets_In_Database_View(widget):
 
 
 def test_sets_On_File_System_View(widget):
-    textView = widget.builder.get_object("onFileSystemView")
+    textView = widget.get_object("onFileSystemView")
     textBuffer = textView.get_buffer()
     widget.set_on_file_system_view("foo")
     assert (
@@ -41,7 +41,7 @@ def test_sets_On_File_System_View(widget):
 
 
 def test_sets_trust_status(widget):
-    textView = widget.builder.get_object("fileTrustStatusView")
+    textView = widget.get_object("fileTrustStatusView")
     textBuffer = textView.get_buffer()
     widget.set_trust_status("foo")
     assert (

@@ -8,6 +8,7 @@ from gi.repository import Gtk
 from unittest.mock import MagicMock
 from ui.main_window import MainWindow
 from ui.analyzer_selection_dialog import ANALYZER_SELECTION
+from ui.state_manager import stateManager
 
 
 class StubMainWindow(MainWindow):
@@ -31,6 +32,13 @@ def mainWindow():
 
 
 @pytest.fixture
+def state():
+    yield stateManager
+    stateManager.del_changeset_q()
+    stateManager.systemNotification = None
+
+
+@pytest.fixture
 def es_locale():
     locale.setlocale(locale.LC_ALL, "es_ES.UTF-8")
     yield
@@ -38,13 +46,37 @@ def es_locale():
 
 
 def test_displays_window(mainWindow):
-    assert type(mainWindow.window) is Gtk.Window
-    assert mainWindow.window.get_title() == "File Access Policy Analyzer"
+    window = mainWindow.get_ref()
+    assert type(window) is Gtk.Window
+    assert window.get_title() == "File Access Policy Analyzer"
+
+
+def test_shows_confirm_if_unapplied_changes(mainWindow, state, mocker):
+    stateManager.add_changeset_q("foo")
+    mockDialog = MagicMock()
+    mockDialog.run.return_value = False
+    mocker.patch(
+        "ui.main_window.UnappliedChangesDialog.get_ref",
+        return_value=mockDialog,
+    )
+    mainWindow.get_object("quitMenu").activate()
+    mockDialog.run.assert_called()
+
+
+def test_does_not_show_confirm_if_no_unapplied_changes(mainWindow, state, mocker):
+    mockDialog = MagicMock()
+    mockDialog.run.return_value = False
+    mocker.patch(
+        "ui.main_window.UnappliedChangesDialog.get_ref",
+        return_value=mockDialog,
+    )
+    mainWindow.get_object("quitMenu").activate()
+    mockDialog.run.assert_not_called()
 
 
 def test_displays_about_dialog(mainWindow, mocker):
-    aboutDialog = mainWindow.builder.get_object("aboutDialog")
-    menuItem = mainWindow.builder.get_object("aboutMenu")
+    aboutDialog = mainWindow.get_object("aboutDialog")
+    menuItem = mainWindow.get_object("aboutMenu")
     mocker.patch.object(aboutDialog, "run", return_value=0)
     menuItem.activate()
     aboutDialog.run.assert_called()
@@ -52,15 +84,13 @@ def test_displays_about_dialog(mainWindow, mocker):
 
 def test_opens_trust_db_admin_page(mocker):
     mockDialog = MagicMock()
-    mockDialog.run.return_value = ANALYZER_SELECTION.TRUST_DATABASE_ADMIN.value
-    mockComponent = MagicMock()
-    mockComponent.get_content.return_value = mockDialog
+    mockDialog.get_selection.return_value = ANALYZER_SELECTION.TRUST_DATABASE_ADMIN
     mocker.patch(
         "ui.main_window.AnalyzerSelectionDialog",
-        return_value=mockComponent,
+        return_value=mockDialog,
     )
     mainWindow = MainWindow()
-    content = next(iter(mainWindow.builder.get_object("mainContent").get_children()))
+    content = next(iter(mainWindow.get_object("mainContent").get_children()))
     assert (
         content.get_tab_label_text(content.get_nth_page(0)) == "System Trust Database"
     )
@@ -70,7 +100,7 @@ def test_raises_bad_selection_error(mainWindow, mocker):
     mockDialog = MagicMock()
     mockDialog.run.return_value = -1
     mockComponent = MagicMock()
-    mockComponent.get_content.return_value = mockDialog
+    mockComponent.get_ref.return_value = mockDialog
     mocker.patch(
         "ui.main_window.AnalyzerSelectionDialog",
         return_value=mockComponent,
@@ -81,7 +111,6 @@ def test_raises_bad_selection_error(mainWindow, mocker):
 
 def test_localization(es_locale):
     mainWindow = StubMainWindow()
-    assert type(mainWindow.window) is Gtk.Window
-    assert (
-        mainWindow.window.get_title() == "Analizador de políticas de acceso a archivos"
-    )
+    window = mainWindow.get_ref()
+    assert type(window) is Gtk.Window
+    assert window.get_title() == "Analizador de políticas de acceso a archivos"

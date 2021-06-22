@@ -45,7 +45,6 @@ class TrustFileList(UIWidget, Events):
         UIWidget.__init__(self)
         Events.__init__(self)
         self.markup_func = markup_func
-        self.trustFileList = self.builder.get_object("trustFileList")
 
         setup_trustView()
         setup_loader()
@@ -74,21 +73,18 @@ class TrustFileList(UIWidget, Events):
         self.__set_loading(False)
 
     def __filter_trust_view(self, model, iter, data):
-        filter = self.builder.get_object("trustViewSearch").get_text()
+        filter = self.get_object("trustViewSearch").get_text()
         return True if not filter else filter in model[iter][1]
 
     def __set_loading(self, loading):
-        viewSwitcher = self.builder.get_object("trustViewStack")
-        trustViewSearch = self.builder.get_object("trustViewSearch")
+        viewSwitcher = self.get_object("trustViewStack")
+        trustViewSearch = self.get_object("trustViewSearch")
         if loading:
             viewSwitcher.set_visible_child_name("trustViewLoader")
             trustViewSearch.set_sensitive(False)
         else:
             viewSwitcher.set_visible_child_name("trustView")
             trustViewSearch.set_sensitive(True)
-
-    def get_content(self):
-        return self.trustFileList
 
     def refresh(self, trust_func):
         self.__set_loading(True)
@@ -105,7 +101,7 @@ class TrustFileList(UIWidget, Events):
     def on_addBtn_clicked(self, *args):
         fcd = Gtk.FileChooserDialog(
             strings.ADD_FILE_BUTTON_LABEL,
-            self.trustFileList.get_toplevel(),
+            self.get_ref().get_toplevel(),
             Gtk.FileChooserAction.OPEN,
             (
                 Gtk.STOCK_CANCEL,
@@ -129,7 +125,7 @@ class TrustFileList(UIWidget, Events):
             listRejected = [e for e in files if re.search(r"\s", e)]
             if listRejected:
                 dlgWhitespaceInfo = Gtk.MessageDialog(
-                    transient_for=self.trustFileList.get_toplevel(),
+                    transient_for=self.get_ref().get_toplevel(),
                     flags=0,
                     message_type=Gtk.MessageType.INFO,
                     buttons=Gtk.ButtonsType.OK,

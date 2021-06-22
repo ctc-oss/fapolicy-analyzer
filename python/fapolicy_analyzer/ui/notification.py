@@ -12,10 +12,9 @@ class Notification(UIWidget):
     def __init__(self, timer_duration=10):
         super().__init__()
         stateManager.system_notification_added += self.on_system_notification_added
-        self.revealer = self.builder.get_object("notification")
-        self.message = self.builder.get_object("message")
-        self.container = self.builder.get_object("container")
-        self.closeBtn = self.builder.get_object("closeBtn")
+        self.message = self.get_object("message")
+        self.container = self.get_object("container")
+        self.closeBtn = self.get_object("closeBtn")
         self.timerDuration = timer_duration
         self.timer = None
 
@@ -37,16 +36,13 @@ class Notification(UIWidget):
         self.timer.cancel()
         self.timer = None
 
-    def get_content(self):
-        return self.revealer
-
     def on_system_notification_added(self, notification):
         if notification and notification.count:
             message = notification[0]
             notificationType = notification[1]
             self.style.add_class(notificationType.value)
             self.message.set_label(message)
-            self.revealer.set_reveal_child(True)
+            self.get_ref().set_reveal_child(True)
 
             if notificationType not in [NotificationType.ERROR, NotificationType.WARN]:
                 self.__start_timer()
@@ -54,5 +50,5 @@ class Notification(UIWidget):
     def on_closeBtn_clicked(self, *args):
         if self.timer:
             self.__stop_timer()
-        self.revealer.set_reveal_child(False)
+        self.get_ref().set_reveal_child(False)
         stateManager.remove_system_notification()

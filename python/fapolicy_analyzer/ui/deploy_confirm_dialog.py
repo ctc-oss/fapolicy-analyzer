@@ -12,13 +12,9 @@ from fapolicy_analyzer.util.format import f
 class DeployConfirmDialog(UIWidget):
     def __init__(self, parent=None, cancel_time=30):
         super().__init__()
-        self.dialog = self.builder.get_object("deployConfirmDialog")
         if parent:
-            self.dialog.set_transient_for(parent)
+            self.get_ref().set_transient_for(parent)
         self.cancel_time = cancel_time
-
-    def get_content(self):
-        return self.dialog
 
     def on_after_show(self, *args):
         thread = Thread(target=self.reset_countdown)
@@ -26,10 +22,11 @@ class DeployConfirmDialog(UIWidget):
         thread.start()
 
     def reset_countdown(self):
+        dialog = self.get_ref()
         for i in reversed(range(0, self.cancel_time)):
             GLib.idle_add(
-                self.dialog.format_secondary_text,
+                dialog.format_secondary_text,
                 f(_("Reverting to previous settings in {i+1} seconds")),
             )
             sleep(1)
-        GLib.idle_add(self.dialog.response, Gtk.ResponseType.NO)
+        GLib.idle_add(dialog.response, Gtk.ResponseType.NO)
