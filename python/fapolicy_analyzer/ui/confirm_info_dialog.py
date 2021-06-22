@@ -50,34 +50,3 @@ class ConfirmInfoDialog(Gtk.Dialog):
             for e in listPathActionPairs:
                 # tuples are in (path,action) order, displayed as (action,path)
                 self.changeStore.append(e[::-1])
-
-
-class DialogWindow(Gtk.Window):
-    def __init__(self):
-        Gtk.Window.__init__(self, title="Dialog Example")
-        self.set_border_width(6)
-        button = Gtk.Button(label="Open dialog")
-        button.connect("clicked", self.on_button_clicked)
-        self.add(button)
-
-    def on_button_clicked(self, widget):
-        dialog = ConfirmInfoDialog(self)
-        response = dialog.run()
-
-        if response == Gtk.ResponseType.OK:
-            print("The OK button was clicked")
-        elif response == Gtk.ResponseType.CANCEL:
-            print("The Cancel button was clicked")
-
-        dialog.destroy()
-
-
-def main():
-    win = DialogWindow()
-    win.connect("destroy", Gtk.main_quit)
-    win.show_all()
-    Gtk.main()
-
-
-if __name__ == "__main__":
-    main()
