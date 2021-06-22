@@ -14,7 +14,7 @@ from .trust_file_details import TrustFileDetails
 from .deploy_confirm_dialog import DeployConfirmDialog
 from .configs import Colors
 from .state_manager import stateManager, NotificationType
-from .confirm_changes_dialog import ConfirmInfoDialog
+from .confirm_info_dialog import ConfirmInfoDialog
 
 
 class AncillaryTrustDatabaseAdmin(UIWidget):
