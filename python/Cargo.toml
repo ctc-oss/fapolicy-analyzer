@@ -6,7 +6,7 @@ version = "0.0.4"
 edition = "2018"
 
 [lib]
-path = "bindings/lib.rs"
+path = "pyo3/lib.rs"
 crate-type = ["cdylib"]
 
 [dependencies.fapolicy-analyzer]
