@@ -11,10 +11,10 @@ from fapolicy_analyzer.util import fs  # noqa: F401
 from .ui_widget import UIWidget
 from .trust_file_list import TrustFileList
 from .trust_file_details import TrustFileDetails
-from .confirmation_dialog import ConfirmDialog
 from .deploy_confirm_dialog import DeployConfirmDialog
 from .configs import Colors
 from .state_manager import stateManager, NotificationType
+from .confirm_info_dialog import ConfirmInfoDialog
 
 
 class AncillaryTrustDatabaseAdmin(UIWidget):
@@ -138,13 +138,11 @@ SHA256: {fs.sha(trust.path)}"""
         # element integration
         print(listPathActionTuples)
         parent = self.content.get_toplevel()
-        confirmDialog = ConfirmDialog(
-            strings.DEPLOY_ANCILLARY_CONFIRM_DIALOG_TITLE,
-            strings.DEPLOY_ANCILLARY_CONFIRM_DIALOG_TEXT,
-            parent,
-        ).get_content()
-        confirm_resp = confirmDialog.run()
-        confirmDialog.hide()
+        dlgDeployList = ConfirmInfoDialog(parent)
+        dlgDeployList.load_path_action_list(stateManager.get_path_action_list())
+        confirm_resp = dlgDeployList.run()
+        dlgDeployList.hide()
+
         if confirm_resp == Gtk.ResponseType.YES:
             try:
                 self.system.deploy()

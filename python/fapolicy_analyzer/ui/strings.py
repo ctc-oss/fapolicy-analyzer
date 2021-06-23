@@ -5,6 +5,8 @@ DEPLOY_ANCILLARY_CONFIRM_DIALOG_TEXT = _(
     """Are you sure you wish to deploy your changes to the ancillary trust database?
  This will update the fapolicy trust and restart the service."""
 )
+DEPLOY_ANCILLARY_CONFIRM_DLG_ACTION_COL_HDR = _("Action")
+DEPLOY_ANCILLARY_CONFIRM_DLG_PATH_COL_HDR = _("File Path")
 
 TRUSTED_FILE_MESSAGE = _("This file is trusted.")
 DISCREPANCY_FILE_MESSAGE = _("There is a discrepancy with this file.")
