@@ -262,3 +262,14 @@ def test_on_session_load(widget, mocker):
     widget.on_session_load(listPaTuples)
     mockAdd.assert_called_with(listPaAddedExpected)
     mockDel.assert_called_with(listPaDeletedExpected)
+
+
+@pytest.mark.parametrize("confirm_resp", [Gtk.ResponseType.YES])
+def test_handle_deploy_excption(widget, confirm_dialog):
+    parent = Gtk.Window()
+    parent.add(widget.get_ref())
+
+    patch("fapolicy_analyzer.System.deploy", side_effect=Exception("mocked error"))
+    with pytest.raises(Exception) as excinfo:
+        widget.on_deployBtn_clicked()
+        assert excinfo.value.message == "mocked error"

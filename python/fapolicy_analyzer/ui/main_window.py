@@ -7,13 +7,17 @@ from gi.repository import Gtk
 from .analyzer_selection_dialog import AnalyzerSelectionDialog, ANALYZER_SELECTION
 from .database_admin_page import DatabaseAdminPage
 from .notification import Notification
+from .policy_rules_admin_page import PolicyRulesAdminPage
 from .state_manager import stateManager
 from .unapplied_changes_dialog import UnappliedChangesDialog
 from .ui_widget import UIWidget
 
 
 def router(selection):
-    route = {ANALYZER_SELECTION.TRUST_DATABASE_ADMIN: DatabaseAdminPage}.get(selection)
+    route = {
+        ANALYZER_SELECTION.TRUST_DATABASE_ADMIN: DatabaseAdminPage,
+        ANALYZER_SELECTION.SCAN_SYSTEM: PolicyRulesAdminPage,
+    }.get(selection)
     if route:
         return route().get_ref()
     raise Exception("Bad Selection")

@@ -18,6 +18,8 @@ ANCILLARY_TRUST_TAB_LABEL = _("Ancillary Trust Database")
 FILE_LIST_TRUST_HEADER = _("Trust")
 FILE_LIST_FILE_HEADER = _("File")
 FILE_LIST_CHANGES_HEADER = _("Changes")
+FILE_LIST_MODE_HEADER = _("Mode")
+FILE_LIST_ACCESS_HEADER = _("Access")
 
 CHANGESET_ACTION_ADD = _("Add")
 CHANGESET_ACTION_DEL = _("Delete")
@@ -31,3 +33,10 @@ WHITESPACE_WARNING_DIALOG_TEXT = _(
 )
 
 LOADER_MESSAGE = _("Loading...")
+
+FILE_LABEL = _("file")
+FILES_LABEL = _("files")
+USER_LABEL = _("user")
+USERS_LABEL = _("users")
+GROUP_LABEL = _("group")
+GROUPS_LABEL = _("groups")

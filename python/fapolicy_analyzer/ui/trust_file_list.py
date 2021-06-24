@@ -4,6 +4,7 @@ import fapolicy_analyzer.ui.strings as strings
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from .searchable_list import SearchableList
+from .strings import FILE_LABEL, FILES_LABEL
 
 
 class TrustFileList(SearchableList):
@@ -40,6 +41,10 @@ class TrustFileList(SearchableList):
         )
         fileColumn.set_sort_column_id(1)
         return [trustColumn, fileColumn]
+
+    def _update_tree_count(self, count):
+        label = FILE_LABEL if count == 1 else FILES_LABEL
+        self.treeCount.set_text(" ".join([str(count), label]))
 
     def refresh(self):
         super().set_loading(True)

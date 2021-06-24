@@ -90,3 +90,9 @@ def test_filtering(widget):
     paths = [x[0] for x in view.get_model()]
     assert "foo" in paths
     assert "baz" not in paths
+
+
+def test_loads_data_on_refresh(widget, mocker):
+    widget._load_data = MagicMock(side_effect=widget._load_data)
+    widget.refresh()
+    widget._load_data.assert_called()
