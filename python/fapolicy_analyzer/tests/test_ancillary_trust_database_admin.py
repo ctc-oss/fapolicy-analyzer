@@ -68,15 +68,15 @@ def test_status_markup(widget):
 
 
 def test_updates_trust_details(widget, mocker):
-    mocker.patch.object(widget.trustFileDetails, "set_in_databae_view")
+    mocker.patch.object(widget.trustFileDetails, "set_in_database_view")
     mocker.patch.object(widget.trustFileDetails, "set_on_file_system_view")
     mocker.patch.object(widget.trustFileDetails, "set_trust_status")
     mocker.patch(
         "ui.ancillary_trust_database_admin.fs.stat", return_value="stat for foo file"
     )
     trust = MagicMock(status="T", path="/tmp/foo", size=1, hash="abc")
-    widget.on_file_selection_change(trust)
-    widget.trustFileDetails.set_in_databae_view.assert_called_with(
+    widget.on_trust_selection_changed(trust)
+    widget.trustFileDetails.set_in_database_view.assert_called_with(
         "File: /tmp/foo\nSize: 1\nSHA256: abc"
     )
     widget.trustFileDetails.set_on_file_system_view.assert_called_with(
@@ -171,7 +171,7 @@ def test_on_trustBtn_clicked(widget, state):
     tmpFile = tempfile.NamedTemporaryFile()
     tmpFile.seek(0, 2)
     trust = MagicMock(status="T", path=tmpFile.name, size=tmpFile.tell(), hash="abc")
-    widget.on_file_selection_change(trust)
+    widget.on_trust_selection_changed(trust)
     widget.on_trustBtn_clicked()
     assert len(state.get_changeset_q()) == 1
 
@@ -187,7 +187,7 @@ def test_on_untrustBtn_clicked(widget, state):
     tmpFile = tempfile.NamedTemporaryFile()
     tmpFile.seek(0, 2)
     trust = MagicMock(status="T", path=tmpFile.name, size=tmpFile.tell(), hash="abc")
-    widget.on_file_selection_change(trust)
+    widget.on_trust_selection_changed(trust)
     widget.on_untrustBtn_clicked()
     assert len(state.get_changeset_q()) == 1
 

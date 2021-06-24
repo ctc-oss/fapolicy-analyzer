@@ -2,7 +2,12 @@ from .ui_widget import UIWidget
 
 
 class TrustFileDetails(UIWidget):
-    def set_in_databae_view(self, text):
+    def clear(self):
+        self.set_in_database_view("")
+        self.set_on_file_system_view("")
+        self.set_trust_status("")
+
+    def set_in_database_view(self, text):
         self.get_object("inDatabaseView").get_buffer().set_text(text)
 
     def set_on_file_system_view(self, text):

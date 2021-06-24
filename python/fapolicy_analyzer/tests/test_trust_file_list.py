@@ -5,17 +5,17 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from unittest.mock import MagicMock
-from helpers import refresh_gui
 from ui.trust_file_list import TrustFileList
 
 
+_trust = [
+    MagicMock(status="u", path="/tmp/foo"),
+    MagicMock(status="t", path="/tmp/baz"),
+]
+
+
 def _trust_func(callback):
-    callback(
-        [
-            MagicMock(status="u", path="/tmp/foo"),
-            MagicMock(status="t", path="/tmp/baz"),
-        ]
-    )
+    callback(_trust)
 
 
 @pytest.fixture
@@ -40,25 +40,27 @@ def test_uses_custom_markup_func():
     markup_func.assert_called_with("t")
 
 
-def test_sorting_path(widget):
-    trustView = widget.trustView
-    assert ["/tmp/foo", "/tmp/baz"] == [x[1] for x in trustView.get_model()]
-    trustView.get_column(1).clicked()
-    assert ["/tmp/baz", "/tmp/foo"] == [x[1] for x in trustView.get_model()]
+def test_loads_trust_store(widget):
+    widget.load_store(_trust)
+    view = widget.get_object("treeView")
+    assert ["u", "t"] == [x[0] for x in view.get_model()]
+    assert ["/tmp/foo", "/tmp/baz"] == [x[1] for x in view.get_model()]
 
 
-def test_sorting_status(widget):
-    trustView = widget.trustView
-    assert ["u", "t"] == [x[0] for x in trustView.get_model()]
-    trustView.get_column(0).clicked()
-    assert ["t", "u"] == [x[0] for x in trustView.get_model()]
-
-
-def test_filtering(widget):
-    trustView = widget.trustView
-    trustViewFilter = widget.get_object("trustViewSearch")
-    trustViewFilter.set_text("foo")
-    refresh_gui()
-    paths = [x[1] for x in trustView.get_model()]
-    assert "/tmp/foo" in paths
-    assert "/tmp/baz" not in paths
+def test_fires_files_added(widget, mocker):
+    mocker.patch(
+        "ui.trust_file_list.Gtk.FileChooserDialog.run",
+        return_value=Gtk.ResponseType.OK,
+    )
+    mocker.patch(
+        "ui.trust_file_list.Gtk.FileChooserDialog.get_filenames",
+        return_value=["foo"],
+    )
+    mocker.patch("ui.trust_file_list.path.isfile", return_value=True)
+    mockHandler = MagicMock()
+    widget.files_added += mockHandler
+    parent = Gtk.Window()
+    widget.get_ref().set_parent(parent)
+    addBtn = widget.get_object("actionButtons").get_children()[0]
+    addBtn.clicked()
+    mockHandler.assert_called_with(["foo"])

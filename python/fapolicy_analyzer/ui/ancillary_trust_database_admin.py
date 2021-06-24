@@ -27,7 +27,7 @@ class AncillaryTrustDatabaseAdmin(UIWidget):
         self.trustFileList = TrustFileList(
             trust_func=self.__load_trust, markup_func=self.__status_markup
         )
-        self.trustFileList.file_selection_change += self.on_file_selection_change
+        self.trustFileList.trust_selection_changed += self.on_trust_selection_changed
         self.trustFileList.files_added += self.on_files_added
         self.get_object("leftBox").pack_start(
             self.trustFileList.get_ref(), True, True, 0
@@ -60,7 +60,7 @@ class AncillaryTrustDatabaseAdmin(UIWidget):
     def __apply_changeset(self, changeset):
         self.system = self.system.apply_changeset(changeset)
         stateManager.add_changeset_q(changeset)
-        self.trustFileList.refresh(self.__load_trust)
+        self.trustFileList.refresh()
 
     def add_trusted_files(self, *files):
         changeset = Changeset()
@@ -74,7 +74,7 @@ class AncillaryTrustDatabaseAdmin(UIWidget):
             changeset.del_trust(file)
         self.__apply_changeset(changeset)
 
-    def on_file_selection_change(self, trust):
+    def on_trust_selection_changed(self, trust):
         self.selectedFile = trust.path if trust else None
         trustBtn = self.get_object("trustBtn")
         untrustBtn = self.get_object("untrustBtn")
@@ -84,7 +84,7 @@ class AncillaryTrustDatabaseAdmin(UIWidget):
             trustBtn.set_sensitive(not trusted)
             untrustBtn.set_sensitive(trusted)
 
-            self.trustFileDetails.set_in_databae_view(
+            self.trustFileDetails.set_in_database_view(
                 f(
                     _(
                         """File: {trust.path}
@@ -113,6 +113,7 @@ SHA256: {fs.sha(trust.path)}"""
         else:
             trustBtn.set_sensitive(False)
             untrustBtn.set_sensitive(False)
+            self.trustFileDetails.clear()
 
     def on_files_added(self, files):
         if files:

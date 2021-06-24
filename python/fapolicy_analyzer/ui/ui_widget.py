@@ -16,13 +16,13 @@ locale.textdomain(DOMAIN)
 
 
 class UIWidget(ABC):
-    def __init__(self):
+    def __init__(self, name=None):
         def gladeFile():
             filename = f"{name}.glade"
             with resources.path("fapolicy_analyzer.glade", filename) as path:
                 return path.as_posix()
 
-        name = self.__module__.split(".")[-1]
+        name = name or self.__module__.split(".")[-1]
         self.builder = Gtk.Builder()
         self.builder.set_translation_domain(DOMAIN)
         self.builder.add_from_file(gladeFile())

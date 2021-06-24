@@ -127,3 +127,6 @@ msgstr ""
 
 msgid "Your changes will be lost."
 msgstr "Tus cambios se perderán."
+
+msgid "Cargando..."
+msgstr ""

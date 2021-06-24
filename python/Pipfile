@@ -19,6 +19,7 @@ pytest-watch = "*"
 babel = "*"
 babelgladeextractor = "*"
 flake8-i18n = "*"
+callee = "*"
 
 [packages]
 pycairo = "1.20.0"
