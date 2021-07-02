@@ -1,0 +1,30 @@
+name: Changelog
+
+on:
+  push:
+    tags:
+      - v*
+jobs:
+  generate_changelog:
+    runs-on: ubuntu-latest
+    name: Generate changelog
+    steps:
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install argparse
+      - uses: actions/checkout@v2
+        with:
+          ref: master
+          fetch-depth: 0
+      - run: git fetch --prune --prune-tags
+      - run: git tag -l 'v*'
+      - run: ./scripts/changelog/changelog.py > CHANGELOG.md
+      - uses: peter-evans/create-pull-request@v3
+        with:
+          title: 'Updated CHANGELOG.md'
+          commit-message: 'Updated CHANGELOG.md'
+          signoff: true
