@@ -35,7 +35,7 @@ def revert_dialog(revert_resp, mocker):
         run=MagicMock(return_value=revert_resp), hide=MagicMock()
     )
     mocker.patch(
-        "ui.ancillary_trust_database_admin.DeployConfirmDialog.get_content",
+        "ui.ancillary_trust_database_admin.DeployConfirmDialog.get_ref",
         return_value=mock_revert_dialog,
     )
     return mock_revert_dialog
@@ -49,7 +49,7 @@ def state():
 
 
 def test_creates_widget(widget):
-    assert type(widget.get_content()) is Gtk.Box
+    assert type(widget.get_ref()) is Gtk.Box
 
 
 def test_status_markup(widget):
@@ -89,7 +89,7 @@ def test_updates_trust_details(widget, mocker):
 @pytest.mark.parametrize("revert_resp", [Gtk.ResponseType.NO])
 def test_on_confirm_deployment(widget, confirm_dialog, revert_dialog):
     parent = Gtk.Window()
-    parent.add(widget.get_content())
+    parent.add(widget.get_ref())
     with patch("fapolicy_analyzer.System") as mock:
         instance = mock.return_value
         widget.system = instance
@@ -103,7 +103,7 @@ def test_on_confirm_deployment(widget, confirm_dialog, revert_dialog):
 @pytest.mark.parametrize("confirm_resp", [Gtk.ResponseType.NO])
 def test_on_neg_confirm_deployment(widget, confirm_dialog):
     parent = Gtk.Window()
-    parent.add(widget.get_content())
+    parent.add(widget.get_ref())
     with patch("fapolicy_analyzer.System") as mock:
         instance = mock.return_value
         widget.system = instance
@@ -118,7 +118,7 @@ def test_on_neg_confirm_deployment(widget, confirm_dialog):
 @pytest.mark.parametrize("revert_resp", [Gtk.ResponseType.NO])
 def test_on_revert_deployment(widget, confirm_dialog, revert_dialog, state):
     parent = Gtk.Window()
-    parent.add(widget.get_content())
+    parent.add(widget.get_ref())
 
     with patch("fapolicy_analyzer.System") as mock:
         widget.system = mock.return_value
@@ -135,7 +135,7 @@ def test_on_revert_deployment(widget, confirm_dialog, revert_dialog, state):
 @pytest.mark.parametrize("revert_resp", [Gtk.ResponseType.YES])
 def test_on_neg_revert_deployment(widget, confirm_dialog, revert_dialog, state):
     parent = Gtk.Window()
-    parent.add(widget.get_content())
+    parent.add(widget.get_ref())
 
     with patch("fapolicy_analyzer.System") as mock:
         widget.system = mock.return_value

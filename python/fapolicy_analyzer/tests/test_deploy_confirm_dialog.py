@@ -8,16 +8,16 @@ from ui.deploy_confirm_dialog import DeployConfirmDialog
 
 def test_creates_widget():
     widget = DeployConfirmDialog()
-    assert type(widget.get_content()) is Gtk.MessageDialog
+    assert type(widget.get_ref()) is Gtk.MessageDialog
 
 
 def test_adds_dialog_to_parent():
     parent = Gtk.Window()
     widget = DeployConfirmDialog(parent)
-    assert widget.get_content().get_transient_for() == parent
+    assert widget.get_ref().get_transient_for() == parent
 
 
 def test_closes_after_cancel_time():
-    widget = DeployConfirmDialog(cancel_time=1)
-    result = widget.get_content().run()
+    widget = DeployConfirmDialog(parent=Gtk.Window(), cancel_time=1)
+    result = widget.get_ref().run()
     assert result == Gtk.ResponseType.NO

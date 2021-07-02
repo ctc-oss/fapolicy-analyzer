@@ -25,7 +25,7 @@ def widget():
 
 
 def test_creates_widget(widget):
-    assert type(widget.get_content()) is Gtk.Box
+    assert type(widget.get_ref()) is Gtk.Box
 
 
 def test_uses_custom_trust_func():
@@ -56,7 +56,7 @@ def test_sorting_status(widget):
 
 def test_filtering(widget):
     trustView = widget.trustView
-    trustViewFilter = widget.builder.get_object("trustViewSearch")
+    trustViewFilter = widget.get_object("trustViewSearch")
     trustViewFilter.set_text("foo")
     refresh_gui()
     paths = [x[1] for x in trustView.get_model()]

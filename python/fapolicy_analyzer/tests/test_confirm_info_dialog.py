@@ -8,7 +8,7 @@ from ui.confirm_info_dialog import ConfirmInfoDialog
 
 
 def test_creates_widget():
-    widget = ConfirmInfoDialog()
+    widget = ConfirmInfoDialog(parent=Gtk.Window())
     assert type(widget) is ConfirmInfoDialog
 
 
@@ -19,22 +19,20 @@ def test_adds_dialog_to_parent():
 
 
 def test_dialog_actions_responses():
-    dialog = ConfirmInfoDialog()
+    dialog = ConfirmInfoDialog(parent=Gtk.Window())
     for expected in [Gtk.ResponseType.YES, Gtk.ResponseType.NO]:
         button = dialog.get_widget_for_response(expected)
-        delayed_gui_action(button.clicked, delay=5)
+        delayed_gui_action(button.clicked, delay=1)
         response = dialog.run()
         assert response == expected
 
 
 def test_load_path_action_list():
-    parent = Gtk.Window()
-    widget = ConfirmInfoDialog(parent=parent)
-
+    widget = ConfirmInfoDialog(parent=Gtk.Window())
     path_action_list = [("/tmp/fu.txt", "Add"), ("/tmp/bar.txt", "Del")]
     widget.load_path_action_list(path_action_list)
 
     # Verify the contents of the ConfirmInfoDialog.ListStore
     for i, j in zip(widget.changeStore, range(2)):
         # Note: tuples are reversed when loading Gtk.ListStore for display
-        assert((i[1], i[0]) == path_action_list[j])
+        assert (i[1], i[0]) == path_action_list[j]

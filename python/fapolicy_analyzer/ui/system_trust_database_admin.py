@@ -32,12 +32,12 @@ class SystemTrustDatabaseAdmin(UIWidget, Events):
         )
         self.trustFileList.file_selection_change += self.on_file_selection_change
         self.get_object("leftBox").pack_start(
-            self.trustFileList.get_content(), True, True, 0
+            self.trustFileList.get_ref(), True, True, 0
         )
 
         self.trustFileDetails = TrustFileDetails()
         self.get_object("rightBox").pack_start(
-            self.trustFileDetails.get_content(), True, True, 0
+            self.trustFileDetails.get_ref(), True, True, 0
         )
 
     def __status_markup(self, status):
@@ -53,9 +53,6 @@ class SystemTrustDatabaseAdmin(UIWidget, Events):
             GLib.idle_add(callback, trust)
 
         self.executor.submit(get_trust)
-
-    def get_content(self):
-        return self.get_object("systemTrustDatabaseAdmin")
 
     def on_file_selection_change(self, trust):
         self.selectedFile = trust

@@ -18,18 +18,18 @@ class DatabaseAdminPage:
         )
 
         self.notebook.append_page(
-            self.systemTrustDbAdmin.get_content(),
+            self.systemTrustDbAdmin.get_ref(),
             Gtk.Label(label=strings.SYSTEM_TRUST_TAB_LABEL),
         )
         self.notebook.append_page(
-            self.ancillaryTrustDbAdmin.get_content(),
+            self.ancillaryTrustDbAdmin.get_ref(),
             Gtk.Label(label=strings.ANCILLARY_TRUST_TAB_LABEL),
         )
 
         self.notebook.set_current_page(1)
         self.notebook.show_all()
 
-    def get_content(self):
+    def get_ref(self):
         return self.notebook
 
     def on_added_to_ancillary_trust(self, file):

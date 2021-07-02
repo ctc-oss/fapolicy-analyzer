@@ -11,9 +11,11 @@ class ANALYZER_SELECTION(Enum):
 class AnalyzerSelectionDialog(UIWidget):
     def __init__(self, parent=None):
         super().__init__()
-        self.dialog = self.builder.get_object("analyzerSelectionDialog")
         if parent:
-            self.dialog.set_transient_for(parent)
+            self.get_ref().set_transient_for(parent)
 
-    def get_content(self):
-        return self.dialog
+    def get_selection(self):
+        dialog = self.get_ref()
+        response = dialog.run()
+        dialog.hide()
+        return ANALYZER_SELECTION(response)

@@ -31,7 +31,7 @@ argparse = "1.4.0"
 allow_prereleases = true
 
 [scripts]
-test = "pipenv run xvfb-run -a pytest -s --cov-report term-missing --cov=ui fapolicy_analyzer/"
+test = "pipenv run xvfb-run -a pytest -s --cov fapolicy_analyzer/"
 lint = "pipenv run flake8 fapolicy_analyzer/"
 watch-test = "pipenv run xvfb-run -a pytest-watch fapolicy_analyzer/ -- --testmon -s"
 extract_messages = "pipenv run python setup.py extract_messages"

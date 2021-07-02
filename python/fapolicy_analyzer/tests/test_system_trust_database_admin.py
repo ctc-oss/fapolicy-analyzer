@@ -15,7 +15,7 @@ def widget():
 
 
 def test_creates_widget(widget):
-    assert type(widget.get_content()) is Gtk.Box
+    assert type(widget.get_ref()) is Gtk.Box
 
 
 def test_status_markup(widget):

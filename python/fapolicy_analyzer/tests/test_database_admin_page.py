@@ -12,28 +12,28 @@ from ui.database_admin_page import DatabaseAdminPage
 def widget(mocker):
     mocker.patch(
         "ui.database_admin_page.AncillaryTrustDatabaseAdmin",
-        return_value=MagicMock(get_content=MagicMock(return_value=Gtk.Box())),
+        return_value=MagicMock(get_ref=MagicMock(return_value=Gtk.Box())),
     )
     mocker.patch(
         "ui.database_admin_page.SystemTrustDatabaseAdmin",
-        return_value=MagicMock(get_content=MagicMock(return_value=Gtk.Box())),
+        return_value=MagicMock(get_ref=MagicMock(return_value=Gtk.Box())),
     )
     return DatabaseAdminPage()
 
 
 def test_creates_widget(widget):
-    assert type(widget.get_content()) is Gtk.Notebook
+    assert type(widget.get_ref()) is Gtk.Notebook
 
 
 def test_appends_system_db_admin_tab(widget):
-    content = widget.get_content()
+    content = widget.get_ref()
     page = content.get_nth_page(0)
     assert type(page) is Gtk.Box
     assert content.get_tab_label_text(page) == "System Trust Database"
 
 
 def test_appends_ancillary_db_admin_tab(widget):
-    content = widget.get_content()
+    content = widget.get_ref()
     page = content.get_nth_page(1)
     assert type(page) is Gtk.Box
     assert content.get_tab_label_text(page) == "Ancillary Trust Database"

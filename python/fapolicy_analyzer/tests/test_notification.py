@@ -13,7 +13,7 @@ from ui.state_manager import stateManager, NotificationType
 def widget():
     widget = Notification(1)
     overlay = Gtk.Overlay()
-    overlay.add_overlay(widget.get_content())
+    overlay.add_overlay(widget.get_ref())
     parent = Gtk.Window()
     parent.add(overlay)
     return widget
@@ -28,10 +28,10 @@ def state():
 @pytest.mark.parametrize("notification_type", list(NotificationType))
 def test_shows_notification(widget, state, notification_type):
     state.add_system_notification("foo", notification_type)
-    assert widget.get_content().get_child_revealed()
-    assert widget.builder.get_object("message").get_label() == "foo"
+    assert widget.get_ref().get_child_revealed()
+    assert widget.get_object("message").get_label() == "foo"
     assert (
-        widget.builder.get_object("container")
+        widget.get_object("container")
         .get_style_context()
         .has_class(notification_type.name.lower())
     )
@@ -40,9 +40,9 @@ def test_shows_notification(widget, state, notification_type):
 @pytest.mark.parametrize("notification_type", list(NotificationType))
 def test_closes_notification(widget, state, notification_type):
     state.add_system_notification("foo", notification_type)
-    assert widget.get_content().get_child_revealed()
-    widget.builder.get_object("closeBtn").clicked()
-    assert not widget.get_content().get_child_revealed()
+    assert widget.get_ref().get_child_revealed()
+    widget.get_object("closeBtn").clicked()
+    assert not widget.get_ref().get_child_revealed()
 
 
 @pytest.mark.parametrize(
@@ -50,9 +50,9 @@ def test_closes_notification(widget, state, notification_type):
 )
 def test_notification_times_out(widget, state, notification_type):
     state.add_system_notification("foo", notification_type)
-    assert widget.get_content().get_child_revealed()
+    assert widget.get_ref().get_child_revealed()
     sleep(1.2)
-    assert not widget.get_content().get_child_revealed()
+    assert not widget.get_ref().get_child_revealed()
 
 
 @pytest.mark.parametrize(
@@ -60,6 +60,6 @@ def test_notification_times_out(widget, state, notification_type):
 )
 def test_notification_does_not_time_out(widget, state, notification_type):
     state.add_system_notification("foo", notification_type)
-    assert widget.get_content().get_child_revealed()
+    assert widget.get_ref().get_child_revealed()
     sleep(1.2)
-    assert widget.get_content().get_child_revealed()
+    assert widget.get_ref().get_child_revealed()
