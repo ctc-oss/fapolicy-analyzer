@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fapolicy-analyzer snapshot\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-06-24 09:49-0400\n"
+"POT-Creation-Date: 2021-07-02 09:22-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -101,25 +101,23 @@ msgid ""
 "\n"
 msgstr ""
 
-#: fapolicy_analyzer/glade/loader.glade:28
-#: fapolicy_analyzer/glade/user_list.glade:99
-#: fapolicy_analyzer/ui/strings.py:29
+#: fapolicy_analyzer/glade/loader.glade:28 fapolicy_analyzer/ui/strings.py:29
 msgid "Loading..."
 msgstr ""
 
-#: fapolicy_analyzer/glade/analyzer_selection_dialog.glade:24
+#: fapolicy_analyzer/glade/analyzer_selection_dialog.glade:25
 msgid "Scan System"
 msgstr ""
 
-#: fapolicy_analyzer/glade/analyzer_selection_dialog.glade:37
+#: fapolicy_analyzer/glade/analyzer_selection_dialog.glade:39
 msgid "Administer Trust Databases"
 msgstr ""
 
-#: fapolicy_analyzer/glade/analyzer_selection_dialog.glade:59
+#: fapolicy_analyzer/glade/analyzer_selection_dialog.glade:61
 msgid "Analyzer Selection"
 msgstr ""
 
-#: fapolicy_analyzer/glade/analyzer_selection_dialog.glade:92
+#: fapolicy_analyzer/glade/analyzer_selection_dialog.glade:94
 msgid "Analyze From Audit"
 msgstr ""
 
@@ -159,6 +157,10 @@ msgstr ""
 msgid "x"
 msgstr ""
 
+#: fapolicy_analyzer/glade/searchable_list.glade:75
+msgid "page0"
+msgstr ""
+
 #: fapolicy_analyzer/glade/system_trust_database_admin.glade:44
 msgid "Add File To Ancillary Trust Database"
 msgstr ""
@@ -175,11 +177,6 @@ msgstr ""
 msgid "File Trust Status"
 msgstr ""
 
-#: fapolicy_analyzer/glade/trust_file_list.glade:75
-#: fapolicy_analyzer/glade/user_list.glade:72
-msgid "page0"
-msgstr ""
-
 #: fapolicy_analyzer/glade/unapplied_changes_dialog.glade:8
 msgid "Unapplied Changes"
 msgstr ""
@@ -192,9 +189,5 @@ msgstr ""
 
 #: fapolicy_analyzer/glade/unapplied_changes_dialog.glade:16
 msgid "Your changes will be lost."
-msgstr ""
-
-#: fapolicy_analyzer/glade/user_list.glade:114
-msgid "page1"
 msgstr ""
 
