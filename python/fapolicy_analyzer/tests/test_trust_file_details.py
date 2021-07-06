@@ -19,7 +19,7 @@ def test_creates_widget(widget):
 def test_sets_In_Database_View(widget):
     textView = widget.get_object("inDatabaseView")
     textBuffer = textView.get_buffer()
-    widget.set_in_databae_view("foo")
+    widget.set_in_database_view("foo")
     assert (
         textBuffer.get_text(
             textBuffer.get_start_iter(), textBuffer.get_end_iter(), True

@@ -30,7 +30,7 @@ class SystemTrustDatabaseAdmin(UIWidget, Events):
             markup_func=self.__status_markup,
             read_only=True,
         )
-        self.trustFileList.file_selection_change += self.on_file_selection_change
+        self.trustFileList.trust_selection_changed += self.on_trust_selection_changed
         self.get_object("leftBox").pack_start(
             self.trustFileList.get_ref(), True, True, 0
         )
@@ -54,7 +54,7 @@ class SystemTrustDatabaseAdmin(UIWidget, Events):
 
         self.executor.submit(get_trust)
 
-    def on_file_selection_change(self, trust):
+    def on_trust_selection_changed(self, trust):
         self.selectedFile = trust
         addBtn = self.get_object("addBtn")
         if trust:
@@ -62,7 +62,7 @@ class SystemTrustDatabaseAdmin(UIWidget, Events):
             trusted = status == "t"
             addBtn.set_sensitive(not trusted)
 
-            self.trustFileDetails.set_in_databae_view(
+            self.trustFileDetails.set_in_database_view(
                 f(
                     _(
                         """File: {trust.path}

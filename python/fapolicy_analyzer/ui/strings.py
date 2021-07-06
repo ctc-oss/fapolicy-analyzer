@@ -25,3 +25,5 @@ WHITESPACE_WARNING_DIALOG_TEXT = _(
     "fapolicyd currently does not support paths containing spaces. The following paths will not be added to the "
     + "Trusted Files List.\n(fapolicyd: V TBD)\n\n"
 )
+
+LOADER_MESSAGE = _("Loading...")

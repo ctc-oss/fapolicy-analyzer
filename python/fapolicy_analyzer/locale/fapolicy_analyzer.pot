@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fapolicy-analyzer snapshot\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-06-17 14:42-0400\n"
+"POT-Creation-Date: 2021-07-02 09:22-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,22 +18,22 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.9.1\n"
 
-#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:93
-#: fapolicy_analyzer/ui/system_trust_database_admin.py:70
+#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:89
+#: fapolicy_analyzer/ui/system_trust_database_admin.py:67
 msgid ""
 "File: {trust.path}\n"
 "Size: {trust.size}\n"
 "SHA256: {trust.hash}"
 msgstr ""
 
-#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:103
-#: fapolicy_analyzer/ui/system_trust_database_admin.py:79
+#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:99
+#: fapolicy_analyzer/ui/system_trust_database_admin.py:76
 msgid ""
 "{fs.stat(trust.path)}\n"
 "SHA256: {fs.sha(trust.path)}"
 msgstr ""
 
-#: fapolicy_analyzer/ui/deploy_confirm_dialog.py:32
+#: fapolicy_analyzer/ui/deploy_confirm_dialog.py:29
 msgid "Reverting to previous settings in {i+1} seconds"
 msgstr ""
 
@@ -101,6 +101,10 @@ msgid ""
 "\n"
 msgstr ""
 
+#: fapolicy_analyzer/glade/loader.glade:28 fapolicy_analyzer/ui/strings.py:29
+msgid "Loading..."
+msgstr ""
+
 #: fapolicy_analyzer/glade/analyzer_selection_dialog.glade:25
 msgid "Scan System"
 msgstr ""
@@ -153,6 +157,10 @@ msgstr ""
 msgid "x"
 msgstr ""
 
+#: fapolicy_analyzer/glade/searchable_list.glade:75
+msgid "page0"
+msgstr ""
+
 #: fapolicy_analyzer/glade/system_trust_database_admin.glade:44
 msgid "Add File To Ancillary Trust Database"
 msgstr ""
@@ -167,18 +175,6 @@ msgstr ""
 
 #: fapolicy_analyzer/glade/trust_file_details.glade:120
 msgid "File Trust Status"
-msgstr ""
-
-#: fapolicy_analyzer/glade/trust_file_list.glade:75
-msgid "page0"
-msgstr ""
-
-#: fapolicy_analyzer/glade/trust_file_list.glade:102
-msgid "Loading..."
-msgstr ""
-
-#: fapolicy_analyzer/glade/trust_file_list.glade:117
-msgid "page1"
 msgstr ""
 
 #: fapolicy_analyzer/glade/unapplied_changes_dialog.glade:8

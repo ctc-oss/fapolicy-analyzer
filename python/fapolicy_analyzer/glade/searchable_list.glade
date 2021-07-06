@@ -2,7 +2,7 @@
 <!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.22"/>
-  <object class="GtkBox" id="trustFileList">
+  <object class="GtkBox" id="searchableList">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
     <property name="margin-right">5</property>
@@ -14,7 +14,7 @@
         <property name="can-focus">False</property>
         <property name="spacing">2</property>
         <child>
-          <object class="GtkSearchEntry" id="trustViewSearch">
+          <object class="GtkSearchEntry" id="search">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="primary-icon-name">edit-find-symbolic</property>
@@ -29,14 +29,14 @@
           </packing>
         </child>
         <child>
-          <object class="GtkButton" id="addBtn">
-            <property name="label">gtk-add</property>
+          <object class="GtkButtonBox" id="actionButtons">
             <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="receives-default">True</property>
-            <property name="use-stock">True</property>
-            <property name="always-show-image">True</property>
-            <signal name="clicked" handler="on_addBtn_clicked" swapped="no"/>
+            <property name="can-focus">False</property>
+            <property name="homogeneous">True</property>
+            <property name="layout-style">start</property>
+            <child>
+              <placeholder/>
+            </child>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -52,7 +52,7 @@
       </packing>
     </child>
     <child>
-      <object class="GtkStack" id="trustViewStack">
+      <object class="GtkStack" id="viewStack">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <child>
@@ -61,7 +61,7 @@
             <property name="can-focus">True</property>
             <property name="shadow-type">in</property>
             <child>
-              <object class="GtkTreeView" id="trustView">
+              <object class="GtkTreeView" id="treeView">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <child internal-child="selection">
@@ -71,51 +71,8 @@
             </child>
           </object>
           <packing>
-            <property name="name">trustView</property>
+            <property name="name">treeView</property>
             <property name="title" translatable="yes">page0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkBox">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="orientation">vertical</property>
-            <property name="spacing">8</property>
-            <child>
-              <object class="GtkImage" id="trustViewLoader">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="valign">end</property>
-                <property name="pixbuf">../resources/filled_fading_balls.gif</property>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="valign">start</property>
-                <property name="label" translatable="yes">Loading...</property>
-                <attributes>
-                  <attribute name="weight" value="bold"/>
-                  <attribute name="scale" value="2"/>
-                </attributes>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-          </object>
-          <packing>
-            <property name="name">trustViewLoader</property>
-            <property name="title" translatable="yes">page1</property>
-            <property name="position">1</property>
           </packing>
         </child>
       </object>
