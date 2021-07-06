@@ -43,8 +43,8 @@ def test_uses_custom_markup_func():
 def test_loads_trust_store(widget):
     widget.load_store(_trust)
     view = widget.get_object("treeView")
-    assert ["u", "t"] == [x[0] for x in view.get_model()]
-    assert ["/tmp/foo", "/tmp/baz"] == [x[1] for x in view.get_model()]
+    assert [t.status for t in _trust] == [x[0] for x in view.get_model()]
+    assert [t.path for t in _trust] == [x[1] for x in view.get_model()]
 
 
 def test_fires_files_added(widget, mocker):
