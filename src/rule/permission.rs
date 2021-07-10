@@ -8,7 +8,7 @@ pub enum Permission {
 
 impl Display for Permission {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("perm=");
+        f.write_str("perm=")?;
         match self {
             Permission::Any => f.write_str("any"),
             Permission::Open => f.write_str("open"),
@@ -27,7 +27,7 @@ mod tests {
     //deny_audit perm=any pattern=ld_so : all
 
     #[test]
-    fn permission_display() {
+    fn display() {
         assert_eq!(format!("{}", Permission::Any), "perm=any");
         assert_eq!(format!("{}", Permission::Open), "perm=open");
         assert_eq!(format!("{}", Permission::Execute), "perm=execute");

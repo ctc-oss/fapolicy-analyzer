@@ -30,15 +30,12 @@ mod tests {
     //deny_audit perm=any pattern=ld_so : all
 
     #[test]
-    fn object_display() {
-        let ft1 = FileType("text/x-lua".into());
-
+    fn display() {
         assert_eq!(format!("{}", Object::All), "all");
         assert_eq!(format!("{}", Object::Dir("/foo".into())), "dir=/foo");
         assert_eq!(
             format!("{}", Object::Device("/dev/cdrom".into())),
             "device=/dev/cdrom"
         );
-        assert_eq!(format!("{}", ft1), format!("ftype={}", &ft1.0));
     }
 }
