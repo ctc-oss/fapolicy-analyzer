@@ -40,11 +40,6 @@ impl Display for Rule {
 mod tests {
     use super::*;
 
-    //deny_audit perm=any all                : device=/dev/cdrom
-    //deny_audit perm=execute all            : ftype=any
-    //deny_audit perm=open exe=/usr/bin/ssh  : dir=/opt
-    //deny_audit perm=any pattern=ld_so      : all
-
     #[test]
     fn display() {
         let r = Rule::deny(Subject::All, Permission::Open, Object::All);

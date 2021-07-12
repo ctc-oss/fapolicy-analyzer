@@ -94,11 +94,6 @@ pub fn rule(i: &str) -> nom::IResult<&str, Rule> {
 mod tests {
     use super::*;
 
-    //deny_audit perm=any all                : device=/dev/cdrom
-    //deny_audit perm=execute all            : ftype=any
-    //deny_audit perm=open exe=/usr/bin/ssh  : dir=/opt
-    //deny_audit perm=any pattern=ld_so      : all
-
     #[test]
     fn parse_subj() {
         assert_eq!(Subject::All, subject("all").ok().unwrap().1);
@@ -131,27 +126,29 @@ mod tests {
         assert_eq!(Permission::Any, r.perm);
         assert_eq!(Subject::Pattern("ld_so".into()), r.subj);
         assert_eq!(Object::All, r.obj);
-    }
 
-    // subject("uid=32").map_err(|e| "");
-    // subject("gid=100").map_err(|e| "");
-    //
-    // println!("{:?}", decision("deny_audit").map_err(|e| ""));
-    //
-    // println!(
-    //     "{:?}",
-    //     rule("deny_audit perm=any all : all").map_err(|e| "")
-    // );
-    // println!(
-    //     "{:?}",
-    //     rule("deny_audit perm=open all : device=/dev/cdrom").map_err(|e| "")
-    // );
-    // println!(
-    //     "{:?}",
-    //     rule("deny_audit perm=open exe=/usr/bin/ssh : dir=/opt").map_err(|e| "")
-    // );
-    // println!(
-    //     "{:?}",
-    //     rule("deny_audit perm=any pattern=ld_so : all").map_err(|e| "")
-    // );
+        let r = rule("deny_audit perm=any all : all").ok().unwrap().1;
+        assert_eq!(Decision::DenyAudit, r.dec);
+        assert_eq!(Permission::Any, r.perm);
+        assert_eq!(Subject::All, r.subj);
+        assert_eq!(Object::All, r.obj);
+
+        let r = rule("deny_audit perm=open all : device=/dev/cdrom")
+            .ok()
+            .unwrap()
+            .1;
+        assert_eq!(Decision::DenyAudit, r.dec);
+        assert_eq!(Permission::Open, r.perm);
+        assert_eq!(Subject::All, r.subj);
+        assert_eq!(Object::Device("/dev/cdrom".into()), r.obj);
+
+        let r = rule("deny_audit perm=open exe=/usr/bin/ssh : dir=/opt")
+            .ok()
+            .unwrap()
+            .1;
+        assert_eq!(Decision::DenyAudit, r.dec);
+        assert_eq!(Permission::Open, r.perm);
+        assert_eq!(Subject::Exe("/usr/bin/ssh".into()), r.subj);
+        assert_eq!(Object::Dir("/opt".into()), r.obj);
+    }
 }
