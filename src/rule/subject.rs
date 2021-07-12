@@ -1,4 +1,7 @@
 use std::fmt::{Display, Formatter};
+use std::str::FromStr;
+
+use crate::rule::parse;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Subject {
@@ -17,6 +20,17 @@ impl Display for Subject {
             Subject::Gid(id) => f.write_fmt(format_args!("gid={}", id)),
             Subject::Exe(id) => f.write_fmt(format_args!("exe={}", id)),
             Subject::Pattern(id) => f.write_fmt(format_args!("pattern={}", id)),
+        }
+    }
+}
+
+impl FromStr for Subject {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match parse::subject(s) {
+            Ok((_, s)) => Ok(s),
+            Err(_) => Err("Failed to parse Subject to string".into()),
         }
     }
 }

@@ -1,4 +1,6 @@
+use crate::rule::parse;
 use std::fmt::{Display, Formatter};
+use std::str::FromStr;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Permission {
@@ -14,6 +16,17 @@ impl Display for Permission {
             Permission::Any => f.write_str("any"),
             Permission::Open => f.write_str("open"),
             Permission::Execute => f.write_str("execute"),
+        }
+    }
+}
+
+impl FromStr for Permission {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match parse::permission(s) {
+            Ok((_, s)) => Ok(s),
+            Err(_) => Err("Failed to parse Permission to string".into()),
         }
     }
 }

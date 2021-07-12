@@ -9,7 +9,7 @@ use nom::sequence::{separated_pair, terminated};
 
 use crate::rule::{Decision, Object, Permission, Rule, Subject};
 
-fn decision(i: &str) -> nom::IResult<&str, Decision> {
+pub(crate) fn decision(i: &str) -> nom::IResult<&str, Decision> {
     alt((
         map(tag("allow"), |_| Decision::Allow),
         map(tag("deny_audit"), |_| Decision::DenyAudit),
@@ -17,7 +17,7 @@ fn decision(i: &str) -> nom::IResult<&str, Decision> {
     ))(i)
 }
 
-fn permission(i: &str) -> nom::IResult<&str, Permission> {
+pub(crate) fn permission(i: &str) -> nom::IResult<&str, Permission> {
     alt((
         map(separated_pair(tag("perm"), tag("="), tag("any")), |_| {
             Permission::Any
@@ -32,7 +32,7 @@ fn permission(i: &str) -> nom::IResult<&str, Permission> {
     ))(i)
 }
 
-fn subject(i: &str) -> nom::IResult<&str, Subject> {
+pub(crate) fn subject(i: &str) -> nom::IResult<&str, Subject> {
     alt((
         map(tag("all"), |_| Subject::All),
         map(
@@ -54,7 +54,7 @@ fn subject(i: &str) -> nom::IResult<&str, Subject> {
     ))(i)
 }
 
-fn object(i: &str) -> nom::IResult<&str, Object> {
+pub(crate) fn object(i: &str) -> nom::IResult<&str, Object> {
     alt((
         map(tag("all"), |_| Object::All),
         map(

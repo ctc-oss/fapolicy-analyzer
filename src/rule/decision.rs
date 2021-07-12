@@ -1,4 +1,6 @@
+use crate::rule::parse;
 use std::fmt::{Display, Formatter};
+use std::str::FromStr;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Decision {
@@ -13,6 +15,17 @@ impl Display for Decision {
             Decision::Allow => f.write_str("allow"),
             Decision::Deny => f.write_str("deny"),
             Decision::DenyAudit => f.write_str("deny_audit"),
+        }
+    }
+}
+
+impl FromStr for Decision {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match parse::decision(s) {
+            Ok((_, s)) => Ok(s),
+            Err(_) => Err("Failed to parse Decision to string".into()),
         }
     }
 }

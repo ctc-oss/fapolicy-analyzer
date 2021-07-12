@@ -1,6 +1,7 @@
 use std::fmt::{Display, Formatter};
 
-use crate::rule::FileType;
+use crate::rule::{parse, FileType};
+use std::str::FromStr;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Object {
@@ -17,6 +18,17 @@ impl Display for Object {
             Object::Dir(p) => f.write_fmt(format_args!("dir={}", p)),
             Object::Device(p) => f.write_fmt(format_args!("device={}", p)),
             Object::FileType(t) => f.write_fmt(format_args!("ftype={}", t)),
+        }
+    }
+}
+
+impl FromStr for Object {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match parse::object(s) {
+            Ok((_, s)) => Ok(s),
+            Err(_) => Err("Failed to parse Object to string".into()),
         }
     }
 }
