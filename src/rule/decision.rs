@@ -1,5 +1,6 @@
 use std::fmt::{Display, Formatter};
 
+#[derive(Clone, Debug, PartialEq)]
 pub enum Decision {
     Allow,
     Deny,

@@ -1,5 +1,6 @@
 use std::fmt::{Display, Formatter};
 
+#[derive(Clone, Debug, PartialEq)]
 pub enum FileType {
     Any,
     Macro(MacroDef),
@@ -12,7 +13,9 @@ impl FileType {
     }
 }
 
+#[derive(Clone, Debug, PartialEq)]
 pub struct MimeType(pub String);
+
 impl MimeType {
     fn from_list(csv: &str) -> Vec<MimeType> {
         csv.split(",")
@@ -22,6 +25,7 @@ impl MimeType {
     }
 }
 
+#[derive(Clone, Debug, PartialEq)]
 pub struct MacroDef {
     name: String,
     mime: Vec<MimeType>,

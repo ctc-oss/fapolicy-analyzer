@@ -2,6 +2,7 @@ use std::fmt::{Display, Formatter};
 
 use crate::rule::FileType;
 
+#[derive(Clone, Debug, PartialEq)]
 pub enum Object {
     All,
     Dir(String),

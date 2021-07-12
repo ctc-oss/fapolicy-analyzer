@@ -2,29 +2,28 @@ use crate::rule::{Decision, Object, Permission, Subject};
 use std::fmt::{Display, Formatter};
 
 pub struct Rule {
-    s: Subject,
-    p: Permission,
-    o: Object,
-    d: Decision,
+    pub subj: Subject,
+    pub perm: Permission,
+    pub obj: Object,
+    pub dec: Decision,
 }
 
 impl Rule {
-    pub fn allow(s: Subject, p: Permission, o: Object) -> Rule {
+    pub fn new(subj: Subject, perm: Permission, obj: Object, dec: Decision) -> Self {
         Rule {
-            s,
-            p,
-            o,
-            d: Decision::Deny,
+            subj,
+            perm,
+            obj,
+            dec,
         }
     }
 
-    pub fn deny(s: Subject, p: Permission, o: Object) -> Rule {
-        Rule {
-            s,
-            p,
-            o,
-            d: Decision::DenyAudit,
-        }
+    pub fn allow(subj: Subject, perm: Permission, obj: Object) -> Self {
+        Self::new(subj, perm, obj, Decision::Allow)
+    }
+
+    pub fn deny(subj: Subject, perm: Permission, obj: Object) -> Self {
+        Self::new(subj, perm, obj, Decision::DenyAudit)
     }
 }
 
@@ -32,7 +31,7 @@ impl Display for Rule {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_fmt(format_args!(
             "{} {} {} : {}",
-            self.d, self.p, self.s, self.o
+            self.dec, self.perm, self.subj, self.obj
         ))
     }
 }
@@ -43,8 +42,8 @@ mod tests {
 
     //deny_audit perm=any all                : device=/dev/cdrom
     //deny_audit perm=execute all            : ftype=any
-    //deny_audit perm=open exe=/usr/bin/ssh : dir=/opt
-    //deny_audit perm=any pattern=ld_so : all
+    //deny_audit perm=open exe=/usr/bin/ssh  : dir=/opt
+    //deny_audit perm=any pattern=ld_so      : all
 
     #[test]
     fn display() {

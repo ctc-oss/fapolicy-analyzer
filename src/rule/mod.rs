@@ -7,6 +7,8 @@ pub use self::file_type::{FileType, MacroDef, MimeType};
 mod object;
 pub use self::object::Object;
 
+mod parse;
+
 mod permission;
 pub use self::permission::Permission;
 
