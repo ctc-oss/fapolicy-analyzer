@@ -35,7 +35,7 @@ def main(*args):
 
         commits = list()
         for entry in log:
-            short, long, author, title = entry.split(',', 4)
+            short, long, author, title = entry.split(',', 3)
             if long not in ignored_commits and not ignored_commit(title):
                 commits.append(f"[{short}](https://github.com/{args.repo}/commit/{long}) {title} [{author}]")
                 authors[author] = authors[author] + 1
