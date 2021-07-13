@@ -1,4 +1,4 @@
-use crate::rule::{Decision, Object, Permission, Subject};
+use crate::rules::{Decision, Object, Permission, Subject};
 use std::fmt::{Display, Formatter};
 
 pub struct Rule {

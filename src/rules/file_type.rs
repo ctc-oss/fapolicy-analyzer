@@ -16,15 +16,6 @@ impl FileType {
 #[derive(Clone, Debug, PartialEq)]
 pub struct MimeType(pub String);
 
-impl MimeType {
-    fn from_list(csv: &str) -> Vec<MimeType> {
-        csv.split(",")
-            .into_iter()
-            .map(|x| MimeType(x.into()))
-            .collect()
-    }
-}
-
 #[derive(Clone, Debug, PartialEq)]
 pub struct MacroDef {
     name: String,
@@ -32,6 +23,8 @@ pub struct MacroDef {
 }
 
 impl MacroDef {
+    // todo;; removed this when is used
+    #[allow(dead_code)]
     fn new(name: &str, list: Vec<MimeType>) -> Self {
         MacroDef {
             name: name.into(),
@@ -73,6 +66,13 @@ impl Display for FileType {
 mod tests {
     use super::*;
 
+    fn mime_type_from_list(csv: &str) -> Vec<MimeType> {
+        csv.split(',')
+            .into_iter()
+            .map(|x| MimeType(x.into()))
+            .collect()
+    }
+
     #[test]
     fn display() {
         let ft1 = FileType::new_mime_type("text/x-lua");
@@ -82,7 +82,7 @@ mod tests {
     #[test]
     fn macro_mime_list() {
         let l = "application/x-bytecode.ocaml,application/x-bytecode.python,application/java-archive,text/x-java";
-        let t = MacroDef::new("lang", MimeType::from_list(l));
+        let t = MacroDef::new("lang", mime_type_from_list(l));
         assert_eq!(format!("%lang={}", l), format!("{}", t));
     }
 }

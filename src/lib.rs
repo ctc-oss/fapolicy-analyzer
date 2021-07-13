@@ -5,7 +5,7 @@ pub mod check;
 pub mod fapolicyd;
 pub mod log;
 pub mod rpm;
-pub mod rule;
+pub mod rules;
 pub mod sha;
 pub mod svc;
 pub mod sys;

@@ -7,7 +7,7 @@ use nom::character::is_alphanumeric;
 use nom::combinator::map;
 use nom::sequence::{separated_pair, terminated};
 
-use crate::rule::{Decision, Object, Permission, Rule, Subject};
+use crate::rules::{Decision, Object, Permission, Rule, Subject};
 
 pub(crate) fn decision(i: &str) -> nom::IResult<&str, Decision> {
     alt((
@@ -76,6 +76,8 @@ fn pattern(i: &str) -> nom::IResult<&str, &str> {
     nom::bytes::complete::take_while1(|x| is_alphanumeric(x as u8) || x == '_')(i)
 }
 
+// todo;; removed this when is used
+#[allow(dead_code)]
 pub fn rule(i: &str) -> nom::IResult<&str, Rule> {
     match nom::combinator::complete(nom::sequence::tuple((
         terminated(decision, space1),
@@ -85,7 +87,9 @@ pub fn rule(i: &str) -> nom::IResult<&str, Rule> {
         object,
     )))(i)
     {
-        Ok((remaining_input, (d, p, s, _, o))) => Ok((remaining_input, Rule::new(s, p, o, d))),
+        Ok((remaining_input, (dec, perm, subj, _, obj))) => {
+            Ok((remaining_input, Rule::new(subj, perm, obj, dec)))
+        }
         Err(e) => Err(e),
     }
 }

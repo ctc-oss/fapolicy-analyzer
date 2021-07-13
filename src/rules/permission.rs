@@ -1,4 +1,4 @@
-use crate::rule::parse;
+use crate::rules::parse;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 

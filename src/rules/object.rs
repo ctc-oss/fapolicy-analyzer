@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter};
 
-use crate::rule::{parse, FileType};
+use crate::rules::{parse, FileType};
 use std::str::FromStr;
 
 #[derive(Clone, Debug, PartialEq)]

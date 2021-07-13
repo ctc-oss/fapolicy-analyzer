@@ -1,7 +1,7 @@
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
-use crate::rule::parse;
+use crate::rules::parse;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Subject {
