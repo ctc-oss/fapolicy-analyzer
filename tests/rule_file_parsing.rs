@@ -19,9 +19,14 @@ fn test_parse_clean() {
 
     let rules: Vec<Rule> = xs
         .iter()
-        .map(|l| parser(&l))
-        .flat_map(|x| x.ok())
-        .map(|x| x.1)
+        .map(|l| (l, parser(&l)))
+        .flat_map(|(l, r)| match r {
+            Ok((_, rule)) => Some(rule),
+            Err(_) => {
+                println!("[fail] {}", l);
+                None
+            }
+        })
         .collect();
 
     for (i, rule) in rules.iter().enumerate() {
