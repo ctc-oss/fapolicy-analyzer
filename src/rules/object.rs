@@ -9,6 +9,7 @@ pub enum Object {
     Dir(String),
     Device(String),
     FileType(FileType),
+    Trusted(bool),
 }
 
 impl Display for Object {
@@ -18,6 +19,7 @@ impl Display for Object {
             Object::Dir(p) => f.write_fmt(format_args!("dir={}", p)),
             Object::Device(p) => f.write_fmt(format_args!("device={}", p)),
             Object::FileType(t) => f.write_fmt(format_args!("ftype={}", t)),
+            Object::Trusted(t) => f.write_fmt(format_args!("trust={}", t)),
         }
     }
 }
