@@ -115,9 +115,7 @@ pub fn rule(i: &str) -> nom::IResult<&str, Rule> {
     }
 }
 
-// todo;; removed this when is used
-#[allow(dead_code)]
-pub(crate) fn macrodef(i: &str) -> nom::IResult<&str, MacroDef> {
+pub fn macrodef(i: &str) -> nom::IResult<&str, MacroDef> {
     match nom::combinator::complete(nom::sequence::tuple((
         tag("%"),
         separated_pair(
