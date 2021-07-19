@@ -28,7 +28,7 @@ def parse_cmdline():
 
 def main():
     parse_cmdline()
-    main = MainWindow()
+    MainWindow()
     Gtk.main()
 
 
