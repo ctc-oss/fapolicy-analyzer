@@ -1,14 +1,15 @@
-import gi
 import logging
 logging.basicConfig(level=logging.WARNING)
 import argparse
 
+import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from .main_window import MainWindow
 
 # Globals
 gbVerbose = False
+
 
 def parse_cmdline():
     global gbVerbose
@@ -24,10 +25,12 @@ def parse_cmdline():
         logging.root.setLevel(logging.DEBUG)
         logging.debug("Verbosity enabled.")
 
+
 def main():
     parse_cmdline()
     main = MainWindow()
     Gtk.main()
+
 
 if __name__ == "__main__":
     main()
