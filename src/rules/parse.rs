@@ -7,6 +7,7 @@ use nom::character::is_alphanumeric;
 use nom::combinator::map;
 use nom::sequence::{separated_pair, terminated};
 
+use crate::rules::file_type::FileType::Mime;
 use crate::rules::{Decision, MacroDef, MimeType, Object, Permission, Rule, Subject};
 use nom::multi::separated_list1;
 
@@ -66,6 +67,10 @@ pub(crate) fn object(i: &str) -> nom::IResult<&str, Object> {
             separated_pair(tag("device"), tag("="), filepath),
             |x: (&str, &str)| Object::Device(x.1.to_string()),
         ),
+        map(
+            separated_pair(tag("ftype"), tag("="), filepath),
+            |x: (&str, &str)| Object::FileType(Mime(MimeType(x.1.to_string()))),
+        ),
     ))(i)
 }
 
@@ -116,6 +121,7 @@ pub(crate) fn macrodef(i: &str) -> nom::IResult<&str, MacroDef> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::rules::file_type::FileType::Mime;
     use crate::rules::MimeType;
 
     #[test]
@@ -174,6 +180,26 @@ mod tests {
         assert_eq!(Permission::Open, r.perm);
         assert_eq!(Subject::Exe("/usr/bin/ssh".into()), r.subj);
         assert_eq!(Object::Dir("/opt".into()), r.obj);
+
+        let r = rule("deny_audit perm=any all : ftype=application/x-bad-elf")
+            .ok()
+            .unwrap()
+            .1;
+        assert_eq!(Decision::DenyAudit, r.dec);
+        assert_eq!(Permission::Any, r.perm);
+        assert_eq!(Subject::All, r.subj);
+        assert_eq!(
+            Object::FileType(Mime(MimeType("application/x-bad-elf".into()))),
+            r.obj
+        );
+
+        //     [fail] deny_audit perm=any all : ftype=application/x-bad-elf
+        //     [fail] allow perm=open all : ftype=application/x-sharedlib trust=1
+        //     [fail] deny_audit perm=open all : ftype=application/x-sharedlib
+        //     [fail] allow perm=execute all : trust=1
+        //     [fail] allow perm=open all : ftype=%languages trust=1
+        //     [fail] deny_audit perm=any all : ftype=%languages
+        //     [fail] allow perm=any all : ftype=text/x-shellscript
     }
 
     #[test]
