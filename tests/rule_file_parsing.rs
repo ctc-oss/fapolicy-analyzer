@@ -18,9 +18,8 @@ fn parser(i: &str) -> nom::IResult<&str, Line> {
     ))(i)
 }
 
-#[test]
-fn test_parse_clean_1() {
-    let f = File::open("tests/data/rules1.txt").expect("failed to open file");
+fn test_parse_clean(fname: &str) {
+    let f = File::open(fname).expect("failed to open file");
     let buff = BufReader::new(f);
 
     let xs: Vec<String> = buff
@@ -60,42 +59,11 @@ fn test_parse_clean_1() {
 }
 
 #[test]
+fn test_parse_clean_1() {
+    test_parse_clean("tests/data/rules1.txt")
+}
+
+#[test]
 fn test_parse_clean_2() {
-    let f = File::open("tests/data/rules2.txt").expect("failed to open file");
-    let buff = BufReader::new(f);
-
-    let xs: Vec<String> = buff
-        .lines()
-        .map(|r| r.unwrap())
-        .filter(|s| !s.is_empty() && !s.starts_with('#'))
-        .collect();
-
-    let lines: Vec<Line> = xs
-        .iter()
-        .map(|l| (l, parser(&l)))
-        .flat_map(|(l, r)| match r {
-            Ok((_, rule)) => Some(rule),
-            Err(_) => {
-                println!("[fail] {}", l);
-                None
-            }
-        })
-        .collect();
-
-    for (i, line) in lines.iter().enumerate() {
-        match line {
-            Arule(r) => println!("{}: {}", i, r),
-            Amacro(m) => println!("{}: {}", i, m),
-            // Line::Acomment(c) => println!("{}: {}", i, c),
-        }
-    }
-
-    println!(
-        "{}/{} - {:.2}%",
-        lines.len(),
-        xs.len(),
-        lines.len() as f32 / xs.len() as f32
-    );
-
-    // assert_eq!(17, y.len());
+    test_parse_clean("tests/data/rules2.txt")
 }
