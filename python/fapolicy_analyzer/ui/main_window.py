@@ -1,3 +1,4 @@
+import logging
 import gi
 
 gi.require_version("Gtk", "3.0")
@@ -28,6 +29,12 @@ class MainWindow(UIWidget):
         toaster = Notification()
         self.get_object("overlay").add_overlay(toaster.get_ref())
 
+        # Disable 'File' menu items until backend support is available
+        self.get_object("openMenu").set_sensitive(False)
+        self.get_object("restoreMenu").set_sensitive(False)
+        self.get_object("saveMenu").set_sensitive(False)
+        self.get_object("saveAsMenu").set_sensitive(False)
+
         self.window.show_all()
 
     def __unapplied_changes(self):
@@ -50,6 +57,22 @@ class MainWindow(UIWidget):
 
     def on_delete_event(self, *args):
         return self.__unapplied_changes()
+
+    def on_openMenu_activate(self, menuitem, data=None):
+        logging.debug("Callback entered: MainWindow::on_openMenu_activate()")
+        pass
+
+    def on_restoreMenu_activate(self, menuitem, data=None):
+        logging.debug("Callback entered: MainWindow::on_restoreMenu_activate()")
+        pass
+
+    def on_saveMenu_activate(self, menuitem, data=None):
+        logging.debug("Callback entered: MainWindow::on_saveMenu_activate()")
+        pass
+
+    def on_saveAsMenu_activate(self, menuitem, data=None):
+        logging.debug("Callback entered: MainWindow::on_saveAsMenu_activate()")
+        pass
 
     def on_aboutMenu_activate(self, menuitem, data=None):
         aboutDialog = self.get_object("aboutDialog")

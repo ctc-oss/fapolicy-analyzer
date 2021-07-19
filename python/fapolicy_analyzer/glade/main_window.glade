@@ -81,6 +81,45 @@
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <child>
+                          <object class="GtkImageMenuItem" id="openMenu">
+                            <property name="label">gtk-open</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="use-underline">True</property>
+                            <property name="use-stock">True</property>
+                            <signal name="activate" handler="on_openMenu_activate" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkMenuItem" id="restoreMenu">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="label" translatable="yes" comments="Presents option to load prior sessions tmp file (if it exists.)">Restore</property>
+                            <property name="use-underline">True</property>
+                            <signal name="activate" handler="on_restoreMenu_activate" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkImageMenuItem" id="saveMenu">
+                            <property name="label">gtk-save</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="use-underline">True</property>
+                            <property name="use-stock">True</property>
+                            <signal name="activate" handler="on_saveMenu_activate" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkImageMenuItem" id="saveAsMenu">
+                            <property name="label">gtk-save-as</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="use-underline">True</property>
+                            <property name="use-stock">True</property>
+                            <signal name="activate" handler="on_saveAsMenu_activate" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
                           <object class="GtkImageMenuItem" id="quitMenu">
                             <property name="label">gtk-quit</property>
                             <property name="visible">True</property>
