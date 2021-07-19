@@ -114,3 +114,24 @@ def test_localization(es_locale):
     window = mainWindow.get_ref()
     assert type(window) is Gtk.Window
     assert window.get_title() == "Analizador de políticas de acceso a archivos"
+
+def test_on_delete_event(mainWindow):
+    window = mainWindow
+    bReturn = window.on_delete_event(None)
+    assert not bReturn
+
+def test_on_openMenu_activate(mainWindow):
+    window = mainWindow
+    window.on_openMenu_activate(None)
+
+def test_on_restoreMenu_activate(mainWindow):
+    window = mainWindow
+    window.on_restoreMenu_activate(None)
+
+def test_on_saveMenu_activate(mainWindow):
+    window = mainWindow
+    window.on_saveMenu_activate(None)
+
+def test_on_saveAsMenu_activate(mainWindow):
+    window = mainWindow
+    window.on_saveAsMenu_activate(None)

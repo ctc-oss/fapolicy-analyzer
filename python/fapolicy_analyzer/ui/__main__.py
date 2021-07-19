@@ -9,12 +9,9 @@ from .main_window import MainWindow
 
 # Globals
 gbVerbose = False
-gstrEditSessionTmpFile = "/tmp/FAPolicyToolSession.tmp"
 
-
-def parse_args():
+def parse_cmdline():
     global gbVerbose
-    global gstrEditSessionTmpFile
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--verbose", action="store_true",
@@ -27,8 +24,10 @@ def parse_args():
         logging.root.setLevel(logging.DEBUG)
         logging.debug("Verbosity enabled.")
 
-
-if __name__ == "__main__":
-    parse_args()
+def main():
+    parse_cmdline()
     main = MainWindow()
     Gtk.main()
+
+if __name__ == "__main__":
+    main()
