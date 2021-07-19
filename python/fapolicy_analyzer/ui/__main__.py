@@ -7,9 +7,6 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from .main_window import MainWindow
 
-# Globals
-gbVerbose = False
-
 
 def parse_cmdline():
     global gbVerbose
@@ -20,8 +17,7 @@ def parse_cmdline():
     args = parser.parse_args()
 
     # Set Verbosity Level
-    gbVerbose = args.verbose
-    if gbVerbose:
+    if args.verbose:
         logging.root.setLevel(logging.DEBUG)
         logging.debug("Verbosity enabled.")
 
