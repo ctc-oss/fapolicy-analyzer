@@ -9,8 +9,6 @@ from .main_window import MainWindow
 
 
 def parse_cmdline():
-    global gbVerbose
-
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="Enable verbose mode")
