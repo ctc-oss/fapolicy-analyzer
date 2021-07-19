@@ -25,7 +25,7 @@ impl FromStr for Decision {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match parse::decision(s) {
             Ok((_, s)) => Ok(s),
-            Err(_) => Err("Failed to parse Decision to string".into()),
+            Err(_) => Err("Failed to parse Decision from string".into()),
         }
     }
 }

@@ -30,7 +30,7 @@ impl FromStr for Subject {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match parse::subject(s) {
             Ok((_, s)) => Ok(s),
-            Err(_) => Err("Failed to parse Subject to string".into()),
+            Err(_) => Err("Failed to parse Subject from string".into()),
         }
     }
 }
@@ -44,5 +44,13 @@ mod tests {
         assert_eq!(format!("{}", Subject::All), "all");
         assert_eq!(format!("{}", Subject::Uid(42)), "uid=42");
         assert_eq!(format!("{}", Subject::Gid(42)), "gid=42");
+    }
+
+    #[test]
+    fn fromstr() -> Result<(), String> {
+        assert_eq!(Subject::All, Subject::from_str("all")?);
+        assert_eq!(Subject::Uid(42), Subject::from_str("uid=42")?);
+        assert_eq!(Subject::Gid(42), Subject::from_str("gid=42")?);
+        Ok(())
     }
 }

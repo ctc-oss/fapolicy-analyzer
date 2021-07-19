@@ -1,13 +1,14 @@
 use nom::branch::alt;
-use nom::bytes::complete::tag;
-use nom::character::complete::digit1;
+use nom::bytes::complete::{is_not, tag};
 use nom::character::complete::space0;
 use nom::character::complete::space1;
+use nom::character::complete::{alphanumeric1, digit1};
 use nom::character::is_alphanumeric;
 use nom::combinator::map;
 use nom::sequence::{separated_pair, terminated};
 
-use crate::rules::{Decision, Object, Permission, Rule, Subject};
+use crate::rules::{Decision, MacroDef, MimeType, Object, Permission, Rule, Subject};
+use nom::multi::separated_list1;
 
 pub(crate) fn decision(i: &str) -> nom::IResult<&str, Decision> {
     alt((
@@ -76,8 +77,6 @@ fn pattern(i: &str) -> nom::IResult<&str, &str> {
     nom::bytes::complete::take_while1(|x| is_alphanumeric(x as u8) || x == '_')(i)
 }
 
-// todo;; removed this when is used
-#[allow(dead_code)]
 pub fn rule(i: &str) -> nom::IResult<&str, Rule> {
     match nom::combinator::complete(nom::sequence::tuple((
         terminated(decision, space1),
@@ -94,9 +93,30 @@ pub fn rule(i: &str) -> nom::IResult<&str, Rule> {
     }
 }
 
+// todo;; removed this when is used
+#[allow(dead_code)]
+pub(crate) fn macrodef(i: &str) -> nom::IResult<&str, MacroDef> {
+    match nom::combinator::complete(nom::sequence::tuple((
+        tag("%"),
+        separated_pair(
+            alphanumeric1,
+            tag("="),
+            separated_list1(tag(","), is_not(",")),
+        ),
+    )))(i)
+    {
+        Ok((remaining_input, (_, (var, def)))) => Ok((
+            remaining_input,
+            MacroDef::new(var, def.iter().map(|&s| MimeType(s.into())).collect()),
+        )),
+        Err(e) => Err(e),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::rules::MimeType;
 
     #[test]
     fn parse_subj() {
@@ -154,5 +174,25 @@ mod tests {
         assert_eq!(Permission::Open, r.perm);
         assert_eq!(Subject::Exe("/usr/bin/ssh".into()), r.subj);
         assert_eq!(Object::Dir("/opt".into()), r.obj);
+    }
+
+    #[test]
+    fn parse_macrodef() {
+        let def = "%lang=application/x-bytecode.ocaml,application/x-bytecode.python,application/java-archive,text/x-java";
+        let md = macrodef(def).ok().unwrap().1;
+
+        assert_eq!("lang", md.name);
+        assert_eq!(
+            vec![
+                "application/x-bytecode.ocaml",
+                "application/x-bytecode.python",
+                "application/java-archive",
+                "text/x-java"
+            ]
+            .iter()
+            .map(|&t| MimeType(t.into()))
+            .collect::<Vec<MimeType>>(),
+            md.mime
+        );
     }
 }

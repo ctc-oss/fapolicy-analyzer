@@ -26,7 +26,7 @@ impl FromStr for Permission {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match parse::permission(s) {
             Ok((_, s)) => Ok(s),
-            Err(_) => Err("Failed to parse Permission to string".into()),
+            Err(_) => Err("Failed to parse Permission from string".into()),
         }
     }
 }

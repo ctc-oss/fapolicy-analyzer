@@ -28,7 +28,7 @@ impl FromStr for Object {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match parse::object(s) {
             Ok((_, s)) => Ok(s),
-            Err(_) => Err("Failed to parse Object to string".into()),
+            Err(_) => Err("Failed to parse Object from string".into()),
         }
     }
 }
