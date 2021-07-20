@@ -10,6 +10,7 @@ pub enum Subject {
     Gid(u32),
     Exe(String),
     Pattern(String),
+    Trusted(bool),
 }
 
 impl Display for Subject {
@@ -20,6 +21,7 @@ impl Display for Subject {
             Subject::Gid(id) => f.write_fmt(format_args!("gid={}", id)),
             Subject::Exe(id) => f.write_fmt(format_args!("exe={}", id)),
             Subject::Pattern(id) => f.write_fmt(format_args!("pattern={}", id)),
+            Subject::Trusted(t) => f.write_fmt(format_args!("trust={}", t)),
         }
     }
 }
@@ -44,6 +46,8 @@ mod tests {
         assert_eq!(format!("{}", Subject::All), "all");
         assert_eq!(format!("{}", Subject::Uid(42)), "uid=42");
         assert_eq!(format!("{}", Subject::Gid(42)), "gid=42");
+        assert_eq!(format!("{}", Subject::Trusted(false)), "trust=0");
+        assert_eq!(format!("{}", Subject::Trusted(true)), "trust=1");
     }
 
     #[test]
@@ -51,6 +55,8 @@ mod tests {
         assert_eq!(Subject::All, Subject::from_str("all")?);
         assert_eq!(Subject::Uid(42), Subject::from_str("uid=42")?);
         assert_eq!(Subject::Gid(42), Subject::from_str("gid=42")?);
+        assert_eq!(Subject::Trusted(true), Subject::from_str("trust=1")?);
+        assert_eq!(Subject::Trusted(false), Subject::from_str("trust=0")?);
         Ok(())
     }
 }

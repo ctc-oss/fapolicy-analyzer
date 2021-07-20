@@ -2,7 +2,7 @@ mod decision;
 pub use self::decision::Decision;
 
 mod file_type;
-pub use self::file_type::{FileType, MacroDef, MimeType};
+pub use self::file_type::{MacroDef, Rvalue};
 
 mod object;
 pub use self::object::Object;

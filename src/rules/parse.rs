@@ -8,8 +8,8 @@ use nom::combinator::map;
 use nom::multi::separated_list1;
 use nom::sequence::{separated_pair, terminated};
 
-use crate::rules::file_type::FileType::Mime;
-use crate::rules::{Decision, MacroDef, MimeType, Object, Permission, Rule, Subject};
+use crate::rules::file_type::Rvalue::Literal;
+use crate::rules::{Decision, MacroDef, Object, Permission, Rule, Subject};
 use nom::error::{Error, ErrorKind};
 
 pub(crate) fn decision(i: &str) -> nom::IResult<&str, Decision> {
@@ -61,20 +61,24 @@ pub(crate) fn object(i: &str) -> nom::IResult<&str, Object> {
     alt((
         map(tag("all"), |_| Object::All),
         map(
-            separated_pair(tag("dir"), tag("="), filepath),
-            |x: (&str, &str)| Object::Dir(x.1.to_string()),
-        ),
-        map(
             separated_pair(tag("device"), tag("="), filepath),
             |x: (&str, &str)| Object::Device(x.1.to_string()),
         ),
         map(
+            separated_pair(tag("dir"), tag("="), filepath),
+            |x: (&str, &str)| Object::Dir(x.1.to_string()),
+        ),
+        map(
             separated_pair(tag("ftype"), tag("="), filepath),
-            |x: (&str, &str)| Object::FileType(Mime(MimeType(x.1.to_string()))),
+            |x: (&str, &str)| Object::FileType(Literal(x.1.to_string())),
+        ),
+        map(
+            separated_pair(tag("path"), tag("="), filepath),
+            |x: (&str, &str)| Object::Path(x.1.to_string()),
         ),
         map(
             separated_pair(tag("trust"), tag("="), trust_flag),
-            |x: (&str, bool)| Object::Trusted(x.1),
+            |x: (&str, bool)| Object::with_trust(&Object::All, x.1),
         ),
     ))(i)
 }
@@ -127,7 +131,7 @@ pub fn macrodef(i: &str) -> nom::IResult<&str, MacroDef> {
     {
         Ok((remaining_input, (_, (var, def)))) => Ok((
             remaining_input,
-            MacroDef::new(var, def.iter().map(|&s| MimeType(s.into())).collect()),
+            MacroDef::new(var, def.iter().map(|&s| s.into()).collect()),
         )),
         Err(e) => Err(e),
     }
@@ -135,9 +139,6 @@ pub fn macrodef(i: &str) -> nom::IResult<&str, MacroDef> {
 
 #[cfg(test)]
 mod tests {
-    use crate::rules::file_type::FileType::Mime;
-    use crate::rules::MimeType;
-
     use super::*;
 
     #[test]
@@ -205,7 +206,7 @@ mod tests {
         assert_eq!(Permission::Any, r.perm);
         assert_eq!(Subject::All, r.subj);
         assert_eq!(
-            Object::FileType(Mime(MimeType("application/x-bad-elf".into()))),
+            Object::FileType(Literal("application/x-bad-elf".into())),
             r.obj
         );
     }
@@ -222,11 +223,8 @@ mod tests {
                 "application/x-bytecode.python",
                 "application/java-archive",
                 "text/x-java"
-            ]
-            .iter()
-            .map(|&t| MimeType(t.into()))
-            .collect::<Vec<MimeType>>(),
-            md.mime
+            ],
+            md.values
         );
     }
 

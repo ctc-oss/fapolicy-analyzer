@@ -26,7 +26,7 @@ deny_audit perm=any pattern=ld_so : all
 # We have to carve out an exception for the system updaters
 # or things go very bad (deadlock).
 allow perm=open exe=/usr/bin/rpm : all
-allow perm=open exe=%python3_path% comm=dnf : all
+allow perm=open exe=/usr/bin/python3 comm=dnf : all
 
 # Do not allow malformed ELF even if trusted
 deny_audit perm=any all : ftype=application/x-bad-elf
@@ -43,7 +43,7 @@ deny_audit perm=execute all : ftype=application/x-executable
 # This is a workaround for kernel thinking this is being executed because it
 # occurs during the execve call for an ELF binary. We catch actual execution
 # in rule 3.
-allow perm=execute all : path=%ld_so_path% trust=1
+allow perm=execute all : path=/lib/ld-2.so trust=1
 
 # Need to carve out an exception for ansible, which uses python
 allow perm=any uid=0 : dir=/tmp/ansible

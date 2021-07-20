@@ -12,13 +12,10 @@ enum Line {
 }
 
 fn parser(i: &str) -> nom::IResult<&str, Line> {
-    alt((
-        map(parse::rule, |r| Arule(r)),
-        map(parse::macrodef, |m| Amacro(m)),
-    ))(i)
+    alt((map(parse::rule, Arule), map(parse::macrodef, Amacro)))(i)
 }
 
-fn test_parse_clean(fname: &str) {
+fn parse_clean(fname: &str) {
     let f = File::open(fname).expect("failed to open file");
     let buff = BufReader::new(f);
 
@@ -60,10 +57,10 @@ fn test_parse_clean(fname: &str) {
 
 #[test]
 fn test_parse_clean_1() {
-    test_parse_clean("tests/data/rules1.txt")
+    parse_clean("tests/data/rules1.txt")
 }
 
 #[test]
 fn test_parse_clean_2() {
-    test_parse_clean("tests/data/rules2.txt")
+    parse_clean("tests/data/rules2.txt")
 }
