@@ -1,0 +1,54 @@
+# this file contains examples of lines from rule files that should be parseable please add interesting valid examples (this is a comment)
+%asingleset=application/x-bytecode.ocaml
+%amultiset=application/x-bytecode.ocaml,application/x-bytecode.python
+deny_audit perm=any all : ftype=%asingleset
+deny_audit perm=any all : ftype=%amultiset
+allow perm=any uid=0 : dir=/var/tmp/
+allow perm=any uid=0 trust=1 : all
+deny_audit perm=any pattern=ld_so : all
+allow perm=open exe=/usr/bin/rpm : all
+allow perm=open exe=/usr/bin/python3 comm=dnf : all
+deny_audit perm=any all : ftype=application/x-bad-elf
+allow perm=open all : ftype=application/x-sharedlib trust=1
+deny_audit perm=open all : ftype=application/x-sharedlib
+allow perm=execute all : trust=1
+allow perm=any uid=0 : dir=/tmp/ansible
+allow perm=any uid=0 : dir=/root/.ansible/tmp/
+allow perm=open all : ftype=%languages trust=1
+allow perm=any all : ftype=text/x-shellscript
+deny_audit perm=execute all : all
+allow perm=open all : all
+allow perm=any uid=0 : dir=/var/tmp/
+allow perm=any uid=0 trust=1 : all
+deny_audit perm=any pattern=ld_so : all
+allow perm=open exe=/usr/bin/rpm : all
+allow perm=open exe=/usr/bin/python3 comm=dnf : all
+deny_audit perm=any all : ftype=application/x-bad-elf
+allow perm=open all : ftype=application/x-sharedlib trust=1
+deny_audit perm=open all : ftype=application/x-sharedlib
+allow perm=execute all : ftype=application/x-executable trust=1
+deny_audit perm=execute all : ftype=application/x-executable
+allow perm=execute all : path=/lib/ld-2.so trust=1
+allow perm=any uid=0 : dir=/tmp/ansible
+allow perm=any uid=0 : dir=/root/.ansible/tmp/
+allow perm=any all : ftype=text/x-python trust=1
+allow perm=open all : ftype=application/x-bytecode.python trust=1
+deny_audit perm=any all : ftype=text/x-python
+deny_audit perm=any all : ftype=application/x-bytecode.python
+allow perm=any all : ftype=text/x-shellscript
+allow perm=any all : ftype=text/x-perl trust=1
+deny_audit perm=any all : ftype=text/x-perl
+allow perm=any all : ftype=application/x-bytecode.ocaml trust=1
+deny_audit perm=any all : ftype=application/x-bytecode.ocaml
+allow perm=any all : ftype=text/x-php trust=1
+deny_audit perm=any all : ftype=text/x-php
+allow perm=any all : ftype=text/x-ruby trust=1
+deny_audit perm=any all : ftype=text/x-ruby
+allow perm=any all : ftype=text/x-lua trust=1
+deny_audit perm=any all : ftype=text/x-lua
+deny_audit perm=execute all : ftype=any
+deny_audit perm=open exe=/usr/bin/ssh : dir=/opt
+deny_audit perm=open exe=/usr/bin/wget : dir=/tmp
+deny_audit perm=any all : device=/dev/cdrom
+deny_audit perm=open all : ftype=%languages
+allow perm=open all : all

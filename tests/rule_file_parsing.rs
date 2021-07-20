@@ -15,16 +15,7 @@ fn parser(i: &str) -> nom::IResult<&str, Line> {
     alt((map(parse::rule, Arule), map(parse::macrodef, Amacro)))(i)
 }
 
-fn parse_clean(fname: &str) {
-    let f = File::open(fname).expect("failed to open file");
-    let buff = BufReader::new(f);
-
-    let xs: Vec<String> = buff
-        .lines()
-        .map(|r| r.unwrap())
-        .filter(|s| !s.is_empty() && !s.starts_with('#'))
-        .collect();
-
+fn parse_clean(xs: Vec<String>) {
     let lines: Vec<Line> = xs
         .iter()
         .map(|l| (l, parser(&l)))
@@ -51,16 +42,46 @@ fn parse_clean(fname: &str) {
         xs.len(),
         lines.len() as f32 / xs.len() as f32
     );
+}
 
-    // assert_eq!(17, y.len());
+#[test]
+fn test_parse_all() {
+    let f = File::open("tests/data/rules0.txt").expect("failed to open file");
+    let buff = BufReader::new(f);
+
+    let xs: Vec<String> = buff
+        .lines()
+        .map(|r| r.unwrap())
+        .filter(|s| !s.is_empty())
+        .collect();
+
+    parse_clean(xs)
 }
 
 #[test]
 fn test_parse_clean_1() {
-    parse_clean("tests/data/rules1.txt")
+    let f = File::open("tests/data/rules1.txt").expect("failed to open file");
+    let buff = BufReader::new(f);
+
+    let xs: Vec<String> = buff
+        .lines()
+        .map(|r| r.unwrap())
+        .filter(|s| !s.is_empty() && !s.starts_with('#'))
+        .collect();
+
+    parse_clean(xs)
 }
 
 #[test]
 fn test_parse_clean_2() {
-    parse_clean("tests/data/rules2.txt")
+    let f = File::open("tests/data/rules2.txt").expect("failed to open file");
+    let buff = BufReader::new(f);
+
+    let xs: Vec<String> = buff
+        .lines()
+        .map(|r| r.unwrap())
+        .filter(|s| !s.is_empty() && !s.starts_with('#'))
+        .collect();
+
+    parse_clean(xs)
 }
