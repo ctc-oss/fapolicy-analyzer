@@ -9,6 +9,7 @@ use nom::multi::separated_list1;
 use nom::sequence::{separated_pair, terminated};
 
 use crate::rules::file_type::Rvalue::Literal;
+use crate::rules::object::Part;
 use crate::rules::{Decision, MacroDef, Object, Permission, Rule, Subject};
 use nom::error::{Error, ErrorKind};
 
@@ -57,30 +58,34 @@ pub(crate) fn subject(i: &str) -> nom::IResult<&str, Subject> {
     ))(i)
 }
 
-pub(crate) fn object(i: &str) -> nom::IResult<&str, Object> {
+fn part(i: &str) -> nom::IResult<&str, Part> {
     alt((
-        map(tag("all"), |_| Object::All),
+        map(tag("all"), |_| Part::All),
         map(
             separated_pair(tag("device"), tag("="), filepath),
-            |x: (&str, &str)| Object::Device(x.1.to_string()),
+            |x: (&str, &str)| Part::Device(x.1.to_string()),
         ),
         map(
             separated_pair(tag("dir"), tag("="), filepath),
-            |x: (&str, &str)| Object::Dir(x.1.to_string()),
+            |x: (&str, &str)| Part::Dir(x.1.to_string()),
         ),
         map(
             separated_pair(tag("ftype"), tag("="), filepath),
-            |x: (&str, &str)| Object::FileType(Literal(x.1.to_string())),
+            |x: (&str, &str)| Part::FileType(Literal(x.1.to_string())),
         ),
         map(
             separated_pair(tag("path"), tag("="), filepath),
-            |x: (&str, &str)| Object::Path(x.1.to_string()),
+            |x: (&str, &str)| Part::Path(x.1.to_string()),
         ),
         map(
             separated_pair(tag("trust"), tag("="), trust_flag),
-            |x: (&str, bool)| Object::with_trust(&Object::All, x.1),
+            |x: (&str, bool)| Part::Trust(x.1),
         ),
     ))(i)
+}
+
+pub(crate) fn object(i: &str) -> nom::IResult<&str, Object> {
+    map(separated_list1(space1, part), |parts| Object::new(parts))(i)
 }
 
 fn filepath(i: &str) -> nom::IResult<&str, &str> {
@@ -155,7 +160,22 @@ mod tests {
 
     #[test]
     fn parse_obj() {
-        assert_eq!(Object::All, object("all").ok().unwrap().1);
+        assert_eq!(Object::from(Part::All), object("all").ok().unwrap().1);
+        assert_eq!(
+            Object::new(vec![Part::All, Part::Trust(true)]),
+            object("all trust=1").ok().unwrap().1
+        );
+
+        assert_eq!(
+            Object::new(vec![Part::Trust(true)]),
+            object("trust=1").ok().unwrap().1
+        );
+
+        // ordering matters
+        assert_eq!(
+            Object::new(vec![Part::Trust(true), Part::All]),
+            object("trust=1 all").ok().unwrap().1
+        );
     }
 
     #[test]
@@ -172,13 +192,13 @@ mod tests {
         assert_eq!(Decision::DenyAudit, r.dec);
         assert_eq!(Permission::Any, r.perm);
         assert_eq!(Subject::Pattern("ld_so".into()), r.subj);
-        assert_eq!(Object::All, r.obj);
+        assert_eq!(Object::from(Part::All), r.obj);
 
         let r = rule("deny_audit perm=any all : all").ok().unwrap().1;
         assert_eq!(Decision::DenyAudit, r.dec);
         assert_eq!(Permission::Any, r.perm);
         assert_eq!(Subject::All, r.subj);
-        assert_eq!(Object::All, r.obj);
+        assert_eq!(Object::from(Part::All), r.obj);
 
         let r = rule("deny_audit perm=open all : device=/dev/cdrom")
             .ok()
@@ -187,7 +207,7 @@ mod tests {
         assert_eq!(Decision::DenyAudit, r.dec);
         assert_eq!(Permission::Open, r.perm);
         assert_eq!(Subject::All, r.subj);
-        assert_eq!(Object::Device("/dev/cdrom".into()), r.obj);
+        assert_eq!(Object::from(Part::Device("/dev/cdrom".into())), r.obj);
 
         let r = rule("deny_audit perm=open exe=/usr/bin/ssh : dir=/opt")
             .ok()
@@ -196,7 +216,7 @@ mod tests {
         assert_eq!(Decision::DenyAudit, r.dec);
         assert_eq!(Permission::Open, r.perm);
         assert_eq!(Subject::Exe("/usr/bin/ssh".into()), r.subj);
-        assert_eq!(Object::Dir("/opt".into()), r.obj);
+        assert_eq!(Object::from(Part::Dir("/opt".into())), r.obj);
 
         let r = rule("deny_audit perm=any all : ftype=application/x-bad-elf")
             .ok()
@@ -206,7 +226,7 @@ mod tests {
         assert_eq!(Permission::Any, r.perm);
         assert_eq!(Subject::All, r.subj);
         assert_eq!(
-            Object::FileType(Literal("application/x-bad-elf".into())),
+            Object::from(Part::FileType(Literal("application/x-bad-elf".into()))),
             r.obj
         );
     }

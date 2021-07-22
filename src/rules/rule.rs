@@ -51,10 +51,11 @@ impl FromStr for Rule {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::rules::object::Part;
 
     #[test]
     fn display() {
-        let r = Rule::deny(Subject::All, Permission::Open, Object::All);
+        let r = Rule::deny(Subject::All, Permission::Open, Object::from(Part::All));
         let expected = "deny_audit perm=open all : all";
 
         assert_eq!(expected, format!("{}", r));
