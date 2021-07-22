@@ -6,8 +6,10 @@ use crate::rules::{parse, Decision, Object, Permission, Subject};
 /// # Rule
 /// A Rule is used by fapolicyd to make decisions about access rights. The rules follow a simple format of:
 /// ### `decision perm subject : object`
+///
 /// They are evaluated from top to bottom with the first rule to match being used for the access control decision.
 /// The colon is mandatory to separate subject and object since they share keywords.
+///
 /// ### Currently only v2 rule format is supported.
 ///
 pub struct Rule {

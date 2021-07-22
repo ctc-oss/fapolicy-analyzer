@@ -4,11 +4,6 @@ use std::str::FromStr;
 
 /// # Permission
 /// Describes what kind permission is being asked for. The permission is either
-///   - `open`
-///   - `execute`
-///   - `any`
-///
-/// If none are given, then open is assumed.
 ///
 #[derive(Clone, Debug, PartialEq)]
 pub enum Permission {

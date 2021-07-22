@@ -22,7 +22,9 @@ impl Object {
 /// Composed with logical AND to create the Object of the rule
 ///
 /// ### Currently unsupported Object Fields
-///   - `sha256hash`: This option matches against the sha256 hash of the file being accessed. The hash in the rules should be all lowercase letters and do NOT start with 0x. Lowercase is the default output of sha256sum.
+///   - `sha256hash`: This option matches against the sha256 hash of the file being accessed.
+///     - The hash in the rules should be all lowercase letters and do NOT start with 0x.
+///     - Lowercase is the default output of sha256sum.
 ///
 #[derive(Clone, Debug, PartialEq)]
 pub enum Part {

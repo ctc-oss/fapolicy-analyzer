@@ -11,18 +11,16 @@ use std::str::FromStr;
 ///
 /// Regardless of the notification, any rule with a deny in the keyword will deny access and any with an allow in the keyword will allow access.
 ///
-/// ### Currently unsupported decisions
-///   - allow_audit
-///   - allow_syslog
-///   - deny_syslog
-///   - allow_log
-///   - deny_log
-///
 #[derive(Clone, Debug, PartialEq)]
 pub enum Decision {
+    AllowAudit,
+    AllowSyslog,
+    AllowLog,
     Allow,
     Deny,
+    DenyLog,
     DenyAudit,
+    DenySyslog,
 }
 
 impl Display for Decision {
@@ -31,6 +29,11 @@ impl Display for Decision {
             Decision::Allow => f.write_str("allow"),
             Decision::Deny => f.write_str("deny"),
             Decision::DenyAudit => f.write_str("deny_audit"),
+            Decision::AllowAudit => f.write_str("allow_audit"),
+            Decision::AllowSyslog => f.write_str("allow_syslog"),
+            Decision::AllowLog => f.write_str("allow_log"),
+            Decision::DenyLog => f.write_str("deny_log"),
+            Decision::DenySyslog => f.write_str("deny_syslog"),
         }
     }
 }
