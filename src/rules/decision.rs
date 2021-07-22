@@ -2,6 +2,22 @@ use crate::rules::parse;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
+/// # Decision
+/// If the rule triggers, this is the access decision that fapolicyd will tell the kernel.
+/// If the decision is one of the audit variety, then the decision will trigger a FANOTIFY audit event with all relevant information.
+/// You must have at least one audit rule loaded to generate an audit event.
+/// If the decision is one of the syslog variety, then the decision will trigger writing an event into syslog.
+/// If the decision is of one the log variety, then it will create an audit event and a syslog event.
+///
+/// Regardless of the notification, any rule with a deny in the keyword will deny access and any with an allow in the keyword will allow access.
+///
+/// ### Currently unsupported decisions
+///   - allow_audit
+///   - allow_syslog
+///   - deny_syslog
+///   - allow_log
+///   - deny_log
+///
 #[derive(Clone, Debug, PartialEq)]
 pub enum Decision {
     Allow,

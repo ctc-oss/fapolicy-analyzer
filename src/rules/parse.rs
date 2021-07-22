@@ -213,6 +213,16 @@ mod tests {
     }
 
     #[test]
+    fn bad_rules() {
+        let (rem, _) = rule(
+            "deny_audit perm=open uid=0 comm=foo exe=/usr/bin/wget : dir=/tmp trust=1 foo=sdf",
+        )
+        .ok()
+        .unwrap();
+        assert!(!rem.is_empty())
+    }
+
+    #[test]
     fn parse_rule() {
         let r = rule("deny_audit perm=any pattern=ld_so : all")
             .ok()
@@ -261,9 +271,9 @@ mod tests {
     }
 
     #[test]
-    fn parse_macrodef() {
+    fn parse_set() {
         let def = "%lang=application/x-bytecode.ocaml,application/x-bytecode.python,application/java-archive,text/x-java";
-        let md = macrodef(def).ok().unwrap().1;
+        let md = set(def).ok().unwrap().1;
 
         assert_eq!("lang", md.name);
         assert_eq!(

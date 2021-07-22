@@ -3,6 +3,10 @@ use std::str::FromStr;
 
 use crate::rules::{bool_to_c, parse, Rvalue};
 
+/// # Object
+/// The object is the file that the subject is interacting with.
+/// The fields in the rule that describe the object are written in a `name=value` format.
+/// There can be one or more object fields. Each field is and'ed with others to decide if a rule triggers.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Object {
     parts: Vec<Part>,
@@ -14,13 +18,32 @@ impl Object {
     }
 }
 
+/// # Object Field
+/// Composed with logical AND to create the Object of the rule
+///
+/// ### Currently unsupported Object Fields
+///   - `sha256hash`: This option matches against the sha256 hash of the file being accessed. The hash in the rules should be all lowercase letters and do NOT start with 0x. Lowercase is the default output of sha256sum.
+///
 #[derive(Clone, Debug, PartialEq)]
 pub enum Part {
+    /// This matches against any subject. When used, this must be the only subject in the rule.
     All,
+    /// This option will match against the device that the file being accessed resides on. To use it, start with `/dev/` and add the target device name.
     Device(String),
+    /// If you wish to match on access to any file in a directory, then use this by giving the full path to the directory.
+    ///  - Its recommended to end with the `/` to ensure it matches a directory.
+    ///  - There are 3 keywords that `dir` supports:
+    ///    - `execdirs`
+    ///    - `systemdirs`
+    ///    - `untrusted`
+    ///
+    /// ### See the `dir` option under Subject for an explanation of these keywords.
     Dir(String),
+    /// This option matches against the mime type of the file being accessed. See `ftype` under Subject for more information on determining the mime type.
     FileType(Rvalue),
+    /// This is the full path to the file that will be accessed. Globbing is not supported. You may also use the special keyword `untrusted` to match on the subject not being listed in the rpm database.
     Path(String),
+    /// This is a boolean describing whether it is required for the object to be in the trust database or not. A value of 1 means its required while 0 means its not. Trust checking is extended by the integrity setting in fapolicyd.conf.
     Trust(bool),
 }
 

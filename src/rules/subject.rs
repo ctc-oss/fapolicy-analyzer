@@ -3,6 +3,10 @@ use std::str::FromStr;
 
 use crate::rules::{bool_to_c, parse};
 
+/// # Subject
+/// The subject is the process that is performing actions on system resources.
+/// The fields in the rule that describe the subject are written in a `name=value` format.
+/// There can be one or more subject fields. Each field is and'ed with others to decide if a rule triggers.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Subject {
     parts: Vec<Part>,
@@ -14,14 +18,54 @@ impl Subject {
     }
 }
 
+/// # Subject Field
+/// Composed with logical AND to create the Subject of the rule
+///
+/// ## execdirs
+/// The `execdirs` option will match against the following list of directories:
+/// - `/usr/`
+/// - `/bin/`
+/// - `/sbin/`
+/// - `/lib/`
+/// - `/lib64/`
+/// - `/usr/libexec/`
+///
+/// ## systemdirs
+/// The `systemdirs` option will match against the same list as `execdirs` but also includes `/etc/`.
+///
+/// ### Currently unsupported Subject Fields
+///   - `auid`: This is the login uid that the audit system assigns users when they log in to the system. Daemons have a value of -1.
+///   - `sessionid`: This is the numeric session id that the audit system assigns to users when they log in. Daemons have a value of -1.
+///   - `pid`: This is the numeric process id that a program has.
+///   - `dir`: If you wish to match a directory, then use this by giving the full path to the directory.
+///     - Its recommended to end with the `/` to ensure it matches a directory.
+///     - There are 3 keywords that `dir` supports:
+///       - `execdirs`
+///       - `systemdirs`
+///       - `untrusted`
+///  - `ftype`: This option takes the mime type of a file as an argument. If you wish to check the mime type of a file while writing rules, run the following command:
+///    - `file --mime-type /path-to-file`
+///  - `device`: This option will match against the device that the executable resides on. To use it, start with `/dev/` and add the target device name.
+///  - `pattern`: There are various ways that an attacker may try to execute code that may reveal itself in the pattern of file accesses made during program startup. This rule can take one of several options depending on which access patterns is wished to be blocked. Fapolicyd is able to detect these different access patterns and provide the access decision as soon as it identifies the pattern. The pattern type can be any of:
+///    - `normal`: This matches against any ELF program that is dynamically linked.
+///    - `ld_so`: This matches against access patterns that indicate that the program is being started directly by the runtime linker.
+///    - `ld_preload`: This matches against access patterns that indicate that the program is being started with either `LD_PRELOAD` or `LD_AUDIT` present in the environment. Note that even without this rule, you have protection against `LD_PRELOAD` of unknown binaries when the rules are written such that trust is used to determine if a library should be opened. In that case, the preloaded library would be denied but the application will still execute. This rule makes it so that even trusted libraries can be denied and the application will not execute.
+///    - `static`: This matches against ELF files that are statically linked.
+///
 #[derive(Clone, Debug, PartialEq)]
 pub enum Part {
+    /// This matches against any subject. When used, this must be the only subject in the rule.
     All,
+    /// This is the shortened command name. When an interpreter starts a program, it usually renames the program to the script rather than the interpreter.
     Comm(String),
+    /// This is the user id that the program is running under.
     Uid(u32),
+    /// This is the group id that the program is running under.
     Gid(u32),
+    /// This is the full path to the executable. Globbing is not supported. You may also use the special keyword \fBuntrusted\fP to match on the subject not being listed in the rpm database.
     Exe(String),
     Pattern(String),
+    /// This is a boolean describing whether it is required for the subject to be in the trust database or not. A value of 1 means its required while 0 means its not. Trust checking is extended by the integrity setting in fapolicyd.conf. When trust is used on the subject, it could be a daemon. If that daemon gets updated on disk, the trustdb will be updated to the new SHA256 hash. If the integrity setting is not none, the running daemon is not likely to be trusted unless it gets restarted. The default rules are not written in a way that this would happen. But this needs to be highlighted as it may not be obvious when writing a new rule.
     Trust(bool),
 }
 
