@@ -24,9 +24,13 @@ fn parse_clean(xs: Vec<String>) {
         .iter()
         .map(|l| (l, parser(&l)))
         .flat_map(|(l, r)| match r {
-            Ok((_, rule)) => Some(rule),
+            Ok(("", rule)) => Some(rule),
+            Ok((rem, _)) => {
+                println!("[incomplete] {} [{}]", l, rem);
+                None
+            }
             Err(_) => {
-                println!("[fail] {}", l);
+                println!("[failure] {}", l);
                 None
             }
         })
