@@ -1,16 +1,17 @@
 use nom::branch::alt;
-use nom::bytes::complete::{is_not, tag};
-use nom::character::complete::space0;
+use nom::bytes::complete::{is_not, tag, take_until, take_while};
 use nom::character::complete::space1;
 use nom::character::complete::{alphanumeric1, digit1};
+use nom::character::complete::{line_ending, space0};
 use nom::character::is_alphanumeric;
 use nom::combinator::map;
 use nom::multi::separated_list1;
-use nom::sequence::{separated_pair, terminated};
+use nom::sequence::{preceded, separated_pair, terminated};
 
 use crate::rules::file_type::Rvalue::Literal;
-use crate::rules::object::Part;
-use crate::rules::{Decision, MacroDef, Object, Permission, Rule, Subject};
+use crate::rules::object::Part as ObjPart;
+use crate::rules::subject::Part as SubjPart;
+use crate::rules::{Comment, Decision, MacroDef, Object, Permission, Rule, Subject};
 use nom::error::{Error, ErrorKind};
 
 pub(crate) fn decision(i: &str) -> nom::IResult<&str, Decision> {
@@ -36,56 +37,72 @@ pub(crate) fn permission(i: &str) -> nom::IResult<&str, Permission> {
     ))(i)
 }
 
-pub(crate) fn subject(i: &str) -> nom::IResult<&str, Subject> {
+fn subj_part(i: &str) -> nom::IResult<&str, SubjPart> {
     alt((
-        map(tag("all"), |_| Subject::All),
+        map(tag("all"), |_| SubjPart::All),
         map(
             separated_pair(tag("uid"), tag("="), digit1),
-            |x: (&str, &str)| Subject::Uid(x.1.parse().unwrap()),
+            |x: (&str, &str)| SubjPart::Uid(x.1.parse().unwrap()),
         ),
         map(
             separated_pair(tag("gid"), tag("="), digit1),
-            |x: (&str, &str)| Subject::Gid(x.1.parse().unwrap()),
+            |x: (&str, &str)| SubjPart::Gid(x.1.parse().unwrap()),
         ),
         map(
             separated_pair(tag("exe"), tag("="), filepath),
-            |x: (&str, &str)| Subject::Exe(x.1.to_string()),
+            |x: (&str, &str)| SubjPart::Exe(x.1.to_string()),
         ),
         map(
             separated_pair(tag("pattern"), tag("="), pattern),
-            |x: (&str, &str)| Subject::Pattern(x.1.to_string()),
+            |x: (&str, &str)| SubjPart::Pattern(x.1.to_string()),
+        ),
+        map(
+            separated_pair(tag("comm"), tag("="), filepath),
+            |x: (&str, &str)| SubjPart::Comm(x.1.to_string()),
+        ),
+        map(
+            separated_pair(tag("trust"), tag("="), trust_flag),
+            |x: (&str, bool)| SubjPart::Trust(x.1),
         ),
     ))(i)
 }
 
-fn part(i: &str) -> nom::IResult<&str, Part> {
+pub(crate) fn subject(i: &str) -> nom::IResult<&str, Subject> {
+    map(separated_list1(space1, subj_part), |parts| {
+        Subject::new(parts)
+    })(i)
+}
+
+fn obj_part(i: &str) -> nom::IResult<&str, ObjPart> {
     alt((
-        map(tag("all"), |_| Part::All),
+        map(tag("all"), |_| ObjPart::All),
         map(
             separated_pair(tag("device"), tag("="), filepath),
-            |x: (&str, &str)| Part::Device(x.1.to_string()),
+            |x: (&str, &str)| ObjPart::Device(x.1.to_string()),
         ),
         map(
             separated_pair(tag("dir"), tag("="), filepath),
-            |x: (&str, &str)| Part::Dir(x.1.to_string()),
+            |x: (&str, &str)| ObjPart::Dir(x.1.to_string()),
         ),
         map(
             separated_pair(tag("ftype"), tag("="), filepath),
-            |x: (&str, &str)| Part::FileType(Literal(x.1.to_string())),
+            |x: (&str, &str)| ObjPart::FileType(Literal(x.1.to_string())),
         ),
         map(
             separated_pair(tag("path"), tag("="), filepath),
-            |x: (&str, &str)| Part::Path(x.1.to_string()),
+            |x: (&str, &str)| ObjPart::Path(x.1.to_string()),
         ),
         map(
             separated_pair(tag("trust"), tag("="), trust_flag),
-            |x: (&str, bool)| Part::Trust(x.1),
+            |x: (&str, bool)| ObjPart::Trust(x.1),
         ),
     ))(i)
 }
 
 pub(crate) fn object(i: &str) -> nom::IResult<&str, Object> {
-    map(separated_list1(space1, part), |parts| Object::new(parts))(i)
+    map(separated_list1(space1, obj_part), |parts| {
+        Object::new(parts)
+    })(i)
 }
 
 fn filepath(i: &str) -> nom::IResult<&str, &str> {
@@ -147,10 +164,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn parse_subj() {
-        assert_eq!(Subject::All, subject("all").ok().unwrap().1);
-        assert_eq!(Subject::Uid(10001), subject("uid=10001").ok().unwrap().1);
-        assert_eq!(Subject::Gid(0), subject("gid=0").ok().unwrap().1);
+    fn parse_subj_part() {
+        assert_eq!(SubjPart::All, subj_part("all").ok().unwrap().1);
+        assert_eq!(SubjPart::Uid(10001), subj_part("uid=10001").ok().unwrap().1);
+        assert_eq!(SubjPart::Gid(0), subj_part("gid=0").ok().unwrap().1);
     }
 
     #[test]
@@ -159,21 +176,25 @@ mod tests {
     }
 
     #[test]
+    fn parse_obj_part() {
+        assert_eq!(ObjPart::All, obj_part("all").ok().unwrap().1);
+    }
+
+    #[test]
     fn parse_obj() {
-        assert_eq!(Object::from(Part::All), object("all").ok().unwrap().1);
         assert_eq!(
-            Object::new(vec![Part::All, Part::Trust(true)]),
+            Object::new(vec![ObjPart::All, ObjPart::Trust(true)]),
             object("all trust=1").ok().unwrap().1
         );
 
         assert_eq!(
-            Object::new(vec![Part::Trust(true)]),
+            Object::new(vec![ObjPart::Trust(true)]),
             object("trust=1").ok().unwrap().1
         );
 
         // ordering matters
         assert_eq!(
-            Object::new(vec![Part::Trust(true), Part::All]),
+            Object::new(vec![ObjPart::Trust(true), ObjPart::All]),
             object("trust=1 all").ok().unwrap().1
         );
     }
@@ -191,14 +212,14 @@ mod tests {
             .1;
         assert_eq!(Decision::DenyAudit, r.dec);
         assert_eq!(Permission::Any, r.perm);
-        assert_eq!(Subject::Pattern("ld_so".into()), r.subj);
-        assert_eq!(Object::from(Part::All), r.obj);
+        assert_eq!(Subject::from(SubjPart::Pattern("ld_so".into())), r.subj);
+        assert_eq!(Object::from(ObjPart::All), r.obj);
 
         let r = rule("deny_audit perm=any all : all").ok().unwrap().1;
         assert_eq!(Decision::DenyAudit, r.dec);
         assert_eq!(Permission::Any, r.perm);
-        assert_eq!(Subject::All, r.subj);
-        assert_eq!(Object::from(Part::All), r.obj);
+        assert_eq!(Subject::from(SubjPart::All), r.subj);
+        assert_eq!(Object::from(ObjPart::All), r.obj);
 
         let r = rule("deny_audit perm=open all : device=/dev/cdrom")
             .ok()
@@ -206,8 +227,8 @@ mod tests {
             .1;
         assert_eq!(Decision::DenyAudit, r.dec);
         assert_eq!(Permission::Open, r.perm);
-        assert_eq!(Subject::All, r.subj);
-        assert_eq!(Object::from(Part::Device("/dev/cdrom".into())), r.obj);
+        assert_eq!(Subject::from(SubjPart::All), r.subj);
+        assert_eq!(Object::from(ObjPart::Device("/dev/cdrom".into())), r.obj);
 
         let r = rule("deny_audit perm=open exe=/usr/bin/ssh : dir=/opt")
             .ok()
@@ -215,8 +236,8 @@ mod tests {
             .1;
         assert_eq!(Decision::DenyAudit, r.dec);
         assert_eq!(Permission::Open, r.perm);
-        assert_eq!(Subject::Exe("/usr/bin/ssh".into()), r.subj);
-        assert_eq!(Object::from(Part::Dir("/opt".into())), r.obj);
+        assert_eq!(Subject::from(SubjPart::Exe("/usr/bin/ssh".into())), r.subj);
+        assert_eq!(Object::from(ObjPart::Dir("/opt".into())), r.obj);
 
         let r = rule("deny_audit perm=any all : ftype=application/x-bad-elf")
             .ok()
@@ -224,9 +245,9 @@ mod tests {
             .1;
         assert_eq!(Decision::DenyAudit, r.dec);
         assert_eq!(Permission::Any, r.perm);
-        assert_eq!(Subject::All, r.subj);
+        assert_eq!(Subject::from(SubjPart::All), r.subj);
         assert_eq!(
-            Object::from(Part::FileType(Literal("application/x-bad-elf".into()))),
+            Object::from(ObjPart::FileType(Literal("application/x-bad-elf".into()))),
             r.obj
         );
     }

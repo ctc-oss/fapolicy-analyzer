@@ -1,6 +1,7 @@
-use crate::rules::{parse, Decision, Object, Permission, Subject};
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
+
+use crate::rules::{parse, Decision, Object, Permission, Subject};
 
 pub struct Rule {
     pub subj: Subject,
@@ -50,12 +51,18 @@ impl FromStr for Rule {
 
 #[cfg(test)]
 mod tests {
+    use crate::rules::object::Part as ObjPart;
+    use crate::rules::subject::Part as SubjPart;
+
     use super::*;
-    use crate::rules::object::Part;
 
     #[test]
     fn display() {
-        let r = Rule::deny(Subject::All, Permission::Open, Object::from(Part::All));
+        let r = Rule::deny(
+            Subject::from(SubjPart::All),
+            Permission::Open,
+            Object::from(ObjPart::All),
+        );
         let expected = "deny_audit perm=open all : all";
 
         assert_eq!(expected, format!("{}", r));

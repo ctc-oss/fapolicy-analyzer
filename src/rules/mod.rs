@@ -17,3 +17,11 @@ pub use self::rule::Rule;
 
 mod subject;
 pub use self::subject::Subject;
+
+pub(crate) fn bool_to_c(b: bool) -> char {
+    if b {
+        '1'
+    } else {
+        '0'
+    }
+}

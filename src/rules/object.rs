@@ -1,7 +1,7 @@
 use std::fmt::{Display, Formatter};
-
-use crate::rules::{parse, Rvalue};
 use std::str::FromStr;
+
+use crate::rules::{bool_to_c, parse, Rvalue};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Object {
@@ -55,14 +55,6 @@ impl Display for Part {
     }
 }
 
-fn bool_to_c(b: bool) -> char {
-    if b {
-        '1'
-    } else {
-        '0'
-    }
-}
-
 impl FromStr for Object {
     type Err = String;
 
@@ -76,8 +68,9 @@ impl FromStr for Object {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::rules::file_type::Rvalue::Literal;
+
+    use super::*;
 
     #[test]
     fn display() {
