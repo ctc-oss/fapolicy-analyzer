@@ -1,44 +1,46 @@
-allow perm=any all : ftype=application/x-bytecode.ocaml trust=1
-allow perm=any all : ftype=text/x-lua trust=1
-allow perm=any all : ftype=text/x-perl trust=1
-allow perm=any all : ftype=text/x-php trust=1
-allow perm=any all : ftype=text/x-python trust=1
-allow perm=any all : ftype=text/x-ruby trust=1
-allow perm=any all : ftype=text/x-shellscript
-allow perm=any uid=0 : dir=/root/.ansible/tmp/
-allow perm=any uid=0 : dir=/tmp/ansible
-allow perm=any uid=0 : dir=/var/tmp/
-allow perm=any uid=0 trust=1 : all
-allow perm=any uid=0 trust=1 : all
-allow perm=execute all : ftype=application/x-executable trust=1
-allow perm=execute all : path=/lib/ld-2.so trust=1
-allow perm=execute all : trust=1
-allow perm=open all : all
-allow perm=open all : ftype=application/x-bytecode.python trust=1
-allow perm=open all : ftype=application/x-sharedlib trust=1
-allow perm=open all : ftype=application/x-sharedlib trust=1
-allow perm=open all : ftype=%languages trust=1
-allow perm=open exe=/usr/bin/python3 comm=dnf : all
-allow perm=open exe=/usr/bin/rpm : all
-%amultiset=application/x-bytecode.ocaml,application/x-bytecode.python
-%asingleset=application/x-bytecode.ocaml
-deny_audit perm=any all : device=/dev/cdrom
-deny_audit perm=any all : ftype=%amultiset
-deny_audit perm=any all : ftype=application/x-bad-elf
-deny_audit perm=any all : ftype=application/x-bytecode.ocaml
-deny_audit perm=any all : ftype=application/x-bytecode.python
-deny_audit perm=any all : ftype=%asingleset
-deny_audit perm=any all : ftype=text/x-lua
-deny_audit perm=any all : ftype=text/x-perl
-deny_audit perm=any all : ftype=text/x-php
-deny_audit perm=any all : ftype=text/x-python
-deny_audit perm=any all : ftype=text/x-ruby
-deny_audit perm=any pattern=ld_so : all
-deny_audit perm=execute all : all
-deny_audit perm=execute all : ftype=any
-deny_audit perm=execute all : ftype=application/x-executable
-deny_audit perm=open all : ftype=application/x-sharedlib
-deny_audit perm=open all : ftype=%languages
-deny_audit perm=open exe=/usr/bin/ssh : dir=/opt
-deny_audit perm=open exe=/usr/bin/wget : dir=/tmp
 # this file contains examples of lines from rule files that should be parseable please add interesting valid examples (this is a comment)
+deny_audit perm=open uid=1001 exe=/usr/bin/wget : dir=/tmp
+deny_audit perm=open exe=/usr/bin/wget : dir=/tmp
+deny_audit perm=open exe=/usr/bin/ssh : dir=/opt
+deny_audit perm=open all : ftype=%languages
+deny_audit perm=open all : ftype=application/x-sharedlib
+deny_audit perm=execute uid=1001 trust=1 : ftype=any trust=1 dir=/tmp
+deny_audit perm=execute all : ftype=application/x-executable
+deny_audit perm=execute all : ftype=any
+deny_audit perm=execute all : all
+deny_audit perm=any pattern=ld_so : all
+deny_audit perm=any all : ftype=text/x-ruby
+deny_audit perm=any all : ftype=text/x-python
+deny_audit perm=any all : ftype=text/x-php
+deny_audit perm=any all : ftype=text/x-perl
+deny_audit perm=any all : ftype=text/x-lua
+deny_audit perm=any all : ftype=%asingleset
+deny_audit perm=any all : ftype=application/x-bytecode.python
+deny_audit perm=any all : ftype=application/x-bytecode.ocaml
+deny_audit perm=any all : ftype=application/x-bad-elf
+deny_audit perm=any all : ftype=%amultiset
+deny_audit perm=any all : device=/dev/cdrom
+%asingleset=application/x-bytecode.ocaml
+%amultiset=application/x-bytecode.ocaml,application/x-bytecode.python
+allow perm=open exe=/usr/bin/rpm : all
+allow perm=open exe=/usr/bin/python3 comm=dnf : all
+allow perm=open all : ftype=%languages trust=1
+allow perm=open all : ftype=application/x-sharedlib trust=1
+allow perm=open all : ftype=application/x-sharedlib trust=1
+allow perm=open all : ftype=application/x-bytecode.python trust=1
+allow perm=open all : all
+allow perm=execute all : trust=1
+allow perm=execute all : path=/lib/ld-2.so trust=1
+allow perm=execute all : ftype=application/x-executable trust=1
+allow perm=any uid=0 trust=1 : all
+allow perm=any uid=0 trust=1 : all
+allow perm=any uid=0 : dir=/var/tmp/
+allow perm=any uid=0 : dir=/tmp/ansible
+allow perm=any uid=0 : dir=/root/.ansible/tmp/
+allow perm=any all : ftype=text/x-shellscript
+allow perm=any all : ftype=text/x-ruby trust=1
+allow perm=any all : ftype=text/x-python trust=1
+allow perm=any all : ftype=text/x-php trust=1
+allow perm=any all : ftype=text/x-perl trust=1
+allow perm=any all : ftype=text/x-lua trust=1
+allow perm=any all : ftype=application/x-bytecode.ocaml trust=1
