@@ -212,55 +212,64 @@ mod tests {
         assert_eq!(Decision::DenyAudit, decision("deny_audit").ok().unwrap().1);
     }
 
+    // todo;; need better error propagation, and then better negative tests
     #[test]
     fn bad_rules() {
-        let (rem, _) = rule(
-            "deny_audit perm=open uid=0 comm=foo exe=/usr/bin/wget : dir=/tmp trust=1 foo=sdf",
-        )
-        .ok()
-        .unwrap();
-        assert!(!rem.is_empty())
+        rule("deny_audit perm=open all : foo").err().unwrap();
+        rule("deny_audit perm=open all trust=foo : all")
+            .err()
+            .unwrap();
+
+        let (rem, _) = rule("deny_audit perm=open all : all trust=1 foo")
+            .ok()
+            .unwrap();
+        assert!(!rem.is_empty());
+
+        let (rem, _) = rule("deny_audit perm=open all : all trust=foo")
+            .ok()
+            .unwrap();
+        assert!(!rem.is_empty());
     }
 
     #[test]
     fn parse_rule() {
-        let r = rule("deny_audit perm=any pattern=ld_so : all")
+        let (rem, r) = rule("deny_audit perm=any pattern=ld_so : all")
             .ok()
-            .unwrap()
-            .1;
+            .unwrap();
         assert_eq!(Decision::DenyAudit, r.dec);
         assert_eq!(Permission::Any, r.perm);
         assert_eq!(Subject::from(SubjPart::Pattern("ld_so".into())), r.subj);
         assert_eq!(Object::from(ObjPart::All), r.obj);
+        assert!(rem.is_empty());
 
-        let r = rule("deny_audit perm=any all : all").ok().unwrap().1;
+        let (rem, r) = rule("deny_audit perm=any all : all").ok().unwrap();
         assert_eq!(Decision::DenyAudit, r.dec);
         assert_eq!(Permission::Any, r.perm);
         assert_eq!(Subject::from(SubjPart::All), r.subj);
         assert_eq!(Object::from(ObjPart::All), r.obj);
+        assert!(rem.is_empty());
 
-        let r = rule("deny_audit perm=open all : device=/dev/cdrom")
+        let (rem, r) = rule("deny_audit perm=open all : device=/dev/cdrom")
             .ok()
-            .unwrap()
-            .1;
+            .unwrap();
         assert_eq!(Decision::DenyAudit, r.dec);
         assert_eq!(Permission::Open, r.perm);
         assert_eq!(Subject::from(SubjPart::All), r.subj);
         assert_eq!(Object::from(ObjPart::Device("/dev/cdrom".into())), r.obj);
+        assert!(rem.is_empty());
 
-        let r = rule("deny_audit perm=open exe=/usr/bin/ssh : dir=/opt")
+        let (rem, r) = rule("deny_audit perm=open exe=/usr/bin/ssh : dir=/opt")
             .ok()
-            .unwrap()
-            .1;
+            .unwrap();
         assert_eq!(Decision::DenyAudit, r.dec);
         assert_eq!(Permission::Open, r.perm);
         assert_eq!(Subject::from(SubjPart::Exe("/usr/bin/ssh".into())), r.subj);
         assert_eq!(Object::from(ObjPart::Dir("/opt".into())), r.obj);
+        assert!(rem.is_empty());
 
-        let r = rule("deny_audit perm=any all : ftype=application/x-bad-elf")
+        let (rem, r) = rule("deny_audit perm=any all : ftype=application/x-bad-elf")
             .ok()
-            .unwrap()
-            .1;
+            .unwrap();
         assert_eq!(Decision::DenyAudit, r.dec);
         assert_eq!(Permission::Any, r.perm);
         assert_eq!(Subject::from(SubjPart::All), r.subj);
@@ -268,6 +277,7 @@ mod tests {
             Object::from(ObjPart::FileType(Literal("application/x-bad-elf".into()))),
             r.obj
         );
+        assert!(rem.is_empty());
     }
 
     #[test]
