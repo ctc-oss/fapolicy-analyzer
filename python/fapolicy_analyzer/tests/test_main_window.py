@@ -122,21 +122,80 @@ def test_on_delete_event(mainWindow):
     assert not bReturn
 
 
-def test_on_openMenu_activate(mainWindow):
+def test_on_openMenu_activate(mainWindow, state, mocker):
+    # Mock the FileChooser dlg
+    mockDialog = MagicMock()
+    mockDialog.run.return_value = Gtk.ResponseType.OK
+    mockDialog.get_filename.return_value = "/tmp/open_tmp.json"
+    mocker.patch(
+        "ui.main_window.Gtk.FileChooserDialog",
+        return_value=mockDialog,
+    )
+
+    mocker.patch(
+        "ui.main_window.stateManager.open_edit_session",
+        return_value=True
+    )
+
+    mocker.patch(
+        "ui.main_window.path.isfile",
+        return_value=True
+    )
+    mainWindow.get_object("openMenu").activate()
+    stateManager.open_edit_session.assert_called_with("/tmp/open_tmp.json")
+
+
+def test_on_restoreMenu_activate(mainWindow, state, mocker):
+    # Invoke 'pass'ed function
+    mainWindow.get_object("restoreMenu").activate()
+
+
+def test_on_saveAsMenu_activate(mainWindow, state, mocker):
+    # Mock the FileChooser dlg
+    mockDialog = MagicMock()
+    mockDialog.run.return_value = Gtk.ResponseType.OK
+    mockDialog.get_filename.return_value = "/tmp/save_as_tmp.json"
+    mocker.patch(
+        "ui.main_window.Gtk.FileChooserDialog",
+        return_value=mockDialog,
+    )
+
+    # Mock the StateMgr interface
+    mockFunc = mocker.patch(
+        "ui.main_window.stateManager.save_edit_session",
+        return_value=True
+    )
+
+    mainWindow.get_object("saveAsMenu").activate()
+    mockFunc.assert_called_with("/tmp/save_as_tmp.json")
+
+
+def test_on_saveMenu_activate(mainWindow, state, mocker):
+    # Mock the on_saveAsMenu_activate() call
+    mockFunc = mocker.patch(
+        "ui.main_window.MainWindow.on_saveAsMenu_activate",
+        return_value=True
+    )
+
+    # Mock the StateMgr interface
+    mocker.patch(
+        "ui.main_window.stateManager.save_edit_session",
+        return_value=True
+    )
+
     window = mainWindow
-    window.on_openMenu_activate(None)
+    window.get_object("saveMenu").activate()
+    mockFunc.assert_called()
 
 
-def test_on_restoreMenu_activate(mainWindow):
-    window = mainWindow
-    window.on_restoreMenu_activate(None)
+def test_on_saveMenu_activate_w_set_filename(mainWindow, state, mocker):
+    mainWindow.strSessionFilename = "/tmp/save_w_filename_tmp.json"
 
+    # Mock the StateMgr interface
+    mocker.patch(
+        "ui.main_window.stateManager.save_edit_session",
+        return_value=True
+    )
 
-def test_on_saveMenu_activate(mainWindow):
-    window = mainWindow
-    window.on_saveMenu_activate(None)
-
-
-def test_on_saveAsMenu_activate(mainWindow):
-    window = mainWindow
-    window.on_saveAsMenu_activate(None)
+    mainWindow.get_object("saveMenu").activate()
+    stateManager.save_edit_session.assert_called_with("/tmp/save_w_filename_tmp.json")

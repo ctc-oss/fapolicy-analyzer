@@ -1,5 +1,7 @@
 import context  # noqa: F401
+import os
 import pytest
+import json
 from unittest.mock import MagicMock
 from ui.state_manager import stateManager, NotificationType
 
@@ -131,3 +133,151 @@ def test_system_notification_removed(uut, notification_type):
     uut.remove_system_notification()
     mock.assert_called_with(("foo", notification_type))
     uut.system_notification_removed -= mock
+
+
+# ######################## Session Serialization #####################
+def test_open_edit_session(uut, mocker):
+    """Test: StateManager's open json session file load functionality.
+    The tested function 'open_edit_session()' converts a json file of
+    paths and associated actions, and converts that into a list of
+    Path/Action tuple pairs.
+
+    1. A reference json file is generated and wrote to disk.
+    2. The StateManager's load/open function is invoked to read and parse
+    the reference file.
+    3. The calls and arguments to the AncillaryTrustDatabaseAdmin's (ATDA)
+    on_files_added() and on_files_deleted() are verified and compared to the
+    expected arguments.
+
+ - Mocking: Two AncillaryTrustDatabaseAdmin functions that actually convert
+    a list of paths into Changesets and then apply those Changesets.
+"""
+
+    strModule = "ui.ancillary_trust_database_admin.AncillaryTrustDatabaseAdmin"
+    mockAdd = mocker.patch("{}.on_files_added".format(strModule))
+    mockDel = mocker.patch("{}.on_files_deleted".format(strModule))
+
+    # Create Path/Action dict and expected generated path lists
+    dictPaInput = {
+        "/data_space/man_from_mars.txt": "Add",
+        "/data_space/this/is/a/longer/path/now_is_the_time.txt": "Del",
+        "/data_space/Integration.json": "Add"
+    }
+
+    listExpectedPathAdds = [
+        "/data_space/Integration.json",
+        "/data_space/man_from_mars.txt"
+    ]
+
+    listExpectedPathDels = [
+        "/data_space/this/is/a/longer/path/now_is_the_time.txt"
+    ]
+
+    # Generate test json input file
+    tmp_file = "/tmp/FaPolicyAnalyzerTest.tmp"
+    with open(tmp_file, "w") as fpJson:
+        json.dump(dictPaInput, fpJson, sort_keys=True, indent=4)
+
+    # Process the json reference file via fapolicy-analyzer's datapath
+    uut.open_edit_session(tmp_file)
+
+    # Clean up of the json reference file
+    os.system("rm -f {}".format(tmp_file))
+
+    # Verify the function were called w/appropriate args
+    mockAdd.assert_called_with(listExpectedPathAdds)
+    mockDel.assert_called_with(listExpectedPathDels)
+
+
+def test_save_edit_session(uut):
+    # Define reference text and generated filename
+    tmp_file_out = "/tmp/FaPolicyAnalyzerUnitTestOutput.tmp.json"
+
+    jsonText = '''{
+    "/data_space/man_from_mars.txt": "Add",
+    "/data_space/this/is/a/longer/path/now_is_the_time.txt": "Del",
+    "/data_space/Integration.json": "Add"
+}
+'''
+
+    # Populate the StateManager's Queue w/equivalent data, write json file
+    listPaTuples = [
+        ("/data_space/man_from_mars.txt", "Add"),
+        ("/data_space/this/is/a/longer/path/now_is_the_time.txt", "Del"),
+        ("/data_space/Integration.json", "Add")]
+
+    uut._StateManager__path_action_list_2_queue(listPaTuples)
+    uut.save_edit_session(tmp_file_out)
+
+    # Independently create json objects and Compare the reference w/the
+    # generated one created from the json file.
+    with open(tmp_file_out) as fpJson:
+        strJsonReference = json.dumps(json.loads(jsonText), sort_keys=True)
+        strJsonGeneratedFile = json.dumps(json.load(fpJson), sort_keys=True)
+        assert strJsonReference == strJsonGeneratedFile
+
+    # Clean up tmp file
+    os.system("rm -f {}".format(tmp_file_out))
+
+
+# ##################### Queue mgmt utilities #########################
+def test_path_action_dict_to_list(uut):
+    # Define test input/output data
+    dictPA = {"/data_space/man_from_mars.txt": "Add",
+              "/data_space/this/is/a/longer/path/now_is_the_time.txt": "Del",
+              "/data_space/Integration.json": "Add"}
+
+    listPaExpected = [
+        ("/data_space/man_from_mars.txt", "Add"),
+        ("/data_space/this/is/a/longer/path/now_is_the_time.txt", "Del"),
+        ("/data_space/Integration.json", "Add")]
+
+    listPaTuplesGenerated = uut._StateManager__path_action_dict_to_list(dictPA)
+    assert listPaTuplesGenerated == listPaExpected
+
+
+def test_path_action_list_2_queue(uut):
+    listPaTuples = [
+        ("/data_space/man_from_mars.txt", "Add"),
+        ("/data_space/this/is/a/longer/path/now_is_the_time.txt", "Del"),
+        ("/data_space/Integration.json", "Add")]
+
+    assert not uut.is_dirty_queue()
+    uut._StateManager__path_action_list_2_queue(listPaTuples)
+    assert uut.is_dirty_queue()
+    listQueueContents = uut.get_path_action_list()
+    assert listPaTuples == listQueueContents
+
+
+def test_path_action_list_2_queue_w_bad_data(uut):
+    listPaTuples = [
+        ("/data_space/man_from_mars.txt", "Add"),
+        ("/data_space/this/is/a/longer/path/now_is_the_time.txt", "Del"),
+        ("/data_space/Integration.json", "BAD")]
+
+    listPaExpected = [
+        ("/data_space/man_from_mars.txt", "Add"),
+        ("/data_space/this/is/a/longer/path/now_is_the_time.txt", "Del")]
+
+    assert not uut.is_dirty_queue()
+    uut._StateManager__path_action_list_2_queue(listPaTuples)
+    assert uut.is_dirty_queue()
+    listQueueContents = uut.get_path_action_list()
+    assert listPaExpected == listQueueContents
+
+
+def test_path_action_list_to_dict(uut):
+    listPaTuples = [
+        ("/data_space/man_from_mars.txt", "Add"),
+        ("/data_space/this/is/a/longer/path/now_is_the_time.txt", "Del"),
+        ("/data_space/Integration.json", "Add")]
+
+    dictPaExpected = {
+        "/data_space/man_from_mars.txt": "Add",
+        "/data_space/this/is/a/longer/path/now_is_the_time.txt": "Del",
+        "/data_space/Integration.json": "Add"
+    }
+
+    uut._StateManager__path_action_list_2_queue(listPaTuples)
+    dictPaCurrentQ = uut._StateManager__path_action_list_to_dict()
+    assert dictPaExpected == dictPaCurrentQ
