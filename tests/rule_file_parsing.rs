@@ -1,4 +1,4 @@
-use crate::Line::{Amacro, Arule};
+use crate::Line::{Acomment, Amacro, Arule};
 use fapolicy_analyzer::rules::{parse, MacroDef, Rule};
 use nom::branch::alt;
 use nom::combinator::map;
@@ -8,11 +8,15 @@ use std::io::{BufRead, BufReader};
 enum Line {
     Arule(Rule),
     Amacro(MacroDef),
-    // Acomment(String),
+    Acomment(String),
 }
 
 fn parser(i: &str) -> nom::IResult<&str, Line> {
-    alt((map(parse::rule, Arule), map(parse::macrodef, Amacro)))(i)
+    alt((
+        map(parse::rule, Arule),
+        map(parse::macrodef, Amacro),
+        map(parse::comment, Acomment),
+    ))(i)
 }
 
 fn parse_clean(xs: Vec<String>) {
@@ -32,7 +36,7 @@ fn parse_clean(xs: Vec<String>) {
         match line {
             Arule(r) => println!("{}: {}", i, r),
             Amacro(m) => println!("{}: {}", i, m),
-            // Line::Acomment(c) => println!("{}: {}", i, c),
+            Acomment(c) => println!("{}: {}", i, c),
         }
     }
 

@@ -1,18 +1,18 @@
 use nom::branch::alt;
-use nom::bytes::complete::{is_not, tag, take_until, take_while};
+use nom::bytes::complete::{is_not, tag};
+use nom::character::complete::space0;
 use nom::character::complete::space1;
 use nom::character::complete::{alphanumeric1, digit1};
-use nom::character::complete::{line_ending, space0};
 use nom::character::is_alphanumeric;
 use nom::combinator::map;
+use nom::error::{Error, ErrorKind};
 use nom::multi::separated_list1;
 use nom::sequence::{preceded, separated_pair, terminated};
 
 use crate::rules::file_type::Rvalue::Literal;
 use crate::rules::object::Part as ObjPart;
 use crate::rules::subject::Part as SubjPart;
-use crate::rules::{Comment, Decision, MacroDef, Object, Permission, Rule, Subject};
-use nom::error::{Error, ErrorKind};
+use crate::rules::{Decision, MacroDef, Object, Permission, Rule, Subject};
 
 pub(crate) fn decision(i: &str) -> nom::IResult<&str, Decision> {
     alt((
@@ -155,6 +155,13 @@ pub fn macrodef(i: &str) -> nom::IResult<&str, MacroDef> {
             remaining_input,
             MacroDef::new(var, def.iter().map(|&s| s.into()).collect()),
         )),
+        Err(e) => Err(e),
+    }
+}
+
+pub fn comment(i: &str) -> nom::IResult<&str, String> {
+    match nom::combinator::complete(preceded(tag("#"), is_not("\n")))(i) {
+        Ok((remaining, c)) => Ok((remaining, c.into())),
         Err(e) => Err(e),
     }
 }
