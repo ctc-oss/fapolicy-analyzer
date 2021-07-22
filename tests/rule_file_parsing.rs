@@ -1,21 +1,21 @@
-use crate::Line::{Acomment, Amacro, Arule};
-use fapolicy_analyzer::rules::{parse, MacroDef, Rule};
+use crate::Line::{Acomment, Arule, Aset};
+use fapolicy_analyzer::rules::{parse, Rule, Set};
 use nom::branch::alt;
 use nom::combinator::map;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
 enum Line {
-    Arule(Rule),
-    Amacro(MacroDef),
     Acomment(String),
+    Arule(Rule),
+    Aset(Set),
 }
 
 fn parser(i: &str) -> nom::IResult<&str, Line> {
     alt((
-        map(parse::rule, Arule),
-        map(parse::macrodef, Amacro),
         map(parse::comment, Acomment),
+        map(parse::rule, Arule),
+        map(parse::set, Aset),
     ))(i)
 }
 
@@ -34,9 +34,9 @@ fn parse_clean(xs: Vec<String>) {
 
     for (i, line) in lines.iter().enumerate() {
         match line {
-            Arule(r) => println!("{}: {}", i, r),
-            Amacro(m) => println!("{}: {}", i, m),
             Acomment(c) => println!("{}: {}", i, c),
+            Arule(r) => println!("{}: {}", i, r),
+            Aset(m) => println!("{}: {}", i, m),
         }
     }
 

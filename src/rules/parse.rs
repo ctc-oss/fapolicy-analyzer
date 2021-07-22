@@ -11,8 +11,9 @@ use nom::sequence::{preceded, separated_pair, terminated};
 
 use crate::rules::file_type::Rvalue::Literal;
 use crate::rules::object::Part as ObjPart;
+use crate::rules::set::Set;
 use crate::rules::subject::Part as SubjPart;
-use crate::rules::{Decision, MacroDef, Object, Permission, Rule, Subject};
+use crate::rules::{Decision, Object, Permission, Rule, Subject};
 
 pub(crate) fn decision(i: &str) -> nom::IResult<&str, Decision> {
     alt((
@@ -141,7 +142,7 @@ pub fn rule(i: &str) -> nom::IResult<&str, Rule> {
     }
 }
 
-pub fn macrodef(i: &str) -> nom::IResult<&str, MacroDef> {
+pub fn set(i: &str) -> nom::IResult<&str, Set> {
     match nom::combinator::complete(nom::sequence::tuple((
         tag("%"),
         separated_pair(
@@ -153,7 +154,7 @@ pub fn macrodef(i: &str) -> nom::IResult<&str, MacroDef> {
     {
         Ok((remaining_input, (_, (var, def)))) => Ok((
             remaining_input,
-            MacroDef::new(var, def.iter().map(|&s| s.into()).collect()),
+            Set::new(var, def.iter().map(|&s| s.into()).collect()),
         )),
         Err(e) => Err(e),
     }

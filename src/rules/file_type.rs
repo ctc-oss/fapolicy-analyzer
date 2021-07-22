@@ -1,10 +1,11 @@
+use crate::rules::set::Set;
 use std::fmt::{Display, Formatter};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Rvalue {
     Any,
     Literal(String),
-    Macro(MacroDef),
+    SetRef(Set),
 }
 
 impl Rvalue {
@@ -13,34 +14,12 @@ impl Rvalue {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
-pub struct MacroDef {
-    pub name: String,
-    pub values: Vec<String>,
-}
-
-impl MacroDef {
-    pub fn new(name: &str, list: Vec<String>) -> Self {
-        MacroDef {
-            name: name.into(),
-            values: list,
-        }
-    }
-}
-
-impl Display for MacroDef {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let list: String = self.values.join(",");
-        f.write_fmt(format_args!("%{}={}", &self.name, list))
-    }
-}
-
 impl Display for Rvalue {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Rvalue::Any => f.write_str("any"),
             Rvalue::Literal(l) => f.write_fmt(format_args!("{}", l)),
-            Rvalue::Macro(m) => f.write_fmt(format_args!("{}", m.name)),
+            Rvalue::SetRef(m) => f.write_fmt(format_args!("{}", m.name)),
         }
     }
 }
@@ -58,7 +37,7 @@ mod tests {
     #[test]
     fn macro_mime_list() {
         let l = "application/x-bytecode.ocaml,application/x-bytecode.python,application/java-archive,text/x-java";
-        let t = MacroDef::new("lang", l.split(',').map(|s| s.into()).collect());
+        let t = Set::new("lang", l.split(',').map(|s| s.into()).collect());
         assert_eq!(format!("%lang={}", l), format!("{}", t));
     }
 }
