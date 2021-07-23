@@ -10,3 +10,4 @@ pub mod sha;
 pub mod svc;
 pub mod sys;
 pub mod trust;
+pub mod users;
