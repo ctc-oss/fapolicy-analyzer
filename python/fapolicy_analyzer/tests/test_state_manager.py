@@ -137,11 +137,13 @@ def test_system_notification_removed(uut, notification_type):
 
 # ######################## Session Serialization #####################
 def test_open_edit_session(uut, mocker):
-    """Test: StateManager's open json session file load functionality.
+    """Tests StateManager's open json session file load functionality.
     The tested function 'open_edit_session()' converts a json file of
     paths and associated actions, and converts that into a list of
-    Path/Action tuple pairs.
+    Path/Action tuple pairs, then communicates with the AncillaryTrust
+    DatabaseAdmin's (ATDA) via an event.
 
+    Test approach:
     1. A reference json file is generated and wrote to disk.
     2. The StateManager's load/open function is invoked to read and parse
     the reference file.
@@ -173,7 +175,7 @@ def test_open_edit_session(uut, mocker):
         "/data_space/this/is/a/longer/path/now_is_the_time.txt"
     ]
 
-    # Generate test json input file
+    # Directly generate reference test json input file
     tmp_file = "/tmp/FaPolicyAnalyzerTest.tmp"
     with open(tmp_file, "w") as fpJson:
         json.dump(dictPaInput, fpJson, sort_keys=True, indent=4)
@@ -190,7 +192,29 @@ def test_open_edit_session(uut, mocker):
 
 
 def test_save_edit_session(uut):
-    # Define reference text and generated filename
+    """Tests StateManager's save json session file functionality.
+    The tested function 'save_edit_session()' converts the embedded Changeset
+    queue into a a list of Path/Action tuple pairs, then a dict, which dumps
+    via the json module into a json file of paths and associated actions.
+
+    Test approach:
+    1. The StateManager's internal queue is populated with Path/Action data
+    leveraging the utility function: __path_action_list_2_queue()
+    2. The StateManager function is invoked to write the contents of the queue
+    (which is the current edit session's undeployed operations) to a json
+    file.
+    3. Independently create json objects from the output file and from a
+    json text string. Compare those objects.
+    the reference file.
+    3. The calls and arguments to the AncillaryTrustDatabaseAdmin's (ATDA)
+    on_files_added() and on_files_deleted() are verified and compared to the
+    expected arguments.
+
+    ToDo: Research if json is the appropriate format for maintaining
+    session operation ordering which may/may not matter if flattened.
+"""
+
+    # Define reference json text and generated filename
     tmp_file_out = "/tmp/FaPolicyAnalyzerUnitTestOutput.tmp.json"
 
     jsonText = '''{
@@ -209,8 +233,9 @@ def test_save_edit_session(uut):
     uut._StateManager__path_action_list_2_queue(listPaTuples)
     uut.save_edit_session(tmp_file_out)
 
-    # Independently create json objects and Compare the reference w/the
-    # generated one created from the json file.
+    # Independently create json objects from the output file and from the
+    # json text string above. Compare the reference object
+    # w/the object created from the json file.
     with open(tmp_file_out) as fpJson:
         strJsonReference = json.dumps(json.loads(jsonText), sort_keys=True)
         strJsonGeneratedFile = json.dumps(json.load(fpJson), sort_keys=True)
@@ -237,6 +262,11 @@ def test_path_action_dict_to_list(uut):
 
 
 def test_path_action_list_2_queue(uut):
+    """Test: The utility function, __path_action_list_2_queue() loads the 
+    internal queue with test data. The contents of the queue is then dumped
+    using  another utility, get_path_action_list(). Those input and output 
+    data lists are then compared.
+"""
     listPaTuples = [
         ("/data_space/man_from_mars.txt", "Add"),
         ("/data_space/this/is/a/longer/path/now_is_the_time.txt", "Del"),
