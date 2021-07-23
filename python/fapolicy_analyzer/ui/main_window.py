@@ -72,7 +72,6 @@ class MainWindow(UIWidget):
         logging.debug("Callback entered: MainWindow::on_openMenu_activate()")
         # Display file chooser dialog
         fcd = Gtk.FileChooserDialog("Select An Edit Session File To Open",
-                                    # strings.ADD_FILE_BUTTON_LABEL,
                                     self.windowTopLevel,
                                     Gtk.FileChooserAction.OPEN,
                                     (
@@ -109,13 +108,12 @@ class MainWindow(UIWidget):
         logging.debug("Callback entered: MainWindow::on_saveAsMenu_activate()")
         # Display file chooser dialog
         fcd = Gtk.FileChooserDialog("Save As...",
-                                    # strings.ADD_FILE_BUTTON_LABEL,
                                     self.windowTopLevel,
                                     Gtk.FileChooserAction.SAVE,
                                     (
                                         Gtk.STOCK_CANCEL,
                                         Gtk.ResponseType.CANCEL,
-                                        Gtk.STOCK_ADD,
+                                        Gtk.STOCK_SAVE,
                                         Gtk.ResponseType.OK,
                                     ),
                                     )

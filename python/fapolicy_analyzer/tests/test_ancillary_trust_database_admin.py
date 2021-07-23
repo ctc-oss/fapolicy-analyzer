@@ -240,10 +240,8 @@ def test_on_file_deleted_empty(widget, state):
 def test_on_session_load(widget, mocker):
     # Submit to flake8/linting - Line was too long
     strModule = "ui.ancillary_trust_database_admin.AncillaryTrustDatabaseAdmin"
-    mockAdd = mocker.patch("{}.on_files_added".format(strModule),
-                           return_value=True)
-    mockDel = mocker.patch("{}.on_files_deleted".format(strModule),
-                           return_value=True)
+    mockAdd = mocker.patch("{}.on_files_added".format(strModule))
+    mockDel = mocker.patch("{}.on_files_deleted".format(strModule))
 
     listPaTuples = [("/data_space/man_from_mars.txt",
                      "Add"),
