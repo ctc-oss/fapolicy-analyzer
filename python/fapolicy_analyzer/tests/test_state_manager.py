@@ -262,9 +262,9 @@ def test_path_action_dict_to_list(uut):
 
 
 def test_path_action_list_2_queue(uut):
-    """Test: The utility function, __path_action_list_2_queue() loads the 
+    """Test: The utility function, __path_action_list_2_queue() loads the
     internal queue with test data. The contents of the queue is then dumped
-    using  another utility, get_path_action_list(). Those input and output 
+    using  another utility, get_path_action_list(). Those input and output
     data lists are then compared.
 """
     listPaTuples = [
