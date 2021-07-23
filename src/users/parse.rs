@@ -1,24 +1,26 @@
-use nom::bytes::complete::tag;
+use nom::bytes::complete::{is_not, tag};
 use nom::character::complete::{alphanumeric1, digit1};
 use nom::combinator::opt;
+use nom::multi::separated_list0;
 use nom::sequence::terminated;
 
-use crate::users::User;
+use crate::users::{Group, User};
 
 /// # An /etc/passwd User parser
-/// Simple parser for the passwd format.
-/// Reference https://tldp.org/LDP/lame/LAME/linux-admin-made-easy/shadow-file-formats.html
+/// Simple parser for the passwd file format.
+/// Reference https://man7.org/linux/man-pages/man5/passwd.5.html
 ///
 /// ## Fields
 /// We do not use all of these fields, they are listed here for reference
 ///
+/// Each line of the file describes a single user and contains seven colon-separated fields:
 /// ```plain
 /// daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
 ///    1   2 3 4    5       6             7
 /// ```
 ///
 /// 1. Username
-/// 2. An "x" in the password field
+/// 2. Password (either the encrypted user password, an asterisk (*), or the letter 'x')
 /// 3. Numeric user id
 /// 4. Numeric group id
 /// 5. Full name of user
@@ -50,6 +52,42 @@ pub fn user(i: &str) -> nom::IResult<&str, User> {
     }
 }
 
+/// # An /etc/group Group parser
+/// Simple parser for the group file format.
+/// Reference https://man7.org/linux/man-pages/man5/group.5.html
+///
+/// ## Fields
+/// We do not use all of these fields, they are listed here for reference
+///
+/// Each line of the file describes a single group and contains four colon-separated fields:
+/// ```plain
+/// group_name:password:GID:user_list
+/// ```
+/// 1. Groupname
+/// 2. Password, either the encrypted user password, an asterisk (*), or the letter 'x'
+/// 3. Numeric group id
+/// 4. User list, separated by commas
+///
+pub fn group(i: &str) -> nom::IResult<&str, Group> {
+    match nom::combinator::complete(nom::sequence::tuple((
+        terminated(alphanumeric1, tag(":")),
+        terminated(opt(tag("x")), tag(":")),
+        terminated(digit1, tag(":")),
+        separated_list0(tag(","), is_not(",")),
+    )))(i)
+    {
+        Ok((remaining_input, (user, _, gid, list))) => Ok((
+            remaining_input,
+            Group {
+                name: user.into(),
+                gid: gid.parse().unwrap(),
+                users: list.iter().map(|s| s.to_string()).collect(),
+            },
+        )),
+        Err(e) => Err(e),
+    }
+}
+
 fn any(i: &str) -> nom::IResult<&str, &str> {
     nom::bytes::complete::is_not(":")(i)
 }
@@ -59,7 +97,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn parse_entry() {
+    fn parse_passwd_entry() {
         let (rem, u) = user("daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin")
             .ok()
             .unwrap();
@@ -70,5 +108,26 @@ mod tests {
         assert_eq!(1, u.gid);
         assert_eq!("/usr/sbin", &u.home);
         assert_eq!("/usr/sbin/nologin", &u.shell);
+    }
+
+    #[test]
+    fn parse_groups_entry() {
+        let (rem, g) = group("root:x:0:").ok().unwrap();
+        assert!(rem.is_empty());
+        assert_eq!("root", &g.name);
+        assert_eq!(0, g.gid);
+        assert!(g.users.is_empty());
+
+        let (rem, g) = group("tty:x:5:syslog").ok().unwrap();
+        assert!(rem.is_empty());
+        assert_eq!("tty", &g.name);
+        assert_eq!(5, g.gid);
+        assert_eq!(vec!["syslog"], g.users);
+
+        let (rem, g) = group("fake:x:999:a,b,c").ok().unwrap();
+        assert!(rem.is_empty());
+        assert_eq!("fake", &g.name);
+        assert_eq!(999, g.gid);
+        assert_eq!(vec!["a", "b", "c"], g.users);
     }
 }

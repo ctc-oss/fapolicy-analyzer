@@ -3,13 +3,13 @@ use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
 /// # User
-/// Represents the /etc/passwd User
+/// Represents a /etc/passwd User
 ///
 #[derive(Clone, Debug, PartialEq)]
 pub struct User {
     pub name: String,
-    pub uid: i32,
-    pub gid: i32,
+    pub uid: u32,
+    pub gid: u32,
     pub home: String,
     pub shell: String,
 }
