@@ -1,10 +1,15 @@
 import logging
 from enum import Enum
 from events import Events
-from fapolicy_analyzer import Changeset
+from fapolicy_analyzer import Changeset, System
+from os import path
 from collections import OrderedDict
+from datetime import datetime as DT
+import atexit
+import os
+import glob
+import time
 import json
-
 
 class NotificationType(Enum):
     ERROR = "error"
@@ -17,6 +22,8 @@ class StateManager(Events):
     """A singleton wrapper class for maintaining global app state and changesets
     - Changeset FIFO queue
     - Current working Changesets
+    - Edit session tmp file management (default location is under /tmp which
+      is assumed to be persistent between reboots
 
     A notify object will have its state_event() callback invoked upon state
     changes occuring in the StateManager instance.
@@ -29,27 +36,47 @@ class StateManager(Events):
         "ev_user_session_loaded"
     ]
 
-    def __init__(self):
+    def __init__(self,
+                 tmpFileBasename="/tmp/FaCurrentSession.tmp",
+                 iTmpFileCount=2):
         Events.__init__(self)
+        self.system = System()
         self.listChangeset = []  # FIFO queue
         self.listUndoChangeset = []  # Undo Stack
         self.bDirtyQ = False
         self.systemNotification = None
+        self.__tmpFileBasename = tmpFileBasename
+        self.__listAutosavedFilenames = []
+        self.__iTmpFileCount = iTmpFileCount
 
+        # Register cleanup callback function
+        atexit.register(self.cleanup)
+        
+    def cleanup(self):
+        """StateManager singleton / global object clean-up
+effectively the StateManager's destructor."""
+        logging.debug("StateManager::cleanup()")
+        self.__force_cleanup_autosave_sessions()
+
+    ######################## Changeset Queue ############################## 
     def add_changeset_q(self, change_set):
         """Add the change_set argument to the end of the FIFO queue"""
         self.listChangeset.append(change_set)
+        self.autosave_edit_session()
         self.__update_dirty_queue()
 
     def next_changeset_q(self):
         """Remove the next changeset from the front of the FIFO queue"""
         retChangeSet = self.listChangeset.pop(0)
+        self.autosave_edit_session()
         self.__update_dirty_queue()
         return retChangeSet
 
     def del_changeset_q(self):
         """Delete the current Changeset FIFO queue"""
         self.listChangeset.clear()
+        # Remove tmp files
+        self.__cleanup_autosave_sessions()
         return self.__update_dirty_queue()
 
     def get_changeset_q(self):
@@ -65,6 +92,7 @@ class StateManager(Events):
         if self.listChangeset:
             csTemp = self.listChangeset.pop()
             self.listUndoChangeset.append(csTemp)
+            self.autosave_edit_session()
             self.__update_dirty_queue()
         return self.get_changeset_q()
 
@@ -73,6 +101,7 @@ class StateManager(Events):
         if self.listUndoChangeset:
             csTemp = self.listUndoChangeset.pop()
             self.listChangeset.append(csTemp)
+            self.autosave_edit_session()
             self.__update_dirty_queue()
         return self.get_changeset_q()
 
@@ -160,7 +189,59 @@ deploy these changesets.
                 self.del_changeset_q()
             self.ev_user_session_loaded(listPA)
 
-    # ######################## Notification Events ##########################
+    ######################## Autosave file mgmt ###########################
+    def __cleanup_autosave_sessions(self):
+        """Deletes all current autosaved session files. These files were
+created during the current editing session, and are deleted after a deploy,
+or a session file open/restore operation."""
+        logging.debug("StateManager::__cleanup_autosave_sessions()")
+        print(self.__listAutosavedFilenames)
+        for f in self.__listAutosavedFilenames:
+            os.remove(f)
+        self.__listAutosavedFilenames.clear()
+        
+
+    def __force_cleanup_autosave_sessions(self):
+        """Brute force delete all detected autosave files"""
+        logging.debug("StateManager::__force_cleanup_autosave_sessions()")
+        strSearchPattern = self.__tmpFileBasename+"_*.json"
+        print("Search Pattern: {}".format(strSearchPattern))
+        listTmpFiles = glob.glob(strSearchPattern)
+        logging.debug("Glob search results: {}".format(listTmpFiles))
+        if listTmpFiles:
+            for f in listTmpFiles:
+                if os.path.isfile(f):
+                    logging.debug("Session file detected: {}".format(f))
+                    self.__listAutosavedFilenames.append(f)
+            self.__cleanup_autosave_sessions()
+
+    
+    def autosave_edit_session(self):
+        """Constructs a new tmp session filename w/timestamp, populates it with
+ the current session state, saves it, and deletes the oldest tmp session file"""
+        logging.debug("StateManager::autosave_edit_session()")
+        timestamp = DT.fromtimestamp(time.time()).strftime('%Y%m%d_%H%M%S_%f')
+        strFilename = self.__tmpFileBasename+"_"+timestamp+".json"
+        logging.debug("  Writing to: {}".format(strFilename))
+        try:
+            self.save_edit_session(strFilename)
+            self.__listAutosavedFilenames.append(strFilename)
+            logging.debug(self.__listAutosavedFilenames)
+            
+            # Delete oldest tmp file
+            if (len(self.__listAutosavedFilenames) > self.__iTmpFileCount):
+                self.__listAutosavedFilenames.sort().reverse()
+                strOldestFile = self.__listAutosavedFilenames[0]
+                logging.debug("Deleting: {}".format(strOldestFile))
+                os.remove(strOldestFile)
+                del(self.__listAutosavedFilenames[0])
+                print(self.__listAutosavedFilenames)
+                            
+        except IOError as error:
+            print("Warning: autosave_edit_session() failed: {}".format(error))
+            print("Continuing...")
+
+    ######################## Notification Events ##########################
     def add_system_notification(self,
                                 notification: str,
                                 notification_type: NotificationType):
