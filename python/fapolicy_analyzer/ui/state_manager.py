@@ -1,5 +1,9 @@
+import logging
 from enum import Enum
 from events import Events
+from fapolicy_analyzer import Changeset
+from collections import OrderedDict
+import json
 
 
 class NotificationType(Enum):
@@ -12,16 +16,17 @@ class NotificationType(Enum):
 class StateManager(Events):
     """A singleton wrapper class for maintaining global app state and changesets
     - Changeset FIFO queue
-    - Current working Changeset
+    - Current working Changesets
 
     A notify object will have its state_event() callback invoked upon state
     changes occuring in the StateManager instance.
     """
 
     __events__ = [
-        "changeset_queue_updated",
+        "ev_changeset_queue_updated",
         "system_notification_added",
         "system_notification_removed",
+        "ev_user_session_loaded"
     ]
 
     def __init__(self):
@@ -83,17 +88,82 @@ class StateManager(Events):
         Returns True is there are unapplied changes, False otherwise."""
         if self.bDirtyQ != self.is_dirty_queue():
             self.bDirtyQ = self.is_dirty_queue()
-            self.changeset_queue_updated()
+            self.ev_changeset_queue_updated()
         return self.bDirtyQ
 
+    # ##################### Queue conversion utilities #####################
     def get_path_action_list(self):
         # Iterate through the StateManagers Changeset list
         # Each changeset contains a dict with at least one Path/Action pair
+        # The rationale for the tuple format is the Gtk TreeView widget display
         return [t for e in self.listChangeset for t in e.get_path_action_map().items()]
 
-    def add_system_notification(
-        self, notification: str, notification_type: NotificationType
-    ):
+    def __path_action_list_2_queue(self, listPathAction):
+        """Converts a list of Path/Action tuples to populate changeset queue
+This is a utility function intended for unit testing and troubleshooting
+the StateManager and its interactions with interfacing objects. It is used to
+populate the internal queue structure with Changeset objects, however it does
+not exercise the full normal end to end data path which will normally apply and
+deploy these changesets.
+"""
+        for e in listPathAction:
+            cs = Changeset()
+            if e[1] == "Add":
+                cs.add_trust(e[0])
+            elif e[1] == "Del":
+                cs.del_trust(e[0])
+            else:
+                print("Error: Path/Action Pair: "
+                      "Unknown Action: {} {}".format(e[0], e[1]))
+                continue
+            self.add_changeset_q(cs)
+
+    def __path_action_list_to_dict(self):
+        """Convert Path/Action list of tuple pairs to dict for json xfer"""
+        dictPA = dict()
+        for t in self.get_path_action_list():
+            dictPA[t[0]] = t[1]
+        logging.debug("Path/Action Dict: {}".format(dictPA))
+        return dictPA
+
+    def __path_action_dict_to_list(self, dictPathAction):
+        """Convert Path/Action dict to list of tuple pairs for json xfer"""
+        listPaTuples = list()
+        for e in dictPathAction.keys():
+            listPaTuples.append((e, dictPathAction[e]))
+        logging.debug("PathAction Tuple List: {}".format(listPaTuples))
+        return listPaTuples
+
+    # ######################## Edit Session Mgmt ############################
+    def save_edit_session(self, strJsonFile):
+        """Save the pending changeset queue to the specified json file"""
+        logging.debug("StateManager::save_edit_session({})".format(strJsonFile))
+        with open(strJsonFile, "w") as fp:
+            json.dump(self.__path_action_list_to_dict(), fp,
+                      sort_keys=True,
+                      indent=4)
+
+    def open_edit_session(self, strJsonFile):
+        """Save the FIFO changeset queue to the specified json file on disk"""
+        logging.debug("Entered StateManager::open_edit_session({})"
+                      .format(strJsonFile))
+        listPA = None
+        with open(strJsonFile, "r") as fp:
+            d = json.load(fp, object_pairs_hook=OrderedDict)
+            logging.debug("Loaded dict = ", d)
+            listPA = self.__path_action_dict_to_list(d)
+            logging.debug("StateManager::open_edit_session():{}".format(listPA))
+
+            # Deleting current edit session history prior to replacing it.
+            if listPA:
+                # ToDo: Delete pending ops in the ATDA's embedded TreeView
+                self.del_changeset_q()
+            self.ev_user_session_loaded(listPA)
+
+    # ######################## Notification Events ##########################
+    def add_system_notification(self,
+                                notification: str,
+                                notification_type: NotificationType):
         self.systemNotification = (notification, notification_type)
         self.system_notification_added(self.systemNotification)
 

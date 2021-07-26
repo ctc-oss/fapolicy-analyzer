@@ -1,5 +1,6 @@
 import gi
 import ui.strings as strings
+import logging
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, GLib
@@ -29,6 +30,7 @@ class AncillaryTrustDatabaseAdmin(UIWidget):
         )
         self.trustFileList.trust_selection_changed += self.on_trust_selection_changed
         self.trustFileList.files_added += self.on_files_added
+        self.trustFileList.files_deleted += self.on_files_deleted
         self.get_object("leftBox").pack_start(
             self.trustFileList.get_ref(), True, True, 0
         )
@@ -38,7 +40,11 @@ class AncillaryTrustDatabaseAdmin(UIWidget):
             self.trustFileDetails.get_ref(), True, True, 0
         )
 
-        stateManager.changeset_queue_updated += self.on_changeset_updated
+        # To update UI elements, e.g. Deploy button
+        stateManager.ev_changeset_queue_updated += self.on_changeset_updated
+
+        # To reapply user trust add/delete requests from opened session file
+        stateManager.ev_user_session_loaded += self.on_session_load
 
     def __status_markup(self, status):
         s = status.lower()
@@ -115,6 +121,10 @@ SHA256: {fs.sha(trust.path)}"""
             untrustBtn.set_sensitive(False)
             self.trustFileDetails.clear()
 
+    def on_files_deleted(self, files):
+        if files:
+            self.delete_trusted_files(*files)
+
     def on_files_added(self, files):
         if files:
             self.add_trusted_files(*files)
@@ -128,18 +138,23 @@ SHA256: {fs.sha(trust.path)}"""
             self.delete_trusted_files(self.selectedFile)
 
     def on_deployBtn_clicked(self, *args):
+        # Get list of human-readable undeployed path/operation pairs
+        listPathActionTuples = stateManager.get_path_action_list()
+        logging.debug(listPathActionTuples)
         parent = self.get_ref().get_toplevel()
         dlgDeployList = ConfirmInfoDialog(parent)
-        dlgDeployList.load_path_action_list(stateManager.get_path_action_list())
+        dlgDeployList.load_path_action_list(listPathActionTuples)
         confirm_resp = dlgDeployList.run()
         dlgDeployList.hide()
 
         if confirm_resp == Gtk.ResponseType.YES:
             try:
                 self.system.deploy()
-            except BaseException:  # BaseException to catch pyo3_runtime.PanicException
+            except BaseException:
+                # BaseException to catch pyo3_runtime.PanicException
                 stateManager.add_system_notification(
-                    "An error occurred trying to deploy the changes. Please try again.",
+                    "An error occurred trying to deploy the changes. "
+                    "Please try again.",
                     NotificationType.ERROR,
                 )
                 return
@@ -156,3 +171,26 @@ SHA256: {fs.sha(trust.path)}"""
     def on_changeset_updated(self):
         deployBtn = self.get_object("deployBtn")
         deployBtn.set_sensitive(stateManager.is_dirty_queue())
+
+    def on_session_load(self, listPaPrs):
+        # flake doesn't like long lines so...
+        strFunction = "AncillaryTrustAdmin::on_session_load(): "
+        logging.debug(strFunction + "{} {}".format(len(listPaPrs), listPaPrs))
+        listPath2Add = []
+        listPath2Del = []
+
+        for e in listPaPrs:
+            logging.debug(e)
+            strPath = e[0]
+            strAction = e[1]
+            if strAction == "Add":
+                listPath2Add.append(strPath)
+            elif strAction == "Del":
+                listPath2Del.append(strPath)
+            else:
+                print("on_session_load(): Unknown action: {}".format(strAction))
+
+        # Clear current session from TreeView store  prior to add/deleting files
+        # Here!
+        self.on_files_added(listPath2Add)
+        self.on_files_deleted(listPath2Del)

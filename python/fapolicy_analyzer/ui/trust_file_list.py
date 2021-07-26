@@ -13,6 +13,7 @@ class TrustFileList(SearchableList):
         self.__events__ = [
             *super().__events__,
             "files_added",
+            "files_deleted",
             "trust_selection_changed",
         ]
         buttons = [] if read_only else [self.__addButton()]

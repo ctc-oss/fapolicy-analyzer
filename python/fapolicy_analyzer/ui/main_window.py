@@ -1,3 +1,4 @@
+from os import path
 import logging
 import gi
 
@@ -21,7 +22,8 @@ def router(selection):
 class MainWindow(UIWidget):
     def __init__(self):
         super().__init__()
-        stateManager.changeset_queue_updated += self.on_changeset_updated
+        self.strSessionFilename = None
+        stateManager.ev_changeset_queue_updated += self.on_changeset_updated
         self.window = self.get_ref()
         self.windowTopLevel = self.window.get_toplevel()
         self.strTopLevelTitle = self.windowTopLevel.get_title()
@@ -30,10 +32,7 @@ class MainWindow(UIWidget):
         self.get_object("overlay").add_overlay(toaster.get_ref())
 
         # Disable 'File' menu items until backend support is available
-        self.get_object("openMenu").set_sensitive(False)
         self.get_object("restoreMenu").set_sensitive(False)
-        self.get_object("saveMenu").set_sensitive(False)
-        self.get_object("saveAsMenu").set_sensitive(False)
 
         self.window.show_all()
 
@@ -58,9 +57,41 @@ class MainWindow(UIWidget):
     def on_delete_event(self, *args):
         return self.__unapplied_changes()
 
+    def __apply_file_filters(self, dialog):
+        fileFilterJson = Gtk.FileFilter()
+        fileFilterJson.set_name("FA Session files")
+        fileFilterJson.add_pattern("*.json")
+        dialog.add_filter(fileFilterJson)
+
+        fileFilterAny = Gtk.FileFilter()
+        fileFilterAny.set_name("Any files")
+        fileFilterAny.add_pattern("*")
+        dialog.add_filter(fileFilterAny)
+
     def on_openMenu_activate(self, menuitem, data=None):
         logging.debug("Callback entered: MainWindow::on_openMenu_activate()")
-        pass
+        # Display file chooser dialog
+        fcd = Gtk.FileChooserDialog("Select An Edit Session File To Open",
+                                    self.windowTopLevel,
+                                    Gtk.FileChooserAction.OPEN,
+                                    (
+                                        Gtk.STOCK_CANCEL,
+                                        Gtk.ResponseType.CANCEL,
+                                        Gtk.STOCK_OPEN,
+                                        Gtk.ResponseType.OK,
+                                    ),
+                                    )
+        self.__apply_file_filters(fcd)
+        response = fcd.run()
+        fcd.hide()
+
+        if response == Gtk.ResponseType.OK:
+            strFilename = fcd.get_filename()
+            if path.isfile(strFilename):
+                self.strSessionFilename = strFilename
+                stateManager.open_edit_session(self.strSessionFilename)
+                # ToDo: Exception handling
+        fcd.destroy()
 
     def on_restoreMenu_activate(self, menuitem, data=None):
         logging.debug("Callback entered: MainWindow::on_restoreMenu_activate()")
@@ -68,11 +99,36 @@ class MainWindow(UIWidget):
 
     def on_saveMenu_activate(self, menuitem, data=None):
         logging.debug("Callback entered: MainWindow::on_saveMenu_activate()")
-        pass
+        if not self.strSessionFilename:
+            self.on_saveAsMenu_activate(menuitem, None)
+        else:
+            stateManager.save_edit_session(self.strSessionFilename)
 
     def on_saveAsMenu_activate(self, menuitem, data=None):
         logging.debug("Callback entered: MainWindow::on_saveAsMenu_activate()")
-        pass
+        # Display file chooser dialog
+        fcd = Gtk.FileChooserDialog("Save As...",
+                                    self.windowTopLevel,
+                                    Gtk.FileChooserAction.SAVE,
+                                    (
+                                        Gtk.STOCK_CANCEL,
+                                        Gtk.ResponseType.CANCEL,
+                                        Gtk.STOCK_SAVE,
+                                        Gtk.ResponseType.OK,
+                                    ),
+                                    )
+
+        self.__apply_file_filters(fcd)
+        fcd.set_do_overwrite_confirmation(True)
+        response = fcd.run()
+        fcd.hide()
+
+        if response == Gtk.ResponseType.OK:
+            strFilename = fcd.get_filename()
+            self.strSessionFilename = strFilename
+            stateManager.save_edit_session(self.strSessionFilename)
+            # Verify no exceptions
+        fcd.destroy()
 
     def on_aboutMenu_activate(self, menuitem, data=None):
         aboutDialog = self.get_object("aboutDialog")
@@ -97,5 +153,6 @@ class MainWindow(UIWidget):
 
     def on_changeset_updated(self):
         """The callback function invoked from the StateManager when
+        logging.debug("MainWindow::on_changeset_updated()")
         state changes."""
         self.set_modified_titlebar(stateManager.is_dirty_queue())

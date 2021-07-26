@@ -100,6 +100,18 @@ def test_on_confirm_deployment(widget, confirm_dialog, revert_dialog):
         instance.deploy.assert_called()
 
 
+@pytest.mark.parametrize("confirm_resp", [Gtk.ResponseType.YES])
+@pytest.mark.parametrize("revert_resp", [Gtk.ResponseType.NO])
+def test_on_confirm_deployment_w_exception(widget, mocker, confirm_dialog, revert_dialog):
+    mockFunc = mocker.patch("fapolicy_analyzer.System.deploy",
+                            side_effect=BaseException)
+
+    parent = Gtk.Window()
+    parent.add(widget.get_ref())
+    widget.on_deployBtn_clicked()
+    mockFunc.assert_called()
+
+
 @pytest.mark.parametrize("confirm_resp", [Gtk.ResponseType.NO])
 def test_on_neg_confirm_deployment(widget, confirm_dialog):
     parent = Gtk.Window()
@@ -201,7 +213,7 @@ def test_on_untrustBtn_clicked_empty(widget, state):
 def test_on_file_added(widget, state):
     assert len(state.get_changeset_q()) == 0
     tmpFile = tempfile.NamedTemporaryFile()
-    widget.trustFileList.files_added([tmpFile.name])
+    widget.on_files_added([tmpFile.name])
     assert len(state.get_changeset_q()) == 1
 
 
@@ -209,3 +221,37 @@ def test_on_file_added_empty(widget, state):
     assert len(state.get_changeset_q()) == 0
     widget.on_files_added(None)
     assert len(state.get_changeset_q()) == 0
+
+
+def test_on_file_deleted(widget, state):
+    assert len(state.get_changeset_q()) == 0
+    tmpFile = tempfile.NamedTemporaryFile()
+    widget.on_files_deleted([tmpFile.name])
+    assert len(state.get_changeset_q()) == 1
+
+
+def test_on_file_deleted_empty(widget, state):
+    assert len(state.get_changeset_q()) == 0
+    widget.on_files_deleted(None)
+    assert len(state.get_changeset_q()) == 0
+
+
+# ########################## Edit Session Related ####################
+def test_on_session_load(widget, mocker):
+    # Submit to flake8/linting - Line was too long
+    strModule = "ui.ancillary_trust_database_admin.AncillaryTrustDatabaseAdmin"
+    mockAdd = mocker.patch("{}.on_files_added".format(strModule))
+    mockDel = mocker.patch("{}.on_files_deleted".format(strModule))
+
+    listPaTuples = [("/data_space/man_from_mars.txt",
+                     "Add"),
+                    ("/data_space/this/is/a/longer/path/now_is_the_time.txt",
+                     "Del"),
+                    ("/data_space/Integration.json", "Add")]
+    listPaAddedExpected = ["/data_space/man_from_mars.txt",
+                           "/data_space/Integration.json"]
+    listPaDeletedExpected = ["/data_space/this/is/a/longer/path/now_is_the_time.txt"]
+
+    widget.on_session_load(listPaTuples)
+    mockAdd.assert_called_with(listPaAddedExpected)
+    mockDel.assert_called_with(listPaDeletedExpected)
