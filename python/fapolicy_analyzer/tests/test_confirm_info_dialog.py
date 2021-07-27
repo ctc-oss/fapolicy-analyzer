@@ -5,6 +5,7 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from helpers import delayed_gui_action
 from ui.confirm_info_dialog import ConfirmInfoDialog
+from ui.strings import CHANGESET_ACTION_ADD, CHANGESET_ACTION_DEL
 
 
 def test_creates_widget():
@@ -28,11 +29,18 @@ def test_dialog_actions_responses():
 
 
 def test_load_path_action_list():
-    widget = ConfirmInfoDialog(parent=Gtk.Window())
     path_action_list = [("/tmp/fu.txt", "Add"), ("/tmp/bar.txt", "Del")]
-    widget.load_path_action_list(path_action_list)
+    widget = ConfirmInfoDialog(Gtk.Window(), path_action_list)
 
-    # Verify the contents of the ConfirmInfoDialog.ListStore
-    for i, j in zip(widget.changeStore, range(2)):
-        # Note: tuples are reversed when loading Gtk.ListStore for display
-        assert (i[1], i[0]) == path_action_list[j]
+    scrollWindow = next(
+        iter(
+            filter(
+                lambda x: isinstance(x, Gtk.ScrolledWindow),
+                widget.get_content_area().get_children(),
+            )
+        )
+    )
+    view = scrollWindow.get_children()[0]
+    rows = [x for x in view.get_model()]
+    assert (CHANGESET_ACTION_ADD, path_action_list[0][0]) == (rows[0][0], rows[0][1])
+    assert (CHANGESET_ACTION_DEL, path_action_list[1][0]) == (rows[1][0], rows[1][1])

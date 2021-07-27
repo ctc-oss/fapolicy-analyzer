@@ -43,3 +43,20 @@ def test_updates_trust_details(widget, mocker):
         "stat: cannot stat '/tmp/foo': No such file or directory\nSHA256: abc"
     )
     widget.trustFileDetails.set_trust_status.assert_called_with("This file is trusted.")
+
+
+def test_disables_add_button(widget):
+    addBtn = widget.get_object("addBtn")
+    addBtn.set_sensitive(True)
+    assert addBtn.get_sensitive()
+    widget.on_trust_selection_changed(None)
+    assert not addBtn.get_sensitive()
+
+
+def test_fires_file_added_to_ancillary_trust(widget):
+    handler = MagicMock()
+    widget.file_added_to_ancillary_trust += handler
+    widget.selectedFile = MagicMock(path="foo")
+    addBtn = widget.get_object("addBtn")
+    addBtn.clicked()
+    handler.assert_called_with("foo")
