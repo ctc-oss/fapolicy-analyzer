@@ -37,7 +37,7 @@ class StateManager(Events):
     ]
 
     def __init__(self,
-                 bAutoSaveEnabled=False,
+                 bAutoSaveEnabled=True,
                  tmpFileBasename="/tmp/FaCurrentSession.tmp",
                  iTmpFileCount=2):
         Events.__init__(self)
