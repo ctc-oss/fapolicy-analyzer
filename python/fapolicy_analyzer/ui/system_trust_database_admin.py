@@ -26,9 +26,7 @@ class SystemTrustDatabaseAdmin(UIWidget, Events):
         self.executor = ThreadPoolExecutor(max_workers=1)
 
         self.trustFileList = TrustFileList(
-            trust_func=self.__load_trust,
-            markup_func=self.__status_markup,
-            read_only=True,
+            trust_func=self.__load_trust, markup_func=self.__status_markup
         )
         self.trustFileList.trust_selection_changed += self.on_trust_selection_changed
         self.get_object("leftBox").pack_start(

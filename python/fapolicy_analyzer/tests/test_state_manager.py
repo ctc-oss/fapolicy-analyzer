@@ -213,7 +213,7 @@ def test_open_edit_session(uut, mocker):
     uut.open_edit_session(tmp_file)
 
     # Clean up of the json reference file
-    #os.system("rm -f {}".format(tmp_file))
+    os.system("rm -f {}".format(tmp_file))
 
     # Verify the function were called w/appropriate args
     mockAdd.assert_called_with(listExpectedPathAdds)

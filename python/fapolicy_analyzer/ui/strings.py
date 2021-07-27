@@ -17,6 +17,10 @@ ANCILLARY_TRUST_TAB_LABEL = _("Ancillary Trust Database")
 
 FILE_LIST_TRUST_HEADER = _("Trust")
 FILE_LIST_FILE_HEADER = _("File")
+FILE_LIST_CHANGES_HEADER = _("Changes")
+
+CHANGESET_ACTION_ADD = _("Add")
+CHANGESET_ACTION_DEL = _("Delete")
 
 ADD_FILE_BUTTON_LABEL = _("Add File")
 

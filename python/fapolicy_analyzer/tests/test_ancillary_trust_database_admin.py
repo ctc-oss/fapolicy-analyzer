@@ -6,8 +6,9 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from unittest.mock import MagicMock, patch
+from fapolicy_analyzer import Trust
 from ui.ancillary_trust_database_admin import AncillaryTrustDatabaseAdmin
-from ui.configs import Colors
+from ui.strings import TRUSTED_FILE_MESSAGE, UNKNOWN_FILE_MESSAGE
 from ui.state_manager import stateManager
 
 
@@ -52,21 +53,6 @@ def test_creates_widget(widget):
     assert type(widget.get_ref()) is Gtk.Box
 
 
-def test_status_markup(widget):
-    assert widget._AncillaryTrustDatabaseAdmin__status_markup("T") == (
-        "<b><u>T</u></b>/D",
-        Colors.LIGHT_GREEN,
-    )
-    assert widget._AncillaryTrustDatabaseAdmin__status_markup("D") == (
-        "T/<b><u>D</u></b>",
-        Colors.LIGHT_RED,
-    )
-    assert widget._AncillaryTrustDatabaseAdmin__status_markup("foo") == (
-        "T/D",
-        Colors.LIGHT_YELLOW,
-    )
-
-
 def test_updates_trust_details(widget, mocker):
     mocker.patch.object(widget.trustFileDetails, "set_in_database_view")
     mocker.patch.object(widget.trustFileDetails, "set_on_file_system_view")
@@ -74,7 +60,7 @@ def test_updates_trust_details(widget, mocker):
     mocker.patch(
         "ui.ancillary_trust_database_admin.fs.stat", return_value="stat for foo file"
     )
-    trust = MagicMock(status="T", path="/tmp/foo", size=1, hash="abc")
+    trust = MagicMock(status="T", path="/tmp/foo", size=1, hash="abc", spec=Trust)
     widget.on_trust_selection_changed(trust)
     widget.trustFileDetails.set_in_database_view.assert_called_with(
         "File: /tmp/foo\nSize: 1\nSHA256: abc"
@@ -82,7 +68,23 @@ def test_updates_trust_details(widget, mocker):
     widget.trustFileDetails.set_on_file_system_view.assert_called_with(
         "stat for foo file\nSHA256: abc"
     )
-    widget.trustFileDetails.set_trust_status.assert_called_with("This file is trusted.")
+    widget.trustFileDetails.set_trust_status.assert_called_with(TRUSTED_FILE_MESSAGE)
+
+
+def test_updates_trust_details_for_deleted_files(widget, mocker):
+    mocker.patch.object(widget.trustFileDetails, "set_in_database_view")
+    mocker.patch.object(widget.trustFileDetails, "set_on_file_system_view")
+    mocker.patch.object(widget.trustFileDetails, "set_trust_status")
+    mocker.patch(
+        "ui.ancillary_trust_database_admin.fs.stat", return_value="stat for foo file"
+    )
+    trust = MagicMock(path="/tmp/foo")
+    widget.on_trust_selection_changed(trust)
+    widget.trustFileDetails.set_in_database_view.assert_not_called()
+    widget.trustFileDetails.set_on_file_system_view.assert_called_with(
+        "stat for foo file\nSHA256: abc"
+    )
+    widget.trustFileDetails.set_trust_status.assert_called_with(UNKNOWN_FILE_MESSAGE)
 
 
 @pytest.mark.parametrize("confirm_resp", [Gtk.ResponseType.YES])
@@ -102,9 +104,12 @@ def test_on_confirm_deployment(widget, confirm_dialog, revert_dialog):
 
 @pytest.mark.parametrize("confirm_resp", [Gtk.ResponseType.YES])
 @pytest.mark.parametrize("revert_resp", [Gtk.ResponseType.NO])
-def test_on_confirm_deployment_w_exception(widget, mocker, confirm_dialog, revert_dialog):
-    mockFunc = mocker.patch("fapolicy_analyzer.System.deploy",
-                            side_effect=BaseException)
+def test_on_confirm_deployment_w_exception(
+    widget, mocker, confirm_dialog, revert_dialog
+):
+    mockFunc = mocker.patch(
+        "fapolicy_analyzer.System.deploy", side_effect=BaseException
+    )
 
     parent = Gtk.Window()
     parent.add(widget.get_ref())
@@ -243,13 +248,15 @@ def test_on_session_load(widget, mocker):
     mockAdd = mocker.patch("{}.on_files_added".format(strModule))
     mockDel = mocker.patch("{}.on_files_deleted".format(strModule))
 
-    listPaTuples = [("/data_space/man_from_mars.txt",
-                     "Add"),
-                    ("/data_space/this/is/a/longer/path/now_is_the_time.txt",
-                     "Del"),
-                    ("/data_space/Integration.json", "Add")]
-    listPaAddedExpected = ["/data_space/man_from_mars.txt",
-                           "/data_space/Integration.json"]
+    listPaTuples = [
+        ("/data_space/man_from_mars.txt", "Add"),
+        ("/data_space/this/is/a/longer/path/now_is_the_time.txt", "Del"),
+        ("/data_space/Integration.json", "Add"),
+    ]
+    listPaAddedExpected = [
+        "/data_space/man_from_mars.txt",
+        "/data_space/Integration.json",
+    ]
     listPaDeletedExpected = ["/data_space/this/is/a/longer/path/now_is_the_time.txt"]
 
     widget.on_session_load(listPaTuples)

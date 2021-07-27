@@ -1,7 +1,7 @@
 import logging
 from enum import Enum
 from events import Events
-from fapolicy_analyzer import Changeset, System
+from fapolicy_analyzer import Changeset
 from collections import OrderedDict
 from datetime import datetime as DT
 import atexit
