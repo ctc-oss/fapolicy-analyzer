@@ -3,7 +3,8 @@ import os
 import pytest
 import json
 from unittest.mock import MagicMock
-from ui.state_manager import stateManager, NotificationType
+from fapolicy_analyzer import Changeset
+from ui.state_manager import stateManager, StateManager, NotificationType
 
 
 # Set up; create UUT
@@ -22,6 +23,34 @@ def populated_queue(uut):
     uut.add_changeset_q(3)
     uut.add_changeset_q(4)
     return uut
+
+
+@pytest.fixture
+def uut_autosave_enabled(uut):
+    stateManager.set_autosave_enable(True)
+    yield stateManager
+    stateManager.del_changeset_q()
+    stateManager.systemNotification = None
+
+
+@pytest.fixture
+def uut_populated_w_changesets():
+    listExpectedChangeset = []
+    for i in range(4):
+        changeset = Changeset()
+        strFilename = "/tmp/filename{i}.txt"
+        modi = i%2
+        if modi%2 == 0:
+            # Even counts
+            changeset.add_trust(strFilename)
+        else:
+            # Odd counts
+            changeset.del_trust(strFilename)
+        listExpectedChangeset.append(changeset)
+
+    return listExpectedChangeset
+
+@pytest.fixture
 
 
 # test: add an element to an empty Q, verify Q contents
@@ -184,7 +213,7 @@ def test_open_edit_session(uut, mocker):
     uut.open_edit_session(tmp_file)
 
     # Clean up of the json reference file
-    os.system("rm -f {}".format(tmp_file))
+    #os.system("rm -f {}".format(tmp_file))
 
     # Verify the function were called w/appropriate args
     mockAdd.assert_called_with(listExpectedPathAdds)
@@ -243,6 +272,11 @@ def test_save_edit_session(uut):
 
     # Clean up tmp file
     os.system("rm -f {}".format(tmp_file_out))
+
+
+# ########################### Test Support Utilities #################
+def test_autosave_edit_session(uut_autosave_enabled):
+    assert True
 
 
 # ##################### Queue mgmt utilities #########################

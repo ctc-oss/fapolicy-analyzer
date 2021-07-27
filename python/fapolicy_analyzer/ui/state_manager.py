@@ -37,6 +37,7 @@ class StateManager(Events):
     ]
 
     def __init__(self,
+                 bAutoSaveEnabled=False,
                  tmpFileBasename="/tmp/FaCurrentSession.tmp",
                  iTmpFileCount=2):
         Events.__init__(self)
@@ -45,6 +46,7 @@ class StateManager(Events):
         self.listUndoChangeset = []  # Undo Stack
         self.bDirtyQ = False
         self.systemNotification = None
+        self.__bAutosaveEnabled = bAutoSaveEnabled
         self.__tmpFileBasename = tmpFileBasename
         self.__listAutosavedFilenames = []
         self.__iTmpFileCount = iTmpFileCount
@@ -58,17 +60,22 @@ effectively the StateManager's destructor."""
         logging.debug("StateManager::cleanup()")
         self.__force_cleanup_autosave_sessions()
 
-    # ####################### Changeset Queue ##############################
+    # ####################### Accessors Functions ####################
+    def set_autosave_enable(self, bEnableAutosave ):
+        logging.debug("StateManager: Enabling autosaving")
+        self.__bAutosaveEnabled = bEnableAutosave
+
+    # ####################### Changeset Queue ########################
     def add_changeset_q(self, change_set):
         """Add the change_set argument to the end of the FIFO queue"""
         self.listChangeset.append(change_set)
-        self.autosave_edit_session()
+        self.__autosave_edit_session()
         self.__update_dirty_queue()
 
     def next_changeset_q(self):
         """Remove the next changeset from the front of the FIFO queue"""
         retChangeSet = self.listChangeset.pop(0)
-        self.autosave_edit_session()
+        self.__autosave_edit_session()
         self.__update_dirty_queue()
         return retChangeSet
 
@@ -92,7 +99,7 @@ effectively the StateManager's destructor."""
         if self.listChangeset:
             csTemp = self.listChangeset.pop()
             self.listUndoChangeset.append(csTemp)
-            self.autosave_edit_session()
+            self.__autosave_edit_session()
             self.__update_dirty_queue()
         return self.get_changeset_q()
 
@@ -101,7 +108,7 @@ effectively the StateManager's destructor."""
         if self.listUndoChangeset:
             csTemp = self.listUndoChangeset.pop()
             self.listChangeset.append(csTemp)
-            self.autosave_edit_session()
+            self.__autosave_edit_session()
             self.__update_dirty_queue()
         return self.get_changeset_q()
 
@@ -204,7 +211,7 @@ or a session file open/restore operation."""
         """Brute force delete all detected autosave files"""
         logging.debug("StateManager::__force_cleanup_autosave_sessions()")
         strSearchPattern = self.__tmpFileBasename + "_*.json"
-        print("Search Pattern: {}".format(strSearchPattern))
+        logging.debug("Search Pattern: {}".format(strSearchPattern))
         listTmpFiles = glob.glob(strSearchPattern)
         logging.debug("Glob search results: {}".format(listTmpFiles))
         if listTmpFiles:
@@ -214,10 +221,15 @@ or a session file open/restore operation."""
                     self.__listAutosavedFilenames.append(f)
             self.__cleanup_autosave_sessions()
 
-    def autosave_edit_session(self):
+    def __autosave_edit_session(self):
         """Constructs a new tmp session filename w/timestamp, populates it with
  the current session state, saves it, and deletes the oldest tmp session file"""
-        logging.debug("StateManager::autosave_edit_session()")
+        logging.debug("StateManager::__autosave_edit_session()")
+
+        # Bypass if autosave is not enabled
+        if not self.__bAutosaveEnabled:
+            return
+        
         timestamp = DT.fromtimestamp(time.time()).strftime('%Y%m%d_%H%M%S_%f')
         strFilename = self.__tmpFileBasename + "_" + timestamp + ".json"
         logging.debug("  Writing to: {}".format(strFilename))
@@ -227,16 +239,17 @@ or a session file open/restore operation."""
             logging.debug(self.__listAutosavedFilenames)
 
             # Delete oldest tmp file
-            if (len(self.__listAutosavedFilenames) > self.__iTmpFileCount):
-                self.__listAutosavedFilenames.sort().reverse()
+            if (self.__listAutosavedFilenames and len(self.__listAutosavedFilenames) > self.__iTmpFileCount):
+                self.__listAutosavedFilenames.sort()
+                self.__listAutosavedFilenames.reverse()
                 strOldestFile = self.__listAutosavedFilenames[0]
                 logging.debug("Deleting: {}".format(strOldestFile))
                 os.remove(strOldestFile)
                 del(self.__listAutosavedFilenames[0])
-                print(self.__listAutosavedFilenames)
+                logging.debug(self.__listAutosavedFilenames)
 
         except IOError as error:
-            print("Warning: autosave_edit_session() failed: {}".format(error))
+            print("Warning: __autosave_edit_session() failed: {}".format(error))
             print("Continuing...")
 
     # ####################### Notification Events ##########################
