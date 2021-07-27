@@ -5,15 +5,14 @@ import logging
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, GLib
 from concurrent.futures import ThreadPoolExecutor
-from fapolicy_analyzer import Changeset, System
+from fapolicy_analyzer import Changeset, System, Trust
 from locale import gettext as _
 from fapolicy_analyzer.util.format import f
 from fapolicy_analyzer.util import fs  # noqa: F401
 from .ui_widget import UIWidget
-from .trust_file_list import TrustFileList
+from .ancillary_trust_file_list import AncillaryTrustFileList
 from .trust_file_details import TrustFileDetails
 from .deploy_confirm_dialog import DeployConfirmDialog
-from .configs import Colors
 from .state_manager import stateManager, NotificationType
 from .confirm_info_dialog import ConfirmInfoDialog
 
@@ -25,9 +24,7 @@ class AncillaryTrustDatabaseAdmin(UIWidget):
         self.executor = ThreadPoolExecutor(max_workers=1)
         self.selectedFile = None
 
-        self.trustFileList = TrustFileList(
-            trust_func=self.__load_trust, markup_func=self.__status_markup
-        )
+        self.trustFileList = AncillaryTrustFileList(trust_func=self.__load_trust)
         self.trustFileList.trust_selection_changed += self.on_trust_selection_changed
         self.trustFileList.files_added += self.on_files_added
         self.trustFileList.files_deleted += self.on_files_deleted
@@ -45,16 +42,6 @@ class AncillaryTrustDatabaseAdmin(UIWidget):
 
         # To reapply user trust add/delete requests from opened session file
         stateManager.ev_user_session_loaded += self.on_session_load
-
-    def __status_markup(self, status):
-        s = status.lower()
-        return (
-            ("<b><u>T</u></b>/D", Colors.LIGHT_GREEN)
-            if s == "t"
-            else ("T/<b><u>D</u></b>", Colors.LIGHT_RED)
-            if s == "d"
-            else ("T/D", Colors.LIGHT_YELLOW)
-        )
 
     def __load_trust(self, callback):
         def get_trust():
@@ -85,20 +72,21 @@ class AncillaryTrustDatabaseAdmin(UIWidget):
         trustBtn = self.get_object("trustBtn")
         untrustBtn = self.get_object("untrustBtn")
         if trust:
-            status = trust.status.lower()
+            status = getattr(trust, "status", "").lower()
             trusted = status == "t"
             trustBtn.set_sensitive(not trusted)
             untrustBtn.set_sensitive(trusted)
 
-            self.trustFileDetails.set_in_database_view(
-                f(
-                    _(
-                        """File: {trust.path}
+            if isinstance(trust, Trust):
+                self.trustFileDetails.set_in_database_view(
+                    f(
+                        _(
+                            """File: {trust.path}
 Size: {trust.size}
 SHA256: {trust.hash}"""
+                        )
                     )
                 )
-            )
 
             self.trustFileDetails.set_on_file_system_view(
                 f(
@@ -142,8 +130,7 @@ SHA256: {fs.sha(trust.path)}"""
         listPathActionTuples = stateManager.get_path_action_list()
         logging.debug(listPathActionTuples)
         parent = self.get_ref().get_toplevel()
-        dlgDeployList = ConfirmInfoDialog(parent)
-        dlgDeployList.load_path_action_list(listPathActionTuples)
+        dlgDeployList = ConfirmInfoDialog(parent, listPathActionTuples)
         confirm_resp = dlgDeployList.run()
         dlgDeployList.hide()
 

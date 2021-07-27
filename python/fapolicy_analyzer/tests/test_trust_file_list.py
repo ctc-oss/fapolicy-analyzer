@@ -41,49 +41,15 @@ def test_uses_custom_markup_func():
 
 
 def test_loads_trust_store(widget):
-    widget.load_store(_trust)
+    widget.load_trust(_trust)
     view = widget.get_object("treeView")
     assert [t.status for t in _trust] == [x[0] for x in view.get_model()]
     assert [t.path for t in _trust] == [x[1] for x in view.get_model()]
 
 
-def test_fires_files_added(widget, mocker):
-    mocker.patch(
-        "ui.trust_file_list.Gtk.FileChooserDialog.run",
-        return_value=Gtk.ResponseType.OK,
-    )
-    mocker.patch(
-        "ui.trust_file_list.Gtk.FileChooserDialog.get_filenames",
-        return_value=["foo"],
-    )
-    mocker.patch("ui.trust_file_list.path.isfile", return_value=True)
+def test_fires_trust_selection_changed(widget):
     mockHandler = MagicMock()
-    widget.files_added += mockHandler
-    parent = Gtk.Window()
-    widget.get_ref().set_parent(parent)
-    addBtn = widget.get_object("actionButtons").get_children()[0]
-    addBtn.clicked()
-    mockHandler.assert_called_with(["foo"])
-
-
-def test_fires_files_w_spaces_added(widget, mocker):
-    mocker.patch(
-        "ui.trust_file_list.Gtk.FileChooserDialog.run",
-        return_value=Gtk.ResponseType.OK,
-    )
-    mocker.patch(
-        "ui.trust_file_list.Gtk.FileChooserDialog.get_filenames",
-        return_value=["/tmp/a file name with spaces"],
-    )
-    mocker.patch("ui.trust_file_list.path.isfile", return_value=True)
-    mocker.patch(
-        "ui.trust_file_list.Gtk.MessageDialog.run",
-        return_value=Gtk.ResponseType.OK,
-    )
-    mockHandler = MagicMock()
-    widget.files_added += mockHandler
-    parent = Gtk.Window()
-    widget.get_ref().set_parent(parent)
-    addBtn = widget.get_object("actionButtons").get_children()[0]
-    addBtn.clicked()
-    assert not mockHandler.called, "Callback should not be invoked; Filepath w/spaces should be filtered out"
+    widget.trust_selection_changed += mockHandler
+    view = widget.get_object("treeView")
+    view.get_selection().select_path(Gtk.TreePath.new_first())
+    mockHandler.assert_called_with(_trust[0])
