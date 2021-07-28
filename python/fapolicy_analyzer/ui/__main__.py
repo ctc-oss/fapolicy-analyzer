@@ -14,6 +14,7 @@ gbAutosaveEnabled = False
 
 def parse_cmdline():
     global gstrEditSessionTmpFile
+    global gbAutosaveEnabled
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--verbose", action="store_true",
@@ -24,6 +25,7 @@ def parse_cmdline():
                         help="Specify edit session tmp file basename")
     args = parser.parse_args()
 
+    print(args)
     # Set Verbosity Level
     if args.verbose:
         logging.root.setLevel(logging.DEBUG)

@@ -6,6 +6,7 @@ from collections import OrderedDict
 from datetime import datetime as DT
 import atexit
 import os
+from sys import stderr
 import glob
 import time
 import json
@@ -61,9 +62,9 @@ effectively the StateManager's destructor."""
         self.__force_cleanup_autosave_sessions()
 
     # ####################### Accessors Functions ####################
-    def set_autosave_enable(self, bEnableAutosave ):
-        logging.debug("StateManager: Enabling autosaving")
-        self.__bAutosaveEnabled = bEnableAutosave
+    def set_autosave_enable(self, bEnable ):
+        logging.debug("StateManager::set_autosave_enable: {}".format(bEnable))
+        self.__bAutosaveEnabled = bEnable
 
     # ####################### Changeset Queue ########################
     def add_changeset_q(self, change_set):
@@ -202,13 +203,13 @@ deploy these changesets.
 created during the current editing session, and are deleted after a deploy,
 or a session file open/restore operation."""
         logging.debug("StateManager::__cleanup_autosave_sessions()")
-        print(self.__listAutosavedFilenames)
+        logging.debug(self.__listAutosavedFilenames)
         for f in self.__listAutosavedFilenames:
             os.remove(f)
         self.__listAutosavedFilenames.clear()
 
     def __force_cleanup_autosave_sessions(self):
-        """Brute force delete all detected autosave files"""
+        """Brute force collection and deletion of all detected autosave files"""
         logging.debug("StateManager::__force_cleanup_autosave_sessions()")
         strSearchPattern = self.__tmpFileBasename + "_*.json"
         logging.debug("Search Pattern: {}".format(strSearchPattern))
@@ -216,8 +217,9 @@ or a session file open/restore operation."""
         logging.debug("Glob search results: {}".format(listTmpFiles))
         if listTmpFiles:
             for f in listTmpFiles:
-                if os.path.isfile(f):
-                    logging.debug("Session file detected: {}".format(f))
+                # Add the tmp file to the deletion list if it's not currently in the list
+                if os.path.isfile(f) and not f in self.__listAutosavedFilenames:
+                    logging.debug("Adding Session file to deletion list: {}".format(f))
                     self.__listAutosavedFilenames.append(f)
             self.__cleanup_autosave_sessions()
 
@@ -228,6 +230,7 @@ or a session file open/restore operation."""
 
         # Bypass if autosave is not enabled
         if not self.__bAutosaveEnabled:
+            logging.debug(" Session autosave is disabled/bypassed")
             return
         
         timestamp = DT.fromtimestamp(time.time()).strftime('%Y%m%d_%H%M%S_%f')
@@ -249,8 +252,8 @@ or a session file open/restore operation."""
                 logging.debug(self.__listAutosavedFilenames)
 
         except IOError as error:
-            print("Warning: __autosave_edit_session() failed: {}".format(error))
-            print("Continuing...")
+            print("Warning: __autosave_edit_session() failed: {}".format(error), file=stderr)
+            print("Continuing...", file=stderr)
 
     # ####################### Notification Events ##########################
     def add_system_notification(self,

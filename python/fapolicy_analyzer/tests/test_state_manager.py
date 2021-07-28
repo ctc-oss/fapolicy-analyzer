@@ -10,6 +10,7 @@ from ui.state_manager import stateManager, StateManager, NotificationType
 # Set up; create UUT
 @pytest.fixture
 def uut():
+    stateManager.set_autosave_enable(False)
     yield stateManager
     stateManager.del_changeset_q()
     stateManager.systemNotification = None
@@ -34,11 +35,11 @@ def uut_autosave_enabled(uut):
 
 
 @pytest.fixture
-def uut_populated_w_changesets():
+def populated_changeset_list():
     listExpectedChangeset = []
     for i in range(4):
         changeset = Changeset()
-        strFilename = "/tmp/filename{i}.txt"
+        strFilename = "/tmp/filename{}.txt".format(i)
         modi = i%2
         if modi%2 == 0:
             # Even counts
@@ -49,9 +50,6 @@ def uut_populated_w_changesets():
         listExpectedChangeset.append(changeset)
 
     return listExpectedChangeset
-
-@pytest.fixture
-
 
 # test: add an element to an empty Q, verify Q contents
 def test_add_empty_queue(uut):
@@ -274,9 +272,17 @@ def test_save_edit_session(uut):
     os.system("rm -f {}".format(tmp_file_out))
 
 
-# ########################### Test Support Utilities #################
-def test_autosave_edit_session(uut_autosave_enabled):
-    assert True
+# ########################### Autosave Sessions #################
+def test_autosave_edit_session(uut_autosave_enabled,
+                               populated_changeset_list
+                               ):
+    for cs in populated_changeset_list:
+        uut_autosave_enabled.add_changeset_q(cs)
+
+    # Get the StateManager's changeset Q and compare it to the original list
+    print(populated_changeset_list)
+    print(uut_autosave_enabled.get_changeset_q())
+    assert populated_changeset_list == uut_autosave_enabled.get_changeset_q()
 
 
 # ##################### Queue mgmt utilities #########################
