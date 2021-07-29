@@ -66,6 +66,11 @@ effectively the StateManager's destructor."""
         logging.debug("StateManager::set_autosave_enable: {}".format(bEnable))
         self.__bAutosaveEnabled = bEnable
 
+    def set_autosave_filename(self, strFileBasename):
+        logging.debug("StateManager::set_autosave_filename: {}"
+                      .format(strFileBasename))
+        self.__tmpFileBasename = strFileBasename
+
     # ####################### Changeset Queue ########################
     def add_changeset_q(self, change_set):
         """Add the change_set argument to the end of the FIFO queue"""
@@ -245,7 +250,6 @@ or a session file open/restore operation."""
             # Delete oldest tmp file
             if (self.__listAutosavedFilenames and len(self.__listAutosavedFilenames) > self.__iTmpFileCount):
                 self.__listAutosavedFilenames.sort()
-                self.__listAutosavedFilenames.reverse()
                 strOldestFile = self.__listAutosavedFilenames[0]
                 logging.debug("Deleting: {}".format(strOldestFile))
                 os.remove(strOldestFile)

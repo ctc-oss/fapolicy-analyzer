@@ -13,6 +13,7 @@ from ui.state_manager import stateManager, NotificationType
 @pytest.fixture
 def uut():
     stateManager.set_autosave_enable(False)
+    stateManager.set_autosave_filename("/tmp/UnitTestSession")
     yield stateManager
     stateManager.del_changeset_q()
     stateManager.systemNotification = None

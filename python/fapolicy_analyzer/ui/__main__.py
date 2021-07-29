@@ -9,7 +9,7 @@ from .main_window import MainWindow
 from .state_manager import stateManager
 
 # Globals
-gstrEditSessionFileName = "/tmp/FAPolicyToolSession.tmp.json"
+gstrEditSessionFileName = None
 gbAutosaveEnabled = False
 
 
@@ -48,7 +48,8 @@ def main():
     parse_cmdline()
     MainWindow()
     stateManager.set_autosave_enable(gbAutosaveEnabled)
-    stateManager.set_autosave_filename(gstrEditSessionFileName)
+    if gstrEditSessionFileName:
+        stateManager.set_autosave_filename(gstrEditSessionFileName)
     Gtk.main()
 
 
