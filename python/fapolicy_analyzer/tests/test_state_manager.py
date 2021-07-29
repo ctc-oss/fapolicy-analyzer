@@ -2,9 +2,11 @@ import context  # noqa: F401
 import os
 import pytest
 import json
+from datetime import datetime as DT
+import time
 from unittest.mock import MagicMock
 from fapolicy_analyzer import Changeset
-from ui.state_manager import stateManager, StateManager, NotificationType
+from ui.state_manager import stateManager, NotificationType
 
 
 # Set up; create UUT
@@ -40,8 +42,9 @@ def populated_changeset_list():
     for i in range(4):
         changeset = Changeset()
         strFilename = "/tmp/filename{}.txt".format(i)
-        modi = i%2
-        if modi%2 == 0:
+
+        # Alternate Adds/Deletes for testing coverage
+        if i % 2 == 0:
             # Even counts
             changeset.add_trust(strFilename)
         else:
@@ -50,6 +53,7 @@ def populated_changeset_list():
         listExpectedChangeset.append(changeset)
 
     return listExpectedChangeset
+
 
 # test: add an element to an empty Q, verify Q contents
 def test_add_empty_queue(uut):
@@ -280,9 +284,65 @@ def test_autosave_edit_session(uut_autosave_enabled,
         uut_autosave_enabled.add_changeset_q(cs)
 
     # Get the StateManager's changeset Q and compare it to the original list
-    print(populated_changeset_list)
-    print(uut_autosave_enabled.get_changeset_q())
     assert populated_changeset_list == uut_autosave_enabled.get_changeset_q()
+
+
+def test_autosave_edit_session_w_exception(mocker, uut_autosave_enabled):
+    # Create a mock that throw an exception side-effect
+    mockFunc = mocker.patch("ui.state_manager.StateManager.save_edit_session",
+                            side_effect=IOError)
+
+    # Populate a single Changeset and add it to the StateManager's queue
+    cs = Changeset()
+    strFilename = "/tmp/DeadBeef.txt"
+    cs.add_trust(strFilename)
+    uut_autosave_enabled.add_changeset_q(cs)
+    mockFunc.assert_called()
+
+
+def test_force_cleanup_autosave_sessions(uut):
+    # Create a number of tmp files
+    listCreatedTmpFiles = []
+    for i in range(5):
+        timestamp = DT.fromtimestamp(time.time()).strftime('%Y%m%d_%H%M%S_%f')
+        strFilename = uut._StateManager__tmpFileBasename + "_" + timestamp + ".json"
+        fp = open(strFilename, "w")
+        fp.write(strFilename)
+        fp.close()
+        listCreatedTmpFiles.append(strFilename)
+
+    # Invoke the cleanup function
+    uut._StateManager__force_cleanup_autosave_sessions()
+
+    # Verify that all created tmp files have been deleted.
+    listRemainingTmpFiles = []
+    for f in listCreatedTmpFiles:
+        if os.path.isfile(f):
+            listRemainingTmpFiles.append(f)
+    assert len(listRemainingTmpFiles) == 0
+
+
+def test_cleanup(uut):
+    # Currently the public wrapper for __force_cleanup_autosave_sessions()
+    # Create a number of tmp files
+    listCreatedTmpFiles = []
+    for i in range(5):
+        timestamp = DT.fromtimestamp(time.time()).strftime('%Y%m%d_%H%M%S_%f')
+        strFilename = uut._StateManager__tmpFileBasename + "_" + timestamp + ".json"
+        fp = open(strFilename, "w")
+        fp.write(strFilename)
+        fp.close()
+        listCreatedTmpFiles.append(strFilename)
+
+    # Invoke the cleanup function
+    uut.cleanup()
+
+    # Verify that all created tmp files have been deleted.
+    listRemainingTmpFiles = []
+    for f in listCreatedTmpFiles:
+        if os.path.isfile(f):
+            listRemainingTmpFiles.append(f)
+    assert len(listRemainingTmpFiles) == 0
 
 
 # ##################### Queue mgmt utilities #########################

@@ -9,11 +9,12 @@ from .main_window import MainWindow
 from .state_manager import stateManager
 
 # Globals
-gstrEditSessionTmpFile = "/tmp/FAPolicyToolSession.tmp.json"
+gstrEditSessionFileName = "/tmp/FAPolicyToolSession.tmp.json"
 gbAutosaveEnabled = False
 
+
 def parse_cmdline():
-    global gstrEditSessionTmpFile
+    global gstrEditSessionFileName
     global gbAutosaveEnabled
 
     parser = argparse.ArgumentParser()
@@ -25,7 +26,6 @@ def parse_cmdline():
                         help="Specify edit session tmp file basename")
     args = parser.parse_args()
 
-    print(args)
     # Set Verbosity Level
     if args.verbose:
         logging.root.setLevel(logging.DEBUG)
@@ -37,13 +37,18 @@ def parse_cmdline():
 
     # Set Edit Session Tmp File
     if args.session:
-        gstrEditSessionTmpFile = args.session
+        gstrEditSessionFileName = args.session
+
+    # Return the parsed args to simplify unit-testing
+    dictArgs = dict(vars(args))
+    return dictArgs
 
 
 def main():
     parse_cmdline()
     MainWindow()
     stateManager.set_autosave_enable(gbAutosaveEnabled)
+    stateManager.set_autosave_filename(gstrEditSessionFileName)
     Gtk.main()
 
 

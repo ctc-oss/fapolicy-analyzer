@@ -6,6 +6,7 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from unittest.mock import MagicMock
+from fapolicy_analyzer import Changeset
 from ui.main_window import MainWindow
 from ui.analyzer_selection_dialog import ANALYZER_SELECTION
 from ui.state_manager import stateManager
@@ -52,7 +53,11 @@ def test_displays_window(mainWindow):
 
 
 def test_shows_confirm_if_unapplied_changes(mainWindow, state, mocker):
-    stateManager.add_changeset_q("foo")
+    # Populate a Changeset, add it to the StateManager's queue
+    cs = Changeset()
+    strFilename = "/tmp/DeadBeef.txt"
+    cs.add_trust(strFilename)
+    stateManager.add_changeset_q(cs)
     mockDialog = MagicMock()
     mockDialog.run.return_value = False
     mocker.patch(

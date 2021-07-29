@@ -62,7 +62,7 @@ effectively the StateManager's destructor."""
         self.__force_cleanup_autosave_sessions()
 
     # ####################### Accessors Functions ####################
-    def set_autosave_enable(self, bEnable ):
+    def set_autosave_enable(self, bEnable):
         logging.debug("StateManager::set_autosave_enable: {}".format(bEnable))
         self.__bAutosaveEnabled = bEnable
 
@@ -218,8 +218,9 @@ or a session file open/restore operation."""
         if listTmpFiles:
             for f in listTmpFiles:
                 # Add the tmp file to the deletion list if it's not currently in the list
-                if os.path.isfile(f) and not f in self.__listAutosavedFilenames:
-                    logging.debug("Adding Session file to deletion list: {}".format(f))
+                if os.path.isfile(f) and f not in self.__listAutosavedFilenames:
+                    logging.debug("Adding Session file to deletion list: "
+                                  "{}".format(f))
                     self.__listAutosavedFilenames.append(f)
             self.__cleanup_autosave_sessions()
 
@@ -232,7 +233,7 @@ or a session file open/restore operation."""
         if not self.__bAutosaveEnabled:
             logging.debug(" Session autosave is disabled/bypassed")
             return
-        
+
         timestamp = DT.fromtimestamp(time.time()).strftime('%Y%m%d_%H%M%S_%f')
         strFilename = self.__tmpFileBasename + "_" + timestamp + ".json"
         logging.debug("  Writing to: {}".format(strFilename))
