@@ -312,8 +312,8 @@ mod tests {
 
     #[test]
     fn parse_trust_flag() {
-        assert_eq!(false, trust_flag("0").ok().unwrap().1);
-        assert_eq!(true, trust_flag("1").ok().unwrap().1);
+        assert!(trust_flag("1").ok().unwrap().1);
+        assert!(!trust_flag("0").ok().unwrap().1);
         assert_eq!(None, trust_flag("2").ok());
         assert_eq!(None, trust_flag("foo").ok());
     }
