@@ -1,7 +1,7 @@
 import logging
 from enum import Enum
 from events import Events
-from fapolicy_analyzer import Changeset, System
+from fapolicy_analyzer import Changeset
 from collections import OrderedDict
 from datetime import datetime as DT
 import atexit
@@ -37,20 +37,16 @@ class StateManager(Events):
         "ev_user_session_loaded"
     ]
 
-    def __init__(self,
-                 bAutoSaveEnabled=True,
-                 tmpFileBasename="/tmp/FaCurrentSession.tmp",
-                 iTmpFileCount=2):
+    def __init__(self):
         Events.__init__(self)
-        self.system = System()
         self.listChangeset = []  # FIFO queue
         self.listUndoChangeset = []  # Undo Stack
         self.bDirtyQ = False
         self.systemNotification = None
-        self.__bAutosaveEnabled = bAutoSaveEnabled
-        self.__tmpFileBasename = tmpFileBasename
+        self.__bAutosaveEnabled = False
+        self.__tmpFileBasename = "/tmp/FaCurrentSession.tmp"
         self.__listAutosavedFilenames = []
-        self.__iTmpFileCount = iTmpFileCount
+        self.__iTmpFileCount = 2
 
         # Register cleanup callback function
         atexit.register(self.cleanup)
@@ -67,9 +63,13 @@ effectively the StateManager's destructor."""
         self.__bAutosaveEnabled = bEnable
 
     def set_autosave_filename(self, strFileBasename):
-        logging.debug("StateManager::set_autosave_filename: {}"
-                      .format(strFileBasename))
+        logging.debug("StateManager::set_autosave_filename: {}".format(strFileBasename))
         self.__tmpFileBasename = strFileBasename
+
+    def set_autosave_filecount(self, iFilecount):
+        logging.debug("StateManager::set_autosave_filecount: {}"
+                      .format(iFilecount))
+        self.__iTmpFileCount = iFilecount
 
     # ####################### Changeset Queue ########################
     def add_changeset_q(self, change_set):

@@ -346,6 +346,20 @@ def test_cleanup(uut):
     assert len(listRemainingTmpFiles) == 0
 
 
+def test_autosave_filecount(uut_autosave_enabled,
+                            populated_changeset_list
+                            ):
+    # Verify the StateManager's attribute can be set
+    uut_autosave_enabled.set_autosave_filecount(3)
+    assert uut_autosave_enabled._StateManager__iTmpFileCount == 3
+
+    for cs in populated_changeset_list:
+        uut_autosave_enabled.add_changeset_q(cs)
+
+    # Verify there are three temp files on the filesystem
+    # Tbd
+
+
 # ##################### Queue mgmt utilities #########################
 def test_path_action_dict_to_list(uut):
     # Define test input/output data
