@@ -22,7 +22,7 @@ fn parser(i: &str) -> nom::IResult<&str, Line> {
 fn parse_clean(xs: Vec<String>) {
     let lines: Vec<Line> = xs
         .iter()
-        .map(|l| (l, parser(&l)))
+        .map(|l| (l, parser(l)))
         .flat_map(|(l, r)| match r {
             Ok(("", rule)) => Some(rule),
             Ok((rem, _)) => {

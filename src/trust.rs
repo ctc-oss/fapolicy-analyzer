@@ -131,7 +131,7 @@ enum TrustOp {
 impl TrustOp {
     fn run(&self, trust: &mut HashMap<String, Trust>) -> Result<(), String> {
         match self {
-            TrustOp::Add(path) => match new_trust_record(&path) {
+            TrustOp::Add(path) => match new_trust_record(path) {
                 Ok(t) => {
                     trust.insert(path.to_string(), t);
                     Ok(())
