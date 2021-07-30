@@ -1,45 +1,32 @@
 ARG platform=fedora:32
-FROM buildpack-deps:bionic-scm as tagger
+FROM ${platform} AS build-stage
 
-RUN curl -so /usr/local/bin/git-rpm-version https://raw.githubusercontent.com/peterlundgren/git-rpm-version/master/git-rpm-version \
- && chmod +x /usr/local/bin/git-rpm-version
-
-WORKDIR /tmp
-COPY .git ./.git
-RUN git describe | cut -c 2- > DESCRIBE
-RUN git-rpm-version -v HEAD  > VERSION
-RUN git-rpm-version -r HEAD  > RELEASE
-
-FROM ${platform}
-
-WORKDIR /tmp
-RUN curl -o rust.sh https://sh.rustup.rs -sSf \
- && chmod a+x rust.sh \
- && ./rust.sh -y -q --profile minimal \
- && rm rust.sh
-
-RUN ln -s /root/.cargo/bin/* /usr/local/bin
-
-RUN dnf install -y python3 python3-devel python3-pip dbus-devel cairo-devel pkg-config which \
-                   gobject-introspection-devel cairo-gobject-devel fedora-packager fedora-review \
- && dnf groupinstall -y "Development Tools" \
+RUN dnf install -y rpm-build rpmdevtools dnf-plugins-core python3-jinja2-cli \
  && dnf clean all
 
-RUN pip3 install pipenv wheel
+RUN mkdir -p /root/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
+COPY fapolicy-analyzer.spec.j2 ./
 
-WORKDIR /opt/app-src
-COPY src     ./src
-COPY python  ./python
-COPY Cargo.* ./
+ARG fedora_ver=
+ARG git_commit=
+ARG rpm_version=
+ARG rpm_release=
 
-WORKDIR /opt/app-src/python
-RUN pipenv install --system --deploy --dev
-COPY --from=tagger /tmp/DESCRIBE /tmp/VERSION /tmp/RELEASE ./
+# Rather than passing the variables directly to rpmbuild, burn the values
+# into the spec file with jinja so the spec in the src.rpm works standalone.
+RUN jinja2 \
+        -D fedora_ver=${fedora_ver} \
+        -D git_commit=${git_commit} \
+        -D rpm_version=${rpm_version} \
+        -D rpm_release=${rpm_release} \
+        fapolicy-analyzer.spec.j2 > /root/rpmbuild/SPECS/fapolicy-analyzer.spec
 
-WORKDIR /opt/app-src
-COPY scripts ./scripts
+RUN cd /root/rpmbuild/SOURCES                    \
+ && spectool -gf ../SPECS/fapolicy-analyzer.spec \
+ && cd /root/rpmbuild/SPECS                      \
+ && dnf builddep fapolicy-analyzer.spec -y       \
+ && rpmbuild -ba fapolicy-analyzer.spec
 
-VOLUME /output
-
-WORKDIR /opt/app-src/python
-ENTRYPOINT ["/opt/app-src/scripts/rpm/build.sh"]
+FROM scratch AS export-stage
+COPY --from=build-stage /root/rpmbuild/SRPMS/*.src.rpm /
+COPY --from=build-stage /root/rpmbuild/RPMS/x86_64/*.rpm /

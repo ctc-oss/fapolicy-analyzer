@@ -19,47 +19,53 @@ jobs:
     container: ${{ matrix.platform }}
     name: Create RPM Release
     steps:
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: 1.52.0
-          override: true
-
-      - name: Install dnf requirements
+      - name: Install basic rpmbuild toolchain
         run: |
-          dnf install -q -y python3 python3-devel python3-pip dbus-devel cairo-devel pkg-config which gobject-introspection-devel cairo-gobject-devel fedora-packager fedora-review
-          dnf groupinstall -q -y "Development Tools"
-
-      - name: Install pip requirements
-        run: pip3 install pipenv wheel
+          dnf install -y rpm-build rpmdevtools dnf-plugins-core python3-jinja2-cli git
 
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
 
-      - name: Pipenv deploy
-        run: pipenv install --system --deploy --dev
-        working-directory: python
-
-      - name: Generate tags
+      - name: Generate the standalone spec file from the template and args
         run: |
+          mkdir -p $HOME/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
           curl -so /usr/local/bin/git-rpm-version https://raw.githubusercontent.com/peterlundgren/git-rpm-version/master/git-rpm-version
           chmod +x /usr/local/bin/git-rpm-version
-          git describe | cut -c 2- > DESCRIBE
-          git-rpm-version -v HEAD  > VERSION
-          git-rpm-version -r HEAD  > RELEASE
-        working-directory: python
+          FEDORA_VER="$(source /etc/os-release ; echo "$VERSION_ID")"
+          GIT_COMMIT="$(git describe --match "v*" --abbrev=0 || git rev-parse --verify HEAD)"
+          RPM_VERSION="$(git-rpm-version -v HEAD)"
+          RPM_RELEASE="$(git-rpm-version -r HEAD)"
+          jinja2                          \
+            -D fedora_ver=${FEDORA_VER}   \
+            -D git_commit=${GIT_COMMIT}   \
+            -D rpm_version=${RPM_VERSION} \
+            -D rpm_release=${RPM_RELEASE} \
+            fapolicy-analyzer.spec.j2 > $HOME/rpmbuild/SPECS/fapolicy-analyzer.spec
+        working-directory: scripts/rpm
 
-      - name: Build RPM
-        id: rpm_build
-        run: ../scripts/rpm/build.sh /tmp
-        working-directory: python
-
-      - name: Create Release notes
+      - name: Download package source
         run: |
-          echo "Release Notes" >> release-notes
-          echo "=============" >> release-notes
+          cd $HOME/rpmbuild/SOURCES
+          spectool -gf ../SPECS/fapolicy-analyzer.spec
+
+      - name: Install package build dependencies
+        run: |
+           cd $HOME/rpmbuild/SPECS
+           dnf builddep fapolicy-analyzer.spec -y
+
+      - name: Build the package
+        run: |
+          cd $HOME/rpmbuild/SPECS
+          rpmbuild -ba fapolicy-analyzer.spec
+          mv $HOME/rpmbuild/RPMS/*/*.rpm /tmp
+          mv $HOME/rpmbuild/SRPMS/*.rpm  /tmp
+
+      - name: Strip ref to tag
+        id: tag_name
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d/ -f3)
 
       - uses: softprops/action-gh-release@v1
         name: Create Release
@@ -68,9 +74,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: Release ${{ github.ref }}
+          name: Release ${{ steps.tag_name.outputs.VERSION }}
           tag_name: ${{ github.ref }}
-          body_path: release-notes
           prerelease: ${{ startsWith(github.ref, 'refs/tags/v0') || contains(github.ref, 'rc') }}
           draft: true
           files: |
