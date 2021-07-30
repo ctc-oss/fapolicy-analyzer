@@ -1,36 +1,24 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
-readonly describe=${DESCRIBE:-$(cat DESCRIBE)}
-readonly version=${VERSION:-$(cat VERSION)}
-readonly release=${RELEASE:-$(cat RELEASE)}
-readonly output_dir=${1:-"/output"}
+if [ $# -lt 2 ]
+then
+       echo "Usage: `basename $0` out_directory fedora_tag1 [ fedora_tag2 ... ]"
+       exit 1
+fi
 
-set_cargo_version() {
-  sed -i -e "0,/version = \".*\"/ s/version = \".*\"/version = \"$describe\"/; t" "$1"
-}
+_output="${1}"
+shift
 
-main() {
-  mkdir -p "$HOME"/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
-
-  set_cargo_version Cargo.toml
-  set_cargo_version ../Cargo.toml
-
-  VERSION="$version" python setup.py compile_catalog -f
-  VERSION="$version" python setup.py bdist_wheel
-
-  readonly wheel=$(cd dist || exit 1; ls fapolicy_analyzer-*.whl)
-  echo "=================== $wheel ==================="
-
-  cp bin/fapolicy-analyzer "$HOME"/rpmbuild/SOURCES
-  cp dist/"$wheel"         "$HOME"/rpmbuild/SOURCES
-
-  SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-  cp "$SCRIPT_DIR/fapolicy-analyzer.spec" "$HOME"/rpmbuild/SPECS
-
-  rpmbuild -ba -D "version $version" -D "releaseid $release" -D "wheel $wheel" "$HOME"/rpmbuild/SPECS/fapolicy-analyzer.spec
-
-  mv "$HOME"/rpmbuild/RPMS/*/* "$output_dir"
-  mv "$HOME"/rpmbuild/SRPMS/*  "$output_dir"
-}
-
-main "$@"
+for F in $@
+do
+       DOCKER_BUILDKIT=1 docker build \
+               -o "${_output}" \
+               --build-arg platform=fedora:"$F" \
+               --build-arg fedora_ver="$F" \
+               --build-arg git_commit="$(git describe --match "v*" --abbrev=0 --candidates=0 || git rev-parse --verify HEAD)" \
+               --build-arg rpm_version="$(git describe --always --match "v*" | sed -e 's/^v//' -e 's/-rc[0-9]*//' -e 's/-[0-9]\{1,\}-g[0-9a-f]\{1,\}//' -e 's/-/\./g')" \
+               --build-arg rpm_release="0$(git describe --always --match "v*" | sed -e 's/[^-]\{1,\}//' -e 's/-/./g')" \
+               --build-arg http_proxy="$http_proxy" \
+               --build-arg https_proxy="$https_proxy" \
+               .
+done
