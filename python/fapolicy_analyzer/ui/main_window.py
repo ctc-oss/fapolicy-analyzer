@@ -95,7 +95,11 @@ class MainWindow(UIWidget):
 
     def on_restoreMenu_activate(self, menuitem, data=None):
         logging.debug("Callback entered: MainWindow::on_restoreMenu_activate()")
-        pass
+        try:
+            stateManager.restore_previous_session()
+            self.get_object("restoreMenu").set_sensitive(False)
+        except:
+            print("Restore failed")
 
     def on_saveMenu_activate(self, menuitem, data=None):
         logging.debug("Callback entered: MainWindow::on_saveMenu_activate()")
@@ -141,6 +145,53 @@ class MainWindow(UIWidget):
         selection = AnalyzerSelectionDialog(self.window).get_selection()
         page = router(selection)
         mainContent.pack_start(page, True, True, 0)
+
+        # On startup check for the existing of a tmp session file
+        # If detected, alert the user, enable the File|Restore menu item
+        if stateManager.detect_previous_session():
+            logging.debug("Detected edit session tmp file")
+
+            # Enable 'Restore' menu item under the 'File' menu
+            self.get_object("restoreMenu").set_sensitive(True)
+            
+            # Prompt the user to immediate restore the prior edit session 
+            dlgSessionRestorePrompt = Gtk.Dialog(title="Prior Session Detected",
+                                                 transient_for=self.window,
+                                                 flags=0
+                                                 )
+
+            dlgSessionRestorePrompt.add_buttons( Gtk.STOCK_NO,
+                                                 Gtk.ResponseType.NO,
+                                                 Gtk.STOCK_YES,
+                                                 Gtk.ResponseType.YES)
+
+            #dlgSessionRestorePrompt.set_default_size(-1, 200)
+            label = Gtk.Label(label="""
+        Restore your prior session now?    
+
+    Yes: Immediately loads your prior session
+
+    No: Continue starting fapolicy-analyzer. 
+
+        Your prior session will still be available
+        and can be loaded at any point during
+        this current session by invoking 'Restore'
+        under the 'File' menu.       
+
+""")
+            hbox = dlgSessionRestorePrompt.get_content_area()
+            hbox.add(label)
+            dlgSessionRestorePrompt.show_all()
+            response = dlgSessionRestorePrompt.run()
+            dlgSessionRestorePrompt.destroy()
+            
+            if response == Gtk.ResponseType.YES:
+                try:
+                    stateManager.restore_previous_session()
+                except:
+                    print("Restore failed")
+        else:
+            self.get_object("restoreMenu").set_sensitive(False)
 
     def set_modified_titlebar(self, bModified=True):
         """Adds leading '*' to titlebar text with True or default argument"""

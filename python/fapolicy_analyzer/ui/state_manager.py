@@ -2,6 +2,7 @@ import logging
 from enum import Enum
 from events import Events
 from fapolicy_analyzer import Changeset
+from os import path
 from collections import OrderedDict
 from datetime import datetime as DT
 import atexit
@@ -229,6 +230,50 @@ or a session file open/restore operation."""
                     self.__listAutosavedFilenames.append(f)
             self.__cleanup_autosave_sessions()
 
+    def detect_previous_session(self):
+        """Searches for preexisting tmp files; Returns bool"""
+        logging.debug("StateManager::detect_previous_session()")
+        strSearchPattern = self.__tmpFileBasename+"_*.json"
+        print("Search Pattern: {}".format(strSearchPattern))
+        listTmpFiles = glob.glob(strSearchPattern)
+        listTmpFiles.sort()
+        logging.debug("Glob search results: {}".format(listTmpFiles))
+        if listTmpFiles:
+            for f in listTmpFiles:
+                if os.path.isfile(f):
+                    logging.debug("Session file detected: {}".format(f))
+                    return True
+        return False
+
+    def restore_previous_session(self):
+        '''Restore latest prior session'''
+        logging.debug("StateManager::restore_previous_session()")
+        
+        # Determine file to load, in newest to oldest order
+        strSearchPattern = self.__tmpFileBasename+"_*.json"
+        print("Search Pattern: {}".format(strSearchPattern))
+        listTmpFiles = glob.glob(strSearchPattern)
+        listTmpFiles.sort()
+        listTmpFiles.reverse()
+        print(listTmpFiles)
+        
+        # iterate through the time ordered files; stop on first successful load
+        bReturn = False
+        for f in listTmpFiles:
+            try:
+                print("Attempting to restore session file: {}".format(f))
+                self.open_edit_session(f)
+                self.__cleanup_autosave_sessions()
+                bReturn = True
+                print("SUCCESS")
+                break
+
+            except:
+                print("FAIL: Restoring {} load failure".format(f))
+                continue
+        self.__cleanup_autosave_sessions()
+        return bReturn
+    
     def __autosave_edit_session(self):
         """Constructs a new tmp session filename w/timestamp, populates it with
  the current session state, saves it, and deletes the oldest tmp session file"""
