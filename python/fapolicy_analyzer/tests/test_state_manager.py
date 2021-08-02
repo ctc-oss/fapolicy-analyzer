@@ -2,13 +2,18 @@ import context  # noqa: F401
 import os
 import pytest
 import json
+from datetime import datetime as DT
+import time
 from unittest.mock import MagicMock
+from fapolicy_analyzer import Changeset
 from ui.state_manager import stateManager, NotificationType
 
 
 # Set up; create UUT
 @pytest.fixture
 def uut():
+    stateManager.set_autosave_enable(False)
+    stateManager.set_autosave_filename("/tmp/UnitTestSession")
     yield stateManager
     stateManager.del_changeset_q()
     stateManager.systemNotification = None
@@ -22,6 +27,33 @@ def populated_queue(uut):
     uut.add_changeset_q(3)
     uut.add_changeset_q(4)
     return uut
+
+
+@pytest.fixture
+def uut_autosave_enabled(uut):
+    stateManager.set_autosave_enable(True)
+    yield stateManager
+    stateManager.del_changeset_q()
+    stateManager.systemNotification = None
+
+
+@pytest.fixture
+def populated_changeset_list():
+    listExpectedChangeset = []
+    for i in range(4):
+        changeset = Changeset()
+        strFilename = "/tmp/filename{}.txt".format(i)
+
+        # Alternate Adds/Deletes for testing coverage
+        if i % 2 == 0:
+            # Even counts
+            changeset.add_trust(strFilename)
+        else:
+            # Odd counts
+            changeset.del_trust(strFilename)
+        listExpectedChangeset.append(changeset)
+
+    return listExpectedChangeset
 
 
 # test: add an element to an empty Q, verify Q contents
@@ -243,6 +275,89 @@ def test_save_edit_session(uut):
 
     # Clean up tmp file
     os.system("rm -f {}".format(tmp_file_out))
+
+
+# ########################### Autosave Sessions #################
+def test_autosave_edit_session(uut_autosave_enabled,
+                               populated_changeset_list
+                               ):
+    for cs in populated_changeset_list:
+        uut_autosave_enabled.add_changeset_q(cs)
+
+    # Get the StateManager's changeset Q and compare it to the original list
+    assert populated_changeset_list == uut_autosave_enabled.get_changeset_q()
+
+
+def test_autosave_edit_session_w_exception(mocker, uut_autosave_enabled):
+    # Create a mock that throw an exception side-effect
+    mockFunc = mocker.patch("ui.state_manager.StateManager.save_edit_session",
+                            side_effect=IOError)
+
+    # Populate a single Changeset and add it to the StateManager's queue
+    cs = Changeset()
+    strFilename = "/tmp/DeadBeef.txt"
+    cs.add_trust(strFilename)
+    uut_autosave_enabled.add_changeset_q(cs)
+    mockFunc.assert_called()
+
+
+def test_force_cleanup_autosave_sessions(uut):
+    # Create a number of tmp files
+    listCreatedTmpFiles = []
+    for i in range(5):
+        timestamp = DT.fromtimestamp(time.time()).strftime('%Y%m%d_%H%M%S_%f')
+        strFilename = uut._StateManager__tmpFileBasename + "_" + timestamp + ".json"
+        fp = open(strFilename, "w")
+        fp.write(strFilename)
+        fp.close()
+        listCreatedTmpFiles.append(strFilename)
+
+    # Invoke the cleanup function
+    uut._StateManager__force_cleanup_autosave_sessions()
+
+    # Verify that all created tmp files have been deleted.
+    listRemainingTmpFiles = []
+    for f in listCreatedTmpFiles:
+        if os.path.isfile(f):
+            listRemainingTmpFiles.append(f)
+    assert len(listRemainingTmpFiles) == 0
+
+
+def test_cleanup(uut):
+    # Currently the public wrapper for __force_cleanup_autosave_sessions()
+    # Create a number of tmp files
+    listCreatedTmpFiles = []
+    for i in range(5):
+        timestamp = DT.fromtimestamp(time.time()).strftime('%Y%m%d_%H%M%S_%f')
+        strFilename = uut._StateManager__tmpFileBasename + "_" + timestamp + ".json"
+        fp = open(strFilename, "w")
+        fp.write(strFilename)
+        fp.close()
+        listCreatedTmpFiles.append(strFilename)
+
+    # Invoke the cleanup function
+    uut.cleanup()
+
+    # Verify that all created tmp files have been deleted.
+    listRemainingTmpFiles = []
+    for f in listCreatedTmpFiles:
+        if os.path.isfile(f):
+            listRemainingTmpFiles.append(f)
+    assert len(listRemainingTmpFiles) == 0
+
+
+def test_autosave_filecount(uut_autosave_enabled,
+                            populated_changeset_list
+                            ):
+    # Verify the StateManager's attribute can be set
+    uut_autosave_enabled.set_autosave_filecount(3)
+    assert uut_autosave_enabled._StateManager__iTmpFileCount == 3
+
+    for cs in populated_changeset_list:
+        uut_autosave_enabled.add_changeset_q(cs)
+
+    # Verify there are three temp files on the filesystem
+    # Tbd
 
 
 # ##################### Queue mgmt utilities #########################

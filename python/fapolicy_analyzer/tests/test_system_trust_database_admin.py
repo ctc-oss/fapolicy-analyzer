@@ -5,6 +5,7 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from unittest.mock import MagicMock
+from callee.strings import Regex
 from ui.system_trust_database_admin import SystemTrustDatabaseAdmin
 from ui.configs import Colors
 
@@ -40,7 +41,7 @@ def test_updates_trust_details(widget, mocker):
         "File: /tmp/foo\nSize: 1\nSHA256: abc"
     )
     widget.trustFileDetails.set_on_file_system_view.assert_called_with(
-        "stat: cannot stat '/tmp/foo': No such file or directory\nSHA256: abc"
+        Regex(r"stat: cannot statx? '/tmp/foo': No such file or directory\nSHA256: abc")
     )
     widget.trustFileDetails.set_trust_status.assert_called_with("This file is trusted.")
 
