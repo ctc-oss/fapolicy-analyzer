@@ -19,7 +19,7 @@ fn parser(i: &str) -> nom::IResult<&str, Line> {
     ))(i)
 }
 
-fn parse_clean(xs: Vec<String>) {
+fn parse_lines(xs: Vec<String>) {
     let lines: Vec<Line> = xs
         .iter()
         .map(|l| (l, parser(l)))
@@ -63,7 +63,7 @@ fn test_parse_all() {
         .filter(|s| !s.is_empty())
         .collect();
 
-    parse_clean(xs)
+    parse_lines(xs)
 }
 
 #[test]
@@ -77,7 +77,7 @@ fn test_parse_clean_1() {
         .filter(|s| !s.is_empty() && !s.starts_with('#'))
         .collect();
 
-    parse_clean(xs)
+    parse_lines(xs)
 }
 
 #[test]
@@ -91,5 +91,5 @@ fn test_parse_clean_2() {
         .filter(|s| !s.is_empty() && !s.starts_with('#'))
         .collect();
 
-    parse_clean(xs)
+    parse_lines(xs)
 }
