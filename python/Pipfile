@@ -23,7 +23,6 @@ flake8-i18n = "*"
 [packages]
 pycairo = "1.20.0"
 PyGObject = "3.38.0"
-toml = "0.10.2"
 events = "0.4"
 argparse = "1.4.0"
 

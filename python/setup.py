@@ -17,9 +17,9 @@ setup(
     rust_extensions=[RustExtension("fapolicy_analyzer.rust")],
     include_package_data=True,
     package_data={
+        "fapolicy_analyzer": ["locale/*/LC_MESSAGES/*.mo"],
         "fapolicy_analyzer.css": ["*.css"],
         "fapolicy_analyzer.glade": ["*.glade"],
-        "fapolicy_analyzer.locale": ["*/*/*.mo"],
         "fapolicy_analyzer.resources": ["*"],
     },
 )
