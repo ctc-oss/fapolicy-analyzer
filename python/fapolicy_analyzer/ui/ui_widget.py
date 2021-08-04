@@ -6,7 +6,7 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from abc import ABC
 from importlib import resources
-from util.format import snake_to_camelcase
+from fapolicy_analyzer.util.format import snake_to_camelcase
 
 
 DOMAIN = "fapolicy_analyzer"
