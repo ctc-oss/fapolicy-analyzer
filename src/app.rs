@@ -7,6 +7,7 @@ use crate::cfg::All;
 use crate::cfg::PROJECT_NAME;
 use crate::trust::load_trust_db;
 use crate::trust::Changeset;
+use crate::users::{load_groups, load_users, Group, User};
 
 /// Represents an immutable view of the application state.
 /// Carries along the configuration that provided the state.
@@ -14,6 +15,8 @@ use crate::trust::Changeset;
 pub struct State {
     pub config: All,
     pub trust_db: Vec<Trust>,
+    pub users: Vec<User>,
+    pub groups: Vec<Group>,
 }
 
 impl State {
@@ -21,6 +24,8 @@ impl State {
         State {
             config: cfg.clone(),
             trust_db: vec![],
+            users: vec![],
+            groups: vec![],
         }
     }
 
@@ -28,6 +33,8 @@ impl State {
         State {
             config: cfg.clone(),
             trust_db: load_trust_db(&cfg.system.trust_db_path),
+            users: load_users(),
+            groups: load_groups(),
         }
     }
 
@@ -49,6 +56,8 @@ impl State {
         Self {
             config: self.config.clone(),
             trust_db: updated_db,
+            users: self.users.clone(),
+            groups: self.groups.clone(),
         }
     }
 }

@@ -1,11 +1,15 @@
-use crate::users::parse;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
+
+use serde::Deserialize;
+use serde::Serialize;
+
+use crate::users::parse;
 
 /// # Group
 /// Represents a /etc/group Group
 ///
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Group {
     pub name: String,
     pub gid: u32,

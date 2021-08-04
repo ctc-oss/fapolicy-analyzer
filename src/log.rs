@@ -10,12 +10,13 @@ use nom::sequence::{preceded, terminated};
 
 use crate::rules::*;
 
-#[derive(Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Event {
     pub rule_id: i32,
     pub dec: Decision,
     pub perm: Permission,
-    pub auid: i32,
+    pub uid: i32,
+    pub gid: i32,
     pub pid: i32,
     pub subj: Subject,
     pub obj: Object,
@@ -37,20 +38,22 @@ pub fn parse_event(i: &str) -> nom::IResult<&str, Event> {
         terminated(preceded(tag("rule="), digit1), space1),
         terminated(preceded(tag("dec="), parse::decision), space1),
         terminated(parse::permission, space1),
-        terminated(preceded(tag("auid="), digit1), space1),
+        terminated(preceded(tag("uid="), digit1), space1),
+        terminated(preceded(tag("gid="), digit1), space1),
         terminated(preceded(tag("pid="), digit1), space1),
         terminated(parse::subject, space1),
         terminated(tag(":"), space0),
         parse::object,
     )))(i)
     {
-        Ok((remaining_input, (id, dec, perm, auid, pid, subj, _, obj))) => Ok((
+        Ok((remaining_input, (id, dec, perm, uid, gid, pid, subj, _, obj))) => Ok((
             remaining_input,
             Event {
                 rule_id: id.parse().unwrap(),
                 dec,
                 perm,
-                auid: auid.parse().unwrap(),
+                uid: uid.parse().unwrap(),
+                gid: gid.parse().unwrap(),
                 pid: pid.parse().unwrap(),
                 subj,
                 obj,
@@ -82,13 +85,14 @@ mod tests {
 
     #[test]
     fn parse_log_event() {
-        let e = "rule=9 dec=allow perm=execute auid=1003 pid=5555 exe=/usr/bin/bash : path=/usr/bin/vi ftype=application/x-executable";
+        let e = "rule=9 dec=allow perm=execute uid=1003 gid=999 pid=5555 exe=/usr/bin/bash : path=/usr/bin/vi ftype=application/x-executable";
         let (rem, e) = parse_event(e).ok().unwrap();
         assert_eq!(9, e.rule_id);
         assert!(rem.is_empty());
         assert_eq!(e.dec, Decision::Allow);
         assert_eq!(e.perm, Permission::Execute);
-        assert_eq!(e.auid, 1003);
+        assert_eq!(e.uid, 1003);
+        assert_eq!(e.gid, 999);
         assert_eq!(e.pid, 5555);
     }
 }
