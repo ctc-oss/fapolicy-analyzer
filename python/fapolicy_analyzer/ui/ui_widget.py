@@ -1,5 +1,6 @@
 import locale
 import gi
+import pkg_resources
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
@@ -10,8 +11,8 @@ from util.format import snake_to_camelcase
 
 DOMAIN = "fapolicy_analyzer"
 locale.setlocale(locale.LC_ALL, locale.getlocale())
-with resources.path("fapolicy_analyzer", "locale") as path:
-    locale.bindtextdomain(DOMAIN, path)
+locale_path = pkg_resources.resource_filename("fapolicy_analyzer", "locale")
+locale.bindtextdomain(DOMAIN, locale_path)
 locale.textdomain(DOMAIN)
 
 
