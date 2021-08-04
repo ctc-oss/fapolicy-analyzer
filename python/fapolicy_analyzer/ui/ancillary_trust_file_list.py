@@ -1,6 +1,6 @@
 import gi
 import re
-import ui.strings as strings
+import fapolicy_analyzer.ui.strings as strings
 
 gi.require_version("Gtk", "3.0")
 from functools import reduce
@@ -9,7 +9,6 @@ from os import path
 from types import SimpleNamespace
 from .configs import Colors
 from .state_manager import stateManager
-from .strings import CHANGESET_ACTION_ADD, CHANGESET_ACTION_DEL
 from .trust_file_list import TrustFileList
 
 
@@ -67,12 +66,20 @@ class AncillaryTrustFileList(TrustFileList):
         for i, data in enumerate(trust):
             status, *rest = self.markup_func(data.status)
             bgColor = rest[0] if rest else "white"
-            changes = CHANGESET_ACTION_ADD if data.path in changesetMap["Add"] else ""
+            changes = (
+                strings.CHANGESET_ACTION_ADD if data.path in changesetMap["Add"] else ""
+            )
             store.append([status, data.path, data, bgColor, changes])
 
         for pth in changesetMap["Del"]:
             store.append(
-                ["T/D", pth, SimpleNamespace(path=pth), "white", CHANGESET_ACTION_DEL]
+                [
+                    "T/D",
+                    pth,
+                    SimpleNamespace(path=pth),
+                    "white",
+                    strings.CHANGESET_ACTION_DEL,
+                ]
             )
 
         self.load_store(store)
