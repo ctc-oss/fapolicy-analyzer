@@ -9,7 +9,7 @@ use crate::rules::{bool_to_c, parse, Rvalue};
 /// There can be one or more object fields. Each field is and'ed with others to decide if a rule triggers.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Object {
-    parts: Vec<Part>,
+    pub parts: Vec<Part>,
 }
 
 impl Object {

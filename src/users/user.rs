@@ -1,11 +1,15 @@
-use crate::users::parse;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
+
+use serde::Deserialize;
+use serde::Serialize;
+
+use crate::users::parse;
 
 /// # User
 /// Represents a /etc/passwd User
 ///
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct User {
     pub name: String,
     pub uid: u32,

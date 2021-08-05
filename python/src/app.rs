@@ -7,6 +7,9 @@ use fapolicy_analyzer::check::trust_status;
 
 use super::trust::PyChangeset;
 use super::trust::PyTrust;
+use crate::acl::{PyGroup, PyUser};
+use crate::event::PyEvent;
+use fapolicy_analyzer::log::Event;
 use fapolicy_analyzer::sys::deploy_app_state;
 
 #[pyclass(module = "app", name = "System")]
@@ -95,6 +98,22 @@ impl PySystem {
     fn is_stale(&self) -> bool {
         // todo;; check current state againt rpm and file
         false
+    }
+
+    /// Load a list of system users
+    fn users(&self) -> Vec<PyUser> {
+        self.state.users.iter().map(|u| u.clone().into()).collect()
+    }
+
+    /// Load a list of system groups
+    fn groups(&self) -> Vec<PyGroup> {
+        self.state.groups.iter().map(|g| g.clone().into()).collect()
+    }
+
+    /// Parse all Events from the log at the specified path
+    fn events_from(&self, log: &str) -> Vec<PyEvent> {
+        let xs = Event::from_file(log);
+        xs.iter().map(|e| PyEvent::from(e.clone())).collect()
     }
 }
 

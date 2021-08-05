@@ -17,7 +17,7 @@ added /home mount point
 added /run/user/1000 mount point
 added /run/user/1003 mount point
 Starting to listen for events
-rule=9 dec=allow perm=execute auid=1003 pid=5555 exe=/usr/bin/bash : path=/usr/bin/vi ftype=application/x-executable
+rule=9 dec=allow perm=execute uid=1003 gid=100 pid=5555 exe=/usr/bin/bash : path=/usr/bin/vi ftype=application/x-executable
 shutting down...
 Inter-thread max queue depth 1
 Allowed accesses: 77
