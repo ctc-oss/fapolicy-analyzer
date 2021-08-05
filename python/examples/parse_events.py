@@ -1,7 +1,6 @@
 from fapolicy_analyzer import *
 
 # config is loaded from $HOME/.config/fapolicy-analyzer/fapolicy-analyzer.toml
-
 s1 = System()
 print(f"found {len(s1.users())} system users")
 print(f"found {len(s1.groups())} system groups")
