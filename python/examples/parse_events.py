@@ -1,7 +1,6 @@
 from fapolicy_analyzer import *
 
 # config is loaded from $HOME/.config/fapolicy-analyzer/fapolicy-analyzer.toml
-from fapolicy_analyzer.rust import System
 
 s1 = System()
 print(f"found {len(s1.users())} system users")
