@@ -3,7 +3,7 @@ File Access Policy Analyzer
 
 Tools to assist with the configuration and maintenance of [fapolicyd](https://github.com/linux-application-whitelisting/fapolicyd).
 
-### Python bindings
+## Python bindings
 
 We write python bindings using [PyO3](https://github.com/PyO3/pyo3) and [setuptools_rust](https://setuptools-rust.readthedocs.io/en/latest/).
 
@@ -16,7 +16,7 @@ python setup.py [develop | install]
 python examples/validate_install.py
 ```
 
-### Integration tests
+## Integration tests
 
 We write integration tests using [Bats](https://bats-core.readthedocs.io/en/latest/index.html) and [Podman](https://podman.io/).  The integration tests can run locally or in Travis CI.
 
@@ -45,12 +45,17 @@ A Bats test that validates changing the trust database looks like:
 
 See the [test/bats](tests/bats) directory for more examples.
 
-### Requirements
+## Requirements
 
 - Python 3
 - Rust 1.52
 - fapolicyd 1.0
 
-### Developers
+### fapolicyd configuration
+To generate rules that can be analyzed we require the following `syslog_format` cnofiguration
+
+`syslog_format = rule,dec,perm,uid,gid,pid,exe,:,path,ftype,trust`
+
+## Developers
 
 See the [Wiki](https://github.com/ctc-oss/fapolicy-analyzer/wiki) for more resources.
