@@ -1,6 +1,7 @@
 use fapolicy_analyzer::users::{Group, User};
 use pyo3::prelude::*;
 
+/// Represents a host system user parsed from /etc/passwd
 #[pyclass(module = "acl", name = "User")]
 #[derive(Clone)]
 pub struct PyUser {
@@ -19,20 +20,26 @@ impl From<PyUser> for User {
 
 #[pymethods]
 impl PyUser {
+    /// The user id (UID) of the user
     #[getter]
     fn id(&self) -> u32 {
         self.user.uid
     }
     #[getter]
+
+    /// The username of the user
     fn name(&self) -> &str {
         &self.user.name
     }
+
+    /// The primary group id (GID) of the user
     #[getter]
     fn primary_group_id(&self) -> u32 {
         self.user.gid
     }
 }
 
+/// Represents a host system group parsed from /etc/group
 #[pyclass(module = "acl", name = "Group")]
 #[derive(Clone)]
 pub struct PyGroup {
@@ -52,14 +59,19 @@ impl From<PyGroup> for Group {
 
 #[pymethods]
 impl PyGroup {
+    /// The group id (GID) of the group
     #[getter]
     fn id(&self) -> u32 {
         self.group.gid
     }
+
+    /// The name of the group
     #[getter]
     fn name(&self) -> String {
         self.group.name.clone()
     }
+
+    /// List of member UIDs that are members of this group
     #[getter]
     fn members(&self) -> Vec<String> {
         self.group.users.clone()

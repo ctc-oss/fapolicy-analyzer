@@ -100,14 +100,17 @@ impl PySystem {
         false
     }
 
+    /// Load a list of system users
     fn users(&self) -> Vec<PyUser> {
         self.state.users.iter().map(|u| u.clone().into()).collect()
     }
 
+    /// Load a list of system groups
     fn groups(&self) -> Vec<PyGroup> {
         self.state.groups.iter().map(|g| g.clone().into()).collect()
     }
 
+    /// Parse all Events from the log at the specified path
     fn events_from(&self, log: &str) -> Vec<PyEvent> {
         let xs = Event::from_file(log);
         xs.iter().map(|e| PyEvent::from(e.clone())).collect()

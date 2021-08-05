@@ -3,6 +3,7 @@ use fapolicy_analyzer::rules::ObjPart;
 use fapolicy_analyzer::rules::SubjPart;
 use pyo3::prelude::*;
 
+/// An Event parsed from a fapolicyd log
 #[pyclass(module = "log", name = "Event")]
 #[derive(Clone)]
 pub struct PyEvent {
@@ -21,16 +22,19 @@ impl From<PyEvent> for Event {
 
 #[pymethods]
 impl PyEvent {
+    /// The user id parsed from the log event
     #[getter]
-    fn user(&self) -> i32 {
+    fn uid(&self) -> i32 {
         self.event.uid
     }
 
+    /// The group id parsed from the log event
     #[getter]
-    fn group(&self) -> i32 {
+    fn gid(&self) -> i32 {
         self.event.gid
     }
 
+    /// The fapolicyd subject parsed from the log event
     #[getter]
     fn subject(&self) -> PySubject {
         let path = if let Some(SubjPart::Exe(path)) = self.event.subj.parts.iter().find(|p| match p
@@ -50,6 +54,7 @@ impl PyEvent {
         }
     }
 
+    /// The fapolicyd object parsed from the log event
     #[getter]
     fn object(&self) -> PyObject {
         let path = if let Some(ObjPart::Path(path)) =
@@ -71,6 +76,7 @@ impl PyEvent {
     }
 }
 
+/// Subject metadata
 #[pyclass(module = "log", name = "Subject")]
 #[derive(Clone)]
 pub struct PySubject {
@@ -79,6 +85,7 @@ pub struct PySubject {
     access: String,
 }
 
+/// Object metadata
 #[pyclass(module = "log", name = "Object")]
 #[derive(Clone)]
 pub struct PyObject {
@@ -90,14 +97,19 @@ pub struct PyObject {
 
 #[pymethods]
 impl PySubject {
+    /// Path of the subject parsed from the log event
     #[getter]
     fn file(&self) -> String {
         self.file.clone()
     }
+
+    /// Trust status of the log event subject
     #[getter]
     fn trust(&self) -> String {
         self.trust.clone()
     }
+
+    /// Access status of the log event subject
     #[getter]
     fn access(&self) -> String {
         self.access.clone()
@@ -106,18 +118,25 @@ impl PySubject {
 
 #[pymethods]
 impl PyObject {
+    /// Path of the object parsed from the log event
     #[getter]
     fn file(&self) -> String {
         self.file.clone()
     }
+
+    /// Trust status of the log event object
     #[getter]
     fn trust(&self) -> String {
         self.trust.clone()
     }
+
+    /// Access status of the log event object
     #[getter]
     fn access(&self) -> String {
         self.access.clone()
     }
+
+    /// Mode of the log event object
     #[getter]
     fn mode(&self) -> String {
         self.mode.clone()
