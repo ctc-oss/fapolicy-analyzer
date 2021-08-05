@@ -8,8 +8,8 @@ print(f"found {len(s1.groups())} system groups")
 umap = {u.id: u.name for u in s1.users()}
 gmap = {g.id: g.name for g in s1.groups()}
 for e in s1.events_from("events0.log")[:5]:
-    print({"u": umap[e.user],
-           "g": gmap[e.group],
+    print({"u": umap[e.uid],
+           "g": gmap[e.gid],
            "s": {
                "file": e.subject.file,
                "trust": e.subject.trust,
