@@ -53,7 +53,7 @@ impl From<PyGroup> for Group {
 #[pymethods]
 impl PyGroup {
     #[getter]
-    fn get_id(&self) -> u32 {
+    fn id(&self) -> u32 {
         self.group.gid
     }
     #[getter]
