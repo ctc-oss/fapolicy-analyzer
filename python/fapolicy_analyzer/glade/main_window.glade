@@ -6,10 +6,13 @@
     <property name="can-focus">False</property>
     <property name="title" translatable="yes">About File Acccess Policy Analyzer</property>
     <property name="type-hint">dialog</property>
+    <property name="decorated">False</property>
     <property name="program-name">File Access Policy Analyzer</property>
-    <property name="version">0.1</property>
-    <property name="logo-icon-name">face-plain</property>
-    <property name="license-type">lgpl-3-0</property>
+    <property name="version">v0.2.0</property>
+    <property name="website">https://github.com/ctc-oss/fapolicy-analyzer/wiki</property>
+    <property name="website-label" translatable="yes">Visit our Wiki for more information</property>
+    <property name="logo-icon-name">changes-prevent</property>
+    <property name="license-type">gpl-3-0</property>
     <child internal-child="vbox">
       <object class="GtkBox">
         <property name="can-focus">False</property>
@@ -46,7 +49,7 @@
       </object>
     </child>
     <action-widgets>
-      <action-widget response="-5">button1</action-widget>
+      <action-widget response="-7">button1</action-widget>
     </action-widgets>
   </object>
   <object class="GtkWindow" id="mainWindow">
