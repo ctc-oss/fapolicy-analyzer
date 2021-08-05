@@ -2,18 +2,20 @@ import context  # noqa: F401
 import os
 import pytest
 import json
+import glob
 from datetime import datetime as DT
 import time
 from unittest.mock import MagicMock
 from fapolicy_analyzer import Changeset
-from ui.state_manager import stateManager, NotificationType
+from ui.state_manager import stateManager, StateManager, NotificationType
 
 
 # Set up; create UUT
 @pytest.fixture
 def uut():
     stateManager.set_autosave_enable(False)
-    stateManager.set_autosave_filename("/tmp/UnitTestSession")
+    #stateManager.set_autosave_filename("/tmp/UnitTestSession")
+    stateManager.set_autosave_filename("/tmp/FaCurrentSession.tmp")
     yield stateManager
     stateManager.del_changeset_q()
     stateManager.systemNotification = None
@@ -30,7 +32,10 @@ def populated_queue(uut):
 
 
 @pytest.fixture
-def uut_autosave_enabled(uut):
+def uut_autosave_enabled():
+    # Reset stateManager's defaults
+    #stateManager.__init__()
+    stateManager.set_autosave_filename("/tmp/FaCurrentSession.tmp")
     stateManager.set_autosave_enable(True)
     yield stateManager
     stateManager.del_changeset_q()
@@ -55,7 +60,29 @@ def populated_changeset_list():
 
     return listExpectedChangeset
 
+@pytest.fixture
+def autosaved_files():
+    fp0 = open("/tmp/FaCurrentSession.tmp_20210803_130622_059045.json", "w")
+    fp1 = open("/tmp/FaCurrentSession.tmp_20210803_130622_065690.json", "w")
+    fp0.write('''{
+    "/home/toma/Development/CTC/data_space/man_from_mars.txt": "Add",
+    "/home/toma/Integration.json": "Add"
+}''')
+    fp1.write('''{
+    "/home/toma/Development/CTC/data_space/man_from_mars.txt": "Add",
+    "/home/toma/Development/CTC/data_space/this/is/a/longer/path/now_is_the_time.txt": "Del",
+    "/home/toma/Integration.json": "Add"
+}''')
+    fp0.close()
+    fp1.close()
 
+    # yields the newest json file.
+    yield "/tmp/FaCurrentSession.tmp_20210803_130622_065690.json"
+
+    # Clean up the filesystem
+    os.remove("/tmp/FaCurrentSession.tmp_20210803_130622_059045.json")
+    os.remove("/tmp/FaCurrentSession.tmp_20210803_130622_065690.json")
+    
 # test: add an element to an empty Q, verify Q contents
 def test_add_empty_queue(uut):
     # Verify empty Q
@@ -357,9 +384,55 @@ def test_autosave_filecount(uut_autosave_enabled,
         uut_autosave_enabled.add_changeset_q(cs)
 
     # Verify there are three temp files on the filesystem
-    # Tbd
+    strSearchPattern = uut_autosave_enabled._StateManager__tmpFileBasename+"_*.json"
+    listTmpFiles = glob.glob(strSearchPattern)
+    assert len(listTmpFiles) == 3
 
 
+def test_detect_previous_session_no_files(uut):
+    # There should be no existing tmp session files
+    strSearchPattern = uut._StateManager__tmpFileBasename+"_*.json"
+    listTmpFiles = glob.glob(strSearchPattern)
+    assert not len(listTmpFiles)
+
+    # The uut's detection function should verify no files too
+    assert not uut.detect_previous_session()
+
+def test_detect_previous_session_files(uut_autosave_enabled,
+                                          populated_changeset_list):
+    # Apply a number of Changesets which each generate a tmp session file
+    for cs in populated_changeset_list:
+        uut_autosave_enabled.add_changeset_q(cs)
+
+    # Verify there temp files on the filesystem
+    strSearchPattern = uut_autosave_enabled._StateManager__tmpFileBasename+"_*.json"
+    listTmpFiles = glob.glob(strSearchPattern)
+    assert len(listTmpFiles) > 0
+
+    # The uut's detection function should verify the existence of tmp files
+    assert uut_autosave_enabled.detect_previous_session()
+
+    # Clean up
+    uut_autosave_enabled.cleanup()
+    listTmpFiles = glob.glob(strSearchPattern)
+    assert len(listTmpFiles) == 0
+
+def test_restore_previous_session(uut_autosave_enabled,
+                                  populated_changeset_list,
+                                  autosaved_files):
+    # Two json files assumed on disk w/fixture
+    strSearchPattern = uut_autosave_enabled._StateManager__tmpFileBasename+"_*.json"
+    listTmpFiles = glob.glob(strSearchPattern)
+    print(strSearchPattern,listTmpFiles)
+    assert len(listTmpFiles) > 0
+    uut_autosave_enabled.restore_previous_session()
+    pass
+    
+def test_restore_previous_session_w_bad_file(uut_autosave_enabled,
+                                  populated_changeset_list):
+    # Write three json files to disk, one with bad json syntax.
+    pass
+    
 # ##################### Queue mgmt utilities #########################
 def test_path_action_dict_to_list(uut):
     # Define test input/output data
