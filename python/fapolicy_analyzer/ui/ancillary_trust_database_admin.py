@@ -11,8 +11,6 @@ from fapolicy_analyzer.util import fs  # noqa: F401
 from .ui_widget import UIWidget
 from .trust_file_list import TrustFileList
 from .trust_file_details import TrustFileDetails
-from .deploy_confirm_dialog import DeployConfirmDialog
-from .configs import Colors
 from .state_manager import stateManager, NotificationType
 from .confirm_info_dialog import ConfirmInfoDialog
 
@@ -153,14 +151,15 @@ SHA256: {fs.sha(trust.path)}"""
                 )
                 return
 
-            deployConfirmDialog = DeployConfirmDialog(parent).get_content()
-            revert_resp = deployConfirmDialog.run()
-            deployConfirmDialog.hide()
-            if revert_resp == Gtk.ResponseType.YES:
-                stateManager.del_changeset_q()
-            else:
-                # TODO: revert here?
-                return
+            # TODO: uncomment and turn on the deploy confirmation dialog once its supported by the backend
+            # deployConfirmDialog = DeployConfirmDialog(parent).get_ref()
+            # revert_resp = deployConfirmDialog.run()
+            # deployConfirmDialog.hide()
+            # if revert_resp == Gtk.ResponseType.YES:
+            stateManager.del_changeset_q()
+            # else:
+            #     # TODO: revert here?
+            #     return
 
     def on_changeset_updated(self):
         deployBtn = self.get_object("deployBtn")
