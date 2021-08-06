@@ -19,7 +19,7 @@ class AddFileButton(UIWidget, Events):
 
     def addFileButton_clicked(self, *args):
         fcd = Gtk.FileChooserDialog(
-            title=strings.ADD_FILE_BUTTON_LABEL,
+            title=strings.ADD_FILE_LABEL,
             transient_for=self.get_ref().get_toplevel(),
             action=Gtk.FileChooserAction.OPEN,
         )

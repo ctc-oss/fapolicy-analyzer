@@ -23,6 +23,7 @@
               <object class="GtkButton" id="scanSystemBtn">
                 <property name="label" translatable="yes">Scan System</property>
                 <property name="visible">True</property>
+                <property name="sensitive">False</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
               </object>
@@ -77,9 +78,10 @@
             <child>
               <object class="GtkEntry" id="auditLogTxt">
                 <property name="visible">True</property>
-                <property name="sensitive">False</property>
                 <property name="can-focus">True</property>
-                <property name="editable">False</property>
+                <property name="secondary-icon-stock">gtk-open</property>
+                <signal name="changed" handler="on_auditLogTxt_changed" swapped="no"/>
+                <signal name="icon-press" handler="on_auditLogTxt_icon_press" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -111,6 +113,7 @@
       </object>
     </child>
     <action-widgets>
+      <action-widget response="2">analyzeAuditBtn</action-widget>
       <action-widget response="1">scanSystemBtn</action-widget>
       <action-widget response="0">adminTrustDatabasesBtn</action-widget>
     </action-widgets>
