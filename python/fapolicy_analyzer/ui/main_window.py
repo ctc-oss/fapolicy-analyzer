@@ -188,6 +188,7 @@ class MainWindow(UIWidget):
             if response == Gtk.ResponseType.YES:
                 try:
                     stateManager.restore_previous_session()
+                    self.get_object("restoreMenu").set_sensitive(False)
                 except:
                     print("Restore failed")
         else:

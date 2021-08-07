@@ -188,20 +188,24 @@ deploy these changesets.
 
     def open_edit_session(self, strJsonFile):
         """Save the FIFO changeset queue to the specified json file on disk"""
-        logging.debug("Entered StateManager::open_edit_session({})"
-                      .format(strJsonFile))
+        logging.debug("Entered StateManager::open_edit_session({})".format(strJsonFile))
         listPA = None
         with open(strJsonFile, "r") as fp:
-            d = json.load(fp, object_pairs_hook=OrderedDict)
-            logging.debug("Loaded dict = ", d)
-            listPA = self.__path_action_dict_to_list(d)
-            logging.debug("StateManager::open_edit_session():{}".format(listPA))
-
+            try:
+                d = json.load(fp, object_pairs_hook=OrderedDict)
+                logging.debug("Loaded dict = ", d)
+                listPA = self.__path_action_dict_to_list(d)
+                logging.debug("StateManager::open_edit_session():{}".format(listPA))
+            except Exception as e:
+                raise e("json.load() failure")
             # Deleting current edit session history prior to replacing it.
             if listPA:
                 # ToDo: Delete pending ops in the ATDA's embedded TreeView
                 self.del_changeset_q()
+
             self.ev_user_session_loaded(listPA)
+            print("listPA = ",listPA)
+
 
     # ####################### Autosave file mgmt ###########################
     def __cleanup_autosave_sessions(self):
@@ -248,7 +252,7 @@ or a session file open/restore operation."""
     def restore_previous_session(self):
         '''Restore latest prior session'''
         logging.debug("StateManager::restore_previous_session()")
-        
+
         # Determine file to load, in newest to oldest order
         strSearchPattern = self.__tmpFileBasename+"_*.json"
         print("Search Pattern: {}".format(strSearchPattern))
@@ -263,6 +267,7 @@ or a session file open/restore operation."""
             try:
                 print("Attempting to restore session file: {}".format(f))
                 self.open_edit_session(f)
+                print("Returned from open_edit_session({})".format(f))
                 self.__cleanup_autosave_sessions()
                 bReturn = True
                 print("SUCCESS")

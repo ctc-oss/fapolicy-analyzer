@@ -7,18 +7,21 @@ from datetime import datetime as DT
 import time
 from unittest.mock import MagicMock
 from fapolicy_analyzer import Changeset
-from ui.state_manager import stateManager, StateManager, NotificationType
-
+#from ui.state_manager import stateManager, StateManager, NotificationType
+from ui.state_manager import StateManager, NotificationType
 
 # Set up; create UUT
 @pytest.fixture
 def uut():
+    stateManager = StateManager()
     stateManager.set_autosave_enable(False)
-    #stateManager.set_autosave_filename("/tmp/UnitTestSession")
-    stateManager.set_autosave_filename("/tmp/FaCurrentSession.tmp")
+    stateManager.set_autosave_filename("/tmp/UnitTestSession")
+    #stateManager.set_autosave_filename("/tmp/FaCurrentSession.tmp")
     yield stateManager
-    stateManager.del_changeset_q()
-    stateManager.systemNotification = None
+    stateManager.cleanup()
+    stateManager = None
+    #stateManager.del_changeset_q()
+    #stateManager.systemNotification = None
 
 
 @pytest.fixture
@@ -35,11 +38,14 @@ def populated_queue(uut):
 def uut_autosave_enabled():
     # Reset stateManager's defaults
     #stateManager.__init__()
-    stateManager.set_autosave_filename("/tmp/FaCurrentSession.tmp")
+    stateManager = StateManager()
+    #stateManager.set_autosave_filename("/tmp/FaCurrentSession.tmp")
     stateManager.set_autosave_enable(True)
     yield stateManager
-    stateManager.del_changeset_q()
-    stateManager.systemNotification = None
+    stateManager.cleanup()
+    stateManager = None
+    #stateManager.del_changeset_q()
+    #stateManager.systemNotification = None
 
 
 @pytest.fixture
@@ -58,7 +64,7 @@ def populated_changeset_list():
             changeset.del_trust(strFilename)
         listExpectedChangeset.append(changeset)
 
-    return listExpectedChangeset
+    yield listExpectedChangeset
 
 @pytest.fixture
 def autosaved_files():
@@ -77,7 +83,8 @@ def autosaved_files():
     fp1.close()
 
     # yields the newest json file.
-    yield "/tmp/FaCurrentSession.tmp_20210803_130622_065690.json"
+    yield ["/tmp/FaCurrentSession.tmp_20210803_130622_065690.json",
+           "/tmp/FaCurrentSession.tmp_20210803_130622_059045.json"]
 
     # Clean up the filesystem
     os.remove("/tmp/FaCurrentSession.tmp_20210803_130622_059045.json")
@@ -217,7 +224,7 @@ def test_open_edit_session(uut, mocker):
     strModule = "ui.ancillary_trust_database_admin.AncillaryTrustDatabaseAdmin"
     mockAdd = mocker.patch("{}.on_files_added".format(strModule))
     mockDel = mocker.patch("{}.on_files_deleted".format(strModule))
-
+    mockEvent = mocker.patch("events.events.Events.__getattr__")
     # Create Path/Action dict and expected generated path lists
     dictPaInput = {
         "/data_space/man_from_mars.txt": "Add",
@@ -246,8 +253,9 @@ def test_open_edit_session(uut, mocker):
     os.system("rm -f {}".format(tmp_file))
 
     # Verify the function were called w/appropriate args
-    mockAdd.assert_called_with(listExpectedPathAdds)
-    mockDel.assert_called_with(listExpectedPathDels)
+    #mockAdd.assert_called()#_with(listExpectedPathAdds)
+    #mockDel.assert_called()#_with(listExpectedPathDels)
+    mockEvent.assert_called_with('ev_user_session_loaded')
 
 
 def test_save_edit_session(uut):
@@ -419,14 +427,22 @@ def test_detect_previous_session_files(uut_autosave_enabled,
 
 def test_restore_previous_session(uut_autosave_enabled,
                                   populated_changeset_list,
-                                  autosaved_files):
+                                  autosaved_files,
+                                  mocker):
+
+    # Mock the event channel comms to the ATDA
+    # mockEvent = mocker.patch("ui.state_manager.ev_user_session_loader")
+    
     # Two json files assumed on disk w/fixture
     strSearchPattern = uut_autosave_enabled._StateManager__tmpFileBasename+"_*.json"
     listTmpFiles = glob.glob(strSearchPattern)
     print(strSearchPattern,listTmpFiles)
     assert len(listTmpFiles) > 0
-    uut_autosave_enabled.restore_previous_session()
-    pass
+
+    # Convert to sets so that ordering is irrelevant 
+    assert set(listTmpFiles) == set(autosaved_files)
+    assert uut_autosave_enabled.restore_previous_session()
+
     
 def test_restore_previous_session_w_bad_file(uut_autosave_enabled,
                                   populated_changeset_list):
