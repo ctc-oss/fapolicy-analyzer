@@ -8,6 +8,9 @@ edition = "2018"
 [lib]
 crate-type = ["cdylib"]
 
+[dependencies]
+rayon = "1.5"
+
 [dependencies.fapolicy-analyzer]
 path = ".."
 

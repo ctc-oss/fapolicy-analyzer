@@ -40,9 +40,11 @@ impl PySystem {
     /// This represents state in the current fapolicyd database, not necessarily
     /// matching what is currently in the RPM database.
     fn system_trust(&self) -> Vec<PyTrust> {
+        use rayon::prelude::*;
+
         self.state
             .trust_db
-            .iter()
+            .par_iter()
             .filter(|t| t.source == TrustSource::System)
             .map(trust_status)
             .flatten()
@@ -63,9 +65,11 @@ impl PySystem {
     /// This represents state in the current fapolicyd database, not necessarily
     /// matching what is currently in the ancillary trust file.
     fn ancillary_trust(&self) -> Vec<PyTrust> {
+        use rayon::prelude::*;
+
         self.state
             .trust_db
-            .iter()
+            .par_iter()
             .filter(|t| t.source == TrustSource::Ancillary)
             .map(trust_status)
             .flatten()
