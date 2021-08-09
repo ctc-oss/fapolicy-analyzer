@@ -1,28 +1,12 @@
 import gi
-import subprocess
 import ui.strings as strings
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, GLib
-from concurrent.futures import ThreadPoolExecutor
-from random import randrange
+from gi.repository import Gtk
 from .add_file_button import AddFileButton
 from .configs import Colors
 from .searchable_list import SearchableList
 from .strings import FILE_LABEL, FILES_LABEL
-
-
-def _mock_subjects():
-    statuses = ["ST", "AT", "U"]
-    accesses = ["A", "P", "D"]
-    locations = ["/usr/sbin", "/usr/bin", "/usr/local/sbin", "/usr/local/bin"]
-    paths = subprocess.getstatusoutput(
-        f"find {' '.join(locations)} -executable -type f"
-    )
-    return [
-        {"status": statuses[randrange(3)], "access": accesses[randrange(3)], "path": p}
-        for p in paths[1].splitlines()
-    ]
 
 
 class SubjectList(SearchableList):
@@ -37,8 +21,7 @@ class SubjectList(SearchableList):
 
         super().__init__(self.__columns(), add_button.get_ref(), searchColumnIndex=2)
 
-        self.executor = ThreadPoolExecutor(max_workers=1)
-        self._load_data()
+        self.load_store([])
         self.selection_changed += self.__handle_selection_changed
 
     def __columns(self):
@@ -79,14 +62,6 @@ class SubjectList(SearchableList):
             else Colors.LIGHT_RED
         )
 
-    def _load_data(self):
-        def get_subjects():
-            subjects = _mock_subjects()
-            GLib.idle_add(self.load_store, subjects)
-
-        super().set_loading(True)
-        self.executor.submit(get_subjects)
-
     def __handle_selection_changed(self, data):
         subject = data[3] if data else None
         self.subject_selection_changed(subject)
@@ -97,10 +72,10 @@ class SubjectList(SearchableList):
 
     def load_store(self, subjects):
         store = Gtk.ListStore(str, str, str, object, str)
-        for i, s in enumerate(subjects):
-            status = self.__markup(s.get("status", "").upper(), ["ST", "AT", "U"])
-            access = self.__markup(s.get("access", "").upper(), ["A", "P", "D"])
-            bgColor = self.__color(s.get("access", ""))
-            store.append([status, access, s.get("path", ""), s, bgColor])
+        for s in subjects:
+            status = self.__markup(s.trust.upper(), ["ST", "AT", "U"])
+            access = self.__markup(s.access.upper(), ["A", "P", "D"])
+            bgColor = self.__color(s.access)
+            store.append([status, access, s.file, s, bgColor])
 
         super().load_store(store)

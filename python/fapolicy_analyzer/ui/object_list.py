@@ -1,34 +1,13 @@
 import gi
-import subprocess
 import ui.strings as strings
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, GLib
+from gi.repository import Gtk
 from concurrent.futures import ThreadPoolExecutor
-from random import randrange
 from .add_file_button import AddFileButton
 from .configs import Colors
 from .searchable_list import SearchableList
 from .strings import FILE_LABEL, FILES_LABEL
-
-
-def _mock_objects():
-    statuses = ["ST", "AT", "U"]
-    modes = ["R", "W", "X", "RW", "RX", "WX", "RWX", ""]
-    accesses = ["A", "D"]
-    locations = ["/usr/sbin", "/usr/bin", "/usr/local/sbin", "/usr/local/bin"]
-    paths = subprocess.getstatusoutput(
-        f"find {' '.join(locations)} -executable -type f"
-    )
-    return [
-        {
-            "status": statuses[randrange(3)],
-            "mode": modes[randrange(8)],
-            "access": accesses[randrange(2)],
-            "path": p,
-        }
-        for p in paths[1].splitlines()
-    ]
 
 
 class ObjectList(SearchableList):
@@ -44,7 +23,7 @@ class ObjectList(SearchableList):
         super().__init__(self.__columns(), add_button.get_ref(), searchColumnIndex=3)
 
         self.executor = ThreadPoolExecutor(max_workers=1)
-        self._load_data()
+        self.load_store([])
         self.selection_changed += self.__handle_selection_changed
 
     def __columns(self):
@@ -96,14 +75,6 @@ class ObjectList(SearchableList):
             else Colors.LIGHT_RED
         )
 
-    def _load_data(self):
-        def get_objects():
-            objects = _mock_objects()
-            GLib.idle_add(self.load_store, objects)
-
-        super().set_loading(True)
-        self.executor.submit(get_objects)
-
     def __handle_selection_changed(self, data):
         object = data[4] if data else None
         self.object_selection_changed(object)
@@ -114,16 +85,16 @@ class ObjectList(SearchableList):
 
     def load_store(self, objects):
         store = Gtk.ListStore(str, str, str, str, object, str)
-        for i, o in enumerate(objects):
-            status = self.__markup(o.get("status", "").upper(), ["ST", "AT", "U"])
+        for o in objects:
+            status = self.__markup(o.trust.upper(), ["ST", "AT", "U"])
             mode = self.__markup(
-                o.get("mode", "").upper(),
+                o.mode.upper(),
                 ["R", "W", "X"],
                 seperator="",
                 multiValue=True,
             )
-            access = self.__markup(o.get("access", "").upper(), ["A", "D"])
-            bgColor = self.__color(o.get("access", ""), o.get("mode", ""))
-            store.append([status, mode, access, o.get("path", ""), o, bgColor])
+            access = self.__markup(o.access.upper(), ["A", "D"])
+            bgColor = self.__color(o.access, o.mode)
+            store.append([status, mode, access, o.file, o, bgColor])
 
         super().load_store(store)
