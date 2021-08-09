@@ -1,11 +1,9 @@
 import gi
-import re
 import fapolicy_analyzer.ui.strings as strings
 
 gi.require_version("Gtk", "3.0")
 from functools import reduce
 from gi.repository import Gtk
-from os import path
 from types import SimpleNamespace
 from .configs import Colors
 from .add_file_button import AddFileButton
@@ -37,9 +35,9 @@ class AncillaryTrustFileList(TrustFileList):
 
         # map change path to action, the action for the last change in the queue wins
         changesetMap = {
-            path: action
+            p: a
             for e in stateManager.get_changeset_q() or []
-            for (path, action) in e.get_path_action_map().items()
+            for (p, a) in e.get_path_action_map().items()
         }
         return reduce(
             reducer,

@@ -86,7 +86,7 @@ def test_filtering(widget):
     view = widget.get_object("treeView")
     viewFilter = widget.get_object("search")
     viewFilter.set_text("foo")
-    refresh_gui()
+    refresh_gui(max_retries=2)
     paths = [x[0] for x in view.get_model()]
     assert "foo" in paths
     assert "baz" not in paths

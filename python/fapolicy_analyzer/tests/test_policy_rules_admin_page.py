@@ -4,6 +4,7 @@ import pytest
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
+from unittest.mock import MagicMock
 from ui.policy_rules_admin_page import PolicyRulesAdminPage
 
 
@@ -44,9 +45,9 @@ def test_adds_object_tabs(widget):
 
 
 def test_updates_user_details(widget, mocker):
-    mocker.patch("ui.policy_rules_admin_page.users.getUserDetails", return_value="foo")
+    mocker.patch("ui.policy_rules_admin_page.acl.getUserDetails", return_value="foo")
     textBuffer = widget.get_object("userDetails").get_buffer()
-    widget.on_user_selection_changed([""])
+    widget.on_user_selection_changed(["fooUser", 1])
     assert (
         textBuffer.get_text(
             textBuffer.get_start_iter(), textBuffer.get_end_iter(), True
@@ -56,9 +57,9 @@ def test_updates_user_details(widget, mocker):
 
 
 def test_updates_group_details(widget, mocker):
-    mocker.patch("ui.policy_rules_admin_page.users.getGroupDetails", return_value="foo")
+    mocker.patch("ui.policy_rules_admin_page.acl.getGroupDetails", return_value="foo")
     textBuffer = widget.get_object("userDetails").get_buffer()
-    widget.on_group_selection_changed([""])
+    widget.on_group_selection_changed(["fooGroup", 1])
     assert (
         textBuffer.get_text(
             textBuffer.get_start_iter(), textBuffer.get_end_iter(), True
@@ -70,7 +71,7 @@ def test_updates_group_details(widget, mocker):
 def test_updates_subject_details(widget, mocker):
     mocker.patch("ui.policy_rules_admin_page.fs.stat", return_value="foo")
     textBuffer = widget.get_object("subjectDetails").get_buffer()
-    widget.on_subject_selection_changed({"path": ""})
+    widget.on_subject_selection_changed(MagicMock(file=""))
     assert (
         textBuffer.get_text(
             textBuffer.get_start_iter(), textBuffer.get_end_iter(), True
@@ -82,7 +83,7 @@ def test_updates_subject_details(widget, mocker):
 def test_updates_object_details(widget, mocker):
     mocker.patch("ui.policy_rules_admin_page.fs.stat", return_value="foo")
     textBuffer = widget.get_object("objectDetails").get_buffer()
-    widget.on_object_selection_changed({"path": ""})
+    widget.on_object_selection_changed(MagicMock(file=""))
     assert (
         textBuffer.get_text(
             textBuffer.get_start_iter(), textBuffer.get_end_iter(), True
