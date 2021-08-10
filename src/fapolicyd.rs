@@ -58,7 +58,7 @@ mod tests {
         assert!(drop_entry("/usr/include/bar.h"));
 
         // todo;; some audit results
-        // assert!(drop_entry("/usr/lib64/python3.8/LICENSE.txt"));
+        // assert!(drop_entry("/usr/lib64/python3.9/LICENSE.txt"));
         // assert!(drop_entry(
         //     "/usr/share/bash-completion/completions/ctrlaltdel"
         // ));
