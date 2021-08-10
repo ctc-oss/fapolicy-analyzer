@@ -4,11 +4,11 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [requires]
-python_version = "3.8"
+python_version = "3.9"
 
 [dev-packages]
 semantic-version = "2.8.5"
-setuptools-rust = "0.11.6"
+setuptools-rust = "0.12.1"
 flake8 = "*"
 black = "*"
 pytest = "*"
