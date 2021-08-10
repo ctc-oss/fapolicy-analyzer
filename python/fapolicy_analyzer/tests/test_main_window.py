@@ -31,7 +31,6 @@ class StubMainWindow(MainWindow):
 def mainWindow():
     return StubMainWindow()
 
-
 @pytest.fixture
 def state():
     yield stateManager
@@ -154,6 +153,19 @@ def test_on_restoreMenu_activate(mainWindow, state, mocker):
     # Invoke 'pass'ed function
     mainWindow.get_object("restoreMenu").activate()
 
+def test_on_restoreMenu_activate_w_exception(mainWindow, state, mocker):
+    """
+    Test the callback bound to the File|Restore menu-item. The 
+    StateManager::restore_previous_session() is mocked to fail with an
+    exception thrown.
+    """
+    mockRestoreAutosave = mocker.patch(
+        "ui.state_manager.StateManager.restore_previous_session",
+        side_effect = IOError
+    )
+
+    mainWindow.get_object("restoreMenu").activate()
+    mockRestoreAutosave.assert_called()
 
 def test_on_saveAsMenu_activate(mainWindow, state, mocker):
     # Mock the FileChooser dlg
@@ -204,3 +216,134 @@ def test_on_saveMenu_activate_w_set_filename(mainWindow, state, mocker):
 
     mainWindow.get_object("saveMenu").activate()
     stateManager.save_edit_session.assert_called_with("/tmp/save_w_filename_tmp.json")
+
+def test_on_start(mocker):
+    """
+    Test specifically for exercising the on_start() functionality.
+    Mocks:
+    1. To bypass the initial database selection dlg.
+    2. The StateManager::
+    """
+    mockDbaseSelection = mocker.patch(
+        "ui.main_window.AnalyzerSelectionDialog.get_selection",
+        return_value=ANALYZER_SELECTION.TRUST_DATABASE_ADMIN
+    )
+
+    mockDetectAutosave = mocker.patch(
+        "ui.state_manager.StateManager.detect_previous_session",
+        return_value = False
+    )
+    mainWindow = MainWindow()
+    mockDbaseSelection.assert_called()
+    mockDetectAutosave.assert_called()
+
+def test_on_start_w_declined_restore(mocker):
+    """
+    Test specifically for exercising the on_start() functionality.
+    Mocks:
+    1. To bypass the initial database selection dlg to circumvent blocking
+    2. The StateManager::detect_previous_session() returning True simulating
+    the detection of an autosaved session file.
+    3. The StateManager::restore_previous_session() to simulate successfully
+    loading the autosaved session file.
+    4. The Gtk.Dialog which will return Gtk.ResponseType.NO to circumvent
+    the blocking that would occur waiting for a user's response.
+    """
+    
+    mockDbaseSelection = mocker.patch(
+        "ui.main_window.AnalyzerSelectionDialog.get_selection",
+        return_value=ANALYZER_SELECTION.TRUST_DATABASE_ADMIN
+    )
+
+    mockDetectAutosave = mocker.patch(
+        "ui.state_manager.StateManager.detect_previous_session",
+        return_value = True
+    )
+
+    mockGtkDialog = mocker.patch(
+        "gi.repository.Gtk.Dialog.run",
+        return_value = Gtk.ResponseType.NO
+    )
+    
+    mainWindow = MainWindow()
+    mockDbaseSelection.assert_called()
+    mockDetectAutosave.assert_called()
+    mockGtkDialog.assert_called()
+
+def test_on_start_w_accepted_restore(mocker):
+    """
+    Test specifically for exercising the on_start() functionality.
+    Mocks:
+    1. To bypass the initial database selection dlg to circumvent blocking
+    2. The StateManager::detect_previous_session() returning True simulating
+    the detection of an autosaved session file.
+    3. The StateManager::restore_previous_session() to simulate successfully
+    loading the autosaved session file.
+    4. The Gtk.Dialog which will return Gtk.ResponseType.NO to circumvent
+    the blocking that would occur waiting for a user's response.
+    """
+    
+    mockDbaseSelection = mocker.patch(
+        "ui.main_window.AnalyzerSelectionDialog.get_selection",
+        return_value=ANALYZER_SELECTION.TRUST_DATABASE_ADMIN
+    )
+
+    mockDetectAutosave = mocker.patch(
+        "ui.state_manager.StateManager.detect_previous_session",
+        return_value = True
+    )
+
+    mockRestoreAutosave = mocker.patch(
+        "ui.state_manager.StateManager.restore_previous_session",
+        return_value = True
+    )
+
+    mockGtkDialog = mocker.patch(
+        "gi.repository.Gtk.Dialog.run",
+        return_value = Gtk.ResponseType.YES
+    )
+    
+    mainWindow = MainWindow()
+    mockDbaseSelection.assert_called()
+    mockDetectAutosave.assert_called()
+    mockGtkDialog.assert_called()
+    mockRestoreAutosave.assert_called()
+
+def test_on_start_w_restore_exception(mocker):
+    """
+    Test specifically for exercising the on_start() functionality.
+    Mocks:
+    1. To bypass the initial database selection dlg to circumvent blocking
+    2. The StateManager::detect_previous_session() returning True simulating
+    the detection of an autosaved session file.
+    3. The StateManager::restore_previous_session() to simulate successfully
+    loading the autosaved session file.
+    4. The Gtk.Dialog which will return Gtk.ResponseType.NO to circumvent
+    the blocking that would occur waiting for a user's response.
+    """
+    
+    mockDbaseSelection = mocker.patch(
+        "ui.main_window.AnalyzerSelectionDialog.get_selection",
+        return_value=ANALYZER_SELECTION.TRUST_DATABASE_ADMIN
+    )
+
+    mockDetectAutosave = mocker.patch(
+        "ui.state_manager.StateManager.detect_previous_session",
+        return_value = True
+    )
+
+    mockRestoreAutosave = mocker.patch(
+        "ui.state_manager.StateManager.restore_previous_session",
+        side_effect = IOError
+    )
+
+    mockGtkDialog = mocker.patch(
+        "gi.repository.Gtk.Dialog.run",
+        return_value = Gtk.ResponseType.YES
+    )
+    
+    mainWindow = MainWindow()
+    mockDbaseSelection.assert_called()
+    mockDetectAutosave.assert_called()
+    mockGtkDialog.assert_called()
+    mockRestoreAutosave.assert_called()
