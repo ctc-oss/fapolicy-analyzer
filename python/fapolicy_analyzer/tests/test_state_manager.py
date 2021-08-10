@@ -213,32 +213,24 @@ def test_open_edit_session(uut, mocker):
     1. A reference json file is generated and wrote to disk.
     2. The StateManager's load/open function is invoked to read and parse
     the reference file.
-    3. The calls and arguments to the AncillaryTrustDatabaseAdmin's (ATDA)
-    on_files_added() and on_files_deleted() are verified and compared to the
-    expected arguments.
+    3. The Event channel call and associated argument is verified and compared to the
+    expected argument.
 
- - Mocking: Two AncillaryTrustDatabaseAdmin functions that actually convert
-    a list of paths into Changesets and then apply those Changesets.
+ - Mocking: The Event channel function in the _EventSlot class that will
+    send a list of Path/Action tuples.
 """
-
-    strModule = "ui.ancillary_trust_database_admin.AncillaryTrustDatabaseAdmin"
-    mockAdd = mocker.patch("{}.on_files_added".format(strModule))
-    mockDel = mocker.patch("{}.on_files_deleted".format(strModule))
-    mockEvent = mocker.patch("events.events.Events.__getattr__")
-    # Create Path/Action dict and expected generated path lists
+    mockEvent = mocker.patch("events.events._EventSlot.__call__")
+    # Create Path/Action dict and expected generated path/action tuple list.
     dictPaInput = {
         "/data_space/man_from_mars.txt": "Add",
         "/data_space/this/is/a/longer/path/now_is_the_time.txt": "Del",
         "/data_space/Integration.json": "Add"
     }
 
-    listExpectedPathAdds = [
-        "/data_space/Integration.json",
-        "/data_space/man_from_mars.txt"
-    ]
-
-    listExpectedPathDels = [
-        "/data_space/this/is/a/longer/path/now_is_the_time.txt"
+    listPaTuplesExpected = [
+        ('/data_space/Integration.json', 'Add'),
+        ('/data_space/man_from_mars.txt', 'Add'),
+        ('/data_space/this/is/a/longer/path/now_is_the_time.txt', 'Del')
     ]
 
     # Directly generate reference test json input file
@@ -252,10 +244,49 @@ def test_open_edit_session(uut, mocker):
     # Clean up of the json reference file
     os.system("rm -f {}".format(tmp_file))
 
-    # Verify the function were called w/appropriate args
-    #mockAdd.assert_called()#_with(listExpectedPathAdds)
-    #mockDel.assert_called()#_with(listExpectedPathDels)
-    mockEvent.assert_called_with('ev_user_session_loaded')
+    # Verify the event channel function was called w/appropriate args
+    mockEvent.assert_called_with(listPaTuplesExpected)
+
+
+def test_open_edit_session_w_exception(uut, mocker):
+    """Tests StateManager's open json session file load functionality.
+    The tested function 'open_edit_session()' converts a json file of
+    paths and associated actions, and converts that into a list of
+    Path/Action tuple pairs, then communicates with the AncillaryTrust
+    DatabaseAdmin's (ATDA) via an event.
+
+    Test approach:
+    1. A reference json file is generated and wrote to disk.
+    2. The StateManager's load/open function is invoked to read and parse
+    the reference file.
+    3. The Event channel call and associated argument is verified and compared to the
+    expected argument.
+
+ - Mocking: The json.load() function will generate an exception.
+"""
+    mockFunc = mocker.patch("ui.state_manager.json.load",
+                             side_effect=IOError)
+    
+    # Create Path/Action dict and expected generated path/action tuple list.
+    dictPaInput = {
+        "/data_space/man_from_mars.txt": "Add",
+        "/data_space/this/is/a/longer/path/now_is_the_time.txt": "Del",
+        "/data_space/Integration.json": "Add"
+    }
+
+    # Directly generate reference test json input file
+    tmp_file = "/tmp/FaPolicyAnalyzerTest.tmp"
+    with open(tmp_file, "w") as fpJson:
+        json.dump(dictPaInput, fpJson, sort_keys=True, indent=4)
+
+    # Process the json reference file via fapolicy-analyzer's datapath
+    uut.open_edit_session(tmp_file)
+
+    # Clean up of the json reference file
+    os.system("rm -f {}".format(tmp_file))
+
+    # Verify the event channel function was called w/appropriate args
+    mockFunc.assert_called()
 
 
 def test_save_edit_session(uut):
@@ -444,6 +475,26 @@ def test_restore_previous_session(uut_autosave_enabled,
     assert uut_autosave_enabled.restore_previous_session()
 
     
+def test_restore_previous_session_w_exception(uut_autosave_enabled,
+                                              autosaved_files,
+                                              mocker):
+    
+
+    # Mock the open_edit_session() call such that it throws an exception
+    mockFunct = mocker.patch("ui.state_manager.StateManager.open_edit_session",
+                             side_effect=IOError)
+    
+    # Two json files assumed on disk w/fixture
+    strSearchPattern = uut_autosave_enabled._StateManager__tmpFileBasename+"_*.json"
+    listTmpFiles = glob.glob(strSearchPattern)
+    print(strSearchPattern,listTmpFiles)
+    assert len(listTmpFiles) > 0
+
+    # Convert to sets so that ordering is irrelevant 
+    assert set(listTmpFiles) == set(autosaved_files)
+    assert not uut_autosave_enabled.restore_previous_session()
+
+
 def test_restore_previous_session_w_bad_file(uut_autosave_enabled,
                                   populated_changeset_list):
     # Write three json files to disk, one with bad json syntax.

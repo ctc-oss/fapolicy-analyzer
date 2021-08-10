@@ -197,7 +197,9 @@ deploy these changesets.
                 listPA = self.__path_action_dict_to_list(d)
                 logging.debug("StateManager::open_edit_session():{}".format(listPA))
             except Exception as e:
-                raise e("json.load() failure")
+                print(e, "json.load() failure")
+                return False
+            
             # Deleting current edit session history prior to replacing it.
             if listPA:
                 # ToDo: Delete pending ops in the ATDA's embedded TreeView
