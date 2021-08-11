@@ -1,7 +1,6 @@
 import logging
 from enum import Enum
 from events import Events
-from fapolicy_analyzer import Changeset
 from collections import OrderedDict
 from datetime import datetime as DT
 import atexit
@@ -139,26 +138,6 @@ effectively the StateManager's destructor."""
         # Each changeset contains a dict with at least one Path/Action pair
         # The rationale for the tuple format is the Gtk TreeView widget display
         return [t for e in self.listChangeset for t in e.get_path_action_map().items()]
-
-    def __path_action_list_2_queue(self, listPathAction):
-        """Converts a list of Path/Action tuples to populate changeset queue
-This is a utility function intended for unit testing and troubleshooting
-the StateManager and its interactions with interfacing objects. It is used to
-populate the internal queue structure with Changeset objects, however it does
-not exercise the full normal end to end data path which will normally apply and
-deploy these changesets.
-"""
-        for e in listPathAction:
-            cs = Changeset()
-            if e[1] == "Add":
-                cs.add_trust(e[0])
-            elif e[1] == "Del":
-                cs.del_trust(e[0])
-            else:
-                print("Error: Path/Action Pair: "
-                      "Unknown Action: {} {}".format(e[0], e[1]))
-                continue
-            self.add_changeset_q(cs)
 
     def __path_action_list_to_dict(self):
         """Convert Path/Action list of tuple pairs to dict for json xfer"""

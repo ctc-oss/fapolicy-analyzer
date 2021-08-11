@@ -318,7 +318,7 @@ def test_save_edit_session(uut):
 
     Test approach:
     1. The StateManager's internal queue is populated with Path/Action data
-    leveraging the utility function: __path_action_list_2_queue()
+    leveraging the utility function: path_action_list_2_queue()
     2. The StateManager function is invoked to write the contents of the queue
     (which is the current edit session's undeployed operations) to a json
     file.
@@ -349,7 +349,7 @@ def test_save_edit_session(uut):
         ("/data_space/this/is/a/longer/path/now_is_the_time.txt", "Del"),
         ("/data_space/Integration.json", "Add")]
 
-    uut._StateManager__path_action_list_2_queue(listPaTuples)
+    path_action_list_2_queue(uut, listPaTuples)
     uut.save_edit_session(tmp_file_out)
 
     # Independently create json objects from the output file and from the
@@ -540,41 +540,6 @@ def test_path_action_dict_to_list(uut):
     assert listPaTuplesGenerated == listPaExpected
 
 
-def test_path_action_list_2_queue(uut):
-    """Test: The utility function, __path_action_list_2_queue() loads the
-    internal queue with test data. The contents of the queue is then dumped
-    using  another utility, get_path_action_list(). Those input and output
-    data lists are then compared.
-"""
-    listPaTuples = [
-        ("/data_space/man_from_mars.txt", "Add"),
-        ("/data_space/this/is/a/longer/path/now_is_the_time.txt", "Del"),
-        ("/data_space/Integration.json", "Add")]
-
-    assert not uut.is_dirty_queue()
-    uut._StateManager__path_action_list_2_queue(listPaTuples)
-    assert uut.is_dirty_queue()
-    listQueueContents = uut.get_path_action_list()
-    assert listPaTuples == listQueueContents
-
-
-def test_path_action_list_2_queue_w_bad_data(uut):
-    listPaTuples = [
-        ("/data_space/man_from_mars.txt", "Add"),
-        ("/data_space/this/is/a/longer/path/now_is_the_time.txt", "Del"),
-        ("/data_space/Integration.json", "BAD")]
-
-    listPaExpected = [
-        ("/data_space/man_from_mars.txt", "Add"),
-        ("/data_space/this/is/a/longer/path/now_is_the_time.txt", "Del")]
-
-    assert not uut.is_dirty_queue()
-    uut._StateManager__path_action_list_2_queue(listPaTuples)
-    assert uut.is_dirty_queue()
-    listQueueContents = uut.get_path_action_list()
-    assert listPaExpected == listQueueContents
-
-
 def test_path_action_list_to_dict(uut):
     listPaTuples = [
         ("/data_space/man_from_mars.txt", "Add"),
@@ -587,6 +552,27 @@ def test_path_action_list_to_dict(uut):
         "/data_space/Integration.json": "Add"
     }
 
-    uut._StateManager__path_action_list_2_queue(listPaTuples)
+    path_action_list_2_queue(uut, listPaTuples)
     dictPaCurrentQ = uut._StateManager__path_action_list_to_dict()
     assert dictPaExpected == dictPaCurrentQ
+
+
+def path_action_list_2_queue(stateMgr, listPathAction):
+    """Converts a list of Path/Action tuples to populate changeset queue
+    This is a utility function intended for unit testing and troubleshooting
+    the StateManager and its interactions with interfacing objects. It is used
+    to populate the internal queue structure with Changeset objects, however it
+    does not exercise the full normal end to end data path which will normally
+    apply and deploy these changesets.
+    """
+    for e in listPathAction:
+        cs = Changeset()
+        if e[1] == "Add":
+            cs.add_trust(e[0])
+        elif e[1] == "Del":
+            cs.del_trust(e[0])
+        else:
+            print("Error: Path/Action Pair: "
+                  "Unknown Action: {} {}".format(e[0], e[1]))
+            continue
+        stateMgr.add_changeset_q(cs)
