@@ -86,27 +86,17 @@ class PolicyRulesAdminPage(UIWidget):
         box.show_all()
         return box
 
-    def __populate_subjects(self, id, detailsFn, compareFn):
-        """Populates the Subjects List view
-
-        Parameters
-        ----------
-        id : str, required
-            UID or GID
-        detailsFn: func, required
-            function passed id to get details for populating userDetails
-        compareFn: func, required
-            function passed id and event that returns True for matching event otherwise False
-        """
+    def __populate_acl_details(self, id, detailsFn):
         userDetails = self.get_object("userDetails")
+        details = "\n".join(detailsFn(id).split(" ")) if id else ""
+        userDetails.get_buffer().set_text(details)
+
+    def __populate_subjects(self, id, compareFn):
         if not id:
-            userDetails.get_buffer().set_text("")
             self.subjectList.get_ref().set_sensitive(False)
             self.subjectList.load_store([])
             return
 
-        details = "\n".join(detailsFn(id).split(" "))
-        userDetails.get_buffer().set_text(details)
         self.subjectList.get_ref().set_sensitive(True)
         subjects = list(
             {
@@ -117,15 +107,13 @@ class PolicyRulesAdminPage(UIWidget):
 
     def on_user_selection_changed(self, data):
         uid = data[1] if data else None
-        self.__populate_subjects(
-            uid, acl.getUserDetails, lambda uid, event: event.uid == uid
-        )
+        self.__populate_acl_details(uid, acl.getUserDetails)
+        self.__populate_subjects(uid, lambda uid, event: event.uid == uid)
 
     def on_group_selection_changed(self, data):
         gid = data[1] if data else None
-        self.__populate_subjects(
-            gid, acl.getGroupDetails, lambda gid, event: event.gid == gid
-        )
+        self.__populate_acl_details(gid, acl.getGroupDetails)
+        self.__populate_subjects(gid, lambda gid, event: event.gid == gid)
 
     def on_subject_selection_changed(self, data):
         subjectDetails = self.get_object("subjectDetails")
