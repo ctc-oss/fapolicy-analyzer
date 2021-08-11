@@ -18,6 +18,7 @@ class SubjectList(SearchableList):
 
         add_button = AddFileButton()
         add_button.files_added += lambda files: print(files)
+        add_button.get_ref().set_sensitive(False)  # disable for now in readonly-view
 
         super().__init__(self.__columns(), add_button.get_ref(), searchColumnIndex=2)
 
