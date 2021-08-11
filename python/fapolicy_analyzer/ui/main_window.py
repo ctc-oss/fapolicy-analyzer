@@ -98,7 +98,7 @@ class MainWindow(UIWidget):
         try:
             stateManager.restore_previous_session()
             self.get_object("restoreMenu").set_sensitive(False)
-        except:
+        except Exception:
             print("Restore failed")
 
     def on_saveMenu_activate(self, menuitem, data=None):
@@ -153,16 +153,16 @@ class MainWindow(UIWidget):
 
             # Enable 'Restore' menu item under the 'File' menu
             self.get_object("restoreMenu").set_sensitive(True)
-            
+
             # Raise the modal  "Prior Session Detected" dialog to
             # prompt the user to immediate restore the prior edit session
             response = self.__AutosaveRestoreDialog()
-            
+
             if response == Gtk.ResponseType.YES:
                 try:
                     stateManager.restore_previous_session()
                     self.get_object("restoreMenu").set_sensitive(False)
-                except:
+                except Exception:
                     print("Restore failed")
         else:
             self.get_object("restoreMenu").set_sensitive(False)
@@ -182,10 +182,9 @@ class MainWindow(UIWidget):
         state changes."""
         self.set_modified_titlebar(stateManager.is_dirty_queue())
 
-
     def __AutosaveRestoreDialog(self):
         """
-        Presents a modal dialog alerting the user to the detection of an 
+        Presents a modal dialog alerting the user to the detection of an
         existing edit session autosaved files, prompting the user to invoke
         an immediate session restore, or to postpone or ignore the restore
         action.
@@ -196,26 +195,26 @@ class MainWindow(UIWidget):
                                              flags=0
                                              )
 
-        dlgSessionRestorePrompt.add_buttons( Gtk.STOCK_NO,
-                                             Gtk.ResponseType.NO,
-                                             Gtk.STOCK_YES,
-                                             Gtk.ResponseType.YES)
+        dlgSessionRestorePrompt.add_buttons(Gtk.STOCK_NO,
+                                            Gtk.ResponseType.NO,
+                                            Gtk.STOCK_YES,
+                                            Gtk.ResponseType.YES)
 
-        #dlgSessionRestorePrompt.set_default_size(-1, 200)
+        # dlgSessionRestorePrompt.set_default_size(-1, 200)
         label = Gtk.Label(label="""
-        Restore your prior session now?    
+        Restore your prior session now?
 
     Yes: Immediately loads your prior session
 
-    No: Continue starting fapolicy-analyzer. 
+    No: Continue starting fapolicy-analyzer.
 
         Your prior session will still be available
         and can be loaded at any point during
         this current session by invoking 'Restore'
-        under the 'File' menu.       
+        under the 'File' menu.
 
         """)
-        
+
         hbox = dlgSessionRestorePrompt.get_content_area()
         hbox.add(label)
         dlgSessionRestorePrompt.show_all()

@@ -7,8 +7,8 @@ from datetime import datetime as DT
 import time
 from unittest.mock import MagicMock
 from fapolicy_analyzer import Changeset
-#from ui.state_manager import stateManager, StateManager, NotificationType
 from ui.state_manager import StateManager, NotificationType
+
 
 # Set up; create UUT
 @pytest.fixture
@@ -16,12 +16,9 @@ def uut():
     stateManager = StateManager()
     stateManager.set_autosave_enable(False)
     stateManager.set_autosave_filename("/tmp/UnitTestSession")
-    #stateManager.set_autosave_filename("/tmp/FaCurrentSession.tmp")
     yield stateManager
     stateManager.cleanup()
     stateManager = None
-    #stateManager.del_changeset_q()
-    #stateManager.systemNotification = None
 
 
 @pytest.fixture
@@ -36,16 +33,11 @@ def populated_queue(uut):
 
 @pytest.fixture
 def uut_autosave_enabled():
-    # Reset stateManager's defaults
-    #stateManager.__init__()
     stateManager = StateManager()
-    #stateManager.set_autosave_filename("/tmp/FaCurrentSession.tmp")
     stateManager.set_autosave_enable(True)
     yield stateManager
     stateManager.cleanup()
     stateManager = None
-    #stateManager.del_changeset_q()
-    #stateManager.systemNotification = None
 
 
 @pytest.fixture
@@ -65,6 +57,7 @@ def populated_changeset_list():
         listExpectedChangeset.append(changeset)
 
     yield listExpectedChangeset
+
 
 @pytest.fixture
 def autosaved_files():
@@ -89,9 +82,37 @@ def autosaved_files():
     # Clean up the filesystem
     os.remove("/tmp/FaCurrentSession.tmp_20210803_130622_059045.json")
     os.remove("/tmp/FaCurrentSession.tmp_20210803_130622_065690.json")
-    
-# test: add an element to an empty Q, verify Q contents
+
+
+@pytest.fixture
+def autosaved_w_bad_file():
+    fp0 = open("/tmp/FaCurrentSession.tmp_20210803_130622_059045.json", "w")
+    fp1 = open("/tmp/FaCurrentSession.tmp_20210803_130622_065690.json", "w")
+    fp0.write('''{
+    "/home/toma/Development/CTC/data_space/man_from_mars.txt": "Add",
+    "/home/toma/Integration.json": "Add"
+}''')
+    fp1.write('''{
+    "/home/toma/Development/CTC/data_space/man_from_mars.txt": "Add",
+    "/home/toma/Development/CTC/data_space/this/is/a/longer/path/now_is_the_time.txt": "Del",
+    "/home/toma/Integration.json": "Add"
+''')
+    fp0.close()
+    fp1.close()
+
+    # yields the newest json file.
+    yield ["/tmp/FaCurrentSession.tmp_20210803_130622_065690.json",
+           "/tmp/FaCurrentSession.tmp_20210803_130622_059045.json"]
+
+    # Clean up the filesystem
+    os.remove("/tmp/FaCurrentSession.tmp_20210803_130622_059045.json")
+    os.remove("/tmp/FaCurrentSession.tmp_20210803_130622_065690.json")
+
+
 def test_add_empty_queue(uut):
+    """
+    test: add an element to an empty Q, verify Q contents
+    """
     # Verify empty Q
     assert not uut.is_dirty_queue()
 
@@ -265,8 +286,8 @@ def test_open_edit_session_w_exception(uut, mocker):
  - Mocking: The json.load() function will generate an exception.
 """
     mockFunc = mocker.patch("ui.state_manager.json.load",
-                             side_effect=IOError)
-    
+                            side_effect=IOError)
+
     # Create Path/Action dict and expected generated path/action tuple list.
     dictPaInput = {
         "/data_space/man_from_mars.txt": "Add",
@@ -423,28 +444,29 @@ def test_autosave_filecount(uut_autosave_enabled,
         uut_autosave_enabled.add_changeset_q(cs)
 
     # Verify there are three temp files on the filesystem
-    strSearchPattern = uut_autosave_enabled._StateManager__tmpFileBasename+"_*.json"
+    strSearchPattern = uut_autosave_enabled._StateManager__tmpFileBasename + "_*.json"
     listTmpFiles = glob.glob(strSearchPattern)
     assert len(listTmpFiles) == 3
 
 
 def test_detect_previous_session_no_files(uut):
     # There should be no existing tmp session files
-    strSearchPattern = uut._StateManager__tmpFileBasename+"_*.json"
+    strSearchPattern = uut._StateManager__tmpFileBasename + "_*.json"
     listTmpFiles = glob.glob(strSearchPattern)
     assert not len(listTmpFiles)
 
     # The uut's detection function should verify no files too
     assert not uut.detect_previous_session()
 
+
 def test_detect_previous_session_files(uut_autosave_enabled,
-                                          populated_changeset_list):
+                                       populated_changeset_list):
     # Apply a number of Changesets which each generate a tmp session file
     for cs in populated_changeset_list:
         uut_autosave_enabled.add_changeset_q(cs)
 
     # Verify there temp files on the filesystem
-    strSearchPattern = uut_autosave_enabled._StateManager__tmpFileBasename+"_*.json"
+    strSearchPattern = uut_autosave_enabled._StateManager__tmpFileBasename + "_*.json"
     listTmpFiles = glob.glob(strSearchPattern)
     assert len(listTmpFiles) > 0
 
@@ -456,6 +478,7 @@ def test_detect_previous_session_files(uut_autosave_enabled,
     listTmpFiles = glob.glob(strSearchPattern)
     assert len(listTmpFiles) == 0
 
+
 def test_restore_previous_session(uut_autosave_enabled,
                                   populated_changeset_list,
                                   autosaved_files,
@@ -463,43 +486,44 @@ def test_restore_previous_session(uut_autosave_enabled,
 
     # Mock the event channel comms to the ATDA
     # mockEvent = mocker.patch("ui.state_manager.ev_user_session_loader")
-    
+
     # Two json files assumed on disk w/fixture
-    strSearchPattern = uut_autosave_enabled._StateManager__tmpFileBasename+"_*.json"
+    strSearchPattern = uut_autosave_enabled._StateManager__tmpFileBasename + "_*.json"
     listTmpFiles = glob.glob(strSearchPattern)
-    print(strSearchPattern,listTmpFiles)
+    print(strSearchPattern, listTmpFiles)
     assert len(listTmpFiles) > 0
 
-    # Convert to sets so that ordering is irrelevant 
+    # Convert to sets so that ordering is irrelevant
     assert set(listTmpFiles) == set(autosaved_files)
     assert uut_autosave_enabled.restore_previous_session()
 
-    
+
 def test_restore_previous_session_w_exception(uut_autosave_enabled,
                                               autosaved_files,
                                               mocker):
-    
-
     # Mock the open_edit_session() call such that it throws an exception
-    mockFunct = mocker.patch("ui.state_manager.StateManager.open_edit_session",
-                             side_effect=IOError)
-    
+    mockFunc = mocker.patch("ui.state_manager.StateManager.open_edit_session",
+                            side_effect=IOError)
+
     # Two json files assumed on disk w/fixture
-    strSearchPattern = uut_autosave_enabled._StateManager__tmpFileBasename+"_*.json"
+    strSearchPattern = uut_autosave_enabled._StateManager__tmpFileBasename + "_*.json"
     listTmpFiles = glob.glob(strSearchPattern)
-    print(strSearchPattern,listTmpFiles)
+    print(strSearchPattern, listTmpFiles)
     assert len(listTmpFiles) > 0
 
-    # Convert to sets so that ordering is irrelevant 
+    # Convert to sets so that ordering is irrelevant
     assert set(listTmpFiles) == set(autosaved_files)
     assert not uut_autosave_enabled.restore_previous_session()
+    mockFunc.assert_called()
 
 
 def test_restore_previous_session_w_bad_file(uut_autosave_enabled,
-                                  populated_changeset_list):
-    # Write three json files to disk, one with bad json syntax.
-    pass
-    
+                                             autosaved_w_bad_file,
+                                             mocker):
+    # Write two json files to disk, the second with bad json syntax.
+    assert 1
+
+
 # ##################### Queue mgmt utilities #########################
 def test_path_action_dict_to_list(uut):
     # Define test input/output data

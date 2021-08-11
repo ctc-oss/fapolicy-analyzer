@@ -31,6 +31,7 @@ class StubMainWindow(MainWindow):
 def mainWindow():
     return StubMainWindow()
 
+
 @pytest.fixture
 def state():
     yield stateManager
@@ -153,19 +154,21 @@ def test_on_restoreMenu_activate(mainWindow, state, mocker):
     # Invoke 'pass'ed function
     mainWindow.get_object("restoreMenu").activate()
 
+
 def test_on_restoreMenu_activate_w_exception(mainWindow, state, mocker):
     """
-    Test the callback bound to the File|Restore menu-item. The 
+    Test the callback bound to the File|Restore menu-item. The
     StateManager::restore_previous_session() is mocked to fail with an
     exception thrown.
     """
     mockRestoreAutosave = mocker.patch(
         "ui.state_manager.StateManager.restore_previous_session",
-        side_effect = IOError
+        side_effect=IOError
     )
 
     mainWindow.get_object("restoreMenu").activate()
     mockRestoreAutosave.assert_called()
+
 
 def test_on_saveAsMenu_activate(mainWindow, state, mocker):
     # Mock the FileChooser dlg
@@ -217,6 +220,7 @@ def test_on_saveMenu_activate_w_set_filename(mainWindow, state, mocker):
     mainWindow.get_object("saveMenu").activate()
     stateManager.save_edit_session.assert_called_with("/tmp/save_w_filename_tmp.json")
 
+
 def test_on_start(mocker):
     """
     Test specifically for exercising the on_start() functionality.
@@ -231,11 +235,12 @@ def test_on_start(mocker):
 
     mockDetectAutosave = mocker.patch(
         "ui.state_manager.StateManager.detect_previous_session",
-        return_value = False
+        return_value=False
     )
-    mainWindow = MainWindow()
+    MainWindow()
     mockDbaseSelection.assert_called()
     mockDetectAutosave.assert_called()
+
 
 def test_on_start_w_declined_restore(mocker):
     """
@@ -249,7 +254,7 @@ def test_on_start_w_declined_restore(mocker):
     4. The Gtk.Dialog which will return Gtk.ResponseType.NO to circumvent
     the blocking that would occur waiting for a user's response.
     """
-    
+
     mockDbaseSelection = mocker.patch(
         "ui.main_window.AnalyzerSelectionDialog.get_selection",
         return_value=ANALYZER_SELECTION.TRUST_DATABASE_ADMIN
@@ -257,18 +262,19 @@ def test_on_start_w_declined_restore(mocker):
 
     mockDetectAutosave = mocker.patch(
         "ui.state_manager.StateManager.detect_previous_session",
-        return_value = True
+        return_value=True
     )
 
     mockGtkDialog = mocker.patch(
         "gi.repository.Gtk.Dialog.run",
-        return_value = Gtk.ResponseType.NO
+        return_value=Gtk.ResponseType.NO
     )
-    
-    mainWindow = MainWindow()
+
+    MainWindow()
     mockDbaseSelection.assert_called()
     mockDetectAutosave.assert_called()
     mockGtkDialog.assert_called()
+
 
 def test_on_start_w_accepted_restore(mocker):
     """
@@ -282,7 +288,7 @@ def test_on_start_w_accepted_restore(mocker):
     4. The Gtk.Dialog which will return Gtk.ResponseType.NO to circumvent
     the blocking that would occur waiting for a user's response.
     """
-    
+
     mockDbaseSelection = mocker.patch(
         "ui.main_window.AnalyzerSelectionDialog.get_selection",
         return_value=ANALYZER_SELECTION.TRUST_DATABASE_ADMIN
@@ -290,24 +296,25 @@ def test_on_start_w_accepted_restore(mocker):
 
     mockDetectAutosave = mocker.patch(
         "ui.state_manager.StateManager.detect_previous_session",
-        return_value = True
+        return_value=True
     )
 
     mockRestoreAutosave = mocker.patch(
         "ui.state_manager.StateManager.restore_previous_session",
-        return_value = True
+        return_value=True
     )
 
     mockGtkDialog = mocker.patch(
         "gi.repository.Gtk.Dialog.run",
-        return_value = Gtk.ResponseType.YES
+        return_value=Gtk.ResponseType.YES
     )
-    
-    mainWindow = MainWindow()
+
+    MainWindow()
     mockDbaseSelection.assert_called()
     mockDetectAutosave.assert_called()
     mockGtkDialog.assert_called()
     mockRestoreAutosave.assert_called()
+
 
 def test_on_start_w_restore_exception(mocker):
     """
@@ -321,7 +328,7 @@ def test_on_start_w_restore_exception(mocker):
     4. The Gtk.Dialog which will return Gtk.ResponseType.NO to circumvent
     the blocking that would occur waiting for a user's response.
     """
-    
+
     mockDbaseSelection = mocker.patch(
         "ui.main_window.AnalyzerSelectionDialog.get_selection",
         return_value=ANALYZER_SELECTION.TRUST_DATABASE_ADMIN
@@ -329,20 +336,20 @@ def test_on_start_w_restore_exception(mocker):
 
     mockDetectAutosave = mocker.patch(
         "ui.state_manager.StateManager.detect_previous_session",
-        return_value = True
+        return_value=True
     )
 
     mockRestoreAutosave = mocker.patch(
         "ui.state_manager.StateManager.restore_previous_session",
-        side_effect = IOError
+        side_effect=IOError
     )
 
     mockGtkDialog = mocker.patch(
         "gi.repository.Gtk.Dialog.run",
-        return_value = Gtk.ResponseType.YES
+        return_value=Gtk.ResponseType.YES
     )
-    
-    mainWindow = MainWindow()
+
+    MainWindow()
     mockDbaseSelection.assert_called()
     mockDetectAutosave.assert_called()
     mockGtkDialog.assert_called()

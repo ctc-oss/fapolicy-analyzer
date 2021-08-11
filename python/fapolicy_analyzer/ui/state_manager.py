@@ -2,7 +2,6 @@ import logging
 from enum import Enum
 from events import Events
 from fapolicy_analyzer import Changeset
-from os import path
 from collections import OrderedDict
 from datetime import datetime as DT
 import atexit
@@ -199,17 +198,17 @@ deploy these changesets.
             except Exception as e:
                 print(e, "json.load() failure")
                 return False
-            
+
             # Deleting current edit session history prior to replacing it.
             if listPA:
                 # ToDo: Delete pending ops in the ATDA's embedded TreeView
                 self.del_changeset_q()
 
             self.ev_user_session_loaded(listPA)
-            print("listPA = ",listPA)
-
+            print("listPA = ", listPA)
 
     # ####################### Autosave file mgmt ###########################
+
     def __cleanup_autosave_sessions(self):
         """Deletes all current autosaved session files. These files were
 created during the current editing session, and are deleted after a deploy,
@@ -239,7 +238,7 @@ or a session file open/restore operation."""
     def detect_previous_session(self):
         """Searches for preexisting tmp files; Returns bool"""
         logging.debug("StateManager::detect_previous_session()")
-        strSearchPattern = self.__tmpFileBasename+"_*.json"
+        strSearchPattern = self.__tmpFileBasename + "_*.json"
         print("Search Pattern: {}".format(strSearchPattern))
         listTmpFiles = glob.glob(strSearchPattern)
         listTmpFiles.sort()
@@ -256,13 +255,13 @@ or a session file open/restore operation."""
         logging.debug("StateManager::restore_previous_session()")
 
         # Determine file to load, in newest to oldest order
-        strSearchPattern = self.__tmpFileBasename+"_*.json"
+        strSearchPattern = self.__tmpFileBasename + "_*.json"
         print("Search Pattern: {}".format(strSearchPattern))
         listTmpFiles = glob.glob(strSearchPattern)
         listTmpFiles.sort()
         listTmpFiles.reverse()
         print(listTmpFiles)
-        
+
         # iterate through the time ordered files; stop on first successful load
         bReturn = False
         for f in listTmpFiles:
@@ -275,12 +274,12 @@ or a session file open/restore operation."""
                 print("SUCCESS")
                 break
 
-            except:
+            except Exception:
                 print("FAIL: Restoring {} load failure".format(f))
                 continue
         self.__cleanup_autosave_sessions()
         return bReturn
-    
+
     def __autosave_edit_session(self):
         """Constructs a new tmp session filename w/timestamp, populates it with
  the current session state, saves it, and deletes the oldest tmp session file"""
