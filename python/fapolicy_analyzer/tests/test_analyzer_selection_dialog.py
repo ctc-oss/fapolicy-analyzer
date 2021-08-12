@@ -38,10 +38,7 @@ def test_analyze_from_audit(widget):
     assert widget.get_data() == "foo"
 
 
-@pytest.mark.parametrize(
-    "response_type", [Gtk.ResponseType.OK, Gtk.ResponseType.OK, Gtk.ResponseType.CANCEL]
-)
-def test_set_audit_file_from_dialog(widget, mocker, response_type):
+def test_set_audit_file_from_dialog(widget, mocker):
     mocker.patch(
         "ui.analyzer_selection_dialog.Gtk.FileChooserDialog.run",
         return_value=Gtk.ResponseType.OK,
