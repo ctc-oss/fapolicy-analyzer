@@ -20,6 +20,7 @@ babel = "*"
 babelgladeextractor = "*"
 flake8-i18n = "*"
 callee = "*"
+pytest-lazy-fixture = "*"
 
 [packages]
 pycairo = "1.20.0"

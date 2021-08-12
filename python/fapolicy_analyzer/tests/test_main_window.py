@@ -90,6 +90,7 @@ def test_displays_about_dialog(mainWindow, mocker):
 def test_opens_trust_db_admin_page(mocker):
     mockDialog = MagicMock()
     mockDialog.get_selection.return_value = ANALYZER_SELECTION.TRUST_DATABASE_ADMIN
+    mockDialog.get_data.return_value = None
     mocker.patch(
         "ui.main_window.AnalyzerSelectionDialog",
         return_value=mockDialog,
@@ -99,6 +100,19 @@ def test_opens_trust_db_admin_page(mocker):
     assert (
         content.get_tab_label_text(content.get_nth_page(0)) == "System Trust Database"
     )
+
+
+def test_opens_analyze_from_audit_page(mocker):
+    mockDialog = MagicMock()
+    mockDialog.get_selection.return_value = ANALYZER_SELECTION.ANALYZE_FROM_AUDIT
+    mockDialog.get_data.return_value = "foo"
+    mocker.patch(
+        "ui.main_window.AnalyzerSelectionDialog",
+        return_value=mockDialog,
+    )
+    mainWindow = MainWindow()
+    content = next(iter(mainWindow.get_object("mainContent").get_children()))
+    assert Gtk.Buildable.get_name(content) == "policyRulesAdminPage"
 
 
 def test_raises_bad_selection_error(mainWindow, mocker):
@@ -137,15 +151,9 @@ def test_on_openMenu_activate(mainWindow, state, mocker):
         return_value=mockDialog,
     )
 
-    mocker.patch(
-        "ui.main_window.stateManager.open_edit_session",
-        return_value=True
-    )
+    mocker.patch("ui.main_window.stateManager.open_edit_session", return_value=True)
 
-    mocker.patch(
-        "ui.main_window.path.isfile",
-        return_value=True
-    )
+    mocker.patch("ui.main_window.path.isfile", return_value=True)
     mainWindow.get_object("openMenu").activate()
     stateManager.open_edit_session.assert_called_with("/tmp/open_tmp.json")
 
@@ -182,8 +190,7 @@ def test_on_saveAsMenu_activate(mainWindow, state, mocker):
 
     # Mock the StateMgr interface
     mockFunc = mocker.patch(
-        "ui.main_window.stateManager.save_edit_session",
-        return_value=True
+        "ui.main_window.stateManager.save_edit_session", return_value=True
     )
 
     mainWindow.get_object("saveAsMenu").activate()
@@ -193,15 +200,11 @@ def test_on_saveAsMenu_activate(mainWindow, state, mocker):
 def test_on_saveMenu_activate(mainWindow, state, mocker):
     # Mock the on_saveAsMenu_activate() call
     mockFunc = mocker.patch(
-        "ui.main_window.MainWindow.on_saveAsMenu_activate",
-        return_value=True
+        "ui.main_window.MainWindow.on_saveAsMenu_activate", return_value=True
     )
 
     # Mock the StateMgr interface
-    mocker.patch(
-        "ui.main_window.stateManager.save_edit_session",
-        return_value=True
-    )
+    mocker.patch("ui.main_window.stateManager.save_edit_session", return_value=True)
 
     window = mainWindow
     window.get_object("saveMenu").activate()
@@ -212,10 +215,7 @@ def test_on_saveMenu_activate_w_set_filename(mainWindow, state, mocker):
     mainWindow.strSessionFilename = "/tmp/save_w_filename_tmp.json"
 
     # Mock the StateMgr interface
-    mocker.patch(
-        "ui.main_window.stateManager.save_edit_session",
-        return_value=True
-    )
+    mocker.patch("ui.main_window.stateManager.save_edit_session", return_value=True)
 
     mainWindow.get_object("saveMenu").activate()
     stateManager.save_edit_session.assert_called_with("/tmp/save_w_filename_tmp.json")
