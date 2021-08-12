@@ -56,47 +56,10 @@ def test_uses_custom_markup_func(widget):
 
 
 def test_fires_files_added(widget, mocker):
-    mocker.patch(
-        "ui.ancillary_trust_file_list.Gtk.FileChooserDialog.run",
-        return_value=Gtk.ResponseType.OK,
-    )
-    mocker.patch(
-        "ui.ancillary_trust_file_list.Gtk.FileChooserDialog.get_filenames",
-        return_value=["foo"],
-    )
-    mocker.patch("ui.ancillary_trust_file_list.path.isfile", return_value=True)
     mockHandler = MagicMock()
     widget.files_added += mockHandler
-    parent = Gtk.Window()
-    widget.get_ref().set_parent(parent)
-    addBtn = widget.get_object("actionButtons").get_children()[0]
-    addBtn.clicked()
+    widget.on_addBtn_files_added(["foo"])
     mockHandler.assert_called_with(["foo"])
-
-
-def test_fires_files_w_spaces_added(widget, mocker):
-    mocker.patch(
-        "ui.ancillary_trust_file_list.Gtk.FileChooserDialog.run",
-        return_value=Gtk.ResponseType.OK,
-    )
-    mocker.patch(
-        "ui.ancillary_trust_file_list.Gtk.FileChooserDialog.get_filenames",
-        return_value=["/tmp/a file name with spaces"],
-    )
-    mocker.patch("ui.ancillary_trust_file_list.path.isfile", return_value=True)
-    mocker.patch(
-        "ui.ancillary_trust_file_list.Gtk.MessageDialog.run",
-        return_value=Gtk.ResponseType.OK,
-    )
-    mockHandler = MagicMock()
-    widget.files_added += mockHandler
-    parent = Gtk.Window()
-    widget.get_ref().set_parent(parent)
-    addBtn = widget.get_object("actionButtons").get_children()[0]
-    addBtn.clicked()
-    assert (
-        not mockHandler.called
-    ), "Callback should not be invoked; Filepath w/spaces should be filtered out"
 
 
 def test_trust_add_actions_in_view(widget, state):

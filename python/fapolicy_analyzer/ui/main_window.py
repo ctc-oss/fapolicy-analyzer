@@ -1,21 +1,27 @@
 from os import path
 import logging
 import gi
+import fapolicy_analyzer.ui.strings as strings
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from .analyzer_selection_dialog import AnalyzerSelectionDialog, ANALYZER_SELECTION
 from .database_admin_page import DatabaseAdminPage
 from .notification import Notification
+from .policy_rules_admin_page import PolicyRulesAdminPage
 from .state_manager import stateManager
 from .unapplied_changes_dialog import UnappliedChangesDialog
 from .ui_widget import UIWidget
 
 
-def router(selection):
-    route = {ANALYZER_SELECTION.TRUST_DATABASE_ADMIN: DatabaseAdminPage}.get(selection)
+def router(selection, data=None):
+    route = {
+        ANALYZER_SELECTION.TRUST_DATABASE_ADMIN: DatabaseAdminPage,
+        ANALYZER_SELECTION.SCAN_SYSTEM: PolicyRulesAdminPage,
+        ANALYZER_SELECTION.ANALYZE_FROM_AUDIT: PolicyRulesAdminPage,
+    }.get(selection)
     if route:
-        return route().get_ref()
+        return (route(data) if data else route()).get_ref()
     raise Exception("Bad Selection")
 
 
@@ -59,28 +65,29 @@ class MainWindow(UIWidget):
 
     def __apply_file_filters(self, dialog):
         fileFilterJson = Gtk.FileFilter()
-        fileFilterJson.set_name("FA Session files")
+        fileFilterJson.set_name(strings.FA_SESSION_FILES_FILTER_LABEL)
         fileFilterJson.add_pattern("*.json")
         dialog.add_filter(fileFilterJson)
 
         fileFilterAny = Gtk.FileFilter()
-        fileFilterAny.set_name("Any files")
+        fileFilterAny.set_name(strings.ANY_FILES_FILTER_LABEL)
         fileFilterAny.add_pattern("*")
         dialog.add_filter(fileFilterAny)
 
     def on_openMenu_activate(self, menuitem, data=None):
         logging.debug("Callback entered: MainWindow::on_openMenu_activate()")
         # Display file chooser dialog
-        fcd = Gtk.FileChooserDialog("Select An Edit Session File To Open",
-                                    self.windowTopLevel,
-                                    Gtk.FileChooserAction.OPEN,
-                                    (
-                                        Gtk.STOCK_CANCEL,
-                                        Gtk.ResponseType.CANCEL,
-                                        Gtk.STOCK_OPEN,
-                                        Gtk.ResponseType.OK,
-                                    ),
-                                    )
+        fcd = Gtk.FileChooserDialog(
+            strings.OPEN_FILE_LABEL,
+            self.windowTopLevel,
+            Gtk.FileChooserAction.OPEN,
+            (
+                Gtk.STOCK_CANCEL,
+                Gtk.ResponseType.CANCEL,
+                Gtk.STOCK_OPEN,
+                Gtk.ResponseType.OK,
+            ),
+        )
         self.__apply_file_filters(fcd)
         response = fcd.run()
         fcd.hide()
@@ -107,16 +114,17 @@ class MainWindow(UIWidget):
     def on_saveAsMenu_activate(self, menuitem, data=None):
         logging.debug("Callback entered: MainWindow::on_saveAsMenu_activate()")
         # Display file chooser dialog
-        fcd = Gtk.FileChooserDialog("Save As...",
-                                    self.windowTopLevel,
-                                    Gtk.FileChooserAction.SAVE,
-                                    (
-                                        Gtk.STOCK_CANCEL,
-                                        Gtk.ResponseType.CANCEL,
-                                        Gtk.STOCK_SAVE,
-                                        Gtk.ResponseType.OK,
-                                    ),
-                                    )
+        fcd = Gtk.FileChooserDialog(
+            strings.SAVE_AS_FILE_LABEL,
+            self.windowTopLevel,
+            Gtk.FileChooserAction.SAVE,
+            (
+                Gtk.STOCK_CANCEL,
+                Gtk.ResponseType.CANCEL,
+                Gtk.STOCK_SAVE,
+                Gtk.ResponseType.OK,
+            ),
+        )
 
         self.__apply_file_filters(fcd)
         fcd.set_do_overwrite_confirmation(True)
@@ -138,8 +146,8 @@ class MainWindow(UIWidget):
 
     def on_start(self, *args):
         mainContent = self.get_object("mainContent")
-        selection = AnalyzerSelectionDialog(self.window).get_selection()
-        page = router(selection)
+        selectionDlg = AnalyzerSelectionDialog(self.window)
+        page = router(selectionDlg.get_selection(), selectionDlg.get_data())
         mainContent.pack_start(page, True, True, 0)
 
     def set_modified_titlebar(self, bModified=True):
