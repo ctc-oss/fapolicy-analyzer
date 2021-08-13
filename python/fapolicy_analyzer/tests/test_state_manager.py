@@ -61,21 +61,20 @@ def populated_changeset_list():
 
 @pytest.fixture
 def autosaved_files():
-    fp0 = open("/tmp/FaCurrentSession.tmp_20210803_130622_059045.json", "w")
-    fp1 = open("/tmp/FaCurrentSession.tmp_20210803_130622_065690.json", "w")
-    fp0.write('''{
-    "/home/toma/Development/CTC/data_space/man_from_mars.txt": "Add",
-    "/home/toma/Integration.json": "Add"
-}''')
-    fp1.write('''{
-    "/home/toma/Development/CTC/data_space/man_from_mars.txt": "Add",
-    "/home/toma/Development/CTC/data_space/this/is/a/longer/path/now_is_the_time.txt": "Del",
-    "/home/toma/Integration.json": "Add"
-}''')
-    fp0.close()
-    fp1.close()
+    with open("/tmp/FaCurrentSession.tmp_20210803_130622_059045.json", "w") as fp0:
+        fp0.write('''{
+        "/home/runner/a/random/data_space/man_from_mars.txt": "Add",
+        "/home/runner/another/random/path/Integration.json": "Add"
+        }''')
 
-    # yields the newest json file.
+    with open("/tmp/FaCurrentSession.tmp_20210803_130622_065690.json", "w") as fp1:
+        fp1.write('''{
+        "/home/runner/a/random/data_space/man_from_mars.txt": "Add",
+        "/usr/local/fapolicy-analyzer/longer/path/now_is_the_time.txt": "Del",
+        "/home/runner/another/random/Integration.json": "Add"
+        }''')
+
+    # yields  a list of the autosaved files
     yield ["/tmp/FaCurrentSession.tmp_20210803_130622_065690.json",
            "/tmp/FaCurrentSession.tmp_20210803_130622_059045.json"]
 
@@ -86,21 +85,20 @@ def autosaved_files():
 
 @pytest.fixture
 def autosaved_w_bad_file():
-    fp0 = open("/tmp/FaCurrentSession.tmp_20210803_130622_059045.json", "w")
-    fp1 = open("/tmp/FaCurrentSession.tmp_20210803_130622_065690.json", "w")
-    fp0.write('''{
-    "/home/toma/Development/CTC/data_space/man_from_mars.txt": "Add",
-    "/home/toma/Integration.json": "Add"
-}''')
-    fp1.write('''{
-    "/home/toma/Development/CTC/data_space/man_from_mars.txt": "Add",
-    "/home/toma/Development/CTC/data_space/this/is/a/longer/path/now_is_the_time.txt": "Del",
-    "/home/toma/Integration.json": "Add"
-''')
-    fp0.close()
-    fp1.close()
+    with open("/tmp/FaCurrentSession.tmp_20210803_130622_059045.json", "w") as fp0:
+        fp0.write('''{
+        "/home/runner/a/random/data_space/man_from_mars.txt": "Add",
+        "/home/runner/another/random/path/Integration.json": "Add"
+        }''')
 
-    # yields the newest json file.
+    with open("/tmp/FaCurrentSession.tmp_20210803_130622_065690.json", "w") as fp1:
+        fp1.write('''{
+        "/home/runner/a/random/data_space/man_from_mars.txt": "Add",
+        "/usr/local/fapolicy-analyzer/longer/path/now_is_the_time.txt": "Del",
+        "/home/runner/another/random/Integration.json": "Add"
+        ''')
+
+    # yields  a list of the autosaved files
     yield ["/tmp/FaCurrentSession.tmp_20210803_130622_065690.json",
            "/tmp/FaCurrentSession.tmp_20210803_130622_059045.json"]
 

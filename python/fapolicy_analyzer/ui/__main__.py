@@ -17,8 +17,8 @@ def XdgDirPrefix(strBaseName):
     """
     # Use the XDG_STATE_HOME env var, or $(HOME)/.local/state/
     _home = os.path.expanduser('~')
-    xdg_state_home = os.environ.get('XDG_STATE_HOME') or \
-        os.path.join(_home, '.local', 'state')
+    xdg_state_home = os.environ.get('XDG_STATE_HOME',
+                                    os.path.join(_home, '.local', 'state'))
     app_tmp_dir = xdg_state_home + "/fapolicy-analyzer/"
 
     try:

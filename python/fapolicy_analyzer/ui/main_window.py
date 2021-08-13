@@ -9,7 +9,7 @@ from .analyzer_selection_dialog import AnalyzerSelectionDialog, ANALYZER_SELECTI
 from .database_admin_page import DatabaseAdminPage
 from .notification import Notification
 from .policy_rules_admin_page import PolicyRulesAdminPage
-from .state_manager import stateManager
+from .state_manager import stateManager, NotificationType
 from .unapplied_changes_dialog import UnappliedChangesDialog
 from .ui_widget import UIWidget
 
@@ -96,17 +96,30 @@ class MainWindow(UIWidget):
             strFilename = fcd.get_filename()
             if path.isfile(strFilename):
                 self.strSessionFilename = strFilename
-                stateManager.open_edit_session(self.strSessionFilename)
-                # ToDo: Exception handling
+                if not stateManager.open_edit_session(self.strSessionFilename):
+                    stateManager.add_system_notification(
+                        "An error occurred trying to open "
+                        "the session file, {}".format(self.strSessionFilename),
+                        NotificationType.ERROR,
+                    )
+
         fcd.destroy()
 
     def on_restoreMenu_activate(self, menuitem, data=None):
         logging.debug("Callback entered: MainWindow::on_restoreMenu_activate()")
         try:
-            stateManager.restore_previous_session()
-            self.get_object("restoreMenu").set_sensitive(False)
+            if not stateManager.restore_previous_session():
+                stateManager.add_system_notification(
+                    "An error occurred trying to restore a prior "
+                    "autosaved edit session ",
+                    NotificationType.ERROR,
+                )
+
         except Exception:
             print("Restore failed")
+
+        # In all cases, gray out the File|Restore menu item
+        self.get_object("restoreMenu").set_sensitive(False)
 
     def on_saveMenu_activate(self, menuitem, data=None):
         logging.debug("Callback entered: MainWindow::on_saveMenu_activate()")
@@ -168,7 +181,13 @@ class MainWindow(UIWidget):
 
             if response == Gtk.ResponseType.YES:
                 try:
-                    stateManager.restore_previous_session()
+                    if not stateManager.restore_previous_session():
+                        stateManager.add_system_notification(
+                            "An error occurred trying to restore a prior "
+                            "autosaved edit session ",
+                            NotificationType.ERROR,
+                        )
+
                     self.get_object("restoreMenu").set_sensitive(False)
                 except Exception:
                     print("Restore failed")

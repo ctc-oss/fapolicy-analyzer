@@ -185,6 +185,7 @@ effectively the StateManager's destructor."""
 
             self.ev_user_session_loaded(listPA)
             print("listPA = ", listPA)
+            return True
 
     # ####################### Autosave file mgmt ###########################
 
@@ -256,6 +257,8 @@ or a session file open/restore operation."""
             except Exception:
                 print("FAIL: Restoring {} load failure".format(f))
                 continue
+
+        # All autosaved files failed on loading
         self.__cleanup_autosave_sessions()
         return bReturn
 
