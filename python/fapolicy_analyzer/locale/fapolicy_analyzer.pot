@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fapolicy-analyzer snapshot\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-07-02 09:22-0400\n"
+"POT-Creation-Date: 2021-08-12 23:26-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,16 +18,16 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.9.1\n"
 
-#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:89
-#: fapolicy_analyzer/ui/system_trust_database_admin.py:67
+#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:83
+#: fapolicy_analyzer/ui/system_trust_database_admin.py:65
 msgid ""
 "File: {trust.path}\n"
 "Size: {trust.size}\n"
 "SHA256: {trust.hash}"
 msgstr ""
 
-#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:99
-#: fapolicy_analyzer/ui/system_trust_database_admin.py:76
+#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:93
+#: fapolicy_analyzer/ui/system_trust_database_admin.py:74
 msgid ""
 "{fs.stat(trust.path)}\n"
 "SHA256: {fs.sha(trust.path)}"
@@ -85,15 +85,52 @@ msgstr ""
 msgid "File"
 msgstr ""
 
+#: fapolicy_analyzer/ui/strings.py:20
+msgid "Changes"
+msgstr ""
+
 #: fapolicy_analyzer/ui/strings.py:21
+msgid "Mode"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:22
+msgid "Access"
+msgstr ""
+
+#: fapolicy_analyzer/glade/add_file_button.glade:11
+#: fapolicy_analyzer/ui/strings.py:24
+msgid "Add"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:25
+msgid "Delete"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:27
 msgid "Add File"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:23
+#: fapolicy_analyzer/ui/strings.py:28
+msgid "Open File"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:29
+msgid "Save As..."
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:30
+msgid "FA Session files"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:31
+msgid "Any files"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:33
 msgid "File path(s) contains embedded whitespace."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:24
+#: fapolicy_analyzer/ui/strings.py:34
 msgid ""
 "fapolicyd currently does not support paths containing spaces. The "
 "following paths will not be added to the Trusted Files List.\n"
@@ -101,19 +138,60 @@ msgid ""
 "\n"
 msgstr ""
 
-#: fapolicy_analyzer/glade/loader.glade:28 fapolicy_analyzer/ui/strings.py:29
+#: fapolicy_analyzer/ui/strings.py:39
+msgid ""
+"\n"
+"        Restore your prior session now?\n"
+"\n"
+"    Yes: Immediately loads your prior session\n"
+"\n"
+"    No: Continue starting fapolicy-analyzer.\n"
+"\n"
+"        Your prior session will still be available\n"
+"        and can be loaded at any point during\n"
+"        this current session by invoking 'Restore'\n"
+"        under the 'File' menu.\n"
+"\n"
+"        "
+msgstr ""
+
+#: fapolicy_analyzer/glade/loader.glade:28 fapolicy_analyzer/ui/strings.py:53
 msgid "Loading..."
 msgstr ""
 
-#: fapolicy_analyzer/glade/analyzer_selection_dialog.glade:25
+#: fapolicy_analyzer/ui/strings.py:55
+msgid "file"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:56
+msgid "files"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:57
+msgid "user"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:58
+msgid "users"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:59
+msgid "group"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:60
+msgid "groups"
+msgstr ""
+
+#: fapolicy_analyzer/glade/analyzer_selection_dialog.glade:24
 msgid "Scan System"
 msgstr ""
 
-#: fapolicy_analyzer/glade/analyzer_selection_dialog.glade:39
+#: fapolicy_analyzer/glade/analyzer_selection_dialog.glade:38
 msgid "Administer Trust Databases"
 msgstr ""
 
-#: fapolicy_analyzer/glade/analyzer_selection_dialog.glade:61
+#: fapolicy_analyzer/glade/analyzer_selection_dialog.glade:60
 msgid "Analyzer Selection"
 msgstr ""
 
@@ -141,15 +219,24 @@ msgstr ""
 msgid "About File Acccess Policy Analyzer"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:54
+#: fapolicy_analyzer/glade/main_window.glade:13
+msgid "Visit our Wiki for more information"
+msgstr ""
+
+#: fapolicy_analyzer/glade/main_window.glade:57
 msgid "File Access Policy Analyzer"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:77
+#: fapolicy_analyzer/glade/main_window.glade:80
 msgid "_File"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:101
+#. Presents option to load prior sessions tmp file (if it exists.)
+#: fapolicy_analyzer/glade/main_window.glade:100
+msgid "Restore"
+msgstr ""
+
+#: fapolicy_analyzer/glade/main_window.glade:143
 msgid "_Help"
 msgstr ""
 
@@ -157,7 +244,7 @@ msgstr ""
 msgid "x"
 msgstr ""
 
-#: fapolicy_analyzer/glade/searchable_list.glade:75
+#: fapolicy_analyzer/glade/searchable_list.glade:107
 msgid "page0"
 msgstr ""
 
