@@ -1,7 +1,6 @@
 import logging
 from enum import Enum
 from events import Events
-from fapolicy_analyzer import Changeset
 from collections import OrderedDict
 from datetime import datetime as DT
 import atexit
@@ -140,26 +139,6 @@ effectively the StateManager's destructor."""
         # The rationale for the tuple format is the Gtk TreeView widget display
         return [t for e in self.listChangeset for t in e.get_path_action_map().items()]
 
-    def __path_action_list_2_queue(self, listPathAction):
-        """Converts a list of Path/Action tuples to populate changeset queue
-This is a utility function intended for unit testing and troubleshooting
-the StateManager and its interactions with interfacing objects. It is used to
-populate the internal queue structure with Changeset objects, however it does
-not exercise the full normal end to end data path which will normally apply and
-deploy these changesets.
-"""
-        for e in listPathAction:
-            cs = Changeset()
-            if e[1] == "Add":
-                cs.add_trust(e[0])
-            elif e[1] == "Del":
-                cs.del_trust(e[0])
-            else:
-                print("Error: Path/Action Pair: "
-                      "Unknown Action: {} {}".format(e[0], e[1]))
-                continue
-            self.add_changeset_q(cs)
-
     def __path_action_list_to_dict(self):
         """Convert Path/Action list of tuple pairs to dict for json xfer"""
         dictPA = dict()
@@ -187,22 +166,29 @@ deploy these changesets.
 
     def open_edit_session(self, strJsonFile):
         """Save the FIFO changeset queue to the specified json file on disk"""
-        logging.debug("Entered StateManager::open_edit_session({})"
-                      .format(strJsonFile))
+        logging.debug("Entered StateManager::open_edit_session({})".format(strJsonFile))
         listPA = None
         with open(strJsonFile, "r") as fp:
-            d = json.load(fp, object_pairs_hook=OrderedDict)
-            logging.debug("Loaded dict = ", d)
-            listPA = self.__path_action_dict_to_list(d)
-            logging.debug("StateManager::open_edit_session():{}".format(listPA))
+            try:
+                d = json.load(fp, object_pairs_hook=OrderedDict)
+                logging.debug("Loaded dict = ", d)
+                listPA = self.__path_action_dict_to_list(d)
+                logging.debug("StateManager::open_edit_session():{}".format(listPA))
+            except Exception as e:
+                print(e, "json.load() failure")
+                return False
 
             # Deleting current edit session history prior to replacing it.
             if listPA:
                 # ToDo: Delete pending ops in the ATDA's embedded TreeView
                 self.del_changeset_q()
+
             self.ev_user_session_loaded(listPA)
+            print("listPA = ", listPA)
+            return True
 
     # ####################### Autosave file mgmt ###########################
+
     def __cleanup_autosave_sessions(self):
         """Deletes all current autosaved session files. These files were
 created during the current editing session, and are deleted after a deploy,
@@ -228,6 +214,53 @@ or a session file open/restore operation."""
                                   "{}".format(f))
                     self.__listAutosavedFilenames.append(f)
             self.__cleanup_autosave_sessions()
+
+    def detect_previous_session(self):
+        """Searches for preexisting tmp files; Returns bool"""
+        logging.debug("StateManager::detect_previous_session()")
+        strSearchPattern = self.__tmpFileBasename + "_*.json"
+        print("Search Pattern: {}".format(strSearchPattern))
+        listTmpFiles = glob.glob(strSearchPattern)
+        listTmpFiles.sort()
+        logging.debug("Glob search results: {}".format(listTmpFiles))
+        if listTmpFiles:
+            for f in listTmpFiles:
+                if os.path.isfile(f):
+                    logging.debug("Session file detected: {}".format(f))
+                    return True
+        return False
+
+    def restore_previous_session(self):
+        '''Restore latest prior session'''
+        logging.debug("StateManager::restore_previous_session()")
+
+        # Determine file to load, in newest to oldest order
+        strSearchPattern = self.__tmpFileBasename + "_*.json"
+        print("Search Pattern: {}".format(strSearchPattern))
+        listTmpFiles = glob.glob(strSearchPattern)
+        listTmpFiles.sort()
+        listTmpFiles.reverse()
+        print(listTmpFiles)
+
+        # iterate through the time ordered files; stop on first successful load
+        bReturn = False
+        for f in listTmpFiles:
+            try:
+                print("Attempting to restore session file: {}".format(f))
+                self.open_edit_session(f)
+                print("Returned from open_edit_session({})".format(f))
+                self.__cleanup_autosave_sessions()
+                bReturn = True
+                print("SUCCESS")
+                break
+
+            except Exception:
+                print("FAIL: Restoring {} load failure".format(f))
+                continue
+
+        # All autosaved files failed on loading
+        self.__cleanup_autosave_sessions()
+        return bReturn
 
     def __autosave_edit_session(self):
         """Constructs a new tmp session filename w/timestamp, populates it with

@@ -9,7 +9,7 @@ from .analyzer_selection_dialog import AnalyzerSelectionDialog, ANALYZER_SELECTI
 from .database_admin_page import DatabaseAdminPage
 from .notification import Notification
 from .policy_rules_admin_page import PolicyRulesAdminPage
-from .state_manager import stateManager
+from .state_manager import stateManager, NotificationType
 from .unapplied_changes_dialog import UnappliedChangesDialog
 from .ui_widget import UIWidget
 
@@ -96,13 +96,30 @@ class MainWindow(UIWidget):
             strFilename = fcd.get_filename()
             if path.isfile(strFilename):
                 self.strSessionFilename = strFilename
-                stateManager.open_edit_session(self.strSessionFilename)
-                # ToDo: Exception handling
+                if not stateManager.open_edit_session(self.strSessionFilename):
+                    stateManager.add_system_notification(
+                        "An error occurred trying to open "
+                        "the session file, {}".format(self.strSessionFilename),
+                        NotificationType.ERROR,
+                    )
+
         fcd.destroy()
 
     def on_restoreMenu_activate(self, menuitem, data=None):
         logging.debug("Callback entered: MainWindow::on_restoreMenu_activate()")
-        pass
+        try:
+            if not stateManager.restore_previous_session():
+                stateManager.add_system_notification(
+                    "An error occurred trying to restore a prior "
+                    "autosaved edit session ",
+                    NotificationType.ERROR,
+                )
+
+        except Exception:
+            print("Restore failed")
+
+        # In all cases, gray out the File|Restore menu item
+        self.get_object("restoreMenu").set_sensitive(False)
 
     def on_saveMenu_activate(self, menuitem, data=None):
         logging.debug("Callback entered: MainWindow::on_saveMenu_activate()")
@@ -150,6 +167,33 @@ class MainWindow(UIWidget):
         page = router(selectionDlg.get_selection(), selectionDlg.get_data())
         mainContent.pack_start(page, True, True, 0)
 
+        # On startup check for the existing of a tmp session file
+        # If detected, alert the user, enable the File|Restore menu item
+        if stateManager.detect_previous_session():
+            logging.debug("Detected edit session tmp file")
+
+            # Enable 'Restore' menu item under the 'File' menu
+            self.get_object("restoreMenu").set_sensitive(True)
+
+            # Raise the modal  "Prior Session Detected" dialog to
+            # prompt the user to immediate restore the prior edit session
+            response = self.__AutosaveRestoreDialog()
+
+            if response == Gtk.ResponseType.YES:
+                try:
+                    if not stateManager.restore_previous_session():
+                        stateManager.add_system_notification(
+                            "An error occurred trying to restore a prior "
+                            "autosaved edit session ",
+                            NotificationType.ERROR,
+                        )
+
+                    self.get_object("restoreMenu").set_sensitive(False)
+                except Exception:
+                    print("Restore failed")
+        else:
+            self.get_object("restoreMenu").set_sensitive(False)
+
     def set_modified_titlebar(self, bModified=True):
         """Adds leading '*' to titlebar text with True or default argument"""
         if bModified:
@@ -164,3 +208,30 @@ class MainWindow(UIWidget):
         logging.debug("MainWindow::on_changeset_updated()")
         state changes."""
         self.set_modified_titlebar(stateManager.is_dirty_queue())
+
+    def __AutosaveRestoreDialog(self):
+        """
+        Presents a modal dialog alerting the user to the detection of an
+        existing edit session autosaved files, prompting the user to invoke
+        an immediate session restore, or to postpone or ignore the restore
+        action.
+        """
+
+        dlgSessionRestorePrompt = Gtk.Dialog(title="Prior Session Detected",
+                                             transient_for=self.window,
+                                             flags=0
+                                             )
+
+        dlgSessionRestorePrompt.add_buttons(Gtk.STOCK_NO,
+                                            Gtk.ResponseType.NO,
+                                            Gtk.STOCK_YES,
+                                            Gtk.ResponseType.YES)
+
+        # dlgSessionRestorePrompt.set_default_size(-1, 200)
+        label = Gtk.Label(label=strings.AUTOSAVE_ACTION_DIALOG_TEXT)
+        hbox = dlgSessionRestorePrompt.get_content_area()
+        hbox.add(label)
+        dlgSessionRestorePrompt.show_all()
+        response = dlgSessionRestorePrompt.run()
+        dlgSessionRestorePrompt.destroy()
+        return response
