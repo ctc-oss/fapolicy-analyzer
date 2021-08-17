@@ -7,6 +7,10 @@ DEPLOY_ANCILLARY_CONFIRM_DIALOG_TEXT = _(
 )
 DEPLOY_ANCILLARY_CONFIRM_DLG_ACTION_COL_HDR = _("Action")
 DEPLOY_ANCILLARY_CONFIRM_DLG_PATH_COL_HDR = _("File Path")
+DEPLOY_ANCILLARY_SUCCESSFUL_MSG = _("Changes successfully deployed.")
+DEPLOY_ANCILLARY_ERROR_MSG = _(
+    "An error occurred trying to deploy the changes. Please try again."
+)
 
 TRUSTED_FILE_MESSAGE = _("This file is trusted.")
 DISCREPANCY_FILE_MESSAGE = _("There is a discrepancy with this file.")
@@ -36,7 +40,8 @@ WHITESPACE_WARNING_DIALOG_TEXT = _(
     + "Trusted Files List.\n(fapolicyd: V TBD)\n\n"
 )
 
-AUTOSAVE_ACTION_DIALOG_TEXT = _("""
+AUTOSAVE_ACTION_DIALOG_TEXT = _(
+    """
         Restore your prior session now?
 
     Yes: Immediately loads your prior session
@@ -48,7 +53,8 @@ AUTOSAVE_ACTION_DIALOG_TEXT = _("""
         this current session by invoking 'Restore'
         under the 'File' menu.
 
-        """)
+        """
+)
 
 LOADER_MESSAGE = _("Loading...")
 
