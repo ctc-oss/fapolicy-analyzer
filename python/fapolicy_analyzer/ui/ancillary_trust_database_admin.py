@@ -21,6 +21,7 @@ class AncillaryTrustDatabaseAdmin(UIWidget):
     def __init__(self):
         super().__init__()
         self.system = System()
+        self.system_rollback = self.system
         self.executor = ThreadPoolExecutor(max_workers=1)
         self.selectedFile = None
 
@@ -137,6 +138,7 @@ SHA256: {fs.sha(trust.path)}"""
         if confirm_resp == Gtk.ResponseType.YES:
             try:
                 self.system.deploy()
+                self.system_rollback = System()
             except BaseException:
                 # BaseException to catch pyo3_runtime.PanicException
                 stateManager.add_system_notification(
@@ -179,5 +181,6 @@ SHA256: {fs.sha(trust.path)}"""
 
         # Clear current session from TreeView store  prior to add/deleting files
         # Here!
+        self.system = self.system_rollback
         self.on_files_added(listPath2Add)
         self.on_files_deleted(listPath2Del)

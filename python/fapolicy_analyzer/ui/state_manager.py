@@ -46,6 +46,8 @@ class StateManager(Events):
         self.__tmpFileBasename = "/tmp/FaCurrentSession.tmp"
         self.__listAutosavedFilenames = []
         self.__iTmpFileCount = 2
+        self.system_working = None
+        self.system_checkpoint = None
 
         # Register cleanup callback function
         atexit.register(self.cleanup)
@@ -187,8 +189,21 @@ effectively the StateManager's destructor."""
             print("listPA = ", listPA)
             return True
 
-    # ####################### Autosave file mgmt ###########################
+    # ######################### System Mgmt ################################
+    def set_system_working( sys ):
+        self.system_working = sys
 
+    def get_system_working( ):
+        return self.system_working
+
+    def update_system_checkpoint( ):
+        self.system_checkpoint = self.system_working
+
+    def restore_system_checkpoint( ):
+        self.system_working = self.system_checpoint
+
+    
+    # ####################### Autosave file mgmt ###########################
     def __cleanup_autosave_sessions(self):
         """Deletes all current autosaved session files. These files were
 created during the current editing session, and are deleted after a deploy,
