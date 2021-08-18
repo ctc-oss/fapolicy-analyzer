@@ -18,3 +18,6 @@ class mock_System:
 
     def deploy(self):
         pass
+
+    def apply_changeset(self, changeset):
+        pass

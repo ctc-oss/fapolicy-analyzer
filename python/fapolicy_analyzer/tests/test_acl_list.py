@@ -17,7 +17,7 @@ def test_creates_widget(widget):
 
 
 def test_loads_store(widget):
-    users = [{"id": 1, "name": "foo"}, {"id": 2, "name": "baz"}]
+    users = [{"id": 1, "name": "baz"}, {"id": 2, "name": "foo"}]
     widget.load_store(users)
     view = widget.get_object("treeView")
     assert [u.get("name") for u in users] == [x[0] for x in view.get_model()]

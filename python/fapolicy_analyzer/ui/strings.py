@@ -36,7 +36,8 @@ WHITESPACE_WARNING_DIALOG_TEXT = _(
     + "Trusted Files List.\n(fapolicyd: V TBD)\n\n"
 )
 
-AUTOSAVE_ACTION_DIALOG_TEXT = _("""
+AUTOSAVE_ACTION_DIALOG_TEXT = _(
+    """
         Restore your prior session now?
 
     Yes: Immediately loads your prior session
@@ -48,7 +49,12 @@ AUTOSAVE_ACTION_DIALOG_TEXT = _("""
         this current session by invoking 'Restore'
         under the 'File' menu.
 
-        """)
+        """
+)
+
+AUTOSAVE_RESTORE_ERROR_MSG = _(
+    "An error occurred trying to restore a prior autosaved edit session"
+)
 
 LOADER_MESSAGE = _("Loading...")
 
