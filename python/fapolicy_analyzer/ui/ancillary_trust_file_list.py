@@ -15,6 +15,7 @@ class AncillaryTrustFileList(TrustFileList):
     def __init__(self, trust_func):
         addBtn = AddFileButton()
         addBtn.files_added += self.on_addBtn_files_added
+        self.changesColumn = None
 
         super().__init__(trust_func, self.__status_markup, addBtn.get_ref())
 
@@ -46,16 +47,19 @@ class AncillaryTrustFileList(TrustFileList):
         )
 
     def _columns(self):
-        statusColumn = Gtk.TreeViewColumn(
+        self.changesColumn = Gtk.TreeViewColumn(
             strings.FILE_LIST_CHANGES_HEADER,
             Gtk.CellRendererText(background="light gray"),
             text=4,
         )
-        statusColumn.set_sort_column_id(4)
-        return [statusColumn, *super()._columns()]
+        self.changesColumn.set_sort_column_id(4)
+        return [self.changesColumn, *super()._columns()]
 
     def load_trust(self, trust):
         changesetMap = self._changesets_to_map()
+
+        # Hide changes column if there are no changes
+        self.changesColumn.set_visible(changesetMap["Add"] or changesetMap["Del"])
 
         store = Gtk.ListStore(str, str, object, str, str)
         for i, data in enumerate(trust):

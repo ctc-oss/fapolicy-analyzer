@@ -50,3 +50,18 @@ def test_sets_trust_status(widget):
         )
         == "foo"
     )
+
+
+def test_clear(widget):
+    widget.set_in_database_view("foo")
+    widget.set_on_file_system_view("foo")
+    widget.set_trust_status("foo")
+    widget.clear()
+    buffers = [
+        widget.get_object("inDatabaseView").get_buffer(),
+        widget.get_object("onFileSystemView").get_buffer(),
+        widget.get_object("fileTrustStatusView").get_buffer(),
+    ]
+    assert not any(
+        [b.get_text(b.get_start_iter(), b.get_end_iter(), True) for b in buffers]
+    )
