@@ -73,9 +73,9 @@ def test_sorting(widget):
     store.append(["baz"])
     widget.load_store(store)
     view = widget.get_object("treeView")
-    assert ["foo", "baz"] == [x[0] for x in view.get_model()]
+    assert ["baz", "foo"] == [x[0] for x in view.get_model()]  # default sort
     view.get_column(0).clicked()
-    assert ["baz", "foo"] == [x[0] for x in view.get_model()]
+    assert ["foo", "baz"] == [x[0] for x in view.get_model()]  # new sort
 
 
 def test_filtering(widget):
@@ -86,7 +86,7 @@ def test_filtering(widget):
     view = widget.get_object("treeView")
     viewFilter = widget.get_object("search")
     viewFilter.set_text("foo")
-    refresh_gui(max_retries=2)
+    refresh_gui(delay=0.3)
     paths = [x[0] for x in view.get_model()]
     assert "foo" in paths
     assert "baz" not in paths

@@ -56,6 +56,10 @@ AUTOSAVE_ACTION_DIALOG_TEXT = _(
         """
 )
 
+AUTOSAVE_RESTORE_ERROR_MSG = _(
+    "An error occurred trying to restore a prior autosaved edit session"
+)
+
 LOADER_MESSAGE = _("Loading...")
 
 FILE_LABEL = _("file")
