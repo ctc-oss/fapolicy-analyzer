@@ -67,7 +67,11 @@ def fapd_dbase_snapshot(strArchiveFile=None, strListFile=None):
         # Delete oldest back-up file
         if retCode == 0:
             fapd_dbase_cleanup_snapshots(strArchiveBasename)
-        return True
+            return True
+        else:
+            # subprocess had failed did not throw an exception
+            print("Fapolicyd pre-deploy backup failed: tar had non zero exit")
+            return False
     except Exception as e:
         print("Fapolicyd pre-deploy backup failed: ", e)
         return False
