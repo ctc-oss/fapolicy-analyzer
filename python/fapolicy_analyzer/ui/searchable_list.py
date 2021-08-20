@@ -15,12 +15,16 @@ class SearchableList(UIWidget, Events):
         columns,
         *actionButtons,
         searchColumnIndex=0,
+        defaultSortIndex=0,
+        defaultSortDirection=Gtk.SortType.DESCENDING,
         view_headers_visible=True,
     ):
         UIWidget.__init__(self, "searchable_list")
         Events.__init__(self)
 
         self.searchColumnIndex = searchColumnIndex
+        self.defaultSortIndex = defaultSortIndex
+        self.defaultSortDirection = defaultSortDirection
         self.treeCount = self.get_object("treeCount")
         self.treeView = self.get_object("treeView")
         self.treeView.set_headers_visible(view_headers_visible)
@@ -53,9 +57,21 @@ class SearchableList(UIWidget, Events):
         self.treeCount.set_text(str(count))
 
     def load_store(self, store):
+        def apply_prev_sort(model):
+            if currentModel := self.treeView.get_model():
+                currentSort = currentModel.get_sort_column_id()
+            else:
+                currentSort = (self.defaultSortIndex, 0)
+
+            model.set_sort_column_id(*currentSort)
+            return model
+
         self.treeViewFilter = store.filter_new()
         self.treeViewFilter.set_visible_func(self.__filter_view)
-        self.treeView.set_model(Gtk.TreeModelSort(model=self.treeViewFilter))
+
+        sortableModel = apply_prev_sort(Gtk.TreeModelSort(model=self.treeViewFilter))
+        self.treeView.set_model(sortableModel)
+
         self.treeView.get_selection().connect("changed", self.on_view_selection_changed)
         self._update_tree_count(self.__get_tree_count())
         self.set_loading(False)

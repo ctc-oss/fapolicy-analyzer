@@ -87,6 +87,18 @@ def test_updates_trust_details_for_deleted_files(widget, mocker):
     widget.trustFileDetails.set_trust_status.assert_called_with(UNKNOWN_FILE_MESSAGE)
 
 
+def test_clears_trust_details(widget, mocker):
+    mocker.patch.object(widget.trustFileDetails, "clear")
+    trustBtn = widget.get_object("trustBtn")
+    untrustBtn = widget.get_object("untrustBtn")
+    trustBtn.set_sensitive(True)
+    untrustBtn.set_sensitive(True)
+    widget.on_trust_selection_changed(None)
+    assert not trustBtn.get_sensitive()
+    assert not untrustBtn.get_sensitive()
+    widget.trustFileDetails.clear.assert_called()
+
+
 @pytest.mark.parametrize("confirm_resp", [Gtk.ResponseType.YES])
 @pytest.mark.parametrize("revert_resp", [Gtk.ResponseType.NO])
 def test_on_confirm_deployment(widget, confirm_dialog, revert_dialog):
@@ -107,14 +119,13 @@ def test_on_confirm_deployment(widget, confirm_dialog, revert_dialog):
 def test_on_confirm_deployment_w_exception(
     widget, mocker, confirm_dialog, revert_dialog
 ):
-    mockFunc = mocker.patch(
-        "fapolicy_analyzer.System.deploy", side_effect=BaseException
-    )
-
     parent = Gtk.Window()
     parent.add(widget.get_ref())
-    widget.on_deployBtn_clicked()
-    mockFunc.assert_called()
+    with patch("fapolicy_analyzer.System") as mock:
+        mock.deploy = MagicMock(return_value=None, side_effect=BaseException)
+        widget.system = mock
+        widget.on_deployBtn_clicked()
+        mock.deploy.assert_called()
 
 
 @pytest.mark.parametrize("confirm_resp", [Gtk.ResponseType.NO])
@@ -122,13 +133,12 @@ def test_on_neg_confirm_deployment(widget, confirm_dialog):
     parent = Gtk.Window()
     parent.add(widget.get_ref())
     with patch("fapolicy_analyzer.System") as mock:
-        instance = mock.return_value
-        widget.system = instance
+        widget.system = mock
         widget.on_deployBtn_clicked()
 
         confirm_dialog.run.assert_called()
         confirm_dialog.hide.assert_called()
-        instance.deploy.assert_not_called()
+        mock.deploy.assert_not_called()
 
 
 @pytest.mark.parametrize("confirm_resp", [Gtk.ResponseType.YES])
@@ -269,7 +279,11 @@ def test_handle_deploy_excption(widget, confirm_dialog):
     parent = Gtk.Window()
     parent.add(widget.get_ref())
 
-    patch("fapolicy_analyzer.System.deploy", side_effect=Exception("mocked error"))
-    with pytest.raises(Exception) as excinfo:
-        widget.on_deployBtn_clicked()
-        assert excinfo.value.message == "mocked error"
+    with patch("fapolicy_analyzer.System") as mock:
+        mock.deploy = MagicMock(
+            return_value=None, side_effect=Exception("mocked error")
+        )
+        widget.system = mock
+        with pytest.raises(Exception) as excinfo:
+            widget.on_deployBtn_clicked()
+            assert excinfo.value.message == "mocked error"
