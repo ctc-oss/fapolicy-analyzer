@@ -6,11 +6,14 @@ import shutil
 import pytest
 from unittest.mock import patch
 from ui.state_manager import stateManager
-from ui.__main__ import parse_cmdline, main, XdgDirPrefix
+from ui.__main__ import parse_cmdline, main
+from util.xdg_utils import xdg_state_dir_prefix
 
 
 @pytest.fixture
 def state():
+    stateManager.__init__()
+    logging.root.setLevel(logging.WARNING)
     yield stateManager
 
     # Reset global objects because they persist between tests.
@@ -133,21 +136,21 @@ def test_main_all_options(mocker, state):
         mockGtk.main.assert_called_once()
 
 
-def test_xdg_dir_prefix_w_exception(mocker):
+def test_xdg_state_dir_prefix_w_exception(mocker):
     """Simulate a directory creation failure to execute the exception
     handling code.
     """
     mockMakeDirs = mocker.patch("os.makedirs", side_effect=IOError)
-    generatedFullPath = XdgDirPrefix("FapTestTmp")
+    generatedFullPath = xdg_state_dir_prefix("FapTestTmp")
     mockMakeDirs.assert_called()
     assert generatedFullPath == "/tmp/FapTestTmp"
 
 
-def test_xdg_dir_prefix_w_xdg_env():
+def test_xdg_state_dir_prefix_w_xdg_env():
     try:
         os.environ['XDG_STATE_HOME'] = '/tmp'
         expectedFullPath = '/tmp/fapolicy-analyzer/FapTestTmp'
-        generatedFullPath = XdgDirPrefix("FapTestTmp")
+        generatedFullPath = xdg_state_dir_prefix("FapTestTmp")
         del os.environ['XDG_STATE_HOME']
     except Exception as e:
         print(e)

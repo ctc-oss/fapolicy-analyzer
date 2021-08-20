@@ -152,7 +152,7 @@ class MainWindow(UIWidget):
             strFilename = fcd.get_filename()
             self.strSessionFilename = strFilename
             stateManager.save_edit_session(self.strSessionFilename)
-            # Verify no exceptions
+
         fcd.destroy()
 
     def on_aboutMenu_activate(self, menuitem, data=None):
