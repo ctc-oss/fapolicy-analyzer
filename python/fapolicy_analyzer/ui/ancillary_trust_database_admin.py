@@ -139,11 +139,14 @@ SHA256: {fs.sha(trust.path)}"""
             try:
                 self.system.deploy()
                 self.system_rollback = System()
+                stateManager.add_system_notification(
+                    strings.DEPLOY_ANCILLARY_SUCCESSFUL_MSG,
+                    NotificationType.SUCCESS,
+                )
             except BaseException:
                 # BaseException to catch pyo3_runtime.PanicException
                 stateManager.add_system_notification(
-                    "An error occurred trying to deploy the changes. "
-                    "Please try again.",
+                    strings.DEPLOY_ANCILLARY_ERROR_MSG,
                     NotificationType.ERROR,
                 )
                 return

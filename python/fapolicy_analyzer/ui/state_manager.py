@@ -33,7 +33,7 @@ class StateManager(Events):
         "ev_changeset_queue_updated",
         "system_notification_added",
         "system_notification_removed",
-        "ev_user_session_loaded"
+        "ev_user_session_loaded",
     ]
 
     def __init__(self):
@@ -54,7 +54,7 @@ class StateManager(Events):
 
     def cleanup(self):
         """StateManager singleton / global object clean-up
-effectively the StateManager's destructor."""
+        effectively the StateManager's destructor."""
         logging.debug("StateManager::cleanup()")
         self.__force_cleanup_autosave_sessions()
 
@@ -68,8 +68,7 @@ effectively the StateManager's destructor."""
         self.__tmpFileBasename = strFileBasename
 
     def set_autosave_filecount(self, iFilecount):
-        logging.debug("StateManager::set_autosave_filecount: {}"
-                      .format(iFilecount))
+        logging.debug("StateManager::set_autosave_filecount: {}".format(iFilecount))
         self.__iTmpFileCount = iFilecount
 
     # ####################### Changeset Queue ########################
@@ -162,9 +161,7 @@ effectively the StateManager's destructor."""
         """Save the pending changeset queue to the specified json file"""
         logging.debug("StateManager::save_edit_session({})".format(strJsonFile))
         with open(strJsonFile, "w") as fp:
-            json.dump(self.__path_action_list_to_dict(), fp,
-                      sort_keys=True,
-                      indent=4)
+            json.dump(self.__path_action_list_to_dict(), fp, sort_keys=True, indent=4)
 
     def open_edit_session(self, strJsonFile):
         """Save the FIFO changeset queue to the specified json file on disk"""
@@ -206,8 +203,8 @@ effectively the StateManager's destructor."""
     # ####################### Autosave file mgmt ###########################
     def __cleanup_autosave_sessions(self):
         """Deletes all current autosaved session files. These files were
-created during the current editing session, and are deleted after a deploy,
-or a session file open/restore operation."""
+        created during the current editing session, and are deleted after a deploy,
+        or a session file open/restore operation."""
         logging.debug("StateManager::__cleanup_autosave_sessions()")
         logging.debug(self.__listAutosavedFilenames)
         for f in self.__listAutosavedFilenames:
@@ -225,8 +222,9 @@ or a session file open/restore operation."""
             for f in listTmpFiles:
                 # Add the tmp file to the deletion list if it's not currently in the list
                 if os.path.isfile(f) and f not in self.__listAutosavedFilenames:
-                    logging.debug("Adding Session file to deletion list: "
-                                  "{}".format(f))
+                    logging.debug(
+                        "Adding Session file to deletion list: " "{}".format(f)
+                    )
                     self.__listAutosavedFilenames.append(f)
             self.__cleanup_autosave_sessions()
 
@@ -246,7 +244,7 @@ or a session file open/restore operation."""
         return False
 
     def restore_previous_session(self):
-        '''Restore latest prior session'''
+        """Restore latest prior session"""
         logging.debug("StateManager::restore_previous_session()")
 
         # Determine file to load, in newest to oldest order
@@ -279,7 +277,7 @@ or a session file open/restore operation."""
 
     def __autosave_edit_session(self):
         """Constructs a new tmp session filename w/timestamp, populates it with
- the current session state, saves it, and deletes the oldest tmp session file"""
+        the current session state, saves it, and deletes the oldest tmp session file"""
         logging.debug("StateManager::__autosave_edit_session()")
 
         # Bypass if autosave is not enabled
@@ -287,7 +285,7 @@ or a session file open/restore operation."""
             logging.debug(" Session autosave is disabled/bypassed")
             return
 
-        timestamp = DT.fromtimestamp(time.time()).strftime('%Y%m%d_%H%M%S_%f')
+        timestamp = DT.fromtimestamp(time.time()).strftime("%Y%m%d_%H%M%S_%f")
         strFilename = self.__tmpFileBasename + "_" + timestamp + ".json"
         logging.debug("  Writing to: {}".format(strFilename))
         try:
@@ -296,22 +294,28 @@ or a session file open/restore operation."""
             logging.debug(self.__listAutosavedFilenames)
 
             # Delete oldest tmp file
-            if (self.__listAutosavedFilenames and len(self.__listAutosavedFilenames) > self.__iTmpFileCount):
+            if (
+                self.__listAutosavedFilenames
+                and len(self.__listAutosavedFilenames) > self.__iTmpFileCount
+            ):
                 self.__listAutosavedFilenames.sort()
                 strOldestFile = self.__listAutosavedFilenames[0]
                 logging.debug("Deleting: {}".format(strOldestFile))
                 os.remove(strOldestFile)
-                del(self.__listAutosavedFilenames[0])
+                del self.__listAutosavedFilenames[0]
                 logging.debug(self.__listAutosavedFilenames)
 
         except IOError as error:
-            print("Warning: __autosave_edit_session() failed: {}".format(error), file=stderr)
+            print(
+                "Warning: __autosave_edit_session() failed: {}".format(error),
+                file=stderr,
+            )
             print("Continuing...", file=stderr)
 
     # ####################### Notification Events ##########################
-    def add_system_notification(self,
-                                notification: str,
-                                notification_type: NotificationType):
+    def add_system_notification(
+        self, notification: str, notification_type: NotificationType
+    ):
         self.systemNotification = (notification, notification_type)
         self.system_notification_added(self.systemNotification)
 

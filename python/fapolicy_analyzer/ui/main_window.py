@@ -5,7 +5,9 @@ import fapolicy_analyzer.ui.strings as strings
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
-from .analyzer_selection_dialog import AnalyzerSelectionDialog, ANALYZER_SELECTION
+from locale import gettext as _
+from fapolicy_analyzer.util.format import f
+from .analyzer_selection_dialog import ANALYZER_SELECTION  # , AnalyzerSelectionDialog
 from .database_admin_page import DatabaseAdminPage
 from .notification import Notification
 from .policy_rules_admin_page import PolicyRulesAdminPage
@@ -36,6 +38,7 @@ class MainWindow(UIWidget):
 
         toaster = Notification()
         self.get_object("overlay").add_overlay(toaster.get_ref())
+        self.mainContent = self.get_object("mainContent")
 
         # Disable 'File' menu items until backend support is available
         self.get_object("restoreMenu").set_sensitive(False)
@@ -54,15 +57,6 @@ class MainWindow(UIWidget):
         unappliedChangesDlg.destroy()
         return response != Gtk.ResponseType.OK
 
-    def on_destroy(self, obj, *args):
-        if not isinstance(obj, Gtk.Window) and self.__unapplied_changes():
-            return True
-
-        Gtk.main_quit()
-
-    def on_delete_event(self, *args):
-        return self.__unapplied_changes()
-
     def __apply_file_filters(self, dialog):
         fileFilterJson = Gtk.FileFilter()
         fileFilterJson.set_name(strings.FA_SESSION_FILES_FILTER_LABEL)
@@ -73,6 +67,82 @@ class MainWindow(UIWidget):
         fileFilterAny.set_name(strings.ANY_FILES_FILTER_LABEL)
         fileFilterAny.add_pattern("*")
         dialog.add_filter(fileFilterAny)
+
+    def __pack_main_content(self, page):
+        current = next(iter(self.mainContent.get_children()), None)
+        if current:
+            self.mainContent.remove(current)
+        self.mainContent.pack_start(page, True, True, 0)
+
+    def __auto_save_restore_dialog(self):
+        """
+        Presents a modal dialog alerting the user to the detection of an
+        existing edit session autosaved files, prompting the user to invoke
+        an immediate session restore, or to postpone or ignore the restore
+        action.
+        """
+
+        dlgSessionRestorePrompt = Gtk.Dialog(
+            title="Prior Session Detected", transient_for=self.window, flags=0
+        )
+
+        dlgSessionRestorePrompt.add_buttons(
+            Gtk.STOCK_NO, Gtk.ResponseType.NO, Gtk.STOCK_YES, Gtk.ResponseType.YES
+        )
+
+        # dlgSessionRestorePrompt.set_default_size(-1, 200)
+        label = Gtk.Label(label=strings.AUTOSAVE_ACTION_DIALOG_TEXT)
+        hbox = dlgSessionRestorePrompt.get_content_area()
+        hbox.add(label)
+        dlgSessionRestorePrompt.show_all()
+        response = dlgSessionRestorePrompt.run()
+        dlgSessionRestorePrompt.destroy()
+        return response
+
+    def on_start(self, *args):
+        # For now the analyzer selection dialog is just commented out so we can revert back to it if needed
+        # selectionDlg = AnalyzerSelectionDialog(self.window)
+        # page = router(selectionDlg.get_selection(), selectionDlg.get_data())
+        page = router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN)
+        self.mainContent.pack_start(page, True, True, 0)
+
+        # On startup check for the existing of a tmp session file
+        # If detected, alert the user, enable the File|Restore menu item
+        if stateManager.detect_previous_session():
+            logging.debug("Detected edit session tmp file")
+            self.get_object("restoreMenu").set_sensitive(True)
+
+            # Raise the modal  "Prior Session Detected" dialog to
+            # prompt the user to immediate restore the prior edit session
+            response = self.__auto_save_restore_dialog()
+
+            if response == Gtk.ResponseType.YES:
+                try:
+                    if not stateManager.restore_previous_session():
+                        stateManager.add_system_notification(
+                            strings.AUTOSAVE_RESTORE_ERROR_MSG,
+                            NotificationType.ERROR,
+                        )
+
+                    self.get_object("restoreMenu").set_sensitive(False)
+                except Exception:
+                    print("Restore failed")
+        else:
+            self.get_object("restoreMenu").set_sensitive(False)
+
+    def on_destroy(self, obj, *args):
+        if not isinstance(obj, Gtk.Window) and self.__unapplied_changes():
+            return True
+
+        Gtk.main_quit()
+
+    def on_delete_event(self, *args):
+        return self.__unapplied_changes()
+
+    def on_changeset_updated(self):
+        dirty = stateManager.is_dirty_queue()
+        title = f"*{self.strTopLevelTitle}" if dirty else self.strTopLevelTitle
+        self.windowTopLevel.set_title(title)
 
     def on_openMenu_activate(self, menuitem, data=None):
         logging.debug("Callback entered: MainWindow::on_openMenu_activate()")
@@ -98,8 +168,11 @@ class MainWindow(UIWidget):
                 self.strSessionFilename = strFilename
                 if not stateManager.open_edit_session(self.strSessionFilename):
                     stateManager.add_system_notification(
-                        "An error occurred trying to open "
-                        "the session file, {}".format(self.strSessionFilename),
+                        f(
+                            _(
+                                "An error occurred trying to open the session file, {self.strSessionFilename}"
+                            )
+                        ),
                         NotificationType.ERROR,
                     )
 
@@ -161,77 +234,26 @@ class MainWindow(UIWidget):
         aboutDialog.run()
         aboutDialog.hide()
 
-    def on_start(self, *args):
-        mainContent = self.get_object("mainContent")
-        selectionDlg = AnalyzerSelectionDialog(self.window)
-        page = router(selectionDlg.get_selection(), selectionDlg.get_data())
-        mainContent.pack_start(page, True, True, 0)
+    def on_analyzeMenu_activate(self, menuitem, *args):
+        fcd = Gtk.FileChooserDialog(
+            title=strings.OPEN_FILE_LABEL,
+            transient_for=self.get_ref(),
+            action=Gtk.FileChooserAction.OPEN,
+        )
+        fcd.add_buttons(
+            Gtk.STOCK_CANCEL,
+            Gtk.ResponseType.CANCEL,
+            Gtk.STOCK_OPEN,
+            Gtk.ResponseType.OK,
+        )
+        response = fcd.run()
+        fcd.hide()
+        if response == Gtk.ResponseType.OK and path.isfile((fcd.get_filename())):
+            file = fcd.get_filename()
+            self.__pack_main_content(
+                router(ANALYZER_SELECTION.ANALYZE_FROM_AUDIT, file)
+            )
+        fcd.destroy()
 
-        # On startup check for the existing of a tmp session file
-        # If detected, alert the user, enable the File|Restore menu item
-        if stateManager.detect_previous_session():
-            logging.debug("Detected edit session tmp file")
-
-            # Enable 'Restore' menu item under the 'File' menu
-            self.get_object("restoreMenu").set_sensitive(True)
-
-            # Raise the modal  "Prior Session Detected" dialog to
-            # prompt the user to immediate restore the prior edit session
-            response = self.__AutosaveRestoreDialog()
-
-            if response == Gtk.ResponseType.YES:
-                try:
-                    if not stateManager.restore_previous_session():
-                        stateManager.add_system_notification(
-                            "An error occurred trying to restore a prior "
-                            "autosaved edit session ",
-                            NotificationType.ERROR,
-                        )
-
-                    self.get_object("restoreMenu").set_sensitive(False)
-                except Exception:
-                    print("Restore failed")
-        else:
-            self.get_object("restoreMenu").set_sensitive(False)
-
-    def set_modified_titlebar(self, bModified=True):
-        """Adds leading '*' to titlebar text with True or default argument"""
-        if bModified:
-            # Prefix title with '*'
-            self.windowTopLevel.set_title("*" + self.strTopLevelTitle)
-        else:
-            # Reset title to original text
-            self.windowTopLevel.set_title(self.strTopLevelTitle)
-
-    def on_changeset_updated(self):
-        """The callback function invoked from the StateManager when
-        logging.debug("MainWindow::on_changeset_updated()")
-        state changes."""
-        self.set_modified_titlebar(stateManager.is_dirty_queue())
-
-    def __AutosaveRestoreDialog(self):
-        """
-        Presents a modal dialog alerting the user to the detection of an
-        existing edit session autosaved files, prompting the user to invoke
-        an immediate session restore, or to postpone or ignore the restore
-        action.
-        """
-
-        dlgSessionRestorePrompt = Gtk.Dialog(title="Prior Session Detected",
-                                             transient_for=self.window,
-                                             flags=0
-                                             )
-
-        dlgSessionRestorePrompt.add_buttons(Gtk.STOCK_NO,
-                                            Gtk.ResponseType.NO,
-                                            Gtk.STOCK_YES,
-                                            Gtk.ResponseType.YES)
-
-        # dlgSessionRestorePrompt.set_default_size(-1, 200)
-        label = Gtk.Label(label=strings.AUTOSAVE_ACTION_DIALOG_TEXT)
-        hbox = dlgSessionRestorePrompt.get_content_area()
-        hbox.add(label)
-        dlgSessionRestorePrompt.show_all()
-        response = dlgSessionRestorePrompt.run()
-        dlgSessionRestorePrompt.destroy()
-        return response
+    def on_trustDbMenu_activate(self, menuitem, *args):
+        self.__pack_main_content(router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN))

@@ -37,12 +37,17 @@ def test_loads_store(widget):
 
     widget.load_store(_objects)
     view = widget.get_object("treeView")
-    assert [t.trust for t in _objects] == [strip_markup(x[0]) for x in view.get_model()]
-    assert [t.mode for t in _objects] == [strip_markup(x[1]) for x in view.get_model()]
-    assert [t.access for t in _objects] == [
+    sortedObjects = sorted(_objects, key=lambda o: o.file)
+    assert [t.trust for t in sortedObjects] == [
+        strip_markup(x[0]) for x in view.get_model()
+    ]
+    assert [t.mode for t in sortedObjects] == [
+        strip_markup(x[1]) for x in view.get_model()
+    ]
+    assert [t.access for t in sortedObjects] == [
         strip_markup(x[2]) for x in view.get_model()
     ]
-    assert [t.file for t in _objects] == [x[3] for x in view.get_model()]
+    assert [t.file for t in sortedObjects] == [x[3] for x in view.get_model()]
 
 
 def test_status_markup(widget):
