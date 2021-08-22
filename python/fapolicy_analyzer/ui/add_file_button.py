@@ -36,7 +36,7 @@ class AddFileButton(UIWidget, Events):
             files = [f for f in fcd.get_filenames() if path.isfile(f)]
 
             # -- Filter to address fapolicyd embeded whitspace in path issue
-            # fapolicyd issue 109:Files and Directories with spaces in the name 
+            # fapolicyd issue 109:Files and Directories with spaces in the name
             #
             # Detect and remove file paths w/embedded spaces. Alert user w/dlg
             print("Filtering out paths with embedded whitespace")
