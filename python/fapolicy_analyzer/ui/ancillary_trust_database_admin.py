@@ -15,6 +15,7 @@ from .trust_file_details import TrustFileDetails
 from .deploy_confirm_dialog import DeployConfirmDialog
 from .state_manager import stateManager, NotificationType
 from .confirm_info_dialog import ConfirmInfoDialog
+from fapolicy_analyzer.util.fapd_dbase import fapd_dbase_snapshot
 
 
 class AncillaryTrustDatabaseAdmin(UIWidget):
@@ -136,7 +137,9 @@ SHA256: {fs.sha(trust.path)}"""
         dlgDeployList.hide()
 
         if confirm_resp == Gtk.ResponseType.YES:
+            fapd_dbase_snapshot()
             try:
+                print("Deploying...")
                 self.system.deploy()
                 self.system_rollback = System()
                 stateManager.add_system_notification(

@@ -1,6 +1,6 @@
 import gi
 import re
-import ui.strings as strings
+import fapolicy_analyzer.ui.strings as strings
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
