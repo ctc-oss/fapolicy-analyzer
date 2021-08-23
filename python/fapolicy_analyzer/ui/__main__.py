@@ -9,7 +9,7 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from .main_window import MainWindow
 from .state_manager import stateManager
-from util.xdg_utils import xdg_state_dir_prefix
+from fapolicy_analyzer.util.xdg_utils import xdg_state_dir_prefix
 
 
 def parse_cmdline():

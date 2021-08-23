@@ -7,7 +7,7 @@ import pytest
 from unittest.mock import patch
 from ui.state_manager import stateManager
 from ui.__main__ import parse_cmdline, main
-from util.xdg_utils import xdg_state_dir_prefix
+from fapolicy_analyzer.util.xdg_utils import xdg_state_dir_prefix
 
 
 @pytest.fixture

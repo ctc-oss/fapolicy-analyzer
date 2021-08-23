@@ -15,7 +15,7 @@ from .trust_file_details import TrustFileDetails
 from .deploy_confirm_dialog import DeployConfirmDialog
 from .state_manager import stateManager, NotificationType
 from .confirm_info_dialog import ConfirmInfoDialog
-from util.fapd_dbase import fapd_dbase_snapshot
+from fapolicy_analyzer.util.fapd_dbase import fapd_dbase_snapshot
 
 
 class AncillaryTrustDatabaseAdmin(UIWidget):

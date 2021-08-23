@@ -1,5 +1,5 @@
 from subprocess import SubprocessError
-from util.fapd_dbase import fapd_dbase_snapshot
+from fapolicy_analyzer.util.fapd_dbase import fapd_dbase_snapshot
 
 
 def test_fapd_dbase_snapshot_fails():

@@ -4,7 +4,7 @@ import os
 import glob
 import logging
 from datetime import datetime as DT
-from util.xdg_utils import xdg_data_dir_prefix, xdg_config_dir_prefix
+from fapolicy_analyzer.util.xdg_utils import xdg_data_dir_prefix, xdg_config_dir_prefix
 
 # Module Globals
 giBackupFileMaxCount = 3
