@@ -58,9 +58,7 @@ def fapd_dbase_snapshot(strArchiveFile=None, strListFile=None):
 
     # Build the tar command w/source options to either use the list or defaults
     listTarCmd = ["/usr/bin/tar", "-czf", strArchiveFile] + listTarSourceArgs
-    print("Executing: ", listTarCmd)
     try:
-        print("Executing: ", listTarCmd)
         p = subprocess.Popen(listTarCmd)
         retCode = p.wait()
 

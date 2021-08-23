@@ -6,7 +6,7 @@ from util.xdg_utils import (
 )
 
 
-def test_xdg_state_dir_prefix_wo_env(monkeypatch):
+def test_xdg_state_dir_prefix_wo_env():
     if "XDG_STATE_HOME" in os.environ:
         del os.environ["XDG_STATE_HOME"]
 
@@ -44,7 +44,7 @@ def test_xdg_state_dir_prefix_w_exception(monkeypatch):
     monkeypatch.delenv("XDG_STATE_HOME", raising=False)
 
 
-def test_xdg_data_dir_prefix_wo_env(monkeypatch):
+def test_xdg_data_dir_prefix_wo_env():
     if "XDG_DATA_HOME" in os.environ:
         del os.environ["XDG_DATA_HOME"]
 
@@ -53,7 +53,6 @@ def test_xdg_data_dir_prefix_wo_env(monkeypatch):
     strDataDefaultDir = strHomeDir + "/.local/share/"
     strExpected = strDataDefaultDir + "fapolicy-analyzer/" + strBasename
 
-    monkeypatch.delenv("XDG_DATA_HOME", raising=False)
     assert xdg_data_dir_prefix(strBasename) == strExpected
 
 
@@ -83,7 +82,7 @@ def test_xdg_data_dir_prefix_w_exception(monkeypatch):
     monkeypatch.delenv("XDG_DATA_HOME", raising=False)
 
 
-def test_xdg_config_dir_prefix_wo_env(monkeypatch):
+def test_xdg_config_dir_prefix_wo_env():
     if "XDG_CONFIG_HOME" in os.environ:
         del os.environ["XDG_CONFIG_HOME"]
 
@@ -92,7 +91,6 @@ def test_xdg_config_dir_prefix_wo_env(monkeypatch):
     strConfigDefaultDir = strHomeDir + "/.config/"
     strExpected = strConfigDefaultDir + "fapolicy-analyzer/" + strBasename
 
-    monkeypatch.delenv("XDG_CONFIG_HOME", raising=False)
     assert xdg_config_dir_prefix(strBasename) == strExpected
 
 
