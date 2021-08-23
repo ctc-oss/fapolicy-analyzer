@@ -11,7 +11,7 @@ from .acl_list import ACLList
 from .strings import GROUP_LABEL, GROUPS_LABEL, USER_LABEL, USERS_LABEL
 from .subject_list import SubjectList
 from .ui_widget import UIWidget
-from util import acl, fs
+from fapolicy_analyzer.util import acl, fs
 
 
 class PolicyRulesAdminPage(UIWidget):
