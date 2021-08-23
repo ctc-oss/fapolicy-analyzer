@@ -186,21 +186,9 @@ class StateManager(Events):
             print("listPA = ", listPA)
             return True
 
-    # ######################### System Mgmt ################################
-    def set_system_working(self, sys):
-        self.system_working = sys
-
-    def get_system_working(self):
-        return self.system_working
-
-    def update_system_checkpoint(self):
-        self.system_checkpoint = self.system_working
-
-    def restore_system_checkpoint(self):
-        self.system_working = self.system_checpoint
 
     # ####################### Autosave file mgmt ###########################
-    def __cleanup_autosave_sessions(self): # noqa
+    def __cleanup_autosave_sessions(self):
         """Deletes all current autosaved session files. These files were
         created during the current editing session, and are deleted after a deploy,
         or a session file open/restore operation."""
