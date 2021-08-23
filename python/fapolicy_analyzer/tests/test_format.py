@@ -1,5 +1,5 @@
 import context  # noqa: F401
-from fapolicy_analyzer.util.format import snake_to_camelcase, f
+from util.format import snake_to_camelcase, f
 
 
 def test_snake_to_camelcase():

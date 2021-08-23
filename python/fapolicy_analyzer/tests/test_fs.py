@@ -1,6 +1,6 @@
 import subprocess
 import os
-from fapolicy_analyzer.util.fs import sha
+from util.fs import sha
 
 
 def test_sha():

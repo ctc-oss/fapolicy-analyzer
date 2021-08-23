@@ -1,5 +1,5 @@
 import os
-from fapolicy_analyzer.util.xdg_utils import (
+from util.xdg_utils import (
     xdg_data_dir_prefix,
     xdg_state_dir_prefix,
     xdg_config_dir_prefix,
