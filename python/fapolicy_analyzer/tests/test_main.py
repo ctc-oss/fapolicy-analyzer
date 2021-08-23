@@ -23,10 +23,10 @@ def state():
 
 def test_parse_args_no_options(mocker, state):
     testargs = ["prog"]
-    _home = os.path.expanduser('~')
-    xdg_state_home = os.path.join(_home, '.local', 'state')
+    _home = os.path.expanduser("~")
+    xdg_state_home = os.path.join(_home, ".local", "state")
     expectTmpPath = xdg_state_home + "/fapolicy-analyzer/FaCurrentSession.tmp"
-    with patch.object(sys, 'argv', testargs):
+    with patch.object(sys, "argv", testargs):
         parse_cmdline()
 
         assert logging.getLogger().level == logging.WARNING
@@ -43,27 +43,23 @@ def test_parse_args_no_options_w_xdg_env(mocker, state):
     xdg_state_home = "/tmp"
     expectTmpPath = xdg_state_home + "/fapolicy-analyzer/FaCurrentSession.tmp"
 
-    with patch.object(sys, 'argv', testargs):
-        os.environ['XDG_STATE_HOME'] = xdg_state_home
+    with patch.object(sys, "argv", testargs):
+        os.environ["XDG_STATE_HOME"] = xdg_state_home
         parse_cmdline()
 
         assert logging.getLogger().level == logging.WARNING
         assert not stateManager._StateManager__bAutosaveEnabled
         assert stateManager._StateManager__iTmpFileCount == 2
         assert stateManager._StateManager__tmpFileBasename == expectTmpPath
-        del os.environ['XDG_STATE_HOME']
+        del os.environ["XDG_STATE_HOME"]
 
         # Tear down
         shutil.rmtree(xdg_state_home + "/fapolicy-analyzer/")
 
 
 def test_parse_args_all_options(mocker, state):
-    testargs = ["prog",
-                "-v",
-                "-a",
-                "-s", "/tmp/TmpFileTemplate.tmp",
-                "-c", "3"]
-    with patch.object(sys, 'argv', testargs):
+    testargs = ["prog", "-v", "-a", "-s", "/tmp/TmpFileTemplate.tmp", "-c", "3"]
+    with patch.object(sys, "argv", testargs):
         parse_cmdline()
 
         assert logging.getLogger().level == logging.DEBUG
@@ -75,31 +71,27 @@ def test_parse_args_all_options(mocker, state):
 
 def test_parse_args_all_options_w_xdg_env(mocker, state):
     """The '-s' option should overide the XDG_STATE_HOME env"""
-    testargs = ["prog",
-                "-v",
-                "-a",
-                "-s", "/tmp/TmpFileTemplate.tmp",
-                "-c", "3"]
+    testargs = ["prog", "-v", "-a", "-s", "/tmp/TmpFileTemplate.tmp", "-c", "3"]
 
-    with patch.object(sys, 'argv', testargs):
-        os.environ['XDG_STATE_HOME'] = '/tmp'
+    with patch.object(sys, "argv", testargs):
+        os.environ["XDG_STATE_HOME"] = "/tmp"
         parse_cmdline()
 
         assert logging.getLogger().level == logging.DEBUG
         assert stateManager._StateManager__bAutosaveEnabled
         assert stateManager._StateManager__iTmpFileCount == 3
         assert stateManager._StateManager__tmpFileBasename == "/tmp/TmpFileTemplate.tmp"
-        del os.environ['XDG_STATE_HOME']
+        del os.environ["XDG_STATE_HOME"]
 
 
 def test_main_no_options(mocker, state):
     testargs = ["prog"]
     testargs = ["prog"]
-    _home = os.path.expanduser('~')
-    xdg_state_home = os.path.join(_home, '.local', 'state')
+    _home = os.path.expanduser("~")
+    xdg_state_home = os.path.join(_home, ".local", "state")
     expectTmpPath = xdg_state_home + "/fapolicy-analyzer/FaCurrentSession.tmp"
 
-    with patch.object(sys, 'argv', testargs):
+    with patch.object(sys, "argv", testargs):
         mockMW = mocker.patch("ui.__main__.MainWindow")
         mockGtk = mocker.patch("ui.__main__.Gtk")
         main()
@@ -117,13 +109,9 @@ def test_main_no_options(mocker, state):
 
 def test_main_all_options(mocker, state):
     """As above, the '-s' option should overide the XDG_STATE_HOME env"""
-    testargs = ["prog",
-                "-v",
-                "-a",
-                "-s", "/tmp/TmpFileTemplate.tmp",
-                "-c", "3"]
+    testargs = ["prog", "-v", "-a", "-s", "/tmp/TmpFileTemplate.tmp", "-c", "3"]
 
-    with patch.object(sys, 'argv', testargs):
+    with patch.object(sys, "argv", testargs):
         mockMW = mocker.patch("ui.__main__.MainWindow")
         mockGtk = mocker.patch("ui.__main__.Gtk")
         main()
@@ -148,10 +136,10 @@ def test_xdg_state_dir_prefix_w_exception(mocker):
 
 def test_xdg_state_dir_prefix_w_xdg_env():
     try:
-        os.environ['XDG_STATE_HOME'] = '/tmp'
-        expectedFullPath = '/tmp/fapolicy-analyzer/FapTestTmp'
+        os.environ["XDG_STATE_HOME"] = "/tmp"
+        expectedFullPath = "/tmp/fapolicy-analyzer/FapTestTmp"
         generatedFullPath = xdg_state_dir_prefix("FapTestTmp")
-        del os.environ['XDG_STATE_HOME']
+        del os.environ["XDG_STATE_HOME"]
     except Exception as e:
         print(e)
 

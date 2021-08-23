@@ -62,21 +62,27 @@ def populated_changeset_list():
 @pytest.fixture
 def autosaved_files():
     with open("/tmp/FaCurrentSession.tmp_20210803_130622_059045.json", "w") as fp0:
-        fp0.write('''{
+        fp0.write(
+            """{
         "/home/runner/a/random/data_space/man_from_mars.txt": "Add",
         "/home/runner/another/random/path/Integration.json": "Add"
-        }''')
+        }"""
+        )
 
     with open("/tmp/FaCurrentSession.tmp_20210803_130622_065690.json", "w") as fp1:
-        fp1.write('''{
+        fp1.write(
+            """{
         "/home/runner/a/random/data_space/man_from_mars.txt": "Add",
         "/usr/local/fapolicy-analyzer/longer/path/now_is_the_time.txt": "Del",
         "/home/runner/another/random/Integration.json": "Add"
-        }''')
+        }"""
+        )
 
     # yields  a list of the autosaved files
-    yield ["/tmp/FaCurrentSession.tmp_20210803_130622_065690.json",
-           "/tmp/FaCurrentSession.tmp_20210803_130622_059045.json"]
+    yield [
+        "/tmp/FaCurrentSession.tmp_20210803_130622_065690.json",
+        "/tmp/FaCurrentSession.tmp_20210803_130622_059045.json",
+    ]
 
     # Clean up the filesystem
     os.remove("/tmp/FaCurrentSession.tmp_20210803_130622_059045.json")
@@ -86,21 +92,27 @@ def autosaved_files():
 @pytest.fixture
 def autosaved_w_bad_file():
     with open("/tmp/FaCurrentSession.tmp_20210803_130622_059045.json", "w") as fp0:
-        fp0.write('''{
+        fp0.write(
+            """{
         "/home/runner/a/random/data_space/man_from_mars.txt": "Add",
         "/home/runner/another/random/path/Integration.json": "Add"
-        }''')
+        }"""
+        )
 
     with open("/tmp/FaCurrentSession.tmp_20210803_130622_065690.json", "w") as fp1:
-        fp1.write('''{
+        fp1.write(
+            """{
         "/home/runner/a/random/data_space/man_from_mars.txt": "Add",
         "/usr/local/fapolicy-analyzer/longer/path/now_is_the_time.txt": "Del",
         "/home/runner/another/random/Integration.json": "Add"
-        ''')
+        """
+        )
 
     # yields  a list of the autosaved files
-    yield ["/tmp/FaCurrentSession.tmp_20210803_130622_065690.json",
-           "/tmp/FaCurrentSession.tmp_20210803_130622_059045.json"]
+    yield [
+        "/tmp/FaCurrentSession.tmp_20210803_130622_065690.json",
+        "/tmp/FaCurrentSession.tmp_20210803_130622_059045.json",
+    ]
 
     # Clean up the filesystem
     os.remove("/tmp/FaCurrentSession.tmp_20210803_130622_059045.json")
@@ -223,33 +235,32 @@ def test_system_notification_removed(uut, notification_type):
 # ######################## Session Serialization #####################
 def test_open_edit_session(uut, mocker):
     """Tests StateManager's open json session file load functionality.
-    The tested function 'open_edit_session()' converts a json file of
-    paths and associated actions, and converts that into a list of
-    Path/Action tuple pairs, then communicates with the AncillaryTrust
-    DatabaseAdmin's (ATDA) via an event.
+       The tested function 'open_edit_session()' converts a json file of
+       paths and associated actions, and converts that into a list of
+       Path/Action tuple pairs, then communicates with the AncillaryTrust
+       DatabaseAdmin's (ATDA) via an event.
 
-    Test approach:
-    1. A reference json file is generated and wrote to disk.
-    2. The StateManager's load/open function is invoked to read and parse
-    the reference file.
-    3. The Event channel call and associated argument is verified and compared to the
-    expected argument.
+       Test approach:
+       1. A reference json file is generated and wrote to disk.
+       2. The StateManager's load/open function is invoked to read and parse
+       the reference file.
+       3. The Event channel call and associated argument is verified and compared to the
+       expected argument.
 
- - Mocking: The Event channel function in the _EventSlot class that will
-    send a list of Path/Action tuples.
-"""
+    - Mocking: The Event channel function in the _EventSlot class that will
+       send a list of Path/Action tuples."""
     mockEvent = mocker.patch("events.events._EventSlot.__call__")
     # Create Path/Action dict and expected generated path/action tuple list.
     dictPaInput = {
         "/data_space/man_from_mars.txt": "Add",
         "/data_space/this/is/a/longer/path/now_is_the_time.txt": "Del",
-        "/data_space/Integration.json": "Add"
+        "/data_space/Integration.json": "Add",
     }
 
     listPaTuplesExpected = [
-        ('/data_space/Integration.json', 'Add'),
-        ('/data_space/man_from_mars.txt', 'Add'),
-        ('/data_space/this/is/a/longer/path/now_is_the_time.txt', 'Del')
+        ("/data_space/Integration.json", "Add"),
+        ("/data_space/man_from_mars.txt", "Add"),
+        ("/data_space/this/is/a/longer/path/now_is_the_time.txt", "Del"),
     ]
 
     # Directly generate reference test json input file
@@ -269,28 +280,26 @@ def test_open_edit_session(uut, mocker):
 
 def test_open_edit_session_w_exception(uut, mocker):
     """Tests StateManager's open json session file load functionality.
-    The tested function 'open_edit_session()' converts a json file of
-    paths and associated actions, and converts that into a list of
-    Path/Action tuple pairs, then communicates with the AncillaryTrust
-    DatabaseAdmin's (ATDA) via an event.
+       The tested function 'open_edit_session()' converts a json file of
+       paths and associated actions, and converts that into a list of
+       Path/Action tuple pairs, then communicates with the AncillaryTrust
+       DatabaseAdmin's (ATDA) via an event.
 
-    Test approach:
-    1. A reference json file is generated and wrote to disk.
-    2. The StateManager's load/open function is invoked to read and parse
-    the reference file.
-    3. The Event channel call and associated argument is verified and compared to the
-    expected argument.
+       Test approach:
+       1. A reference json file is generated and wrote to disk.
+       2. The StateManager's load/open function is invoked to read and parse
+       the reference file.
+       3. The Event channel call and associated argument is verified and compared to the
+       expected argument.
 
- - Mocking: The json.load() function will generate an exception.
-"""
-    mockFunc = mocker.patch("ui.state_manager.json.load",
-                            side_effect=IOError)
+    - Mocking: The json.load() function will generate an exception."""
+    mockFunc = mocker.patch("ui.state_manager.json.load", side_effect=IOError)
 
     # Create Path/Action dict and expected generated path/action tuple list.
     dictPaInput = {
         "/data_space/man_from_mars.txt": "Add",
         "/data_space/this/is/a/longer/path/now_is_the_time.txt": "Del",
-        "/data_space/Integration.json": "Add"
+        "/data_space/Integration.json": "Add",
     }
 
     # Directly generate reference test json input file
@@ -328,24 +337,24 @@ def test_save_edit_session(uut):
     expected arguments.
 
     ToDo: Research if json is the appropriate format for maintaining
-    session operation ordering which may/may not matter if flattened.
-"""
+    session operation ordering which may/may not matter if flattened."""
 
     # Define reference json text and generated filename
     tmp_file_out = "/tmp/FaPolicyAnalyzerUnitTestOutput.tmp.json"
 
-    jsonText = '''{
+    jsonText = """{
     "/data_space/man_from_mars.txt": "Add",
     "/data_space/this/is/a/longer/path/now_is_the_time.txt": "Del",
     "/data_space/Integration.json": "Add"
 }
-'''
+"""
 
     # Populate the StateManager's Queue w/equivalent data, write json file
     listPaTuples = [
         ("/data_space/man_from_mars.txt", "Add"),
         ("/data_space/this/is/a/longer/path/now_is_the_time.txt", "Del"),
-        ("/data_space/Integration.json", "Add")]
+        ("/data_space/Integration.json", "Add"),
+    ]
 
     path_action_list_2_queue(uut, listPaTuples)
     uut.save_edit_session(tmp_file_out)
@@ -363,9 +372,7 @@ def test_save_edit_session(uut):
 
 
 # ########################### Autosave Sessions #################
-def test_autosave_edit_session(uut_autosave_enabled,
-                               populated_changeset_list
-                               ):
+def test_autosave_edit_session(uut_autosave_enabled, populated_changeset_list):
     for cs in populated_changeset_list:
         uut_autosave_enabled.add_changeset_q(cs)
 
@@ -375,8 +382,9 @@ def test_autosave_edit_session(uut_autosave_enabled,
 
 def test_autosave_edit_session_w_exception(mocker, uut_autosave_enabled):
     # Create a mock that throw an exception side-effect
-    mockFunc = mocker.patch("ui.state_manager.StateManager.save_edit_session",
-                            side_effect=IOError)
+    mockFunc = mocker.patch(
+        "ui.state_manager.StateManager.save_edit_session", side_effect=IOError
+    )
 
     # Populate a single Changeset and add it to the StateManager's queue
     cs = Changeset()
@@ -390,7 +398,7 @@ def test_force_cleanup_autosave_sessions(uut):
     # Create a number of tmp files
     listCreatedTmpFiles = []
     for i in range(5):
-        timestamp = DT.fromtimestamp(time.time()).strftime('%Y%m%d_%H%M%S_%f')
+        timestamp = DT.fromtimestamp(time.time()).strftime("%Y%m%d_%H%M%S_%f")
         strFilename = uut._StateManager__tmpFileBasename + "_" + timestamp + ".json"
         fp = open(strFilename, "w")
         fp.write(strFilename)
@@ -413,7 +421,7 @@ def test_cleanup(uut):
     # Create a number of tmp files
     listCreatedTmpFiles = []
     for i in range(5):
-        timestamp = DT.fromtimestamp(time.time()).strftime('%Y%m%d_%H%M%S_%f')
+        timestamp = DT.fromtimestamp(time.time()).strftime("%Y%m%d_%H%M%S_%f")
         strFilename = uut._StateManager__tmpFileBasename + "_" + timestamp + ".json"
         fp = open(strFilename, "w")
         fp.write(strFilename)
@@ -431,9 +439,7 @@ def test_cleanup(uut):
     assert len(listRemainingTmpFiles) == 0
 
 
-def test_autosave_filecount(uut_autosave_enabled,
-                            populated_changeset_list
-                            ):
+def test_autosave_filecount(uut_autosave_enabled, populated_changeset_list):
     # Verify the StateManager's attribute can be set
     uut_autosave_enabled.set_autosave_filecount(3)
     assert uut_autosave_enabled._StateManager__iTmpFileCount == 3
@@ -457,8 +463,7 @@ def test_detect_previous_session_no_files(uut):
     assert not uut.detect_previous_session()
 
 
-def test_detect_previous_session_files(uut_autosave_enabled,
-                                       populated_changeset_list):
+def test_detect_previous_session_files(uut_autosave_enabled, populated_changeset_list):
     # Apply a number of Changesets which each generate a tmp session file
     for cs in populated_changeset_list:
         uut_autosave_enabled.add_changeset_q(cs)
@@ -477,10 +482,9 @@ def test_detect_previous_session_files(uut_autosave_enabled,
     assert len(listTmpFiles) == 0
 
 
-def test_restore_previous_session(uut_autosave_enabled,
-                                  populated_changeset_list,
-                                  autosaved_files,
-                                  mocker):
+def test_restore_previous_session(
+    uut_autosave_enabled, populated_changeset_list, autosaved_files, mocker
+):
 
     # Mock the event channel comms to the ATDA
     # mockEvent = mocker.patch("ui.state_manager.ev_user_session_loader")
@@ -496,12 +500,13 @@ def test_restore_previous_session(uut_autosave_enabled,
     assert uut_autosave_enabled.restore_previous_session()
 
 
-def test_restore_previous_session_w_exception(uut_autosave_enabled,
-                                              autosaved_files,
-                                              mocker):
+def test_restore_previous_session_w_exception(
+    uut_autosave_enabled, autosaved_files, mocker
+):
     # Mock the open_edit_session() call such that it throws an exception
-    mockFunc = mocker.patch("ui.state_manager.StateManager.open_edit_session",
-                            side_effect=IOError)
+    mockFunc = mocker.patch(
+        "ui.state_manager.StateManager.open_edit_session", side_effect=IOError
+    )
 
     # Two json files assumed on disk w/fixture
     strSearchPattern = uut_autosave_enabled._StateManager__tmpFileBasename + "_*.json"
@@ -515,9 +520,9 @@ def test_restore_previous_session_w_exception(uut_autosave_enabled,
     mockFunc.assert_called()
 
 
-def test_restore_previous_session_w_bad_file(uut_autosave_enabled,
-                                             autosaved_w_bad_file,
-                                             mocker):
+def test_restore_previous_session_w_bad_file(
+    uut_autosave_enabled, autosaved_w_bad_file, mocker
+):
     # Write two json files to disk, the second with bad json syntax.
     assert 1
 
@@ -525,14 +530,17 @@ def test_restore_previous_session_w_bad_file(uut_autosave_enabled,
 # ##################### Queue mgmt utilities #########################
 def test_path_action_dict_to_list(uut):
     # Define test input/output data
-    dictPA = {"/data_space/man_from_mars.txt": "Add",
-              "/data_space/this/is/a/longer/path/now_is_the_time.txt": "Del",
-              "/data_space/Integration.json": "Add"}
+    dictPA = {
+        "/data_space/man_from_mars.txt": "Add",
+        "/data_space/this/is/a/longer/path/now_is_the_time.txt": "Del",
+        "/data_space/Integration.json": "Add",
+    }
 
     listPaExpected = [
         ("/data_space/man_from_mars.txt", "Add"),
         ("/data_space/this/is/a/longer/path/now_is_the_time.txt", "Del"),
-        ("/data_space/Integration.json", "Add")]
+        ("/data_space/Integration.json", "Add"),
+    ]
 
     listPaTuplesGenerated = uut._StateManager__path_action_dict_to_list(dictPA)
     assert listPaTuplesGenerated == listPaExpected
@@ -542,12 +550,13 @@ def test_path_action_list_to_dict(uut):
     listPaTuples = [
         ("/data_space/man_from_mars.txt", "Add"),
         ("/data_space/this/is/a/longer/path/now_is_the_time.txt", "Del"),
-        ("/data_space/Integration.json", "Add")]
+        ("/data_space/Integration.json", "Add"),
+    ]
 
     dictPaExpected = {
         "/data_space/man_from_mars.txt": "Add",
         "/data_space/this/is/a/longer/path/now_is_the_time.txt": "Del",
-        "/data_space/Integration.json": "Add"
+        "/data_space/Integration.json": "Add",
     }
 
     path_action_list_2_queue(uut, listPaTuples)
@@ -570,7 +579,8 @@ def path_action_list_2_queue(stateMgr, listPathAction):
         elif e[1] == "Del":
             cs.del_trust(e[0])
         else:
-            print("Error: Path/Action Pair: "
-                  "Unknown Action: {} {}".format(e[0], e[1]))
+            print(
+                "Error: Path/Action Pair: " "Unknown Action: {} {}".format(e[0], e[1])
+            )
             continue
         stateMgr.add_changeset_q(cs)

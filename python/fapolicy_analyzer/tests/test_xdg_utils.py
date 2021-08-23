@@ -1,7 +1,9 @@
 import os
-from util.xdg_utils import xdg_data_dir_prefix, \
-    xdg_state_dir_prefix, \
-    xdg_config_dir_prefix
+from util.xdg_utils import (
+    xdg_data_dir_prefix,
+    xdg_state_dir_prefix,
+    xdg_config_dir_prefix,
+)
 
 
 def test_xdg_state_dir_prefix_wo_env(monkeypatch):
@@ -9,7 +11,7 @@ def test_xdg_state_dir_prefix_wo_env(monkeypatch):
         del os.environ["XDG_STATE_HOME"]
 
     strBasename = "Arbitrary.txt"
-    strHomeDir = os.environ.get('HOME')
+    strHomeDir = os.environ.get("HOME")
     strStateDefaultDir = strHomeDir + "/.local/state/"
     strExpected = strStateDefaultDir + "fapolicy-analyzer/" + strBasename
 
@@ -47,7 +49,7 @@ def test_xdg_data_dir_prefix_wo_env(monkeypatch):
         del os.environ["XDG_DATA_HOME"]
 
     strBasename = "Arbitrary.txt"
-    strHomeDir = os.environ.get('HOME')
+    strHomeDir = os.environ.get("HOME")
     strDataDefaultDir = strHomeDir + "/.local/share/"
     strExpected = strDataDefaultDir + "fapolicy-analyzer/" + strBasename
 
@@ -86,7 +88,7 @@ def test_xdg_config_dir_prefix_wo_env(monkeypatch):
         del os.environ["XDG_CONFIG_HOME"]
 
     strBasename = "Arbitrary.txt"
-    strHomeDir = os.environ.get('HOME')
+    strHomeDir = os.environ.get("HOME")
     strConfigDefaultDir = strHomeDir + "/.config/"
     strExpected = strConfigDefaultDir + "fapolicy-analyzer/" + strBasename
 

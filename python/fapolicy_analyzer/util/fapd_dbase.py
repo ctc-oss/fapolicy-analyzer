@@ -42,7 +42,7 @@ def fapd_dbase_snapshot(strArchiveFile=None, strListFile=None):
     # Set the backup archive's name, if not specified, set to the default
     if not strArchiveFile:
         strArchiveBasename = xdg_data_dir_prefix(gstrBackupBasename)
-        timestamp = DT.fromtimestamp(time.time()).strftime('%Y%m%d_%H%M%S_%f')
+        timestamp = DT.fromtimestamp(time.time()).strftime("%Y%m%d_%H%M%S_%f")
         strArchiveFile = strArchiveBasename + "_" + timestamp + ".tgz"
         print("Fapolicyd backup to: {}".format(strArchiveFile))
 
