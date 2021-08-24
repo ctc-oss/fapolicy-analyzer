@@ -8,10 +8,11 @@
     <property name="icon-name">list-add</property>
   </object>
   <object class="GtkButton" id="addFileButton">
-    <property name="label" translatable="yes">Add</property>
     <property name="visible">True</property>
     <property name="can-focus">True</property>
     <property name="receives-default">True</property>
+    <property name="halign">center</property>
+    <property name="valign">center</property>
     <property name="image">listAddImage</property>
     <property name="always-show-image">True</property>
     <signal name="clicked" handler="addFileButton_clicked" swapped="no"/>

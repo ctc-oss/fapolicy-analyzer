@@ -6,7 +6,7 @@ from .searchable_list import SearchableList
 
 
 class ACLList(SearchableList):
-    def __init__(self, label="User", label_plural="None"):
+    def __init__(self, label="User", label_plural=None):
         super().__init__(self.__columns(), view_headers_visible=False)
 
         self.label = label
