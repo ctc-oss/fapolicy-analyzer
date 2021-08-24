@@ -10,15 +10,19 @@ from ui.policy_rules_admin_page import PolicyRulesAdminPage
 
 
 def mock_users():
-    mockUser = MagicMock(id=1)
-    mockUser.name = "fooUser"
-    return [mockUser]
+    mockUser1 = MagicMock(id=1)
+    mockUser1.name = "fooUser"
+    mockUser2 = MagicMock(id=2)
+    mockUser2.name = "otherUser"
+    return [mockUser1, mockUser2]
 
 
 def mock_groups():
-    mockGroup = MagicMock(id=100)
-    mockGroup.name = "fooGroup"
-    return [mockGroup]
+    mockGroup1 = MagicMock(id=100)
+    mockGroup1.name = "fooGroup"
+    mockGroup2 = MagicMock(id=101)
+    mockGroup2.name = "otherGroup"
+    return [mockGroup1, mockGroup2]
 
 
 mock_events = [
@@ -27,7 +31,13 @@ mock_events = [
         gid=100,
         subject=MagicMock(file="fooSubject", trust="ST", access="A"),
         object=MagicMock(file="fooObject", trust="ST", access="A", mode="R"),
-    )
+    ),
+    MagicMock(
+        uid=2,
+        gid=101,
+        subject=MagicMock(file="otherSubject", trust="ST", access="A"),
+        object=MagicMock(file="otherObject", trust="ST", access="A", mode="R"),
+    ),
 ]
 
 
@@ -63,6 +73,20 @@ def objectListView(widget):
     return widget.objectList.get_object("treeView")
 
 
+@pytest.fixture
+def activeSwitcherButton(widget):
+    # find switcher button, either the 1st button in the user list
+    # or 2nd button in subject list. Only 1 should exist at any point in time.
+    return next(
+        iter(
+            [
+                *widget.userList.get_action_buttons()[0:],
+                *widget.subjectList.get_action_buttons()[1:],
+            ]
+        )
+    )
+
+
 def test_creates_widget(widget):
     assert type(widget.get_ref()) is Gtk.Box
 
@@ -94,16 +118,115 @@ def test_adds_object_tabs(widget):
     assert tabs.get_tab_label_text(page) == "Object"
 
 
-def test_loads_users(widget, userListView):
+def test_switches_acl_subject_columns(widget, activeSwitcherButton):
+    aclColumn = widget.get_object("userPanel")
+    subjectColumn = widget.get_object("subjectPanel")
+    children = widget.get_ref().get_children()
+    assert children[0] == aclColumn
+    assert children[1] == subjectColumn
+    activeSwitcherButton.clicked()
+    children = widget.get_ref().get_children()
+    assert children[0] == subjectColumn
+    assert children[1] == aclColumn
+
+
+def test_loads_users_primary(widget, userListView):
     model = userListView.get_model()
+    assert len(model) == 2
     assert [x.name for x in mock_users()] == [x[0] for x in model]
     assert [x.id for x in mock_users()] == [x[1] for x in model]
 
 
-def test_loads_groups(widget, groupListView):
+def test_loads_groups_primary(widget, groupListView):
     model = groupListView.get_model()
+    assert len(model) == 2
     assert [x.name for x in mock_groups()] == [x[0] for x in model]
     assert [x.id for x in mock_groups()] == [x[1] for x in model]
+
+
+def test_loads_subjects_primary(widget, subjectListView, activeSwitcherButton):
+    activeSwitcherButton.clicked()
+    model = subjectListView.get_model()
+    expectedSubjects = [e.subject for e in mock_events]
+    assert len(model) == 2
+    for idx, expectedSubject in enumerate(expectedSubjects):
+        assert expectedSubject.trust in model[idx][0]
+        assert expectedSubject.access in model[idx][1]
+        assert expectedSubject.file == model[idx][2]
+
+
+@pytest.mark.parametrize(
+    "view", [pytest.lazy_fixture("userListView"), pytest.lazy_fixture("groupListView")]
+)
+def test_loads_subjects_secondary(widget, view, subjectListView):
+    view.get_selection().select_path(Gtk.TreePath.new_first())
+    model = subjectListView.get_model()
+    expectedSubject = mock_events[0].subject
+    assert len(model) == 1
+    assert expectedSubject.trust in next(iter([x[0] for x in model]))
+    assert expectedSubject.access in next(iter([x[1] for x in model]))
+    assert expectedSubject.file == next(iter([x[2] for x in model]))
+
+
+def test_loads_users_secondary(
+    widget, userListView, activeSwitcherButton, subjectListView
+):
+    activeSwitcherButton.clicked()
+    model = userListView.get_model()
+    assert len(model) == 0
+
+    subjectListView.get_selection().select_path(Gtk.TreePath.new_first())
+    model = userListView.get_model()
+    expectedUser = mock_users()[0]
+    assert len(model) == 1
+    assert expectedUser.name == next(iter([x[0] for x in model]))
+    assert expectedUser.id == next(iter([x[1] for x in model]))
+
+
+def test_loads_groups_secondary(
+    widget, groupListView, activeSwitcherButton, subjectListView
+):
+    activeSwitcherButton.clicked()
+    model = groupListView.get_model()
+    assert len(model) == 0
+
+    subjectListView.get_selection().select_path(Gtk.TreePath.new_first())
+    model = groupListView.get_model()
+    expectedGroup = mock_groups()[0]
+    assert len(model) == 1
+    assert expectedGroup.name == next(iter([x[0] for x in model]))
+    assert expectedGroup.id == next(iter([x[1] for x in model]))
+
+
+@pytest.mark.parametrize(
+    "view", [pytest.lazy_fixture("userListView"), pytest.lazy_fixture("groupListView")]
+)
+def test_loads_objects_from_subject(widget, view, subjectListView, objectListView):
+    view.get_selection().select_path(Gtk.TreePath.new_first())
+    subjectListView.get_selection().select_path(Gtk.TreePath.new_first())
+    model = objectListView.get_model()
+    expectedObject = mock_events[0].object
+    assert expectedObject.trust in next(iter([x[0] for x in model]))
+    assert expectedObject.mode in next(iter([x[1] for x in model]))
+    assert expectedObject.access in next(iter([x[2] for x in model]))
+    assert expectedObject.file == next(iter([x[3] for x in model]))
+
+
+@pytest.mark.parametrize(
+    "view", [pytest.lazy_fixture("userListView"), pytest.lazy_fixture("groupListView")]
+)
+def test_loads_objects_from_acl(
+    widget, view, subjectListView, objectListView, activeSwitcherButton
+):
+    activeSwitcherButton.clicked()
+    subjectListView.get_selection().select_path(Gtk.TreePath.new_first())
+    view.get_selection().select_path(Gtk.TreePath.new_first())
+    model = objectListView.get_model()
+    expectedObject = mock_events[0].object
+    assert expectedObject.trust in next(iter([x[0] for x in model]))
+    assert expectedObject.mode in next(iter([x[1] for x in model]))
+    assert expectedObject.access in next(iter([x[2] for x in model]))
+    assert expectedObject.file == next(iter([x[3] for x in model]))
 
 
 @pytest.mark.parametrize(
@@ -125,36 +248,10 @@ def test_updates_acl_details(widget, view, mockFnName, mocker):
     )
 
 
-@pytest.mark.parametrize(
-    "view", [pytest.lazy_fixture("userListView"), pytest.lazy_fixture("groupListView")]
-)
-def test_loads_subjects(widget, view, subjectListView):
-    view.get_selection().select_path(Gtk.TreePath.new_first())
-    model = subjectListView.get_model()
-    expectedSubject = mock_events[0].subject
-    assert expectedSubject.trust in next(iter([x[0] for x in model]))
-    assert expectedSubject.access in next(iter([x[1] for x in model]))
-    assert expectedSubject.file == next(iter([x[2] for x in model]))
-
-
-@pytest.mark.parametrize(
-    "view", [pytest.lazy_fixture("userListView"), pytest.lazy_fixture("groupListView")]
-)
-def test_loads_objects(widget, view, subjectListView, objectListView):
-    view.get_selection().select_path(Gtk.TreePath.new_first())
-    subjectListView.get_selection().select_path(Gtk.TreePath.new_first())
-    model = objectListView.get_model()
-    expectedObject = mock_events[0].object
-    assert expectedObject.trust in next(iter([x[0] for x in model]))
-    assert expectedObject.mode in next(iter([x[1] for x in model]))
-    assert expectedObject.access in next(iter([x[2] for x in model]))
-    assert expectedObject.file == next(iter([x[3] for x in model]))
-
-
 def test_updates_subject_details(widget, mocker):
     mocker.patch("ui.policy_rules_admin_page.fs.stat", return_value="foo")
     textBuffer = widget.get_object("subjectDetails").get_buffer()
-    widget.on_subject_selection_changed(MagicMock(file=""))
+    widget.on_subject_selection_changed(MagicMock(), MagicMock(file="baz"))
     assert (
         textBuffer.get_text(
             textBuffer.get_start_iter(), textBuffer.get_end_iter(), True
@@ -249,3 +346,21 @@ def test_handles_empty_object_select(
         )
         == 0
     )
+
+
+def test_clears_selection_when_switching_acl_tabs(widget, userListView, groupListView):
+    tabs = widget.get_object("userTabs")
+    userSelection = userListView.get_selection()
+    groupSelection = groupListView.get_selection()
+
+    userSelection.select_path(Gtk.TreePath.new_first())
+    assert userSelection.count_selected_rows() == 1
+    assert groupSelection.count_selected_rows() == 0
+    tabs.set_current_page(1)
+    groupSelection.select_path(Gtk.TreePath.new_first())
+    assert userSelection.count_selected_rows() == 0
+    assert groupSelection.count_selected_rows() == 1
+    tabs.set_current_page(0)
+    userSelection.select_path(Gtk.TreePath.new_first())
+    assert userSelection.count_selected_rows() == 1
+    assert groupSelection.count_selected_rows() == 0

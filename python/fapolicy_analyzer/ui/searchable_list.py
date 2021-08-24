@@ -34,14 +34,7 @@ class SearchableList(UIWidget, Events):
         self.search = self.get_object("search")
         self.viewSwitcher = self.get_object("viewStack")
         self.viewSwitcher.add_named(Loader().get_ref(), "loader")
-
-        buttonGroup = self.get_object("actionButtons")
-        if actionButtons:
-            for button in actionButtons:
-                buttonGroup.pack_start(button, False, True, 0)
-                buttonGroup.show_all()
-        else:
-            buttonGroup.get_parent().remove(buttonGroup)
+        self.set_action_buttons(*actionButtons)
 
     def __filter_view(self, model, iter, data):
         filter = self.get_object("search").get_text()
@@ -86,6 +79,23 @@ class SearchableList(UIWidget, Events):
 
     def refresh(self):
         self._load_data()
+
+    def set_action_buttons(self, *buttons):
+        buttonGroup = self.get_object("actionButtons")
+
+        # remove all buttons
+        buttonGroup.foreach(lambda btn: buttonGroup.remove(btn))
+
+        if not buttons:
+            buttonGroup.hide()
+            return
+
+        for button in buttons:
+            buttonGroup.pack_start(button, False, True, 0)
+            buttonGroup.show_all()
+
+    def get_action_buttons(self):
+        return self.get_object("actionButtons").get_children()
 
     def on_view_selection_changed(self, selection):
         model, treeiter = selection.get_selected()
