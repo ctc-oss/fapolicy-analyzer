@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fapolicy-analyzer snapshot\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-08-12 23:26-0400\n"
+"POT-Creation-Date: 2021-08-25 11:47-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.9.1\n"
 
-#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:83
+#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:84
 #: fapolicy_analyzer/ui/system_trust_database_admin.py:65
 msgid ""
 "File: {trust.path}\n"
@@ -26,7 +26,7 @@ msgid ""
 "SHA256: {trust.hash}"
 msgstr ""
 
-#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:93
+#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:94
 #: fapolicy_analyzer/ui/system_trust_database_admin.py:74
 msgid ""
 "{fs.stat(trust.path)}\n"
@@ -35,6 +35,12 @@ msgstr ""
 
 #: fapolicy_analyzer/ui/deploy_confirm_dialog.py:29
 msgid "Reverting to previous settings in {i+1} seconds"
+msgstr ""
+
+#: fapolicy_analyzer/ui/main_window.py:172
+msgid ""
+"An error occurred trying to open the session file, "
+"{self.strSessionFilename}"
 msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:3
@@ -56,81 +62,88 @@ msgstr ""
 msgid "File Path"
 msgstr ""
 
+#: fapolicy_analyzer/ui/strings.py:10
+msgid "Changes successfully deployed."
+msgstr ""
+
 #: fapolicy_analyzer/ui/strings.py:11
-msgid "This file is trusted."
-msgstr ""
-
-#: fapolicy_analyzer/ui/strings.py:12
-msgid "There is a discrepancy with this file."
-msgstr ""
-
-#: fapolicy_analyzer/ui/strings.py:13
-msgid "The trust status of this file is unknown."
+msgid "An error occurred trying to deploy the changes. Please try again."
 msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:15
-msgid "System Trust Database"
+msgid "This file is trusted."
 msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:16
+msgid "There is a discrepancy with this file."
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:17
+msgid "The trust status of this file is unknown."
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:19
+msgid "System Trust Database"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:20
 msgid "Ancillary Trust Database"
 msgstr ""
 
 #: fapolicy_analyzer/glade/ancillary_trust_database_admin.glade:50
-#: fapolicy_analyzer/ui/strings.py:18
+#: fapolicy_analyzer/ui/strings.py:22
 msgid "Trust"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:19
+#: fapolicy_analyzer/ui/strings.py:23
 msgid "File"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:20
+#: fapolicy_analyzer/ui/strings.py:24
 msgid "Changes"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:21
+#: fapolicy_analyzer/ui/strings.py:25
 msgid "Mode"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:22
+#: fapolicy_analyzer/ui/strings.py:26
 msgid "Access"
 msgstr ""
 
-#: fapolicy_analyzer/glade/add_file_button.glade:11
-#: fapolicy_analyzer/ui/strings.py:24
+#: fapolicy_analyzer/ui/strings.py:28
 msgid "Add"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:25
+#: fapolicy_analyzer/ui/strings.py:29
 msgid "Delete"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:27
+#: fapolicy_analyzer/ui/strings.py:31
 msgid "Add File"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:28
+#: fapolicy_analyzer/ui/strings.py:32
 msgid "Open File"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:29
+#: fapolicy_analyzer/ui/strings.py:33
 msgid "Save As..."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:30
+#: fapolicy_analyzer/ui/strings.py:34
 msgid "FA Session files"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:31
+#: fapolicy_analyzer/ui/strings.py:35
 msgid "Any files"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:33
+#: fapolicy_analyzer/ui/strings.py:37
 msgid "File path(s) contains embedded whitespace."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:34
+#: fapolicy_analyzer/ui/strings.py:38
 msgid ""
 "fapolicyd currently does not support paths containing spaces. The "
 "following paths will not be added to the Trusted Files List.\n"
@@ -138,7 +151,7 @@ msgid ""
 "\n"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:39
+#: fapolicy_analyzer/ui/strings.py:43
 msgid ""
 "\n"
 "        Restore your prior session now?\n"
@@ -155,31 +168,35 @@ msgid ""
 "        "
 msgstr ""
 
-#: fapolicy_analyzer/glade/loader.glade:28 fapolicy_analyzer/ui/strings.py:53
+#: fapolicy_analyzer/ui/strings.py:59
+msgid "An error occurred trying to restore a prior autosaved edit session"
+msgstr ""
+
+#: fapolicy_analyzer/glade/loader.glade:28 fapolicy_analyzer/ui/strings.py:63
 msgid "Loading..."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:55
+#: fapolicy_analyzer/ui/strings.py:65
 msgid "file"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:56
+#: fapolicy_analyzer/ui/strings.py:66
 msgid "files"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:57
+#: fapolicy_analyzer/ui/strings.py:67
 msgid "user"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:58
+#: fapolicy_analyzer/ui/strings.py:68
 msgid "users"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:59
+#: fapolicy_analyzer/ui/strings.py:69
 msgid "group"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:60
+#: fapolicy_analyzer/ui/strings.py:70
 msgid "groups"
 msgstr ""
 
@@ -188,6 +205,7 @@ msgid "Scan System"
 msgstr ""
 
 #: fapolicy_analyzer/glade/analyzer_selection_dialog.glade:38
+#: fapolicy_analyzer/glade/main_window.glade:161
 msgid "Administer Trust Databases"
 msgstr ""
 
@@ -237,6 +255,14 @@ msgid "Restore"
 msgstr ""
 
 #: fapolicy_analyzer/glade/main_window.glade:143
+msgid "_Action"
+msgstr ""
+
+#: fapolicy_analyzer/glade/main_window.glade:153
+msgid "Anaylze From Audit Log"
+msgstr ""
+
+#: fapolicy_analyzer/glade/main_window.glade:174
 msgid "_Help"
 msgstr ""
 
@@ -244,7 +270,7 @@ msgstr ""
 msgid "x"
 msgstr ""
 
-#: fapolicy_analyzer/glade/searchable_list.glade:107
+#: fapolicy_analyzer/glade/searchable_list.glade:108
 msgid "page0"
 msgstr ""
 
