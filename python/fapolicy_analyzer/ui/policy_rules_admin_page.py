@@ -202,7 +202,7 @@ class PolicyRulesAdminPage(UIWidget):
 
         self.selectedSubject = subject
         subjectDetails = self.get_object("subjectDetails")
-        subjectDetails.get_buffer().set_text(fs.stat(subject))
+        subjectDetails.get_buffer().set_text(fs.stat(subject) if subject else "")
         secondaryAction()
 
     def on_object_selection_changed(self, data):
