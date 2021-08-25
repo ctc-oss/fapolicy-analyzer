@@ -8,7 +8,14 @@ from fapolicy_analyzer import System
 from functools import partial
 from .object_list import ObjectList
 from .acl_list import ACLList
-from .strings import GROUP_LABEL, GROUPS_LABEL, USER_LABEL, USERS_LABEL
+from .state_manager import NotificationType, stateManager
+from .strings import (
+    GROUP_LABEL,
+    GROUPS_LABEL,
+    PARSE_EVENT_LOG_ERROR_MSG,
+    USER_LABEL,
+    USERS_LABEL,
+)
 from .subject_list import SubjectList
 from .ui_widget import UIWidget
 from fapolicy_analyzer.util import acl, fs
@@ -27,9 +34,8 @@ class PolicyRulesAdminPage(UIWidget):
 
         userTabs = self.get_object("userTabs")
         self.userList = ACLList(label=USER_LABEL, label_plural=USERS_LABEL)
-        userTabs.append_page(self.userList.get_ref(), Gtk.Label(label="User"))
-
         self.groupList = ACLList(label=GROUP_LABEL, label_plural=GROUPS_LABEL)
+        userTabs.append_page(self.userList.get_ref(), Gtk.Label(label="User"))
         userTabs.append_page(self.groupList.get_ref(), Gtk.Label(label="Group"))
 
         userTabs.append_page(
@@ -92,10 +98,18 @@ class PolicyRulesAdminPage(UIWidget):
 
     def __load_data(self, auditFile):
         def process():
-            system = System()
-            self.events = system.events_from(auditFile)
-            self.users = system.users()
-            self.groups = system.groups()
+            try:
+                system = System()
+                self.events = system.events_from(auditFile)
+                self.users = system.users()
+                self.groups = system.groups()
+            except BaseException:
+                # BaseException to catch pyo3_runtime.PanicException
+                GLib.idle_add(
+                    stateManager.add_system_notification,
+                    PARSE_EVENT_LOG_ERROR_MSG,
+                    NotificationType.ERROR,
+                )
             GLib.idle_add(self.__populate_acls)
 
         self.userList.set_loading(True)
@@ -113,7 +127,7 @@ class PolicyRulesAdminPage(UIWidget):
         box.show_all()
         return box
 
-    def __populate_acls(self, *args):
+    def __populate_acls(self):
         users = list(
             {
                 e.uid: {"id": u.id, "name": u.name}
@@ -214,6 +228,12 @@ class PolicyRulesAdminPage(UIWidget):
         rest = [x for x in self.switchers if x != switcher]
         for s in rest:
             s.set_as_primary()
+
+    def on_userTabs_switch_page(self, notebook, page, page_num):
+        if page_num != 0:
+            self.userList.treeView.get_selection().unselect_all()
+        if page_num != 1:
+            self.groupList.treeView.get_selection().unselect_all()
 
     class Switcher(Events):
         __events__ = ["buttonClicked"]

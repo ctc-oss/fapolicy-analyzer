@@ -68,3 +68,6 @@ USER_LABEL = _("user")
 USERS_LABEL = _("users")
 GROUP_LABEL = _("group")
 GROUPS_LABEL = _("groups")
+PARSE_EVENT_LOG_ERROR_MSG = _(
+    "An error occurred trying to parse the event log file. Please try again or select a different file."
+)

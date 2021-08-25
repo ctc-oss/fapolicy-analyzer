@@ -15,6 +15,7 @@
           <object class="GtkNotebook" id="userTabs">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
+            <signal name="switch-page" handler="on_userTabs_switch_page" swapped="no"/>
           </object>
           <packing>
             <property name="resize">True</property>

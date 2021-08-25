@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fapolicy-analyzer snapshot\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-08-25 11:47-0400\n"
+"POT-Creation-Date: 2021-08-25 14:09-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -37,7 +37,7 @@ msgstr ""
 msgid "Reverting to previous settings in {i+1} seconds"
 msgstr ""
 
-#: fapolicy_analyzer/ui/main_window.py:172
+#: fapolicy_analyzer/ui/main_window.py:177
 msgid ""
 "An error occurred trying to open the session file, "
 "{self.strSessionFilename}"
@@ -198,6 +198,12 @@ msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:70
 msgid "groups"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:71
+msgid ""
+"An error occurred trying to parse the event log file. Please try again or"
+" select a different file."
 msgstr ""
 
 #: fapolicy_analyzer/glade/analyzer_selection_dialog.glade:24
