@@ -1,0 +1,6 @@
+# simulate interactions to generate events
+---
+- name: simulate simple interactions
+  debug:
+    msg: "todo"
+    verbosity: 0

@@ -1,0 +1,11 @@
+# create demonstration users and groups
+---
+- name: create users
+  debug:
+    msg: "todo"
+    verbosity: 0
+
+- name: create groups
+  debug:
+    msg: "todo"
+    verbosity: 0

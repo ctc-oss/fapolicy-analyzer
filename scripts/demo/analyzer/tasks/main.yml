@@ -1,0 +1,22 @@
+# prepare fapolicy analyzer installation
+---
+# todo;; verify all transient gtk dependencies get install if just relying on our rpm
+#- name: install gtk
+#  yum:
+#    state: present
+#    name:
+#      - gtk3
+
+# todo;; gpg signing
+- name: install analyzer
+  yum:
+    state: present
+    name:
+      - "https://github.com/ctc-oss/fapolicy-analyzer/releases/download/v0.2.0-rc6/fapolicy-analyzer-0.2.0-0.rc6.fc34.x86_64.rpm"
+    disable_gpg_check: yes
+
+- name: update gtk mimes
+  shell: |
+    update-mime-database /usr/share/mime
+    gdk-pixbuf-query-loaders-64 --update-cache
+

@@ -1,0 +1,11 @@
+# initialize demonstration filesystem
+---
+- name: create demonstration directories
+  debug:
+    msg: "todo"
+    verbosity: 0
+
+- name: create files for demonstration
+  debug:
+    msg: "todo"
+    verbosity: 0

@@ -1,0 +1,13 @@
+# configure demonstration fapolicyd rules and trust entries
+---
+- name: install fapolicyd
+  yum:
+    state: present
+    name:
+      - fapolicyd
+
+- name: enable fapolicyd service
+  systemd:
+    name: fapolicyd
+    state: started
+    enabled: true

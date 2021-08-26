@@ -1,0 +1,11 @@
+analyzer_repo: ctc-oss/fapolicy-analyzer
+analyzer_version: 0.2.0
+analyzer_release: 0.rc6
+
+proxy_env:
+  no_proxy: "{{ lookup('env', 'no_proxy') }}"
+  http_proxy: "{{ lookup('env', 'http_proxy') }}"
+  https_proxy: "{{ lookup('env', 'https_proxy') }}"
+  NO_PROXY: "{{ lookup('env', 'no_proxy') }}"
+  HTTP_PROXY: "{{ lookup('env', 'http_proxy') }}"
+  HTTPS_PROXY: "{{ lookup('env', 'https_proxy') }}"

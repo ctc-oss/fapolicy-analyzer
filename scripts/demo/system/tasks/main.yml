@@ -1,0 +1,15 @@
+# install and initialize dependencies
+---
+- name: install misc requirements
+  yum:
+    state: present
+    name:
+      - nano
+      - which
+      - xorg-x11-xauth
+
+- name: share vagrant user xauthority globally
+  lineinfile:
+    state: present
+    line: "export XAUTHORITY=/home/vagrant/.Xauthority"
+    path: /etc/profile
