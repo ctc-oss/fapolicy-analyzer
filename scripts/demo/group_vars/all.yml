@@ -1,6 +1,6 @@
 analyzer_repo: ctc-oss/fapolicy-analyzer
 analyzer_version: 0.2.0
-analyzer_release: 0.rc6
+analyzer_release: 1
 
 proxy_env:
   no_proxy: "{{ lookup('env', 'no_proxy') }}"

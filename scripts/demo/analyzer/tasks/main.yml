@@ -12,7 +12,7 @@
   yum:
     state: present
     name:
-      - "https://github.com/ctc-oss/fapolicy-analyzer/releases/download/v0.2.0-rc6/fapolicy-analyzer-0.2.0-0.rc6.fc34.x86_64.rpm"
+      - "https://github.com/{{analyzer_repo}}/releases/download/v{{analyzer_version}}/fapolicy-analyzer-{{analyzer_version}}-{{analyzer_release}}.fc34.x86_64.rpm"
     disable_gpg_check: yes
 
 - name: update gtk mimes
