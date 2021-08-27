@@ -17,7 +17,7 @@
 - name: enable fapolicyd service
   systemd:
     name: fapolicyd
-    state: started
+    state: restarted
     enabled: true
 
 - name: "Add {{ vagrant_user }} to fapolicyd group"
