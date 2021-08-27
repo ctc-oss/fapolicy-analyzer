@@ -1,9 +1,20 @@
 # create demonstration users and groups
 ---
-- name: create users
-  debug:
-    msg: "todo"
-    verbosity: 0
+
+- name: Create demo users
+  user:
+    name: "{{ item.name }}"
+    uid: "{{ item.uid }}"
+    groups: users
+    append: yes
+  loop:
+    - { name: bob, uid: 1001 }
+    - { name: alice, uid: 1002 }
+    - { name: carol, uid: 1003 }
+    - { name: dave, uid: 1004 }
+    - { name: eve, uid: 1005 }
+    - { name: mallory, uid: 1006 }
+    - { name: trudy, uid: 1007 }
 
 - name: create groups
   debug:

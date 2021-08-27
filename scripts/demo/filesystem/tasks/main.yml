@@ -1,11 +1,22 @@
 # initialize demonstration filesystem
 ---
 - name: create demonstration directories
-  debug:
-    msg: "todo"
-    verbosity: 0
+  file:
+    path: "{{ item }}"
+    state: directory
+    group: fapolicyd
+    mode: g+rwx
+  loop:
+    - /demo
 
-- name: create files for demonstration
-  debug:
-    msg: "todo"
-    verbosity: 0
+- name: Copy demonstration files
+  copy:
+    src: "{{ item.src }}"
+    dest: "/demo/{{ item.dest }}"
+    group: fapolicyd
+    mode: g+rwx
+    remote_src: yes
+  loop:
+    - { src: /usr/bin/ls, dest: my-ls }
+    - { src: /usr/bin/cat, dest: my-cat }
+    - { src: /usr/bin/echo, dest: my-echo }

@@ -6,6 +6,14 @@
     name:
       - fapolicyd
 
+- name: override fapolicy configuration
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  loop:
+    - { src: fapolicyd.conf, dest: fapolicy.conf }
+    - { src: trust.rules, dest: fapolicy.rules }
+
 - name: enable fapolicyd service
   systemd:
     name: fapolicyd

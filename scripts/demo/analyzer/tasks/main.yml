@@ -12,4 +12,3 @@
   shell: |
     update-mime-database /usr/share/mime
     gdk-pixbuf-query-loaders-64 --update-cache
-

@@ -13,3 +13,11 @@
     state: present
     line: "export XAUTHORITY=/home/vagrant/.Xauthority"
     path: /etc/profile
+
+# todo;; add vagrant user to fapolicyd group
+
+- name: "Add {{ vagrant_user }} to fapolicyd group"
+  user:
+    name: "{{ vagrant_user }}"
+    groups: fapolicyd
+    append: yes
