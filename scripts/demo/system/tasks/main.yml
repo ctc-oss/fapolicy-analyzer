@@ -21,6 +21,12 @@
     groups: fapolicyd
     append: yes
 
+- name: "Add {{ vagrant_user }} to systemd-journal group"
+  user:
+    name: "{{ vagrant_user }}"
+    groups: systemd-journal
+    append: yes
+
 - name: generate dconf dbs
   shell: |
     dconf update
