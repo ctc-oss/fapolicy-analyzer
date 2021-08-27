@@ -8,18 +8,13 @@
       - which
       - xorg-x11-xauth
       - dbus-x11
+      - dconf
 
 - name: share vagrant user xauthority globally
   lineinfile:
     state: present
     line: "export XAUTHORITY=/home/vagrant/.Xauthority"
     path: /etc/profile
-
-- name: "Add {{ vagrant_user }} to fapolicyd group"
-  user:
-    name: "{{ vagrant_user }}"
-    groups: fapolicyd
-    append: yes
 
 - name: "Add {{ vagrant_user }} to systemd-journal group"
   user:
