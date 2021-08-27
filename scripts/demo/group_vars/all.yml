@@ -1,6 +1,8 @@
 analyzer_repo: ctc-oss/fapolicy-analyzer
 analyzer_version: 0.2.0
 analyzer_release: 1
+analyzer_rpm_download_url_format: "https://github.com/{{analyzer_repo}}/releases/download/v{{analyzer_version}}/fapolicy-analyzer-{{analyzer_version}}-{{analyzer_release}}.fc34.x86_64.rpm"
+analyzer_rpm_download_url: "{{ lookup('env', 'rpm_url') | default(analyzer_rpm_download_url_format, True) }}"
 vagrant_user: vagrant
 
 proxy_env:
