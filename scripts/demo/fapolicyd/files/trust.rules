@@ -1,3 +1,3 @@
-allow perm=execute all : trust=1
-deny_log perm=execute all : dir=/demo
-allow perm=open all : all
+allow_syslog perm=execute all : trust=1
+deny_syslog perm=execute all : dir=/demo
+allow_syslog perm=open all : all

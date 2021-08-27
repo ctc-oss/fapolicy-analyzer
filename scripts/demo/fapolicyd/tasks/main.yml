@@ -9,10 +9,10 @@
 - name: override fapolicy configuration
   copy:
     src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
+    dest: "/etc/fapolicyd/{{ item.dest }}"
   loop:
-    - { src: fapolicyd.conf, dest: fapolicy.conf }
-    - { src: trust.rules, dest: fapolicy.rules }
+    - { src: fapolicyd.conf, dest: fapolicydq.conf }
+    - { src: trust.rules, dest: fapolicyd.rules }
 
 - name: enable fapolicyd service
   systemd:
