@@ -19,3 +19,9 @@
     name: fapolicyd
     state: started
     enabled: true
+
+- name: "Add {{ vagrant_user }} to fapolicyd group"
+  user:
+    name: "{{ vagrant_user }}"
+    groups: fapolicyd
+    append: yes
