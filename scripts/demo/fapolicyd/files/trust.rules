@@ -6,11 +6,11 @@
 %languages=application/x-bytecode.ocaml,application/x-bytecode.python,application/java-archive,text/x-java,application/x-java-applet,application/javascript,text/javascript,text/x-awk,text/x-gawk,text/x-lisp,application/x-elc,text/x-lua,text/x-m4,text/x-perl,text/x-php,text/x-python,text/x-R,text/x-ruby,text/x-script.guile,text/x-tcl,text/x-luatex,text/x-systemtap
 
 # Carve out an exception for dracut initramfs building
-allow_syslog perm=any all : dir=/tmp/
+allow perm=any all : dir=/tmp/
 allow perm=any uid=0 trust=1 : all
 
 # Prevent execution by ld.so
-deny_audit perm=any pattern=ld_so : all
+deny_syslog perm=any pattern=ld_so : all
 
 # We have to carve out an exception for the system updaters
 # or things go very bad (deadlock).
@@ -18,15 +18,15 @@ allow perm=open exe=/usr/bin/rpm : all
 allow perm=open exe=%python3_path% comm=dnf : all
 
 # Do not allow malformed ELF even if trusted
-deny_audit perm=any all : ftype=application/x-bad-elf
+deny_syslog perm=any all : ftype=application/x-bad-elf
 
 # Only allow known ELF libs - this is ahead of executable because typical
 # executable is linked with a dozen or more libraries.
 allow perm=open all : ftype=application/x-sharedlib trust=1
-deny_audit perm=open all : ftype=application/x-sharedlib
+deny_syslog perm=open all : ftype=application/x-sharedlib
 
 # Allow trusted programs to execute
-allow perm=execute all : trust=1
+allow_syslog perm=execute all : trust=1
 
 # Need to carve out an exception for ansible, which uses python
 allow perm=any uid=0 : dir=/tmp/ansible
@@ -34,13 +34,13 @@ allow perm=any uid=0 : dir=/root/.ansible/tmp/
 
 # Allow any program to open trusted language files
 allow perm=open all : ftype=%languages trust=1
-deny_audit perm=any all : ftype=%languages
+deny_syslog perm=any all : ftype=%languages
 
 # Allow all shell script execution and sourcing
 allow perm=any all : ftype=text/x-shellscript
 
 # Deny execution for anything untrusted
-deny_audit perm=execute all : all
+deny_syslog perm=execute all : all
 
 # Allow everything else to open any file
 allow perm=open all : all
