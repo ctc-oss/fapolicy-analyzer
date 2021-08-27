@@ -12,6 +12,7 @@
     name:
       - "{{ analyzer_rpm_download_url }}"
     disable_gpg_check: yes
+  environment: "{{ proxy_env }}"
 
 - name: update gtk mimes
   shell: |
