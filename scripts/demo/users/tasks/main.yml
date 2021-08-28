@@ -6,6 +6,7 @@
     name: "{{ item.name }}"
     uid: "{{ item.uid }}"
     group: users
+    comment: "demo user"
   loop:
     - { name: bob, uid: 1001 }
     - { name: alice, uid: 1002 }
