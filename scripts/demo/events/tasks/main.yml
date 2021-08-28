@@ -18,4 +18,4 @@
 
 - name: capture events0-1.txt
   shell: |
-    journalctl -r | grep -e 'rule=' | cut -d: -f4- | awk '{$1=$1};1' > /home/vagrant/events-1.txt
+    journalctl -r | grep -e 'rule=\d+' | cut -d: -f4- | awk '{$1=$1};1' > /home/vagrant/events-1.txt
