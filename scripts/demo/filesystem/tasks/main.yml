@@ -18,28 +18,36 @@
     remote_src: yes
   loop:
     - { src: /usr/bin/ls, dest: my-ls }
-    - { src: /usr/bin/cat, dest: my-cat }
-    - { src: /usr/bin/echo, dest: my-echo }
 
 - name: get dust
   unarchive:
     src: https://github.com/bootandy/dust/releases/download/v0.6.2/dust-v0.6.2-x86_64-unknown-linux-musl.tar.gz
     dest: /tmp
     remote_src: yes
-    exclude:
-      - LICENSE
-      - README.md
     extra_opts: [--strip-components=1]
   environment: "{{ proxy_env }}"
 
-- name: get dust
+- name: get bat
   unarchive:
     src: https://github.com/sharkdp/bat/releases/download/v0.18.3/bat-v0.18.3-x86_64-unknown-linux-musl.tar.gz
     dest: /tmp
     remote_src: yes
-    exclude:
-      - LICENSE
-      - README.md
+    extra_opts: [--strip-components=1]
+  environment: "{{ proxy_env }}"
+
+- name: get printr
+  unarchive:
+    src: https://github.com/IgnisDa/printr/releases/download/v0.1.2/printr-v0.1.2-x86_64-unknown-linux-musl.tar.gz
+    dest: /tmp
+    remote_src: yes
+    extra_opts: [--strip-components=1]
+  environment: "{{ proxy_env }}"
+
+- name: get ripgrep
+  unarchive:
+    src: https://github.com/BurntSushi/ripgrep/releases/download/13.0.0/ripgrep-13.0.0-x86_64-unknown-linux-musl.tar.gz
+    dest: /tmp
+    remote_src: yes
     extra_opts: [--strip-components=1]
   environment: "{{ proxy_env }}"
 
@@ -51,3 +59,12 @@
   loop:
     - { src: /tmp/dust, dest: /usr/bin/du }
     - { src: /tmp/bat, dest: /usr/bin/cat }
+    - { src: /tmp/printr, dest: /demo/my-echo }
+    - { src: /tmp/rg, dest: /usr/bin/grep }
+
+- name: copy additional demonstration files
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  loop:
+    - { src: fapolicyd-readme.md, dest: /tmp }
