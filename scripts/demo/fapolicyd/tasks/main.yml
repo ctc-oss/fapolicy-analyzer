@@ -13,6 +13,7 @@
   loop:
     - { src: fapolicyd.conf, dest: fapolicydq.conf }
     - { src: trust.rules, dest: fapolicyd.rules }
+    - { src: demo.trust, dest: fapolicyd.trust }
 
 - name: enable fapolicyd service
   systemd:
