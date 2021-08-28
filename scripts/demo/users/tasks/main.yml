@@ -5,8 +5,7 @@
   user:
     name: "{{ item.name }}"
     uid: "{{ item.uid }}"
-    groups: users
-    append: no
+    group: users
   loop:
     - { name: bob, uid: 1001 }
     - { name: alice, uid: 1002 }
