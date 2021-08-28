@@ -1,6 +1,21 @@
 # simulate interactions to generate events
 ---
-- name: simulate simple interactions
-  debug:
-    msg: "todo"
-    verbosity: 0
+
+- name: run commands as users
+  become: yes
+  become_user: "{{ item }}"
+  shell: |
+    du /tmp
+  ignore_errors: yes
+  loop:
+    - bob
+    - alice
+    - carol
+    - dave
+    - eve
+    - mallory
+    - trudy
+
+- name: capture events0-1.txt
+  shell: |
+    journalctl -r | grep -e 'rule=' | cut -d: -f4- | awk '{$1=$1};1' > /home/vagrant/events-1.txt
