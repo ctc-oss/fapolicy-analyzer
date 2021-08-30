@@ -16,35 +16,6 @@ python setup.py [develop | install]
 python examples/validate_install.py
 ```
 
-## Integration tests
-
-We write integration tests using [Bats](https://bats-core.readthedocs.io/en/latest/index.html) and [Podman](https://podman.io/).  The integration tests can run locally or in Travis CI.
-
-A Bats test that validates changing the trust database looks like:
-
-```bash
-@test "trust: add" {
-  # initially denied :thumbs_down:
-  run in_container /deny/simple.sh
-  assert_output --partial "permission denied"
-
-  # add a trust entry for the script
-  run in_container python3 examples/add_trust.py /deny/simple.sh
-  assert_output --partial "applying"
-  assert_output --partial "signaling"
-
-  # check the fapolicyd trust db for the new entry
-  run in_container python3 examples/show_ancillary.py
-  assert_output --partial "/deny/simple.sh"
-
-  # now its runs :thumbs_up:
-  run in_container /deny/simple.sh
-  assert_output "OK"
-}
-```
-
-See the [test/bats](tests/bats) directory for more examples.
-
 ## Requirements
 
 - Python 3
