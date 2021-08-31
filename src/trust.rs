@@ -5,11 +5,21 @@ use std::io::BufReader;
 use std::path::Path;
 
 use lmdb::{Cursor, Environment, Transaction};
+use thiserror::Error;
 
 use crate::api;
 use crate::api::{Trust, TrustSource};
 use crate::sha::sha256_digest;
+use crate::trust::Error::{LmdbNotFound, LmdbReadFail};
 use crate::trust::TrustOp::{Add, Del};
+
+#[derive(Error, Debug)]
+pub enum Error {
+    #[error("Trust DB not found")]
+    LmdbNotFound,
+    #[error("{0}")]
+    LmdbReadFail(lmdb::Error),
+}
 
 /// Trust status tag
 /// T / U / unk
@@ -48,13 +58,13 @@ impl From<TrustPair> for api::Trust {
 
 /// load the fapolicyd backend lmdb database
 /// parse the results into trust entries
-pub fn load_trust_db(path: &str) -> Vec<api::Trust> {
+pub fn load_trust_db(path: &str) -> Result<Vec<api::Trust>, Error> {
     let env = Environment::new().set_max_dbs(1).open(Path::new(path));
     let env = match env {
         Ok(e) => e,
         _ => {
             println!("WARN: fapolicyd trust db was not found");
-            return vec![];
+            return Err(LmdbNotFound);
         }
     };
 
@@ -71,7 +81,7 @@ pub fn load_trust_db(path: &str) -> Vec<api::Trust> {
             })
         })
         .unwrap()
-        .unwrap()
+        .map_err(LmdbReadFail)
 }
 
 /// load a fapolicyd ancillary file trust database

@@ -1,0 +1,11 @@
+use crate::{sys, trust};
+use thiserror::Error;
+
+#[derive(Error, Debug)]
+pub enum Error {
+    #[error("System error: {0}")]
+    SystemError(#[from] sys::Error),
+
+    #[error("Trust error: {0}")]
+    TrustError(#[from] trust::Error),
+}
