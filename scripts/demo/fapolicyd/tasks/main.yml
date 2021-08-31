@@ -1,0 +1,28 @@
+# configure demonstration fapolicyd rules and trust entries
+---
+- name: install fapolicyd
+  yum:
+    state: present
+    name:
+      - fapolicyd
+
+- name: override fapolicy configuration
+  copy:
+    src: "{{ item.src }}"
+    dest: "/etc/fapolicyd/{{ item.dest }}"
+  loop:
+    - { src: fapolicyd.conf.md, dest: fapolicyd.conf }
+    - { src: trust.rules.md, dest: fapolicyd.rules }
+    - { src: demo.trust, dest: fapolicyd.trust }
+
+- name: enable fapolicyd service
+  systemd:
+    name: fapolicyd
+    state: restarted
+    enabled: true
+
+- name: "Add {{ vagrant_user }} to fapolicyd group"
+  user:
+    name: "{{ vagrant_user }}"
+    groups: fapolicyd
+    append: yes

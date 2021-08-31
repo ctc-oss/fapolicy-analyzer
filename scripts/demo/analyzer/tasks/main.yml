@@ -1,0 +1,20 @@
+# prepare fapolicy analyzer installation
+---
+- name: analyzer rpm url
+  debug:
+    msg: "{{ analyzer_rpm_download_url }}"
+    verbosity: 0
+
+# todo;; gpg signing
+- name: install analyzer
+  yum:
+    state: present
+    name:
+      - "{{ analyzer_rpm_download_url }}"
+    disable_gpg_check: yes
+  environment: "{{ proxy_env }}"
+
+- name: update gtk mimes
+  shell: |
+    update-mime-database /usr/share/mime
+    gdk-pixbuf-query-loaders-64 --update-cache

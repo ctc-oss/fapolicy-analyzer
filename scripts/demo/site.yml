@@ -1,0 +1,30 @@
+---
+- name: Prepare
+  hosts: all
+  gather_facts: no
+  become: yes
+  tasks:
+    - name: show proxy settings
+      debug:
+        msg: "proxy: {{ proxy_env }}"
+        verbosity: 0
+
+  roles:
+    - system
+
+- name: Configure
+  hosts: all
+  gather_facts: no
+  become: yes
+  roles:
+    - fapolicyd
+    - filesystem
+    - analyzer
+    - users
+
+- name: Simulate
+  hosts: all
+  gather_facts: no
+  become: no
+  roles:
+    - events
