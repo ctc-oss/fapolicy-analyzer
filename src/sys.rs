@@ -1,30 +1,35 @@
+use std::fs::File;
+use std::io::Write;
+
 use serde::Deserialize;
 use serde::Serialize;
+use thiserror::Error;
 
 use crate::api::TrustSource;
 use crate::app::State;
 use crate::fapolicyd;
-use std::fs::File;
-use std::io::Write;
+use crate::sys::Error::WriteAncillaryFail;
 
-pub fn deploy_app_state(state: &State) -> Result<(), String> {
-    // todo;; back up trust file
-    println!("backing up trust file...");
+#[derive(Error, Debug)]
+pub enum Error {
+    #[error("{0}")]
+    WriteAncillaryFail(String),
+    #[error("{0}")]
+    FapolicydReloadFail(String),
+}
 
-    println!("writing changeset to disk...");
+pub fn deploy_app_state(state: &State) -> Result<(), Error> {
     let mut tf = File::create(&state.config.system.ancillary_trust_path)
-        .expect("unable to create ancillary trust");
+        .map_err(|_| WriteAncillaryFail("unable to create ancillary trust".to_string()))?;
     for t in &state.trust_db {
         if t.source == TrustSource::Ancillary {
             tf.write_all(format!("{} {} {}\n", t.path, t.size.to_string(), t.hash).as_bytes())
-                .expect("unable to write ancillary trust file")
+                .map_err(|_| {
+                    WriteAncillaryFail("unable to write ancillary trust entry".to_string())
+                })?;
         }
     }
-
-    println!("signaling fapolicdy reload...");
-    fapolicyd::reload_databases();
-
-    Ok(())
+    fapolicyd::reload_databases()
 }
 
 /// host system configuration information
