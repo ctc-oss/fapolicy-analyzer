@@ -66,7 +66,7 @@
     /usr/local/bin/dbadmin.py
   ignore_errors: yes
 
-- name: capture events0-1.txt
+- name: capture events-1.txt
+  become: yes
   shell: |
-    sleep 5
     journalctl -r | grep -e 'rule=\d+' | cut -d: -f4- | awk '{$1=$1};1' > /home/vagrant/events-1.txt
