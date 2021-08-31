@@ -1,21 +1,72 @@
 # simulate interactions to generate events
 ---
 
-- name: run commands as users
+- name: restricted commands as users
   become: yes
   become_user: "{{ item }}"
   shell: |
     du /tmp
   ignore_errors: yes
   loop:
-    - bob
     - alice
+    - carol
+    - eve
+    - trudy
+
+- name: common commands as users
+  become: yes
+  become_user: "{{ item }}"
+  shell: |
+    ls /tmp
+    df -h
+    which nano
+  ignore_errors: yes
+  loop:
+    - alice
+    - carol
+    - mallory
+    - trudy
+
+- name: common commands as users
+  become: yes
+  become_user: "{{ item }}"
+  shell: |
+    echo foo | grep foo
+  ignore_errors: yes
+  loop:
+    - alice
+    - bob
     - carol
     - dave
     - eve
     - mallory
     - trudy
 
+- name: commands as alice
+  become: yes
+  become_user: alice
+  shell: |
+    du /tmp
+  ignore_errors: yes
+  loop:
+    - /sbin/tcpdump
+    - /usr/bin/bash
+    - /usr/bin/curl
+    - /usr/bin/firefox
+    - /usr/bin/gcc
+    - /usr/bin/grep
+    - /usr/bin/python
+
+# todo;; revisit; this should be python3 /usr/local/bin/dbadmin.py
+#        but with the current rules its not rejected
+- name: alice executes dbadmin.py
+  become: yes
+  become_user: alice
+  shell: |
+    /usr/local/bin/dbadmin.py
+  ignore_errors: yes
+
 - name: capture events0-1.txt
   shell: |
+    sleep 5
     journalctl -r | grep -e 'rule=\d+' | cut -d: -f4- | awk '{$1=$1};1' > /home/vagrant/events-1.txt

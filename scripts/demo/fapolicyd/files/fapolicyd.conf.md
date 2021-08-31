@@ -1,4 +1,4 @@
-# fapolicyd configuration can impact the execution of fapolicy-analyzer
+# fapolicyd configuration can impact the accuracy of what fapolicy-analyzer reports
 
 ### Integrity controls what part of the trust database is used to validate the file integrity (none, size, sha256, ima)
 integrity = size
