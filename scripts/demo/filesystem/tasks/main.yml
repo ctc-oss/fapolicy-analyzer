@@ -62,9 +62,10 @@
     - { src: /tmp/printr, dest: /demo/my-echo }
     - { src: /tmp/rg, dest: /usr/bin/grep }
 
-- name: copy additional demonstration files
+- name: install additional demonstration files
   copy:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
   loop:
     - { src: fapolicyd-readme.md, dest: /tmp }
+    - { src: dbadmin.py, dest: /usr/local/bin }
