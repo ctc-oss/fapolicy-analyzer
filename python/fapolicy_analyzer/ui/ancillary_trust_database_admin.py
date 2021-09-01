@@ -22,7 +22,7 @@ class AncillaryTrustDatabaseAdmin(UIWidget):
     def __init__(self):
         super().__init__()
         self.system = System()
-        self.system_rollback = self.system
+        self.system_checkpoint = self.system
         self.executor = ThreadPoolExecutor(max_workers=1)
         self.selectedFile = None
 
@@ -141,7 +141,7 @@ SHA256: {fs.sha(trust.path)}"""
             try:
                 print("Deploying...")
                 self.system.deploy()
-                self.system_rollback = System()
+                self.system_checkpoint = System()
                 stateManager.add_system_notification(
                     strings.DEPLOY_ANCILLARY_SUCCESSFUL_MSG,
                     NotificationType.SUCCESS,
@@ -187,6 +187,22 @@ SHA256: {fs.sha(trust.path)}"""
 
         # Clear current session from TreeView store  prior to add/deleting files
         # Here!
-        self.system = self.system_rollback
+        self.system = self.system_checkpoint
         self.on_files_added(listPath2Add)
         self.on_files_deleted(listPath2Del)
+
+    def def system_rollback_to_checkpoint(self):
+        self.system = self.system_checkpoint.
+        return self.system.
+
+    def update_checkpoint(self):
+        self.system_checkpoint = get_system()
+ 
+    def get_system(self):
+        if not self.system:
+            self.system = System()
+        return self.system
+
+    def update_system(self):
+        self.system = System()
+        return self.system

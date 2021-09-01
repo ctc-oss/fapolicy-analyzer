@@ -287,3 +287,28 @@ def test_handle_deploy_excption(widget, confirm_dialog):
         with pytest.raises(Exception) as excinfo:
             widget.on_deployBtn_clicked()
             assert excinfo.value.message == "mocked error"
+
+# ############### ###### System checkpoint / rollback ######################
+def __get_pending_operations(self):
+    store = self.trus= self.trustFileList.treeView.get_model()
+    for row in store:
+        # Print values of all columns
+        print(">> ", row[:])
+        
+        
+    iter = self.trustFileList.treeView.get_model().get_iter_first()
+    while (iter):
+        print("> ", iter)
+        iter = self.trustFileList.treeView.get_model().iter_next(iter)
+
+def test_atda_system_rollback_to_checkpoint():
+    assert True
+
+def test_atda_update_checkpoint():
+    assert True
+
+def test_atda_get_system():
+    assert True
+
+def test_atda_update_system():
+    assert True
