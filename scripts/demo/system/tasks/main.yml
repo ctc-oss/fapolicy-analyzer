@@ -1,0 +1,31 @@
+# install and initialize dependencies
+---
+- name: install misc requirements
+  yum:
+    state: present
+    name:
+      - nano
+      - which
+      - xorg-x11-xauth
+      - dbus-x11
+      - dconf
+
+- name: share vagrant user xauthority globally
+  lineinfile:
+    state: present
+    line: "export XAUTHORITY=/home/vagrant/.Xauthority"
+    path: /etc/profile
+
+- name: "Add {{ vagrant_user }} to systemd-journal group"
+  user:
+    name: "{{ vagrant_user }}"
+    groups: systemd-journal
+    append: yes
+
+- name: generate dconf dbs
+  shell: |
+    dconf update
+
+- name: rotate journald
+  shell: |
+    journalctl --rotate

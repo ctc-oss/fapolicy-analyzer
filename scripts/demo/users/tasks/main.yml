@@ -1,0 +1,22 @@
+# create demonstration users and groups
+---
+
+- name: Create demo users
+  user:
+    name: "{{ item.name }}"
+    uid: "{{ item.uid }}"
+    group: users
+    comment: "demo user"
+  loop:
+    - { name: bob, uid: 1001 }
+    - { name: alice, uid: 1002 }
+    - { name: carol, uid: 1003 }
+    - { name: dave, uid: 1004 }
+    - { name: eve, uid: 1005 }
+    - { name: mallory, uid: 1006 }
+    - { name: trudy, uid: 1007 }
+
+- name: create groups
+  debug:
+    msg: "todo"
+    verbosity: 0

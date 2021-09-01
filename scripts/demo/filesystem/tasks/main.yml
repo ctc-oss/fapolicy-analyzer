@@ -1,0 +1,71 @@
+# initialize demonstration filesystem
+---
+- name: create demonstration directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    group: fapolicyd
+    mode: g+rwx
+  loop:
+    - /demo
+
+- name: copy demonstration files
+  copy:
+    src: "{{ item.src }}"
+    dest: "/demo/{{ item.dest }}"
+    group: fapolicyd
+    mode: g+rwx
+    remote_src: yes
+  loop:
+    - { src: /usr/bin/ls, dest: my-ls }
+
+- name: get dust
+  unarchive:
+    src: https://github.com/bootandy/dust/releases/download/v0.6.2/dust-v0.6.2-x86_64-unknown-linux-musl.tar.gz
+    dest: /tmp
+    remote_src: yes
+    extra_opts: [--strip-components=1]
+  environment: "{{ proxy_env }}"
+
+- name: get bat
+  unarchive:
+    src: https://github.com/sharkdp/bat/releases/download/v0.18.3/bat-v0.18.3-x86_64-unknown-linux-musl.tar.gz
+    dest: /tmp
+    remote_src: yes
+    extra_opts: [--strip-components=1]
+  environment: "{{ proxy_env }}"
+
+- name: get printr
+  unarchive:
+    src: https://github.com/IgnisDa/printr/releases/download/v0.1.2/printr-v0.1.2-x86_64-unknown-linux-musl.tar.gz
+    dest: /tmp
+    remote_src: yes
+    extra_opts: [--strip-components=1]
+  environment: "{{ proxy_env }}"
+
+- name: get ripgrep
+  unarchive:
+    src: https://github.com/BurntSushi/ripgrep/releases/download/13.0.0/ripgrep-13.0.0-x86_64-unknown-linux-musl.tar.gz
+    dest: /tmp
+    remote_src: yes
+    extra_opts: [--strip-components=1]
+  environment: "{{ proxy_env }}"
+
+- name: install system trust demonstration files
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    remote_src: yes
+  loop:
+    - { src: /tmp/dust, dest: /usr/bin/du }
+    - { src: /tmp/bat, dest: /usr/bin/cat }
+    - { src: /tmp/printr, dest: /demo/my-echo }
+    - { src: /tmp/rg, dest: /usr/bin/grep }
+
+- name: install additional demonstration files
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  loop:
+    - { src: fapolicyd-readme.md, dest: /tmp }
+    - { src: dbadmin.py, dest: /usr/local/bin }
