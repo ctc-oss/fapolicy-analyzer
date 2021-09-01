@@ -8,9 +8,22 @@ use nom::character::complete::space1;
 use nom::combinator::iterator;
 use nom::sequence::{delimited, terminated};
 use nom::{InputIter, Parser};
+use thiserror::Error;
 
 use crate::api;
 use crate::fapolicyd::keep_entry;
+use crate::rpm::Error::{ReadRpmDumpFailed, RpmCommandNotFound, RpmDumpFailed};
+use std::io;
+
+#[derive(Error, Debug)]
+pub enum Error {
+    #[error("rpm: command not found")]
+    RpmCommandNotFound,
+    #[error("rpm dump failed: {0}")]
+    RpmDumpFailed(io::Error),
+    #[error("read rpm dump failed")]
+    ReadRpmDumpFailed,
+}
 
 #[derive(Debug)]
 struct RpmDbEntry {
@@ -21,15 +34,23 @@ struct RpmDbEntry {
 
 /// directly load the rpm database
 /// used to analyze the fapolicyd trust db for out of sync issues
-pub fn load_system_trust(rpmdb: &str) -> Vec<api::Trust> {
+pub fn load_system_trust(rpmdb: &str) -> Result<Vec<api::Trust>, Error> {
+    // we just check the version to ensure rpm is there
+    let _rpm_version = Command::new("rpm")
+        .arg("version")
+        .output()
+        .map_err(|_| RpmCommandNotFound)?;
+
     let args = vec!["-qa", "--dump", "--dbpath", rpmdb];
     let res = Command::new("rpm")
         .args(args)
         .output()
-        .expect("failed to execute process");
+        .map_err(RpmDumpFailed)?;
 
-    let clean = String::from_utf8(res.stdout).unwrap();
-    parse(&clean)
+    match String::from_utf8(res.stdout) {
+        Ok(data) => Ok(parse(&data)),
+        Err(_) => Err(ReadRpmDumpFailed),
+    }
 }
 
 fn contains_no_files(s: &str) -> nom::IResult<&str, Option<RpmDbEntry>> {
