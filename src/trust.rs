@@ -10,7 +10,7 @@ use thiserror::Error;
 use crate::api;
 use crate::api::{Trust, TrustSource};
 use crate::sha::sha256_digest;
-use crate::trust::Error::{LmdbNotFound, LmdbReadFail};
+use crate::trust::Error::{AncillaryTrustNotFound, LmdbNotFound, LmdbReadFail};
 use crate::trust::TrustOp::{Add, Del};
 
 #[derive(Error, Debug)]
@@ -19,6 +19,8 @@ pub enum Error {
     LmdbNotFound,
     #[error("{0}")]
     LmdbReadFail(lmdb::Error),
+    #[error("Trust file not found")]
+    AncillaryTrustNotFound,
 }
 
 /// Trust status tag
@@ -68,8 +70,7 @@ pub fn load_trust_db(path: &str) -> Result<Vec<api::Trust>, Error> {
         }
     };
 
-    let db = env.open_db(Some("trust.db")).expect("load trust.db");
-
+    let db = env.open_db(Some("trust.db")).map_err(LmdbReadFail)?;
     env.begin_ro_txn()
         .map(|t| {
             t.open_ro_cursor(db).map(|mut c| {
@@ -86,18 +87,15 @@ pub fn load_trust_db(path: &str) -> Result<Vec<api::Trust>, Error> {
 
 /// load a fapolicyd ancillary file trust database
 /// used to analyze the fapolicyd trust db for out of sync issues
-pub fn load_ancillary_trust(path: &str) -> Vec<api::Trust> {
-    let f = File::open(path);
-    let f = match f {
-        Ok(e) => e,
-        _ => {
-            println!("WARN: fapolicyd trust file was not found");
-            return vec![];
-        }
-    };
+pub fn load_ancillary_trust(path: &str) -> Result<Vec<api::Trust>, Error> {
+    match File::open(path) {
+        Ok(e) => Ok(read_ancillary_trust(e)),
+        _ => Err(AncillaryTrustNotFound),
+    }
+}
 
+fn read_ancillary_trust(f: File) -> Vec<api::Trust> {
     let r = BufReader::new(f);
-
     r.lines()
         .map(|r| r.unwrap())
         .filter(|s| !s.is_empty() && !s.starts_with('#'))
