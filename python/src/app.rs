@@ -34,6 +34,9 @@ impl From<PySystem> for State {
 
 #[pymethods]
 impl PySystem {
+    /// Create a new initialized System
+    /// This returns a result object that will be an error if initialization fails,
+    /// allowing the member accessors on the System to return non-result objects.
     #[new]
     fn new() -> PyResult<PySystem> {
         let conf = cfg::All::load();
