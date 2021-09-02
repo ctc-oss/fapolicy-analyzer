@@ -21,6 +21,7 @@ babelgladeextractor = "*"
 flake8-i18n = "*"
 callee = "*"
 pytest-lazy-fixture = "*"
+flake8-quotes = "*"
 
 [packages]
 pycairo = "1.20.0"
