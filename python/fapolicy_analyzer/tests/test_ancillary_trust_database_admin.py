@@ -298,7 +298,6 @@ def test_system_rollback_to_checkpoint(widget):
     assert widget.system != widget.system_checkpoint
 
     tmpPreOp = widget.system_checkpoint
-    print(widget.system, widget.system_checkpoint)
     widget.system_rollback_to_checkpoint()
     assert widget.system == tmpPreOp
     assert widget.system == widget.system_checkpoint

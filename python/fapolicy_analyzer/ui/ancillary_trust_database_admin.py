@@ -21,8 +21,7 @@ from fapolicy_analyzer.util.fapd_dbase import fapd_dbase_snapshot
 class AncillaryTrustDatabaseAdmin(UIWidget):
     def __init__(self):
         super().__init__()
-        self.system = None
-        self.system = self.get_system()
+        self.system = System()
         self.update_system_checkpoint()
         self.executor = ThreadPoolExecutor(max_workers=1)
         self.selectedFile = None

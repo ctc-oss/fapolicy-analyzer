@@ -46,8 +46,6 @@ class StateManager(Events):
         self.__tmpFileBasename = "/tmp/FaCurrentSession.tmp"
         self.__listAutosavedFilenames = []
         self.__iTmpFileCount = 2
-        self.system_working = None
-        self.system_checkpoint = None
 
         # Register cleanup callback function
         atexit.register(self.cleanup)
