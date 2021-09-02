@@ -10,7 +10,7 @@ use thiserror::Error;
 use crate::api;
 use crate::api::{Trust, TrustSource};
 use crate::error;
-use crate::error::Error::{FileNotFound};
+use crate::error::Error::FileNotFound;
 use crate::sha::sha256_digest;
 use crate::trust::Error::{
     LmdbNotFound, LmdbPermissionDenied, LmdbReadFail, MalformattedTrustEntry, UnsupportedTrustType,
