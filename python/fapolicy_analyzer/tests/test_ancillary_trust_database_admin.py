@@ -2,6 +2,7 @@ import context  # noqa: F401
 import pytest
 import tempfile
 import gi
+import mocks
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
@@ -275,7 +276,7 @@ def test_on_session_load(widget, mocker):
 
 
 @pytest.mark.parametrize("confirm_resp", [Gtk.ResponseType.YES])
-def test_handle_deploy_excption(widget, confirm_dialog):
+def test_handle_deploy_exception(widget, confirm_dialog):
     parent = Gtk.Window()
     parent.add(widget.get_ref())
 
@@ -287,3 +288,53 @@ def test_handle_deploy_excption(widget, confirm_dialog):
         with pytest.raises(Exception) as excinfo:
             widget.on_deployBtn_clicked()
             assert excinfo.value.message == "mocked error"
+
+
+# ############### ###### System checkpoint / rollback ######################
+def test_system_rollback_to_checkpoint(widget):
+    # Set and verify current and checkpoint systems are different values
+    widget.system = 0x10101010
+    widget.system_checkpoint = 0xDEADBEEF
+    assert widget.system != widget.system_checkpoint
+
+    tmpPreOp = widget.system_checkpoint
+    widget.system_rollback_to_checkpoint()
+    assert widget.system == tmpPreOp
+    assert widget.system == widget.system_checkpoint
+
+
+def test_update_system_checkpoint(widget):
+    # Verify current and checkpoint systems are the same
+    widget.system = 0xDEADBEEF
+    widget.system_checkpoint = 0x10101010
+    widget.update_system_checkpoint()
+    assert widget.system == widget.system_checkpoint
+
+
+def test_set_system(widget):
+    # Assign an arbitrary hex number to the system
+    widget.system = 0xDEADBEEF
+    mockSystem = MagicMock()
+    sys = widget.set_system(mockSystem)
+    assert sys == widget.system
+    assert sys == mockSystem
+
+
+def test_get_system(widget):
+    widget.system = MagicMock()
+    sys = widget.get_system()
+    assert sys == widget.system
+
+
+def test_update_system(widget):
+    # with patch("fapolicy_analyzer.System") as mockSystem:
+    # Assign an arbitrary hex number to the system
+    widget.system = 0xDEADBEEF
+    assert not isinstance(widget.system, mocks.mock_System)
+
+    # Create a new System() instance
+    sys = widget.update_system()
+
+    # Verify that it's the expected mocked type.
+    assert sys == widget.system
+    assert isinstance(sys, mocks.mock_System)
