@@ -21,8 +21,9 @@ from fapolicy_analyzer.util.fapd_dbase import fapd_dbase_snapshot
 class AncillaryTrustDatabaseAdmin(UIWidget):
     def __init__(self):
         super().__init__()
-        self.system = System()
-        self.system_checkpoint = self.system
+        self.system = None
+        self.system = self.get_system()
+        self.update_system_checkpoint()
         self.executor = ThreadPoolExecutor(max_workers=1)
         self.selectedFile = None
 
@@ -141,7 +142,7 @@ SHA256: {fs.sha(trust.path)}"""
             try:
                 print("Deploying...")
                 self.system.deploy()
-                self.system_checkpoint = System()
+                self.update_system_checkpoint()
                 stateManager.add_system_notification(
                     strings.DEPLOY_ANCILLARY_SUCCESSFUL_MSG,
                     NotificationType.SUCCESS,
@@ -185,22 +186,25 @@ SHA256: {fs.sha(trust.path)}"""
             else:
                 print("on_session_load(): Unknown action: {}".format(strAction))
 
-        # Clear current session from TreeView store  prior to add/deleting files
-        # Here!
-        self.system = self.system_checkpoint
+        self.system_rollback_to_checkpoint()
         self.on_files_added(listPath2Add)
         self.on_files_deleted(listPath2Del)
 
-    def def system_rollback_to_checkpoint(self):
-        self.system = self.system_checkpoint.
-        return self.system.
+    def system_rollback_to_checkpoint(self):
+        self.system = self.system_checkpoint
+        return self.system
 
-    def update_checkpoint(self):
-        self.system_checkpoint = get_system()
- 
+    def update_system_checkpoint(self):
+        self.system_checkpoint = self.get_system()
+        return self.system_checkpoint
+
     def get_system(self):
         if not self.system:
             self.system = System()
+        return self.system
+
+    def set_system(self, sys):
+        self.system = sys
         return self.system
 
     def update_system(self):
