@@ -4,23 +4,21 @@ use std::io::prelude::*;
 use std::io::BufReader;
 use std::path::Path;
 
+use crate::error;
 use lmdb::{Cursor, Environment, Transaction};
 use thiserror::Error;
 
 use crate::api;
 use crate::api::{Trust, TrustSource};
+use crate::error::Error::{FileNotFound, TrustError};
 use crate::sha::sha256_digest;
-use crate::trust::Error::{AncillaryTrustNotFound, LmdbNotFound, LmdbReadFail};
+use crate::trust::Error::LmdbReadFail;
 use crate::trust::TrustOp::{Add, Del};
 
 #[derive(Error, Debug)]
 pub enum Error {
-    #[error("Trust DB not found")]
-    LmdbNotFound,
     #[error("{0}")]
     LmdbReadFail(lmdb::Error),
-    #[error("Trust file not found")]
-    AncillaryTrustNotFound,
 }
 
 /// Trust status tag
@@ -60,13 +58,16 @@ impl From<TrustPair> for api::Trust {
 
 /// load the fapolicyd backend lmdb database
 /// parse the results into trust entries
-pub fn load_trust_db(path: &str) -> Result<Vec<api::Trust>, Error> {
+pub fn load_trust_db(path: &str) -> Result<Vec<api::Trust>, error::Error> {
     let env = Environment::new().set_max_dbs(1).open(Path::new(path));
     let env = match env {
         Ok(e) => e,
         _ => {
             println!("WARN: fapolicyd trust db was not found");
-            return Err(LmdbNotFound);
+            return Err(FileNotFound(
+                "fapolicyd trust db".to_string(),
+                path.to_string(),
+            ));
         }
     };
 
@@ -82,15 +83,18 @@ pub fn load_trust_db(path: &str) -> Result<Vec<api::Trust>, Error> {
             })
         })
         .unwrap()
-        .map_err(LmdbReadFail)
+        .map_err(|e| TrustError(LmdbReadFail(e)))
 }
 
 /// load a fapolicyd ancillary file trust database
 /// used to analyze the fapolicyd trust db for out of sync issues
-pub fn load_ancillary_trust(path: &str) -> Result<Vec<api::Trust>, Error> {
+pub fn load_ancillary_trust(path: &str) -> Result<Vec<api::Trust>, error::Error> {
     match File::open(path) {
         Ok(e) => Ok(read_ancillary_trust(e)),
-        _ => Err(AncillaryTrustNotFound),
+        _ => Err(FileNotFound(
+            "ancillary trust db".to_string(),
+            path.to_string(),
+        )),
     }
 }
 

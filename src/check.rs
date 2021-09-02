@@ -3,6 +3,8 @@ use std::io::BufReader;
 
 use crate::api::Trust;
 use crate::app::State;
+use crate::error::Error;
+use crate::error::Error::FileNotFound;
 use crate::sha::sha256_digest;
 use crate::trust::Status;
 use std::process::Command;
@@ -20,14 +22,14 @@ pub fn file_sync(_app: &State) -> bool {
 }
 
 /// check status of trust against the filesystem
-pub fn trust_status(t: &Trust) -> Result<Status, String> {
+pub fn trust_status(t: &Trust) -> Result<Status, Error> {
     match File::open(&t.path) {
         Ok(f) => match sha256_digest(BufReader::new(&f)) {
             Ok(sha) if sha == t.hash && len(&f) == t.size => Ok(Status::Trusted(t.clone())),
             Ok(sha) => Ok(Status::Discrepancy(t.clone(), sha)),
-            Err(e) => Err(format!("sha256 op failed, {}", e)),
+            Err(e) => Err(e),
         },
-        _ => Err(format!("WARN: {} not found", t.path)),
+        _ => Err(FileNotFound("trusted file".to_string(), t.path.clone())),
     }
 }
 
