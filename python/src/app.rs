@@ -42,7 +42,7 @@ impl PySystem {
         let conf = cfg::All::load();
         match State::load(&conf) {
             Ok(state) => Ok(state.into()),
-            Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{:?}", e))),
+            Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{}", e))),
         }
     }
 

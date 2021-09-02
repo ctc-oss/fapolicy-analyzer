@@ -1,6 +1,8 @@
-use crate::{rpm, sys, trust};
 use std::io;
+
 use thiserror::Error;
+
+use crate::{rpm, sys, trust};
 
 #[derive(Error, Debug)]
 pub enum Error {
