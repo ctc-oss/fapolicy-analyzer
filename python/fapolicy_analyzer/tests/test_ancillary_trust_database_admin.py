@@ -308,7 +308,7 @@ def test_update_system_checkpoint(widget):
     # Verify current and checkpoint systems are the same
     widget.system = 0xDEADBEEF
     widget.system_checkpoint = 0x10101010
-    sys = widget.update_system_checkpoint()
+    widget.update_system_checkpoint()
     assert widget.system == widget.system_checkpoint
 
 
