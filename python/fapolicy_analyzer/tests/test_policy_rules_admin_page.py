@@ -6,7 +6,7 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from unittest.mock import MagicMock
 from helpers import refresh_gui
-from ui.policy_rules_admin_page import PolicyRulesAdminPage
+from fapolicy_analyzer.ui.policy_rules_admin_page import PolicyRulesAdminPage
 
 
 def mock_users():
