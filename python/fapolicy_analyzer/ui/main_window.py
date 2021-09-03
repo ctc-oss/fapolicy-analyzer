@@ -42,6 +42,7 @@ class MainWindow(UIWidget):
 
         # Disable 'File' menu items until backend support is available
         self.get_object("restoreMenu").set_sensitive(False)
+        self.__toggle_trustDbMenu()
 
         self.window.show_all()
 
@@ -98,6 +99,10 @@ class MainWindow(UIWidget):
         response = dlgSessionRestorePrompt.run()
         dlgSessionRestorePrompt.destroy()
         return response
+
+    def __toggle_trustDbMenu(self):
+        menuItem = self.get_object("trustDbMenu")
+        menuItem.set_sensitive(not menuItem.get_sensitive())
 
     def on_start(self, *args):
         # For now the analyzer selection dialog is just commented out so we can revert back to it if needed
@@ -253,7 +258,9 @@ class MainWindow(UIWidget):
             self.__pack_main_content(
                 router(ANALYZER_SELECTION.ANALYZE_FROM_AUDIT, file)
             )
+            self.__toggle_trustDbMenu()
         fcd.destroy()
 
     def on_trustDbMenu_activate(self, menuitem, *args):
         self.__pack_main_content(router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN))
+        self.__toggle_trustDbMenu()

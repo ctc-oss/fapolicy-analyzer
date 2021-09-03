@@ -28,11 +28,9 @@
           </packing>
         </child>
         <child>
-          <object class="GtkButtonBox" id="actionButtons">
+          <object class="GtkBox" id="actionButtons">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="homogeneous">True</property>
-            <property name="layout-style">start</property>
             <child>
               <placeholder/>
             </child>
@@ -68,6 +66,9 @@
                   <object class="GtkTreeView" id="treeView">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
+                    <child internal-child="selection">
+                      <object class="GtkTreeSelection"/>
+                    </child>
                   </object>
                 </child>
               </object>
