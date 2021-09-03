@@ -9,6 +9,10 @@ edition = "2018"
 name = "init-trust-db"
 path = "crates/tools/trustdb_init.rs"
 
+[[test]]
+name = "integration"
+path = "tests/tests.rs"
+
 [workspace]
 members = [
     "crates/analyzer",
