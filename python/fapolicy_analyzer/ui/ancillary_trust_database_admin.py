@@ -1,6 +1,7 @@
 import gi
 import logging
 import fapolicy_analyzer.ui.strings as strings
+import sys
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, GLib
@@ -21,7 +22,13 @@ from fapolicy_analyzer.util.fapd_dbase import fapd_dbase_snapshot
 class AncillaryTrustDatabaseAdmin(UIWidget):
     def __init__(self):
         super().__init__()
-        self.system = System()
+
+        try:
+            self.system = System()
+        except RuntimeError as e:
+            print(e)
+            sys.exit(1)
+
         self.update_system_checkpoint()
         self.executor = ThreadPoolExecutor(max_workers=1)
         self.selectedFile = None
