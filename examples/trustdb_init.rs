@@ -4,6 +4,7 @@ use clap::Clap;
 use lmdb::{DatabaseFlags, Environment, Transaction, WriteFlags};
 
 use fapolicy_analyzer::cfg::All;
+use fapolicy_analyzer::error::Error;
 use fapolicy_analyzer::rpm::load_system_trust;
 
 #[derive(Clap)]
@@ -24,7 +25,7 @@ struct Opts {
     dbdir: Option<String>,
 }
 
-fn main() {
+fn main() -> Result<(), Error> {
     let opts: Opts = Opts::parse();
     let path = match opts.dbdir {
         Some(p) => p,
@@ -50,7 +51,7 @@ fn main() {
 
     if !opts.empty {
         let cfg = All::load();
-        let sys = load_system_trust(&cfg.system.system_trust_path);
+        let sys = load_system_trust(&cfg.system.system_trust_path)?;
 
         let mut tx = env.begin_rw_txn().expect("failed to start db transaction");
         for trust in sys {
@@ -59,5 +60,7 @@ fn main() {
                 .expect("unable to add trust to db transaction");
         }
         tx.commit().expect("failed to commit db transaction")
-    }
+    };
+
+    Ok(())
 }

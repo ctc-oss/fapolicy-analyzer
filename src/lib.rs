@@ -2,6 +2,7 @@ pub mod api;
 pub mod app;
 pub mod cfg;
 pub mod check;
+pub mod error;
 pub mod fapolicyd;
 pub mod log;
 pub mod rpm;

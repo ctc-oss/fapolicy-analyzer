@@ -5,11 +5,31 @@ use std::io::BufReader;
 use std::path::Path;
 
 use lmdb::{Cursor, Environment, Transaction};
+use thiserror::Error;
 
 use crate::api;
 use crate::api::{Trust, TrustSource};
+use crate::error;
+use crate::error::Error::FileNotFound;
 use crate::sha::sha256_digest;
+use crate::trust::Error::{
+    LmdbNotFound, LmdbPermissionDenied, LmdbReadFail, MalformattedTrustEntry, UnsupportedTrustType,
+};
 use crate::trust::TrustOp::{Add, Del};
+
+#[derive(Error, Debug)]
+pub enum Error {
+    #[error("lmdb db not found, {0}")]
+    LmdbNotFound(String),
+    #[error("{0}")]
+    LmdbReadFail(lmdb::Error),
+    #[error("Permission denied, {0}")]
+    LmdbPermissionDenied(String),
+    #[error("Unsupported Trust type: {0}")]
+    UnsupportedTrustType(String),
+    #[error("Malformed Trust entry: {0}")]
+    MalformattedTrustEntry(String),
+}
 
 /// Trust status tag
 /// T / U / unk
@@ -48,18 +68,16 @@ impl From<TrustPair> for api::Trust {
 
 /// load the fapolicyd backend lmdb database
 /// parse the results into trust entries
-pub fn load_trust_db(path: &str) -> Vec<api::Trust> {
+pub fn load_trust_db(path: &str) -> Result<Vec<api::Trust>, Error> {
     let env = Environment::new().set_max_dbs(1).open(Path::new(path));
     let env = match env {
         Ok(e) => e,
-        _ => {
-            println!("WARN: fapolicyd trust db was not found");
-            return vec![];
-        }
+        Err(lmdb::Error::Other(2)) => return Err(LmdbNotFound(path.to_string())),
+        Err(lmdb::Error::Other(13)) => return Err(LmdbPermissionDenied(path.to_string())),
+        Err(e) => return Err(LmdbReadFail(e)),
     };
 
-    let db = env.open_db(Some("trust.db")).expect("load trust.db");
-
+    let db = env.open_db(Some("trust.db")).map_err(LmdbReadFail)?;
     env.begin_ro_txn()
         .map(|t| {
             t.open_ro_cursor(db).map(|mut c| {
@@ -71,23 +89,23 @@ pub fn load_trust_db(path: &str) -> Vec<api::Trust> {
             })
         })
         .unwrap()
-        .unwrap()
+        .map_err(LmdbReadFail)
 }
 
 /// load a fapolicyd ancillary file trust database
 /// used to analyze the fapolicyd trust db for out of sync issues
-pub fn load_ancillary_trust(path: &str) -> Vec<api::Trust> {
-    let f = File::open(path);
-    let f = match f {
-        Ok(e) => e,
-        _ => {
-            println!("WARN: fapolicyd trust file was not found");
-            return vec![];
-        }
-    };
+pub fn load_ancillary_trust(path: &str) -> Result<Vec<api::Trust>, error::Error> {
+    match File::open(path) {
+        Ok(e) => Ok(read_ancillary_trust(e)),
+        _ => Err(FileNotFound(
+            "ancillary trust db".to_string(),
+            path.to_string(),
+        )),
+    }
+}
 
+fn read_ancillary_trust(f: File) -> Vec<api::Trust> {
     let r = BufReader::new(f);
-
     r.lines()
         .map(|r| r.unwrap())
         .filter(|s| !s.is_empty() && !s.starts_with('#'))
@@ -95,19 +113,19 @@ pub fn load_ancillary_trust(path: &str) -> Vec<api::Trust> {
         .collect()
 }
 
-fn parse_strtyped_trust_record(s: &str, t: &str) -> Result<api::Trust, String> {
+fn parse_strtyped_trust_record(s: &str, t: &str) -> Result<api::Trust, Error> {
     match t {
         "1" => parse_typed_trust_record(s, TrustSource::System),
         "2" => parse_typed_trust_record(s, TrustSource::Ancillary),
-        _ => Err("unknown trust type".to_string()),
+        v => Err(UnsupportedTrustType(v.to_string())),
     }
 }
 
-fn parse_trust_record(s: &str) -> Result<api::Trust, String> {
+fn parse_trust_record(s: &str) -> Result<api::Trust, Error> {
     parse_typed_trust_record(s, TrustSource::Ancillary)
 }
 
-fn parse_typed_trust_record(s: &str, t: api::TrustSource) -> Result<api::Trust, String> {
+fn parse_typed_trust_record(s: &str, t: api::TrustSource) -> Result<api::Trust, Error> {
     let mut v: Vec<&str> = s.rsplitn(3, ' ').collect();
     v.reverse();
     match v.as_slice() {
@@ -117,7 +135,7 @@ fn parse_typed_trust_record(s: &str, t: api::TrustSource) -> Result<api::Trust, 
             hash: sha.to_string(),
             source: t,
         }),
-        _ => Err(format!("failed to read record; {}", s)),
+        _ => Err(MalformattedTrustEntry(s.to_string())),
     }
 }
 

@@ -1,16 +1,18 @@
 use pyo3::prelude::*;
+use pyo3::{exceptions, PyResult};
 
 use fapolicy_analyzer::api::TrustSource;
 use fapolicy_analyzer::app::State;
 use fapolicy_analyzer::cfg;
 use fapolicy_analyzer::check::trust_status;
+use fapolicy_analyzer::log::Event;
+use fapolicy_analyzer::sys::deploy_app_state;
+
+use crate::acl::{PyGroup, PyUser};
+use crate::event::PyEvent;
 
 use super::trust::PyChangeset;
 use super::trust::PyTrust;
-use crate::acl::{PyGroup, PyUser};
-use crate::event::PyEvent;
-use fapolicy_analyzer::log::Event;
-use fapolicy_analyzer::sys::deploy_app_state;
 
 #[pyclass(module = "app", name = "System")]
 #[derive(Clone)]
@@ -32,10 +34,16 @@ impl From<PySystem> for State {
 
 #[pymethods]
 impl PySystem {
+    /// Create a new initialized System
+    /// This returns a result object that will be an error if initialization fails,
+    /// allowing the member accessors on the System to return non-result objects.
     #[new]
-    fn new() -> PySystem {
+    fn new() -> PyResult<PySystem> {
         let conf = cfg::All::load();
-        State::load(&conf).into()
+        match State::load(&conf) {
+            Ok(state) => Ok(state.into()),
+            Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{}", e))),
+        }
     }
 
     /// Obtain a list of trusted files sourced from the system trust database.

@@ -184,7 +184,6 @@ class StateManager(Events):
             print("listPA = ", listPA)
             return True
 
-    # ###################### Autosave file mgmt ###########################
     def __cleanup_autosave_sessions(self):
         """Deletes all current autosaved session files. These files were
         created during the current editing session, and are deleted after a deploy,
