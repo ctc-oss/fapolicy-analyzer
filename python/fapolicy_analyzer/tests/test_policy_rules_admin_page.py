@@ -95,7 +95,9 @@ def test_adds_object_tabs(widget):
 
 
 def test_loads_users(widget, userListView):
+    print("getting model")
     model = userListView.get_model()
+    print("got model", model)
     assert [x.name for x in mock_users()] == [x[0] for x in model]
     assert [x.id for x in mock_users()] == [x[1] for x in model]
 

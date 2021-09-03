@@ -45,11 +45,13 @@ class PolicyRulesAdminPage(UIWidget):
         objectTabs.append_page(self.objectList.get_ref(), Gtk.Label(label="Object"))
 
         if auditFile:
+            print("loading events")
             self.__load_events(auditFile)
 
     def __load_events(self, auditFile):
         def process():
             system = System()
+            print("using system ", system)
             self.events = system.events_from(auditFile)
 
             users = list(
@@ -68,6 +70,7 @@ class PolicyRulesAdminPage(UIWidget):
                     if e.gid == g.id
                 }.values()
             )
+            print("loaded events", self.events)
             GLib.idle_add(self.userList.load_store, users)
             GLib.idle_add(self.groupList.load_store, groups)
 
