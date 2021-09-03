@@ -33,11 +33,12 @@ mock_events = [
 
 @pytest.fixture
 def widget(mocker):
-    mocker.patch("ui.policy_rules_admin_page.System.users", return_value=mock_users())
-    mocker.patch("ui.policy_rules_admin_page.System.groups", return_value=mock_groups())
-    mocker.patch(
-        "ui.policy_rules_admin_page.System.events_from", return_value=mock_events
+    mock_system = MagicMock(
+        users=MagicMock(return_value=mock_users()),
+        groups=MagicMock(return_value=mock_groups()),
+        events_from=MagicMock(return_value=mock_events),
     )
+    mocker.patch("ui.policy_rules_admin_page.System", return_value=mock_system)
     widget = PolicyRulesAdminPage("foo")
     refresh_gui()
     return widget
@@ -95,7 +96,9 @@ def test_adds_object_tabs(widget):
 
 
 def test_loads_users(widget, userListView):
+    print("getting model")
     model = userListView.get_model()
+    print("got model", model)
     assert [x.name for x in mock_users()] == [x[0] for x in model]
     assert [x.id for x in mock_users()] == [x[1] for x in model]
 

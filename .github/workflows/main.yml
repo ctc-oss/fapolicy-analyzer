@@ -146,7 +146,7 @@ jobs:
             do echo "./$(basename $entry)" >> ${{steps.download.outputs.download-path}}/easy-install.pth;
           done
       - name: Test with pytest
-        run: pipenv run test -vv
+        run: pipenv run xvfb-run -a pytest -s fapolicy_analyzer/tests/test_policy_rules_admin_page.py -k test_loads_users
         working-directory: python
 
   fmt:

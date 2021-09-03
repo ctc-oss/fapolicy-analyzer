@@ -45,36 +45,43 @@ class PolicyRulesAdminPage(UIWidget):
         objectTabs.append_page(self.objectList.get_ref(), Gtk.Label(label="Object"))
 
         if auditFile:
+            print("loading events")
             self.__load_events(auditFile)
 
     def __load_events(self, auditFile):
         def process():
-            system = System()
-            self.events = system.events_from(auditFile)
+            try:
+                system = System()
+                print("using system ", system)
+                self.events = system.events_from(auditFile)
 
-            users = list(
-                {
-                    e.uid: {"id": u.id, "name": u.name}
-                    for u in system.users()
-                    for e in self.events
-                    if e.uid == u.id
-                }.values()
-            )
-            groups = list(
-                {
-                    e.gid: {"id": g.id, "name": g.name}
-                    for g in system.groups()
-                    for e in self.events
-                    if e.gid == g.id
-                }.values()
-            )
-            GLib.idle_add(self.userList.load_store, users)
-            GLib.idle_add(self.groupList.load_store, groups)
+                users = list(
+                    {
+                        e.uid: {"id": u.id, "name": u.name}
+                        for u in system.users()
+                        for e in self.events
+                        if e.uid == u.id
+                    }.values()
+                )
+                groups = list(
+                    {
+                        e.gid: {"id": g.id, "name": g.name}
+                        for g in system.groups()
+                        for e in self.events
+                        if e.gid == g.id
+                    }.values()
+                )
+                print("loaded events", self.events)
+                GLib.idle_add(self.userList.load_store, users)
+                GLib.idle_add(self.groupList.load_store, groups)
+            except Exception as e:
+                print("raised exception: ", e)
 
         self.userList.set_loading(True)
         self.groupList.set_loading(True)
         self.subjectList.get_ref().set_sensitive(False)
         self.objectList.get_ref().set_sensitive(False)
+        print("executing process")
         self.executor.submit(process)
 
     def __all_list(self):
