@@ -14,7 +14,7 @@ setup(
     ),
     setup_requires=["setuptools", "setuptools_rust"],
     zip_safe=False,
-    rust_extensions=[RustExtension("fapolicy_analyzer.rust")],
+    rust_extensions=[RustExtension("fapolicy_analyzer.rust", path="crates/pyo3/Cargo.toml")],
     include_package_data=True,
     package_data={
         "fapolicy_analyzer": ["locale/*/LC_MESSAGES/*.mo"],
