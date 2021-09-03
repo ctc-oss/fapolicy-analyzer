@@ -68,7 +68,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install pipenv
           pipenv install --dev
-        working-directory: python
       - name: Build
         id: build
         run: |
@@ -77,12 +76,11 @@ jobs:
           echo ::set-output name=virt_env::$(pipenv --venv)
         env:
           VERSION: 0.0.0
-        working-directory: python
       - name: Archive wheel
         uses: actions/upload-artifact@v2
         with:
           name: fapolicy-analyzer-wheel
-          path: python/dist/fapolicy_analyzer-*.whl
+          path: dist/fapolicy_analyzer-*.whl
 
   ui_lint:
     name: UI Lint
@@ -100,7 +98,6 @@ jobs:
           pip install flake8 flake8-i18n
       - name: Lint with flake8
         run: python -m flake8 ./fapolicy_analyzer
-        working-directory: python
 
   ui_test:
     name: UI Test Suite
@@ -130,7 +127,6 @@ jobs:
           pip install pipenv
           pipenv install --dev
           echo ::set-output name=virt_env::$(pipenv --venv)
-        working-directory: python
       - name: Download bindings package
         id: download
         uses: actions/download-artifact@v2
@@ -139,7 +135,6 @@ jobs:
           path: /tmp
       - name: Install wheel
         run: pipenv install /tmp/fapolicy_analyzer-*.whl
-        working-directory: python
       - name: 'Update path'
         run: |
           for entry in ${{steps.download.outputs.download-path}}/fapolicy*;
@@ -147,7 +142,6 @@ jobs:
           done
       - name: Test with pytest
         run: pipenv run test
-        working-directory: python
 
   fmt:
     name: Rustfmt
