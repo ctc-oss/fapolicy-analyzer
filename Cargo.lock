@@ -157,7 +157,6 @@ dependencies = [
 name = "fapolicy-analyzer"
 version = "0.3.0"
 dependencies = [
- "clap",
  "confy",
  "data-encoding",
  "dbus",
@@ -180,6 +179,12 @@ dependencies = [
 [[package]]
 name = "fapolicy-tools"
 version = "0.3.0"
+dependencies = [
+ "clap",
+ "fapolicy-analyzer",
+ "lmdb-rkv",
+ "nom",
+]
 
 [[package]]
 name = "funty"
