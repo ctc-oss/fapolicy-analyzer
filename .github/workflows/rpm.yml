@@ -62,6 +62,12 @@ jobs:
           mv $HOME/rpmbuild/RPMS/*/*.rpm /tmp
           mv $HOME/rpmbuild/SRPMS/*.rpm  /tmp
 
+      - name: Archive RPMs
+        uses: actions/upload-artifact@v2
+        with:
+          name: fapolicy-analyzer-rpms
+          path: /tmp/*.rpm
+
       - name: Strip ref to tag
         id: tag_name
         if: startsWith(github.ref, 'refs/tags/v')
@@ -75,7 +81,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           name: Release ${{ steps.tag_name.outputs.VERSION }}
-          tag_name: ${{ github.ref }}
+          tag_name: ${{ steps.tag_name.outputs.VERSION }}
           prerelease: ${{ startsWith(github.ref, 'refs/tags/v0') || contains(github.ref, 'rc') }}
           draft: true
           files: |

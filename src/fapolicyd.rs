@@ -1,5 +1,7 @@
 // todo;; tracking the fapolicyd specific bits in here to determine if bindings are worthwhile
 
+use crate::sys;
+use crate::sys::Error::FapolicydReloadFail;
 use std::io::Write;
 
 pub const TRUST_DB_PATH: &str = "/var/lib/fapolicyd";
@@ -13,14 +15,15 @@ const USR_SHARE_ALLOWED_EXTS: [&str; 15] = [
 ];
 
 /// send signal to fapolicyd FIFO pipe to reload the trust database
-pub fn reload_databases() {
-    std::fs::OpenOptions::new()
+pub fn reload_databases() -> Result<(), sys::Error> {
+    let mut fifo = std::fs::OpenOptions::new()
         .write(true)
         .read(false)
         .open(FIFO_PIPE)
-        .expect("unable to open fifo pipe")
-        .write_all("1".as_bytes())
-        .expect("unable to write fifo pipe");
+        .map_err(|_| FapolicydReloadFail("failed to open fifo pipe".to_string()))?;
+
+    fifo.write_all("1".as_bytes())
+        .map_err(|_| FapolicydReloadFail("failed to write reload byte to pipe".to_string()))
 }
 
 /// filtering logic as implemented by fapolicyd rpm backend

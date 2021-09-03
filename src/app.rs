@@ -5,6 +5,7 @@ use serde::Serialize;
 use crate::api::{Trust, TrustSource};
 use crate::cfg::All;
 use crate::cfg::PROJECT_NAME;
+use crate::error::Error;
 use crate::trust::load_trust_db;
 use crate::trust::Changeset;
 use crate::users::{load_groups, load_users, Group, User};
@@ -29,13 +30,14 @@ impl State {
         }
     }
 
-    pub fn load(cfg: &All) -> State {
-        State {
+    pub fn load(cfg: &All) -> Result<State, Error> {
+        let trust_db = load_trust_db(&cfg.system.trust_db_path)?;
+        Ok(State {
             config: cfg.clone(),
-            trust_db: load_trust_db(&cfg.system.trust_db_path),
+            trust_db,
             users: load_users(),
             groups: load_groups(),
-        }
+        })
     }
 
     /// Apply a Changeset to this state, results in a new immutable state
