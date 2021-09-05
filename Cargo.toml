@@ -1,7 +1,7 @@
 [package]
 name = "fapolicy-tools"
 description = "Tools to assist with the configuration and maintenance of fapolicyd"
-license = "LGPL-3.0-or-later"
+license = "GPL-3.0-or-later"
 version = "0.3.0"
 edition = "2018"
 

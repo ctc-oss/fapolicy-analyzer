@@ -1,5 +1,6 @@
 [package]
 name = "fapolicy-analyzer"
+description = "Analyzer support for fapolicyd"
 license = "LGPL-3.0-or-later"
 version = "0.3.0"
 edition = "2018"
