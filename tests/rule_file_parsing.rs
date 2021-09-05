@@ -1,4 +1,3 @@
-use crate::Line::{Acomment, Arule, Aset};
 use fapolicy_analyzer::rules::{parse, Rule, Set};
 use nom::branch::alt;
 use nom::combinator::map;
@@ -13,9 +12,9 @@ enum Line {
 
 fn parser(i: &str) -> nom::IResult<&str, Line> {
     alt((
-        map(parse::comment, Acomment),
-        map(parse::rule, Arule),
-        map(parse::set, Aset),
+        map(parse::comment, Line::Acomment),
+        map(parse::rule, Line::Arule),
+        map(parse::set, Line::Aset),
     ))(i)
 }
 
@@ -38,9 +37,9 @@ fn parse_lines(xs: Vec<String>) {
 
     for (i, line) in lines.iter().enumerate() {
         match line {
-            Acomment(c) => println!("{}: {}", i, c),
-            Arule(r) => println!("{}: {}", i, r),
-            Aset(m) => println!("{}: {}", i, m),
+            Line::Acomment(c) => println!("{}: {}", i, c),
+            Line::Arule(r) => println!("{}: {}", i, r),
+            Line::Aset(m) => println!("{}: {}", i, m),
         }
     }
 
