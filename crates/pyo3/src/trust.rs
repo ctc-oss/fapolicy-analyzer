@@ -109,7 +109,7 @@ impl PyChangeset {
     }
 
     pub fn get_path_action_map(&self) -> HashMap<String, String> {
-	trust::get_path_action_map(&self.s)
+        trust::get_path_action_map(&self.s)
     }
 }
 

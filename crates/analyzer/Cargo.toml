@@ -1,0 +1,20 @@
+[package]
+name = "fapolicy-analyzer"
+description = "Analyzer support for fapolicyd"
+license = "LGPL-3.0-or-later"
+version = "0.3.0"
+edition = "2018"
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+data-encoding = "2.3.1"
+ring = "0.16.19"
+nom = "6.1.0"
+dbus = "0.9.1"
+lmdb-rkv = "0.14.0"
+confy = "0.4.0"
+serde = { version = "1.0", features = ["derive"] }
+directories = "2.0.2"
+thiserror = "1.0"

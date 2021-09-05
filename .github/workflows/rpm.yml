@@ -34,7 +34,7 @@ jobs:
           curl -so /usr/local/bin/git-rpm-version https://raw.githubusercontent.com/peterlundgren/git-rpm-version/master/git-rpm-version
           chmod +x /usr/local/bin/git-rpm-version
           FEDORA_VER="$(source /etc/os-release ; echo "$VERSION_ID")"
-          GIT_COMMIT="$(git describe --match "v*" --abbrev=0 || git rev-parse --verify HEAD)"
+          GIT_COMMIT="$(git describe --match "v*" --abbrev=0 --candidates=0 || git rev-parse --verify HEAD)"
           RPM_VERSION="$(git-rpm-version -v HEAD)"
           RPM_RELEASE="$(git-rpm-version -r HEAD)"
           jinja2                          \

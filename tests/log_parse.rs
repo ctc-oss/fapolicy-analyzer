@@ -1,4 +1,3 @@
-use crate::Line::AnEvent;
 use fapolicy_analyzer::log;
 use fapolicy_analyzer::log::Event;
 use nom::combinator::map;
@@ -10,7 +9,7 @@ enum Line {
 }
 
 fn parser(i: &str) -> nom::IResult<&str, Line> {
-    map(log::parse_event, AnEvent)(i)
+    map(log::parse_event, Line::AnEvent)(i)
 }
 
 fn parse_lines(xs: Vec<String>) {
@@ -32,7 +31,7 @@ fn parse_lines(xs: Vec<String>) {
 
     for (i, line) in lines.iter().enumerate() {
         match line {
-            AnEvent(c) => println!("{}: {:?}", i, c),
+            Line::AnEvent(c) => println!("{}: {:?}", i, c),
         }
     }
 
