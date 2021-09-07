@@ -13,17 +13,20 @@ use fapolicy_analyzer::trust;
 #[derive(Clone)]
 pub struct PyTrust {
     pub trust: api::Trust,
+    pub actual: Option<trust::Actual>,
     pub status: String,
 }
 impl From<trust::Status> for PyTrust {
     fn from(status: trust::Status) -> Self {
-        let (trust, tag) = match status {
-            trust::Status::Trusted(t) => (t, "T"),
-            trust::Status::Discrepancy(t, _) => (t, "D"),
-            trust::Status::Unknown(t) => (t, "U"),
+        let (trust, actual, tag) = match status {
+            trust::Status::Trusted(t, act) => (t, act, "T"),
+            trust::Status::Discrepancy(t, act) => (t, act, "D"),
+            // todo;; hmmmmmmmmmmmmmmmmmmmm
+            trust::Status::Unknown(_) => panic!("shouldnt have got an unknown"), /*(t, "U")*/
         };
         Self {
             trust,
+            actual: Some(actual),
             status: tag.to_string(),
         }
     }
@@ -40,6 +43,7 @@ impl PyTrust {
                 hash: sha.to_string(),
                 source: TrustSource::Ancillary,
             },
+            actual: None,
             status: "U".to_string(),
         }
     }
@@ -57,6 +61,11 @@ impl PyTrust {
     #[getter]
     fn get_hash(&self) -> &str {
         &self.trust.hash
+    }
+
+    #[getter]
+    fn get_last_modified(&self) -> Option<String> {
+        self.actual.as_ref().map(|a| a.clone().last_modified)
     }
 
     /// Get a string representation of the TDU status

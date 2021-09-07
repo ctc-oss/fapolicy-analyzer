@@ -6,7 +6,7 @@ use crate::app::State;
 use crate::error::Error;
 use crate::error::Error::FileNotFound;
 use crate::sha::sha256_digest;
-use crate::trust::Status;
+use crate::trust::{Actual, Status};
 use std::process::Command;
 
 /// check for sync between fapolicyd and rpmdb
@@ -24,17 +24,25 @@ pub fn file_sync(_app: &State) -> bool {
 /// check status of trust against the filesystem
 pub fn trust_status(t: &Trust) -> Result<Status, Error> {
     match File::open(&t.path) {
-        Ok(f) => match sha256_digest(BufReader::new(&f)) {
-            Ok(sha) if sha == t.hash && len(&f) == t.size => Ok(Status::Trusted(t.clone())),
-            Ok(sha) => Ok(Status::Discrepancy(t.clone(), sha)),
+        Ok(f) => match collect_actual(&f) {
+            Ok(act) if act.hash == t.hash && act.size == t.size => {
+                Ok(Status::Trusted(t.clone(), act))
+            }
+            Ok(act) => Ok(Status::Discrepancy(t.clone(), act)),
             Err(e) => Err(e),
         },
         _ => Err(FileNotFound("trusted file".to_string(), t.path.clone())),
     }
 }
 
-fn len(file: &File) -> u64 {
-    file.metadata().unwrap().len()
+fn collect_actual(file: &File) -> Result<Actual, Error> {
+    let meta = file.metadata()?;
+    let sha = sha256_digest(BufReader::new(file))?;
+    Ok(Actual {
+        size: meta.len(),
+        hash: sha,
+        last_modified: format!("{:?}", meta.modified()?),
+    })
 }
 
 #[derive(Debug, Clone)]

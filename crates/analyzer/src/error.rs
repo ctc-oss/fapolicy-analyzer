@@ -19,5 +19,5 @@ pub enum Error {
     RpmError(#[from] rpm::Error),
 
     #[error("Hash error: {0}")]
-    HashOpError(#[from] io::Error),
+    MetaError(#[from] io::Error),
 }
