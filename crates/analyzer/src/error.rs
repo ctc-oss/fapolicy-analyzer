@@ -18,6 +18,9 @@ pub enum Error {
     #[error("RPM error: {0}")]
     RpmError(#[from] rpm::Error),
 
-    #[error("Hash error: {0}")]
-    MetaError(#[from] io::Error),
+    #[error("File IO Error: {0}")]
+    FileIoError(#[from] io::Error),
+
+    #[error("Error reading metadata: {0}")]
+    MetaError(String),
 }

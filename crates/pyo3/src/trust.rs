@@ -47,8 +47,8 @@ impl PyTrust {
     }
 
     #[getter]
-    fn get_last_modified(&self) -> &str {
-        self.actual.last_modified.as_str()
+    fn get_last_modified(&self) -> u64 {
+        self.actual.last_modified
     }
 
     #[getter]

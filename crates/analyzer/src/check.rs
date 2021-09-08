@@ -4,10 +4,11 @@ use std::io::BufReader;
 use crate::api::Trust;
 use crate::app::State;
 use crate::error::Error;
-use crate::error::Error::FileNotFound;
+use crate::error::Error::{FileNotFound, MetaError};
 use crate::sha::sha256_digest;
 use crate::trust::{Actual, Status};
 use std::process::Command;
+use std::time::UNIX_EPOCH;
 
 /// check for sync between fapolicyd and rpmdb
 /// can return false on the first mismatch
@@ -41,7 +42,12 @@ fn collect_actual(file: &File) -> Result<Actual, Error> {
     Ok(Actual {
         size: meta.len(),
         hash: sha,
-        last_modified: format!("{:?}", meta.modified()?),
+        last_modified: meta
+            .modified()
+            .map_err(|e| MetaError(format!("{}", e)))?
+            .duration_since(UNIX_EPOCH)
+            .map_err(|_| MetaError("failed to convert to epoch seconds".into()))?
+            .as_secs(),
     })
 }
 

@@ -37,7 +37,7 @@ pub enum Error {
 pub struct Actual {
     pub size: u64,
     pub hash: String,
-    pub last_modified: String,
+    pub last_modified: u64,
 }
 
 /// Trust status tag
