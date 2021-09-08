@@ -7,11 +7,14 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from locale import gettext as _
 from fapolicy_analyzer.util.format import f
+from .actions import add_notification, NotificationType
 from .analyzer_selection_dialog import ANALYZER_SELECTION  # , AnalyzerSelectionDialog
 from .database_admin_page import DatabaseAdminPage
 from .notification import Notification
 from .policy_rules_admin_page import PolicyRulesAdminPage
-from .state_manager import stateManager, NotificationType
+from .session_manager import sessionManager
+from .store import dispatch, get_system_feature
+from .epics import init_system
 from .unapplied_changes_dialog import UnappliedChangesDialog
 from .ui_widget import UIWidget
 
@@ -30,11 +33,12 @@ def router(selection, data=None):
 class MainWindow(UIWidget):
     def __init__(self):
         super().__init__()
+        init_system()
         self.strSessionFilename = None
-        stateManager.ev_changeset_queue_updated += self.on_changeset_updated
         self.window = self.get_ref()
         self.windowTopLevel = self.window.get_toplevel()
         self.strTopLevelTitle = self.windowTopLevel.get_title()
+        self._changesets = []
 
         toaster = Notification()
         self.get_object("overlay").add_overlay(toaster.get_ref())
@@ -42,13 +46,15 @@ class MainWindow(UIWidget):
 
         # Disable 'File' menu items until backend support is available
         self.get_object("restoreMenu").set_sensitive(False)
-        self.__toggle_trustDbMenu()
+        self.__set_trustDbMenu_sensitive(False)
 
         self.window.show_all()
 
+        get_system_feature().subscribe(on_next=self.on_next_system)
+
     def __unapplied_changes(self):
         # Check backend for unapplied changes
-        if not stateManager.is_dirty_queue():
+        if not self._changesets:
             return False
 
         # Warn user pending changes will be lost.
@@ -73,6 +79,7 @@ class MainWindow(UIWidget):
         current = next(iter(self.mainContent.get_children()), None)
         if current:
             self.mainContent.remove(current)
+            current.destroy()
         self.mainContent.pack_start(page, True, True, 0)
 
     def __auto_save_restore_dialog(self):
@@ -100,9 +107,9 @@ class MainWindow(UIWidget):
         dlgSessionRestorePrompt.destroy()
         return response
 
-    def __toggle_trustDbMenu(self):
+    def __set_trustDbMenu_sensitive(self, sensitive):
         menuItem = self.get_object("trustDbMenu")
-        menuItem.set_sensitive(not menuItem.get_sensitive())
+        menuItem.set_sensitive(sensitive)
 
     def on_start(self, *args):
         # For now the analyzer selection dialog is just commented out so we can revert back to it if needed
@@ -113,7 +120,7 @@ class MainWindow(UIWidget):
 
         # On startup check for the existing of a tmp session file
         # If detected, alert the user, enable the File|Restore menu item
-        if stateManager.detect_previous_session():
+        if sessionManager.detect_previous_session():
             logging.debug("Detected edit session tmp file")
             self.get_object("restoreMenu").set_sensitive(True)
 
@@ -123,10 +130,12 @@ class MainWindow(UIWidget):
 
             if response == Gtk.ResponseType.YES:
                 try:
-                    if not stateManager.restore_previous_session():
-                        stateManager.add_system_notification(
-                            strings.AUTOSAVE_RESTORE_ERROR_MSG,
-                            NotificationType.ERROR,
+                    if not sessionManager.restore_previous_session():
+                        dispatch(
+                            add_notification(
+                                strings.AUTOSAVE_RESTORE_ERROR_MSG,
+                                NotificationType.ERROR,
+                            )
                         )
 
                     self.get_object("restoreMenu").set_sensitive(False)
@@ -144,8 +153,9 @@ class MainWindow(UIWidget):
     def on_delete_event(self, *args):
         return self.__unapplied_changes()
 
-    def on_changeset_updated(self):
-        dirty = stateManager.is_dirty_queue()
+    def on_next_system(self, system):
+        self._changesets = system["changesets"]
+        dirty = len(self._changesets) > 0
         title = f"*{self.strTopLevelTitle}" if dirty else self.strTopLevelTitle
         self.windowTopLevel.set_title(title)
 
@@ -171,14 +181,16 @@ class MainWindow(UIWidget):
             strFilename = fcd.get_filename()
             if path.isfile(strFilename):
                 self.strSessionFilename = strFilename
-                if not stateManager.open_edit_session(self.strSessionFilename):
-                    stateManager.add_system_notification(
-                        f(
-                            _(
-                                "An error occurred trying to open the session file, {self.strSessionFilename}"
-                            )
-                        ),
-                        NotificationType.ERROR,
+                if not sessionManager.open_edit_session(self.strSessionFilename):
+                    dispatch(
+                        add_notification(
+                            f(
+                                _(
+                                    "An error occurred trying to open the session file, {self.strSessionFilename}"
+                                )
+                            ),
+                            NotificationType.ERROR,
+                        )
                     )
 
         fcd.destroy()
@@ -186,15 +198,16 @@ class MainWindow(UIWidget):
     def on_restoreMenu_activate(self, menuitem, data=None):
         logging.debug("Callback entered: MainWindow::on_restoreMenu_activate()")
         try:
-            if not stateManager.restore_previous_session():
-                stateManager.add_system_notification(
-                    "An error occurred trying to restore a prior "
-                    "autosaved edit session ",
-                    NotificationType.ERROR,
+            if not sessionManager.restore_previous_session():
+                dispatch(
+                    add_notification(
+                        strings.AUTOSAVE_RESTORE_ERROR_MSG,
+                        NotificationType.ERROR,
+                    )
                 )
 
         except Exception:
-            print("Restore failed")
+            logging.exception("Restore failed")
 
         # In all cases, gray out the File|Restore menu item
         self.get_object("restoreMenu").set_sensitive(False)
@@ -204,7 +217,10 @@ class MainWindow(UIWidget):
         if not self.strSessionFilename:
             self.on_saveAsMenu_activate(menuitem, None)
         else:
-            stateManager.save_edit_session(self.strSessionFilename)
+            sessionManager.save_edit_session(
+                self._changesets,
+                self.strSessionFilename,
+            )
 
     def on_saveAsMenu_activate(self, menuitem, data=None):
         logging.debug("Callback entered: MainWindow::on_saveAsMenu_activate()")
@@ -229,7 +245,10 @@ class MainWindow(UIWidget):
         if response == Gtk.ResponseType.OK:
             strFilename = fcd.get_filename()
             self.strSessionFilename = strFilename
-            stateManager.save_edit_session(self.strSessionFilename)
+            sessionManager.save_edit_session(
+                self._changesets,
+                self.strSessionFilename,
+            )
 
         fcd.destroy()
 
@@ -258,9 +277,9 @@ class MainWindow(UIWidget):
             self.__pack_main_content(
                 router(ANALYZER_SELECTION.ANALYZE_FROM_AUDIT, file)
             )
-            self.__toggle_trustDbMenu()
+            self.__set_trustDbMenu_sensitive(True)
         fcd.destroy()
 
     def on_trustDbMenu_activate(self, menuitem, *args):
         self.__pack_main_content(router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN))
-        self.__toggle_trustDbMenu()
+        self.__set_trustDbMenu_sensitive(False)
