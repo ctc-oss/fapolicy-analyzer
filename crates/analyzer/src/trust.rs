@@ -40,12 +40,9 @@ pub struct Actual {
     pub last_modified: String,
 }
 
-/// Trust status tag TDU
-/// Trusted / Discrepancy / Unknown
+/// Trust status tag
 #[derive(Clone)]
 pub enum Status {
-    /// No trust entry in database
-    Unknown(Actual),
     /// Filesystem matches trust
     Trusted(api::Trust, Actual),
     /// filesystem does not match trust

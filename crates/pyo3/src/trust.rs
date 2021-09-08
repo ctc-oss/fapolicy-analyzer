@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use pyo3::prelude::*;
 
 use fapolicy_analyzer::api;
-use fapolicy_analyzer::api::TrustSource;
 use fapolicy_analyzer::trust;
 
 /// Trust entry
@@ -13,7 +12,7 @@ use fapolicy_analyzer::trust;
 #[derive(Clone)]
 pub struct PyTrust {
     pub trust: api::Trust,
-    pub actual: Option<trust::Actual>,
+    pub actual: trust::Actual,
     pub status: String,
 }
 impl From<trust::Status> for PyTrust {
@@ -21,12 +20,10 @@ impl From<trust::Status> for PyTrust {
         let (trust, actual, tag) = match status {
             trust::Status::Trusted(t, act) => (t, act, "T"),
             trust::Status::Discrepancy(t, act) => (t, act, "D"),
-            // todo;; hmmmmmmmmmmmmmmmmmmmm
-            trust::Status::Unknown(_) => panic!("shouldnt have got an unknown"), /*(t, "U")*/
         };
         Self {
             trust,
-            actual: Some(actual),
+            actual,
             status: tag.to_string(),
         }
     }
@@ -34,20 +31,6 @@ impl From<trust::Status> for PyTrust {
 
 #[pymethods]
 impl PyTrust {
-    #[new]
-    fn new(p: &str, sz: u64, sha: &str) -> PyTrust {
-        PyTrust {
-            trust: api::Trust {
-                path: p.to_string(),
-                size: sz,
-                hash: sha.to_string(),
-                source: TrustSource::Ancillary,
-            },
-            actual: None,
-            status: "U".to_string(),
-        }
-    }
-
     #[getter]
     fn get_size(&self) -> u64 {
         self.trust.size
@@ -64,11 +47,10 @@ impl PyTrust {
     }
 
     #[getter]
-    fn get_last_modified(&self) -> Option<String> {
-        self.actual.as_ref().map(|a| a.clone().last_modified)
+    fn get_last_modified(&self) -> &str {
+        self.actual.last_modified.as_str()
     }
 
-    /// Get a string representation of the TDU status
     #[getter]
     fn get_status(&self) -> &str {
         &self.status
