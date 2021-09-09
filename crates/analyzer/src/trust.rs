@@ -31,18 +31,22 @@ pub enum Error {
     MalformattedTrustEntry(String),
 }
 
+/// Actual delivers metadata about the actual file that exists on the filesystem.
+/// This is used to identify discrepancies between the trusted and the actual files.
+#[derive(Clone)]
+pub struct Actual {
+    pub size: u64,
+    pub hash: String,
+    pub last_modified: u64,
+}
+
 /// Trust status tag
-/// T / U / unk
 #[derive(Clone)]
 pub enum Status {
-    /// No entry in database
-    Unknown(api::Trust),
-    /// filesystem matches database
-    Trusted(api::Trust),
-    /// filesystem does not match database
-    /// lhs expected, rhs actual
-    Discrepancy(api::Trust, String),
-    // todo;; what about file does not exist?
+    /// Filesystem matches trust
+    Trusted(api::Trust, Actual),
+    /// filesystem does not match trust
+    Discrepancy(api::Trust, Actual),
 }
 
 struct TrustPair {
