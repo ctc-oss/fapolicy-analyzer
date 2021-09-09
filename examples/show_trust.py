@@ -26,7 +26,7 @@ def main(*argv):
         else:
             for t in ts:
                 print(f"{t.path} {t.size} {t.hash}")
-                if args.t:
+                if args.time:
                     formatted = datetime.fromtimestamp(t.last_modified)
                     print(f"\t-last modified: {formatted}")
             print(f"found {len(ts)} {tt} trust entries")
