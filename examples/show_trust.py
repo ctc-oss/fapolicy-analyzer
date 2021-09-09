@@ -8,7 +8,7 @@ def main(*argv):
     parser = argparse.ArgumentParser()
     parser.add_argument("trust_type", nargs="+", choices=["system", "file"], help="trust type to show")
     parser.add_argument("-c", "--count", action='store_true', help="only show the count")
-    parser.add_argument("-t", action='store_true', help="show last modified time")
+    parser.add_argument("-t", "--time", action='store_true', help="show last modified time")
     args = parser.parse_args(argv)
 
     # config is loaded from $HOME/.config/fapolicy-analyzer/fapolicy-analyzer.toml
