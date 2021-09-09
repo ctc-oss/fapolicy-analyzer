@@ -17,6 +17,8 @@ path = "tests/tests.rs"
 members = [
     "crates/analyzer",
     "crates/pyo3",
+    "crates/trust",
+    "crates/util",
 ]
 
 [dependencies]
@@ -25,3 +27,4 @@ lmdb-rkv = "0.14.0"
 nom = "6.1.0"
 
 fapolicy-analyzer = { version = "0.3.0", path = "crates/analyzer" }
+fapolicy-trust = { path = "crates/trust" }

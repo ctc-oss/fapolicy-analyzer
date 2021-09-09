@@ -8,8 +8,7 @@ edition = "2018"
 [lib]
 crate-type = ["cdylib"]
 
-[dependencies.fapolicy-analyzer]
-path = "../analyzer"
-
-[dependencies.pyo3]
-version = "0.14.2"
+[dependencies]
+pyo3 = "0.14.2"
+fapolicy-analyzer = { path = "../analyzer" }
+fapolicy-trust = { path = "../trust" }

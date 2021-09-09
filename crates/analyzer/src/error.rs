@@ -2,7 +2,7 @@ use std::io;
 
 use thiserror::Error;
 
-use crate::{rpm, sys, trust};
+use crate::{rpm, sys};
 
 #[derive(Error, Debug)]
 pub enum Error {
@@ -13,7 +13,7 @@ pub enum Error {
     SystemError(#[from] sys::Error),
 
     #[error("Trust error: {0}")]
-    TrustError(#[from] trust::Error),
+    TrustError(#[from] fapolicy_trust::error::Error),
 
     #[error("RPM error: {0}")]
     RpmError(#[from] rpm::Error),
@@ -23,4 +23,7 @@ pub enum Error {
 
     #[error("Error reading metadata: {0}")]
     MetaError(String),
+
+    #[error("{0}")]
+    GeneralError(#[from] fapolicy_util::error::Error),
 }
