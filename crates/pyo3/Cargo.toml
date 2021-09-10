@@ -10,5 +10,5 @@ crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = "0.14.2"
-fapolicy-analyzer = { path = "../analyzer" }
-fapolicy-trust = { path = "../trust" }
+fapolicy-analyzer = { version = "0.3", path = "../analyzer" }
+fapolicy-trust = { version = "0.3", path = "../trust" }
