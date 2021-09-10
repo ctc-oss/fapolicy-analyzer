@@ -43,27 +43,27 @@ jobs:
             -D rpm_version=${RPM_VERSION} \
             -D rpm_release=${RPM_RELEASE} \
             fapolicy-analyzer.spec.j2 > $HOME/rpmbuild/SPECS/fapolicy-analyzer.spec
-        working-directory: ${{ github.workspace }}/scripts/rpm
+        working-directory: scripts/rpm
 
       - name: Download package source
         run: |
+          cd $HOME/rpmbuild/SOURCES
           spectool -gf ../SPECS/fapolicy-analyzer.spec \
-        working-directory: ${{ home }}/rpmbuild/SOURCES
 
       - name: Install package build dependencies
         run: |
+           cd $HOME/rpmbuild
            dnf builddep fapolicy-analyzer.spec -y
-        working-directory: ${{ home }}/rpmbuild/SPECS
 
       - name: Build the package
         run: |
+           cd $HOME/rpmbuild/SPECS
            rpmbuild -ba fapolicy-analyzer.spec
-        working-directory: ${{ home }}/rpmbuild/SPECS
 
       - name: Export the package
         run: |
+          cd $HOME/rpmbuild
           cp **/*.rpm "$RUNNER_TEMP"
-        working-directory: ${{ home }}/rpmbuild
 
       - uses: softprops/action-gh-release@v1
         name: Create Release
