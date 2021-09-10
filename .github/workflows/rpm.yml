@@ -52,7 +52,7 @@ jobs:
 
       - name: Install package build dependencies
         run: |
-           cd $HOME/rpmbuild
+           cd $HOME/rpmbuild/SPECS
            dnf builddep fapolicy-analyzer.spec -y
 
       - name: Build the package
