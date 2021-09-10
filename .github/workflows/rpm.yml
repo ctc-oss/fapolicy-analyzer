@@ -19,14 +19,14 @@ jobs:
     container: ${{ matrix.platform }}
     name: Create RPM Release
     steps:
+      - name: Install basic rpmbuild toolchain
+        run: |
+          dnf install -y rpm-build rpmdevtools dnf-plugins-core python3-jinja2-cli git
+
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
-
-      - name: Install basic rpmbuild toolchain
-        run: |
-          dnf install -y rpm-build rpmdevtools dnf-plugins-core python3-jinja2-cli
 
       - name: Generate the standalone spec file from the template and args
         run: |
