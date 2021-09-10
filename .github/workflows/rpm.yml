@@ -30,7 +30,7 @@ jobs:
 
       - name: Generate the standalone spec file from the template and args
         run: |
-          mkdir -p "$HOME"/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
+          mkdir -p $HOME/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
           curl -so /usr/local/bin/git-rpm-version https://raw.githubusercontent.com/peterlundgren/git-rpm-version/master/git-rpm-version
           chmod +x /usr/local/bin/git-rpm-version
           FEDORA_VER="$(source /etc/os-release ; echo "$VERSION_ID")"
@@ -42,7 +42,7 @@ jobs:
             -D git_commit=${GIT_COMMIT}   \
             -D rpm_version=${RPM_VERSION} \
             -D rpm_release=${RPM_RELEASE} \
-            fapolicy-analyzer.spec.j2 > "$HOME"/rpmbuild/SPECS/fapolicy-analyzer.spec
+            fapolicy-analyzer.spec.j2 > $HOME/rpmbuild/SPECS/fapolicy-analyzer.spec
         working-directory: ${{ github.workspace }}/scripts/rpm
 
       - name: Download package source
