@@ -26,12 +26,10 @@ GUI and CLI tools to assist with the configuration and maintenance of fapolicyd
 %global debug_package %{nil}
 
 %build
-cd python
 VERSION=%{version} %{python3} setup.py compile_catalog -f
 VERSION=%{version} %{python3} setup.py bdist_wheel
 
 %install
-cd python
 %{python3} -m pip install -v --target %{buildroot}%{python3_sitelib} dist/*.whl
 install bin/fapolicy-analyzer %{buildroot}%{_sbindir}/fapolicy-analyzer -D
 
