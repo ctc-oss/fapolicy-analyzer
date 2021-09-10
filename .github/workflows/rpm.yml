@@ -14,23 +14,23 @@ jobs:
   build:
     strategy:
       matrix:
-        platform: [ 'fedora:33', 'fedora:34' ]
+        platform: [ 'fedora:32', 'fedora:33', 'fedora:34' ]
     runs-on: ubuntu-latest
     container: ${{ matrix.platform }}
     name: Create RPM Release
     steps:
-      - name: Install basic rpmbuild toolchain
-        run: |
-          dnf install -y rpm-build rpmdevtools dnf-plugins-core python3-jinja2-cli git
-
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
 
+      - name: Install basic rpmbuild toolchain
+        run: |
+          dnf install -y rpm-build rpmdevtools dnf-plugins-core python3-jinja2-cli
+
       - name: Generate the standalone spec file from the template and args
         run: |
-          mkdir -p $HOME/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
+          mkdir -p "$HOME"/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
           curl -so /usr/local/bin/git-rpm-version https://raw.githubusercontent.com/peterlundgren/git-rpm-version/master/git-rpm-version
           chmod +x /usr/local/bin/git-rpm-version
           FEDORA_VER="$(source /etc/os-release ; echo "$VERSION_ID")"
@@ -42,36 +42,28 @@ jobs:
             -D git_commit=${GIT_COMMIT}   \
             -D rpm_version=${RPM_VERSION} \
             -D rpm_release=${RPM_RELEASE} \
-            fapolicy-analyzer.spec.j2 > $HOME/rpmbuild/SPECS/fapolicy-analyzer.spec
-        working-directory: scripts/rpm
+            fapolicy-analyzer.spec.j2 > "$HOME"/rpmbuild/SPECS/fapolicy-analyzer.spec
+        working-directory: ${{ github.workspace }}/scripts/rpm
 
       - name: Download package source
         run: |
-          cd $HOME/rpmbuild/SOURCES
-          spectool -gf ../SPECS/fapolicy-analyzer.spec
+          spectool -gf ../SPECS/fapolicy-analyzer.spec \
+        working-directory: ${{ home }}/rpmbuild/SOURCES
 
       - name: Install package build dependencies
         run: |
-           cd $HOME/rpmbuild/SPECS
            dnf builddep fapolicy-analyzer.spec -y
+        working-directory: ${{ home }}/rpmbuild/SPECS
 
       - name: Build the package
         run: |
-          cd $HOME/rpmbuild/SPECS
-          rpmbuild -ba fapolicy-analyzer.spec
-          mv $HOME/rpmbuild/RPMS/*/*.rpm /tmp
-          mv $HOME/rpmbuild/SRPMS/*.rpm  /tmp
+           rpmbuild -ba fapolicy-analyzer.spec
+        working-directory: ${{ home }}/rpmbuild/SPECS
 
-      - name: Archive RPMs
-        uses: actions/upload-artifact@v2
-        with:
-          name: fapolicy-analyzer-rpms
-          path: /tmp/*.rpm
-
-      - name: Strip ref to tag
-        id: tag_name
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d/ -f3)
+      - name: Export the package
+        run: |
+          cp **/*.rpm "$RUNNER_TEMP"
+        working-directory: ${{ home }}/rpmbuild
 
       - uses: softprops/action-gh-release@v1
         name: Create Release
@@ -80,9 +72,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: Release ${{ steps.tag_name.outputs.VERSION }}
-          tag_name: ${{ steps.tag_name.outputs.VERSION }}
+          name: Release ${{ github.ref }}
+          tag_name: ${{ github.ref }}
+          body_path: release-notes
           prerelease: ${{ startsWith(github.ref, 'refs/tags/v0') || contains(github.ref, 'rc') }}
           draft: true
           files: |
-            /tmp/*.rpm
+            "$RUNNER_TEMP"/*.rpm

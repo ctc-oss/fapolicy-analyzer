@@ -1,4 +1,4 @@
-ARG platform=fedora:33
+ARG platform=fedora:32
 FROM ${platform} AS build-stage
 
 RUN dnf install -y rpm-build rpmdevtools dnf-plugins-core python3-jinja2-cli \

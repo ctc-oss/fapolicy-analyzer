@@ -1,0 +1,34 @@
+Args:
+
+	fedora_ver	Numeric fedora release
+			Used to choose the installation method for
+			python setuptools rust: package for fedora 34+
+			or pip for earlier.
+
+	git_commit	Git tag or commit to package
+			Used to contruct the URL for the package archive.
+
+	rpm_version	Package version
+
+	rpm_release	Package release
+
+Build steps:
+
+	1. Install basic rpmbuild toolchain:
+	   * rpm-build
+	   * rpmdevtools: provides spectool to download source archive
+	   * dnf-plugins-core: provides builddep to download dependencies
+	   * python3-jinja2-cli: create standalone spec file from template
+
+	2. Generate the standalone spec file from the template and args
+	   * FEDORA_VER: read VERSION_ID from /etc/os-release
+	   * GIT_COMMIT: exact git tag or git commit hash
+	   * RPM_VERSION: from git-rpm-version
+	   * RPM_RELEASE: from git-rpm-version
+
+	3. Download package source with spectool
+
+	4. Install package build dependencies with builddep
+
+	5. Build the package with rpmbuild
+
