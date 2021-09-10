@@ -48,7 +48,7 @@ jobs:
       - name: Download package source
         run: |
           cd $HOME/rpmbuild/SOURCES
-          spectool -gf ../SPECS/fapolicy-analyzer.spec \
+          spectool -gf ../SPECS/fapolicy-analyzer.spec
 
       - name: Install package build dependencies
         run: |
