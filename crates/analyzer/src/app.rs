@@ -2,13 +2,14 @@ use directories::ProjectDirs;
 use serde::Deserialize;
 use serde::Serialize;
 
-use crate::api::{Trust, TrustSource};
 use crate::cfg::All;
 use crate::cfg::PROJECT_NAME;
 use crate::error::Error;
-use crate::trust::load_trust_db;
-use crate::trust::Changeset;
 use crate::users::{load_groups, load_users, Group, User};
+use fapolicy_trust::ops::Changeset;
+use fapolicy_trust::read::load_trust_db;
+use fapolicy_trust::trust::Trust;
+use fapolicy_trust::trust::TrustSource::Ancillary;
 
 /// Represents an immutable view of the application state.
 /// Carries along the configuration that provided the state.
@@ -46,7 +47,7 @@ impl State {
         let updated_db = changes.apply(
             self.trust_db
                 .iter()
-                .filter(|t| t.source == TrustSource::Ancillary)
+                .filter(|t| t.source == Ancillary)
                 .map(|t| (t.path.clone(), t.clone()))
                 .collect(),
         );

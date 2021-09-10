@@ -10,9 +10,9 @@ use nom::sequence::{delimited, terminated};
 use nom::{InputIter, Parser};
 use thiserror::Error;
 
-use crate::api;
 use crate::fapolicyd::keep_entry;
 use crate::rpm::Error::{ReadRpmDumpFailed, RpmCommandNotFound, RpmDumpFailed};
+use fapolicy_trust::trust::{Trust, TrustSource};
 use std::io;
 
 #[derive(Error, Debug)]
@@ -34,7 +34,7 @@ struct RpmDbEntry {
 
 /// directly load the rpm database
 /// used to analyze the fapolicyd trust db for out of sync issues
-pub fn load_system_trust(rpmdb: &str) -> Result<Vec<api::Trust>, Error> {
+pub fn load_system_trust(rpmdb: &str) -> Result<Vec<Trust>, Error> {
     // we just check the version to ensure rpm is there
     let _rpm_version = Command::new("rpm")
         .arg("version")
@@ -57,18 +57,18 @@ fn contains_no_files(s: &str) -> nom::IResult<&str, Option<RpmDbEntry>> {
     delimited(tag("("), tag("contains no files"), tag(")"))(s).map(|x| (x.0, None))
 }
 
-fn parse(s: &str) -> Vec<api::Trust> {
+fn parse(s: &str) -> Vec<Trust> {
     iterator(s, terminated(contains_no_files.or(parse_line), line_ending))
         .collect::<Vec<Option<RpmDbEntry>>>()
         .iter()
         .flatten()
         .filter(|e| keep_entry(&e.path))
         .flat_map(|e| {
-            e.hash.as_ref().map(|hash| api::Trust {
+            e.hash.as_ref().map(|hash| Trust {
                 path: e.path.clone(),
                 size: e.size,
                 hash: hash.clone(),
-                source: api::TrustSource::System,
+                source: TrustSource::System,
             })
         })
         .collect()
@@ -210,7 +210,7 @@ mod tests {
     #[test]
     fn parse_db() {
         let abc = format!("{}\n{}\n{}\n{}\n", A, B, C, D);
-        let files: Vec<api::Trust> = parse(&abc);
+        let files: Vec<Trust> = parse(&abc);
         assert_eq!(files.len(), 2);
     }
 }

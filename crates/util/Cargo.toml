@@ -1,0 +1,11 @@
+[package]
+name = "fapolicy-util"
+description = "Utility crate for fapolicyd"
+license = "LGPL-3.0-or-later"
+version = "0.3.0"
+edition = "2018"
+
+[dependencies]
+data-encoding = "2.3.1"
+ring = "0.16.19"
+thiserror = "1.0"

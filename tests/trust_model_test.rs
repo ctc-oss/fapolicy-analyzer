@@ -1,6 +1,6 @@
 use fapolicy_analyzer::app::State;
 use fapolicy_analyzer::cfg::All;
-use fapolicy_analyzer::trust::Changeset;
+use fapolicy_trust::ops::Changeset;
 
 #[test]
 fn test_change_trust_state() {

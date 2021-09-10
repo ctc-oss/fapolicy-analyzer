@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
+use fapolicy_trust::ops::{get_path_action_map, Changeset};
+use fapolicy_trust::stat::{Actual, Status};
+use fapolicy_trust::trust::Trust;
 use pyo3::prelude::*;
-
-use fapolicy_analyzer::api;
-use fapolicy_analyzer::trust;
 
 /// Trust entry
 ///
@@ -11,15 +11,15 @@ use fapolicy_analyzer::trust;
 #[pyclass(module = "trust", name = "Trust")]
 #[derive(Clone)]
 pub struct PyTrust {
-    pub trust: api::Trust,
-    pub actual: trust::Actual,
+    pub trust: Trust,
+    pub actual: Actual,
     pub status: String,
 }
-impl From<trust::Status> for PyTrust {
-    fn from(status: trust::Status) -> Self {
+impl From<Status> for PyTrust {
+    fn from(status: Status) -> Self {
         let (trust, actual, tag) = match status {
-            trust::Status::Trusted(t, act) => (t, act, "T"),
-            trust::Status::Discrepancy(t, act) => (t, act, "D"),
+            Status::Trusted(t, act) => (t, act, "T"),
+            Status::Discrepancy(t, act) => (t, act, "D"),
         };
         Self {
             trust,
@@ -61,16 +61,16 @@ impl PyTrust {
 #[pyclass(module = "trust", name = "Changeset")]
 #[derive(Clone)]
 pub struct PyChangeset {
-    s: trust::Changeset,
+    s: Changeset,
 }
 
-impl From<trust::Changeset> for PyChangeset {
-    fn from(s: trust::Changeset) -> Self {
+impl From<Changeset> for PyChangeset {
+    fn from(s: Changeset) -> Self {
         Self { s }
     }
 }
 
-impl From<PyChangeset> for trust::Changeset {
+impl From<PyChangeset> for Changeset {
     fn from(s: PyChangeset) -> Self {
         s.s
     }
@@ -80,7 +80,7 @@ impl From<PyChangeset> for trust::Changeset {
 impl PyChangeset {
     #[new]
     pub fn new() -> Self {
-        trust::Changeset::new().into()
+        Changeset::new().into()
     }
 
     pub fn add_trust(&mut self, path: &str) {
@@ -100,7 +100,7 @@ impl PyChangeset {
     }
 
     pub fn get_path_action_map(&self) -> HashMap<String, String> {
-        trust::get_path_action_map(&self.s)
+        get_path_action_map(&self.s)
     }
 }
 

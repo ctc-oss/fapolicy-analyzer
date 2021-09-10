@@ -1,4 +1,4 @@
-use fapolicy_analyzer::sha::sha256_digest;
+use fapolicy_util::sha::sha256_digest;
 use std::fs::File;
 use std::io::BufReader;
 

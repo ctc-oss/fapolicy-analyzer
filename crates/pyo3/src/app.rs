@@ -1,7 +1,6 @@
 use pyo3::prelude::*;
 use pyo3::{exceptions, PyResult};
 
-use fapolicy_analyzer::api::TrustSource;
 use fapolicy_analyzer::app::State;
 use fapolicy_analyzer::cfg;
 use fapolicy_analyzer::check::trust_status;
@@ -13,6 +12,7 @@ use crate::event::PyEvent;
 
 use super::trust::PyChangeset;
 use super::trust::PyTrust;
+use fapolicy_trust::trust::TrustSource;
 
 #[pyclass(module = "app", name = "System")]
 #[derive(Clone)]
@@ -42,7 +42,7 @@ impl PySystem {
         let conf = cfg::All::load();
         match State::load(&conf) {
             Ok(state) => Ok(state.into()),
-            Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{}", e))),
+            Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{:?}", e))),
         }
     }
 

@@ -5,10 +5,10 @@ use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
 
-use crate::api::TrustSource;
 use crate::app::State;
 use crate::fapolicyd;
 use crate::sys::Error::WriteAncillaryFail;
+use fapolicy_trust::trust::TrustSource::Ancillary;
 
 #[derive(Error, Debug)]
 pub enum Error {
@@ -22,7 +22,7 @@ pub fn deploy_app_state(state: &State) -> Result<(), Error> {
     let mut tf = File::create(&state.config.system.ancillary_trust_path)
         .map_err(|_| WriteAncillaryFail("unable to create ancillary trust".to_string()))?;
     for t in &state.trust_db {
-        if t.source == TrustSource::Ancillary {
+        if t.source == Ancillary {
             tf.write_all(format!("{} {} {}\n", t.path, t.size.to_string(), t.hash).as_bytes())
                 .map_err(|_| {
                     WriteAncillaryFail("unable to write ancillary trust entry".to_string())
