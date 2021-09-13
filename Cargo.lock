@@ -171,7 +171,7 @@ dependencies = [
 
 [[package]]
 name = "fapolicy-api"
-version = "0.1.0"
+version = "0.3.0"
 dependencies = [
  "serde",
 ]
@@ -191,6 +191,7 @@ name = "fapolicy-pyo3"
 version = "0.3.0"
 dependencies = [
  "fapolicy-analyzer",
+ "fapolicy-api",
  "fapolicy-daemon",
  "fapolicy-trust",
  "pyo3",
@@ -202,6 +203,7 @@ version = "0.3.0"
 dependencies = [
  "clap",
  "fapolicy-analyzer",
+ "fapolicy-api",
  "fapolicy-daemon",
  "fapolicy-trust",
  "lmdb-rkv",

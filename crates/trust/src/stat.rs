@@ -1,4 +1,4 @@
-use crate::trust::Trust;
+use fapolicy_api::trust::Trust;
 
 /// Actual delivers metadata about the actual file that exists on the filesystem.
 /// This is used to identify discrepancies between the trusted and the actual files.
