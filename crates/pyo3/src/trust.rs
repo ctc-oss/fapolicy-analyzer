@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
+use fapolicy_api::trust::Trust;
 use fapolicy_trust::ops::{get_path_action_map, Changeset};
 use fapolicy_trust::stat::{Actual, Status};
-use fapolicy_trust::trust::Trust;
 use pyo3::prelude::*;
 
 /// Trust entry
