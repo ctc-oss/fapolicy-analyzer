@@ -1,4 +1,4 @@
-use crate::trust::TrustSource;
+use fapolicy_api::trust::TrustSource;
 use thiserror::Error;
 
 /// An Error that can occur in this crate

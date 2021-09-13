@@ -10,5 +10,5 @@ lmdb-rkv = "0.14.0"
 serde = { version = "1.0", features = ["derive"] }
 thiserror = "1.0"
 
-fapolicy-api = { version = "0.1.0", path = "../api" }
+fapolicy-api = { version = "0.3.0", path = "../api" }
 fapolicy-util = { version = "0.3", path = "../util" }

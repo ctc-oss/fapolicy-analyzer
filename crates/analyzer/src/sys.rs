@@ -7,8 +7,8 @@ use thiserror::Error;
 
 use crate::app::State;
 use crate::sys::Error::{DaemonError, WriteAncillaryFail};
+use fapolicy_api::trust::TrustSource::Ancillary;
 use fapolicy_daemon::fapolicyd::{RPM_DB_PATH, TRUST_DB_PATH, TRUST_FILE_PATH};
-use fapolicy_trust::trust::TrustSource::Ancillary;
 
 #[derive(Error, Debug)]
 pub enum Error {

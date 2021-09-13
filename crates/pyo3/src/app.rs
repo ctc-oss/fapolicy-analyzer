@@ -12,7 +12,7 @@ use crate::event::PyEvent;
 
 use super::trust::PyChangeset;
 use super::trust::PyTrust;
-use fapolicy_trust::trust::TrustSource;
+use fapolicy_api::trust::TrustSource;
 
 #[pyclass(module = "app", name = "System")]
 #[derive(Clone)]
