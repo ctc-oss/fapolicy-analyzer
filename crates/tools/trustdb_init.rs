@@ -5,7 +5,7 @@ use lmdb::{DatabaseFlags, Environment, Transaction, WriteFlags};
 
 use fapolicy_analyzer::cfg::All;
 use fapolicy_analyzer::error::Error;
-use fapolicy_analyzer::rpm::load_system_trust;
+use fapolicy_daemon::rpm::load_system_trust;
 
 #[derive(Clap)]
 #[clap(name = "trustdb_init")]
@@ -51,7 +51,7 @@ fn main() -> Result<(), Error> {
 
     if !opts.empty {
         let cfg = All::load();
-        let sys = load_system_trust(&cfg.system.system_trust_path)?;
+        let sys = load_system_trust(&cfg.system.system_trust_path).expect("load sys trust error");
 
         let mut tx = env.begin_rw_txn().expect("failed to start db transaction");
         for trust in sys {

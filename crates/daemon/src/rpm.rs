@@ -12,7 +12,7 @@ use thiserror::Error;
 
 use crate::fapolicyd::keep_entry;
 use crate::rpm::Error::{ReadRpmDumpFailed, RpmCommandNotFound, RpmDumpFailed};
-use fapolicy_trust::trust::{Trust, TrustSource};
+use fapolicy_api::trust::{Trust, TrustSource};
 use std::io;
 
 #[derive(Error, Debug)]

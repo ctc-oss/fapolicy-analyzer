@@ -1,0 +1,20 @@
+[package]
+name = "fapolicy-daemon"
+description = "Bindings to fapolicyd"
+license = "LGPL-3.0-or-later"
+version = "0.3.0"
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+nom = "6.1.0"
+thiserror = "1.0"
+fapolicy-api = { version = "0.1.0", path = "../api" }
+
+[dependencies.dbus]
+version = "0.9"
+optional = true
+
+[features]
+systemd = ["dbus"]

@@ -7,7 +7,7 @@ use dbus::{Error, Message};
 use crate::svc::Method::{DisableUnitFiles, EnableUnitFiles, StartUnit, StopUnit};
 
 #[derive(Debug)]
-enum Method {
+pub enum Method {
     StartUnit,
     StopUnit,
     EnableUnitFiles,
