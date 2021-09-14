@@ -123,7 +123,7 @@ def test_on_confirm_deployment_w_exception(
     parent = Gtk.Window()
     parent.add(widget.get_ref())
     with patch("fapolicy_analyzer.System") as mock:
-        mock.deploy = MagicMock(return_value=None, side_effect=BaseException)
+        mock.deploy = MagicMock(return_value=None, side_effect=RuntimeError)
         widget.system = mock
         widget.on_deployBtn_clicked()
         mock.deploy.assert_called()
