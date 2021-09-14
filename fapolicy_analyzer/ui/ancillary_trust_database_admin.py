@@ -155,7 +155,7 @@ SHA256: {fs.sha(trust.path)}"""
                 )
             except RuntimeError as e:
                 stateManager.add_system_notification(
-                    f"Tailed to deploy: {e}",
+                    f"Failed to deploy: {e}",
                     NotificationType.ERROR,
                 )
                 return
