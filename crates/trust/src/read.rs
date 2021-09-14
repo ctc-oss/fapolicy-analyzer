@@ -5,18 +5,21 @@ use std::path::Path;
 
 use lmdb::{Cursor, Environment, Transaction};
 
-use fapolicy_api::trust::TrustSource::{Ancillary, System};
-use fapolicy_api::trust::{Trust, TrustSource};
+use crate::source::TrustSource;
+use crate::source::TrustSource::{Ancillary, System};
+use fapolicy_api::trust::Trust;
 
+use crate::db::{TrustEntry, TrustRec};
 use crate::error::Error;
 use crate::error::Error::{
     LmdbNotFound, LmdbPermissionDenied, LmdbReadFail, MalformattedTrustEntry, TrustSourceNotFound,
     UnsupportedTrustType,
 };
+use std::collections::HashMap;
 
-struct TrustPair {
-    k: String,
-    v: String,
+pub(crate) struct TrustPair {
+    pub k: String,
+    pub v: String,
 }
 
 impl TrustPair {
@@ -25,13 +28,6 @@ impl TrustPair {
             k: String::from_utf8(Vec::from(b.0)).unwrap(),
             v: String::from_utf8(Vec::from(b.1)).unwrap(),
         }
-    }
-}
-
-impl From<TrustPair> for Trust {
-    fn from(kv: TrustPair) -> Self {
-        let (t, v) = kv.v.split_once(' ').unwrap();
-        parse_strtyped_trust_record(format!("{} {}", kv.k, v).as_str(), t).unwrap()
     }
 }
 
@@ -47,18 +43,26 @@ pub fn load_trust_db(path: &str) -> Result<Vec<Trust>, Error> {
     };
 
     let db = env.open_db(Some("trust.db")).map_err(LmdbReadFail)?;
-    env.begin_ro_txn()
+    let lookup: HashMap<TrustRec, Trust> = env
+        .begin_ro_txn()
         .map(|t| {
             t.open_ro_cursor(db).map(|mut c| {
                 c.iter()
                     .map(|c| c.unwrap())
                     .map(TrustPair::new)
-                    .map(|kv| kv.into())
+                    .map(|kv| {
+                        let te: TrustEntry = kv.into();
+                        te
+                    })
+                    .map(|e| (e.k, e.v))
                     .collect()
             })
         })
         .unwrap()
         .map_err(LmdbReadFail)
+        .unwrap();
+
+    Ok(vec![])
 }
 
 /// load a fapolicyd ancillary file trust database
@@ -79,19 +83,19 @@ fn read_ancillary_trust(f: File) -> Vec<Trust> {
         .collect()
 }
 
-fn parse_strtyped_trust_record(s: &str, t: &str) -> Result<Trust, Error> {
+pub(crate) fn parse_strtyped_trust_record(s: &str, t: &str) -> Result<(Trust, TrustSource), Error> {
     match t {
-        "1" => parse_typed_trust_record(s, System),
-        "2" => parse_typed_trust_record(s, Ancillary),
+        "1" => parse_typed_trust_record(s).map(|t| (t, System)),
+        "2" => parse_typed_trust_record(s).map(|t| (t, Ancillary)),
         v => Err(UnsupportedTrustType(v.to_string())),
     }
 }
 
 fn parse_trust_record(s: &str) -> Result<Trust, Error> {
-    parse_typed_trust_record(s, Ancillary)
+    parse_typed_trust_record(s)
 }
 
-fn parse_typed_trust_record(s: &str, t: TrustSource) -> Result<Trust, Error> {
+fn parse_typed_trust_record(s: &str) -> Result<Trust, Error> {
     let mut v: Vec<&str> = s.rsplitn(3, ' ').collect();
     v.reverse();
     match v.as_slice() {
@@ -99,7 +103,6 @@ fn parse_typed_trust_record(s: &str, t: TrustSource) -> Result<Trust, Error> {
             path: f.to_string(),
             size: sz.parse().unwrap(),
             hash: sha.to_string(),
-            source: t,
         }),
         _ => Err(MalformattedTrustEntry(s.to_string())),
     }
@@ -142,12 +145,12 @@ mod tests {
             "/home/user/my-ls".as_bytes(),
             "1 157984 61a9960bf7d255a85811f4afcac51067b8f2e4c75e21cf4f2af95319d4ed1b87".as_bytes(),
         ));
-        let t: Trust = tp.into();
+        let te: TrustEntry = tp.into();
 
-        assert_eq!(t.path, "/home/user/my-ls");
-        assert_eq!(t.size, 157984);
+        assert_eq!(te.k.path, "/home/user/my-ls");
+        assert_eq!(te.v.size, 157984);
         assert_eq!(
-            t.hash,
+            te.v.hash,
             "61a9960bf7d255a85811f4afcac51067b8f2e4c75e21cf4f2af95319d4ed1b87"
         );
     }

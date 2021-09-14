@@ -1,6 +1,6 @@
 use crate::ops::TrustOp::{Add, Del};
+use crate::source::TrustSource::Ancillary;
 use fapolicy_api::trust::Trust;
-use fapolicy_api::trust::TrustSource::Ancillary;
 use fapolicy_util::sha::sha256_digest;
 use std::collections::HashMap;
 use std::fs::File;
@@ -30,7 +30,6 @@ impl TrustOp {
                         path: path.to_string(),
                         size: *size,
                         hash: hash.clone(),
-                        source: Ancillary,
                     },
                 );
                 Ok(())
@@ -110,7 +109,6 @@ fn new_trust_record(path: &str) -> Result<Trust, String> {
         path: path.to_string(),
         size: f.metadata().unwrap().len(),
         hash: sha,
-        source: Ancillary,
     })
 }
 
@@ -128,7 +126,7 @@ impl InsChange for Changeset {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use fapolicy_api::trust::TrustSource::Ancillary;
+    use crate::source::TrustSource::Ancillary;
     use std::collections::HashMap;
 
     fn make_trust(path: &str, size: u64, hash: &str) -> Trust {
@@ -136,7 +134,6 @@ mod tests {
             path: path.to_string(),
             size,
             hash: hash.to_string(),
-            source: Ancillary,
         }
     }
 
