@@ -1,3 +1,4 @@
+use std::io;
 use std::process::Command;
 
 use nom::bytes::complete::tag;
@@ -10,10 +11,10 @@ use nom::sequence::{delimited, terminated};
 use nom::{InputIter, Parser};
 use thiserror::Error;
 
+use fapolicy_api::trust::Trust;
+
 use crate::fapolicyd::keep_entry;
 use crate::rpm::Error::{ReadRpmDumpFailed, RpmCommandNotFound, RpmDumpFailed};
-use fapolicy_api::trust::{Trust, TrustSource};
-use std::io;
 
 #[derive(Error, Debug)]
 pub enum Error {
@@ -68,7 +69,6 @@ fn parse(s: &str) -> Vec<Trust> {
                 path: e.path.clone(),
                 size: e.size,
                 hash: hash.clone(),
-                source: TrustSource::System,
             })
         })
         .collect()

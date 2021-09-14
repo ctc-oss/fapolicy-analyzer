@@ -16,7 +16,7 @@ use fapolicy_trust::read::load_trust_db;
 #[derive(Clone, Serialize, Deserialize)]
 pub struct State {
     pub config: All,
-    pub trust_db: Vec<Trust>,
+    pub trust_db: trust::DB,
     pub users: Vec<User>,
     pub groups: Vec<Group>,
 }
