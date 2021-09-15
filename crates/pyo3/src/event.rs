@@ -38,11 +38,13 @@ impl PyEvent {
     /// The fapolicyd subject parsed from the log event
     #[getter]
     fn subject(&self) -> PySubject {
-        let path = if let Some(SubjPart::Exe(path)) = self.event.subj.parts.iter().find(|p| match p
+        let path = if let Some(SubjPart::Exe(path)) = self
+            .event
+            .subj
+            .parts
+            .iter()
+            .find(|p| matches!(p, SubjPart::Exe(_)))
         {
-            SubjPart::Exe(_) => true,
-            _ => false,
-        }) {
             path.clone()
         } else {
             "invalid".into()
@@ -58,11 +60,13 @@ impl PyEvent {
     /// The fapolicyd object parsed from the log event
     #[getter]
     fn object(&self) -> PyObject {
-        let path = if let Some(ObjPart::Path(path)) =
-            self.event.obj.parts.iter().find(|p| match p {
-                ObjPart::Path(_) => true,
-                _ => false,
-            }) {
+        let path = if let Some(ObjPart::Path(path)) = self
+            .event
+            .obj
+            .parts
+            .iter()
+            .find(|p| matches!(p, ObjPart::Path(_)))
+        {
             path.clone()
         } else {
             "invalid".into()
