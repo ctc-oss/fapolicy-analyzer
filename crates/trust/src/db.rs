@@ -60,6 +60,13 @@ impl Rec {
             source: None,
         }
     }
+    pub fn sourced(t: Trust, source: TrustSource) -> Self {
+        Rec {
+            trusted: t,
+            actual: None,
+            source: Some(source),
+        }
+    }
 
     pub fn is_sys(&self) -> bool {
         match &self.source {

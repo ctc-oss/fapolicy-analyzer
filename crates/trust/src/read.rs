@@ -17,27 +17,6 @@ use crate::error::Error::{
 use crate::source::TrustSource;
 use crate::source::TrustSource::{Ancillary, System};
 
-// todo;; why do we need this? why not go straight to Meta
-pub(crate) struct TrustEntry {
-    pub path: String,
-    pub trust: Trust,
-    source: TrustSource,
-}
-
-impl From<TrustPair> for TrustEntry {
-    fn from(kv: TrustPair) -> Self {
-        let (tt, v) = kv.v.split_once(' ').unwrap();
-        let (t, s) = parse_strtyped_trust_record(format!("{} {}", kv.k, v).as_str(), tt)
-            .expect("failed to parse_strtyped_trust_record");
-
-        TrustEntry {
-            path: t.path.clone(),
-            trust: t,
-            source: s,
-        }
-    }
-}
-
 pub(crate) struct TrustPair {
     pub k: String,
     pub v: String,
@@ -49,6 +28,15 @@ impl TrustPair {
             k: String::from_utf8(Vec::from(b.0)).unwrap(),
             v: String::from_utf8(Vec::from(b.1)).unwrap(),
         }
+    }
+}
+
+impl From<TrustPair> for (String, Rec) {
+    fn from(kv: TrustPair) -> Self {
+        let (tt, v) = kv.v.split_once(' ').unwrap();
+        let (t, s) = parse_strtyped_trust_record(format!("{} {}", kv.k, v).as_str(), tt)
+            .expect("failed to parse_strtyped_trust_record");
+        (t.path.clone(), Rec::sourced(t, s))
     }
 }
 
@@ -71,7 +59,6 @@ pub fn load_trust_db(path: &str) -> Result<DB, Error> {
                 c.iter()
                     .map(|c| c.unwrap())
                     .map(|kv| TrustPair::new(kv).into())
-                    .map(|e: TrustEntry| (e.path, Rec::with(e.trust)))
                     .collect()
             })
         })
@@ -162,12 +149,12 @@ mod tests {
             "/home/user/my-ls".as_bytes(),
             "1 157984 61a9960bf7d255a85811f4afcac51067b8f2e4c75e21cf4f2af95319d4ed1b87".as_bytes(),
         ));
-        let te: TrustEntry = tp.into();
+        let (_, r) = tp.into();
 
-        assert_eq!(te.path, "/home/user/my-ls");
-        assert_eq!(te.trust.size, 157984);
+        assert_eq!(r.trusted.path, "/home/user/my-ls");
+        assert_eq!(r.trusted.size, 157984);
         assert_eq!(
-            te.trust.hash,
+            r.trusted.hash,
             "61a9960bf7d255a85811f4afcac51067b8f2e4c75e21cf4f2af95319d4ed1b87"
         );
     }
