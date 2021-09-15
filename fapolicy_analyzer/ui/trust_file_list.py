@@ -1,5 +1,7 @@
 import gi
 import fapolicy_analyzer.ui.strings as strings
+import logging
+from time import localtime, strftime
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
@@ -25,24 +27,36 @@ class TrustFileList(SearchableList):
         self.selection_changed += self.__handle_selection_changed
 
     def __handle_selection_changed(self, data):
-        trust = data[2] if data else None
+        trust = data[3] if data else None
         self.trust_selection_changed(trust)
 
     def _columns(self):
+        # trust status column
         trustColumn = Gtk.TreeViewColumn(
             strings.FILE_LIST_TRUST_HEADER,
             Gtk.CellRendererText(background="light gray"),
             markup=0,
         )
-        trustColumn.set_sort_column_id(0),
-        fileColumn = Gtk.TreeViewColumn(
-            strings.FILE_LIST_FILE_HEADER,
+        trustColumn.set_sort_column_id(0)
+
+        # modification time column
+        mtimeColumn = Gtk.TreeViewColumn(
+            strings.FILE_LIST_MTIME_HEADER,
             Gtk.CellRendererText(),
             text=1,
             cell_background=3,
         )
-        fileColumn.set_sort_column_id(1)
-        return [trustColumn, fileColumn]
+        mtimeColumn.set_sort_column_id(1)
+
+        # fullpath column
+        fileColumn = Gtk.TreeViewColumn(
+            strings.FILE_LIST_FILE_HEADER,
+            Gtk.CellRendererText(),
+            text=2,
+            cell_background=3,
+        )
+        fileColumn.set_sort_column_id(2)
+        return [trustColumn, mtimeColumn, fileColumn]
 
     def _update_tree_count(self, count):
         label = FILE_LABEL if count == 1 else FILES_LABEL
@@ -53,12 +67,16 @@ class TrustFileList(SearchableList):
         self.trust_func(self.load_trust)
 
     def load_trust(self, trust):
-        store = Gtk.ListStore(str, str, object, str)
+        store = Gtk.ListStore(str, str, str, object, str)
         for i, data in enumerate(trust):
             status, *rest = (
                 self.markup_func(data.status) if self.markup_func else (data.status,)
             )
             bgColor = rest[0] if rest else "white"
-            store.append([status, data.path, data, bgColor])
+            strDateTime = strftime('%Y.%m.%d %H:%M:%S',
+                                   localtime(data.last_modified))
+            store.append([status,
+                          strDateTime,
+                          data.path, data, bgColor])
 
         self.load_store(store)
