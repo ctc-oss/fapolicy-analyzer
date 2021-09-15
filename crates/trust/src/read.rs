@@ -9,7 +9,7 @@ use crate::source::TrustSource;
 use crate::source::TrustSource::{Ancillary, System};
 use fapolicy_api::trust::Trust;
 
-use crate::db::{TrustEntry, TrustRec};
+use crate::db::{TrustEntry, TrustRec, DB};
 use crate::error::Error;
 use crate::error::Error::{
     LmdbNotFound, LmdbPermissionDenied, LmdbReadFail, MalformattedTrustEntry, TrustSourceNotFound,
@@ -33,7 +33,7 @@ impl TrustPair {
 
 /// load the fapolicyd backend lmdb database
 /// parse the results into trust entries
-pub fn load_trust_db(path: &str) -> Result<Vec<Trust>, Error> {
+pub fn load_trust_db(path: &str) -> Result<DB, Error> {
     let env = Environment::new().set_max_dbs(1).open(Path::new(path));
     let env = match env {
         Ok(e) => e,
@@ -62,7 +62,7 @@ pub fn load_trust_db(path: &str) -> Result<Vec<Trust>, Error> {
         .map_err(LmdbReadFail)
         .unwrap();
 
-    Ok(vec![])
+    Ok(DB::default())
 }
 
 /// load a fapolicyd ancillary file trust database

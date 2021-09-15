@@ -1,10 +1,23 @@
+use crate::db::{Meta, TrustRec, DB};
 use crate::ops::TrustOp::{Add, Del};
+use crate::source::TrustSource;
 use crate::source::TrustSource::Ancillary;
 use fapolicy_api::trust::Trust;
 use fapolicy_util::sha::sha256_digest;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufReader;
+
+fn foo(&db: DB, changes: &Changeset) -> DB {
+    println!("applying changeset to current state...");
+    // let updated_db = changes.apply(
+    //     db.foo()
+    //         .filter(|(k, v)| k.is_ancillary())
+    //         .map(|(k, v)| (k.path.clone(), v.trusted.clone()))
+    //         .collect(),
+    // );
+    changes.apply(db)
+}
 
 #[derive(Clone, Debug)]
 enum TrustOp {
@@ -14,11 +27,20 @@ enum TrustOp {
 }
 
 impl TrustOp {
-    fn run(&self, trust: &mut HashMap<String, Trust>) -> Result<(), String> {
+    fn run(&self, trust: &mut HashMap<TrustRec, Meta>) -> Result<(), String> {
         match self {
             TrustOp::Add(path) => match new_trust_record(path) {
                 Ok(t) => {
-                    trust.insert(path.to_string(), t);
+                    trust.insert(
+                        TrustRec {
+                            path: t.path.clone(),
+                            source: Ancillary,
+                        },
+                        Meta {
+                            trusted: t,
+                            actual: None,
+                        },
+                    );
                     Ok(())
                 }
                 Err(_) => Err("failed to add trust".to_string()),
@@ -66,7 +88,7 @@ impl Changeset {
     }
 
     /// generate a modified trust map
-    pub fn apply(&self, trust: HashMap<String, Trust>) -> HashMap<String, Trust> {
+    pub fn apply(&self, &trust: DB) -> DB {
         let mut modified = trust;
         for change in self.changes.iter() {
             change.run(&mut modified).unwrap()

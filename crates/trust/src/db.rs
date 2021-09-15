@@ -1,6 +1,7 @@
 use crate::read::{parse_strtyped_trust_record, TrustPair};
 use crate::source::TrustSource;
 use fapolicy_api::trust::Trust;
+use std::collections::hash_map::Iter;
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 
@@ -19,7 +20,7 @@ struct A {
 #[derive(Debug)]
 pub struct TrustRec {
     pub path: String,
-    source: TrustSource,
+    pub(crate) source: TrustSource,
 }
 
 pub struct TrustEntry {
@@ -53,11 +54,11 @@ impl TrustRec {
     fn new(path: String, source: TrustSource) -> Self {
         TrustRec { path, source }
     }
-    fn is_sys(&self) -> bool {
+    pub fn is_sys(&self) -> bool {
         self.source == TrustSource::System
     }
 
-    fn is_ancillary(&self) -> bool {
+    pub fn is_ancillary(&self) -> bool {
         self.source == TrustSource::Ancillary
     }
 }
@@ -77,25 +78,22 @@ impl Hash for TrustRec {
 }
 
 #[derive(Debug)]
-struct Meta {
-    trusted: T,
-    actual: Option<A>,
+pub struct Meta {
+    pub trusted: Trust,
+    pub(crate) actual: Option<A>,
 }
 
 impl Meta {
-    fn new(sz: u64, hash: String) -> Self {
+    fn new(path: &str, sz: u64, hash: &str) -> Self {
         Meta {
-            trusted: T {
-                size: sz,
-                hash: hash.into(),
-            },
+            trusted: Trust::new(path, sz, hash),
             actual: None,
         }
     }
 }
 #[derive(Debug)]
-struct DB {
-    lookup: HashMap<TrustRec, Meta>,
+pub struct DB {
+    pub(crate) lookup: HashMap<TrustRec, Meta>,
 }
 
 impl Default for DB {
@@ -103,6 +101,24 @@ impl Default for DB {
         DB {
             lookup: HashMap::default(),
         }
+    }
+}
+
+impl DB {
+    pub fn new(source: HashMap<TrustRec, Meta>) -> Self {
+        DB { lookup: source }
+    }
+
+    pub fn foo(&self) -> Iter<'_, TrustRec, Meta> {
+        self.lookup.iter()
+    }
+
+    pub fn len(&self) -> usize {
+        self.lookup.len()
+    }
+
+    pub fn get(&self, k: &str) -> Option<&Meta> {
+        self.lookup.get(TrustRec {})
     }
 }
 
@@ -126,15 +142,15 @@ mod tests {
         let mut db = DB::default();
         db.lookup.insert(
             TrustRec::sys("/foo".into()),
-            Meta::new(1000000, "xxxxx0".into()),
+            Meta::new("", 1000000, "xxxxx0".into()),
         );
         db.lookup.insert(
             TrustRec::file("/foo".into()),
-            Meta::new(200, "yxxxx0".into()),
+            Meta::new("", 200, "yxxxx0".into()),
         );
         db.lookup.insert(
             TrustRec::sys("/bar".into()),
-            Meta::new(9999, "xxxxx0".into()),
+            Meta::new("", 9999, "xxxxx0".into()),
         );
         // db.lookup
         //     .insert(Sys("/baz".into()), Meta::from_sys(100, "xxxxx0".into()));
