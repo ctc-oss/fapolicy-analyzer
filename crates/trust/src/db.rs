@@ -68,17 +68,11 @@ impl Rec {
     }
 
     pub fn is_sys(&self) -> bool {
-        match &self.source {
-            Some(TrustSource::System) => true,
-            _ => false,
-        }
+        matches!(&self.source, Some(System))
     }
 
     pub fn is_ancillary(&self) -> bool {
-        match &self.source {
-            Some(TrustSource::Ancillary) => true,
-            _ => false,
-        }
+        matches!(&self.source, Some(Ancillary))
     }
 }
 
