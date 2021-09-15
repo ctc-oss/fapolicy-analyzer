@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
@@ -5,8 +6,6 @@ use std::path::Path;
 
 use lmdb::{Cursor, Environment, Transaction};
 
-use crate::source::TrustSource;
-use crate::source::TrustSource::{Ancillary, System};
 use fapolicy_api::trust::Trust;
 
 use crate::db::{Meta, TrustEntry, DB};
@@ -15,7 +14,8 @@ use crate::error::Error::{
     LmdbNotFound, LmdbPermissionDenied, LmdbReadFail, MalformattedTrustEntry, TrustSourceNotFound,
     UnsupportedTrustType,
 };
-use std::collections::HashMap;
+use crate::source::TrustSource;
+use crate::source::TrustSource::{Ancillary, System};
 
 pub(crate) struct TrustPair {
     pub k: String,

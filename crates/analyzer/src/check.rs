@@ -1,14 +1,15 @@
 use std::fs::File;
 use std::io::BufReader;
+use std::process::Command;
+use std::time::UNIX_EPOCH;
+
+use fapolicy_api::trust::Trust;
+use fapolicy_trust::stat::{Actual, Status};
+use fapolicy_util::sha::sha256_digest;
 
 use crate::app::State;
 use crate::error::Error;
 use crate::error::Error::{FileNotFound, MetaError};
-use fapolicy_api::trust::Trust;
-use fapolicy_trust::stat::{Actual, Status};
-use fapolicy_util::sha::sha256_digest;
-use std::process::Command;
-use std::time::UNIX_EPOCH;
 
 /// check for sync between fapolicyd and rpmdb
 /// can return false on the first mismatch

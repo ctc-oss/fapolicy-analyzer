@@ -1,10 +1,12 @@
-use crate::read::{parse_strtyped_trust_record, TrustPair};
-use crate::source::TrustSource;
-use crate::stat::Actual;
-use fapolicy_api::trust::Trust;
 use std::collections::hash_map::Iter;
 use std::collections::HashMap;
 use std::hash::Hasher;
+
+use fapolicy_api::trust::Trust;
+
+use crate::read::{parse_strtyped_trust_record, TrustPair};
+use crate::source::TrustSource;
+use crate::stat::Actual;
 
 pub(crate) struct TrustEntry {
     pub path: String,

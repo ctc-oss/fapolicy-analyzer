@@ -1,9 +1,7 @@
-use std::path::Path;
-
 use clap::Clap;
-use lmdb::{Cursor, Environment, Transaction};
-
 use fapolicy_analyzer::cfg::All;
+use lmdb::{Cursor, Environment, Transaction};
+use std::path::Path;
 
 #[derive(Clap)]
 struct Opts {

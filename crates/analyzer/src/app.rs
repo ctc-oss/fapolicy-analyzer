@@ -1,15 +1,15 @@
+use directories::ProjectDirs;
+use serde::Deserialize;
+use serde::Serialize;
+
+use fapolicy_trust::db::DB;
+use fapolicy_trust::ops::Changeset;
+use fapolicy_trust::read::load_trust_db;
+
 use crate::cfg::All;
 use crate::cfg::PROJECT_NAME;
 use crate::error::Error;
 use crate::users::{load_groups, load_users, Group, User};
-use directories::ProjectDirs;
-
-use fapolicy_trust::db::DB;
-
-use fapolicy_trust::ops::Changeset;
-use fapolicy_trust::read::load_trust_db;
-use serde::Deserialize;
-use serde::Serialize;
 
 /// Represents an immutable view of the application state.
 /// Carries along the configuration that provided the state.

@@ -5,9 +5,10 @@ use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
 
+use fapolicy_daemon::fapolicyd::{RPM_DB_PATH, TRUST_DB_PATH, TRUST_FILE_PATH};
+
 use crate::app::State;
 use crate::sys::Error::{DaemonError, WriteAncillaryFail};
-use fapolicy_daemon::fapolicyd::{RPM_DB_PATH, TRUST_DB_PATH, TRUST_FILE_PATH};
 
 #[derive(Error, Debug)]
 pub enum Error {

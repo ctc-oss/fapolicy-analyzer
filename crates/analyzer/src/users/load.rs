@@ -1,6 +1,7 @@
-use crate::users::{parse, Group, User};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+
+use crate::users::{parse, Group, User};
 
 pub fn users() -> Vec<User> {
     let lines = lines_from("/etc/passwd");

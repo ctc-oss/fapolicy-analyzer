@@ -1,11 +1,12 @@
-use crate::db::{Meta, DB};
-use crate::ops::TrustOp::{Add, Del};
-
-use fapolicy_api::trust::Trust;
-use fapolicy_util::sha::sha256_digest;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufReader;
+
+use fapolicy_api::trust::Trust;
+use fapolicy_util::sha::sha256_digest;
+
+use crate::db::{Meta, DB};
+use crate::ops::TrustOp::{Add, Del};
 
 #[derive(Clone, Debug)]
 enum TrustOp {
@@ -117,9 +118,9 @@ impl InsChange for Changeset {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     use std::collections::HashMap;
+
+    use super::*;
 
     fn make_trust(path: &str, size: u64, hash: &str) -> Trust {
         Trust {

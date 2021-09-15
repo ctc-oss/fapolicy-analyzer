@@ -1,7 +1,8 @@
+use pyo3::prelude::*;
+
 use fapolicy_analyzer::log::Event;
 use fapolicy_analyzer::rules::ObjPart;
 use fapolicy_analyzer::rules::SubjPart;
-use pyo3::prelude::*;
 
 /// An Event parsed from a fapolicyd log
 #[pyclass(module = "log", name = "Event")]

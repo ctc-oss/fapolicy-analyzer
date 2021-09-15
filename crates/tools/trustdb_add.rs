@@ -1,13 +1,11 @@
-use std::path::Path;
-
 use clap::Clap;
-use lmdb::{Environment, Transaction, WriteFlags};
-
 use fapolicy_analyzer::api::{Trust, TrustSource};
 use fapolicy_analyzer::cfg::All;
 use fapolicy_analyzer::sha::sha256_digest;
+use lmdb::{Environment, Transaction, WriteFlags};
 use std::fs::File;
 use std::io::BufReader;
+use std::path::Path;
 
 #[derive(Clap)]
 #[clap(name = "trustdb_add")]

@@ -1,6 +1,7 @@
-use fapolicy_util::sha::sha256_digest;
 use std::fs::File;
 use std::io::BufReader;
+
+use fapolicy_util::sha::sha256_digest;
 
 #[test]
 fn test_hashme() {

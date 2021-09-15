@@ -1,6 +1,7 @@
-use crate::rules::parse;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
+
+use crate::rules::parse;
 
 /// # Permission
 /// Describes what kind permission is being asked for. The permission is either
