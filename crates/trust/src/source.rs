@@ -2,7 +2,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use std::fmt::{Display, Formatter};
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum TrustSource {
     Ancillary,
     System,

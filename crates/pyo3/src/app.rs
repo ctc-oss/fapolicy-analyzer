@@ -12,7 +12,6 @@ use crate::event::PyEvent;
 
 use super::trust::PyChangeset;
 use super::trust::PyTrust;
-use fapolicy_api::trust::TrustSource;
 
 #[pyclass(module = "app", name = "System")]
 #[derive(Clone)]
@@ -53,9 +52,9 @@ impl PySystem {
     fn system_trust(&self) -> Vec<PyTrust> {
         self.state
             .trust_db
-            .iter()
-            .filter(|t| t.source == TrustSource::System)
-            .map(trust_status)
+            .foo()
+            .filter(|(_, m)| m.is_sys())
+            .map(|(_, m)| trust_status(&m.trusted))
             .flatten()
             .map(PyTrust::from)
             .collect()
@@ -76,9 +75,9 @@ impl PySystem {
     fn ancillary_trust(&self) -> Vec<PyTrust> {
         self.state
             .trust_db
-            .iter()
-            .filter(|t| t.source == TrustSource::Ancillary)
-            .map(trust_status)
+            .foo()
+            .filter(|(_, m)| m.is_ancillary())
+            .map(|(_, m)| trust_status(&m.trusted))
             .flatten()
             .map(PyTrust::from)
             .collect()

@@ -1,31 +1,33 @@
 use crate::read::{parse_strtyped_trust_record, TrustPair};
 use crate::source::TrustSource;
+use crate::stat::Actual;
 use fapolicy_api::trust::Trust;
 use std::collections::hash_map::Iter;
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
+//
+// #[derive(Debug)]
+// struct T {
+//     size: u64,
+//     hash: String,
+// }
+// #[derive(Debug)]
+// struct A {
+//     size: u64,
+//     hash: String,
+//     last_mod: String,
+// }
 
-#[derive(Debug)]
-struct T {
-    size: u64,
-    hash: String,
-}
-#[derive(Debug)]
-struct A {
-    size: u64,
-    hash: String,
-    last_mod: String,
-}
-
-#[derive(Debug)]
-pub struct TrustRec {
-    pub path: String,
-    pub(crate) source: TrustSource,
-}
+// #[derive(Debug)]
+// pub struct TrustRec {
+//     pub path: String,
+//     pub(crate) source: TrustSource,
+// }
 
 pub struct TrustEntry {
-    pub k: TrustRec,
-    pub v: Trust,
+    pub path: String,
+    pub trust: Trust,
+    pub source: TrustSource,
 }
 
 impl From<TrustPair> for TrustEntry {
@@ -35,65 +37,68 @@ impl From<TrustPair> for TrustEntry {
             .expect("failed to parse_strtyped_trust_record");
 
         TrustEntry {
-            k: TrustRec {
-                path: t.path.clone(),
-                source: s,
-            },
-            v: t,
+            path: t.path.clone(),
+            trust: t,
+            source: s,
         }
     }
 }
 
-impl TrustRec {
-    fn file(path: String) -> Self {
-        TrustRec::new(path, TrustSource::Ancillary)
-    }
-    fn sys(path: String) -> Self {
-        TrustRec::new(path, TrustSource::System)
-    }
-    fn new(path: String, source: TrustSource) -> Self {
-        TrustRec { path, source }
-    }
-    pub fn is_sys(&self) -> bool {
-        self.source == TrustSource::System
-    }
-
-    pub fn is_ancillary(&self) -> bool {
-        self.source == TrustSource::Ancillary
-    }
+impl TrustEntry {
+    // fn file(path: String) -> Self {
+    //     TrustRec::new(path, TrustSource::Ancillary)
+    // }
+    // fn sys(path: String) -> Self {
+    //     TrustRec::new(path, TrustSource::System)
+    // }
+    // fn new(path: String, source: TrustSource) -> Self {
+    //     TrustRec { path, source }
+    // }
+    // pub fn is_sys(&self) -> bool {
+    //     self.source == TrustSource::System
+    // }
+    //
+    // pub fn is_ancillary(&self) -> bool {
+    //     self.source == TrustSource::Ancillary
+    // }
 }
 
-impl Eq for TrustRec {}
-
-impl PartialEq for TrustRec {
-    fn eq(&self, other: &Self) -> bool {
-        self.path == other.path
-    }
-}
-
-impl Hash for TrustRec {
-    fn hash<H: Hasher>(&self, hasher: &mut H) {
-        self.path.hash(hasher);
-    }
-}
-
-#[derive(Debug)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub struct Meta {
     pub trusted: Trust,
-    pub(crate) actual: Option<A>,
+    actual: Option<Actual>,
+    source: Option<TrustSource>,
 }
 
 impl Meta {
-    fn new(path: &str, sz: u64, hash: &str) -> Self {
+    pub fn new(path: &str, sz: u64, hash: &str) -> Self {
+        Meta::with(Trust::new(path, sz, hash))
+    }
+    pub fn with(t: Trust) -> Self {
         Meta {
-            trusted: Trust::new(path, sz, hash),
+            trusted: t,
             actual: None,
+            source: None,
+        }
+    }
+
+    pub fn is_sys(&self) -> bool {
+        match &self.source {
+            Some(System) => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_ancillary(&self) -> bool {
+        match &self.source {
+            Some(Ancillary) => true,
+            _ => false,
         }
     }
 }
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct DB {
-    pub(crate) lookup: HashMap<TrustRec, Meta>,
+    pub(crate) lookup: HashMap<String, Meta>,
 }
 
 impl Default for DB {
@@ -105,11 +110,11 @@ impl Default for DB {
 }
 
 impl DB {
-    pub fn new(source: HashMap<TrustRec, Meta>) -> Self {
+    pub fn new(source: HashMap<String, Meta>) -> Self {
         DB { lookup: source }
     }
 
-    pub fn foo(&self) -> Iter<'_, TrustRec, Meta> {
+    pub fn foo(&self) -> Iter<'_, String, Meta> {
         self.lookup.iter()
     }
 
@@ -117,8 +122,12 @@ impl DB {
         self.lookup.len()
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.lookup.is_empty()
+    }
+
     pub fn get(&self, k: &str) -> Option<&Meta> {
-        self.lookup.get(TrustRec {})
+        self.lookup.get(k)
     }
 }
 
@@ -140,18 +149,12 @@ mod tests {
     //         db
     fn make_db() -> DB {
         let mut db = DB::default();
-        db.lookup.insert(
-            TrustRec::sys("/foo".into()),
-            Meta::new("", 1000000, "xxxxx0".into()),
-        );
-        db.lookup.insert(
-            TrustRec::file("/foo".into()),
-            Meta::new("", 200, "yxxxx0".into()),
-        );
-        db.lookup.insert(
-            TrustRec::sys("/bar".into()),
-            Meta::new("", 9999, "xxxxx0".into()),
-        );
+        db.lookup
+            .insert("/foo".into(), Meta::new("", 1000000, "xxxxx0".into()));
+        db.lookup
+            .insert("/foo".into(), Meta::new("", 200, "yxxxx0".into()));
+        db.lookup
+            .insert("/bar".into(), Meta::new("", 9999, "xxxxx0".into()));
         // db.lookup
         //     .insert(Sys("/baz".into()), Meta::from_sys(100, "xxxxx0".into()));
         db

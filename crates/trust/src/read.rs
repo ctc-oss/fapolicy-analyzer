@@ -9,7 +9,7 @@ use crate::source::TrustSource;
 use crate::source::TrustSource::{Ancillary, System};
 use fapolicy_api::trust::Trust;
 
-use crate::db::{TrustEntry, TrustRec, DB};
+use crate::db::{Meta, TrustEntry, DB};
 use crate::error::Error;
 use crate::error::Error::{
     LmdbNotFound, LmdbPermissionDenied, LmdbReadFail, MalformattedTrustEntry, TrustSourceNotFound,
@@ -43,7 +43,7 @@ pub fn load_trust_db(path: &str) -> Result<DB, Error> {
     };
 
     let db = env.open_db(Some("trust.db")).map_err(LmdbReadFail)?;
-    let lookup: HashMap<TrustRec, Trust> = env
+    let lookup: HashMap<String, Meta> = env
         .begin_ro_txn()
         .map(|t| {
             t.open_ro_cursor(db).map(|mut c| {
@@ -54,7 +54,7 @@ pub fn load_trust_db(path: &str) -> Result<DB, Error> {
                         let te: TrustEntry = kv.into();
                         te
                     })
-                    .map(|e| (e.k, e.v))
+                    .map(|e| (e.path, Meta::with(e.trust)))
                     .collect()
             })
         })
@@ -62,7 +62,7 @@ pub fn load_trust_db(path: &str) -> Result<DB, Error> {
         .map_err(LmdbReadFail)
         .unwrap();
 
-    Ok(DB::default())
+    Ok(DB::new(lookup))
 }
 
 /// load a fapolicyd ancillary file trust database
@@ -147,10 +147,10 @@ mod tests {
         ));
         let te: TrustEntry = tp.into();
 
-        assert_eq!(te.k.path, "/home/user/my-ls");
-        assert_eq!(te.v.size, 157984);
+        assert_eq!(te.path, "/home/user/my-ls");
+        assert_eq!(te.trust.size, 157984);
         assert_eq!(
-            te.v.hash,
+            te.trust.hash,
             "61a9960bf7d255a85811f4afcac51067b8f2e4c75e21cf4f2af95319d4ed1b87"
         );
     }
