@@ -8,7 +8,7 @@ use lmdb::{Cursor, Environment, Transaction};
 
 use fapolicy_api::trust::Trust;
 
-use crate::db::{Meta, DB};
+use crate::db::{Rec, DB};
 use crate::error::Error;
 use crate::error::Error::{
     LmdbNotFound, LmdbPermissionDenied, LmdbReadFail, MalformattedTrustEntry, TrustSourceNotFound,
@@ -64,14 +64,14 @@ pub fn load_trust_db(path: &str) -> Result<DB, Error> {
     };
 
     let db = env.open_db(Some("trust.db")).map_err(LmdbReadFail)?;
-    let lookup: HashMap<String, Meta> = env
+    let lookup: HashMap<String, Rec> = env
         .begin_ro_txn()
         .map(|t| {
             t.open_ro_cursor(db).map(|mut c| {
                 c.iter()
                     .map(|c| c.unwrap())
                     .map(|kv| TrustPair::new(kv).into())
-                    .map(|e: TrustEntry| (e.path, Meta::with(e.trust)))
+                    .map(|e: TrustEntry| (e.path, Rec::with(e.trust)))
                     .collect()
             })
         })

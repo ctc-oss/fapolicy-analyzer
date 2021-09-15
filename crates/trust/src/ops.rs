@@ -5,7 +5,7 @@ use std::io::BufReader;
 use fapolicy_api::trust::Trust;
 use fapolicy_util::sha::sha256_digest;
 
-use crate::db::{Meta, DB};
+use crate::db::{Rec, DB};
 use crate::ops::TrustOp::{Add, Del};
 
 #[derive(Clone, Debug)]
@@ -16,17 +16,17 @@ enum TrustOp {
 }
 
 impl TrustOp {
-    fn run(&self, trust: &mut HashMap<String, Meta>) -> Result<(), String> {
+    fn run(&self, trust: &mut HashMap<String, Rec>) -> Result<(), String> {
         match self {
             TrustOp::Add(path) => match new_trust_record(path) {
                 Ok(t) => {
-                    trust.insert(t.path.clone(), Meta::with(t));
+                    trust.insert(t.path.clone(), Rec::with(t));
                     Ok(())
                 }
                 Err(_) => Err("failed to add trust".to_string()),
             },
             TrustOp::Ins(path, size, hash) => {
-                trust.insert(path.clone(), Meta::new(path, *size, hash));
+                trust.insert(path.clone(), Rec::new(path, *size, hash));
                 Ok(())
             }
             TrustOp::Del(path) => {
@@ -176,7 +176,7 @@ mod tests {
         let mut source = HashMap::new();
         source.insert(
             "/foo/bar".to_string(),
-            Meta::with(make_default_trust_at("/foo/bar")),
+            Rec::with(make_default_trust_at("/foo/bar")),
         );
 
         let existing = DB::new(source);

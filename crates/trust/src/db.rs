@@ -9,7 +9,7 @@ use crate::stat::Actual;
 
 #[derive(Clone, Debug)]
 pub struct DB {
-    pub(crate) lookup: HashMap<String, Meta>,
+    pub(crate) lookup: HashMap<String, Rec>,
 }
 
 impl Default for DB {
@@ -21,11 +21,11 @@ impl Default for DB {
 }
 
 impl DB {
-    pub fn new(source: HashMap<String, Meta>) -> Self {
+    pub fn new(source: HashMap<String, Rec>) -> Self {
         DB { lookup: source }
     }
 
-    pub fn iter(&self) -> Iter<'_, String, Meta> {
+    pub fn iter(&self) -> Iter<'_, String, Rec> {
         self.lookup.iter()
     }
 
@@ -37,24 +37,24 @@ impl DB {
         self.lookup.is_empty()
     }
 
-    pub fn get(&self, k: &str) -> Option<&Meta> {
+    pub fn get(&self, k: &str) -> Option<&Rec> {
         self.lookup.get(k)
     }
 }
 
 #[derive(PartialEq, Eq, Clone, Debug)]
-pub struct Meta {
+pub struct Rec {
     pub trusted: Trust,
     actual: Option<Actual>,
     source: Option<TrustSource>,
 }
 
-impl Meta {
+impl Rec {
     pub fn new(path: &str, sz: u64, hash: &str) -> Self {
-        Meta::with(Trust::new(path, sz, hash))
+        Rec::with(Trust::new(path, sz, hash))
     }
     pub fn with(t: Trust) -> Self {
-        Meta {
+        Rec {
             trusted: t,
             actual: None,
             source: None,
