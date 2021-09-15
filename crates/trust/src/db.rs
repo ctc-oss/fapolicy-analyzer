@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 use fapolicy_api::trust::Trust;
 
-use crate::read::{parse_strtyped_trust_record, TrustPair};
+
 use crate::source::TrustSource;
 use crate::stat::Actual;
 
