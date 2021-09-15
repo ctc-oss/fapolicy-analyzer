@@ -9,7 +9,7 @@ use fapolicy_util::sha::sha256_digest;
 
 use crate::app::State;
 use crate::error::Error;
-use crate::error::Error::{FileNotFound, MetaError};
+use crate::error::Error::{FileIoError, GeneralError, MetaError};
 
 /// check for sync between fapolicyd and rpmdb
 /// can return false on the first mismatch
@@ -34,7 +34,7 @@ pub fn trust_status(t: &Trust) -> Result<Status, Error> {
             Err(e) => Err(e),
         },
         Err(e) if e.kind() == ErrorKind::NotFound => Ok(Status::Missing(t.clone())),
-        _ => Err(FileNotFound("trusted file".to_string(), t.path.clone())),
+        Err(e) => Err(FileIoError(e)),
     }
 }
 
