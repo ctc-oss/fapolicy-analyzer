@@ -5,26 +5,8 @@ use fapolicy_api::trust::Trust;
 use std::collections::hash_map::Iter;
 use std::collections::HashMap;
 use std::hash::Hasher;
-//
-// #[derive(Debug)]
-// struct T {
-//     size: u64,
-//     hash: String,
-// }
-// #[derive(Debug)]
-// struct A {
-//     size: u64,
-//     hash: String,
-//     last_mod: String,
-// }
 
-// #[derive(Debug)]
-// pub struct TrustRec {
-//     pub path: String,
-//     pub(crate) source: TrustSource,
-// }
-
-pub struct TrustEntry {
+pub(crate) struct TrustEntry {
     pub path: String,
     pub trust: Trust,
     pub source: TrustSource,
@@ -42,25 +24,6 @@ impl From<TrustPair> for TrustEntry {
             source: s,
         }
     }
-}
-
-impl TrustEntry {
-    // fn file(path: String) -> Self {
-    //     TrustRec::new(path, TrustSource::Ancillary)
-    // }
-    // fn sys(path: String) -> Self {
-    //     TrustRec::new(path, TrustSource::System)
-    // }
-    // fn new(path: String, source: TrustSource) -> Self {
-    //     TrustRec { path, source }
-    // }
-    // pub fn is_sys(&self) -> bool {
-    //     self.source == TrustSource::System
-    // }
-    //
-    // pub fn is_ancillary(&self) -> bool {
-    //     self.source == TrustSource::Ancillary
-    // }
 }
 
 #[derive(PartialEq, Eq, Clone, Debug)]

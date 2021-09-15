@@ -152,12 +152,11 @@ mod tests {
         xs.ins(&*expected.path, expected.size, &*expected.hash);
         assert_eq!(xs.len(), 1);
 
-        // let store = DB::default();
-        // xs.apply(store.lookup);
-        // assert_eq!(store.len(), 1);
-        //
-        // let actual = store.get(&expected.path).unwrap();
-        // assert_eq!(actual.trusted, expected);
+        let store = xs.apply(DB::default());
+        assert_eq!(store.len(), 1);
+
+        let actual = store.get(&expected.path).unwrap();
+        assert_eq!(actual.trusted, expected);
     }
 
     #[test]
@@ -166,10 +165,9 @@ mod tests {
         xs.ins("/foo/bar", 1000, "12345");
         xs.ins("/foo/fad", 1000, "12345");
         assert_eq!(xs.len(), 2);
-        //
-        // let store = DB::default();
-        // xs.apply(store.lookup);
-        // assert_eq!(store.len(), 2);
+
+        let store = xs.apply(DB::default());
+        assert_eq!(store.len(), 2);
     }
 
     #[test]
@@ -183,12 +181,12 @@ mod tests {
         let existing = DB::new(source);
         assert_eq!(existing.len(), 1);
 
-        // let mut xs = Changeset::new();
-        // xs.del("/foo/bar");
-        // assert_eq!(xs.len(), 1);
-        //
-        // xs.apply(existing.lookup);
-        // assert_eq!(existing.len(), 0);
+        let mut xs = Changeset::new();
+        xs.del("/foo/bar");
+        assert_eq!(xs.len(), 1);
+
+        let existing = xs.apply(existing);
+        assert_eq!(existing.len(), 0);
     }
 
     #[test]
@@ -197,12 +195,11 @@ mod tests {
         xs.ins("/foo/bar", 1000, "12345");
         assert_eq!(xs.len(), 1);
 
-        // xs.del("/foo/bar");
-        // assert_eq!(xs.len(), 2);
-        //
-        // let store = DB::default();
-        // xs.apply(store.lookup);
-        // assert_eq!(store.len(), 0);
+        xs.del("/foo/bar");
+        assert_eq!(xs.len(), 2);
+
+        let store = xs.apply(DB::default());
+        assert_eq!(store.len(), 0);
     }
 
     #[test]
@@ -214,11 +211,10 @@ mod tests {
         assert_eq!(xs.len(), 1);
         xs.ins(&*expected.path, expected.size, &*expected.hash);
 
-        // let store = DB::default();
-        // xs.apply(store.lookup);
-        // assert_eq!(store.len(), 1);
-        //
-        // let actual = store.get(&expected.path).unwrap();
-        // assert_eq!(actual.trusted, expected);
+        let store = xs.apply(DB::default());
+        assert_eq!(store.len(), 1);
+
+        let actual = store.get(&expected.path).unwrap();
+        assert_eq!(actual.trusted, expected);
     }
 }
