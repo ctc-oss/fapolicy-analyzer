@@ -52,7 +52,7 @@ impl PySystem {
     fn system_trust(&self) -> Vec<PyTrust> {
         self.state
             .trust_db
-            .foo()
+            .iter()
             .filter(|(_, m)| m.is_sys())
             .map(|(_, m)| trust_status(&m.trusted))
             .flatten()
@@ -75,7 +75,7 @@ impl PySystem {
     fn ancillary_trust(&self) -> Vec<PyTrust> {
         self.state
             .trust_db
-            .foo()
+            .iter()
             .filter(|(_, m)| m.is_ancillary())
             .map(|(_, m)| trust_status(&m.trusted))
             .flatten()

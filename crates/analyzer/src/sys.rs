@@ -20,7 +20,7 @@ pub enum Error {
 pub fn deploy_app_state(state: &State) -> Result<(), Error> {
     let mut tf = File::create(&state.config.system.ancillary_trust_path)
         .map_err(|_| WriteAncillaryFail("unable to create ancillary trust".to_string()))?;
-    for (path, meta) in state.trust_db.foo() {
+    for (path, meta) in state.trust_db.iter() {
         if meta.is_ancillary() {
             tf.write_all(
                 format!(

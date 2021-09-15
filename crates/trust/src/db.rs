@@ -114,7 +114,7 @@ impl DB {
         DB { lookup: source }
     }
 
-    pub fn foo(&self) -> Iter<'_, String, Meta> {
+    pub fn iter(&self) -> Iter<'_, String, Meta> {
         self.lookup.iter()
     }
 
