@@ -8,7 +8,7 @@ use lmdb::{Cursor, Environment, Transaction};
 
 use fapolicy_api::trust::Trust;
 
-use crate::db::{Meta, TrustEntry, DB};
+use crate::db::{Meta, DB};
 use crate::error::Error;
 use crate::error::Error::{
     LmdbNotFound, LmdbPermissionDenied, LmdbReadFail, MalformattedTrustEntry, TrustSourceNotFound,
@@ -16,6 +16,27 @@ use crate::error::Error::{
 };
 use crate::source::TrustSource;
 use crate::source::TrustSource::{Ancillary, System};
+
+// todo;; why do we need this? why not go straight to Meta
+pub(crate) struct TrustEntry {
+    pub path: String,
+    pub trust: Trust,
+    source: TrustSource,
+}
+
+impl From<TrustPair> for TrustEntry {
+    fn from(kv: TrustPair) -> Self {
+        let (tt, v) = kv.v.split_once(' ').unwrap();
+        let (t, s) = parse_strtyped_trust_record(format!("{} {}", kv.k, v).as_str(), tt)
+            .expect("failed to parse_strtyped_trust_record");
+
+        TrustEntry {
+            path: t.path.clone(),
+            trust: t,
+            source: s,
+        }
+    }
+}
 
 pub(crate) struct TrustPair {
     pub k: String,
@@ -49,12 +70,8 @@ pub fn load_trust_db(path: &str) -> Result<DB, Error> {
             t.open_ro_cursor(db).map(|mut c| {
                 c.iter()
                     .map(|c| c.unwrap())
-                    .map(TrustPair::new)
-                    .map(|kv| {
-                        let te: TrustEntry = kv.into();
-                        te
-                    })
-                    .map(|e| (e.path, Meta::with(e.trust)))
+                    .map(|kv| TrustPair::new(kv).into())
+                    .map(|e: TrustEntry| (e.path, Meta::with(e.trust)))
                     .collect()
             })
         })
