@@ -5,13 +5,14 @@ use std::path::Path;
 
 use lmdb::{Cursor, Environment, Transaction};
 
+use fapolicy_api::trust::TrustSource::{Ancillary, System};
+use fapolicy_api::trust::{Trust, TrustSource};
+
 use crate::error::Error;
 use crate::error::Error::{
     LmdbNotFound, LmdbPermissionDenied, LmdbReadFail, MalformattedTrustEntry, TrustSourceNotFound,
     UnsupportedTrustType,
 };
-use crate::trust::TrustSource::{Ancillary, System};
-use crate::trust::{Trust, TrustSource};
 
 struct TrustPair {
     k: String,

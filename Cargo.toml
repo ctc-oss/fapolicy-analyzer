@@ -16,6 +16,7 @@ path = "tests/tests.rs"
 [workspace]
 members = [
     "crates/analyzer",
+    "crates/daemon",
     "crates/pyo3",
     "crates/trust",
     "crates/util",
@@ -26,5 +27,7 @@ clap = "3.0.0-beta.2"
 lmdb-rkv = "0.14.0"
 nom = "6.1.0"
 
+fapolicy-api = { version = "0.3.0", path = "crates/api" }
 fapolicy-analyzer = { version = "0.3.0", path = "crates/analyzer" }
-fapolicy-trust = { path = "crates/trust" }
+fapolicy-daemon = { version = "0.3.0", path = "crates/daemon" }
+fapolicy-trust = { version = "0.3.0", path = "crates/trust" }

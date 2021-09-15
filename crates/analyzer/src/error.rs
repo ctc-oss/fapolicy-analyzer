@@ -2,7 +2,7 @@ use std::io;
 
 use thiserror::Error;
 
-use crate::{rpm, sys};
+use crate::sys;
 
 #[derive(Error, Debug)]
 pub enum Error {
@@ -14,9 +14,6 @@ pub enum Error {
 
     #[error("Trust error: {0}")]
     TrustError(#[from] fapolicy_trust::error::Error),
-
-    #[error("RPM error: {0}")]
-    RpmError(#[from] rpm::Error),
 
     #[error("File IO Error: {0}")]
     FileIoError(#[from] io::Error),

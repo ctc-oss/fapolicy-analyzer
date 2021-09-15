@@ -12,7 +12,7 @@ use crate::event::PyEvent;
 
 use super::trust::PyChangeset;
 use super::trust::PyTrust;
-use fapolicy_trust::trust::TrustSource;
+use fapolicy_api::trust::TrustSource;
 
 #[pyclass(module = "app", name = "System")]
 #[derive(Clone)]
@@ -98,8 +98,11 @@ impl PySystem {
     }
 
     /// Update the host system with this state of this System
-    fn deploy(&self) {
-        deploy_app_state(&self.state).expect("deployment failed")
+    fn deploy(&self) -> PyResult<()> {
+        match deploy_app_state(&self.state) {
+            Ok(_) => Ok(()),
+            Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{:?}", e))),
+        }
     }
 
     /// Check the host system state against the state of this System

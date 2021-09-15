@@ -153,10 +153,9 @@ SHA256: {fs.sha(trust.path)}"""
                     strings.DEPLOY_ANCILLARY_SUCCESSFUL_MSG,
                     NotificationType.SUCCESS,
                 )
-            except BaseException:
-                # BaseException to catch pyo3_runtime.PanicException
+            except RuntimeError as e:
                 stateManager.add_system_notification(
-                    strings.DEPLOY_ANCILLARY_ERROR_MSG,
+                    f"Failed to deploy: {e}",
                     NotificationType.ERROR,
                 )
                 return

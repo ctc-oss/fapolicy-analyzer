@@ -158,8 +158,9 @@ name = "fapolicy-analyzer"
 version = "0.3.0"
 dependencies = [
  "confy",
- "dbus",
  "directories",
+ "fapolicy-api",
+ "fapolicy-daemon",
  "fapolicy-trust",
  "fapolicy-util",
  "lmdb-rkv",
@@ -169,10 +170,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "fapolicy-api"
+version = "0.3.0"
+dependencies = [
+ "serde",
+]
+
+[[package]]
+name = "fapolicy-daemon"
+version = "0.3.0"
+dependencies = [
+ "dbus",
+ "fapolicy-api",
+ "nom",
+ "thiserror",
+]
+
+[[package]]
 name = "fapolicy-pyo3"
 version = "0.3.0"
 dependencies = [
  "fapolicy-analyzer",
+ "fapolicy-api",
+ "fapolicy-daemon",
  "fapolicy-trust",
  "pyo3",
 ]
@@ -183,6 +203,8 @@ version = "0.3.0"
 dependencies = [
  "clap",
  "fapolicy-analyzer",
+ "fapolicy-api",
+ "fapolicy-daemon",
  "fapolicy-trust",
  "lmdb-rkv",
  "nom",
@@ -192,6 +214,7 @@ dependencies = [
 name = "fapolicy-trust"
 version = "0.3.0"
 dependencies = [
+ "fapolicy-api",
  "fapolicy-util",
  "lmdb-rkv",
  "serde",

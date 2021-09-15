@@ -1,7 +1,7 @@
 // todo;; tracking the fapolicyd specific bits in here to determine if bindings are worthwhile
 
-use crate::sys;
-use crate::sys::Error::FapolicydReloadFail;
+use crate::error::Error;
+use crate::error::Error::FapolicydReloadFail;
 use std::io::Write;
 
 pub const TRUST_DB_PATH: &str = "/var/lib/fapolicyd";
@@ -15,7 +15,7 @@ const USR_SHARE_ALLOWED_EXTS: [&str; 15] = [
 ];
 
 /// send signal to fapolicyd FIFO pipe to reload the trust database
-pub fn reload_databases() -> Result<(), sys::Error> {
+pub fn reload_databases() -> Result<(), Error> {
     let mut fifo = std::fs::OpenOptions::new()
         .write(true)
         .read(false)
@@ -27,7 +27,7 @@ pub fn reload_databases() -> Result<(), sys::Error> {
 }
 
 /// filtering logic as implemented by fapolicyd rpm backend
-pub fn keep_entry(p: &str) -> bool {
+pub(crate) fn keep_entry(p: &str) -> bool {
     match p {
         s if s.starts_with("/usr/share") => {
             USR_SHARE_ALLOWED_EXTS.iter().any(|ext| s.ends_with(*ext)) || s.contains("/libexec/")

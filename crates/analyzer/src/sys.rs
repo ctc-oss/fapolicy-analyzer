@@ -6,16 +6,16 @@ use serde::Serialize;
 use thiserror::Error;
 
 use crate::app::State;
-use crate::fapolicyd;
-use crate::sys::Error::WriteAncillaryFail;
-use fapolicy_trust::trust::TrustSource::Ancillary;
+use crate::sys::Error::{DaemonError, WriteAncillaryFail};
+use fapolicy_api::trust::TrustSource::Ancillary;
+use fapolicy_daemon::fapolicyd::{RPM_DB_PATH, TRUST_DB_PATH, TRUST_FILE_PATH};
 
 #[derive(Error, Debug)]
 pub enum Error {
     #[error("{0}")]
     WriteAncillaryFail(String),
     #[error("{0}")]
-    FapolicydReloadFail(String),
+    DaemonError(#[from] fapolicy_daemon::error::Error),
 }
 
 pub fn deploy_app_state(state: &State) -> Result<(), Error> {
@@ -29,7 +29,7 @@ pub fn deploy_app_state(state: &State) -> Result<(), Error> {
                 })?;
         }
     }
-    fapolicyd::reload_databases()
+    fapolicy_daemon::reload_databases().map_err(DaemonError)
 }
 
 /// host system configuration information
@@ -44,9 +44,9 @@ pub struct Config {
 impl ::std::default::Default for Config {
     fn default() -> Self {
         Self {
-            trust_db_path: fapolicyd::TRUST_DB_PATH.to_string(),
-            system_trust_path: fapolicyd::RPM_DB_PATH.to_string(),
-            ancillary_trust_path: fapolicyd::TRUST_FILE_PATH.to_string(),
+            trust_db_path: TRUST_DB_PATH.to_string(),
+            system_trust_path: RPM_DB_PATH.to_string(),
+            ancillary_trust_path: TRUST_FILE_PATH.to_string(),
         }
     }
 }

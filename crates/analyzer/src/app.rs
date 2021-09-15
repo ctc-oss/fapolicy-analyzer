@@ -6,10 +6,10 @@ use crate::cfg::All;
 use crate::cfg::PROJECT_NAME;
 use crate::error::Error;
 use crate::users::{load_groups, load_users, Group, User};
+use fapolicy_api::trust::Trust;
+use fapolicy_api::trust::TrustSource::Ancillary;
 use fapolicy_trust::ops::Changeset;
 use fapolicy_trust::read::load_trust_db;
-use fapolicy_trust::trust::Trust;
-use fapolicy_trust::trust::TrustSource::Ancillary;
 
 /// Represents an immutable view of the application state.
 /// Carries along the configuration that provided the state.
