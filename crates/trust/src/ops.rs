@@ -1,7 +1,6 @@
 use crate::db::{Meta, DB};
 use crate::ops::TrustOp::{Add, Del};
-use crate::source::TrustSource;
-use crate::source::TrustSource::Ancillary;
+
 use fapolicy_api::trust::Trust;
 use fapolicy_util::sha::sha256_digest;
 use std::collections::HashMap;
@@ -119,7 +118,7 @@ impl InsChange for Changeset {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::source::TrustSource::Ancillary;
+
     use std::collections::HashMap;
 
     fn make_trust(path: &str, size: u64, hash: &str) -> Trust {
@@ -181,7 +180,7 @@ mod tests {
             Meta::with(make_default_trust_at("/foo/bar")),
         );
 
-        let mut existing = DB::new(source);
+        let existing = DB::new(source);
         assert_eq!(existing.len(), 1);
 
         // let mut xs = Changeset::new();

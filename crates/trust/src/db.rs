@@ -4,7 +4,7 @@ use crate::stat::Actual;
 use fapolicy_api::trust::Trust;
 use std::collections::hash_map::Iter;
 use std::collections::HashMap;
-use std::hash::{Hash, Hasher};
+use std::hash::Hasher;
 //
 // #[derive(Debug)]
 // struct T {
@@ -84,14 +84,14 @@ impl Meta {
 
     pub fn is_sys(&self) -> bool {
         match &self.source {
-            Some(System) => true,
+            Some(_System) => true,
             _ => false,
         }
     }
 
     pub fn is_ancillary(&self) -> bool {
         match &self.source {
-            Some(Ancillary) => true,
+            Some(_Ancillary) => true,
             _ => false,
         }
     }

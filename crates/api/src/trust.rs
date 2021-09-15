@@ -1,6 +1,5 @@
 use serde::Deserialize;
 use serde::Serialize;
-use std::fmt::{Display, Formatter};
 
 /// The properties that impact Trust reasoning
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
