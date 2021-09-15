@@ -158,7 +158,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: fmt
-          args: --all -- --check --all
+          args: --all -- --check
 
   clippy:
     name: Clippy
