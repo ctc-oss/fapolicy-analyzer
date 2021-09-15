@@ -14,6 +14,8 @@ pub struct Actual {
 pub enum Status {
     /// Filesystem matches trust
     Trusted(Trust, Actual),
-    /// filesystem does not match trust
+    /// Filesystem does not match trust
     Discrepancy(Trust, Actual),
+    /// Does not exist on filesystem
+    Missing(Trust),
 }

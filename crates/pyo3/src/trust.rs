@@ -13,20 +13,38 @@ use fapolicy_trust::stat::{Actual, Status};
 #[derive(Clone)]
 pub struct PyTrust {
     pub trust: Trust,
-    pub actual: Actual,
+    pub actual: Option<Actual>,
     pub status: String,
 }
 impl From<Status> for PyTrust {
     fn from(status: Status) -> Self {
         let (trust, actual, tag) = match status {
-            Status::Trusted(t, act) => (t, act, "T"),
-            Status::Discrepancy(t, act) => (t, act, "D"),
+            Status::Trusted(t, act) => (t, Some(act), "T"),
+            Status::Discrepancy(t, act) => (t, Some(act), "D"),
+            Status::Missing(t) => (t, None, "U"),
         };
         Self {
             trust,
             actual,
             status: tag.to_string(),
         }
+    }
+}
+
+#[pyclass(module = "trust", name = "Actual")]
+pub struct PyActual {
+    rs: Actual,
+}
+
+impl From<Actual> for PyActual {
+    fn from(rs: Actual) -> Self {
+        Self { rs }
+    }
+}
+
+impl From<PyActual> for Actual {
+    fn from(py: PyActual) -> Self {
+        py.rs
     }
 }
 
@@ -48,8 +66,8 @@ impl PyTrust {
     }
 
     #[getter]
-    fn get_last_modified(&self) -> u64 {
-        self.actual.last_modified
+    fn get_stat(&self) -> Option<PyActual> {
+        self.actual.as_ref().map(|a| a.clone().into())
     }
 
     #[getter]

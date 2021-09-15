@@ -50,16 +50,18 @@ pub struct Rec {
 
 impl Rec {
     pub fn new(path: &str, sz: u64, hash: &str) -> Self {
-        Rec::with(Trust::new(path, sz, hash))
+        Rec::new_from_source(Trust::new(path, sz, hash), TrustSource::Ancillary)
     }
-    pub fn with(t: Trust) -> Self {
+
+    pub fn new_from(t: Trust) -> Self {
         Rec {
             trusted: t,
             actual: None,
             source: None,
         }
     }
-    pub(crate) fn with_source(t: Trust, source: TrustSource) -> Self {
+
+    pub(crate) fn new_from_source(t: Trust, source: TrustSource) -> Self {
         Rec {
             trusted: t,
             actual: None,

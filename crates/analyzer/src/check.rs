@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::BufReader;
+use std::io::{BufReader, ErrorKind};
 use std::process::Command;
 use std::time::UNIX_EPOCH;
 
@@ -33,6 +33,7 @@ pub fn trust_status(t: &Trust) -> Result<Status, Error> {
             Ok(act) => Ok(Status::Discrepancy(t.clone(), act)),
             Err(e) => Err(e),
         },
+        Err(e) if e.kind() == ErrorKind::NotFound => Ok(Status::Missing(t.clone())),
         _ => Err(FileNotFound("trusted file".to_string(), t.path.clone())),
     }
 }

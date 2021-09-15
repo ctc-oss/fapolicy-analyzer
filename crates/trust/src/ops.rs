@@ -7,6 +7,7 @@ use fapolicy_util::sha::sha256_digest;
 
 use crate::db::{Rec, DB};
 use crate::ops::TrustOp::{Add, Del};
+use crate::source::TrustSource;
 
 #[derive(Clone, Debug)]
 enum TrustOp {
@@ -20,7 +21,10 @@ impl TrustOp {
         match self {
             TrustOp::Add(path) => match new_trust_record(path) {
                 Ok(t) => {
-                    trust.insert(t.path.clone(), Rec::with(t));
+                    trust.insert(
+                        t.path.clone(),
+                        Rec::new_from_source(t, TrustSource::Ancillary),
+                    );
                     Ok(())
                 }
                 Err(_) => Err("failed to add trust".to_string()),
@@ -95,6 +99,7 @@ impl ::std::default::Default for Changeset {
 }
 
 fn new_trust_record(path: &str) -> Result<Trust, String> {
+    println!("new_trust_record");
     let f = File::open(path).map_err(|_| "failed to open file".to_string())?;
     let sha = sha256_digest(BufReader::new(&f)).map_err(|_| "failed to hash file".to_string())?;
 
@@ -176,7 +181,7 @@ mod tests {
         let mut source = HashMap::new();
         source.insert(
             "/foo/bar".to_string(),
-            Rec::with(make_default_trust_at("/foo/bar")),
+            Rec::new_from(make_default_trust_at("/foo/bar")),
         );
 
         let existing = DB::new(source);
