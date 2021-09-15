@@ -99,7 +99,6 @@ impl ::std::default::Default for Changeset {
 }
 
 fn new_trust_record(path: &str) -> Result<Trust, String> {
-    println!("new_trust_record");
     let f = File::open(path).map_err(|_| "failed to open file".to_string())?;
     let sha = sha256_digest(BufReader::new(&f)).map_err(|_| "failed to hash file".to_string())?;
 

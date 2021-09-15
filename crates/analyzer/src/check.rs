@@ -9,7 +9,7 @@ use fapolicy_util::sha::sha256_digest;
 
 use crate::app::State;
 use crate::error::Error;
-use crate::error::Error::{FileIoError, GeneralError, MetaError};
+use crate::error::Error::{FileIoError, MetaError};
 
 /// check for sync between fapolicyd and rpmdb
 /// can return false on the first mismatch
