@@ -16,5 +16,5 @@ pub enum Error {
     #[error("Malformed Trust entry: {0}")]
     MalformattedTrustEntry(String),
     #[error("{0} file not found at {1}")]
-    TrustSourceNotFound(TrustSource, String),
+    TrustSourceNotFound(String, String),
 }

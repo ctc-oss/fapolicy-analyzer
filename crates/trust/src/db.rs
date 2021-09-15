@@ -3,7 +3,6 @@ use std::collections::HashMap;
 
 use fapolicy_api::trust::Trust;
 
-
 use crate::source::TrustSource;
 use crate::stat::Actual;
 
@@ -60,7 +59,7 @@ impl Rec {
             source: None,
         }
     }
-    pub fn sourced(t: Trust, source: TrustSource) -> Self {
+    pub(crate) fn with_source(t: Trust, source: TrustSource) -> Self {
         Rec {
             trusted: t,
             actual: None,

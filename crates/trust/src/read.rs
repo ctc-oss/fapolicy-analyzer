@@ -1,7 +1,4 @@
 use std::collections::HashMap;
-use std::fs::File;
-use std::io::prelude::*;
-use std::io::BufReader;
 use std::path::Path;
 
 use lmdb::{Cursor, Environment, Transaction};
@@ -11,8 +8,7 @@ use fapolicy_api::trust::Trust;
 use crate::db::{Rec, DB};
 use crate::error::Error;
 use crate::error::Error::{
-    LmdbNotFound, LmdbPermissionDenied, LmdbReadFail, MalformattedTrustEntry, TrustSourceNotFound,
-    UnsupportedTrustType,
+    LmdbNotFound, LmdbPermissionDenied, LmdbReadFail, MalformattedTrustEntry, UnsupportedTrustType,
 };
 use crate::source::TrustSource;
 use crate::source::TrustSource::{Ancillary, System};
@@ -31,12 +27,13 @@ impl TrustPair {
     }
 }
 
-impl From<TrustPair> for (String, Rec) {
+type KV = (String, Rec);
+impl From<TrustPair> for KV {
     fn from(kv: TrustPair) -> Self {
         let (tt, v) = kv.v.split_once(' ').unwrap();
         let (t, s) = parse_strtyped_trust_record(format!("{} {}", kv.k, v).as_str(), tt)
             .expect("failed to parse_strtyped_trust_record");
-        (t.path.clone(), Rec::sourced(t, s))
+        (t.path.clone(), Rec::with_source(t, s))
     }
 }
 
@@ -69,37 +66,15 @@ pub fn load_trust_db(path: &str) -> Result<DB, Error> {
     Ok(DB::new(lookup))
 }
 
-/// load a fapolicyd ancillary file trust database
-/// used to analyze the fapolicyd trust db for out of sync issues
-pub fn load_ancillary_trust(path: &str) -> Result<Vec<Trust>, Error> {
-    match File::open(path) {
-        Ok(e) => Ok(read_ancillary_trust(e)),
-        _ => Err(TrustSourceNotFound(Ancillary, path.to_string())),
-    }
-}
-
-fn read_ancillary_trust(f: File) -> Vec<Trust> {
-    let r = BufReader::new(f);
-    r.lines()
-        .map(|r| r.unwrap())
-        .filter(|s| !s.is_empty() && !s.starts_with('#'))
-        .map(|l| parse_trust_record(&l).unwrap())
-        .collect()
-}
-
 pub(crate) fn parse_strtyped_trust_record(s: &str, t: &str) -> Result<(Trust, TrustSource), Error> {
     match t {
-        "1" => parse_typed_trust_record(s).map(|t| (t, System)),
-        "2" => parse_typed_trust_record(s).map(|t| (t, Ancillary)),
+        "1" => parse_trust_record(s).map(|t| (t, System)),
+        "2" => parse_trust_record(s).map(|t| (t, Ancillary)),
         v => Err(UnsupportedTrustType(v.to_string())),
     }
 }
 
 fn parse_trust_record(s: &str) -> Result<Trust, Error> {
-    parse_typed_trust_record(s)
-}
-
-fn parse_typed_trust_record(s: &str) -> Result<Trust, Error> {
     let mut v: Vec<&str> = s.rsplitn(3, ' ').collect();
     v.reverse();
     match v.as_slice() {
