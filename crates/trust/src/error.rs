@@ -1,7 +1,5 @@
 use thiserror::Error;
 
-use crate::source::TrustSource;
-
 /// An Error that can occur in this crate
 #[derive(Error, Debug)]
 pub enum Error {
