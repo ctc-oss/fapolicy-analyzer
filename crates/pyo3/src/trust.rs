@@ -1,9 +1,10 @@
 use std::collections::HashMap;
 
+use pyo3::prelude::*;
+
 use fapolicy_api::trust::Trust;
 use fapolicy_trust::ops::{get_path_action_map, Changeset};
 use fapolicy_trust::stat::{Actual, Status};
-use pyo3::prelude::*;
 
 /// Trust entry
 ///
@@ -12,14 +13,15 @@ use pyo3::prelude::*;
 #[derive(Clone)]
 pub struct PyTrust {
     pub trust: Trust,
-    pub actual: Actual,
+    pub actual: Option<Actual>,
     pub status: String,
 }
 impl From<Status> for PyTrust {
     fn from(status: Status) -> Self {
         let (trust, actual, tag) = match status {
-            Status::Trusted(t, act) => (t, act, "T"),
-            Status::Discrepancy(t, act) => (t, act, "D"),
+            Status::Trusted(t, act) => (t, Some(act), "T"),
+            Status::Discrepancy(t, act) => (t, Some(act), "D"),
+            Status::Missing(t) => (t, None, "U"),
         };
         Self {
             trust,
@@ -32,13 +34,13 @@ impl From<Status> for PyTrust {
 #[pymethods]
 impl PyTrust {
     #[getter]
-    fn get_size(&self) -> u64 {
-        self.trust.size
+    fn get_path(&self) -> &str {
+        &self.trust.path
     }
 
     #[getter]
-    fn get_path(&self) -> &str {
-        &self.trust.path
+    fn get_size(&self) -> u64 {
+        self.trust.size
     }
 
     #[getter]
@@ -46,14 +48,52 @@ impl PyTrust {
         &self.trust.hash
     }
 
+    /// Optional actual metadata
+    /// Will be None in the case of the file not existing
     #[getter]
-    fn get_last_modified(&self) -> u64 {
-        self.actual.last_modified
+    fn get_actual(&self) -> Option<PyActual> {
+        self.actual.as_ref().map(|a| a.clone().into())
     }
 
     #[getter]
     fn get_status(&self) -> &str {
         &self.status
+    }
+}
+
+/// A collection of actual metadata about the trusted file
+#[pyclass(module = "trust", name = "Actual")]
+pub struct PyActual {
+    rs: Actual,
+}
+
+impl From<Actual> for PyActual {
+    fn from(rs: Actual) -> Self {
+        Self { rs }
+    }
+}
+
+impl From<PyActual> for Actual {
+    fn from(py: PyActual) -> Self {
+        py.rs
+    }
+}
+
+#[pymethods]
+impl PyActual {
+    #[getter]
+    fn get_size(&self) -> u64 {
+        self.rs.size
+    }
+
+    #[getter]
+    fn get_hash(&self) -> &str {
+        &self.rs.hash
+    }
+
+    #[getter]
+    fn get_last_modified(&self) -> u64 {
+        self.rs.last_modified
     }
 }
 
@@ -106,6 +146,7 @@ impl PyChangeset {
 
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyTrust>()?;
+    m.add_class::<PyActual>()?;
     m.add_class::<PyChangeset>()?;
     // m.add_wrapped(pyo3::wrap_pyfunction!(apply_trust_change))?;
     Ok(())

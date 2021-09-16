@@ -15,7 +15,6 @@ def main(*argv):
     s1 = System()
 
     for tt in args.trust_type:
-        ts = []
         if tt == "system":
             ts = s1.system_trust()
         else:
@@ -27,8 +26,15 @@ def main(*argv):
             for t in ts:
                 print(f"{t.path} {t.size} {t.hash}")
                 if args.time:
-                    formatted = datetime.fromtimestamp(t.last_modified)
-                    print(f"\t-last modified: {formatted}")
+                    if t.actual:
+                        formatted = datetime.fromtimestamp(t.actual.last_modified)
+                        print(f"\tlast modified: {formatted}")
+                        if t.actual.size != t.size:
+                            print("\tsize mismatch")
+                        if t.actual.hash != t.hash:
+                            print("\thash mismatch")
+                    else:
+                        print("\tfile not found")
             print(f"found {len(ts)} {tt} trust entries")
 
 

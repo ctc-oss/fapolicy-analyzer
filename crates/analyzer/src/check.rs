@@ -1,14 +1,15 @@
 use std::fs::File;
-use std::io::BufReader;
+use std::io::{BufReader, ErrorKind};
+use std::process::Command;
+use std::time::UNIX_EPOCH;
 
-use crate::app::State;
-use crate::error::Error;
-use crate::error::Error::{FileNotFound, MetaError};
 use fapolicy_api::trust::Trust;
 use fapolicy_trust::stat::{Actual, Status};
 use fapolicy_util::sha::sha256_digest;
-use std::process::Command;
-use std::time::UNIX_EPOCH;
+
+use crate::app::State;
+use crate::error::Error;
+use crate::error::Error::{FileIoError, MetaError};
 
 /// check for sync between fapolicyd and rpmdb
 /// can return false on the first mismatch
@@ -32,7 +33,8 @@ pub fn trust_status(t: &Trust) -> Result<Status, Error> {
             Ok(act) => Ok(Status::Discrepancy(t.clone(), act)),
             Err(e) => Err(e),
         },
-        _ => Err(FileNotFound("trusted file".to_string(), t.path.clone())),
+        Err(e) if e.kind() == ErrorKind::NotFound => Ok(Status::Missing(t.clone())),
+        Err(e) => Err(FileIoError(e)),
     }
 }
 
