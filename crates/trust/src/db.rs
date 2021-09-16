@@ -6,6 +6,9 @@ use fapolicy_api::trust::Trust;
 use crate::source::TrustSource;
 use crate::stat::Actual;
 
+/// Trust Database
+/// A container for tracking trust entries and their metadata
+/// Backed by a HashMap lookup table
 #[derive(Clone, Debug)]
 pub struct DB {
     pub(crate) lookup: HashMap<String, Rec>,
@@ -13,9 +16,7 @@ pub struct DB {
 
 impl Default for DB {
     fn default() -> Self {
-        DB {
-            lookup: HashMap::default(),
-        }
+        DB::new()
     }
 }
 
@@ -26,31 +27,42 @@ impl From<HashMap<String, Rec>> for DB {
 }
 
 impl DB {
+    /// Create a new empty database
     pub fn new() -> Self {
-        DB::default()
+        DB {
+            lookup: HashMap::default(),
+        }
     }
 
+    /// Get a record iterator to the underlying lookup table
     pub fn iter(&self) -> Iter<'_, String, Rec> {
         self.lookup.iter()
     }
 
+    /// Get the number of records in the lookup table
     pub fn len(&self) -> usize {
         self.lookup.len()
     }
 
+    /// Test if the lookup table is empty
     pub fn is_empty(&self) -> bool {
         self.lookup.is_empty()
     }
 
+    /// Get a record from the lookup table using the path to the trusted file
     pub fn get(&self, k: &str) -> Option<&Rec> {
         self.lookup.get(k)
     }
 
+    /// Put a record into the lookup table using the path of the trusted file
+    /// This method takes only a record to ensure the key to value mapping is enforced.
     pub fn put(&mut self, v: Rec) -> Option<Rec> {
         self.lookup.insert(v.trusted.path.clone(), v)
     }
 }
 
+/// Trust Record
+/// Provides the trusted state and optionally the source of the trust and the actual state
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct Rec {
     pub trusted: Trust,
@@ -59,6 +71,7 @@ pub struct Rec {
 }
 
 impl Rec {
+    /// Create an unsourced record
     pub fn new(t: Trust) -> Self {
         Rec {
             trusted: t,
@@ -67,6 +80,7 @@ impl Rec {
         }
     }
 
+    /// Create a sourced record
     pub(crate) fn new_from(t: Trust, source: TrustSource) -> Self {
         Rec {
             trusted: t,
@@ -75,10 +89,12 @@ impl Rec {
         }
     }
 
+    /// Is this record from system trust
     pub fn is_system(&self) -> bool {
         matches!(&self.source, Some(TrustSource::System))
     }
 
+    /// Is this record from ancillary trust
     pub fn is_ancillary(&self) -> bool {
         matches!(&self.source, Some(TrustSource::Ancillary))
     }
@@ -132,7 +148,7 @@ mod tests {
     }
 
     #[test]
-    fn rec_new() {
+    fn rec_create() {
         let t: Trust = Trust::new("/foo", 1, "0x00");
 
         let rec = Rec::new(t.clone());

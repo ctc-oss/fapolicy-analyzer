@@ -48,6 +48,8 @@ impl PyTrust {
         &self.trust.hash
     }
 
+    /// Optional actual metadata
+    /// Will be None in the case of the file not existing
     #[getter]
     fn get_actual(&self) -> Option<PyActual> {
         self.actual.as_ref().map(|a| a.clone().into())
@@ -59,6 +61,7 @@ impl PyTrust {
     }
 }
 
+/// A collection of actual metadata about the trusted file
 #[pyclass(module = "trust", name = "Actual")]
 pub struct PyActual {
     rs: Actual,
