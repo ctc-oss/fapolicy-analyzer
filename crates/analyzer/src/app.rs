@@ -1,22 +1,22 @@
-use directories::ProjectDirs;
-use serde::Deserialize;
-use serde::Serialize;
-
 use crate::cfg::All;
 use crate::cfg::PROJECT_NAME;
 use crate::error::Error;
 use crate::users::{load_groups, load_users, Group, User};
-use fapolicy_api::trust::Trust;
-use fapolicy_api::trust::TrustSource::Ancillary;
+use directories::ProjectDirs;
+
+use fapolicy_trust::db::DB;
+
 use fapolicy_trust::ops::Changeset;
 use fapolicy_trust::read::load_trust_db;
+use serde::Deserialize;
+use serde::Serialize;
 
 /// Represents an immutable view of the application state.
 /// Carries along the configuration that provided the state.
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone)]
 pub struct State {
     pub config: All,
-    pub trust_db: Vec<Trust>,
+    pub trust_db: DB,
     pub users: Vec<User>,
     pub groups: Vec<Group>,
 }
@@ -25,7 +25,7 @@ impl State {
     pub fn empty(cfg: &All) -> State {
         State {
             config: cfg.clone(),
-            trust_db: vec![],
+            trust_db: DB::default(),
             users: vec![],
             groups: vec![],
         }
@@ -44,21 +44,10 @@ impl State {
     /// Apply a Changeset to this state, results in a new immutable state
     pub fn apply_trust_changes(&self, changes: Changeset) -> Self {
         println!("applying changeset to current state...");
-        let updated_db = changes.apply(
-            self.trust_db
-                .iter()
-                .filter(|t| t.source == Ancillary)
-                .map(|t| (t.path.clone(), t.clone()))
-                .collect(),
-        );
-        let updated_db = changes
-            .apply(updated_db)
-            .iter()
-            .map(|e| e.1.clone())
-            .collect();
+        let modified = changes.apply(self.trust_db.clone());
         Self {
             config: self.config.clone(),
-            trust_db: updated_db,
+            trust_db: modified,
             users: self.users.clone(),
             groups: self.groups.clone(),
         }

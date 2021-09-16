@@ -7,7 +7,6 @@ use thiserror::Error;
 
 use crate::app::State;
 use crate::sys::Error::{DaemonError, WriteAncillaryFail};
-use fapolicy_api::trust::TrustSource::Ancillary;
 use fapolicy_daemon::fapolicyd::{RPM_DB_PATH, TRUST_DB_PATH, TRUST_FILE_PATH};
 
 #[derive(Error, Debug)]
@@ -21,12 +20,18 @@ pub enum Error {
 pub fn deploy_app_state(state: &State) -> Result<(), Error> {
     let mut tf = File::create(&state.config.system.ancillary_trust_path)
         .map_err(|_| WriteAncillaryFail("unable to create ancillary trust".to_string()))?;
-    for t in &state.trust_db {
-        if t.source == Ancillary {
-            tf.write_all(format!("{} {} {}\n", t.path, t.size.to_string(), t.hash).as_bytes())
-                .map_err(|_| {
-                    WriteAncillaryFail("unable to write ancillary trust entry".to_string())
-                })?;
+    for (path, meta) in state.trust_db.iter() {
+        if meta.is_ancillary() {
+            tf.write_all(
+                format!(
+                    "{} {} {}\n",
+                    path,
+                    meta.trusted.size.to_string(),
+                    meta.trusted.hash
+                )
+                .as_bytes(),
+            )
+            .map_err(|_| WriteAncillaryFail("unable to write ancillary trust entry".to_string()))?;
         }
     }
     fapolicy_daemon::reload_databases().map_err(DaemonError)

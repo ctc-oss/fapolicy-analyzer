@@ -1,10 +1,13 @@
-use crate::ops::TrustOp::{Add, Del};
-use fapolicy_api::trust::Trust;
-use fapolicy_api::trust::TrustSource::Ancillary;
-use fapolicy_util::sha::sha256_digest;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufReader;
+
+use fapolicy_api::trust::Trust;
+use fapolicy_util::sha::sha256_digest;
+
+use crate::db::{Rec, DB};
+use crate::ops::TrustOp::{Add, Del};
+use crate::source::TrustSource;
 
 #[derive(Clone, Debug)]
 enum TrustOp {
@@ -14,11 +17,11 @@ enum TrustOp {
 }
 
 impl TrustOp {
-    fn run(&self, trust: &mut HashMap<String, Trust>) -> Result<(), String> {
+    fn run(&self, trust: &mut HashMap<String, Rec>) -> Result<(), String> {
         match self {
             TrustOp::Add(path) => match new_trust_record(path) {
                 Ok(t) => {
-                    trust.insert(path.to_string(), t);
+                    trust.insert(t.path.clone(), Rec::new_from(t, TrustSource::Ancillary));
                     Ok(())
                 }
                 Err(_) => Err("failed to add trust".to_string()),
@@ -26,12 +29,7 @@ impl TrustOp {
             TrustOp::Ins(path, size, hash) => {
                 trust.insert(
                     path.clone(),
-                    Trust {
-                        path: path.to_string(),
-                        size: *size,
-                        hash: hash.clone(),
-                        source: Ancillary,
-                    },
+                    Rec::new_from(Trust::new(path, *size, hash), TrustSource::Ancillary),
                 );
                 Ok(())
             }
@@ -66,13 +64,11 @@ impl Changeset {
         Changeset { changes: vec![] }
     }
 
-    /// generate a modified trust map
-    pub fn apply(&self, trust: HashMap<String, Trust>) -> HashMap<String, Trust> {
-        let mut modified = trust;
+    pub fn apply(&self, mut trust: DB) -> DB {
         for change in self.changes.iter() {
-            change.run(&mut modified).unwrap()
+            change.run(&mut trust.lookup).unwrap()
         }
-        modified
+        trust
     }
 
     pub fn add(&mut self, path: &str) {
@@ -110,7 +106,6 @@ fn new_trust_record(path: &str) -> Result<Trust, String> {
         path: path.to_string(),
         size: f.metadata().unwrap().len(),
         hash: sha,
-        source: Ancillary,
     })
 }
 
@@ -127,16 +122,15 @@ impl InsChange for Changeset {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use fapolicy_api::trust::TrustSource::Ancillary;
     use std::collections::HashMap;
+
+    use super::*;
 
     fn make_trust(path: &str, size: u64, hash: &str) -> Trust {
         Trust {
             path: path.to_string(),
             size,
             hash: hash.to_string(),
-            source: Ancillary,
         }
     }
 
@@ -163,11 +157,11 @@ mod tests {
         xs.ins(&*expected.path, expected.size, &*expected.hash);
         assert_eq!(xs.len(), 1);
 
-        let store = xs.apply(HashMap::new());
+        let store = xs.apply(DB::default());
         assert_eq!(store.len(), 1);
 
         let actual = store.get(&expected.path).unwrap();
-        assert_eq!(*actual, expected);
+        assert_eq!(actual.trusted, expected);
     }
 
     #[test]
@@ -177,22 +171,27 @@ mod tests {
         xs.ins("/foo/fad", 1000, "12345");
         assert_eq!(xs.len(), 2);
 
-        let store = xs.apply(HashMap::new());
+        let store = xs.apply(DB::default());
         assert_eq!(store.len(), 2);
     }
 
     #[test]
     fn changeset_del_existing() {
-        let mut existing = HashMap::new();
-        existing.insert("/foo/bar".to_string(), make_default_trust_at("/foo/bar"));
+        let mut source = HashMap::new();
+        source.insert(
+            "/foo/bar".to_string(),
+            Rec::new(make_default_trust_at("/foo/bar")),
+        );
+
+        let existing = DB::from(source);
         assert_eq!(existing.len(), 1);
 
         let mut xs = Changeset::new();
         xs.del("/foo/bar");
         assert_eq!(xs.len(), 1);
 
-        let store = xs.apply(existing);
-        assert_eq!(store.len(), 0);
+        let existing = xs.apply(existing);
+        assert_eq!(existing.len(), 0);
     }
 
     #[test]
@@ -204,7 +203,7 @@ mod tests {
         xs.del("/foo/bar");
         assert_eq!(xs.len(), 2);
 
-        let store = xs.apply(HashMap::new());
+        let store = xs.apply(DB::default());
         assert_eq!(store.len(), 0);
     }
 
@@ -217,10 +216,10 @@ mod tests {
         assert_eq!(xs.len(), 1);
         xs.ins(&*expected.path, expected.size, &*expected.hash);
 
-        let store = xs.apply(HashMap::new());
+        let store = xs.apply(DB::default());
         assert_eq!(store.len(), 1);
 
         let actual = store.get(&expected.path).unwrap();
-        assert_eq!(*actual, expected);
+        assert_eq!(actual.trusted, expected);
     }
 }
