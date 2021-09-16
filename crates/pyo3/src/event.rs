@@ -1,8 +1,6 @@
 use pyo3::prelude::*;
 
 use fapolicy_analyzer::log::Event;
-use fapolicy_analyzer::rules::ObjPart;
-use fapolicy_analyzer::rules::SubjPart;
 
 /// An Event parsed from a fapolicyd log
 #[pyclass(module = "log", name = "Event")]
@@ -39,17 +37,11 @@ impl PyEvent {
     /// The fapolicyd subject parsed from the log event
     #[getter]
     fn subject(&self) -> PySubject {
-        let path = if let Some(SubjPart::Exe(path)) = self
+        let path = self
             .event
             .subj
-            .parts
-            .iter()
-            .find(|p| matches!(p, SubjPart::Exe(_)))
-        {
-            path.clone()
-        } else {
-            "invalid".into()
-        };
+            .exe()
+            .expect("failed to parse event subject exe");
 
         PySubject {
             file: path,
@@ -61,17 +53,11 @@ impl PyEvent {
     /// The fapolicyd object parsed from the log event
     #[getter]
     fn object(&self) -> PyObject {
-        let path = if let Some(ObjPart::Path(path)) = self
+        let path = self
             .event
             .obj
-            .parts
-            .iter()
-            .find(|p| matches!(p, ObjPart::Path(_)))
-        {
-            path.clone()
-        } else {
-            "invalid".into()
-        };
+            .path()
+            .expect("failed to parse event object path");
 
         PyObject {
             file: path,

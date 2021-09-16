@@ -16,6 +16,13 @@ impl Object {
     pub fn new(parts: Vec<Part>) -> Self {
         Object { parts }
     }
+
+    pub fn path(&self) -> Option<String> {
+        match self.parts.iter().find(|p| matches!(p, Part::Path(_))) {
+            Some(Part::Path(path)) => Some(path.clone()),
+            _ => None,
+        }
+    }
 }
 
 /// # Object Field
