@@ -168,7 +168,7 @@ mod tests {
         assert!(rec.is_system());
         assert!(!rec.is_ancillary());
 
-        let rec = Rec::new_from(t.clone(), Ancillary);
+        let rec = Rec::new_from(t, Ancillary);
         assert_eq!(*rec.source.as_ref().unwrap(), Ancillary);
         assert!(!rec.is_system());
         assert!(rec.is_ancillary());
