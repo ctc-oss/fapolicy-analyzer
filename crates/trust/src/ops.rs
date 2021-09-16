@@ -21,16 +21,16 @@ impl TrustOp {
         match self {
             TrustOp::Add(path) => match new_trust_record(path) {
                 Ok(t) => {
-                    trust.insert(
-                        t.path.clone(),
-                        Rec::new_from_source(t, TrustSource::Ancillary),
-                    );
+                    trust.insert(t.path.clone(), Rec::new_from(t, TrustSource::Ancillary));
                     Ok(())
                 }
                 Err(_) => Err("failed to add trust".to_string()),
             },
             TrustOp::Ins(path, size, hash) => {
-                trust.insert(path.clone(), Rec::new(path, *size, hash));
+                trust.insert(
+                    path.clone(),
+                    Rec::new_from(Trust::new(path, *size, hash), TrustSource::Ancillary),
+                );
                 Ok(())
             }
             TrustOp::Del(path) => {
@@ -180,10 +180,10 @@ mod tests {
         let mut source = HashMap::new();
         source.insert(
             "/foo/bar".to_string(),
-            Rec::new_from(make_default_trust_at("/foo/bar")),
+            Rec::new(make_default_trust_at("/foo/bar")),
         );
 
-        let existing = DB::new(source);
+        let existing = DB::from(source);
         assert_eq!(existing.len(), 1);
 
         let mut xs = Changeset::new();

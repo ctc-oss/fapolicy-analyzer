@@ -33,7 +33,7 @@ impl From<TrustPair> for KV {
         let (tt, v) = kv.v.split_once(' ').unwrap();
         let (t, s) = parse_strtyped_trust_record(format!("{} {}", kv.k, v).as_str(), tt)
             .expect("failed to parse_strtyped_trust_record");
-        (t.path.clone(), Rec::new_from_source(t, s))
+        (t.path.clone(), Rec::new_from(t, s))
     }
 }
 
@@ -63,7 +63,7 @@ pub fn load_trust_db(path: &str) -> Result<DB, Error> {
         .map_err(LmdbReadFail)
         .unwrap();
 
-    Ok(DB::new(lookup))
+    Ok(DB::from(lookup))
 }
 
 pub(crate) fn parse_strtyped_trust_record(s: &str, t: &str) -> Result<(Trust, TrustSource), Error> {
