@@ -69,7 +69,11 @@ class AncillaryTrustFileList(TrustFileList):
             changes = (
                 strings.CHANGESET_ACTION_ADD if data.path in changesetMap["Add"] else ""
             )
-            strDateTime = strftime("%Y-%m-%d %H:%M:%S", localtime(data.last_modified))
+            strDateTime = (
+                strftime("%Y-%m-%d %H:%M:%S", localtime(data.actual.last_modified))
+                if data.actual
+                else "Missing"
+            )
             store.append([status, strDateTime, data.path, data, bgColor, changes])
 
         for pth in changesetMap["Del"]:

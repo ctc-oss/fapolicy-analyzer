@@ -73,7 +73,11 @@ class TrustFileList(SearchableList):
                 self.markup_func(data.status) if self.markup_func else (data.status,)
             )
             bgColor = rest[0] if rest else "white"
-            strDateTime = strftime("%Y.%m.%d %H:%M:%S", localtime(data.last_modified))
+            strDateTime = (
+                strftime("%Y.%m.%d %H:%M:%S", localtime(data.actual.last_modified))
+                if data.actual
+                else "Missing"
+            )
             store.append([status, strDateTime, data.path, data, bgColor])
 
         self.load_store(store)
