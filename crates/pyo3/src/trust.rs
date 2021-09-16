@@ -31,23 +31,6 @@ impl From<Status> for PyTrust {
     }
 }
 
-#[pyclass(module = "trust", name = "Actual")]
-pub struct PyActual {
-    rs: Actual,
-}
-
-impl From<Actual> for PyActual {
-    fn from(rs: Actual) -> Self {
-        Self { rs }
-    }
-}
-
-impl From<PyActual> for Actual {
-    fn from(py: PyActual) -> Self {
-        py.rs
-    }
-}
-
 #[pymethods]
 impl PyTrust {
     #[getter]
@@ -66,13 +49,38 @@ impl PyTrust {
     }
 
     #[getter]
-    fn get_stat(&self) -> Option<PyActual> {
+    fn get_actual(&self) -> Option<PyActual> {
         self.actual.as_ref().map(|a| a.clone().into())
     }
 
     #[getter]
     fn get_status(&self) -> &str {
         &self.status
+    }
+}
+
+#[pyclass(module = "trust", name = "Actual")]
+pub struct PyActual {
+    rs: Actual,
+}
+
+impl From<Actual> for PyActual {
+    fn from(rs: Actual) -> Self {
+        Self { rs }
+    }
+}
+
+impl From<PyActual> for Actual {
+    fn from(py: PyActual) -> Self {
+        py.rs
+    }
+}
+
+#[pymethods]
+impl PyActual {
+    #[getter]
+    fn get_last_modified(&self) -> u64 {
+        self.rs.last_modified
     }
 }
 
@@ -125,6 +133,7 @@ impl PyChangeset {
 
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyTrust>()?;
+    m.add_class::<PyActual>()?;
     m.add_class::<PyChangeset>()?;
     // m.add_wrapped(pyo3::wrap_pyfunction!(apply_trust_change))?;
     Ok(())
