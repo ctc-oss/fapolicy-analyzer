@@ -63,11 +63,11 @@ def test_uses_custom_trust_func():
 def test_uses_custom_markup_func(widget):
     AncillaryTrustFileList(trust_func=_trust_func)
     view = widget.get_object("treeView")
-    assert ["T/D", "<b><u>T</u></b>/D", "T/<b><u>D</u></b>"] == [
+    assert [ "T/<b><u>D</u></b>", "<b><u>T</u></b>/D", "T/D"] == [
         x[0] for x in view.get_model()
     ]
-    assert [Colors.LIGHT_YELLOW, Colors.LIGHT_GREEN, Colors.LIGHT_RED] == [
-        x[3] for x in view.get_model()
+    assert [Colors.LIGHT_RED, Colors.LIGHT_GREEN, Colors.LIGHT_YELLOW] == [
+        x[4] for x in view.get_model()
     ]
 
 
@@ -100,8 +100,8 @@ def test_trust_add_actions_in_view(widget, state):
     state.add_changeset_q(mockChangeset)
     widget.load_trust(_trust)
     model = widget.get_object("treeView").get_model()
-    row = next(iter([x for x in model if x[1] == "/tmp/foo"]))
-    assert CHANGESET_ACTION_ADD == row[4]
+    row = next(iter([x for x in model if x[2] == "/tmp/foo"]))
+    assert CHANGESET_ACTION_ADD == row[5]
 
 
 def test_trust_delete_actions_in_view(widget, state):
@@ -111,5 +111,5 @@ def test_trust_delete_actions_in_view(widget, state):
     state.add_changeset_q(mockChangeset)
     widget.load_trust(_trust)
     model = widget.get_object("treeView").get_model()
-    row = next(iter([x for x in model if x[1] == "/tmp/foz"]))
-    assert CHANGESET_ACTION_DEL == row[4]
+    row = next(iter([x for x in model if x[2] == "/tmp/foz"]))
+    assert CHANGESET_ACTION_DEL == row[5]

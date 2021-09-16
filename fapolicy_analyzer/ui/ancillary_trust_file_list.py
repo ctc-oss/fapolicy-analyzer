@@ -80,6 +80,7 @@ class AncillaryTrustFileList(TrustFileList):
             store.append(
                 [
                     "T/D",
+                    " N/A ",
                     pth,
                     SimpleNamespace(path=pth),
                     "white",
