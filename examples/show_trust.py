@@ -15,7 +15,6 @@ def main(*argv):
     s1 = System()
 
     for tt in args.trust_type:
-        ts = []
         if tt == "system":
             ts = s1.system_trust()
         else:
