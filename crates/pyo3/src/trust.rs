@@ -34,13 +34,13 @@ impl From<Status> for PyTrust {
 #[pymethods]
 impl PyTrust {
     #[getter]
-    fn get_size(&self) -> u64 {
-        self.trust.size
+    fn get_path(&self) -> &str {
+        &self.trust.path
     }
 
     #[getter]
-    fn get_path(&self) -> &str {
-        &self.trust.path
+    fn get_size(&self) -> u64 {
+        self.trust.size
     }
 
     #[getter]
@@ -81,6 +81,16 @@ impl From<PyActual> for Actual {
 
 #[pymethods]
 impl PyActual {
+    #[getter]
+    fn get_size(&self) -> u64 {
+        self.rs.size
+    }
+
+    #[getter]
+    fn get_hash(&self) -> &str {
+        &self.rs.hash
+    }
+
     #[getter]
     fn get_last_modified(&self) -> u64 {
         self.rs.last_modified
