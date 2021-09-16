@@ -1,5 +1,6 @@
 use pyo3::prelude::*;
 use pyo3::{exceptions, PyResult};
+use rayon::prelude::*;
 
 use fapolicy_analyzer::app::State;
 use fapolicy_analyzer::cfg;
@@ -52,9 +53,10 @@ impl PySystem {
     fn system_trust(&self) -> Vec<PyTrust> {
         self.state
             .trust_db
-            .iter()
-            .filter(|(_, m)| m.is_system())
-            .map(|(_, m)| trust_status(&m.trusted))
+            .values()
+            .par_iter()
+            .filter(|r| r.is_system())
+            .map(|r| trust_status(&r.trusted))
             .flatten()
             .map(PyTrust::from)
             .collect()
@@ -75,9 +77,10 @@ impl PySystem {
     fn ancillary_trust(&self) -> Vec<PyTrust> {
         self.state
             .trust_db
+            .values()
             .iter()
-            .filter(|(_, m)| m.is_ancillary())
-            .map(|(_, m)| trust_status(&m.trusted))
+            .filter(|r| r.is_ancillary())
+            .map(|r| trust_status(&r.trusted))
             .flatten()
             .map(PyTrust::from)
             .collect()

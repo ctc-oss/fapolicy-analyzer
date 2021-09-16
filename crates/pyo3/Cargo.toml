@@ -10,6 +10,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = "0.14.2"
+rayon = "1.5"
 
 fapolicy-api = { version = "0.3.0", path = "../api" }
 fapolicy-analyzer = { version = "0.3", path = "../analyzer" }

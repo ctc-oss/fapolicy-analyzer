@@ -39,6 +39,11 @@ impl DB {
         self.lookup.iter()
     }
 
+    /// Get a Vec of record references
+    pub fn values(&self) -> Vec<&Rec> {
+        self.lookup.values().collect()
+    }
+
     /// Get the number of records in the lookup table
     pub fn len(&self) -> usize {
         self.lookup.len()
@@ -102,9 +107,11 @@ impl Rec {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::source::TrustSource::{Ancillary, System};
     use std::iter::FromIterator;
+
+    use crate::source::TrustSource::{Ancillary, System};
+
+    use super::*;
 
     #[test]
     fn db_create() {
