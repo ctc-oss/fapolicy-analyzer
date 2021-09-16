@@ -30,6 +30,10 @@ def main(*argv):
                     if t.actual:
                         formatted = datetime.fromtimestamp(t.actual.last_modified)
                         print(f"\tlast modified: {formatted}")
+                        if t.actual.size != t.size:
+                            print("\tsize mismatch")
+                        if t.actual.hash != t.hash:
+                            print("\thash mismatch")
                     else:
                         print("\tfile not found")
             print(f"found {len(ts)} {tt} trust entries")
