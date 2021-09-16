@@ -53,7 +53,7 @@ impl PySystem {
         self.state
             .trust_db
             .iter()
-            .filter(|(_, m)| m.is_sys())
+            .filter(|(_, m)| m.is_system())
             .map(|(_, m)| trust_status(&m.trusted))
             .flatten()
             .map(PyTrust::from)

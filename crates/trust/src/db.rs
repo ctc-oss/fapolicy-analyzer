@@ -75,7 +75,7 @@ impl Rec {
         }
     }
 
-    pub fn is_sys(&self) -> bool {
+    pub fn is_system(&self) -> bool {
         matches!(&self.source, Some(TrustSource::System))
     }
 
@@ -142,12 +142,12 @@ mod tests {
 
         let rec = Rec::new_from(t.clone(), System);
         assert_eq!(*rec.source.as_ref().unwrap(), System);
-        assert!(rec.is_sys());
+        assert!(rec.is_system());
         assert!(!rec.is_ancillary());
 
         let rec = Rec::new_from(t.clone(), Ancillary);
         assert_eq!(*rec.source.as_ref().unwrap(), Ancillary);
-        assert!(!rec.is_sys());
+        assert!(!rec.is_system());
         assert!(rec.is_ancillary());
     }
 
@@ -156,9 +156,9 @@ mod tests {
         let t: Trust = Trust::new("/foo", 1, "0x00");
 
         assert!(!Rec::new(t.clone()).is_ancillary());
-        assert!(!Rec::new(t.clone()).is_sys());
+        assert!(!Rec::new(t.clone()).is_system());
 
         assert!(Rec::new_from(t.clone(), Ancillary).is_ancillary());
-        assert!(Rec::new_from(t, System).is_sys());
+        assert!(Rec::new_from(t, System).is_system());
     }
 }
