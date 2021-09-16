@@ -1,6 +1,5 @@
-use std::fmt::{Display, Formatter};
-
 use crate::rules::set::Set;
+use std::fmt::{Display, Formatter};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Rvalue {

@@ -1,8 +1,7 @@
-use pyo3::prelude::*;
-
 use fapolicy_analyzer::log::Event;
 use fapolicy_analyzer::rules::ObjPart;
 use fapolicy_analyzer::rules::SubjPart;
+use pyo3::prelude::*;
 
 /// An Event parsed from a fapolicyd log
 #[pyclass(module = "log", name = "Event")]
@@ -38,13 +37,11 @@ impl PyEvent {
     /// The fapolicyd subject parsed from the log event
     #[getter]
     fn subject(&self) -> PySubject {
-        let path = if let Some(SubjPart::Exe(path)) = self
-            .event
-            .subj
-            .parts
-            .iter()
-            .find(|p| matches!(p, SubjPart::Exe(_)))
+        let path = if let Some(SubjPart::Exe(path)) = self.event.subj.parts.iter().find(|p| match p
         {
+            SubjPart::Exe(_) => true,
+            _ => false,
+        }) {
             path.clone()
         } else {
             "invalid".into()
@@ -60,13 +57,11 @@ impl PyEvent {
     /// The fapolicyd object parsed from the log event
     #[getter]
     fn object(&self) -> PyObject {
-        let path = if let Some(ObjPart::Path(path)) = self
-            .event
-            .obj
-            .parts
-            .iter()
-            .find(|p| matches!(p, ObjPart::Path(_)))
-        {
+        let path = if let Some(ObjPart::Path(path)) =
+            self.event.obj.parts.iter().find(|p| match p {
+                ObjPart::Path(_) => true,
+                _ => false,
+            }) {
             path.clone()
         } else {
             "invalid".into()

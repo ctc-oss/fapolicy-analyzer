@@ -1,5 +1,4 @@
 use std::io;
-
 use thiserror::Error;
 
 /// An Error that can occur in this crate

@@ -1,9 +1,8 @@
+use crate::error::Error;
 use std::io::Read;
 
 use data_encoding::HEXLOWER;
 use ring::digest::{Context, SHA256};
-
-use crate::error::Error;
 
 /// generate a sha256 hash as a string
 pub fn sha256_digest<R: Read>(mut reader: R) -> Result<String, Error> {
