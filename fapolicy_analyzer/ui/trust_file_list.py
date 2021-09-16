@@ -1,6 +1,6 @@
 import gi
 import fapolicy_analyzer.ui.strings as strings
-import logging
+
 from time import localtime, strftime
 
 gi.require_version("Gtk", "3.0")
@@ -73,10 +73,7 @@ class TrustFileList(SearchableList):
                 self.markup_func(data.status) if self.markup_func else (data.status,)
             )
             bgColor = rest[0] if rest else "white"
-            strDateTime = strftime('%Y.%m.%d %H:%M:%S',
-                                   localtime(data.last_modified))
-            store.append([status,
-                          strDateTime,
-                          data.path, data, bgColor])
+            strDateTime = strftime("%Y.%m.%d %H:%M:%S", localtime(data.last_modified))
+            store.append([status, strDateTime, data.path, data, bgColor])
 
         self.load_store(store)
