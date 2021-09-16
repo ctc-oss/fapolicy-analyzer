@@ -27,8 +27,7 @@ impl TrustPair {
     }
 }
 
-type KV = (String, Rec);
-impl From<TrustPair> for KV {
+impl From<TrustPair> for (String, Rec) {
     fn from(kv: TrustPair) -> Self {
         let (tt, v) = kv.v.split_once(' ').unwrap();
         let (t, s) = parse_strtyped_trust_record(format!("{} {}", kv.k, v).as_str(), tt)
