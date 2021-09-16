@@ -1,7 +1,10 @@
 use serde::Deserialize;
 use serde::Serialize;
 
-/// The properties that impact Trust reasoning
+/// # The definition of Trust
+/// - Path to the file
+/// - Size of the file
+/// - Hash of the file
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Trust {
     pub path: String,
