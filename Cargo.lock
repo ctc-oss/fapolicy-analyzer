@@ -210,7 +210,6 @@ dependencies = [
  "fapolicy-api",
  "fapolicy-daemon",
  "fapolicy-trust",
- "fapolicy-util",
  "nom",
  "serde",
  "thiserror",
