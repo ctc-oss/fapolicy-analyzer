@@ -9,9 +9,6 @@ edition = "2018"
 path = "src/lib.rs"
 
 [dependencies]
-confy = "0.4.0"
-directories = "2.0.2"
-lmdb-rkv = "0.14.0"
 nom = "6.1.0"
 serde = { version = "1.0", features = ["derive"] }
 thiserror = "1.0"

@@ -207,13 +207,10 @@ checksum = "e78d4f1cc4ae33bbfc157ed5d5a5ef3bc29227303d595861deb238fcec4e9457"
 name = "fapolicy-analyzer"
 version = "0.3.0"
 dependencies = [
- "confy",
- "directories",
  "fapolicy-api",
  "fapolicy-daemon",
  "fapolicy-trust",
  "fapolicy-util",
- "lmdb-rkv",
  "nom",
  "serde",
  "thiserror",
@@ -224,6 +221,20 @@ name = "fapolicy-api"
 version = "0.3.0"
 dependencies = [
  "serde",
+]
+
+[[package]]
+name = "fapolicy-app"
+version = "0.3.0"
+dependencies = [
+ "confy",
+ "directories",
+ "fapolicy-analyzer",
+ "fapolicy-daemon",
+ "fapolicy-trust",
+ "lmdb-rkv",
+ "serde",
+ "thiserror",
 ]
 
 [[package]]
@@ -242,6 +253,7 @@ version = "0.3.0"
 dependencies = [
  "fapolicy-analyzer",
  "fapolicy-api",
+ "fapolicy-app",
  "fapolicy-daemon",
  "fapolicy-trust",
  "pyo3",
@@ -255,6 +267,7 @@ dependencies = [
  "clap",
  "fapolicy-analyzer",
  "fapolicy-api",
+ "fapolicy-app",
  "fapolicy-daemon",
  "fapolicy-trust",
  "lmdb-rkv",

@@ -7,21 +7,8 @@ use fapolicy_api::trust::Trust;
 use fapolicy_trust::stat::{Actual, Status};
 use fapolicy_util::sha::sha256_digest;
 
-use crate::app::State;
 use crate::error::Error;
 use crate::error::Error::{FileIoError, MetaError};
-
-/// check for sync between fapolicyd and rpmdb
-/// can return false on the first mismatch
-pub fn rpm_sync(_app: &State) -> bool {
-    true
-}
-
-/// check for sync between fapolicyd and file trust
-/// can return false on the first mismatch
-pub fn file_sync(_app: &State) -> bool {
-    true
-}
 
 /// check status of trust against the filesystem
 pub fn trust_status(t: &Trust) -> Result<Status, Error> {

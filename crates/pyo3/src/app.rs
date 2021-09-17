@@ -2,11 +2,11 @@ use pyo3::prelude::*;
 use pyo3::{exceptions, PyResult};
 use rayon::prelude::*;
 
-use fapolicy_analyzer::app::State;
-use fapolicy_analyzer::cfg;
 use fapolicy_analyzer::check::trust_status;
 use fapolicy_analyzer::log::Event;
-use fapolicy_analyzer::sys::deploy_app_state;
+use fapolicy_app::app::State;
+use fapolicy_app::cfg;
+use fapolicy_app::sys::deploy_app_state;
 
 use crate::acl::{PyGroup, PyUser};
 use crate::event::PyEvent;

@@ -1,8 +1,6 @@
+use crate::{app, sys};
 use serde::Deserialize;
 use serde::Serialize;
-
-use crate::app;
-use crate::sys;
 
 pub const PROJECT_NAME: &str = "fapolicy-analyzer";
 

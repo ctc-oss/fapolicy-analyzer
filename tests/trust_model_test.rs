@@ -1,5 +1,5 @@
-use fapolicy_analyzer::app::State;
-use fapolicy_analyzer::cfg::All;
+use fapolicy_app::app::State;
+use fapolicy_app::cfg::All;
 use fapolicy_trust::ops::Changeset;
 
 #[test]
