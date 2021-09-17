@@ -181,7 +181,7 @@ class StateManager(Events):
                 self.del_changeset_q()
 
             self.ev_user_session_loaded(listPA)
-            print("listPA = ", listPA)
+            logging.debug(f"listPA = {listPA}")
             return True
 
     def __cleanup_autosave_sessions(self):
@@ -215,7 +215,7 @@ class StateManager(Events):
         """Searches for preexisting tmp files; Returns bool"""
         logging.debug("StateManager::detect_previous_session()")
         strSearchPattern = self.__tmpFileBasename + "_*.json"
-        print("Search Pattern: {}".format(strSearchPattern))
+        logging.debug("Search Pattern: {}".format(strSearchPattern))
         listTmpFiles = glob.glob(strSearchPattern)
         listTmpFiles.sort()
         logging.debug("Glob search results: {}".format(listTmpFiles))
@@ -232,11 +232,11 @@ class StateManager(Events):
 
         # Determine file to load, in newest to oldest order
         strSearchPattern = self.__tmpFileBasename + "_*.json"
-        print("Search Pattern: {}".format(strSearchPattern))
+        logging.debug("Search Pattern: {}".format(strSearchPattern))
         listTmpFiles = glob.glob(strSearchPattern)
         listTmpFiles.sort()
         listTmpFiles.reverse()
-        print(listTmpFiles)
+        logging.debug(listTmpFiles)
 
         # iterate through the time ordered files; stop on first successful load
         bReturn = False

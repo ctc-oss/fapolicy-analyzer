@@ -2,13 +2,14 @@ import gi
 import fapolicy_analyzer.ui.strings as strings
 
 gi.require_version("Gtk", "3.0")
+import os.path
 from functools import reduce
 from gi.repository import Gtk
 from types import SimpleNamespace
 from .configs import Colors
 from .add_file_button import AddFileButton
 from .state_manager import stateManager
-from .trust_file_list import TrustFileList
+from .trust_file_list import TrustFileList, epoch_to_string
 
 
 class AncillaryTrustFileList(TrustFileList):
@@ -50,7 +51,7 @@ class AncillaryTrustFileList(TrustFileList):
         self.changesColumn = Gtk.TreeViewColumn(
             strings.FILE_LIST_CHANGES_HEADER,
             Gtk.CellRendererText(background="light gray"),
-            text=4,
+            text=5,
         )
         self.changesColumn.set_sort_column_id(4)
         return [self.changesColumn, *super()._columns()]
@@ -61,19 +62,25 @@ class AncillaryTrustFileList(TrustFileList):
         # Hide changes column if there are no changes
         self.changesColumn.set_visible(changesetMap["Add"] or changesetMap["Del"])
 
-        store = Gtk.ListStore(str, str, object, str, str)
+        store = Gtk.ListStore(str, str, str, object, str, str)
         for i, data in enumerate(trust):
             status, *rest = self.markup_func(data.status)
             bgColor = rest[0] if rest else "white"
             changes = (
                 strings.CHANGESET_ACTION_ADD if data.path in changesetMap["Add"] else ""
             )
-            store.append([status, data.path, data, bgColor, changes])
+
+            secsEpoch = data.actual.last_modified if data.actual else None
+            strDateTime = epoch_to_string(secsEpoch)
+            store.append([status, strDateTime, data.path, data, bgColor, changes])
 
         for pth in changesetMap["Del"]:
+            secsEpoch = int(os.path.getmtime(pth)) if os.path.isfile(pth) else None
+            strDateTime = epoch_to_string(secsEpoch)
             store.append(
                 [
                     "T/D",
+                    strDateTime,
                     pth,
                     SimpleNamespace(path=pth),
                     "white",

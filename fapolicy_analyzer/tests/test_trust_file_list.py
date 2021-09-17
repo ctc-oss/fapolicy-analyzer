@@ -9,8 +9,8 @@ from ui.trust_file_list import TrustFileList
 
 
 _trust = [
-    MagicMock(status="u", path="/tmp/bar"),
-    MagicMock(status="t", path="/tmp/foo"),
+    MagicMock(status="u", path="/tmp/bar", actual=MagicMock(last_modified=123456789)),
+    MagicMock(status="t", path="/tmp/foo", actual=MagicMock(last_modified=123456789)),
 ]
 
 
@@ -44,7 +44,7 @@ def test_loads_trust_store(widget):
     widget.load_trust(_trust)
     view = widget.get_object("treeView")
     assert [t.status for t in _trust] == [x[0] for x in view.get_model()]
-    assert [t.path for t in _trust] == [x[1] for x in view.get_model()]
+    assert [t.path for t in _trust] == [x[2] for x in view.get_model()]
 
 
 def test_fires_trust_selection_changed(widget):

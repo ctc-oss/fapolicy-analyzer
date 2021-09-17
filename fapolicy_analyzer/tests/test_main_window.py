@@ -80,7 +80,7 @@ def test_defaults_to_trust_db_admin_page(mainWindow):
     )
 
 
-def test_opens_trust_db_admin_page(mainWindow):
+def test_opens_trust_db_admin_page(mainWindow, mocker):
     mainContent = mainWindow.get_object("mainContent")
     mainContent.remove(next(iter(mainContent.get_children())))
     assert not mainContent.get_children()
@@ -94,6 +94,17 @@ def test_opens_trust_db_admin_page(mainWindow):
 
 def test_opens_analyze_with_audit_page(mainWindow, mocker):
     menuItem = mainWindow.get_object("analyzeMenu")
+
+    mockTFunc = mocker.patch(
+        "ui.trust_file_list.epoch_to_string",
+        return_value="10-01-2020",
+    )
+
+    mockATFunc = mocker.patch(
+        "ui.ancillary_trust_file_list.epoch_to_string",
+        return_value="10-01-2020",
+    )
+
     mocker.patch(
         "ui.main_window.Gtk.FileChooserDialog.run",
         return_value=Gtk.ResponseType.OK,
@@ -106,6 +117,8 @@ def test_opens_analyze_with_audit_page(mainWindow, mocker):
     menuItem.activate()
     refresh_gui()
     content = next(iter(mainWindow.get_object("mainContent").get_children()))
+    mockTFunc.assert_called()
+    mockATFunc.assert_called()
     assert Gtk.Buildable.get_name(content) == "policyRulesAdminPage"
 
 

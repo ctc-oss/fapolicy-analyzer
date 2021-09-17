@@ -1,10 +1,27 @@
 import gi
 import fapolicy_analyzer.ui.strings as strings
 
+from time import localtime, strftime, strptime, mktime
+
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from .searchable_list import SearchableList
 from .strings import FILE_LABEL, FILES_LABEL
+
+
+def epoch_to_string(secsEpoch):
+    if secsEpoch:
+        # If last modified after midnight, display mtime, otherwise date
+        # This strips off the hours, minutes, seconds to yield midnight 00:00:00
+        timeMidnight = strptime(strftime("%d %b %y", localtime()), "%d %b %y")
+        secsEpochMidnight = int(mktime(timeMidnight))
+
+        if secsEpoch >= secsEpochMidnight:
+            return strftime("%H:%M:%S", localtime(secsEpoch))
+        else:
+            return strftime("%Y-%m-%d", localtime(secsEpoch))
+    else:
+        return "Missing"
 
 
 class TrustFileList(SearchableList):
@@ -25,24 +42,36 @@ class TrustFileList(SearchableList):
         self.selection_changed += self.__handle_selection_changed
 
     def __handle_selection_changed(self, data):
-        trust = data[2] if data else None
+        trust = data[3] if data else None
         self.trust_selection_changed(trust)
 
     def _columns(self):
+        # trust status column
         trustColumn = Gtk.TreeViewColumn(
             strings.FILE_LIST_TRUST_HEADER,
             Gtk.CellRendererText(background="light gray"),
             markup=0,
         )
-        trustColumn.set_sort_column_id(0),
+        trustColumn.set_sort_column_id(0)
+
+        # modification time column
+        mtimeColumn = Gtk.TreeViewColumn(
+            strings.FILE_LIST_MTIME_HEADER,
+            Gtk.CellRendererText(),
+            text=1,
+            cell_background=4,
+        )
+        mtimeColumn.set_sort_column_id(1)
+
+        # fullpath column
         fileColumn = Gtk.TreeViewColumn(
             strings.FILE_LIST_FILE_HEADER,
             Gtk.CellRendererText(),
-            text=1,
-            cell_background=3,
+            text=2,
+            cell_background=4,
         )
-        fileColumn.set_sort_column_id(1)
-        return [trustColumn, fileColumn]
+        fileColumn.set_sort_column_id(2)
+        return [trustColumn, mtimeColumn, fileColumn]
 
     def _update_tree_count(self, count):
         label = FILE_LABEL if count == 1 else FILES_LABEL
@@ -53,12 +82,15 @@ class TrustFileList(SearchableList):
         self.trust_func(self.load_trust)
 
     def load_trust(self, trust):
-        store = Gtk.ListStore(str, str, object, str)
+        store = Gtk.ListStore(str, str, str, object, str)
         for i, data in enumerate(trust):
             status, *rest = (
                 self.markup_func(data.status) if self.markup_func else (data.status,)
             )
             bgColor = rest[0] if rest else "white"
-            store.append([status, data.path, data, bgColor])
+            secsEpoch = data.actual.last_modified if data.actual else None
+            strDateTime = epoch_to_string(secsEpoch)
+
+            store.append([status, strDateTime, data.path, data, bgColor])
 
         self.load_store(store)
