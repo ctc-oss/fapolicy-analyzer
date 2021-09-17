@@ -15,9 +15,9 @@ from ui.strings import (
 from ui.state_manager import stateManager
 
 _trust = [
-    MagicMock(status="d", path="/tmp/foo"),
-    MagicMock(status="t", path="/tmp/baz"),
-    MagicMock(status="u", path="/tmp/bar"),
+    MagicMock(status="d", path="/tmp/foo", actual=MagicMock(last_modified=123456789)),
+    MagicMock(status="t", path="/tmp/baz", actual=MagicMock(last_modified=123456789)),
+    MagicMock(status="u", path="/tmp/bar", actual=MagicMock(last_modified=123456789)),
 ]
 
 

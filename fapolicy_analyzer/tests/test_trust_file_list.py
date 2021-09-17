@@ -9,8 +9,8 @@ from ui.trust_file_list import TrustFileList
 
 
 _trust = [
-    MagicMock(status="u", path="/tmp/bar"),
-    MagicMock(status="t", path="/tmp/foo"),
+    MagicMock(status="u", path="/tmp/bar", actual=MagicMock(last_modified=123456789)),
+    MagicMock(status="t", path="/tmp/foo", actual=MagicMock(last_modified=123456789)),
 ]
 
 
