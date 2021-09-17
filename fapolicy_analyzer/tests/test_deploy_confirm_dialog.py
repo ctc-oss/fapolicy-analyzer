@@ -17,7 +17,17 @@ def test_adds_dialog_to_parent():
     assert widget.get_ref().get_transient_for() == parent
 
 
-def test_closes_after_cancel_time():
+def test_closes_after_cancel_time(mocker):
+    mocker.patch(
+        "ui.trust_file_list.epoch_to_string",
+        return_value="10-01-2020",
+    )
+
+    mockATFunc = mocker.patch(
+        "ui.ancillary_trust_file_list.epoch_to_string",
+        return_value="10-01-2020",
+    )
+
     widget = DeployConfirmDialog(parent=Gtk.Window(), cancel_time=1)
     result = widget.get_ref().run()
     assert result == Gtk.ResponseType.NO

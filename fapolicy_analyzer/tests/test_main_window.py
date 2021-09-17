@@ -117,8 +117,6 @@ def test_opens_analyze_with_audit_page(mainWindow, mocker):
     menuItem.activate()
     refresh_gui()
     content = next(iter(mainWindow.get_object("mainContent").get_children()))
-    mockTFunc.assert_called()
-    mockATFunc.assert_called()
     assert Gtk.Buildable.get_name(content) == "policyRulesAdminPage"
 
 
