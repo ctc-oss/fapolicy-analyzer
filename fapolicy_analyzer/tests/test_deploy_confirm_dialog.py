@@ -23,7 +23,7 @@ def test_closes_after_cancel_time(mocker):
         return_value="10-01-2020",
     )
 
-    mockATFunc = mocker.patch(
+    mocker.patch(
         "ui.ancillary_trust_file_list.epoch_to_string",
         return_value="10-01-2020",
     )
