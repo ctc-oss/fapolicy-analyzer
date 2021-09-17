@@ -1,3 +1,4 @@
+use rayon::prelude::*;
 use std::collections::HashMap;
 use std::path::Path;
 
@@ -61,6 +62,12 @@ pub fn load_trust_db(path: &str) -> Result<DB, Error> {
         .unwrap()
         .map_err(LmdbReadFail)
         .unwrap();
+
+    // check
+    let lookup: HashMap<String, Rec> = lookup
+        .par_iter()
+        .flat_map(|(p, r)| Rec::status_check(r.clone()).map(|r| (p.clone(), r)))
+        .collect();
 
     Ok(DB::from(lookup))
 }

@@ -280,6 +280,7 @@ dependencies = [
  "fapolicy-api",
  "fapolicy-util",
  "lmdb-rkv",
+ "rayon",
  "serde",
  "thiserror",
 ]

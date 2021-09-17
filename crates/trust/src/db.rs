@@ -3,8 +3,9 @@ use std::collections::HashMap;
 
 use fapolicy_api::trust::Trust;
 
+use crate::error::Error;
 use crate::source::TrustSource;
-use crate::stat::{Actual, Status};
+use crate::stat::{check, Actual, Status};
 
 /// Trust Database
 /// A container for tracking trust entries and their metadata
@@ -107,7 +108,14 @@ impl Rec {
         matches!(&self.source, Some(TrustSource::Ancillary))
     }
 
-    pub fn status(&self) -> Result<Status> {}
+    /// Check a Rec into a Rec with updated status
+    pub fn status_check(rec: Rec) -> Result<Rec, Error> {
+        let status = check(&rec.trusted)?;
+        Ok(Rec {
+            status: Some(status),
+            ..rec
+        })
+    }
 }
 
 #[cfg(test)]
