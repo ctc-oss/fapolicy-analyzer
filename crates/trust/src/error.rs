@@ -1,3 +1,4 @@
+use std::io;
 use thiserror::Error;
 
 /// An Error that can occur in this crate
@@ -15,4 +16,13 @@ pub enum Error {
     MalformattedTrustEntry(String),
     #[error("{0} file not found at {1}")]
     TrustSourceNotFound(String, String),
+
+    #[error("File IO Error: {0}")]
+    FileIoError(#[from] io::Error),
+
+    #[error("Error reading metadata: {0}")]
+    MetaError(String),
+
+    #[error("{0}")]
+    GeneralError(#[from] fapolicy_util::error::Error),
 }
