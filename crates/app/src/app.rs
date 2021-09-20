@@ -1,8 +1,8 @@
 use crate::cfg::All;
 use crate::cfg::PROJECT_NAME;
 use crate::error::Error;
-use crate::users::{load_groups, load_users, Group, User};
 use directories::ProjectDirs;
+use fapolicy_analyzer::users::{load_groups, load_users, Group, User};
 
 use fapolicy_trust::db::DB;
 

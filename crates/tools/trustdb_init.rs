@@ -3,8 +3,8 @@ use std::path::Path;
 use clap::Clap;
 use lmdb::{DatabaseFlags, Environment, Transaction, WriteFlags};
 
-use fapolicy_analyzer::cfg::All;
 use fapolicy_analyzer::error::Error;
+use fapolicy_app::cfg::All;
 use fapolicy_daemon::rpm::load_system_trust;
 
 #[derive(Clap)]

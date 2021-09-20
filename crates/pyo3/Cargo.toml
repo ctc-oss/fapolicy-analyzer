@@ -14,5 +14,6 @@ rayon = "1.5"
 
 fapolicy-api = { version = "0.3.0", path = "../api" }
 fapolicy-analyzer = { version = "0.3", path = "../analyzer" }
+fapolicy-app = { version = "0.3.0", path = "../app" }
 fapolicy-daemon = { version = "0.3", path = "../daemon" }
 fapolicy-trust = { version = "0.3", path = "../trust" }
