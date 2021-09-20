@@ -54,7 +54,7 @@ class AncillaryTrustDatabaseAdmin(UIWidget):
 
     def __load_trust(self, callback):
         def get_trust():
-            trust = self.system.ancillary_trust_async()
+            trust = self.system.ancillary_trust()
             GLib.idle_add(callback, trust)
 
         self.executor.submit(get_trust)
