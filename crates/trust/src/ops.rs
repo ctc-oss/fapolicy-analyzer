@@ -6,6 +6,7 @@ use fapolicy_api::trust::Trust;
 use fapolicy_util::sha::sha256_digest;
 
 use crate::db::{Rec, DB};
+use crate::error::Error;
 use crate::ops::TrustOp::{Add, Del};
 use crate::source::TrustSource;
 
@@ -17,20 +18,20 @@ enum TrustOp {
 }
 
 impl TrustOp {
-    fn run(&self, trust: &mut HashMap<String, Rec>) -> Result<(), String> {
+    fn run(&self, trust: &mut HashMap<String, Rec>) -> Result<(), Error> {
         match self {
-            TrustOp::Add(path) => match new_trust_record(path) {
-                Ok(t) => {
-                    trust.insert(t.path.clone(), Rec::new_from(t, TrustSource::Ancillary));
-                    Ok(())
-                }
-                Err(_) => Err("failed to add trust".to_string()),
-            },
+            TrustOp::Add(path) => {
+                let t = new_trust_record(path)?;
+                let r = Rec::new_from(t, TrustSource::Ancillary);
+                let r = Rec::status_check(r)?;
+                trust.insert(r.trusted.path.clone(), r);
+                Ok(())
+            }
             TrustOp::Ins(path, size, hash) => {
-                trust.insert(
-                    path.clone(),
-                    Rec::new_from(Trust::new(path, *size, hash), TrustSource::Ancillary),
-                );
+                let t = Trust::new(path, *size, hash);
+                let r = Rec::new_from(t, TrustSource::Ancillary);
+                let r = Rec::status_check(r)?;
+                trust.insert(r.trusted.path.clone(), r);
                 Ok(())
             }
             TrustOp::Del(path) => {
@@ -98,9 +99,9 @@ impl ::std::default::Default for Changeset {
     }
 }
 
-fn new_trust_record(path: &str) -> Result<Trust, String> {
-    let f = File::open(path).map_err(|_| "failed to open file".to_string())?;
-    let sha = sha256_digest(BufReader::new(&f)).map_err(|_| "failed to hash file".to_string())?;
+fn new_trust_record(path: &str) -> Result<Trust, Error> {
+    let f = File::open(path)?;
+    let sha = sha256_digest(BufReader::new(&f))?;
 
     Ok(Trust {
         path: path.to_string(),

@@ -47,7 +47,7 @@ class SystemTrustDatabaseAdmin(UIWidget, Events):
 
     def __load_trust(self, callback):
         def get_trust():
-            trust = self.system.system_trust_async()
+            trust = self.system.system_trust()
             GLib.idle_add(callback, trust)
 
         self.executor.submit(get_trust)

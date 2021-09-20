@@ -3,8 +3,9 @@ use std::collections::HashMap;
 
 use fapolicy_api::trust::Trust;
 
+use crate::error::Error;
 use crate::source::TrustSource;
-use crate::stat::Actual;
+use crate::stat::{check, Actual, Status};
 
 /// Trust Database
 /// A container for tracking trust entries and their metadata
@@ -71,6 +72,7 @@ impl DB {
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct Rec {
     pub trusted: Trust,
+    pub status: Option<Status>,
     actual: Option<Actual>,
     source: Option<TrustSource>,
 }
@@ -81,6 +83,7 @@ impl Rec {
         Rec {
             trusted: t,
             actual: None,
+            status: None,
             source: None,
         }
     }
@@ -90,6 +93,7 @@ impl Rec {
         Rec {
             trusted: t,
             actual: None,
+            status: None,
             source: Some(source),
         }
     }
@@ -102,6 +106,15 @@ impl Rec {
     /// Is this record from ancillary trust
     pub fn is_ancillary(&self) -> bool {
         matches!(&self.source, Some(TrustSource::Ancillary))
+    }
+
+    /// Check a Rec into a Rec with updated status
+    pub fn status_check(rec: Rec) -> Result<Rec, Error> {
+        let status = check(&rec.trusted)?;
+        Ok(Rec {
+            status: Some(status),
+            ..rec
+        })
     }
 }
 

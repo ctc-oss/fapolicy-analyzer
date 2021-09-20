@@ -18,7 +18,7 @@ pub struct Actual {
 }
 
 /// Trust status tag
-#[derive(Debug)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub enum Status {
     /// Filesystem matches trust
     Trusted(Trust, Actual),

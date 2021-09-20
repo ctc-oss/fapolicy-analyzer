@@ -256,7 +256,6 @@ dependencies = [
  "fapolicy-daemon",
  "fapolicy-trust",
  "pyo3",
- "rayon",
 ]
 
 [[package]]
@@ -280,6 +279,7 @@ dependencies = [
  "fapolicy-api",
  "fapolicy-util",
  "lmdb-rkv",
+ "rayon",
  "serde",
  "thiserror",
 ]

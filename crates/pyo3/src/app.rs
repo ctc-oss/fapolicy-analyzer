@@ -1,12 +1,10 @@
 use pyo3::prelude::*;
 use pyo3::{exceptions, PyResult};
-use rayon::prelude::*;
 
 use fapolicy_analyzer::log::Event;
 use fapolicy_app::app::State;
 use fapolicy_app::cfg;
 use fapolicy_app::sys::deploy_app_state;
-use fapolicy_trust::stat::check;
 
 use crate::acl::{PyGroup, PyUser};
 use crate::event::PyEvent;
@@ -38,12 +36,14 @@ impl PySystem {
     /// This returns a result object that will be an error if initialization fails,
     /// allowing the member accessors on the System to return non-result objects.
     #[new]
-    fn new() -> PyResult<PySystem> {
-        let conf = cfg::All::load();
-        match State::load(&conf) {
-            Ok(state) => Ok(state.into()),
-            Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{:?}", e))),
-        }
+    fn new(py: Python) -> PyResult<PySystem> {
+        py.allow_threads(|| {
+            let conf = cfg::All::load();
+            match State::load(&conf) {
+                Ok(state) => Ok(state.into()),
+                Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{:?}", e))),
+            }
+        })
     }
 
     /// Obtain a list of trusted files sourced from the system trust database.
@@ -54,21 +54,12 @@ impl PySystem {
         self.state
             .trust_db
             .values()
-            .par_iter()
+            .iter()
             .filter(|r| r.is_system())
-            .map(|r| check(&r.trusted))
+            .map(|r| r.status.clone())
             .flatten()
             .map(PyTrust::from)
             .collect()
-    }
-
-    /// Obtain a list of trusted files sourced from the system trust database.
-    /// The system trust is generated from the contents of the RPM database.
-    /// This represents state in the current fapolicyd database, not necessarily
-    /// matching what is currently in the RPM database.
-    /// This call will not block other threads from executing.
-    fn system_trust_async(&self, py: Python) -> Vec<PyTrust> {
-        py.allow_threads(|| self.system_trust())
     }
 
     /// Obtain a list of trusted files sourced from the ancillary trust database.
@@ -78,20 +69,12 @@ impl PySystem {
         self.state
             .trust_db
             .values()
-            .par_iter()
+            .iter()
             .filter(|r| r.is_ancillary())
-            .map(|r| check(&r.trusted))
+            .map(|r| r.status.clone())
             .flatten()
             .map(PyTrust::from)
             .collect()
-    }
-
-    /// Obtain a list of trusted files sourced from the ancillary trust database.
-    /// This represents state in the current fapolicyd database, not necessarily
-    /// matching what is currently in the ancillary trust file.
-    /// This call will not block other threads from executing.
-    fn ancillary_trust_async(&self, py: Python) -> Vec<PyTrust> {
-        py.allow_threads(|| self.ancillary_trust())
     }
 
     /// Apply the changeset to the state of this System generating a new System
