@@ -16,6 +16,8 @@ path = "tests/tests.rs"
 [workspace]
 members = [
     "crates/analyzer",
+    "crates/app",
+    "crates/api",
     "crates/daemon",
     "crates/pyo3",
     "crates/trust",
@@ -29,5 +31,6 @@ nom = "6.1.0"
 
 fapolicy-api = { version = "0.3.0", path = "crates/api" }
 fapolicy-analyzer = { version = "0.3.0", path = "crates/analyzer" }
+fapolicy-app = { version = "0.3.0", path = "crates/app" }
 fapolicy-daemon = { version = "0.3.0", path = "crates/daemon" }
 fapolicy-trust = { version = "0.3.0", path = "crates/trust" }
