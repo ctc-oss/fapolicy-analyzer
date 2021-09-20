@@ -19,7 +19,12 @@ def test_adds_dialog_to_parent():
     assert widget.get_transient_for() == parent
 
 
-def test_dialog_actions_responses():
+def test_dialog_actions_responses(mocker):
+    mocker.patch(
+        "ui.ancillary_trust_file_list.epoch_to_string",
+        return_value="10-01-2020",
+    )
+
     dialog = ConfirmInfoDialog(parent=Gtk.Window())
     for expected in [Gtk.ResponseType.YES, Gtk.ResponseType.NO]:
         button = dialog.get_widget_for_response(expected)

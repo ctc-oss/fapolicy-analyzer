@@ -48,6 +48,17 @@ def widget(mocker):
         groups=MagicMock(return_value=mock_groups()),
         events_from=MagicMock(return_value=mock_events),
     )
+
+    mocker.patch(
+        "ui.ancillary_trust_file_list.epoch_to_string",
+        return_value="10-01-2020",
+    )
+
+    mocker.patch(
+        "ui.trust_file_list.epoch_to_string",
+        return_value="10-01-2020",
+    )
+
     mocker.patch("ui.policy_rules_admin_page.System", return_value=mock_system)
     widget = PolicyRulesAdminPage("foo")
     refresh_gui()

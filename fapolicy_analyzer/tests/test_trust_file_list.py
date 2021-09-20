@@ -5,7 +5,8 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from unittest.mock import MagicMock
-from ui.trust_file_list import TrustFileList
+from time import localtime, strftime, mktime
+from ui.trust_file_list import TrustFileList, epoch_to_string
 
 
 _trust = [
@@ -53,3 +54,21 @@ def test_fires_trust_selection_changed(widget):
     view = widget.get_object("treeView")
     view.get_selection().select_path(Gtk.TreePath.new_first())
     mockHandler.assert_called_with(_trust[0])
+
+
+def test_epoch_to_string():
+    secsEpochCurrent = int(mktime(localtime()))
+    secsEpochOneDayOld = secsEpochCurrent - (24 * 60 * 60)
+
+    # Verify timestamps from today are display in hour:minute:sec format
+    strExpected = strftime("%H:%M:%S", localtime(secsEpochCurrent))
+    strFromEpochToString = epoch_to_string(secsEpochCurrent)
+    assert strExpected == strFromEpochToString
+
+    # Verify timestamps older than today are displayed as calendar date
+    strExpected = strftime("%Y-%m-%d", localtime(secsEpochOneDayOld))
+    strFromEpochToString = epoch_to_string(secsEpochOneDayOld)
+    assert strExpected == strFromEpochToString
+
+    # Verify a NULL string input outputs "Missing"
+    assert epoch_to_string(None) == "Missing"
