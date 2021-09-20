@@ -1,3 +1,12 @@
 #!/usr/bin/env bash
 
-python3 -m fapolicy_analyzer.ui
+# Verify: The .Xauthority file needs read access. It would be better to not do
+# chmod +r $HOME/.Xauthority
+XAUTHORITY=$HOME/.Xauthority
+
+# ToDo: Determine if XDG_RUNTIME_DIR needs to be unset with each execution to
+# be robust.
+pkttyagent --process $$ & pkexec  --disable-internal-agent env DISPLAY=$DISPLAY  XAUTHORITY=$XAUTHORITY python3 -m fapolicy_analyzer.ui
+
+# Todo: Get pkttyagent PID above so that we kill a specific instance
+pkill pktty
