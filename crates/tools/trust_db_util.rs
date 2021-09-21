@@ -1,7 +1,7 @@
 use clap::Clap;
 
 use crate::Error::{DirTrustError, DpkgCommandFail, DpkgNotFound};
-use crate::Subcommand::{AddRec, DelRec, Dump, Init, Search};
+use crate::Subcommand::{AddRec, Clear, DelRec, Dump, Init, Search};
 use fapolicy_api::trust::Trust;
 use fapolicy_app::cfg;
 use fapolicy_daemon::rpm::load_system_trust as load_rpm_trust;
@@ -50,12 +50,16 @@ struct Opts {
 
 #[derive(Clap)]
 enum Subcommand {
+    Clear(ClearOpts),
     Init(InitOpts),
     AddRec(AddRecOpts),
     DelRec(DelRecOpts),
     Dump(DumpDbOpts),
     Search(SearchDbOpts),
 }
+
+#[derive(Clap)]
+struct ClearOpts {}
 
 #[derive(Clap)]
 struct InitOpts {
@@ -112,6 +116,7 @@ fn main() {
         .expect("unable to open path to trust db");
 
     match all_opts.cmd {
+        Clear(opts) => clear(opts, &sys_conf, &env),
         Init(opts) => init(opts, &sys_conf, &env),
         AddRec(opts) => add(opts, &sys_conf, &env),
         DelRec(_) => {}
@@ -120,13 +125,17 @@ fn main() {
     }
 }
 
+fn clear(_: ClearOpts, _: &cfg::All, env: &Environment) {
+    if let Ok(db) = env.open_db(Some("trust.db")) {
+        let mut tx = env.begin_rw_txn().expect("failed to start db transaction");
+        tx.clear_db(db).expect("failed to force clear db");
+        tx.commit().expect("failed to commit force clear db");
+    }
+}
+
 fn init(opts: InitOpts, cfg: &cfg::All, env: &Environment) {
     if opts.force {
-        if let Ok(db) = env.open_db(Some("trust.db")) {
-            let mut tx = env.begin_rw_txn().expect("failed to start db transaction");
-            tx.clear_db(db).expect("failed to force clear db");
-            tx.commit().expect("failed to commit force clear db");
-        }
+        clear(ClearOpts {}, cfg, env)
     }
 
     let db = env
