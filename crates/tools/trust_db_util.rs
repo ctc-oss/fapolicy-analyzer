@@ -247,7 +247,7 @@ fn load_dpkg_trust() -> Result<Vec<Trust>, Error> {
         .flatten()
         .skip(6)
         .flat_map(|s| s.split_whitespace().nth(1))
-        .map(|s| s.to_string())
+        .map(String::from)
         .collect();
 
     let files: Vec<String> = packages
@@ -269,6 +269,6 @@ fn load_dpkg_trust() -> Result<Vec<Trust>, Error> {
 fn output_lines(out: Output) -> Result<Vec<String>, Error> {
     Ok(String::from_utf8(out.stdout)?
         .lines()
-        .map(|s| s.to_string())
+        .map(String::from)
         .collect())
 }
