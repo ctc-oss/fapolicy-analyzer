@@ -249,7 +249,11 @@ fn check(_: CheckDbOpts, cfg: &cfg::All) {
     let db = read::load_trust_db(&cfg.system.trust_db_path).expect("failed to load db");
 
     let t = SystemTime::now();
-    let count = check_trust_db(&db).unwrap().len();
+    let count = check_trust_db(&db)
+        .unwrap()
+        .iter()
+        .filter(|(_, v)| v.status.is_some())
+        .count();
 
     let duration = t.elapsed().expect("timer failure");
     println!(
