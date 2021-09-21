@@ -206,7 +206,6 @@ fn load_dpkg_trust() -> Result<Vec<Trust>, Error> {
 
     let files: Vec<String> = packages
         .iter()
-        .take(50)
         .flat_map(|p| Command::new("dpkg-query").args(vec!["-L", p]).output())
         .flat_map(output_lines)
         .flatten()
