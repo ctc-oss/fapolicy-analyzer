@@ -1,7 +1,7 @@
 use clap::Clap;
 
 use crate::Error::{DirTrustError, DpkgCommandFail, DpkgNotFound};
-use crate::Subcommand::{AddRec, Clear, DelRec, Dump, Init, Search};
+use crate::Subcommand::{Add, Clear, Del, Dump, Init, Search};
 use fapolicy_api::trust::Trust;
 use fapolicy_app::cfg;
 use fapolicy_daemon::rpm::load_system_trust as load_rpm_trust;
@@ -50,11 +50,17 @@ struct Opts {
 
 #[derive(Clap)]
 enum Subcommand {
+    /// Clear the trust database of all entries
     Clear(ClearOpts),
+    /// Initialize the trust database from system trust
     Init(InitOpts),
-    AddRec(AddRecOpts),
-    DelRec(DelRecOpts),
+    /// Add a file to the trust database
+    Add(AddRecOpts),
+    /// Remove a file from the trust database
+    Del(DelRecOpts),
+    /// Dump all trust entries to stdout
     Dump(DumpDbOpts),
+    /// Search for a trust entry
     Search(SearchDbOpts),
 }
 
@@ -125,8 +131,8 @@ fn main() {
     match all_opts.cmd {
         Clear(opts) => clear(opts, &sys_conf, &env),
         Init(opts) => init(opts, &sys_conf, &env),
-        AddRec(opts) => add(opts, &sys_conf, &env),
-        DelRec(opts) => del(opts, &sys_conf, &env),
+        Add(opts) => add(opts, &sys_conf, &env),
+        Del(opts) => del(opts, &sys_conf, &env),
         Dump(opts) => dump(opts, &sys_conf),
         Search(opts) => find(opts, &sys_conf, &env),
     }
