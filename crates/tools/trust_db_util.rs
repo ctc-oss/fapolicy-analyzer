@@ -1,18 +1,21 @@
 use clap::Clap;
 
 use crate::Error::{DirTrustError, DpkgCommandFail, DpkgNotFound};
-use crate::Subcommand::{Add, Clear, Del, Dump, Init, Search};
+use crate::Subcommand::{Add, Check, Clear, Del, Dump, Init, Search};
 use fapolicy_api::trust::Trust;
 use fapolicy_app::cfg;
 use fapolicy_daemon::rpm::load_system_trust as load_rpm_trust;
 use fapolicy_trust::read;
+use fapolicy_trust::read::check_trust_db;
 use fapolicy_util::sha::sha256_digest;
 use lmdb::{DatabaseFlags, Environment, Transaction, WriteFlags};
+use rayon::prelude::*;
 use std::fs::File;
 use std::io;
 use std::io::BufReader;
 use std::path::Path;
 use std::process::{Command, Output};
+use std::time::SystemTime;
 use thiserror::Error;
 
 /// An Error that can occur in this app
@@ -62,6 +65,8 @@ enum Subcommand {
     Dump(DumpDbOpts),
     /// Search for a trust entry
     Search(SearchDbOpts),
+    /// Check trust status
+    Check(CheckDbOpts),
 }
 
 #[derive(Clap)]
@@ -80,6 +85,14 @@ struct InitOpts {
     /// use dpkg to generate db
     #[clap(long)]
     dpkg: bool,
+
+    /// number of records to generate
+    #[clap(short, long)]
+    count: Option<usize>,
+
+    /// use par_iter
+    #[clap(long)]
+    par: bool,
 }
 
 #[derive(Clap)]
@@ -105,6 +118,13 @@ struct SearchDbOpts {
     /// File to delete
     #[clap(long)]
     key: String,
+}
+
+#[derive(Clap)]
+struct CheckDbOpts {
+    /// use par_iter
+    #[clap(long)]
+    par: bool,
 }
 
 fn main() {
@@ -135,6 +155,7 @@ fn main() {
         Del(opts) => del(opts, &sys_conf, &env),
         Dump(opts) => dump(opts, &sys_conf),
         Search(opts) => find(opts, &sys_conf, &env),
+        Check(opts) => check(opts, &sys_conf),
     }
 }
 
@@ -159,6 +180,7 @@ fn init(opts: InitOpts, cfg: &cfg::All, env: &Environment) {
         return;
     }
 
+    let t = SystemTime::now();
     let sys = if opts.dpkg {
         load_dpkg_trust().expect("failed to load dpkg trust")
     } else {
@@ -168,12 +190,19 @@ fn init(opts: InitOpts, cfg: &cfg::All, env: &Environment) {
     let mut tx = env.begin_rw_txn().expect("failed to start db transaction");
     for trust in &sys {
         let v = format!("{} {} {}", 1, trust.size, trust.hash);
-        tx.put(db, &trust.path, &v, WriteFlags::APPEND_DUP)
-            .expect("unable to add trust to db transaction");
+        match tx.put(db, &trust.path, &v, WriteFlags::APPEND_DUP) {
+            Ok(_) => {}
+            Err(_) => println!("skipped {}", trust.path),
+        }
     }
     tx.commit().expect("failed to commit db transaction");
 
-    println!("initialized db with {} entries", sys.len());
+    let duration = t.elapsed().expect("timer failure");
+    println!(
+        "initialized db with {} entries in {} seconds",
+        sys.len(),
+        duration.as_secs()
+    );
 }
 
 fn add(opts: AddRecOpts, _: &cfg::All, env: &Environment) {
@@ -216,6 +245,20 @@ fn dump(_: DumpDbOpts, cfg: &cfg::All) {
         .for_each(|(k, v)| println!("{} {} {}", k, v.trusted.size, v.trusted.hash))
 }
 
+fn check(_: CheckDbOpts, cfg: &cfg::All) {
+    let db = read::load_trust_db(&cfg.system.trust_db_path).expect("failed to load db");
+
+    let t = SystemTime::now();
+    let count = check_trust_db(&db).unwrap().len();
+
+    let duration = t.elapsed().expect("timer failure");
+    println!(
+        "checked {} entries in {} seconds",
+        count,
+        duration.as_secs()
+    );
+}
+
 fn new_trust_record(path: &str) -> Result<Trust, Error> {
     if Path::new(path).is_dir() {
         return Err(DirTrustError);
@@ -251,7 +294,7 @@ fn load_dpkg_trust() -> Result<Vec<Trust>, Error> {
         .collect();
 
     let files: Vec<String> = packages
-        .iter()
+        .par_iter()
         .flat_map(|p| Command::new("dpkg-query").args(vec!["-L", p]).output())
         .flat_map(output_lines)
         .flatten()
