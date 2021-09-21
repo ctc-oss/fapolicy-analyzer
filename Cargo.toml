@@ -28,6 +28,7 @@ members = [
 clap = "3.0.0-beta.2"
 lmdb-rkv = "0.14.0"
 nom = "6.1.0"
+thiserror = "1.0"
 
 fapolicy-api = { version = "0.3.0", path = "crates/api" }
 fapolicy-analyzer = { version = "0.3.0", path = "crates/analyzer" }

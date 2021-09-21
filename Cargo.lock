@@ -271,6 +271,7 @@ dependencies = [
  "fapolicy-util",
  "lmdb-rkv",
  "nom",
+ "thiserror",
 ]
 
 [[package]]
