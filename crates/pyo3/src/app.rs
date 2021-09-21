@@ -39,7 +39,7 @@ impl PySystem {
     fn new(py: Python) -> PyResult<PySystem> {
         py.allow_threads(|| {
             let conf = cfg::All::load();
-            match State::load(&conf) {
+            match State::load_checked(&conf) {
                 Ok(state) => Ok(state.into()),
                 Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{:?}", e))),
             }
