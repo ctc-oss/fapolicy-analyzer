@@ -17,7 +17,7 @@ fi
 pkexec  --disable-internal-agent env DISPLAY=$DISPLAY  XAUTHORITY=$XAUTHORITY python3 -m fapolicy_analyzer.ui
 
 # Terminate pkttyagent if started
-if [[ $pidAgent == 0 ]]; then
+if [[ $pidAgent != 0 ]]; then
     echo Terminating pkttyagent.
-    kill $pidAgent
+    kill -2 $pidAgent
 fi
