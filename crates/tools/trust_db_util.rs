@@ -122,10 +122,10 @@ fn main() {
 
 fn init(opts: InitOpts, cfg: &cfg::All, env: &Environment) {
     if opts.force {
-        if let Some(db) = env.open_db(Some("trust.db")).ok() {
+        if let Ok(db) = env.open_db(Some("trust.db")) {
             let mut tx = env.begin_rw_txn().expect("failed to start db transaction");
             tx.clear_db(db).expect("failed to force clear db");
-            tx.commit();
+            tx.commit().expect("failed to commit force clear db");
         }
     }
 
@@ -144,12 +144,14 @@ fn init(opts: InitOpts, cfg: &cfg::All, env: &Environment) {
     };
 
     let mut tx = env.begin_rw_txn().expect("failed to start db transaction");
-    for trust in sys {
+    for trust in &sys {
         let v = format!("{} {} {}", 1, trust.size, trust.hash);
         tx.put(db, &trust.path, &v, WriteFlags::APPEND_DUP)
             .expect("unable to add trust to db transaction");
     }
-    tx.commit().expect("failed to commit db transaction")
+    tx.commit().expect("failed to commit db transaction");
+
+    println!("initialized db with {} entries", sys.len());
 }
 
 fn add(opts: AddRecOpts, _: &cfg::All, env: &Environment) {
@@ -193,8 +195,8 @@ fn load_dpkg_trust() -> Result<Vec<Trust>, Error> {
     let packages: Vec<String> = Command::new("dpkg-query")
         .arg("-l")
         .output()
-        .map_err(|e| DpkgCommandFail(e))
-        .map(|x| output_lines(x))?
+        .map_err(DpkgCommandFail)
+        .map(output_lines)?
         .iter()
         .flatten()
         .skip(6)
