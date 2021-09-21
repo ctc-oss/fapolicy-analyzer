@@ -83,7 +83,10 @@ struct AddRecOpts {
 }
 
 #[derive(Clap)]
-struct DelRecOpts {}
+struct DelRecOpts {
+    /// File to delete
+    path: String,
+}
 
 #[derive(Clap)]
 struct DumpDbOpts {
@@ -92,7 +95,11 @@ struct DumpDbOpts {
 }
 
 #[derive(Clap)]
-struct SearchDbOpts {}
+struct SearchDbOpts {
+    /// File to delete
+    #[clap(long)]
+    key: String,
+}
 
 fn main() {
     let sys_conf = cfg::All::load();
@@ -119,9 +126,9 @@ fn main() {
         Clear(opts) => clear(opts, &sys_conf, &env),
         Init(opts) => init(opts, &sys_conf, &env),
         AddRec(opts) => add(opts, &sys_conf, &env),
-        DelRec(_) => {}
+        DelRec(opts) => del(opts, &sys_conf, &env),
         Dump(opts) => dump(opts, &sys_conf),
-        Search(_) => {}
+        Search(opts) => find(opts, &sys_conf, &env),
     }
 }
 
@@ -171,6 +178,30 @@ fn add(opts: AddRecOpts, _: &cfg::All, env: &Environment) {
     tx.put(db, &trust.path, &v, WriteFlags::APPEND_DUP)
         .expect("unable to add trust to db transaction");
     tx.commit().expect("failed to commit db transaction")
+}
+
+fn del(opts: DelRecOpts, _: &cfg::All, env: &Environment) {
+    let db = env.open_db(Some("trust.db")).expect("failed to open db");
+    let mut tx = env.begin_rw_txn().expect("failed to start db transaction");
+    tx.del(db, &opts.path, None)
+        .expect("failed to delete record");
+    tx.commit().expect("failed to commit db transaction")
+}
+
+fn find(opts: SearchDbOpts, _: &cfg::All, env: &Environment) {
+    let db = env.open_db(Some("trust.db")).expect("failed to open db");
+    let tx = env.begin_ro_txn().expect("failed to start ro tx");
+    match tx.get(db, &opts.key) {
+        Ok(e) => {
+            println!(
+                "{}",
+                String::from_utf8(Vec::from(e)).expect("failed to read string")
+            )
+        }
+        Err(_) => {
+            println!("entry not found")
+        }
+    }
 }
 
 fn dump(_: DumpDbOpts, cfg: &cfg::All) {
