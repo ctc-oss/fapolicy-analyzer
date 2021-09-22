@@ -6,8 +6,8 @@ version = "0.3.0"
 edition = "2018"
 
 [[bin]]
-name = "init-trust-db"
-path = "crates/tools/trustdb_init.rs"
+name = "tdb"
+path = "crates/tools/trust_db_util.rs"
 
 [[test]]
 name = "integration"
@@ -28,9 +28,12 @@ members = [
 clap = "3.0.0-beta.2"
 lmdb-rkv = "0.14.0"
 nom = "6.1.0"
+rayon = "1.5"
+thiserror = "1.0"
 
 fapolicy-api = { version = "0.3.0", path = "crates/api" }
 fapolicy-analyzer = { version = "0.3.0", path = "crates/analyzer" }
 fapolicy-app = { version = "0.3.0", path = "crates/app" }
 fapolicy-daemon = { version = "0.3.0", path = "crates/daemon" }
 fapolicy-trust = { version = "0.3.0", path = "crates/trust" }
+fapolicy-util = { version = "0.3.0", path = "crates/util" }
