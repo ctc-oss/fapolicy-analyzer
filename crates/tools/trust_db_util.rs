@@ -61,7 +61,7 @@ enum Subcommand {
     Add(AddRecOpts),
     /// Remove a file from the trust database
     Del(DelRecOpts),
-    /// Dump all trust entries to stdout
+    /// Dump all trust entries to file or stdout
     Dump(DumpDbOpts),
     /// Search for a trust entry
     Search(SearchDbOpts),
