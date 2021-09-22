@@ -268,8 +268,11 @@ dependencies = [
  "fapolicy-app",
  "fapolicy-daemon",
  "fapolicy-trust",
+ "fapolicy-util",
  "lmdb-rkv",
  "nom",
+ "rayon",
+ "thiserror",
 ]
 
 [[package]]

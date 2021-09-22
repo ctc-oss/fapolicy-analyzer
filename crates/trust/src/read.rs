@@ -63,8 +63,12 @@ pub fn load_trust_db(path: &str) -> Result<DB, Error> {
         .map_err(LmdbReadFail)
         .unwrap();
 
-    // check
-    let lookup: HashMap<String, Rec> = lookup
+    Ok(DB::from(lookup))
+}
+
+pub fn check_trust_db(db: &DB) -> Result<DB, Error> {
+    let lookup: HashMap<String, Rec> = db
+        .lookup
         .par_iter()
         .flat_map(|(p, r)| Rec::status_check(r.clone()).map(|r| (p.clone(), r)))
         .collect();
@@ -72,7 +76,7 @@ pub fn load_trust_db(path: &str) -> Result<DB, Error> {
     Ok(DB::from(lookup))
 }
 
-pub(crate) fn parse_strtyped_trust_record(s: &str, t: &str) -> Result<(Trust, TrustSource), Error> {
+fn parse_strtyped_trust_record(s: &str, t: &str) -> Result<(Trust, TrustSource), Error> {
     match t {
         "1" => parse_trust_record(s).map(|t| (t, System)),
         "2" => parse_trust_record(s).map(|t| (t, Ancillary)),
