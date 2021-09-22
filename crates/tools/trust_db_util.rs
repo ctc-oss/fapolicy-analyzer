@@ -12,7 +12,7 @@ use lmdb::{DatabaseFlags, Environment, Transaction, WriteFlags};
 use rayon::prelude::*;
 use std::fs::File;
 use std::io;
-use std::io::BufReader;
+use std::io::{BufReader, Write};
 use std::path::Path;
 use std::process::{Command, Output};
 use std::time::SystemTime;
@@ -109,8 +109,9 @@ struct DelRecOpts {
 
 #[derive(Clap)]
 struct DumpDbOpts {
-    #[clap(long)]
-    check: bool,
+    /// Optional file
+    #[clap(short, long)]
+    outfile: Option<String>,
 }
 
 #[derive(Clap)]
@@ -239,10 +240,20 @@ fn find(opts: SearchDbOpts, _: &cfg::All, env: &Environment) {
     }
 }
 
-fn dump(_: DumpDbOpts, cfg: &cfg::All) {
+fn dump(opts: DumpDbOpts, cfg: &cfg::All) {
     let db = read::load_trust_db(&cfg.system.trust_db_path).expect("failed to load db");
-    db.iter()
-        .for_each(|(k, v)| println!("{} {} {}", k, v.trusted.size, v.trusted.hash))
+    match opts.outfile {
+        None => db
+            .iter()
+            .for_each(|(k, v)| println!("{} {} {}", k, v.trusted.size, v.trusted.hash)),
+        Some(path) => {
+            let mut f = File::create(&path).expect("unable to create file");
+            for (k, v) in db.iter() {
+                f.write_all(format!("{} {} {}\n", k, v.trusted.size, v.trusted.hash).as_bytes())
+                    .expect("failed to write entry");
+            }
+        }
+    }
 }
 
 fn check(_: CheckDbOpts, cfg: &cfg::All) {
