@@ -56,7 +56,11 @@ pub enum Error {
 #[clap(name = "Trust DB Utils", version = "v0.1")]
 struct Opts {
     #[clap(subcommand)]
-    pub cmd: Subcommand,
+    cmd: Subcommand,
+
+    /// Verbose output
+    #[clap(short, long)]
+    verbose: bool,
 
     /// Specify the fapolicyd database directory
     /// Defaults to the value specified in the users XDG configuration
@@ -154,7 +158,10 @@ fn main() -> Result<(), Error> {
         panic!("dbdir must be a directory")
     }
 
-    println!("opening trust db at {}", trust_db_path.to_string_lossy());
+    if all_opts.verbose {
+        println!("opening trust db at {}", trust_db_path.to_string_lossy());
+    }
+
     let env = Environment::new()
         .set_max_dbs(1)
         .set_map_size(104857600)
@@ -162,7 +169,7 @@ fn main() -> Result<(), Error> {
 
     match all_opts.cmd {
         Clear(opts) => clear(opts, &sys_conf, &env),
-        Init(opts) => init(opts, &sys_conf, &env),
+        Init(opts) => init(opts, all_opts.verbose, &sys_conf, &env),
         Add(opts) => add(opts, &sys_conf, &env),
         Del(opts) => del(opts, &sys_conf, &env),
         Dump(opts) => dump(opts, &sys_conf),
@@ -181,7 +188,7 @@ fn clear(_: ClearOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
     Ok(())
 }
 
-fn init(opts: InitOpts, cfg: &cfg::All, env: &Environment) -> Result<(), Error> {
+fn init(opts: InitOpts, verbose: bool, cfg: &cfg::All, env: &Environment) -> Result<(), Error> {
     if opts.force {
         clear(ClearOpts {}, cfg, env)?;
     }
@@ -204,17 +211,21 @@ fn init(opts: InitOpts, cfg: &cfg::All, env: &Environment) -> Result<(), Error> 
         let v = format!("{} {} {}", 1, trust.size, trust.hash);
         match tx.put(db, &trust.path, &v, WriteFlags::APPEND_DUP) {
             Ok(_) => {}
-            Err(_) => println!("skipped {}", trust.path),
+            Err(_) if verbose => println!("skipped {}", trust.path),
+            Err(_) => {}
         }
     }
     tx.commit()?;
 
     let duration = t.elapsed().expect("timer failure");
-    println!(
-        "initialized db with {} entries in {} seconds",
-        sys.len(),
-        duration.as_secs()
-    );
+
+    if verbose {
+        println!(
+            "initialized db with {} entries in {} seconds",
+            sys.len(),
+            duration.as_secs()
+        );
+    }
 
     Ok(())
 }
@@ -243,12 +254,8 @@ fn find(opts: SearchDbOpts, _: &cfg::All, env: &Environment) -> Result<(), Error
     let db = env.open_db(Some(TRUST_DB_NAME))?;
     let tx = env.begin_ro_txn()?;
     match tx.get(db, &opts.key) {
-        Ok(e) => {
-            println!("{}", String::from_utf8(Vec::from(e))?)
-        }
-        Err(_) => {
-            println!("entry not found")
-        }
+        Ok(e) => println!("{}", String::from_utf8(Vec::from(e))?),
+        Err(_) => println!("entry not found"),
     };
 
     Ok(())
@@ -257,9 +264,11 @@ fn find(opts: SearchDbOpts, _: &cfg::All, env: &Environment) -> Result<(), Error
 fn dump(opts: DumpDbOpts, cfg: &cfg::All) -> Result<(), Error> {
     let db = read::load_trust_db(&cfg.system.trust_db_path)?;
     match opts.outfile {
-        None => db
-            .iter()
-            .for_each(|(k, v)| println!("{} {} {}", k, v.trusted.size, v.trusted.hash)),
+        None => {
+            for (k, v) in db.iter() {
+                println!("{} {} {}", k, v.trusted.size, v.trusted.hash)
+            }
+        }
         Some(path) => {
             let mut f = File::create(&path)?;
             for (k, v) in db.iter() {
