@@ -275,8 +275,7 @@ fn check(_: CheckDbOpts, cfg: &cfg::All) -> Result<(), Error> {
     let db = read::load_trust_db(&cfg.system.trust_db_path)?;
 
     let t = SystemTime::now();
-    let count = check_trust_db(&db)
-        .unwrap()
+    let count = check_trust_db(&db)?
         .iter()
         .filter(|(_, v)| v.status.is_some())
         .count();
@@ -301,7 +300,7 @@ fn new_trust_record(path: &str) -> Result<Trust, Error> {
 
     Ok(Trust {
         path: path.to_string(),
-        size: f.metadata().unwrap().len(),
+        size: f.metadata()?.len(),
         hash: sha,
     })
 }
