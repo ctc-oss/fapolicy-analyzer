@@ -7,7 +7,7 @@ use fapolicy_analyzer::users::{load_groups, load_users, Group, User};
 use fapolicy_trust::db::DB;
 
 use fapolicy_trust::ops::Changeset;
-use fapolicy_trust::read::load_trust_db;
+use fapolicy_trust::read::{check_trust_db, load_trust_db};
 use serde::Deserialize;
 use serde::Serialize;
 
@@ -39,6 +39,12 @@ impl State {
             users: load_users(),
             groups: load_groups(),
         })
+    }
+
+    pub fn load_checked(cfg: &All) -> Result<State, Error> {
+        let state = State::load(cfg)?;
+        let trust_db = check_trust_db(&state.trust_db)?;
+        Ok(State { trust_db, ..state })
     }
 
     /// Apply a Changeset to this state, results in a new immutable state
