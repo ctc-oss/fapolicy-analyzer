@@ -12,6 +12,7 @@
       - dbus-devel
       - gcc
       - git
+      - glade
       - gobject-introspection-devel
       - openssl-devel
       - python3-cairo-devel
