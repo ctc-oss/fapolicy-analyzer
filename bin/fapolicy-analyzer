@@ -5,7 +5,7 @@ pidAgent=0
 
 # Use local desktop's XAUTHORITY if DISPLAY == :0
 if (echo $DISPLAY | grep '^:0'); then
-    # Note: The Gnome desktop start its own dbus agent.
+    # Note: The Gnome desktop starts its own dbus agent.
     XAUTHORITY=$XAUTHORITY
 else
     # Start the dbus service agent if ssh session with a remote DISPLAY
