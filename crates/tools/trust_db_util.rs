@@ -1,22 +1,24 @@
-use clap::Clap;
-
-use crate::Error::{DirTrustError, DpkgCommandFail, DpkgNotFound};
-use crate::Subcommand::{Add, Check, Clear, Del, Dump, Init, Search};
-use fapolicy_api::trust::Trust;
-use fapolicy_app::cfg;
-use fapolicy_daemon::rpm::load_system_trust as load_rpm_trust;
-use fapolicy_trust::read;
-use fapolicy_trust::read::check_trust_db;
-use fapolicy_util::sha::sha256_digest;
-use lmdb::{DatabaseFlags, Environment, Transaction, WriteFlags};
-use rayon::prelude::*;
 use std::fs::File;
 use std::io;
 use std::io::{BufReader, Write};
 use std::path::Path;
 use std::process::{Command, Output};
 use std::time::SystemTime;
+
+use clap::Clap;
+use lmdb::{DatabaseFlags, Environment, Transaction, WriteFlags};
+use rayon::prelude::*;
 use thiserror::Error;
+
+use fapolicy_api::trust::Trust;
+use fapolicy_app::cfg;
+use fapolicy_daemon::rpm::load_system_trust as load_rpm_trust;
+use fapolicy_trust::read;
+use fapolicy_trust::read::check_trust_db;
+use fapolicy_util::sha::sha256_digest;
+
+use crate::Error::{DirTrustError, DpkgCommandFail, DpkgNotFound};
+use crate::Subcommand::{Add, Check, Clear, Del, Dump, Init, Search};
 
 /// An Error that can occur in this app
 #[derive(Error, Debug)]
@@ -26,6 +28,15 @@ pub enum Error {
 
     #[error("dpkg-query command failed, {0}")]
     DpkgCommandFail(io::Error),
+
+    #[error("{0}")]
+    RpmError(#[from] fapolicy_daemon::rpm::Error),
+
+    #[error("{0}")]
+    LmdbError(#[from] lmdb::Error),
+
+    #[error("{0}")]
+    TrustError(#[from] fapolicy_trust::error::Error),
 
     #[error("cant trust a directory")]
     DirTrustError,
@@ -128,7 +139,7 @@ struct CheckDbOpts {
     par: bool,
 }
 
-fn main() {
+fn main() -> Result<(), Error> {
     let sys_conf = cfg::All::load();
     let all_opts: Opts = Opts::parse();
     let trust_db_path = match all_opts.dbdir {
@@ -146,49 +157,50 @@ fn main() {
     let env = Environment::new()
         .set_max_dbs(1)
         .set_map_size(104857600)
-        .open(trust_db_path)
-        .expect("unable to open path to trust db");
+        .open(trust_db_path)?;
 
     match all_opts.cmd {
-        Clear(opts) => clear(opts, &sys_conf, &env),
-        Init(opts) => init(opts, &sys_conf, &env),
-        Add(opts) => add(opts, &sys_conf, &env),
-        Del(opts) => del(opts, &sys_conf, &env),
-        Dump(opts) => dump(opts, &sys_conf),
-        Search(opts) => find(opts, &sys_conf, &env),
-        Check(opts) => check(opts, &sys_conf),
-    }
+        Clear(opts) => clear(opts, &sys_conf, &env)?,
+        Init(opts) => init(opts, &sys_conf, &env)?,
+        Add(opts) => add(opts, &sys_conf, &env)?,
+        Del(opts) => del(opts, &sys_conf, &env)?,
+        Dump(opts) => dump(opts, &sys_conf)?,
+        Search(opts) => find(opts, &sys_conf, &env)?,
+        Check(opts) => check(opts, &sys_conf)?,
+    };
+
+    Ok(())
 }
 
-fn clear(_: ClearOpts, _: &cfg::All, env: &Environment) {
+fn clear(_: ClearOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
     if let Ok(db) = env.open_db(Some("trust.db")) {
-        let mut tx = env.begin_rw_txn().expect("failed to start db transaction");
-        tx.clear_db(db).expect("failed to force clear db");
-        tx.commit().expect("failed to commit force clear db");
-    }
+        let mut tx = env.begin_rw_txn()?;
+        tx.clear_db(db)?;
+        tx.commit()?;
+    };
+
+    Ok(())
 }
 
-fn init(opts: InitOpts, cfg: &cfg::All, env: &Environment) {
+fn init(opts: InitOpts, cfg: &cfg::All, env: &Environment) -> Result<(), Error> {
     if opts.force {
-        clear(ClearOpts {}, cfg, env)
+        clear(ClearOpts {}, cfg, env)?;
     }
 
-    let db = env
-        .create_db(Some("trust.db"), DatabaseFlags::DUP_SORT)
-        .expect("failed to create db");
+    let db = env.create_db(Some("trust.db"), DatabaseFlags::DUP_SORT)?;
 
     if opts.empty {
-        return;
+        return Ok(());
     }
 
     let t = SystemTime::now();
     let sys = if opts.dpkg {
-        load_dpkg_trust().expect("failed to load dpkg trust")
+        load_dpkg_trust()?
     } else {
-        load_rpm_trust(&cfg.system.system_trust_path).expect("failed to load rpm trust")
+        load_rpm_trust(&cfg.system.system_trust_path)?
     };
 
-    let mut tx = env.begin_rw_txn().expect("failed to start db transaction");
+    let mut tx = env.begin_rw_txn()?;
     for trust in &sys {
         let v = format!("{} {} {}", 1, trust.size, trust.hash);
         match tx.put(db, &trust.path, &v, WriteFlags::APPEND_DUP) {
@@ -196,7 +208,7 @@ fn init(opts: InitOpts, cfg: &cfg::All, env: &Environment) {
             Err(_) => println!("skipped {}", trust.path),
         }
     }
-    tx.commit().expect("failed to commit db transaction");
+    tx.commit()?;
 
     let duration = t.elapsed().expect("timer failure");
     println!(
@@ -204,60 +216,64 @@ fn init(opts: InitOpts, cfg: &cfg::All, env: &Environment) {
         sys.len(),
         duration.as_secs()
     );
+
+    Ok(())
 }
 
-fn add(opts: AddRecOpts, _: &cfg::All, env: &Environment) {
-    let trust = new_trust_record(&opts.path).expect("unable to generate trust");
-    let db = env.open_db(Some("trust.db")).expect("failed to open db");
-    let mut tx = env.begin_rw_txn().expect("failed to start db transaction");
+fn add(opts: AddRecOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
+    let trust = new_trust_record(&opts.path)?;
+    let db = env.open_db(Some("trust.db"))?;
+    let mut tx = env.begin_rw_txn()?;
     let v = format!("{} {} {}", 2, trust.size, trust.hash);
-    tx.put(db, &trust.path, &v, WriteFlags::APPEND_DUP)
-        .expect("unable to add trust to db transaction");
-    tx.commit().expect("failed to commit db transaction")
+    tx.put(db, &trust.path, &v, WriteFlags::APPEND_DUP)?;
+    tx.commit()?;
+
+    Ok(())
 }
 
-fn del(opts: DelRecOpts, _: &cfg::All, env: &Environment) {
-    let db = env.open_db(Some("trust.db")).expect("failed to open db");
-    let mut tx = env.begin_rw_txn().expect("failed to start db transaction");
-    tx.del(db, &opts.path, None)
-        .expect("failed to delete record");
-    tx.commit().expect("failed to commit db transaction")
+fn del(opts: DelRecOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
+    let db = env.open_db(Some("trust.db"))?;
+    let mut tx = env.begin_rw_txn()?;
+    tx.del(db, &opts.path, None)?;
+    tx.commit()?;
+
+    Ok(())
 }
 
-fn find(opts: SearchDbOpts, _: &cfg::All, env: &Environment) {
-    let db = env.open_db(Some("trust.db")).expect("failed to open db");
-    let tx = env.begin_ro_txn().expect("failed to start ro tx");
+fn find(opts: SearchDbOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
+    let db = env.open_db(Some("trust.db"))?;
+    let tx = env.begin_ro_txn()?;
     match tx.get(db, &opts.key) {
         Ok(e) => {
-            println!(
-                "{}",
-                String::from_utf8(Vec::from(e)).expect("failed to read string")
-            )
+            println!("{}", String::from_utf8(Vec::from(e))?)
         }
         Err(_) => {
             println!("entry not found")
         }
-    }
+    };
+
+    Ok(())
 }
 
-fn dump(opts: DumpDbOpts, cfg: &cfg::All) {
-    let db = read::load_trust_db(&cfg.system.trust_db_path).expect("failed to load db");
+fn dump(opts: DumpDbOpts, cfg: &cfg::All) -> Result<(), Error> {
+    let db = read::load_trust_db(&cfg.system.trust_db_path)?;
     match opts.outfile {
         None => db
             .iter()
             .for_each(|(k, v)| println!("{} {} {}", k, v.trusted.size, v.trusted.hash)),
         Some(path) => {
-            let mut f = File::create(&path).expect("unable to create file");
+            let mut f = File::create(&path)?;
             for (k, v) in db.iter() {
-                f.write_all(format!("{} {} {}\n", k, v.trusted.size, v.trusted.hash).as_bytes())
-                    .expect("failed to write entry");
+                f.write_all(format!("{} {} {}\n", k, v.trusted.size, v.trusted.hash).as_bytes())?;
             }
         }
-    }
+    };
+
+    Ok(())
 }
 
-fn check(_: CheckDbOpts, cfg: &cfg::All) {
-    let db = read::load_trust_db(&cfg.system.trust_db_path).expect("failed to load db");
+fn check(_: CheckDbOpts, cfg: &cfg::All) -> Result<(), Error> {
+    let db = read::load_trust_db(&cfg.system.trust_db_path)?;
 
     let t = SystemTime::now();
     let count = check_trust_db(&db)
@@ -272,6 +288,8 @@ fn check(_: CheckDbOpts, cfg: &cfg::All) {
         count,
         duration.as_secs()
     );
+
+    Ok(())
 }
 
 fn new_trust_record(path: &str) -> Result<Trust, Error> {
