@@ -265,7 +265,7 @@ msgid "_Action"
 msgstr ""
 
 #: fapolicy_analyzer/glade/main_window.glade:153
-msgid "Anaylze From Audit Log"
+msgid "Analyze From Audit Log"
 msgstr ""
 
 #: fapolicy_analyzer/glade/main_window.glade:174
