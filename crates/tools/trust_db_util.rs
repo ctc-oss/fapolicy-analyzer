@@ -160,16 +160,14 @@ fn main() -> Result<(), Error> {
         .open(trust_db_path)?;
 
     match all_opts.cmd {
-        Clear(opts) => clear(opts, &sys_conf, &env)?,
-        Init(opts) => init(opts, &sys_conf, &env)?,
-        Add(opts) => add(opts, &sys_conf, &env)?,
-        Del(opts) => del(opts, &sys_conf, &env)?,
-        Dump(opts) => dump(opts, &sys_conf)?,
-        Search(opts) => find(opts, &sys_conf, &env)?,
-        Check(opts) => check(opts, &sys_conf)?,
-    };
-
-    Ok(())
+        Clear(opts) => clear(opts, &sys_conf, &env),
+        Init(opts) => init(opts, &sys_conf, &env),
+        Add(opts) => add(opts, &sys_conf, &env),
+        Del(opts) => del(opts, &sys_conf, &env),
+        Dump(opts) => dump(opts, &sys_conf),
+        Search(opts) => find(opts, &sys_conf, &env),
+        Check(opts) => check(opts, &sys_conf),
+    }
 }
 
 fn clear(_: ClearOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
