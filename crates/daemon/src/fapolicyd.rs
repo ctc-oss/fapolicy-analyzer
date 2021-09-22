@@ -5,6 +5,7 @@ use crate::error::Error::FapolicydReloadFail;
 use std::io::Write;
 
 pub const TRUST_DB_PATH: &str = "/var/lib/fapolicyd";
+pub const TRUST_DB_NAME: &str = "trust.db";
 pub const TRUST_FILE_PATH: &str = "/etc/fapolicyd/fapolicyd.trust";
 pub const RPM_DB_PATH: &str = "/var/lib/rpm";
 pub const FIFO_PIPE: &str = "/run/fapolicyd/fapolicyd.fifo";

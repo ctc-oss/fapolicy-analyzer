@@ -19,6 +19,7 @@ use fapolicy_util::sha::sha256_digest;
 
 use crate::Error::{DirTrustError, DpkgCommandFail, DpkgNotFound};
 use crate::Subcommand::{Add, Check, Clear, Del, Dump, Init, Search};
+use fapolicy_daemon::fapolicyd::TRUST_DB_NAME;
 
 /// An Error that can occur in this app
 #[derive(Error, Debug)]
@@ -171,7 +172,7 @@ fn main() -> Result<(), Error> {
 }
 
 fn clear(_: ClearOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
-    if let Ok(db) = env.open_db(Some("trust.db")) {
+    if let Ok(db) = env.open_db(Some(TRUST_DB_NAME)) {
         let mut tx = env.begin_rw_txn()?;
         tx.clear_db(db)?;
         tx.commit()?;
@@ -185,7 +186,7 @@ fn init(opts: InitOpts, cfg: &cfg::All, env: &Environment) -> Result<(), Error> 
         clear(ClearOpts {}, cfg, env)?;
     }
 
-    let db = env.create_db(Some("trust.db"), DatabaseFlags::DUP_SORT)?;
+    let db = env.create_db(Some(TRUST_DB_NAME), DatabaseFlags::DUP_SORT)?;
 
     if opts.empty {
         return Ok(());
@@ -220,7 +221,7 @@ fn init(opts: InitOpts, cfg: &cfg::All, env: &Environment) -> Result<(), Error> 
 
 fn add(opts: AddRecOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
     let trust = new_trust_record(&opts.path)?;
-    let db = env.open_db(Some("trust.db"))?;
+    let db = env.open_db(Some(TRUST_DB_NAME))?;
     let mut tx = env.begin_rw_txn()?;
     let v = format!("{} {} {}", 2, trust.size, trust.hash);
     tx.put(db, &trust.path, &v, WriteFlags::APPEND_DUP)?;
@@ -230,7 +231,7 @@ fn add(opts: AddRecOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
 }
 
 fn del(opts: DelRecOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
-    let db = env.open_db(Some("trust.db"))?;
+    let db = env.open_db(Some(TRUST_DB_NAME))?;
     let mut tx = env.begin_rw_txn()?;
     tx.del(db, &opts.path, None)?;
     tx.commit()?;
@@ -239,7 +240,7 @@ fn del(opts: DelRecOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
 }
 
 fn find(opts: SearchDbOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
-    let db = env.open_db(Some("trust.db"))?;
+    let db = env.open_db(Some(TRUST_DB_NAME))?;
     let tx = env.begin_ro_txn()?;
     match tx.get(db, &opts.key) {
         Ok(e) => {
@@ -305,28 +306,31 @@ fn new_trust_record(path: &str) -> Result<Trust, Error> {
     })
 }
 
+// number of lines to eliminate the `dpkg-query -l` header
+const DPKG_QUERY_HEADER_LINES: usize = 6;
+const DPKG_QUERY: &str = "dpkg-query";
 fn load_dpkg_trust() -> Result<Vec<Trust>, Error> {
     // check that dpkg-query exists and can be called
-    let _exists = Command::new("dpkg-query")
+    let _exists = Command::new(DPKG_QUERY)
         .arg("--version")
         .output()
         .map_err(|_| DpkgNotFound)?;
 
-    let packages: Vec<String> = Command::new("dpkg-query")
+    let packages: Vec<String> = Command::new(DPKG_QUERY)
         .arg("-l")
         .output()
         .map_err(DpkgCommandFail)
         .map(output_lines)?
         .iter()
         .flatten()
-        .skip(6)
+        .skip(DPKG_QUERY_HEADER_LINES)
         .flat_map(|s| s.split_whitespace().nth(1))
         .map(String::from)
         .collect();
 
     let files: Vec<String> = packages
         .par_iter()
-        .flat_map(|p| Command::new("dpkg-query").args(vec!["-L", p]).output())
+        .flat_map(|p| Command::new(DPKG_QUERY).args(vec!["-L", p]).output())
         .flat_map(output_lines)
         .flatten()
         .collect();
