@@ -6,20 +6,20 @@ use std::process::{Command, Output};
 use std::time::SystemTime;
 
 use clap::Clap;
-use lmdb::{DatabaseFlags, Environment, Transaction, WriteFlags};
+use lmdb::{Cursor, DatabaseFlags, Environment, Transaction, WriteFlags};
 use rayon::prelude::*;
 use thiserror::Error;
 
 use fapolicy_api::trust::Trust;
 use fapolicy_app::cfg;
+use fapolicy_daemon::fapolicyd::TRUST_DB_NAME;
 use fapolicy_daemon::rpm::load_system_trust as load_rpm_trust;
 use fapolicy_trust::read;
 use fapolicy_trust::read::check_trust_db;
 use fapolicy_util::sha::sha256_digest;
 
 use crate::Error::{DirTrustError, DpkgCommandFail, DpkgNotFound};
-use crate::Subcommand::{Add, Check, Clear, Del, Dump, Init, Search};
-use fapolicy_daemon::fapolicyd::TRUST_DB_NAME;
+use crate::Subcommand::{Add, Check, Clear, Count, Del, Dump, Init, Search};
 
 /// An Error that can occur in this app
 #[derive(Error, Debug)]
@@ -83,6 +83,8 @@ enum Subcommand {
     Search(SearchDbOpts),
     /// Check trust status
     Check(CheckDbOpts),
+    /// Count the number of trust entries
+    Count(CountOpts),
 }
 
 #[derive(Clap)]
@@ -144,6 +146,9 @@ struct CheckDbOpts {
     par: bool,
 }
 
+#[derive(Clap)]
+struct CountOpts {}
+
 fn main() -> Result<(), Error> {
     let sys_conf = cfg::All::load();
     let all_opts: Opts = Opts::parse();
@@ -175,6 +180,7 @@ fn main() -> Result<(), Error> {
         Dump(opts) => dump(opts, &sys_conf),
         Search(opts) => find(opts, &sys_conf, &env),
         Check(opts) => check(opts, &sys_conf),
+        Count(opts) => count(opts, &sys_conf, &env),
     }
 }
 
@@ -295,6 +301,16 @@ fn check(_: CheckDbOpts, cfg: &cfg::All) -> Result<(), Error> {
         count,
         duration.as_secs()
     );
+
+    Ok(())
+}
+
+fn count(_: CountOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
+    let db = env.open_db(Some(TRUST_DB_NAME))?;
+    let tx = env.begin_ro_txn()?;
+    let mut c = tx.open_ro_cursor(db)?;
+    let cnt = c.iter().count();
+    println!("{}", cnt);
 
     Ok(())
 }
