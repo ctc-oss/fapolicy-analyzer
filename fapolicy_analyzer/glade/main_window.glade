@@ -150,7 +150,7 @@
                           <object class="GtkMenuItem" id="analyzeMenu">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">Anaylze From Audit Log</property>
+                            <property name="label" translatable="yes">Analyze From Audit Log</property>
                             <signal name="activate" handler="on_analyzeMenu_activate" swapped="no"/>
                           </object>
                         </child>
