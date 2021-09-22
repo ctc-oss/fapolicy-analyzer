@@ -19,5 +19,5 @@ pkexec  --disable-internal-agent env DISPLAY=$DISPLAY  XAUTHORITY=$XAUTHORITY py
 # Terminate pkttyagent if started
 if [[ $pidAgent != 0 ]]; then
     echo Terminating pkttyagent.
-    kill -2 $pidAgent
+    kill -SIGTERM $pidAgent
 fi
