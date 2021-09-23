@@ -139,7 +139,7 @@ def test_path_color(widget):
     assert view.get_model()[0][5] == Colors.LIGHT_GREEN
     # Partical Access
     widget.load_store([_mock_object(access="A", mode="R")])
-    assert view.get_model()[0][5] == Colors.LIGHT_YELLOW
+    assert view.get_model()[0][5] == Colors.LIGHT_GREEN
     # Bad data
     widget.load_store([_mock_object(access="foo")])
     assert view.get_model()[0][5] == Colors.LIGHT_RED
