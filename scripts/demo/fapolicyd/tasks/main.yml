@@ -5,7 +5,6 @@
     state: present
     name:
       - fapolicyd
-  environment: "{{ proxy_env }}"
 
 - name: override fapolicy configuration
   copy:

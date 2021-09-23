@@ -1,3 +1,15 @@
+# Install any missing plugins
+required_plugins = %w( vagrant-vbguest vagrant-proxyconf )
+plugins_to_install = required_plugins.select { |plugin| not Vagrant.has_plugin? plugin }
+if not plugins_to_install.empty?
+  puts "Installing plugins: #{plugins_to_install.join(' ')}"
+  if system "vagrant plugin install #{plugins_to_install.join(' ')}"
+    exec "vagrant #{ARGV.join(' ')}"
+  else
+    abort "Installation of one or more plugins has failed. Aborting."
+  end
+end
+
 Vagrant.configure("2") do |config|
   config.vm.box = "fedora/34-cloud-base"
   config.vm.box_version = "34.20210423.0"
@@ -6,21 +18,31 @@ Vagrant.configure("2") do |config|
   config.ssh.forward_x11 = true
 
   config.vbguest.auto_update = false
+  config.vm.synced_folder ".", "/vagrant", disabled: true
   config.vm.provider "virtualbox" do |vb|
     vb.gui = false
     vb.memory = "2048"
   end
 
   rpm_url = ENV['rpm_url']
-  http_proxy = ENV['http_proxy']
-  https_proxy = ENV['https_proxy']
 
+  config.proxy.enabled = true
+  config.proxy.http = ENV['http_proxy']
+  config.proxy.https = ENV['https_proxy']
+  config.proxy.no_proxy = "localhost,127.0.0.1"
+
+  env = "prod"
+  if ENV['ENV'] == 'dev'
+    env = "dev"
+    config.vbguest.auto_update = true
+    config.vm.synced_folder ".shared/", "/shared", type: "virtualbox"
+  end
+  
   config.vm.provision "ansible" do |ansible|
     ansible.playbook = "../../demo/site.yml"
     ansible.extra_vars = {
       rpm_url: rpm_url,
-      http_proxy: http_proxy,
-      https_proxy: https_proxy
+      env: env
     }
   end
 end

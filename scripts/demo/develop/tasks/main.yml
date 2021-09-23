@@ -23,14 +23,12 @@
       - sqlite-devel
       - tk-devel
       - zlib-devel
-  environment: "{{ proxy_env }}"
 
 - name: install rust for the vagrant user
   become: yes
   become_user: "{{ vagrant_user }}"
   shell: "curl https://sh.rustup.rs -sSf | sh -s -- -y"
   changed_when: false
-  environment: "{{ proxy_env }}"
 
 - name: install pipenv for the vagrant user
   become: yes
@@ -38,34 +36,44 @@
   pip:
     name: pipenv
     extra_args: --user
-  environment: "{{ proxy_env }}"
 
 - name: source code checkout
   become: yes
   become_user: "{{ vagrant_user }}"
   git:
     repo: 'https://github.com/ctc-oss/fapolicy-analyzer.git'
-    dest: "/home/{{ vagrant_user }}/git/fapolicy-analyzer"
-  environment: "{{ proxy_env }}"
+    dest: "/shared/{{ vagrant_user }}/git/fapolicy-analyzer"
 
 - name: create python environment
   become: yes
   become_user: "{{ vagrant_user }}"
-  command: chdir="/home/{{ vagrant_user }}/git/fapolicy-analyzer/" pipenv install --dev
-  environment: "{{ proxy_env }}"
+  command: chdir="/shared/{{ vagrant_user }}/git/fapolicy-analyzer/" pipenv install --dev
+
+- name: check if fapolicyd service exists
+  stat: path=/etc/systemd/system/multi-user.target.wants/fapolicyd.service
+  register: fapolicyd_service_status
 
 - name: stop fapolicyd service
   systemd:
     name: fapolicyd
     state: stopped
+  when: fapolicyd_service_status.stat.exists
 
 - name: build the project
   become: yes
   become_user: "{{ vagrant_user }}"
-  command: chdir="/home/{{ vagrant_user }}/git/fapolicy-analyzer/" pipenv run python setup.py develop
-  environment: "{{ proxy_env }}"
+  command: chdir="/shared/{{ vagrant_user }}/git/fapolicy-analyzer/" pipenv run python setup.py develop
+
+- name: create symbolic link to shared repo
+  file:
+    src: "/shared/{{ vagrant_user }}/git"
+    dest: "/home/{{ vagrant_user }}/git"
+    owner: "{{ vagrant_user }}"
+    group: "{{ vagrant_user }}"
+    state: link
 
 - name: start fapolicyd service
   systemd:
     name: fapolicyd
     state: started
+  when: fapolicyd_service_status.stat.exists

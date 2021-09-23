@@ -9,7 +9,6 @@
       - xorg-x11-xauth
       - dbus-x11
       - dconf
-  environment: "{{ proxy_env }}"
 
 - name: share vagrant user xauthority globally
   lineinfile:
