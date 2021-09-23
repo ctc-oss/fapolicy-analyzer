@@ -36,12 +36,12 @@ fn main() {
     let mut rng = rand::thread_rng();
     let arand = Uniform::from(0..(a.len()));
     let orand = Uniform::from(0..(o.len()));
+    let orand2 = Uniform::from(2..(o.len().min(7)));
     let srand = Uniform::from(0..(s.len()));
     let urand = Uniform::from(0..(sys.users.len()));
 
     for i in 0..100 {
         let u = sys.users.iter().nth(urand.sample(&mut rng)).unwrap();
-        let obj = o.iter().nth(orand.sample(&mut rng)).unwrap();
         let t = if i % 2 == 0 {
             s.iter()
                 .map(|r| r.trusted.clone())
@@ -56,20 +56,23 @@ fn main() {
                 .clone()
         };
 
-        let e = Event {
-            rule_id: 0,
-            dec: Decision::DenyAudit,
-            perm: Permission::Any,
-            uid: u.uid as i32,
-            gid: u.gid as i32,
-            pid: 999,
-            subj: Subject {
-                parts: vec![SubjPart::Exe(t.path)],
-            },
-            obj: Object {
-                parts: vec![ObjPart::Path(obj.trusted.path.clone())],
-            },
-        };
-        println!("{}", e.to_string().trim());
+        for _ in 1..(orand2.sample(&mut rng)) {
+            let rec = o.iter().nth(orand.sample(&mut rng)).unwrap();
+            let e = Event {
+                rule_id: 0,
+                dec: Decision::DenyAudit,
+                perm: Permission::Any,
+                uid: u.uid as i32,
+                gid: u.gid as i32,
+                pid: 999,
+                subj: Subject {
+                    parts: vec![SubjPart::Exe(t.path.clone())],
+                },
+                obj: Object {
+                    parts: vec![ObjPart::Path(rec.trusted.path.clone())],
+                },
+            };
+            println!("{}", e.to_string().trim());
+        }
     }
 }
