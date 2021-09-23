@@ -84,7 +84,7 @@ fn parse_strtyped_trust_record(s: &str, t: &str) -> Result<(Trust, TrustSource),
     }
 }
 
-fn parse_trust_record(s: &str) -> Result<Trust, Error> {
+pub fn parse_trust_record(s: &str) -> Result<Trust, Error> {
     let mut v: Vec<&str> = s.rsplitn(3, ' ').collect();
     v.reverse();
     match v.as_slice() {
