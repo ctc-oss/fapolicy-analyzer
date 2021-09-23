@@ -221,6 +221,14 @@ fn init(opts: InitOpts, verbose: bool, cfg: &cfg::All, env: &Environment) -> Res
         load_rpm_trust(&cfg.system.system_trust_path)?
     };
 
+    let sys = if let Some(c) = opts.count {
+        let mut m = sys;
+        m.truncate(c);
+        m
+    } else {
+        sys
+    };
+
     let mut tx = env.begin_rw_txn()?;
     for trust in &sys {
         let v = format!("{} {} {}", 1, trust.size, trust.hash);
@@ -374,16 +382,12 @@ fn load_dpkg_trust() -> Result<Vec<Trust>, Error> {
         .map(String::from)
         .collect();
 
-    let files: Vec<String> = packages
+    Ok(packages
         .par_iter()
         .flat_map(|p| Command::new(DPKG_QUERY).args(vec!["-L", p]).output())
         .flat_map(output_lines)
         .flatten()
-        .collect();
-
-    Ok(files
-        .iter()
-        .filter_map(|s| match new_trust_record(s) {
+        .filter_map(|s| match new_trust_record(&s) {
             Ok(t) => Some(t),
             Err(_) => None,
         })
