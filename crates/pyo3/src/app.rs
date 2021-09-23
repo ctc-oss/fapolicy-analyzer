@@ -1,7 +1,7 @@
 use pyo3::prelude::*;
 use pyo3::{exceptions, PyResult};
 
-use fapolicy_analyzer::log::Event;
+use fapolicy_analyzer::event::Event;
 use fapolicy_app::app::State;
 use fapolicy_app::cfg;
 use fapolicy_app::sys::deploy_app_state;

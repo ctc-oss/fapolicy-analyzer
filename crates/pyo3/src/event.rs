@@ -1,6 +1,10 @@
 use pyo3::prelude::*;
 
-use fapolicy_analyzer::log::Event;
+use fapolicy_analyzer::event::Event;
+
+pub struct PyEventAnalysis {
+    event: PyEvent,
+}
 
 /// An Event parsed from a fapolicyd log
 #[pyclass(module = "log", name = "Event")]

@@ -1,5 +1,5 @@
+use fapolicy_analyzer::event::Event;
 use fapolicy_analyzer::log;
-use fapolicy_analyzer::log::Event;
 use nom::combinator::map;
 use std::fs::File;
 use std::io::{BufRead, BufReader};

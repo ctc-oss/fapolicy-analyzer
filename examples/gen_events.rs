@@ -1,4 +1,4 @@
-use fapolicy_analyzer::log::Event;
+use fapolicy_analyzer::event::Event;
 use fapolicy_analyzer::rules::{Decision, Object, Permission, Subject};
 use fapolicy_analyzer::rules::{ObjPart, SubjPart};
 use fapolicy_app::app::State;
