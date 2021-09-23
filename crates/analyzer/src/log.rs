@@ -1,3 +1,4 @@
+use std::fmt::Display;
 use std::fs::File;
 use std::io::{prelude::*, BufReader};
 use std::iter::Iterator;
@@ -31,6 +32,27 @@ impl FromStr for Event {
             Ok((_, s)) => Ok(s),
             Err(_) => Err("Failed to parse Event from string".into()),
         }
+    }
+}
+
+impl Display for Event {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_fmt(format_args!("rule={} ", self.rule_id))?;
+        f.write_fmt(format_args!("dec={} ", self.dec))?;
+        f.write_fmt(format_args!("{} ", self.perm))?;
+        f.write_fmt(format_args!("uid={} ", self.uid))?;
+        f.write_fmt(format_args!("gid={} ", self.gid))?;
+        f.write_fmt(format_args!("pid={} ", self.pid))?;
+        f.write_fmt(format_args!("exe={} ", self.subj.exe().unwrap()))?;
+        f.write_str(": ")?;
+        let o = self
+            .obj
+            .parts
+            .iter()
+            .fold(String::new(), |x, p| format!("{} {}", x, p));
+        f.write_fmt(format_args!("{} ", o))?;
+
+        Ok(())
     }
 }
 
