@@ -25,13 +25,23 @@ fn main() {
         .map(|e| e.1.clone())
         .collect();
 
+    let o: Vec<Rec> = sys
+        .trust_db
+        .iter()
+        .filter(|(p, r)| r.is_system() && p.contains(".so"))
+        .map(|e| e.1.clone())
+        .take(100)
+        .collect();
+
     let mut rng = rand::thread_rng();
-    let arand = Uniform::from(1..(a.len()));
-    let srand = Uniform::from(1..(s.len()));
-    let urand = Uniform::from(1..(sys.users.len()));
+    let arand = Uniform::from(0..(a.len()));
+    let orand = Uniform::from(0..(o.len()));
+    let srand = Uniform::from(0..(s.len()));
+    let urand = Uniform::from(0..(sys.users.len()));
 
     for i in 0..100 {
         let u = sys.users.iter().nth(urand.sample(&mut rng)).unwrap();
+        let obj = o.iter().nth(orand.sample(&mut rng)).unwrap();
         let t = if i % 2 == 0 {
             s.iter()
                 .map(|r| r.trusted.clone())
@@ -45,7 +55,6 @@ fn main() {
                 .unwrap()
                 .clone()
         };
-        let (o, _) = sys.trust_db.iter().nth(i + 100).unwrap();
 
         let e = Event {
             rule_id: 0,
@@ -58,7 +67,7 @@ fn main() {
                 parts: vec![SubjPart::Exe(t.path)],
             },
             obj: Object {
-                parts: vec![ObjPart::Path(o.clone())],
+                parts: vec![ObjPart::Path(obj.trusted.path.clone())],
             },
         };
         println!("{}", e.to_string().trim());
