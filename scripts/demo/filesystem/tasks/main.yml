@@ -25,7 +25,6 @@
     dest: /tmp
     remote_src: yes
     extra_opts: [--strip-components=1]
-  environment: "{{ proxy_env }}"
 
 - name: get bat
   unarchive:
@@ -33,7 +32,6 @@
     dest: /tmp
     remote_src: yes
     extra_opts: [--strip-components=1]
-  environment: "{{ proxy_env }}"
 
 - name: get printr
   unarchive:
@@ -41,7 +39,6 @@
     dest: /tmp
     remote_src: yes
     extra_opts: [--strip-components=1]
-  environment: "{{ proxy_env }}"
 
 - name: get ripgrep
   unarchive:
@@ -49,7 +46,6 @@
     dest: /tmp
     remote_src: yes
     extra_opts: [--strip-components=1]
-  environment: "{{ proxy_env }}"
 
 - name: install system trust demonstration files
   copy:
