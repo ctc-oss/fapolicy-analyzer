@@ -6,6 +6,7 @@ use std::str::FromStr;
 
 use crate::log::parse_event;
 use crate::rules::*;
+use fapolicy_trust::db::DB;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Event {
@@ -62,4 +63,58 @@ impl Event {
             .map(|l| parse_event(&l).unwrap().1)
             .collect()
     }
+}
+
+fn trust_check(path: &str, db: &DB) -> String {
+    if db.get(path).unwrap().is_system() {
+        "ST".into()
+    } else {
+        "AT".into()
+    }
+}
+
+pub fn analyze(events: Vec<Event>, db: &DB) -> Vec<Analysis> {
+    events
+        .iter()
+        .map(|e| {
+            let sp = e.subj.exe().unwrap();
+            let op = e.obj.path().unwrap();
+            Analysis {
+                event: e.clone(),
+                subject: SubjAnalysis {
+                    trust: trust_check(&sp, db),
+                    access: "A".to_string(),
+                    file: sp,
+                },
+                object: ObjAnalysis {
+                    trust: trust_check(&op, db),
+                    access: "A".to_string(),
+                    mode: "R".to_string(),
+                    file: op,
+                },
+            }
+        })
+        .collect()
+}
+
+#[derive(Clone)]
+pub struct Analysis {
+    pub event: Event,
+    pub subject: SubjAnalysis,
+    pub object: ObjAnalysis,
+}
+
+#[derive(Clone)]
+pub struct SubjAnalysis {
+    pub file: String,
+    pub trust: String,
+    pub access: String,
+}
+
+#[derive(Clone)]
+pub struct ObjAnalysis {
+    pub file: String,
+    pub trust: String,
+    pub access: String,
+    pub mode: String,
 }

@@ -1,7 +1,7 @@
 use pyo3::prelude::*;
 use pyo3::{exceptions, PyResult};
 
-use fapolicy_analyzer::event::Event;
+use fapolicy_analyzer::event::{analyze, Event};
 use fapolicy_app::app::State;
 use fapolicy_app::cfg;
 use fapolicy_app::sys::deploy_app_state;
@@ -11,6 +11,7 @@ use crate::event::PyEvent;
 
 use super::trust::PyChangeset;
 use super::trust::PyTrust;
+use std::time::SystemTime;
 
 #[pyclass(module = "app", name = "System")]
 #[derive(Clone)]
@@ -39,8 +40,13 @@ impl PySystem {
     fn new(py: Python) -> PyResult<PySystem> {
         py.allow_threads(|| {
             let conf = cfg::All::load();
+            let t = SystemTime::now();
             match State::load_checked(&conf) {
-                Ok(state) => Ok(state.into()),
+                Ok(state) => {
+                    let d = t.elapsed().unwrap().as_secs();
+                    println!("loaded system in {} seconds", d);
+                    Ok(state.into())
+                }
                 Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{:?}", e))),
             }
         })
@@ -109,7 +115,10 @@ impl PySystem {
     /// Parse all Events from the log at the specified path
     fn events_from(&self, log: &str) -> Vec<PyEvent> {
         let xs = Event::from_file(log);
-        xs.iter().map(|e| PyEvent::from(e.clone())).collect()
+        analyze(xs, &self.state.trust_db)
+            .iter()
+            .map(|e| PyEvent::from(e.clone()))
+            .collect()
     }
 }
 
