@@ -1,16 +1,11 @@
 ---
 - name: Prepare
   hosts: all
-  gather_facts: no
   become: yes
-  tasks:
-    - name: show proxy settings
-      debug:
-        msg: "proxy: {{ proxy_env }}"
-        verbosity: 0
-
   roles:
-    - system
+    - role: system
+    - role: develop
+      when: env == 'dev'
 
 - name: Configure
   hosts: all
@@ -28,10 +23,3 @@
   become: no
   roles:
     - events
-
-- name: Develop
-  hosts: all
-  gather_facts: no
-  become: yes
-  roles:
-    - develop
