@@ -1,0 +1,71 @@
+# install development requirements, and create a build
+---
+- name: install development requirements
+  yum:
+    state: present
+    name:
+      - bzip2
+      - bzip2-devel
+      - cairo
+      - cairo-devel
+      - cairo-gobject-devel
+      - dbus-devel
+      - gcc
+      - git
+      - glade
+      - gobject-introspection-devel
+      - openssl-devel
+      - python3-cairo-devel
+      - python3-wheel
+      - python-devel
+      - readline-devel
+      - sqlite
+      - sqlite-devel
+      - tk-devel
+      - zlib-devel
+  environment: "{{ proxy_env }}"
+
+- name: install rust for the vagrant user
+  become: yes
+  become_user: "{{ vagrant_user }}"
+  shell: "curl https://sh.rustup.rs -sSf | sh -s -- -y"
+  changed_when: false
+  environment: "{{ proxy_env }}"
+
+- name: install pipenv for the vagrant user
+  become: yes
+  become_user: "{{ vagrant_user }}"
+  pip:
+    name: pipenv
+    extra_args: --user
+  environment: "{{ proxy_env }}"
+
+- name: source code checkout
+  become: yes
+  become_user: "{{ vagrant_user }}"
+  git:
+    repo: 'https://github.com/ctc-oss/fapolicy-analyzer.git'
+    dest: "/home/{{ vagrant_user }}/git/fapolicy-analyzer"
+  environment: "{{ proxy_env }}"
+
+- name: create python environment
+  become: yes
+  become_user: "{{ vagrant_user }}"
+  command: chdir="/home/{{ vagrant_user }}/git/fapolicy-analyzer/" pipenv install --dev
+  environment: "{{ proxy_env }}"
+
+- name: stop fapolicyd service
+  systemd:
+    name: fapolicyd
+    state: stopped
+
+- name: build the project
+  become: yes
+  become_user: "{{ vagrant_user }}"
+  command: chdir="/home/{{ vagrant_user }}/git/fapolicy-analyzer/" pipenv run python setup.py develop
+  environment: "{{ proxy_env }}"
+
+- name: start fapolicyd service
+  systemd:
+    name: fapolicyd
+    state: started

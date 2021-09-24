@@ -28,3 +28,10 @@
   become: no
   roles:
     - events
+
+- name: Develop
+  hosts: all
+  gather_facts: no
+  become: yes
+  roles:
+    - develop
