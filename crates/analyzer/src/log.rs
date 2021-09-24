@@ -88,7 +88,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn parse_log_event() {
+    fn simple() {
         let e = "rule=9 dec=allow perm=execute uid=1003 gid=999 pid=5555 exe=/usr/bin/bash : path=/usr/bin/vi ftype=application/x-executable";
         let (rem, e) = parse_event(e).ok().unwrap();
         assert_eq!(9, e.rule_id);
@@ -98,5 +98,13 @@ mod tests {
         assert_eq!(e.uid, 1003);
         assert_eq!(e.gid, vec![999]);
         assert_eq!(e.pid, 5555);
+    }
+
+    #[test]
+    fn multi_gid() {
+        let e = "rule=9 dec=allow perm=execute uid=1003 gid=123,456,789 pid=5555 exe=/usr/bin/bash : path=/usr/bin/vi ftype=application/x-executable";
+        let (rem, e) = parse_event(e).ok().unwrap();
+        assert!(rem.is_empty());
+        assert_eq!(e.gid, vec![123, 456, 789]);
     }
 }
