@@ -32,7 +32,8 @@ impl PyEvent {
     /// The group id parsed from the log event
     #[getter]
     fn gid(&self) -> i32 {
-        self.event.gid
+        // todo;; unhack this
+        *self.event.gid.iter().nth(0).unwrap()
     }
 
     /// The fapolicyd subject parsed from the log event
