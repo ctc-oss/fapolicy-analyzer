@@ -9,6 +9,7 @@ use nom::character::complete::{digit1, space1};
 use nom::sequence::{preceded, terminated};
 
 use crate::rules::*;
+use nom::multi::separated_list1;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Event {
@@ -16,7 +17,7 @@ pub struct Event {
     pub dec: Decision,
     pub perm: Permission,
     pub uid: i32,
-    pub gid: i32,
+    pub gid: Vec<i32>,
     pub pid: i32,
     pub subj: Subject,
     pub obj: Object,
@@ -39,7 +40,10 @@ pub fn parse_event(i: &str) -> nom::IResult<&str, Event> {
         terminated(preceded(tag("dec="), parse::decision), space1),
         terminated(parse::permission, space1),
         terminated(preceded(tag("uid="), digit1), space1),
-        terminated(preceded(tag("gid="), digit1), space1),
+        terminated(
+            preceded(tag("gid="), separated_list1(tag(","), digit1)),
+            space1,
+        ),
         terminated(preceded(tag("pid="), digit1), space1),
         terminated(parse::subject, space1),
         terminated(tag(":"), space0),
@@ -53,7 +57,7 @@ pub fn parse_event(i: &str) -> nom::IResult<&str, Event> {
                 dec,
                 perm,
                 uid: uid.parse().unwrap(),
-                gid: gid.parse().unwrap(),
+                gid: gid.iter().map(|s| s.parse().unwrap()).collect(),
                 pid: pid.parse().unwrap(),
                 subj,
                 obj,
@@ -84,7 +88,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn parse_log_event() {
+    fn simple() {
         let e = "rule=9 dec=allow perm=execute uid=1003 gid=999 pid=5555 exe=/usr/bin/bash : path=/usr/bin/vi ftype=application/x-executable";
         let (rem, e) = parse_event(e).ok().unwrap();
         assert_eq!(9, e.rule_id);
@@ -92,7 +96,15 @@ mod tests {
         assert_eq!(e.dec, Decision::Allow);
         assert_eq!(e.perm, Permission::Execute);
         assert_eq!(e.uid, 1003);
-        assert_eq!(e.gid, 999);
+        assert_eq!(e.gid, vec![999]);
         assert_eq!(e.pid, 5555);
+    }
+
+    #[test]
+    fn multi_gid() {
+        let e = "rule=9 dec=allow perm=execute uid=1003 gid=123,456,789 pid=5555 exe=/usr/bin/bash : path=/usr/bin/vi ftype=application/x-executable";
+        let (rem, e) = parse_event(e).ok().unwrap();
+        assert!(rem.is_empty());
+        assert_eq!(e.gid, vec![123, 456, 789]);
     }
 }
