@@ -1,5 +1,5 @@
 # Install any missing plugins
-required_plugins = %w( vagrant-vbguest vagrant-proxyconf )
+required_plugins = %w( vagrant-vbguest vagrant-proxyconf vagrant-registration )
 plugins_to_install = required_plugins.select { |plugin| not Vagrant.has_plugin? plugin }
 if not plugins_to_install.empty?
   puts "Installing plugins: #{plugins_to_install.join(' ')}"
@@ -11,8 +11,8 @@ if not plugins_to_install.empty?
 end
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "fedora/34-cloud-base"
-  config.vm.box_version = "34.20210423.0"
+  config.vm.box = "generic/rhel8"
+  #config.vm.box_version = "3.4.4"
 
   config.ssh.forward_agent = true
   config.ssh.forward_x11 = true
@@ -30,6 +30,13 @@ Vagrant.configure("2") do |config|
   config.proxy.http = ENV['http_proxy']
   config.proxy.https = ENV['https_proxy']
   config.proxy.no_proxy = "localhost,127.0.0.1"
+
+  # RHSM BITS using the vagrant-registration plugin
+  config.registration.proxy = ENV['http_proxy']
+  config.registration.username = ENV['RHSM_USERNAME']
+  config.registration.password = ENV['RHSM_PASSWORD']
+  #config.registration.pools = ['pool1', 'pool2']
+  config.registration.unregister_on_halt = false
 
   env = "prod"
   if ENV['ENV'] == 'dev'
