@@ -32,7 +32,11 @@ Vagrant.configure("2") do |config|
   config.proxy.no_proxy = "localhost,127.0.0.1"
 
   env = "prod"
+  git_branch = "origin/master"
   if ENV['ENV'] == 'dev'
+    if ENV['GIT_BRANCH']
+      git_branch = ENV['GIT_BRANCH']
+    end
     env = "dev"
     config.vbguest.auto_update = true
     config.vm.synced_folder ".shared/", "/shared", type: "virtualbox"
@@ -41,8 +45,9 @@ Vagrant.configure("2") do |config|
   config.vm.provision "ansible" do |ansible|
     ansible.playbook = "../../demo/site.yml"
     ansible.extra_vars = {
-      rpm_url: rpm_url,
-      env: env
+      env: env,
+      git_branch: git_branch,
+      rpm_url: rpm_url
     }
   end
 end
