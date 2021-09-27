@@ -9,6 +9,7 @@
       - xorg-x11-xauth
       - dbus-x11
       - dconf
+      - polkit-gnome
 
 - name: share vagrant user xauthority globally
   lineinfile:

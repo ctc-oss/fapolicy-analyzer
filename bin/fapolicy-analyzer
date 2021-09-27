@@ -1,3 +1,23 @@
 #!/usr/bin/env bash
 
-python3 -m fapolicy_analyzer.ui
+# Initialize globals
+pidAgent=0
+
+# Use local desktop's XAUTHORITY if DISPLAY == :0
+if (echo $DISPLAY | grep '^:0'); then
+    # Note: The Gnome desktop starts its own dbus agent.
+    XAUTHORITY=$XAUTHORITY
+else
+    # Start the dbus service agent if ssh session with a remote DISPLAY
+    XAUTHORITY=$HOME/.Xauthority
+    pkttyagent --process $$ & pidAgent=$!
+fi
+
+# Execute the fapolicy-analyzer with heightened privileges
+pkexec  --disable-internal-agent env DISPLAY=$DISPLAY  XAUTHORITY=$XAUTHORITY python3 -m fapolicy_analyzer.ui
+
+# Terminate pkttyagent if started
+if [[ $pidAgent != 0 ]]; then
+    echo Terminating pkttyagent.
+    kill -SIGTERM $pidAgent
+fi
