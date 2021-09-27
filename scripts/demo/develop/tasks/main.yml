@@ -14,6 +14,7 @@
       - git
       - gobject-introspection-devel
       - gtk3
+      - mesa-dri-drivers
       - mesa-libGL
       - mesa-libGLw-devel
       - openssl-devel

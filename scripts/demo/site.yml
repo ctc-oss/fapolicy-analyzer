@@ -14,8 +14,9 @@
   roles:
     - fapolicyd
     - filesystem
-    - analyzer
     - users
+    - role: analyzer
+      when: env != 'dev'
 
 - name: Simulate
   hosts: all
