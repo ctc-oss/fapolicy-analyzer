@@ -27,7 +27,7 @@
     line: "export XAUTHORITY=/home/vagrant/.Xauthority"
     path: /etc/profile
 
-- name: "Add {{ vagrant_user }} to systemd-journal group"
+- name: "add {{ vagrant_user }} to systemd-journal group"
   user:
     name: "{{ vagrant_user }}"
     groups: systemd-journal
