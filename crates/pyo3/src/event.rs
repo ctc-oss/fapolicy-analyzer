@@ -31,7 +31,7 @@ impl PyEvent {
     #[getter]
     fn gid(&self) -> i32 {
         // todo;; unhack this
-        *self.event.gid.iter().nth(0).unwrap()
+        *self.rs.event.gid.iter().nth(0).unwrap()
     }
 
     /// The fapolicyd subject parsed from the log event

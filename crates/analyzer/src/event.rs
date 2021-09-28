@@ -37,7 +37,14 @@ impl Display for Event {
         f.write_fmt(format_args!("dec={} ", self.dec))?;
         f.write_fmt(format_args!("{} ", self.perm))?;
         f.write_fmt(format_args!("uid={} ", self.uid))?;
-        f.write_fmt(format_args!("gid={} ", self.gid))?;
+        f.write_fmt(format_args!(
+            "gid={} ",
+            self.gid
+                .iter()
+                .map(|v| format!("{}", v))
+                .collect::<Vec<String>>()
+                .join(",")
+        ))?;
         f.write_fmt(format_args!("pid={} ", self.pid))?;
         f.write_fmt(format_args!("exe={} ", self.subj.exe().unwrap()))?;
         f.write_str(": ")?;

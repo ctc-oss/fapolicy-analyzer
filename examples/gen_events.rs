@@ -63,7 +63,7 @@ fn main() {
                 dec: Decision::DenyAudit,
                 perm: Permission::Any,
                 uid: u.uid as i32,
-                gid: u.gid as i32,
+                gid: vec![u.gid as i32],
                 pid: 999,
                 subj: Subject {
                     parts: vec![SubjPart::Exe(t.path.clone())],
