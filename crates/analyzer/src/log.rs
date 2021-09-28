@@ -1,38 +1,11 @@
-use std::fs::File;
-use std::io::{prelude::*, BufReader};
-use std::iter::Iterator;
-use std::str::FromStr;
-
 use nom::bytes::complete::tag;
 use nom::character::complete::space0;
 use nom::character::complete::{digit1, space1};
 use nom::sequence::{preceded, terminated};
 
+use crate::event::Event;
 use crate::rules::*;
 use nom::multi::separated_list1;
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct Event {
-    pub rule_id: i32,
-    pub dec: Decision,
-    pub perm: Permission,
-    pub uid: i32,
-    pub gid: Vec<i32>,
-    pub pid: i32,
-    pub subj: Subject,
-    pub obj: Object,
-}
-
-impl FromStr for Event {
-    type Err = String;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match parse_event(s) {
-            Ok((_, s)) => Ok(s),
-            Err(_) => Err("Failed to parse Event from string".into()),
-        }
-    }
-}
 
 pub fn parse_event(i: &str) -> nom::IResult<&str, Event> {
     match nom::combinator::complete(nom::sequence::tuple((
@@ -67,19 +40,6 @@ pub fn parse_event(i: &str) -> nom::IResult<&str, Event> {
             println!("foo");
             Err(e)
         }
-    }
-}
-
-impl Event {
-    pub fn from_file(path: &str) -> Vec<Event> {
-        let f = File::open(path).unwrap();
-        let r = BufReader::new(f);
-
-        r.lines()
-            .map(|r| r.unwrap())
-            .filter(|s| !s.is_empty() && !s.starts_with('#'))
-            .map(|l| parse_event(&l).unwrap().1)
-            .collect()
     }
 }
 

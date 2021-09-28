@@ -24,6 +24,9 @@ members = [
     "crates/util",
 ]
 
+[dev-dependencies]
+rand = "0.8"
+
 [dependencies]
 clap = "3.0.0-beta.2"
 lmdb-rkv = "0.14.0"

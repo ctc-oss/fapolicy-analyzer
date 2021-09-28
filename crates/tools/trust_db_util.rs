@@ -1,6 +1,6 @@
 use std::fs::File;
 use std::io;
-use std::io::{BufReader, Write};
+use std::io::{BufRead, BufReader, Write};
 use std::path::Path;
 use std::process::{Command, Output};
 use std::time::SystemTime;
@@ -15,11 +15,11 @@ use fapolicy_app::cfg;
 use fapolicy_daemon::fapolicyd::TRUST_DB_NAME;
 use fapolicy_daemon::rpm::load_system_trust as load_rpm_trust;
 use fapolicy_trust::read;
-use fapolicy_trust::read::check_trust_db;
+use fapolicy_trust::read::{check_trust_db, parse_trust_record};
 use fapolicy_util::sha::sha256_digest;
 
 use crate::Error::{DirTrustError, DpkgCommandFail, DpkgNotFound};
-use crate::Subcommand::{Add, Check, Clear, Count, Del, Dump, Init, Search};
+use crate::Subcommand::{Add, Check, Clear, Count, Del, Dump, Init, Load, Search};
 
 /// An Error that can occur in this app
 #[derive(Error, Debug)]
@@ -62,8 +62,8 @@ struct Opts {
     #[clap(short, long)]
     verbose: bool,
 
-    /// Specify the fapolicyd database directory
-    /// Defaults to the value specified in the users XDG configuration
+    /// The fapolicyd database directory
+    /// Defaults to XDG conf value
     dbdir: Option<String>,
 }
 
@@ -85,6 +85,8 @@ enum Subcommand {
     Check(CheckDbOpts),
     /// Count the number of trust entries
     Count(CountOpts),
+    /// Load file trust entries
+    Load(LoadOpts),
 }
 
 #[derive(Clap)]
@@ -147,6 +149,12 @@ struct CheckDbOpts {
 }
 
 #[derive(Clap)]
+struct LoadOpts {
+    /// File trust source
+    path: String,
+}
+
+#[derive(Clap)]
 struct CountOpts {}
 
 fn main() -> Result<(), Error> {
@@ -181,6 +189,7 @@ fn main() -> Result<(), Error> {
         Search(opts) => find(opts, &sys_conf, &env),
         Check(opts) => check(opts, &sys_conf),
         Count(opts) => count(opts, &sys_conf, &env),
+        Load(opts) => load(opts, &sys_conf, &env),
     }
 }
 
@@ -212,6 +221,14 @@ fn init(opts: InitOpts, verbose: bool, cfg: &cfg::All, env: &Environment) -> Res
         load_rpm_trust(&cfg.system.system_trust_path)?
     };
 
+    let sys = if let Some(c) = opts.count {
+        let mut m = sys;
+        m.truncate(c);
+        m
+    } else {
+        sys
+    };
+
     let mut tx = env.begin_rw_txn()?;
     for trust in &sys {
         let v = format!("{} {} {}", 1, trust.size, trust.hash);
@@ -232,6 +249,19 @@ fn init(opts: InitOpts, verbose: bool, cfg: &cfg::All, env: &Environment) -> Res
             duration.as_secs()
         );
     }
+
+    Ok(())
+}
+
+fn load(opts: LoadOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
+    let trust = load_ancillary_trust(&opts.path)?;
+    let db = env.open_db(Some(TRUST_DB_NAME))?;
+    let mut tx = env.begin_rw_txn()?;
+    for t in trust {
+        let v = format!("{} {} {}", 2, t.size, t.hash);
+        tx.put(db, &t.path, &v, WriteFlags::APPEND_DUP)?;
+    }
+    tx.commit()?;
 
     Ok(())
 }
@@ -352,16 +382,12 @@ fn load_dpkg_trust() -> Result<Vec<Trust>, Error> {
         .map(String::from)
         .collect();
 
-    let files: Vec<String> = packages
+    Ok(packages
         .par_iter()
         .flat_map(|p| Command::new(DPKG_QUERY).args(vec!["-L", p]).output())
         .flat_map(output_lines)
         .flatten()
-        .collect();
-
-    Ok(files
-        .iter()
-        .filter_map(|s| match new_trust_record(s) {
+        .filter_map(|s| match new_trust_record(&s) {
             Ok(t) => Some(t),
             Err(_) => None,
         })
@@ -372,5 +398,16 @@ fn output_lines(out: Output) -> Result<Vec<String>, Error> {
     Ok(String::from_utf8(out.stdout)?
         .lines()
         .map(String::from)
+        .collect())
+}
+
+fn load_ancillary_trust(path: &str) -> Result<Vec<Trust>, Error> {
+    let f = File::open(path)?;
+    let r = BufReader::new(f);
+
+    Ok(r.lines()
+        .map(|r| r.unwrap())
+        .filter(|s| !s.is_empty() && !s.starts_with('#'))
+        .map(|l| parse_trust_record(&l).unwrap())
         .collect())
 }
