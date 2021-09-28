@@ -7,7 +7,6 @@ use crate::event::Event;
 use crate::rules::*;
 use nom::multi::separated_list1;
 
-
 pub fn parse_event(i: &str) -> nom::IResult<&str, Event> {
     match nom::combinator::complete(nom::sequence::tuple((
         terminated(preceded(tag("rule="), digit1), space1),
