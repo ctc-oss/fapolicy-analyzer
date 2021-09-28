@@ -70,8 +70,8 @@ jobs:
 
       - name: Export the package
         run: |
-          cd $HOME/rpmbuild
-          cp **/*.rpm /tmp
+          mv $HOME/rpmbuild/RPMS/*/*.rpm /tmp
+          mv $HOME/rpmbuild/SRPMS/*.rpm  /tmp
 
       - name: Archive RPMs
         uses: actions/upload-artifact@v2
