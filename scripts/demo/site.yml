@@ -12,9 +12,9 @@
   gather_facts: no
   become: yes
   roles:
+    - users
     - fapolicyd
     - filesystem
-    - users
     - role: analyzer
       when: env != 'dev'
 

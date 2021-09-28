@@ -1,5 +1,16 @@
 # initialize demonstration filesystem
 ---
+- name: check if fapolicyd service exists
+  stat: path=/etc/systemd/system/multi-user.target.wants/fapolicyd.service
+  register: fapolicyd_service_status
+
+- name: stop fapolicyd service
+  become: yes
+  systemd:
+    name: fapolicyd
+    state: stopped
+  when: fapolicyd_service_status.stat.exists
+
 - name: create demonstration directories
   file:
     path: "{{ item }}"
@@ -65,3 +76,16 @@
   loop:
     - { src: fapolicyd-readme.md, dest: /tmp }
     - { src: dbadmin.py, dest: /usr/local/bin }
+
+- name: dave installs rust in his home directory
+  become: yes
+  become_user: dave
+  shell: "curl https://sh.rustup.rs -sSf | sh -s -- -y"
+  changed_when: false
+
+- name: start fapolicyd service
+  become: yes
+  systemd:
+    name: fapolicyd
+    state: started
+  when: fapolicyd_service_status.stat.exists

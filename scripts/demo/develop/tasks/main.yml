@@ -1,6 +1,6 @@
 # install development requirements, and create a build
 ---
-- name: install development requirements common to the RedHat 8 family
+- name: install development requirements common to the RedHat family
   yum:
     state: present
     name:
