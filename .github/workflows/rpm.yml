@@ -14,14 +14,22 @@ jobs:
   build:
     strategy:
       matrix:
-        platform: [ 'fedora:33', 'fedora:34' ]
+        platform: [ 'fedora:33', 'fedora:34', 'registry.access.redhat.com/ubi8/ubi:8.4' ]
     runs-on: ubuntu-latest
     container: ${{ matrix.platform }}
     name: Create RPM Release
     steps:
+      - name: Enable rocky appstream if ubi
+        run: |
+          grep -e "^Red Hat Enterprise Linux" /etc/redhat-release \
+          && RELEASE=$(grep -oE "[0-9]+\.[0-9]+" /etc/redhat-release) \
+          && printf "[rocky-$RELEASE-appstream]\nname=Rocky Linux $RELEASE - AppStream\nbaseurl=http://dl.rockylinux.org/pub/rocky/$RELEASE/AppStream/x86_64/os/\ngpgcheck=1\nenabled=1\ngpgkey=https://git.rockylinux.org/label/rocky-repos/-/raw/r8/SOURCES/RPM-GPG-KEY-rockyofficial\nincludepkgs=rpmdevtools,dbus-devel\n" > /etc/yum.repos.d/Rocky-"$RELEASE"-AppStream.repo \
+          || true
+
       - name: Install basic rpmbuild toolchain
         run: |
-          dnf install -y rpm-build rpmdevtools dnf-plugins-core python3-jinja2-cli git
+          dnf install -y git rpm-build rpmdevtools dnf-plugins-core python3-pip
+          pip3 install --no-input jinja2-cli
 
       - uses: actions/checkout@v2
         with:
@@ -33,12 +41,12 @@ jobs:
           mkdir -p $HOME/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
           curl -so /usr/local/bin/git-rpm-version https://raw.githubusercontent.com/peterlundgren/git-rpm-version/master/git-rpm-version
           chmod +x /usr/local/bin/git-rpm-version
-          FEDORA_VER="$(source /etc/os-release ; echo "$VERSION_ID")"
+          PYRPM="python3$(fgrep -q Fedora /etc/redhat-release || printf "9")"
           GIT_COMMIT="$(git describe --match "v*" --abbrev=0 --candidates=0 || git rev-parse --verify HEAD)"
           RPM_VERSION="$(git-rpm-version -v HEAD)"
           RPM_RELEASE="$(git-rpm-version -r HEAD)"
           jinja2                          \
-            -D fedora_ver=${FEDORA_VER}   \
+            -D pyrpm=${PYRPM}             \
             -D git_commit=${GIT_COMMIT}   \
             -D rpm_version=${RPM_VERSION} \
             -D rpm_release=${RPM_RELEASE} \

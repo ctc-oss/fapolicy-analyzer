@@ -10,15 +10,16 @@ URL:            https://github.com/ctc-oss/fapolicy-analyzer
 Source0: %{url}/archive/%{git_commit}/%{name}-%{git_commit}.tar.gz
 
 BuildArch:      x86_64
-BuildRequires:  python3 >= 3.9, python3-devel, python3-pip, python-wheel, dbus-devel, rust-packaging
-{% if (fedora_ver | int) >= 34 %}BuildRequires:  python-setuptools-rust{% endif %}
-Requires:       python3 >= 3.9, gtk3, python3-gobject, python3-events, python3-configargparse
-Requires:       dbus-libs
+Requires:       {{ pyrpm }} >= 3.9
+BuildRequires:  {{ pyrpm }} >= 3.9, {{ pyrpm }}-rpm-macros, {{ pyrpm }}-devel, {{ pyrpm }}-pip, {{ pyrpm }}-wheel
+BuildRequires:  dbus-devel, cargo
+Requires:       gtk3, dbus-libs
 AutoReqProv:    no
 
+# For tools not packaged in el8, just use pip always.
 %prep
 %autosetup -n %{name}-%(echo %{git_commit} | sed -e 's/^v//')
-{% if (fedora_ver | int) < 34 %}%{python3} -m pip install setuptools-rust{% endif %}
+%{python3} -m pip install --no-input Babel setuptools-rust
 
 %description
 GUI and CLI tools to assist with the configuration and maintenance of fapolicyd
@@ -30,7 +31,7 @@ VERSION=%{version} %{python3} setup.py compile_catalog -f
 VERSION=%{version} %{python3} setup.py bdist_wheel
 
 %install
-%{python3} -m pip install -v --target %{buildroot}%{python3_sitelib} dist/*.whl
+%{python3} -m pip install --no-input -v --target %{buildroot}%{python3_sitelib} dist/*.whl
 install bin/fapolicy-analyzer %{buildroot}%{_sbindir}/fapolicy-analyzer -D
 
 %files
