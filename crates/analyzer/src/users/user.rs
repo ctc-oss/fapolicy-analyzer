@@ -65,4 +65,10 @@ mod tests {
         let actual = User::from_str("daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin").unwrap();
         assert_eq!(testuser(), actual);
     }
+
+    #[test]
+    fn without_comment_field() {
+        let actual = User::from_str("daemon:x:1:1::/usr/sbin:/usr/sbin/nologin").unwrap();
+        assert_eq!(testuser(), actual);
+    }
 }
