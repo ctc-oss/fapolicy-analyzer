@@ -39,6 +39,7 @@ fn main() {
     let orand2 = Uniform::from(2..(o.len().min(7)));
     let srand = Uniform::from(0..(s.len()));
     let urand = Uniform::from(0..(sys.users.len()));
+    let decrand = Uniform::from(0..=1);
 
     for i in 0..100 {
         let u = sys.users.iter().nth(urand.sample(&mut rng)).unwrap();
@@ -57,10 +58,15 @@ fn main() {
         };
 
         for _ in 1..(orand2.sample(&mut rng)) {
+            let dec = if decrand.sample(&mut rng) == 1 {
+                Decision::Allow
+            } else {
+                Decision::Deny
+            };
             let rec = o.iter().nth(orand.sample(&mut rng)).unwrap();
             let e = Event {
                 rule_id: 0,
-                dec: Decision::DenyAudit,
+                dec,
                 perm: Permission::Any,
                 uid: u.uid as i32,
                 gid: vec![u.gid as i32],

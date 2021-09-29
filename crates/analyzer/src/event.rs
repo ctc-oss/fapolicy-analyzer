@@ -9,6 +9,7 @@ use fapolicy_trust::db::DB;
 use crate::error::Error;
 use crate::error::Error::AnalyzerError;
 use crate::log::parse_event;
+use crate::rules::Decision::*;
 use crate::rules::*;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -90,16 +91,22 @@ pub fn analyze(events: Vec<Event>, db: &DB) -> Vec<Analysis> {
         .map(|e| {
             let sp = e.subj.exe().unwrap();
             let op = e.obj.path().unwrap();
+
+            let (sa, oa) = match e.dec {
+                Allow | AllowLog | AllowSyslog | AllowAudit => ("A".to_string(), "A".to_string()),
+                Deny | DenyLog | DenySyslog | DenyAudit => ("D".to_string(), "D".to_string()),
+            };
+
             Analysis {
                 event: e.clone(),
                 subject: SubjAnalysis {
                     trust: trust_check(&sp, db).unwrap(),
-                    access: "A".to_string(),
+                    access: sa,
                     file: sp,
                 },
                 object: ObjAnalysis {
                     trust: trust_check(&op, db).unwrap(),
-                    access: "A".to_string(),
+                    access: oa,
                     mode: "R".to_string(),
                     file: op,
                 },
