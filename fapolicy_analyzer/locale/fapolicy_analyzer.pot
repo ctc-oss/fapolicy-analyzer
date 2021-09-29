@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fapolicy-analyzer snapshot\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-10-22 12:54-0400\n"
+"POT-Creation-Date: 2021-10-22 14:33-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.9.1\n"
 
-#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:98
+#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:103
 #: fapolicy_analyzer/ui/system_trust_database_admin.py:84
 msgid ""
 "File: {trust.path}\n"
@@ -26,7 +26,7 @@ msgid ""
 "SHA256: {trust.hash}"
 msgstr ""
 
-#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:108
+#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:113
 #: fapolicy_analyzer/ui/system_trust_database_admin.py:93
 msgid ""
 "{fs.stat(trust.path)}\n"
@@ -156,14 +156,18 @@ msgid "FA Session files"
 msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:40
+msgid "fapolicyd archive files"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:41
 msgid "Any files"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:42
+#: fapolicy_analyzer/ui/strings.py:43
 msgid "File path(s) contains embedded whitespace."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:43
+#: fapolicy_analyzer/ui/strings.py:44
 msgid ""
 "fapolicyd currently does not support paths containing spaces. The "
 "following paths will not be added to the Trusted Files List.\n"
@@ -171,7 +175,7 @@ msgid ""
 "\n"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:48
+#: fapolicy_analyzer/ui/strings.py:49
 msgid ""
 "\n"
 "        Restore your prior session now?\n"
@@ -188,49 +192,49 @@ msgid ""
 "        "
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:64
+#: fapolicy_analyzer/ui/strings.py:65
 msgid "An error occurred trying to restore a prior autosaved edit session"
 msgstr ""
 
-#: fapolicy_analyzer/glade/loader.glade:28 fapolicy_analyzer/ui/strings.py:68
+#: fapolicy_analyzer/glade/loader.glade:28 fapolicy_analyzer/ui/strings.py:69
 msgid "Loading..."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:70
+#: fapolicy_analyzer/ui/strings.py:71
 msgid "file"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:71
+#: fapolicy_analyzer/ui/strings.py:72
 msgid "files"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:72
+#: fapolicy_analyzer/ui/strings.py:73
 msgid "user"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:73
+#: fapolicy_analyzer/ui/strings.py:74
 msgid "users"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:74
+#: fapolicy_analyzer/ui/strings.py:75
 msgid "group"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:75
+#: fapolicy_analyzer/ui/strings.py:76
 msgid "groups"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:76
+#: fapolicy_analyzer/ui/strings.py:77
 msgid ""
 "An error occurred trying to parse the event log file. Please try again or"
 " select a different file."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:79
+#: fapolicy_analyzer/ui/strings.py:80
 msgid "An error occurred trying to retrieve the user list. Please try again."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:82
+#: fapolicy_analyzer/ui/strings.py:83
 msgid "An error occurred trying to retrieve the group list. Please try again."
 msgstr ""
 

@@ -8,6 +8,7 @@ from fapolicy_analyzer import Changeset, Trust
 from locale import gettext as _
 from fapolicy_analyzer.util import fs  # noqa: F401
 from fapolicy_analyzer.util.format import f
+from fapolicy_analyzer.util.fapd_dbase import fapd_dbase_snapshot
 from .actions import (
     apply_changesets,
     add_notification,
@@ -153,6 +154,13 @@ SHA256: {fs.sha(trust.path)}"""
         dlgDeployList.hide()
 
         if confirm_resp == Gtk.ResponseType.YES:
+            bSaveFapolicydState = dlgDeployList.get_save_state()
+            logging.debug("Save fapolicyd data = {}".format(bSaveFapolicydState))
+            if bSaveFapolicydState:
+                # Invoke a file chooser dlg and generate the fapd state tarball
+                if strArchiveName := self.display_save_fapd_archive_dlg(parent):
+                    fapd_dbase_snapshot(strArchiveName)
+
             logging.debug("Deploying...")
             self._deploying = True
             dispatch((deploy_ancillary_trust()))
@@ -207,3 +215,47 @@ SHA256: {fs.sha(trust.path)}"""
                 )
             )
             self.__display_deploy_confirmation_dialog()
+
+    # ########## Fapd backup ########
+    def display_save_fapd_archive_dlg(self, parent):
+        """Display a file chooser dialog to specify the output archive file."""
+        logging.debug("atda::display_save_fapd_archive_dlg()")
+
+        # Display file chooser dialog
+        fcd = Gtk.FileChooserDialog(
+            strings.SAVE_AS_FILE_LABEL,
+            parent,
+            Gtk.FileChooserAction.SAVE,
+            (
+                Gtk.STOCK_CANCEL,
+                Gtk.ResponseType.CANCEL,
+                Gtk.STOCK_SAVE,
+                Gtk.ResponseType.OK,
+            ),
+        )
+
+        self.__apply_tgz_file_filters(fcd)
+        fcd.set_do_overwrite_confirmation(True)
+        response = fcd.run()
+        fcd.hide()
+
+        strFilename = None
+        if response == Gtk.ResponseType.OK:
+            strFilename = fcd.get_filename()
+            logging.debug(
+                f"fadp_dbase::display_save_fapd_archive_dlg::strFilename = {strFilename}"
+            )
+
+        fcd.destroy()
+        return strFilename
+
+    def __apply_tgz_file_filters(self, dialog):
+        fileFilterTgz = Gtk.FileFilter()
+        fileFilterTgz.set_name(strings.FA_ARCHIVE_FILES_FILTER_LABEL)
+        fileFilterTgz.add_pattern("*.tgz")
+        dialog.add_filter(fileFilterTgz)
+
+        fileFilterAny = Gtk.FileFilter()
+        fileFilterAny.set_name(strings.ANY_FILES_FILTER_LABEL)
+        fileFilterAny.add_pattern("*")
+        dialog.add_filter(fileFilterAny)

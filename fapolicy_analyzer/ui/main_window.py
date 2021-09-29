@@ -62,7 +62,7 @@ class MainWindow(UIWidget):
         unappliedChangesDlg.destroy()
         return response != Gtk.ResponseType.OK
 
-    def __apply_file_filters(self, dialog):
+    def __apply_json_file_filters(self, dialog):
         fileFilterJson = Gtk.FileFilter()
         fileFilterJson.set_name(strings.FA_SESSION_FILES_FILTER_LABEL)
         fileFilterJson.add_pattern("*.json")
@@ -171,7 +171,7 @@ class MainWindow(UIWidget):
                 Gtk.ResponseType.OK,
             ),
         )
-        self.__apply_file_filters(fcd)
+        self.__apply_json_file_filters(fcd)
         response = fcd.run()
         fcd.hide()
 
@@ -235,7 +235,7 @@ class MainWindow(UIWidget):
             ),
         )
 
-        self.__apply_file_filters(fcd)
+        self.__apply_json_file_filters(fcd)
         fcd.set_do_overwrite_confirmation(True)
         response = fcd.run()
         fcd.hide()

@@ -37,6 +37,7 @@ ADD_FILE_LABEL = _("Add File")
 OPEN_FILE_LABEL = _("Open File")
 SAVE_AS_FILE_LABEL = _("Save As...")
 FA_SESSION_FILES_FILTER_LABEL = _("FA Session files")
+FA_ARCHIVE_FILES_FILTER_LABEL = _("fapolicyd archive files")
 ANY_FILES_FILTER_LABEL = _("Any files")
 
 WHITESPACE_WARNING_DIALOG_TITLE = _("File path(s) contains embedded whitespace.")
