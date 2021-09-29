@@ -86,6 +86,20 @@ fn trust_check(path: &str, db: &TrustDB) -> Result<String, Error> {
     }
 }
 
+fn any_denials_for_subject(p: &str, events: &Vec<Event>) -> bool {
+    events
+        .iter()
+        .filter(|e| match e.subj.exe() {
+            Some(exe) if &exe == p => true,
+            _ => false,
+        })
+        .find(|e| match e.dec {
+            Deny | DenyLog | DenySyslog | DenyAudit => true,
+            _ => false,
+        })
+        .is_some()
+}
+
 pub fn analyze(events: Vec<Event>, trust: &TrustDB, rules: &RulesDB) -> Vec<Analysis> {
     events
         .iter()
@@ -95,17 +109,15 @@ pub fn analyze(events: Vec<Event>, trust: &TrustDB, rules: &RulesDB) -> Vec<Anal
 
             let r = rules.get(e.rule_id as usize).unwrap();
 
-            let (sa, oa) = match e.dec {
-                Allow | AllowLog | AllowSyslog | AllowAudit => ("A".to_string(), "A".to_string()),
-                Deny | DenyLog | DenySyslog | DenyAudit => ("D".to_string(), "D".to_string()),
+            let ed = match e.dec {
+                Allow | AllowLog | AllowSyslog | AllowAudit => "A".to_string(),
+                Deny | DenyLog | DenySyslog | DenyAudit => "D".to_string(),
             };
 
-            let sa = if r.subj.parts.contains(&SubjPart::All) {
-                "A".to_string()
-            } else if sa != "A" {
+            let sa = if any_denials_for_subject(&sp, &events) {
                 "P".to_string()
             } else {
-                sa
+                ed.clone()
             };
 
             Analysis {
@@ -117,7 +129,7 @@ pub fn analyze(events: Vec<Event>, trust: &TrustDB, rules: &RulesDB) -> Vec<Anal
                 },
                 object: ObjAnalysis {
                     trust: trust_check(&op, trust).unwrap(),
-                    access: oa,
+                    access: ed,
                     mode: "R".to_string(),
                     file: op,
                 },

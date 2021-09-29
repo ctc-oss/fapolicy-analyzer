@@ -47,8 +47,7 @@ impl DB {
 
     /// Get a record from the lookup table using the path to the trusted file
     pub fn get(&self, id: usize) -> Option<&Rule> {
-        // fapolicyd rules are indexed from 1
-        self.lookup.get(&(id - 1))
+        self.lookup.get(&id)
     }
 }
 
