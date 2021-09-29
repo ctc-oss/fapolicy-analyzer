@@ -24,14 +24,8 @@ fn parse_lines(xs: Vec<String>) {
         .map(|l| (l, parser(l)))
         .flat_map(|(l, r)| match r {
             Ok(("", rule)) => Some(rule),
-            Ok((rem, _)) => {
-                println!("[incomplete] {} [{}]", l, rem);
-                None
-            }
-            Err(_) => {
-                println!("[failure] {}", l);
-                None
-            }
+            Ok((rem, _)) => None,
+            Err(_) => None,
         })
         .collect();
 
