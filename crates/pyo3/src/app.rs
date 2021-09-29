@@ -115,7 +115,7 @@ impl PySystem {
     /// Parse all Events from the log at the specified path
     fn events_from(&self, log: &str) -> Vec<PyEvent> {
         let xs = Event::from_file(log);
-        analyze(xs, &self.state.trust_db)
+        analyze(xs, &self.state.trust_db, &self.state.rules_db)
             .iter()
             .map(|e| PyEvent::from(e.clone()))
             .collect()

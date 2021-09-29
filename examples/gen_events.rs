@@ -65,7 +65,7 @@ fn main() {
             };
             let rec = o.iter().nth(orand.sample(&mut rng)).unwrap();
             let e = Event {
-                rule_id: 0,
+                rule_id: 1,
                 dec,
                 perm: Permission::Any,
                 uid: u.uid as i32,

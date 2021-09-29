@@ -4,7 +4,8 @@ use std::io::{prelude::*, BufReader};
 use std::iter::Iterator;
 use std::str::FromStr;
 
-use fapolicy_trust::db::DB;
+use crate::rules::db::DB as RulesDB;
+use fapolicy_trust::db::DB as TrustDB;
 
 use crate::error::Error;
 use crate::error::Error::AnalyzerError;
@@ -76,7 +77,7 @@ impl Event {
     }
 }
 
-fn trust_check(path: &str, db: &DB) -> Result<String, Error> {
+fn trust_check(path: &str, db: &TrustDB) -> Result<String, Error> {
     match db.get(path) {
         Some(r) if r.is_system() => Ok("ST".into()),
         Some(r) if r.is_ancillary() => Ok("AT".into()),
@@ -85,27 +86,37 @@ fn trust_check(path: &str, db: &DB) -> Result<String, Error> {
     }
 }
 
-pub fn analyze(events: Vec<Event>, db: &DB) -> Vec<Analysis> {
+pub fn analyze(events: Vec<Event>, trust: &TrustDB, rules: &RulesDB) -> Vec<Analysis> {
     events
         .iter()
         .map(|e| {
             let sp = e.subj.exe().unwrap();
             let op = e.obj.path().unwrap();
 
+            let r = rules.get(e.rule_id as usize).unwrap();
+
             let (sa, oa) = match e.dec {
                 Allow | AllowLog | AllowSyslog | AllowAudit => ("A".to_string(), "A".to_string()),
                 Deny | DenyLog | DenySyslog | DenyAudit => ("D".to_string(), "D".to_string()),
             };
 
+            let sa = if r.subj.parts.contains(&SubjPart::All) {
+                "A".to_string()
+            } else if sa != "A" {
+                "P".to_string()
+            } else {
+                sa
+            };
+
             Analysis {
                 event: e.clone(),
                 subject: SubjAnalysis {
-                    trust: trust_check(&sp, db).unwrap(),
+                    trust: trust_check(&sp, trust).unwrap(),
                     access: sa,
                     file: sp,
                 },
                 object: ObjAnalysis {
-                    trust: trust_check(&op, db).unwrap(),
+                    trust: trust_check(&op, trust).unwrap(),
                     access: oa,
                     mode: "R".to_string(),
                     file: op,

@@ -4,8 +4,10 @@ use crate::error::Error;
 use directories::ProjectDirs;
 use fapolicy_analyzer::users::{load_groups, load_users, Group, User};
 
-use fapolicy_trust::db::DB;
+use fapolicy_analyzer::rules::db::DB as RulesDB;
+use fapolicy_trust::db::DB as TrustDB;
 
+use fapolicy_analyzer::rules::read::load_rules_db;
 use fapolicy_trust::ops::Changeset;
 use fapolicy_trust::read::{check_trust_db, load_trust_db};
 use serde::Deserialize;
@@ -16,7 +18,8 @@ use serde::Serialize;
 #[derive(Clone)]
 pub struct State {
     pub config: All,
-    pub trust_db: DB,
+    pub trust_db: TrustDB,
+    pub rules_db: RulesDB,
     pub users: Vec<User>,
     pub groups: Vec<Group>,
 }
@@ -25,7 +28,8 @@ impl State {
     pub fn empty(cfg: &All) -> State {
         State {
             config: cfg.clone(),
-            trust_db: DB::default(),
+            trust_db: TrustDB::default(),
+            rules_db: RulesDB::default(),
             users: vec![],
             groups: vec![],
         }
@@ -33,9 +37,11 @@ impl State {
 
     pub fn load(cfg: &All) -> Result<State, Error> {
         let trust_db = load_trust_db(&cfg.system.trust_db_path)?;
+        let rules_db = load_rules_db("/tmp/rules0.txt")?;
         Ok(State {
             config: cfg.clone(),
             trust_db,
+            rules_db,
             users: load_users(),
             groups: load_groups(),
         })
@@ -54,6 +60,7 @@ impl State {
         Self {
             config: self.config.clone(),
             trust_db: modified,
+            rules_db: self.rules_db.clone(),
             users: self.users.clone(),
             groups: self.groups.clone(),
         }
