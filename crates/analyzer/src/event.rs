@@ -4,9 +4,12 @@ use std::io::{prelude::*, BufReader};
 use std::iter::Iterator;
 use std::str::FromStr;
 
+use fapolicy_trust::db::DB;
+
+use crate::error::Error;
+use crate::error::Error::AnalyzerError;
 use crate::log::parse_event;
 use crate::rules::*;
-use fapolicy_trust::db::DB;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Event {
@@ -72,11 +75,12 @@ impl Event {
     }
 }
 
-fn trust_check(path: &str, db: &DB) -> String {
-    if db.get(path).unwrap().is_system() {
-        "ST".into()
-    } else {
-        "AT".into()
+fn trust_check(path: &str, db: &DB) -> Result<String, Error> {
+    match db.get(path) {
+        Some(r) if r.is_system() => Ok("ST".into()),
+        Some(r) if r.is_ancillary() => Ok("AT".into()),
+        None => Ok("U".into()),
+        _ => Err(AnalyzerError("unexpected trust check state".into())),
     }
 }
 
@@ -89,12 +93,12 @@ pub fn analyze(events: Vec<Event>, db: &DB) -> Vec<Analysis> {
             Analysis {
                 event: e.clone(),
                 subject: SubjAnalysis {
-                    trust: trust_check(&sp, db),
+                    trust: trust_check(&sp, db).unwrap(),
                     access: "A".to_string(),
                     file: sp,
                 },
                 object: ObjAnalysis {
-                    trust: trust_check(&op, db),
+                    trust: trust_check(&op, db).unwrap(),
                     access: "A".to_string(),
                     mode: "R".to_string(),
                     file: op,
