@@ -12,8 +12,9 @@ Source0: %{url}/archive/%{git_commit}/%{name}-%{git_commit}.tar.gz
 BuildArch:      x86_64
 Requires:       {{ pyrpm }} >= 3.9
 BuildRequires:  {{ pyrpm }} >= 3.9, {{ pyrpm }}-rpm-macros, {{ pyrpm }}-devel, {{ pyrpm }}-pip, {{ pyrpm }}-wheel
-BuildRequires:  dbus-devel, cargo
+Recommends:     {{ pyrpm }}-gobject, {{ pyrpm }}-events, {{ pyrpm }}-configargparse
 Requires:       gtk3, dbus-libs
+BuildRequires:  dbus-devel, cargo
 AutoReqProv:    no
 
 # For tools not packaged in el8, just use pip always.
@@ -31,7 +32,7 @@ VERSION=%{version} %{python3} setup.py compile_catalog -f
 VERSION=%{version} %{python3} setup.py bdist_wheel
 
 %install
-%{python3} -m pip install --no-input -v --target %{buildroot}%{python3_sitelib} dist/*.whl
+%{python3} -m pip install --no-deps --no-input -v --target %{buildroot}%{python3_sitelib} dist/*.whl
 install bin/fapolicy-analyzer %{buildroot}%{_sbindir}/fapolicy-analyzer -D
 
 %files
