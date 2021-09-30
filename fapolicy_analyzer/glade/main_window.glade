@@ -8,7 +8,7 @@
     <property name="type-hint">dialog</property>
     <property name="decorated">False</property>
     <property name="program-name">File Access Policy Analyzer</property>
-    <property name="version">v0.2.0</property>
+    <property name="version">v0.3.0</property>
     <property name="website">https://github.com/ctc-oss/fapolicy-analyzer/wiki</property>
     <property name="website-label" translatable="yes">Visit our Wiki for more information</property>
     <property name="logo-icon-name">changes-prevent</property>
