@@ -2,7 +2,7 @@
 name = "fapolicy-pyo3"
 description = "Python bindings for the fapolicy-analyzer"
 license = "LGPL-3.0-or-later"
-version = "0.3.0"
+version = "0.4.0"
 edition = "2018"
 
 [lib]
@@ -11,8 +11,8 @@ crate-type = ["cdylib"]
 [dependencies]
 pyo3 = "0.14.2"
 
-fapolicy-api = { version = "0.3.0", path = "../api" }
-fapolicy-analyzer = { version = "0.3", path = "../analyzer" }
-fapolicy-app = { version = "0.3.0", path = "../app" }
-fapolicy-daemon = { version = "0.3", path = "../daemon" }
-fapolicy-trust = { version = "0.3", path = "../trust" }
+fapolicy-api = { version = "0.4.0", path = "../api" }
+fapolicy-analyzer = { version = "0.4", path = "../analyzer" }
+fapolicy-app = { version = "0.4.0", path = "../app" }
+fapolicy-daemon = { version = "0.4", path = "../daemon" }
+fapolicy-trust = { version = "0.4", path = "../trust" }

@@ -2,7 +2,7 @@
 name = "fapolicy-tools"
 description = "Tools to assist with the configuration and maintenance of fapolicyd"
 license = "GPL-3.0-or-later"
-version = "0.3.0"
+version = "0.4.0"
 edition = "2018"
 
 [[bin]]
@@ -34,9 +34,9 @@ nom = "6.1.0"
 rayon = "1.5"
 thiserror = "1.0"
 
-fapolicy-api = { version = "0.3.0", path = "crates/api" }
-fapolicy-analyzer = { version = "0.3.0", path = "crates/analyzer" }
-fapolicy-app = { version = "0.3.0", path = "crates/app" }
-fapolicy-daemon = { version = "0.3.0", path = "crates/daemon" }
-fapolicy-trust = { version = "0.3.0", path = "crates/trust" }
-fapolicy-util = { version = "0.3.0", path = "crates/util" }
+fapolicy-api = { version = "0.4.0", path = "crates/api" }
+fapolicy-analyzer = { version = "0.4.0", path = "crates/analyzer" }
+fapolicy-app = { version = "0.4.0", path = "crates/app" }
+fapolicy-daemon = { version = "0.4.0", path = "crates/daemon" }
+fapolicy-trust = { version = "0.4.0", path = "crates/trust" }
+fapolicy-util = { version = "0.4.0", path = "crates/util" }
