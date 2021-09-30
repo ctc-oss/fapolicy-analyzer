@@ -85,32 +85,18 @@ fn trust_check(path: &str, db: &TrustDB) -> Result<String, Error> {
     }
 }
 
-fn any_denials_for_subject(p: &str, events: &Vec<Event>) -> bool {
+fn any_denials_for_subject(p: &str, events: &[Event]) -> bool {
     events
         .iter()
-        .filter(|e| match e.subj.exe() {
-            Some(exe) if &exe == p => true,
-            _ => false,
-        })
-        .find(|e| match e.dec {
-            Deny | DenyLog | DenySyslog | DenyAudit => true,
-            _ => false,
-        })
-        .is_some()
+        .filter(|e| matches!( e.subj.exe(), Some(exe) if exe == p))
+        .any(|e| matches!(e.dec, Deny | DenyLog | DenySyslog | DenyAudit))
 }
 
-fn any_allows_for_subject(p: &str, events: &Vec<Event>) -> bool {
+fn any_allows_for_subject(p: &str, events: &[Event]) -> bool {
     events
         .iter()
-        .filter(|e| match e.subj.exe() {
-            Some(exe) if &exe == p => true,
-            _ => false,
-        })
-        .find(|e| match e.dec {
-            Allow | AllowLog | AllowSyslog | AllowAudit => true,
-            _ => false,
-        })
-        .is_some()
+        .filter(|e| matches!(e.subj.exe(), Some(exe) if exe == p))
+        .any(|e| matches!(e.dec, Allow | AllowLog | AllowSyslog | AllowAudit))
 }
 
 pub fn analyze(events: Vec<Event>, trust: &TrustDB) -> Vec<Analysis> {

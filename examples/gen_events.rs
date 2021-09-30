@@ -10,7 +10,7 @@ fn main() {
     let cfg = All::load();
     let sys = State::load(&cfg).expect("cant load state");
 
-    let s: Vec<Rec> = sys
+    let ss: Vec<Rec> = sys
         .trust_db
         .iter()
         .filter(|(p, r)| r.is_system() && p.ends_with(".sh"))
@@ -18,14 +18,14 @@ fn main() {
         .take(10)
         .collect();
 
-    let a: Vec<Rec> = sys
+    let aa: Vec<Rec> = sys
         .trust_db
         .iter()
         .filter(|(_, r)| r.is_ancillary())
         .map(|e| e.1.clone())
         .collect();
 
-    let o: Vec<Rec> = sys
+    let oo: Vec<Rec> = sys
         .trust_db
         .iter()
         .filter(|(p, r)| r.is_system() && p.contains(".so"))
@@ -34,23 +34,23 @@ fn main() {
         .collect();
 
     let mut rng = rand::thread_rng();
-    let arand = Uniform::from(0..(a.len()));
-    let orand = Uniform::from(0..(o.len()));
-    let orand2 = Uniform::from(2..(o.len().min(7)));
-    let srand = Uniform::from(0..(s.len()));
+    let arand = Uniform::from(0..(aa.len()));
+    let orand = Uniform::from(0..(oo.len()));
+    let orand2 = Uniform::from(2..(oo.len().min(7)));
+    let srand = Uniform::from(0..(ss.len()));
     let urand = Uniform::from(0..(sys.users.len()));
     let decrand = Uniform::from(0..=1);
 
     for i in 0..100 {
-        let u = sys.users.iter().nth(urand.sample(&mut rng)).unwrap();
+        let u = sys.users.get(urand.sample(&mut rng)).unwrap();
         let t = if i % 2 == 0 {
-            s.iter()
+            ss.iter()
                 .map(|r| r.trusted.clone())
                 .nth(srand.sample(&mut rng))
                 .unwrap()
                 .clone()
         } else {
-            a.iter()
+            aa.iter()
                 .map(|r| r.trusted.clone())
                 .nth(arand.sample(&mut rng))
                 .unwrap()
@@ -63,7 +63,7 @@ fn main() {
             } else {
                 Decision::Deny
             };
-            let rec = o.iter().nth(orand.sample(&mut rng)).unwrap();
+            let rec = oo.get(orand.sample(&mut rng)).unwrap();
             let e = Event {
                 rule_id: 1,
                 dec,
