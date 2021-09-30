@@ -35,7 +35,7 @@ fn trust_status() {
 }
 
 #[test]
-fn apd_status() {
+fn subj_apd_status() {
     let trust = TrustDB::default();
     let rules = RulesDB::default();
 
@@ -65,4 +65,22 @@ fn apd_status() {
         .clone();
 
     assert_eq!(a3.subject.access, "P");
+}
+
+#[test]
+fn obj_ad_status() {
+    let trust = TrustDB::default();
+    let rules = RulesDB::default();
+
+    let (_, e1) = parse_event("rule=4 dec=deny_syslog perm=execute uid=1004 gid=100,1002 pid=40358 exe=/bin/bash : path=/home/dave/.cargo/bin/rustc ftype=application/x-executable trust=0").ok().unwrap();
+    let (_, e2) = parse_event("rule=3 dec=allow_syslog perm=execute uid=1004 gid=100,1002 pid=40357 exe=/bin/bash : path=/usr/lib64/ld-2.28.so ftype=application/x-sharedlib trust=1").ok().unwrap();
+
+    let a1 = analyze(vec![e1.clone()], &trust, &rules)
+        .first()
+        .unwrap()
+        .clone();
+    assert_eq!(a1.object.access, "D");
+
+    let a2 = analyze(vec![e2], &trust, &rules).first().unwrap().clone();
+    assert_eq!(a2.object.access, "A");
 }
