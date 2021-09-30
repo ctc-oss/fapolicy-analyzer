@@ -1,7 +1,6 @@
 # create demonstration users and groups
 ---
-
-- name: Create demo users
+- name: create demo users
   user:
     name: "{{ item.name }}"
     uid: "{{ item.uid }}"
@@ -16,7 +15,23 @@
     - { name: mallory, uid: 1006 }
     - { name: trudy, uid: 1007 }
 
-- name: create groups
-  debug:
-    msg: "todo"
-    verbosity: 0
+- name: create demo groups
+  group:
+    name: "{{ item.name }}"
+    state: present
+  loop:
+    - { name: accountant }
+    - { name: developer }
+    - { name: sysadmin }
+
+- name: add dave to developer group
+  user:
+    name: dave
+    groups: developer
+    append: yes
+
+- name: add trudy to sysadmin group
+  user:
+    name: trudy
+    groups: sysadmin
+    append: yes
