@@ -21,7 +21,6 @@ pub use self::subject::Part as SubjPart;
 pub use self::subject::Subject;
 
 mod set;
-
 pub use self::set::Set;
 
 pub(crate) fn bool_to_c(b: bool) -> char {
