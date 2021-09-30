@@ -9,7 +9,6 @@ use fapolicy_trust::db::DB as TrustDB;
 use crate::error::Error;
 use crate::error::Error::AnalyzerError;
 use crate::log::parse_event;
-use crate::rules::db::DB as RulesDB;
 use crate::rules::Decision::*;
 use crate::rules::*;
 
@@ -114,7 +113,7 @@ fn any_allows_for_subject(p: &str, events: &Vec<Event>) -> bool {
         .is_some()
 }
 
-pub fn analyze(events: Vec<Event>, trust: &TrustDB, _: &RulesDB) -> Vec<Analysis> {
+pub fn analyze(events: Vec<Event>, trust: &TrustDB) -> Vec<Analysis> {
     events
         .iter()
         .map(|e| {

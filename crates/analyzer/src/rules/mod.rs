@@ -20,8 +20,6 @@ mod subject;
 pub use self::subject::Part as SubjPart;
 pub use self::subject::Subject;
 
-pub mod db;
-pub mod read;
 mod set;
 
 pub use self::set::Set;
