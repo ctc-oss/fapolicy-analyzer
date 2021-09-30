@@ -12,10 +12,11 @@
   gather_facts: no
   become: yes
   roles:
+    - users
     - fapolicyd
     - filesystem
-    - analyzer
-    - users
+    - role: analyzer
+      when: env != 'dev'
 
 - name: Simulate
   hosts: all

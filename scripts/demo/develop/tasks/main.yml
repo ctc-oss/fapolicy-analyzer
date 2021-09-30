@@ -1,6 +1,6 @@
 # install development requirements, and create a build
 ---
-- name: install development requirements common to the RedHat 8 family
+- name: install development requirements common to the RedHat family
   yum:
     state: present
     name:
@@ -14,6 +14,7 @@
       - git
       - gobject-introspection-devel
       - gtk3
+      - mesa-dri-drivers
       - mesa-libGL
       - mesa-libGLw-devel
       - openssl-devel
@@ -68,12 +69,13 @@
     name: pipenv
     extra_args: --user
 
-- name: source code checkout
+- name: source code checkout {{ git_branch }}
   become: yes
   become_user: "{{ vagrant_user }}"
   git:
     repo: 'https://github.com/ctc-oss/fapolicy-analyzer.git'
     dest: "/shared/{{ vagrant_user }}/git/fapolicy-analyzer"
+    version: "{{ git_branch }}"
 
 - name: create python environment
   become: yes

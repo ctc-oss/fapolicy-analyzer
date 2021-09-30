@@ -33,7 +33,7 @@ pub fn user(i: &str) -> nom::IResult<&str, User> {
         terminated(opt(tag("x")), tag(":")),
         terminated(digit1, tag(":")),
         terminated(digit1, tag(":")),
-        terminated(any, tag(":")),
+        terminated(opt(any), tag(":")),
         terminated(any, tag(":")),
         any,
     )))(i)

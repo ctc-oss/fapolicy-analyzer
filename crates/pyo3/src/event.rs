@@ -1,23 +1,21 @@
 use pyo3::prelude::*;
 
-use fapolicy_analyzer::log::Event;
-use fapolicy_analyzer::rules::ObjPart;
-use fapolicy_analyzer::rules::SubjPart;
+use fapolicy_analyzer::event::{Analysis, ObjAnalysis, SubjAnalysis};
 
 /// An Event parsed from a fapolicyd log
 #[pyclass(module = "log", name = "Event")]
 #[derive(Clone)]
 pub struct PyEvent {
-    event: Event,
+    rs: Analysis,
 }
-impl From<Event> for PyEvent {
-    fn from(event: Event) -> Self {
-        Self { event }
+impl From<Analysis> for PyEvent {
+    fn from(rs: Analysis) -> Self {
+        Self { rs }
     }
 }
-impl From<PyEvent> for Event {
-    fn from(event: PyEvent) -> Self {
-        event.event
+impl From<PyEvent> for Analysis {
+    fn from(py: PyEvent) -> Self {
+        py.rs
     }
 }
 
@@ -26,58 +24,26 @@ impl PyEvent {
     /// The user id parsed from the log event
     #[getter]
     fn uid(&self) -> i32 {
-        self.event.uid
+        self.rs.event.uid
     }
 
     /// The group id parsed from the log event
     #[getter]
     fn gid(&self) -> i32 {
-        self.event.gid
+        // todo;; unhack this
+        *self.rs.event.gid.iter().nth(0).unwrap()
     }
 
     /// The fapolicyd subject parsed from the log event
     #[getter]
     fn subject(&self) -> PySubject {
-        let path = if let Some(SubjPart::Exe(path)) = self
-            .event
-            .subj
-            .parts
-            .iter()
-            .find(|p| matches!(p, SubjPart::Exe(_)))
-        {
-            path.clone()
-        } else {
-            "invalid".into()
-        };
-
-        PySubject {
-            file: path,
-            trust: "ST".to_string(),
-            access: "A".to_string(),
-        }
+        self.rs.subject.clone().into()
     }
 
     /// The fapolicyd object parsed from the log event
     #[getter]
     fn object(&self) -> PyObject {
-        let path = if let Some(ObjPart::Path(path)) = self
-            .event
-            .obj
-            .parts
-            .iter()
-            .find(|p| matches!(p, ObjPart::Path(_)))
-        {
-            path.clone()
-        } else {
-            "invalid".into()
-        };
-
-        PyObject {
-            file: path,
-            trust: "ST".into(),
-            access: "A".into(),
-            mode: "R".into(),
-        }
+        self.rs.object.clone().into()
     }
 }
 
@@ -85,19 +51,18 @@ impl PyEvent {
 #[pyclass(module = "log", name = "Subject")]
 #[derive(Clone)]
 pub struct PySubject {
-    file: String,
-    trust: String,
-    access: String,
+    rs: SubjAnalysis,
 }
 
-/// Object metadata
-#[pyclass(module = "log", name = "Object")]
-#[derive(Clone)]
-pub struct PyObject {
-    file: String,
-    trust: String,
-    access: String,
-    mode: String,
+impl From<SubjAnalysis> for PySubject {
+    fn from(rs: SubjAnalysis) -> Self {
+        Self { rs }
+    }
+}
+impl From<PySubject> for SubjAnalysis {
+    fn from(py: PySubject) -> Self {
+        py.rs
+    }
 }
 
 #[pymethods]
@@ -105,19 +70,37 @@ impl PySubject {
     /// Path of the subject parsed from the log event
     #[getter]
     fn file(&self) -> String {
-        self.file.clone()
+        self.rs.file.clone()
     }
 
     /// Trust status of the log event subject
     #[getter]
     fn trust(&self) -> String {
-        self.trust.clone()
+        self.rs.trust.clone()
     }
 
     /// Access status of the log event subject
     #[getter]
     fn access(&self) -> String {
-        self.access.clone()
+        self.rs.access.clone()
+    }
+}
+
+/// Object metadata
+#[pyclass(module = "log", name = "Object")]
+#[derive(Clone)]
+pub struct PyObject {
+    rs: ObjAnalysis,
+}
+
+impl From<ObjAnalysis> for PyObject {
+    fn from(rs: ObjAnalysis) -> Self {
+        Self { rs }
+    }
+}
+impl From<PyObject> for ObjAnalysis {
+    fn from(py: PyObject) -> Self {
+        py.rs
     }
 }
 
@@ -126,25 +109,25 @@ impl PyObject {
     /// Path of the object parsed from the log event
     #[getter]
     fn file(&self) -> String {
-        self.file.clone()
+        self.rs.file.clone()
     }
 
     /// Trust status of the log event object
     #[getter]
     fn trust(&self) -> String {
-        self.trust.clone()
+        self.rs.trust.clone()
     }
 
     /// Access status of the log event object
     #[getter]
     fn access(&self) -> String {
-        self.access.clone()
+        self.rs.access.clone()
     }
 
     /// Mode of the log event object
     #[getter]
     fn mode(&self) -> String {
-        self.mode.clone()
+        self.rs.mode.clone()
     }
 }
 

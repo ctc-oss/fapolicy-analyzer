@@ -39,17 +39,23 @@ Vagrant.configure("2") do |config|
   config.registration.unregister_on_halt = false
 
   env = "prod"
+  git_branch = "origin/master"
   if ENV['ENV'] == 'dev'
+    if ENV['GIT_BRANCH']
+      git_branch = ENV['GIT_BRANCH']
+    end
     env = "dev"
     config.vbguest.auto_update = true
-    config.vm.synced_folder ".shared/", "/shared", type: "virtualbox"
+    Dir.mkdir './.shared/' unless File.exists?('./.shared/')
+    config.vm.synced_folder "./.shared/", "/shared", type: "virtualbox"
   end
   
   config.vm.provision "ansible" do |ansible|
     ansible.playbook = "../../demo/site.yml"
     ansible.extra_vars = {
-      rpm_url: rpm_url,
-      env: env
+      env: env,
+      git_branch: git_branch,
+      rpm_url: rpm_url
     }
   end
 end

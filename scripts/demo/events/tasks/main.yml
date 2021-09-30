@@ -66,6 +66,13 @@
     /usr/local/bin/dbadmin.py
   ignore_errors: yes
 
+- name: dave tries to run rustc
+  become: yes
+  become_user: dave
+  shell: |
+    /home/dave/.cargo/bin/rustc --version
+  ignore_errors: yes
+
 - name: capture events-1.txt
   become: yes
   shell: |

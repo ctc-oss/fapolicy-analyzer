@@ -16,6 +16,13 @@ impl Subject {
     pub fn new(parts: Vec<Part>) -> Self {
         Subject { parts }
     }
+
+    pub fn exe(&self) -> Option<String> {
+        match self.parts.iter().find(|p| matches!(p, Part::Exe(_))) {
+            Some(Part::Exe(path)) => Some(path.clone()),
+            _ => None,
+        }
+    }
 }
 
 /// # Subject Field
