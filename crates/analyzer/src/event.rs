@@ -4,12 +4,12 @@ use std::io::{prelude::*, BufReader};
 use std::iter::Iterator;
 use std::str::FromStr;
 
-use crate::rules::db::DB as RulesDB;
 use fapolicy_trust::db::DB as TrustDB;
 
 use crate::error::Error;
 use crate::error::Error::AnalyzerError;
 use crate::log::parse_event;
+use crate::rules::db::DB as RulesDB;
 use crate::rules::Decision::*;
 use crate::rules::*;
 
@@ -100,24 +100,39 @@ fn any_denials_for_subject(p: &str, events: &Vec<Event>) -> bool {
         .is_some()
 }
 
-pub fn analyze(events: Vec<Event>, trust: &TrustDB, rules: &RulesDB) -> Vec<Analysis> {
+fn any_allows_for_subject(p: &str, events: &Vec<Event>) -> bool {
+    events
+        .iter()
+        .filter(|e| match e.subj.exe() {
+            Some(exe) if &exe == p => true,
+            _ => false,
+        })
+        .find(|e| match e.dec {
+            Allow | AllowLog | AllowSyslog | AllowAudit => true,
+            _ => false,
+        })
+        .is_some()
+}
+
+pub fn analyze(events: Vec<Event>, trust: &TrustDB, _: &RulesDB) -> Vec<Analysis> {
     events
         .iter()
         .map(|e| {
             let sp = e.subj.exe().unwrap();
             let op = e.obj.path().unwrap();
 
-            let r = rules.get(e.rule_id as usize).unwrap();
-
             let ed = match e.dec {
                 Allow | AllowLog | AllowSyslog | AllowAudit => "A".to_string(),
                 Deny | DenyLog | DenySyslog | DenyAudit => "D".to_string(),
             };
 
-            let sa = if any_denials_for_subject(&sp, &events) {
-                "P".to_string()
-            } else {
-                ed.clone()
+            let sa = match (
+                any_allows_for_subject(&sp, &events),
+                any_denials_for_subject(&sp, &events),
+            ) {
+                (true, false) => "A".to_string(),
+                (false, true) => "D".to_string(),
+                _ => "P".to_string(),
             };
 
             Analysis {
@@ -138,21 +153,21 @@ pub fn analyze(events: Vec<Event>, trust: &TrustDB, rules: &RulesDB) -> Vec<Anal
         .collect()
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Analysis {
     pub event: Event,
     pub subject: SubjAnalysis,
     pub object: ObjAnalysis,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct SubjAnalysis {
     pub file: String,
     pub trust: String,
     pub access: String,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ObjAnalysis {
     pub file: String,
     pub trust: String,

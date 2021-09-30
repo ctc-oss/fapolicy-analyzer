@@ -37,9 +37,9 @@ pub fn load_rules_db(path: &str) -> Result<DB, Error> {
     let lookup: HashMap<usize, Rule> = xs
         .iter()
         .map(|l| (l, parser(l)))
-        .flat_map(|(l, r)| match r {
+        .flat_map(|(_, r)| match r {
             Ok(("", rule)) => Some(rule),
-            Ok((rem, _)) => None,
+            Ok((_, _)) => None,
             Err(_) => None,
         })
         .filter_map(|line| match line {
