@@ -4,7 +4,7 @@ use crate::error::Error;
 use directories::ProjectDirs;
 use fapolicy_analyzer::users::{load_groups, load_users, Group, User};
 
-use fapolicy_trust::db::DB;
+use fapolicy_trust::db::DB as TrustDB;
 
 use fapolicy_trust::ops::Changeset;
 use fapolicy_trust::read::{check_trust_db, load_trust_db};
@@ -16,7 +16,7 @@ use serde::Serialize;
 #[derive(Clone)]
 pub struct State {
     pub config: All,
-    pub trust_db: DB,
+    pub trust_db: TrustDB,
     pub users: Vec<User>,
     pub groups: Vec<Group>,
 }
@@ -25,7 +25,7 @@ impl State {
     pub fn empty(cfg: &All) -> State {
         State {
             config: cfg.clone(),
-            trust_db: DB::default(),
+            trust_db: TrustDB::default(),
             users: vec![],
             groups: vec![],
         }

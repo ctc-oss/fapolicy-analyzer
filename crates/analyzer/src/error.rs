@@ -15,4 +15,7 @@ pub enum Error {
 
     #[error("Error reading metadata: {0}")]
     MetaError(String),
+
+    #[error("{0}")]
+    AnalyzerError(String),
 }

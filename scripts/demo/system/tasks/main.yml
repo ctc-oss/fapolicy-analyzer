@@ -1,6 +1,6 @@
 # install and initialize dependencies
 ---
-- name: install misc requirements
+- name: install misc requirements common to the RedHat family
   yum:
     state: present
     name:
@@ -9,7 +9,17 @@
       - xorg-x11-xauth
       - dbus-x11
       - dconf
+  when:
+    - ansible_facts['os_family'] == "RedHat"
+
+- name: install misc requirements that are Fedora 34 specific
+  yum:
+    state: present
+    name:
       - polkit-gnome
+  when:
+    - ansible_facts['distribution'] == "Fedora"
+    - ansible_facts['distribution_major_version'] == "34"
 
 - name: share vagrant user xauthority globally
   lineinfile:
@@ -17,7 +27,7 @@
     line: "export XAUTHORITY=/home/vagrant/.Xauthority"
     path: /etc/profile
 
-- name: "Add {{ vagrant_user }} to systemd-journal group"
+- name: "add {{ vagrant_user }} to systemd-journal group"
   user:
     name: "{{ vagrant_user }}"
     groups: systemd-journal

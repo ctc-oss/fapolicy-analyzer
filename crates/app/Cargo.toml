@@ -2,7 +2,7 @@
 name = "fapolicy-app"
 description = "Application state management components"
 license = "LGPL-3.0-or-later"
-version = "0.3.0"
+version = "0.4.0"
 edition = "2018"
 
 [dependencies]
@@ -12,8 +12,8 @@ lmdb-rkv = "0.14.0"
 serde = { version = "1.0", features = ["derive"] }
 thiserror = "1.0"
 
-fapolicy-analyzer = { version = "0.3", path = "../analyzer" }
-#fapolicy-api = { version = "0.3.0", path = "../api" }
-fapolicy-daemon = { version = "0.3", path = "../daemon" }
-fapolicy-trust = { version = "0.3", path = "../trust" }
-#fapolicy-util = { version = "0.3", path = "../util" }
+fapolicy-analyzer = { version = "0.4", path = "../analyzer" }
+#fapolicy-api = { version = "0.4.0", path = "../api" }
+fapolicy-daemon = { version = "0.4", path = "../daemon" }
+fapolicy-trust = { version = "0.4", path = "../trust" }
+#fapolicy-util = { version = "0.4", path = "../util" }
