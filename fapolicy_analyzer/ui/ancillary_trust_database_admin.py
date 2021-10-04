@@ -1,36 +1,37 @@
 import gi
 import logging
 import fapolicy_analyzer.ui.strings as strings
-import sys
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, GLib
-from concurrent.futures import ThreadPoolExecutor
-from fapolicy_analyzer import Changeset, System, Trust
+from gi.repository import Gtk
+from fapolicy_analyzer import Changeset, Trust
 from locale import gettext as _
-from fapolicy_analyzer.util.format import f
 from fapolicy_analyzer.util import fs  # noqa: F401
-from .ui_widget import UIWidget
+from fapolicy_analyzer.util.format import f
+from .actions import (
+    apply_changesets,
+    add_notification,
+    clear_changesets,
+    NotificationType,
+    request_ancillary_trust,
+    deploy_ancillary_trust,
+    set_system_checkpoint,
+)
 from .ancillary_trust_file_list import AncillaryTrustFileList
-from .trust_file_details import TrustFileDetails
-from .deploy_confirm_dialog import DeployConfirmDialog
-from .state_manager import stateManager, NotificationType
 from .confirm_info_dialog import ConfirmInfoDialog
-from fapolicy_analyzer.util.fapd_dbase import fapd_dbase_snapshot
+from .deploy_confirm_dialog import DeployConfirmDialog
+from .store import dispatch, get_system_feature
+from .trust_file_details import TrustFileDetails
+from .ui_widget import UIWidget
 
 
 class AncillaryTrustDatabaseAdmin(UIWidget):
     def __init__(self):
         super().__init__()
-
-        try:
-            self.system = System()
-        except RuntimeError as e:
-            print(e)
-            sys.exit(1)
-
-        self.update_system_checkpoint()
-        self.executor = ThreadPoolExecutor(max_workers=1)
+        self._changesets = []
+        self._trust = []
+        self._deploying = False
+        self._loading = False
         self.selectedFile = None
 
         self.trustFileList = AncillaryTrustFileList(trust_func=self.__load_trust)
@@ -46,23 +47,28 @@ class AncillaryTrustDatabaseAdmin(UIWidget):
             self.trustFileDetails.get_ref(), True, True, 0
         )
 
-        # To update UI elements, e.g. Deploy button
-        stateManager.ev_changeset_queue_updated += self.on_changeset_updated
+        self._deployBtn = self.get_object("deployBtn")
 
-        # To reapply user trust add/delete requests from opened session file
-        stateManager.ev_user_session_loaded += self.on_session_load
+        get_system_feature().subscribe(on_next=self.on_next_system)
 
-    def __load_trust(self, callback):
-        def get_trust():
-            trust = self.system.ancillary_trust()
-            GLib.idle_add(callback, trust)
-
-        self.executor.submit(get_trust)
+    def __load_trust(self):
+        self._loading = True
+        dispatch(request_ancillary_trust())
 
     def __apply_changeset(self, changeset):
-        self.system = self.system.apply_changeset(changeset)
-        stateManager.add_changeset_q(changeset)
-        self.trustFileList.refresh()
+        dispatch(apply_changesets(changeset))
+
+    def __display_deploy_confirmation_dialog(self):
+        parent = self.get_ref().get_toplevel()
+        deployConfirmDialog = DeployConfirmDialog(parent).get_ref()
+        revert_resp = deployConfirmDialog.run()
+        deployConfirmDialog.hide()
+        if revert_resp == Gtk.ResponseType.YES:
+            dispatch(set_system_checkpoint())
+            dispatch(clear_changesets())
+        else:
+            # TODO: revert here?
+            return
 
     def add_trusted_files(self, *files):
         changeset = Changeset()
@@ -135,8 +141,11 @@ SHA256: {fs.sha(trust.path)}"""
             self.delete_trusted_files(self.selectedFile)
 
     def on_deployBtn_clicked(self, *args):
-        # Get list of human-readable undeployed path/operation pairs
-        listPathActionTuples = stateManager.get_path_action_list()
+        def changesets_to_path_action_pairs(changesets):
+            """Converts to list of human-readable undeployed path/operation pairs"""
+            return [t for e in changesets for t in e.get_path_action_map().items()]
+
+        listPathActionTuples = changesets_to_path_action_pairs(self._changesets)
         logging.debug(listPathActionTuples)
         parent = self.get_ref().get_toplevel()
         dlgDeployList = ConfirmInfoDialog(parent, listPathActionTuples)
@@ -144,74 +153,57 @@ SHA256: {fs.sha(trust.path)}"""
         dlgDeployList.hide()
 
         if confirm_resp == Gtk.ResponseType.YES:
-            fapd_dbase_snapshot()
-            try:
-                print("Deploying...")
-                self.system.deploy()
-                self.update_system_checkpoint()
-                stateManager.add_system_notification(
+            logging.debug("Deploying...")
+            self._deploying = True
+            dispatch((deploy_ancillary_trust()))
+
+    def on_next_system(self, system):
+        changesets = system.get("changesets")
+        trustState = system.get("ancillary_trust")
+
+        # if changesets have changes request a new ancillary trust
+        if self._changesets != changesets:
+            self._changesets = changesets
+            self._deployBtn.set_sensitive(len(changesets) != 0)
+            self.trustFileList.set_changesets(changesets)
+            self.__load_trust()
+
+        # if there was an error check if we were loading or deploying and show appropriate notification
+        if trustState.error:
+            if self._loading:
+                self._loading = False
+                logging.error(
+                    "%s: %s", strings.ANCILLARY_TRUST_LOAD_ERROR, trustState.error
+                )
+                dispatch(
+                    add_notification(
+                        strings.ANCILLARY_TRUST_LOAD_ERROR, NotificationType.ERROR
+                    )
+                )
+            elif self._deploying:
+                self._deploying = False
+                logging.error(
+                    "%s: %s", strings.DEPLOY_ANCILLARY_ERROR_MSG, trustState.error
+                )
+                dispatch(
+                    add_notification(
+                        strings.DEPLOY_ANCILLARY_ERROR_MSG, NotificationType.ERROR
+                    )
+                )
+
+        # if not loading and the trust changes reload the view
+        if self._loading and self._trust != trustState.trust:
+            self._loading = False
+            self._trust = trustState.trust
+            self.trustFileList.load_trust(self._trust)
+
+        # if not deploying and we were deploying then confirm
+        if self._deploying and trustState.deployed:
+            self._deploying = False
+            dispatch(
+                add_notification(
                     strings.DEPLOY_ANCILLARY_SUCCESSFUL_MSG,
                     NotificationType.SUCCESS,
                 )
-            except RuntimeError as e:
-                stateManager.add_system_notification(
-                    f"Failed to deploy: {e}",
-                    NotificationType.ERROR,
-                )
-                return
-
-            deployConfirmDialog = DeployConfirmDialog(parent).get_ref()
-            revert_resp = deployConfirmDialog.run()
-            deployConfirmDialog.hide()
-            if revert_resp == Gtk.ResponseType.YES:
-                stateManager.del_changeset_q()
-            else:
-                # TODO: revert here?
-                return
-
-    def on_changeset_updated(self):
-        deployBtn = self.get_object("deployBtn")
-        deployBtn.set_sensitive(stateManager.is_dirty_queue())
-
-    def on_session_load(self, listPaPrs):
-        # flake doesn't like long lines so...
-        strFunction = "AncillaryTrustAdmin::on_session_load(): "
-        logging.debug(strFunction + "{} {}".format(len(listPaPrs), listPaPrs))
-        listPath2Add = []
-        listPath2Del = []
-
-        for e in listPaPrs:
-            logging.debug(e)
-            strPath = e[0]
-            strAction = e[1]
-            if strAction == "Add":
-                listPath2Add.append(strPath)
-            elif strAction == "Del":
-                listPath2Del.append(strPath)
-            else:
-                print("on_session_load(): Unknown action: {}".format(strAction))
-
-        self.system_rollback_to_checkpoint()
-        self.on_files_added(listPath2Add)
-        self.on_files_deleted(listPath2Del)
-
-    def system_rollback_to_checkpoint(self):
-        self.system = self.system_checkpoint
-        return self.system
-
-    def update_system_checkpoint(self):
-        self.system_checkpoint = self.get_system()
-        return self.system_checkpoint
-
-    def get_system(self):
-        if not self.system:
-            self.system = System()
-        return self.system
-
-    def set_system(self, sys):
-        self.system = sys
-        return self.system
-
-    def update_system(self):
-        self.system = System()
-        return self.system
+            )
+            self.__display_deploy_confirmation_dialog()

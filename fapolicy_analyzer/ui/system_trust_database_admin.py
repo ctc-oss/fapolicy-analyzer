@@ -1,18 +1,19 @@
-import gi
+import logging
 import fapolicy_analyzer.ui.strings as strings
-
-gi.require_version("Gtk", "3.0")
-from gi.repository import GLib
 from events import Events
-from concurrent.futures import ThreadPoolExecutor
-from fapolicy_analyzer import System
 from locale import gettext as _
 from fapolicy_analyzer.util.format import f
 from fapolicy_analyzer.util import fs  # noqa: F401
+from .actions import (
+    NotificationType,
+    add_notification,
+    request_system_trust,
+)
+from .configs import Colors
+from .store import dispatch, get_system_feature
 from .trust_file_list import TrustFileList
 from .trust_file_details import TrustFileDetails
 from .ui_widget import UIWidget
-from .configs import Colors
 
 
 class SystemTrustDatabaseAdmin(UIWidget, Events):
@@ -22,8 +23,9 @@ class SystemTrustDatabaseAdmin(UIWidget, Events):
     def __init__(self):
         UIWidget.__init__(self)
         Events.__init__(self)
-        self.system = System()
-        self.executor = ThreadPoolExecutor(max_workers=1)
+        self._trust = []
+        self._error = None
+        self._loading = False
 
         self.trustFileList = TrustFileList(
             trust_func=self.__load_trust, markup_func=self.__status_markup
@@ -38,6 +40,8 @@ class SystemTrustDatabaseAdmin(UIWidget, Events):
             self.trustFileDetails.get_ref(), True, True, 0
         )
 
+        get_system_feature().subscribe(on_next=self.on_next_system)
+
     def __status_markup(self, status):
         return (
             ("<b><u>T</u></b>/D", Colors.LIGHT_GREEN)
@@ -45,12 +49,27 @@ class SystemTrustDatabaseAdmin(UIWidget, Events):
             else ("T/<b><u>D</u></b>", Colors.LIGHT_RED)
         )
 
-    def __load_trust(self, callback):
-        def get_trust():
-            trust = self.system.system_trust()
-            GLib.idle_add(callback, trust)
+    def __load_trust(self):
+        self._loading = True
+        dispatch(request_system_trust())
 
-        self.executor.submit(get_trust)
+    def on_next_system(self, system):
+        trustState = system.get("system_trust")
+
+        if self._error != trustState.error:
+            self._error = trustState.error
+            self._loading = False
+            logging.error("%s: %s", strings.SYSTEM_TRUST_LOAD_ERROR, self._error)
+            dispatch(
+                add_notification(
+                    strings.SYSTEM_TRUST_LOAD_ERROR, NotificationType.ERROR
+                )
+            )
+        elif self._loading and self._trust != trustState.trust:
+            self._error = None
+            self._loading = False
+            self._trust = trustState.trust
+            self.trustFileList.load_trust(self._trust)
 
     def on_trust_selection_changed(self, trust):
         self.selectedFile = trust

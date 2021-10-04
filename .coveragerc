@@ -5,6 +5,6 @@ source =
 
 [report]
 show_missing = true
-fail_under = 93
+fail_under = 90
 omit =
     */tests/*

@@ -4,6 +4,7 @@
 .local
 .testmondata
 .vscode/
+.pytest_cache/
 *.egg-info
 *.glade~
 *.iml

@@ -7,12 +7,12 @@ import gi
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
-from .main_window import MainWindow
-from .state_manager import stateManager
 from fapolicy_analyzer.util.xdg_utils import xdg_state_dir_prefix
+from .main_window import MainWindow
+from .session_manager import sessionManager
 
 
-def parse_cmdline():
+def _parse_cmdline():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-v", "--verbose", action="store_true", help="Enable verbose mode"
@@ -38,21 +38,23 @@ def parse_cmdline():
 
     # Enable edit session autosaves
     if args.autosave:
-        stateManager.set_autosave_enable(args.autosave)
+        sessionManager.set_autosave_enable(args.autosave)
 
     # Enable edit session max autosave file count
     if args.count:
-        stateManager.set_autosave_filecount(int(args.count))
+        sessionManager.set_autosave_filecount(int(args.count))
 
     # Set Edit Session Tmp File
     if args.session:
-        stateManager.set_autosave_filename(args.session)
+        sessionManager.set_autosave_filename(args.session)
     else:
-        stateManager.set_autosave_filename(xdg_state_dir_prefix("FaCurrentSession.tmp"))
+        sessionManager.set_autosave_filename(
+            xdg_state_dir_prefix("FaCurrentSession.tmp")
+        )
 
 
 def main():
-    parse_cmdline()
+    _parse_cmdline()
     MainWindow()
     Gtk.main()
 

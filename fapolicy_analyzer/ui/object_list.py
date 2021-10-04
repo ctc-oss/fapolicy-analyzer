@@ -3,7 +3,6 @@ import fapolicy_analyzer.ui.strings as strings
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
-from concurrent.futures import ThreadPoolExecutor
 from .add_file_button import AddFileButton
 from .configs import Colors
 from .searchable_list import SearchableList
@@ -28,7 +27,6 @@ class ObjectList(SearchableList):
             defaultSortIndex=3,
         )
 
-        self.executor = ThreadPoolExecutor(max_workers=1)
         self.load_store([])
         self.selection_changed += self.__handle_selection_changed
 
