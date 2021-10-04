@@ -5,24 +5,57 @@ import gi
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
-from unittest.mock import MagicMock
+from callee import Attrs, InstanceOf
 from fapolicy_analyzer import Changeset
 from helpers import refresh_gui
+from mocks import mock_System
+from redux import Action
+from rx import create
+from unittest.mock import MagicMock
+from ui.actions import ADD_NOTIFICATION
 from ui.main_window import MainWindow, router
-from ui.state_manager import stateManager, NotificationType
+from ui.session_manager import sessionManager, NotificationType
 from ui.strings import AUTOSAVE_RESTORE_ERROR_MSG
+from ui.epics import init_system
+
+test_changeset = Changeset()
+test_changeset.add_trust("/tmp/DeadBeef.txt")
+
+
+@pytest.fixture()
+def mock_dispatch(mocker):
+    return mocker.patch("ui.main_window.dispatch")
 
 
 @pytest.fixture
-def mainWindow():
+def mock_init_system(mocker):
+    return mocker.patch("ui.main_window.init_system")
+
+
+@pytest.fixture
+def mock_system_features(changesets, mocker):
+    def push_changeset(observer, *args):
+        observer.on_next({"changesets": changesets})
+        observer.on_completed()
+
+    system_features_mock = create(push_changeset)
+    mocker.patch("ui.main_window.get_system_feature", return_value=system_features_mock)
+
+
+@pytest.fixture
+def mock_dispatches(mocker):
+    mocker.patch("ui.ancillary_trust_database_admin.dispatch")
+    mocker.patch("ui.system_trust_database_admin.dispatch")
+    mocker.patch("ui.policy_rules_admin_page.dispatch")
+
+
+@pytest.fixture
+@pytest.mark.usefixtures("mock_system_features")
+def mainWindow(mock_init_system, mock_dispatches):
+    # mocker.patch("ui.main_window.PolicyRulesAdminPage.on_next_system")
+    # mocker.patch("ui.database_admin_page.AncillaryTrustDatabaseAdmin.on_next_system")
+    init_system(mock_System())
     return MainWindow()
-
-
-@pytest.fixture
-def state():
-    yield stateManager
-    stateManager.del_changeset_q()
-    stateManager.systemNotification = None
 
 
 @pytest.fixture
@@ -38,12 +71,9 @@ def test_displays_window(mainWindow):
     assert window.get_title() == "File Access Policy Analyzer"
 
 
-def test_shows_confirm_if_unapplied_changes(mainWindow, state, mocker):
-    # Populate a Changeset, add it to the StateManager's queue
-    cs = Changeset()
-    strFilename = "/tmp/DeadBeef.txt"
-    cs.add_trust(strFilename)
-    stateManager.add_changeset_q(cs)
+@pytest.mark.usefixtures("mock_system_features")
+@pytest.mark.parametrize("changesets", [[test_changeset]])
+def test_shows_confirm_if_unapplied_changes(mainWindow, mocker):
     mockDialog = MagicMock()
     mockDialog.run.return_value = False
     mocker.patch(
@@ -54,7 +84,7 @@ def test_shows_confirm_if_unapplied_changes(mainWindow, state, mocker):
     mockDialog.run.assert_called()
 
 
-def test_does_not_show_confirm_if_no_unapplied_changes(mainWindow, state, mocker):
+def test_does_not_show_confirm_if_no_unapplied_changes(mainWindow, mocker):
     mockDialog = MagicMock()
     mockDialog.run.return_value = False
     mocker.patch(
@@ -80,7 +110,7 @@ def test_defaults_to_trust_db_admin_page(mainWindow):
     )
 
 
-def test_opens_trust_db_admin_page(mainWindow, mocker):
+def test_opens_trust_db_admin_page(mainWindow):
     mainContent = mainWindow.get_object("mainContent")
     mainContent.remove(next(iter(mainContent.get_children())))
     assert not mainContent.get_children()
@@ -126,7 +156,8 @@ def test_bad_router_option():
         assert excinfo.value.message == "Bad Selection"
 
 
-def test_localization(es_locale):
+@pytest.mark.usefixtures("es_locale", "mock_init_system", "mock_dispatches")
+def test_localization():
     mainWindow = MainWindow()
     window = mainWindow.get_ref()
     assert type(window) is Gtk.Window
@@ -139,7 +170,7 @@ def test_on_delete_event(mainWindow):
     assert not bReturn
 
 
-def test_on_openMenu_activate(mainWindow, state, mocker):
+def test_on_openMenu_activate(mainWindow, mocker):
     # Mock the FileChooser dlg
     mockDialog = MagicMock()
     mockDialog.run.return_value = Gtk.ResponseType.OK
@@ -149,14 +180,14 @@ def test_on_openMenu_activate(mainWindow, state, mocker):
         return_value=mockDialog,
     )
 
-    mocker.patch("ui.main_window.stateManager.open_edit_session", return_value=True)
+    mocker.patch("ui.main_window.sessionManager.open_edit_session", return_value=True)
 
     mocker.patch("ui.main_window.path.isfile", return_value=True)
     mainWindow.get_object("openMenu").activate()
-    stateManager.open_edit_session.assert_called_with("/tmp/open_tmp.json")
+    sessionManager.open_edit_session.assert_called_with("/tmp/open_tmp.json")
 
 
-def test_on_openMenu_activate_fail(mainWindow, state, mocker):
+def test_on_openMenu_activate_fail(mainWindow, mock_dispatch, mocker):
     fakeFile = "/tmp/open_tmp.json"
     mockDialog = MagicMock()
     mockDialog.run.return_value = Gtk.ResponseType.OK
@@ -166,41 +197,46 @@ def test_on_openMenu_activate_fail(mainWindow, state, mocker):
         return_value=mockDialog,
     )
 
-    mocker.patch("ui.main_window.stateManager.open_edit_session", return_value=False)
+    mocker.patch("ui.main_window.sessionManager.open_edit_session", return_value=False)
 
     mocker.patch("ui.main_window.path.isfile", return_value=True)
-    mockHandler = MagicMock()
-    state.system_notification_added += mockHandler
     mainWindow.get_object("openMenu").activate()
-    mockHandler.assert_called_with(
-        (
-            f"An error occurred trying to open the session file, {fakeFile}",
-            NotificationType.ERROR,
+    mock_dispatch.assert_called_with(
+        InstanceOf(Action)
+        & Attrs(
+            type=ADD_NOTIFICATION,
+            payload=Attrs(
+                type=NotificationType.ERROR,
+                text=f"An error occurred trying to open the session file, {fakeFile}",
+            ),
         )
     )
-    state.system_notification_added -= mockHandler
 
 
-def test_on_restoreMenu_activate(mainWindow, state, mocker):
-    # Invoke 'pass'ed function
+def test_on_restoreMenu_activate(mainWindow, mocker):
+    mocker.patch("glob.glob", return_value=["foo"])
+    mock = mocker.patch(
+        "ui.main_window.sessionManager.open_edit_session", return_value=True
+    )
     mainWindow.get_object("restoreMenu").activate()
+    mock.assert_called_with("foo")
 
 
-def test_on_restoreMenu_activate_w_exception(mainWindow, state, mocker):
+def test_on_restoreMenu_activate_w_exception(mainWindow, mocker):
     """
     Test the callback bound to the File|Restore menu-item. The
-    StateManager::restore_previous_session() is mocked to fail with an
+    sessionManager::restore_previous_session() is mocked to fail with an
     exception thrown.
     """
     mockRestoreAutosave = mocker.patch(
-        "ui.state_manager.StateManager.restore_previous_session", side_effect=IOError
+        "ui.main_window.sessionManager.restore_previous_session", side_effect=IOError
     )
 
     mainWindow.get_object("restoreMenu").activate()
     mockRestoreAutosave.assert_called()
 
 
-def test_on_saveAsMenu_activate(mainWindow, state, mocker):
+def test_on_saveAsMenu_activate(mainWindow, mocker):
     # Mock the FileChooser dlg
     mockDialog = MagicMock()
     mockDialog.run.return_value = Gtk.ResponseType.OK
@@ -209,62 +245,60 @@ def test_on_saveAsMenu_activate(mainWindow, state, mocker):
         "ui.main_window.Gtk.FileChooserDialog",
         return_value=mockDialog,
     )
-
-    # Mock the StateMgr interface
     mockFunc = mocker.patch(
-        "ui.main_window.stateManager.save_edit_session", return_value=True
+        "ui.main_window.sessionManager.save_edit_session", return_value=True
     )
 
     mainWindow.get_object("saveAsMenu").activate()
-    mockFunc.assert_called_with("/tmp/save_as_tmp.json")
+    mockFunc.assert_called_with([], "/tmp/save_as_tmp.json")
 
 
-def test_on_saveMenu_activate(mainWindow, state, mocker):
+def test_on_saveMenu_activate(mainWindow, mocker):
     # Mock the on_saveAsMenu_activate() call
     mockFunc = mocker.patch(
         "ui.main_window.MainWindow.on_saveAsMenu_activate", return_value=True
     )
-
-    # Mock the StateMgr interface
-    mocker.patch("ui.main_window.stateManager.save_edit_session", return_value=True)
+    mocker.patch("ui.main_window.sessionManager.save_edit_session", return_value=True)
 
     window = mainWindow
     window.get_object("saveMenu").activate()
     mockFunc.assert_called()
 
 
-def test_on_saveMenu_activate_w_set_filename(mainWindow, state, mocker):
+def test_on_saveMenu_activate_w_set_filename(mainWindow, mocker):
     mainWindow.strSessionFilename = "/tmp/save_w_filename_tmp.json"
-
-    # Mock the StateMgr interface
-    mocker.patch("ui.main_window.stateManager.save_edit_session", return_value=True)
+    mocker.patch("ui.main_window.sessionManager.save_edit_session", return_value=True)
 
     mainWindow.get_object("saveMenu").activate()
-    stateManager.save_edit_session.assert_called_with("/tmp/save_w_filename_tmp.json")
+    sessionManager.save_edit_session.assert_called_with(
+        [], "/tmp/save_w_filename_tmp.json"
+    )
 
 
-def test_on_start(mainWindow, mocker):
+@pytest.mark.usefixtures("mock_init_system", "mock_dispatches")
+def test_on_start(mocker):
     mockDetectAutosave = mocker.patch(
-        "ui.state_manager.StateManager.detect_previous_session", return_value=False
+        "ui.main_window.sessionManager.detect_previous_session", return_value=False
     )
     MainWindow()
     mockDetectAutosave.assert_called()
 
 
+@pytest.mark.usefixtures("mock_init_system", "mock_dispatches")
 def test_on_start_w_declined_restore(mocker):
     """
     Test specifically for exercising the on_start() functionality.
     Mocks:
-    1. The StateManager::detect_previous_session() returning True simulating
+    1. The sessionManager::detect_previous_session() returning True simulating
     the detection of an autosaved session file.
-    2. The StateManager::restore_previous_session() to simulate successfully
+    2. The sessionManager::restore_previous_session() to simulate successfully
     loading the autosaved session file.
     3. The Gtk.Dialog which will return Gtk.ResponseType.NO to circumvent
     the blocking that would occur waiting for a user's response.
     """
 
     mockDetectAutosave = mocker.patch(
-        "ui.state_manager.StateManager.detect_previous_session", return_value=True
+        "ui.main_window.sessionManager.detect_previous_session", return_value=True
     )
 
     mockGtkDialog = mocker.patch(
@@ -276,24 +310,25 @@ def test_on_start_w_declined_restore(mocker):
     mockGtkDialog.assert_called()
 
 
+@pytest.mark.usefixtures("mock_init_system", "mock_dispatches")
 def test_on_start_w_accepted_restore(mocker):
     """
     Test specifically for exercising the on_start() functionality.
     Mocks:
-    1. The StateManager::detect_previous_session() returning True simulating
+    1. The sessionManager::detect_previous_session() returning True simulating
     the detection of an autosaved session file.
-    2. The StateManager::restore_previous_session() to simulate successfully
+    2. The sessionManager::restore_previous_session() to simulate successfully
     loading the autosaved session file.
     3. The Gtk.Dialog which will return Gtk.ResponseType.NO to circumvent
     the blocking that would occur waiting for a user's response.
     """
 
     mockDetectAutosave = mocker.patch(
-        "ui.state_manager.StateManager.detect_previous_session", return_value=True
+        "ui.main_window.sessionManager.detect_previous_session", return_value=True
     )
 
     mockRestoreAutosave = mocker.patch(
-        "ui.state_manager.StateManager.restore_previous_session", return_value=True
+        "ui.main_window.sessionManager.restore_previous_session", return_value=True
     )
 
     mockGtkDialog = mocker.patch(
@@ -306,24 +341,25 @@ def test_on_start_w_accepted_restore(mocker):
     mockRestoreAutosave.assert_called()
 
 
+@pytest.mark.usefixtures("mock_init_system", "mock_dispatches")
 def test_on_start_w_restore_exception(mocker):
     """
     Test specifically for exercising the on_start() functionality.
     Mocks:
-    1. The StateManager::detect_previous_session() returning True simulating
+    1. The sessionManager::detect_previous_session() returning True simulating
     the detection of an autosaved session file.
-    2. The StateManager::restore_previous_session() to simulate successfully
+    2. The sessionManager::restore_previous_session() to simulate successfully
     loading the autosaved session file.
     3. The Gtk.Dialog which will return Gtk.ResponseType.NO to circumvent
     the blocking that would occur waiting for a user's response.
     """
 
     mockDetectAutosave = mocker.patch(
-        "ui.state_manager.StateManager.detect_previous_session", return_value=True
+        "ui.main_window.sessionManager.detect_previous_session", return_value=True
     )
 
     mockRestoreAutosave = mocker.patch(
-        "ui.state_manager.StateManager.restore_previous_session", side_effect=IOError
+        "ui.main_window.sessionManager.restore_previous_session", side_effect=IOError
     )
 
     mockGtkDialog = mocker.patch(
@@ -336,17 +372,24 @@ def test_on_start_w_restore_exception(mocker):
     mockRestoreAutosave.assert_called()
 
 
-def test_on_start_w_failed_restore(state, mocker):
+@pytest.mark.usefixtures("mock_init_system", "mock_dispatches")
+def test_on_start_w_failed_restore(mock_dispatch, mocker):
     mocker.patch(
-        "ui.state_manager.StateManager.detect_previous_session", return_value=True
+        "ui.main_window.sessionManager.detect_previous_session", return_value=True
     )
     mocker.patch(
-        "ui.state_manager.StateManager.restore_previous_session", return_value=False
+        "ui.main_window.sessionManager.restore_previous_session", return_value=False
     )
     mocker.patch("gi.repository.Gtk.Dialog.run", return_value=Gtk.ResponseType.YES)
 
-    mockHandler = MagicMock()
-    state.system_notification_added += mockHandler
     MainWindow()
-    mockHandler.assert_called_with((AUTOSAVE_RESTORE_ERROR_MSG, NotificationType.ERROR))
-    state.system_notification_added -= mockHandler
+    mock_dispatch.assert_called_with(
+        InstanceOf(Action)
+        & Attrs(
+            type=ADD_NOTIFICATION,
+            payload=Attrs(
+                type=NotificationType.ERROR,
+                text=AUTOSAVE_RESTORE_ERROR_MSG,
+            ),
+        )
+    )

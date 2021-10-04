@@ -4,19 +4,20 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gio
 from importlib import resources
 from threading import Timer
+from .actions import NotificationType, remove_notification
 from .ui_widget import UIWidget
-from .state_manager import stateManager, NotificationType
+from .store import dispatch, get_notifications_feature
 
 
 class Notification(UIWidget):
     def __init__(self, timer_duration=10):
         super().__init__()
-        stateManager.system_notification_added += self.on_system_notification_added
         self.message = self.get_object("message")
         self.container = self.get_object("container")
         self.closeBtn = self.get_object("closeBtn")
         self.timerDuration = timer_duration
         self.timer = None
+        self.notification_id = None
 
         styleProvider = Gtk.CssProvider()
         with resources.path("fapolicy_analyzer.css", "notification.css") as path:
@@ -27,6 +28,7 @@ class Notification(UIWidget):
         self.closeBtn.get_style_context().add_provider(
             styleProvider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
         )
+        get_notifications_feature().subscribe(on_next=self.on_next_notifications)
 
     def __start_timer(self):
         self.timer = Timer(self.timerDuration, self.closeBtn.clicked)
@@ -36,19 +38,23 @@ class Notification(UIWidget):
         self.timer.cancel()
         self.timer = None
 
-    def on_system_notification_added(self, notification):
-        if notification and notification.count:
-            message = notification[0]
-            notificationType = notification[1]
+    def on_next_notifications(self, notifications):
+        first = next(iter(notifications), None)
+        if first:
+            message = first.text
+            notificationType = first.type
             self.style.add_class(notificationType.value)
             self.message.set_label(message)
+            self.notification_id = first.id
             self.get_ref().set_reveal_child(True)
 
             if notificationType not in [NotificationType.ERROR, NotificationType.WARN]:
                 self.__start_timer()
+        else:
+            self.get_ref().set_reveal_child(False)
+            self.notification_id = None
 
     def on_closeBtn_clicked(self, *args):
         if self.timer:
             self.__stop_timer()
-        self.get_ref().set_reveal_child(False)
-        stateManager.remove_system_notification()
+        dispatch(remove_notification(self.notification_id))

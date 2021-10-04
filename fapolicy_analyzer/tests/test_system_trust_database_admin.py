@@ -12,6 +12,7 @@ from ui.configs import Colors
 
 @pytest.fixture
 def widget(mocker):
+    mocker.patch("ui.system_trust_database_admin.dispatch")
     return SystemTrustDatabaseAdmin()
 
 

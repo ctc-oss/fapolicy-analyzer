@@ -1,15 +1,22 @@
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, GLib
-from concurrent.futures import ThreadPoolExecutor
+from gi.repository import Gtk
 from events import Events
-from fapolicy_analyzer import System
 from functools import partial
 from .object_list import ObjectList
 from .acl_list import ACLList
-from .state_manager import NotificationType, stateManager
+from .actions import (
+    add_notification,
+    NotificationType,
+    request_events,
+    request_groups,
+    request_users,
+)
+from .store import dispatch, get_system_feature
 from .strings import (
+    GET_GROUPS_LOG_ERROR_MSG,
+    GET_USERS_ERROR_MSG,
     GROUP_LABEL,
     GROUPS_LABEL,
     PARSE_EVENT_LOG_ERROR_MSG,
@@ -24,10 +31,12 @@ from fapolicy_analyzer.util import acl, fs
 class PolicyRulesAdminPage(UIWidget):
     def __init__(self, auditFile=None):
         super().__init__()
-        self.executor = ThreadPoolExecutor(max_workers=1)
-        self.events = []
-        self.users = []
-        self.groups = []
+        self._events = []
+        self._eventsLoading = False
+        self._users = []
+        self._usersLoading = False
+        self._groups = []
+        self._groupsLoading = False
         self.selectedUser = None
         self.selectedGroup = None
         self.selectedSubject = None
@@ -93,30 +102,15 @@ class PolicyRulesAdminPage(UIWidget):
         for s in self.switchers:
             s.buttonClicked += self.on_switcher_button_clicked
 
+        get_system_feature().subscribe(on_next=self.on_next_system)
+
         if auditFile:
-            self.__load_data(auditFile)
-
-    def __load_data(self, auditFile):
-        def process():
-            try:
-                system = System()
-                self.events = system.events_from(auditFile)
-                self.users = system.users()
-                self.groups = system.groups()
-            except BaseException:
-                # BaseException to catch pyo3_runtime.PanicException
-                GLib.idle_add(
-                    stateManager.add_system_notification,
-                    PARSE_EVENT_LOG_ERROR_MSG,
-                    NotificationType.ERROR,
-                )
-            GLib.idle_add(self.__populate_acls)
-
-        self.userList.set_loading(True)
-        self.groupList.set_loading(True)
-        self.subjectList.get_ref().set_sensitive(False)
-        self.objectList.get_ref().set_sensitive(False)
-        self.executor.submit(process)
+            self._usersLoading = True
+            dispatch(request_users())
+            self._groupsLoading = True
+            dispatch(request_groups())
+            self._eventsLoading = True
+            dispatch(request_events(auditFile))
 
     def __all_list(self):
         box = Gtk.Box()
@@ -128,11 +122,14 @@ class PolicyRulesAdminPage(UIWidget):
         return box
 
     def __populate_acls(self):
+        if self._usersLoading or self._groupsLoading:
+            return
+
         users = list(
             {
                 e.uid: {"id": u.id, "name": u.name}
-                for u in self.users
-                for e in self.events
+                for u in self._users
+                for e in self._events
                 if e.uid == u.id
                 and (not self.selectedSubject or e.subject.file == self.selectedSubject)
             }.values()
@@ -140,8 +137,8 @@ class PolicyRulesAdminPage(UIWidget):
         groups = list(
             {
                 e.gid: {"id": g.id, "name": g.name}
-                for g in self.groups
-                for e in self.events
+                for g in self._groups
+                for e in self._events
                 if e.gid == g.id
                 and (not self.selectedSubject or e.subject.file == self.selectedSubject)
             }.values()
@@ -165,7 +162,7 @@ class PolicyRulesAdminPage(UIWidget):
         subjects = list(
             {
                 e.subject.file: e.subject
-                for e in self.events
+                for e in self._events
                 if (not self.selectedUser or e.uid == self.selectedUser)
                 and (not self.selectedGroup or e.gid == self.selectedGroup)
             }.values()
@@ -182,7 +179,7 @@ class PolicyRulesAdminPage(UIWidget):
             objects = list(
                 {
                     e.object.file: e.object
-                    for e in self.events
+                    for e in self._events
                     if e.subject.file == self.selectedSubject
                     and (e.uid == self.selectedUser or e.gid == self.selectedGroup)
                 }.values()
@@ -192,6 +189,57 @@ class PolicyRulesAdminPage(UIWidget):
             objects = []
 
         self.objectList.load_store(objects)
+
+    def on_next_system(self, system):
+        eventsState = system.get("events")
+        groupState = system.get("groups")
+        userState = system.get("users")
+
+        if eventsState.error and self._eventsLoading:
+            self._eventsLoading = False
+            dispatch(
+                add_notification(
+                    PARSE_EVENT_LOG_ERROR_MSG,
+                    NotificationType.ERROR,
+                )
+            )
+        elif self._eventsLoading and self._events != eventsState.events:
+            self._eventsLoading = False
+            self._events = eventsState.events
+            self.__populate_acls()
+
+        if userState.error and self._usersLoading:
+            self._usersLoading = False
+            dispatch(
+                add_notification(
+                    GET_USERS_ERROR_MSG,
+                    NotificationType.ERROR,
+                )
+            )
+        elif self._usersLoading and self._users != userState.users:
+            self._usersLoading = False
+            self._users = userState.users
+            self.__populate_acls()
+
+        if groupState.error and self._groupsLoading:
+            self._groupsLoading = False
+            dispatch(
+                add_notification(
+                    GET_GROUPS_LOG_ERROR_MSG,
+                    NotificationType.ERROR,
+                )
+            )
+        elif self._groupsLoading and self._groups != groupState.groups:
+            self._groupsLoading = False
+            self._groups = groupState.groups
+            self.__populate_acls()
+
+        self.userList.set_loading(
+            self._eventsLoading or self._usersLoading or self._groupsLoading
+        )
+        self.groupList.set_loading(
+            self._eventsLoading or self._usersLoading or self._groupsLoading
+        )
 
     def on_user_selection_changed(self, secondaryAction, data):
         uid = data[1] if data else None
