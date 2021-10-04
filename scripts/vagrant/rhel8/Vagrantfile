@@ -48,8 +48,9 @@ Vagrant.configure("2") do |config|
     config.vbguest.auto_update = true
     Dir.mkdir './.shared/' unless File.exists?('./.shared/')
     config.vm.synced_folder "./.shared/", "/shared", type: "virtualbox"
+    config.vm.provision :docker
   end
-  
+
   config.vm.provision "ansible" do |ansible|
     ansible.playbook = "../../demo/site.yml"
     ansible.extra_vars = {
