@@ -2,7 +2,7 @@
 name = "fapolicy-api"
 description = "File Access Policy API"
 license = "LGPL-3.0-or-later"
-version = "0.3.0"
+version = "0.4.0"
 edition = "2018"
 
 [dependencies]

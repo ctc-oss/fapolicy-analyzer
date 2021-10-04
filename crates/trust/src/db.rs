@@ -5,6 +5,7 @@ use fapolicy_api::trust::Trust;
 
 use crate::error::Error;
 use crate::source::TrustSource;
+use crate::source::TrustSource::{Ancillary, System};
 use crate::stat::{check, Actual, Status};
 
 /// Trust Database
@@ -86,6 +87,14 @@ impl Rec {
             status: None,
             source: None,
         }
+    }
+
+    pub fn new_from_system(t: Trust) -> Self {
+        Self::new_from(t, System)
+    }
+
+    pub fn new_from_ancillary(t: Trust) -> Self {
+        Self::new_from(t, Ancillary)
     }
 
     /// Create a sourced record

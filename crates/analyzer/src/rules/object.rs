@@ -1,7 +1,7 @@
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
-use crate::rules::{bool_to_c, parse, Rvalue};
+use crate::rules::{bool_to_c, parse, ObjPart, Rvalue};
 
 /// # Object
 /// The object is the file that the subject is interacting with.
@@ -15,6 +15,10 @@ pub struct Object {
 impl Object {
     pub fn new(parts: Vec<Part>) -> Self {
         Object { parts }
+    }
+
+    pub fn all() -> Self {
+        Self::new(vec![ObjPart::All])
     }
 
     pub fn path(&self) -> Option<String> {
