@@ -5,86 +5,102 @@ import sys
 import shutil
 import pytest
 from unittest.mock import patch
-from ui.state_manager import stateManager
-from ui.__main__ import parse_cmdline, main
+from ui.session_manager import sessionManager
+from ui.__main__ import main
 from util.xdg_utils import xdg_state_dir_prefix
 
 
 @pytest.fixture
-def state():
-    stateManager.__init__()
+def session():
+    sessionManager.__init__()
     logging.root.setLevel(logging.WARNING)
-    yield stateManager
+    yield sessionManager
 
     # Reset global objects because they persist between tests.
-    stateManager.__init__()
+    sessionManager.__init__()
     logging.root.setLevel(logging.WARNING)
 
 
-def test_parse_args_no_options(mocker, state):
+@pytest.fixture
+def mocks(mocker):
+    mocker.patch("ui.__main__.MainWindow")
+    mocker.patch("ui.__main__.Gtk")
+
+
+@pytest.mark.usefixtures("mocks", "session")
+def test_parse_args_no_options():
     testargs = ["prog"]
     _home = os.path.expanduser("~")
     xdg_state_home = os.path.join(_home, ".local", "state")
     expectTmpPath = xdg_state_home + "/fapolicy-analyzer/FaCurrentSession.tmp"
     with patch.object(sys, "argv", testargs):
-        parse_cmdline()
+        main()
 
         assert logging.getLogger().level == logging.WARNING
-        assert not stateManager._StateManager__bAutosaveEnabled
-        assert stateManager._StateManager__iTmpFileCount == 2
-        assert stateManager._StateManager__tmpFileBasename == expectTmpPath
+        assert not sessionManager._SessionManager__bAutosaveEnabled
+        assert sessionManager._SessionManager__iTmpFileCount == 2
+        assert sessionManager._SessionManager__tmpFileBasename == expectTmpPath
 
         # Tear down
         shutil.rmtree(xdg_state_home + "/fapolicy-analyzer/")
 
 
-def test_parse_args_no_options_w_xdg_env(mocker, state):
+@pytest.mark.usefixtures("mocks", "session")
+def test_parse_args_no_options_w_xdg_env():
     testargs = ["prog"]
     xdg_state_home = "/tmp"
     expectTmpPath = xdg_state_home + "/fapolicy-analyzer/FaCurrentSession.tmp"
 
     with patch.object(sys, "argv", testargs):
         os.environ["XDG_STATE_HOME"] = xdg_state_home
-        parse_cmdline()
+        main()
 
         assert logging.getLogger().level == logging.WARNING
-        assert not stateManager._StateManager__bAutosaveEnabled
-        assert stateManager._StateManager__iTmpFileCount == 2
-        assert stateManager._StateManager__tmpFileBasename == expectTmpPath
+        assert not sessionManager._SessionManager__bAutosaveEnabled
+        assert sessionManager._SessionManager__iTmpFileCount == 2
+        assert sessionManager._SessionManager__tmpFileBasename == expectTmpPath
         del os.environ["XDG_STATE_HOME"]
 
         # Tear down
         shutil.rmtree(xdg_state_home + "/fapolicy-analyzer/")
 
 
-def test_parse_args_all_options(mocker, state):
+@pytest.mark.usefixtures("mocks", "session")
+def test_parse_args_all_options():
     testargs = ["prog", "-v", "-a", "-s", "/tmp/TmpFileTemplate.tmp", "-c", "3"]
     with patch.object(sys, "argv", testargs):
-        parse_cmdline()
+        main()
 
         assert logging.getLogger().level == logging.DEBUG
-        assert stateManager._StateManager__bAutosaveEnabled
-        assert stateManager._StateManager__iTmpFileCount == 3
-        assert stateManager._StateManager__tmpFileBasename == "/tmp/TmpFileTemplate.tmp"
-        # No teardown because we are using a system dir
+        assert sessionManager._SessionManager__bAutosaveEnabled
+        assert sessionManager._SessionManager__iTmpFileCount == 3
+        assert (
+            sessionManager._SessionManager__tmpFileBasename
+            == "/tmp/TmpFileTemplate.tmp"
+        )
 
 
-def test_parse_args_all_options_w_xdg_env(mocker, state):
+@pytest.mark.usefixtures("mocks", "session")
+def test_parse_args_all_options_w_xdg_env():
     """The '-s' option should overide the XDG_STATE_HOME env"""
     testargs = ["prog", "-v", "-a", "-s", "/tmp/TmpFileTemplate.tmp", "-c", "3"]
 
     with patch.object(sys, "argv", testargs):
         os.environ["XDG_STATE_HOME"] = "/tmp"
-        parse_cmdline()
+        main()
 
         assert logging.getLogger().level == logging.DEBUG
-        assert stateManager._StateManager__bAutosaveEnabled
-        assert stateManager._StateManager__iTmpFileCount == 3
-        assert stateManager._StateManager__tmpFileBasename == "/tmp/TmpFileTemplate.tmp"
+        assert sessionManager._SessionManager__bAutosaveEnabled
+        assert sessionManager._SessionManager__iTmpFileCount == 3
+        assert (
+            sessionManager._SessionManager__tmpFileBasename
+            == "/tmp/TmpFileTemplate.tmp"
+        )
         del os.environ["XDG_STATE_HOME"]
 
 
-def test_main_no_options(mocker, state):
+@pytest.mark.usefixtures("session")
+def test_main_no_options(mocker):
     testargs = ["prog"]
     testargs = ["prog"]
     _home = os.path.expanduser("~")
@@ -97,9 +113,9 @@ def test_main_no_options(mocker, state):
         main()
 
         assert logging.getLogger().level == logging.WARNING
-        assert not stateManager._StateManager__bAutosaveEnabled
-        assert stateManager._StateManager__iTmpFileCount == 2
-        assert stateManager._StateManager__tmpFileBasename == expectTmpPath
+        assert not sessionManager._SessionManager__bAutosaveEnabled
+        assert sessionManager._SessionManager__iTmpFileCount == 2
+        assert sessionManager._SessionManager__tmpFileBasename == expectTmpPath
         mockMW.assert_called_once()
         mockGtk.main.assert_called_once()
 
@@ -107,7 +123,8 @@ def test_main_no_options(mocker, state):
         shutil.rmtree(xdg_state_home + "/fapolicy-analyzer/")
 
 
-def test_main_all_options(mocker, state):
+@pytest.mark.usefixtures("session")
+def test_main_all_options(mocker):
     """As above, the '-s' option should overide the XDG_STATE_HOME env"""
     testargs = ["prog", "-v", "-a", "-s", "/tmp/TmpFileTemplate.tmp", "-c", "3"]
 
@@ -117,9 +134,12 @@ def test_main_all_options(mocker, state):
         main()
 
         assert logging.getLogger().level == logging.DEBUG
-        assert stateManager._StateManager__bAutosaveEnabled
-        assert stateManager._StateManager__iTmpFileCount == 3
-        assert stateManager._StateManager__tmpFileBasename == "/tmp/TmpFileTemplate.tmp"
+        assert sessionManager._SessionManager__bAutosaveEnabled
+        assert sessionManager._SessionManager__iTmpFileCount == 3
+        assert (
+            sessionManager._SessionManager__tmpFileBasename
+            == "/tmp/TmpFileTemplate.tmp"
+        )
         mockMW.assert_called_once()
         mockGtk.main.assert_called_once()
 
@@ -135,12 +155,9 @@ def test_xdg_state_dir_prefix_w_exception(mocker):
 
 
 def test_xdg_state_dir_prefix_w_xdg_env():
-    try:
-        os.environ["XDG_STATE_HOME"] = "/tmp"
-        expectedFullPath = "/tmp/fapolicy-analyzer/FapTestTmp"
-        generatedFullPath = xdg_state_dir_prefix("FapTestTmp")
-        del os.environ["XDG_STATE_HOME"]
-    except Exception as e:
-        print(e)
+    os.environ["XDG_STATE_HOME"] = "/tmp"
+    expectedFullPath = "/tmp/fapolicy-analyzer/FapTestTmp"
+    generatedFullPath = xdg_state_dir_prefix("FapTestTmp")
+    del os.environ["XDG_STATE_HOME"]
 
     assert expectedFullPath == generatedFullPath

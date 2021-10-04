@@ -12,17 +12,12 @@ from ui.strings import (
     CHANGESET_ACTION_DEL,
     FILE_LIST_CHANGES_HEADER,
 )
-from ui.state_manager import stateManager
 
 _trust = [
     MagicMock(status="d", path="/tmp/foo", actual=MagicMock(last_modified=123456789)),
     MagicMock(status="t", path="/tmp/baz", actual=MagicMock(last_modified=123456789)),
     MagicMock(status="u", path="/tmp/bar", actual=MagicMock(last_modified=123456789)),
 ]
-
-
-def _trust_func(callback):
-    callback(_trust)
 
 
 def _get_column(widget, colName):
@@ -39,15 +34,8 @@ def _get_column(widget, colName):
 
 @pytest.fixture
 def widget():
-    widget = AncillaryTrustFileList(trust_func=_trust_func)
+    widget = AncillaryTrustFileList(trust_func=MagicMock())
     return widget
-
-
-@pytest.fixture
-def state():
-    stateManager.del_changeset_q()
-    yield stateManager
-    stateManager.del_changeset_q()
 
 
 def test_creates_widget(widget):
@@ -60,8 +48,9 @@ def test_uses_custom_trust_func():
     trust_func.assert_called()
 
 
-def test_uses_custom_markup_func(widget):
-    AncillaryTrustFileList(trust_func=_trust_func)
+def test_uses_custom_markup_func():
+    widget = AncillaryTrustFileList(trust_func=MagicMock())
+    widget.load_trust(_trust)
     view = widget.get_object("treeView")
     assert ["T/<b><u>D</u></b>", "<b><u>T</u></b>/D", "T/D"] == [
         x[0] for x in view.get_model()
@@ -80,35 +69,36 @@ def test_fires_files_added(widget, mocker):
 
 def test_hides_changes_column(widget):
     changesColumn = _get_column(widget, FILE_LIST_CHANGES_HEADER)
+    widget.load_trust(_trust)
     assert not changesColumn.get_visible()
 
 
-def test_shows_changes_column(widget, state):
+def test_shows_changes_column(widget):
     mockChangeset = MagicMock(
         get_path_action_map=MagicMock(return_value=({"/tmp/foo": "Add"}))
     )
-    state.add_changeset_q(mockChangeset)
+    widget.set_changesets([mockChangeset])
     widget.load_trust(_trust)
     changesColumn = _get_column(widget, FILE_LIST_CHANGES_HEADER)
     assert changesColumn.get_visible()
 
 
-def test_trust_add_actions_in_view(widget, state):
+def test_trust_add_actions_in_view(widget):
     mockChangeset = MagicMock(
         get_path_action_map=MagicMock(return_value=({"/tmp/foo": "Add"}))
     )
-    state.add_changeset_q(mockChangeset)
+    widget.set_changesets([mockChangeset])
     widget.load_trust(_trust)
     model = widget.get_object("treeView").get_model()
     row = next(iter([x for x in model if x[2] == "/tmp/foo"]))
     assert CHANGESET_ACTION_ADD == row[5]
 
 
-def test_trust_delete_actions_in_view(widget, state):
+def test_trust_delete_actions_in_view(widget):
     mockChangeset = MagicMock(
         get_path_action_map=MagicMock(return_value=({"/tmp/foz": "Del"}))
     )
-    state.add_changeset_q(mockChangeset)
+    widget.set_changesets([mockChangeset])
     widget.load_trust(_trust)
     model = widget.get_object("treeView").get_model()
     row = next(iter([x for x in model if x[2] == "/tmp/foz"]))

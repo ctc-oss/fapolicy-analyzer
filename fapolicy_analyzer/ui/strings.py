@@ -1,5 +1,9 @@
 from locale import gettext as _
 
+SYSTEM_INITIALIZATION_ERROR = _("Error initializing System")
+ANCILLARY_TRUST_LOAD_ERROR = _("Error loading Ancillary Trust")
+SYSTEM_TRUST_LOAD_ERROR = _("Error loading System Trust")
+
 DEPLOY_ANCILLARY_CONFIRM_DIALOG_TITLE = _("Deploy Ancillary Trust Changes?")
 DEPLOY_ANCILLARY_CONFIRM_DIALOG_TEXT = _(
     """Are you sure you wish to deploy your changes to the ancillary trust database?
@@ -71,4 +75,10 @@ GROUP_LABEL = _("group")
 GROUPS_LABEL = _("groups")
 PARSE_EVENT_LOG_ERROR_MSG = _(
     "An error occurred trying to parse the event log file. Please try again or select a different file."
+)
+GET_USERS_ERROR_MSG = _(
+    "An error occurred trying to retrieve the user list. Please try again."
+)
+GET_GROUPS_LOG_ERROR_MSG = _(
+    "An error occurred trying to retrieve the group list. Please try again."
 )

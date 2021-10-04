@@ -1,10 +1,10 @@
 import gi
 import fapolicy_analyzer.ui.strings as strings
 
-from time import localtime, strftime, strptime, mktime
-
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
+from concurrent.futures import ThreadPoolExecutor
+from gi.repository import Gtk, GLib
+from time import localtime, strftime, strptime, mktime
 from .searchable_list import SearchableList
 from .strings import FILE_LABEL, FILES_LABEL
 
@@ -38,8 +38,10 @@ class TrustFileList(SearchableList):
         )
         self.trust_func = trust_func
         self.markup_func = markup_func
+        self.__executor = ThreadPoolExecutor(max_workers=1)
         self.refresh()
         self.selection_changed += self.__handle_selection_changed
+        self.get_ref().connect("destroy", self.on_destroy)
 
     def __handle_selection_changed(self, data):
         trust = data[3] if data else None
@@ -77,20 +79,28 @@ class TrustFileList(SearchableList):
         label = FILE_LABEL if count == 1 else FILES_LABEL
         self.treeCount.set_text(" ".join([str(count), label]))
 
+    def on_destroy(self, *args):
+        self.__executor.shutdown(cancel_futures=True)
+        return False
+
     def refresh(self):
-        super().set_loading(True)
-        self.trust_func(self.load_trust)
+        self.trust_func()
 
     def load_trust(self, trust):
-        store = Gtk.ListStore(str, str, str, object, str)
-        for i, data in enumerate(trust):
-            status, *rest = (
-                self.markup_func(data.status) if self.markup_func else (data.status,)
-            )
-            bgColor = rest[0] if rest else "white"
-            secsEpoch = data.actual.last_modified if data.actual else None
-            strDateTime = epoch_to_string(secsEpoch)
+        def process():
+            store = Gtk.ListStore(str, str, str, object, str)
+            for i, data in enumerate(trust):
+                status, *rest = (
+                    self.markup_func(data.status)
+                    if self.markup_func
+                    else (data.status,)
+                )
+                bgColor = rest[0] if rest else "white"
+                secsEpoch = data.actual.last_modified if data.actual else None
+                strDateTime = epoch_to_string(secsEpoch)
 
-            store.append([status, strDateTime, data.path, data, bgColor])
+                store.append([status, strDateTime, data.path, data, bgColor])
+            GLib.idle_add(self.load_store, store)
 
-        self.load_store(store)
+        self.set_loading(True)
+        self.__executor.submit(process)

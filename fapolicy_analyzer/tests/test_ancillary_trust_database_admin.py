@@ -1,21 +1,42 @@
 import context  # noqa: F401
 import pytest
-import tempfile
 import gi
-import mocks
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
+from callee import InstanceOf, Attrs, Sequence
+from fapolicy_analyzer import Changeset, Trust
+from mocks import mock_System, mock_trust
+from redux import Action
+from rx.subject import Subject
 from unittest.mock import MagicMock, patch
-from fapolicy_analyzer import Trust
+from ui.actions import (
+    ADD_NOTIFICATION,
+    APPLY_CHANGESETS,
+    CLEAR_CHANGESETS,
+    NotificationType,
+    DEPLOY_ANCILLARY_TRUST,
+    SET_SYSTEM_CHECKPOINT,
+)
 from ui.ancillary_trust_database_admin import AncillaryTrustDatabaseAdmin
-from ui.strings import TRUSTED_FILE_MESSAGE, UNKNOWN_FILE_MESSAGE
-from ui.state_manager import stateManager
+from ui.epics import init_system
+from ui.strings import (
+    DEPLOY_ANCILLARY_ERROR_MSG,
+    DEPLOY_ANCILLARY_SUCCESSFUL_MSG,
+    TRUSTED_FILE_MESSAGE,
+    UNKNOWN_FILE_MESSAGE,
+)
+
+
+@pytest.fixture()
+def mock_dispatch(mocker):
+    return mocker.patch("ui.ancillary_trust_database_admin.dispatch")
 
 
 @pytest.fixture
-def widget(mocker):
+def widget(mock_dispatch, mocker):
     mocker.patch("ui.ancillary_trust_database_admin.fs.sha", return_value="abc")
+    init_system(mock_System())
     return AncillaryTrustDatabaseAdmin()
 
 
@@ -41,13 +62,6 @@ def revert_dialog(revert_resp, mocker):
         return_value=mock_revert_dialog,
     )
     return mock_revert_dialog
-
-
-@pytest.fixture
-def state():
-    stateManager.del_changeset_q()
-    yield stateManager
-    stateManager.del_changeset_q()
 
 
 def test_creates_widget(widget):
@@ -102,184 +116,259 @@ def test_clears_trust_details(widget, mocker):
 
 @pytest.mark.parametrize("confirm_resp", [Gtk.ResponseType.YES])
 @pytest.mark.parametrize("revert_resp", [Gtk.ResponseType.NO])
-def test_on_confirm_deployment(widget, confirm_dialog, revert_dialog):
-    parent = Gtk.Window()
-    parent.add(widget.get_ref())
-    with patch("fapolicy_analyzer.System") as mock:
-        instance = mock.return_value
-        widget.system = instance
-        widget.on_deployBtn_clicked()
-
-        confirm_dialog.run.assert_called()
-        confirm_dialog.hide.assert_called()
-        instance.deploy.assert_called()
+@pytest.mark.usefixtures("revert_dialog")
+def test_on_confirm_deployment(widget, confirm_dialog, mock_dispatch):
+    widget.get_object("deployBtn").clicked()
+    mock_dispatch.assert_called_with(
+        InstanceOf(Action) & Attrs(type=DEPLOY_ANCILLARY_TRUST)
+    )
+    confirm_dialog.run.assert_called()
+    confirm_dialog.hide.assert_called()
 
 
+@pytest.mark.usefixtures("confirm_dialog")
 @pytest.mark.parametrize("confirm_resp", [Gtk.ResponseType.YES])
-@pytest.mark.parametrize("revert_resp", [Gtk.ResponseType.NO])
-def test_on_confirm_deployment_w_exception(
-    widget, mocker, confirm_dialog, revert_dialog
-):
-    parent = Gtk.Window()
-    parent.add(widget.get_ref())
-    with patch("fapolicy_analyzer.System") as mock:
-        mock.deploy = MagicMock(return_value=None, side_effect=RuntimeError)
-        widget.system = mock
-        widget.on_deployBtn_clicked()
-        mock.deploy.assert_called()
+def test_on_deployment_w_exception(mock_dispatch, mocker):
+    system_features_mock = Subject()
+    mocker.patch(
+        "ui.ancillary_trust_database_admin.get_system_feature",
+        return_value=system_features_mock,
+    )
+    init_system(mock_System())
+    widget = AncillaryTrustDatabaseAdmin()
+    system_features_mock.on_next(
+        {
+            "changesets": [],
+            "ancillary_trust": MagicMock(trust=[mock_trust()], error=None),
+        }
+    )
+    widget.get_object("deployBtn").clicked()
+    system_features_mock.on_next(
+        {"changesets": [], "ancillary_trust": MagicMock(error="foo")}
+    )
+    mock_dispatch.assert_any_call(
+        InstanceOf(Action)
+        & Attrs(
+            type=ADD_NOTIFICATION,
+            payload=Attrs(type=NotificationType.ERROR, text=DEPLOY_ANCILLARY_ERROR_MSG),
+        )
+    )
 
 
 @pytest.mark.parametrize("confirm_resp", [Gtk.ResponseType.NO])
-def test_on_neg_confirm_deployment(widget, confirm_dialog):
-    parent = Gtk.Window()
-    parent.add(widget.get_ref())
-    with patch("fapolicy_analyzer.System") as mock:
-        widget.system = mock
-        widget.on_deployBtn_clicked()
-
-        confirm_dialog.run.assert_called()
-        confirm_dialog.hide.assert_called()
-        mock.deploy.assert_not_called()
+def test_on_neg_confirm_deployment(confirm_dialog, mock_dispatch, mocker):
+    system_features_mock = Subject()
+    mocker.patch(
+        "ui.ancillary_trust_database_admin.get_system_feature",
+        return_value=system_features_mock,
+    )
+    init_system(mock_System())
+    widget = AncillaryTrustDatabaseAdmin()
+    system_features_mock.on_next(
+        {
+            "changesets": [],
+            "ancillary_trust": MagicMock(trust=[mock_trust()], error=None),
+        }
+    )
+    widget.get_object("deployBtn").clicked()
+    confirm_dialog.run.assert_called()
+    confirm_dialog.hide.assert_called()
+    mock_dispatch.assert_not_any_call(
+        InstanceOf(Action) & Attrs(type=DEPLOY_ANCILLARY_TRUST)
+    )
 
 
 @pytest.mark.parametrize("confirm_resp", [Gtk.ResponseType.YES])
 @pytest.mark.parametrize("revert_resp", [Gtk.ResponseType.NO])
-def test_on_revert_deployment(widget, confirm_dialog, revert_dialog, state):
-    parent = Gtk.Window()
-    parent.add(widget.get_ref())
-
-    with patch("fapolicy_analyzer.System") as mock:
-        widget.system = mock.return_value
-        mockChangeset = MagicMock()
-        state.add_changeset_q(mockChangeset)
-        assert len(state.get_changeset_q()) == 1
-        widget.on_deployBtn_clicked()
-        assert len(state.get_changeset_q()) == 1
-        revert_dialog.run.assert_called()
-        revert_dialog.hide.assert_called()
+@pytest.mark.usefixtures("confirm_dialog", "revert_dialog")
+def test_on_revert_deployment(mock_dispatch, mocker):
+    system_features_mock = Subject()
+    mocker.patch(
+        "ui.ancillary_trust_database_admin.get_system_feature",
+        return_value=system_features_mock,
+    )
+    init_system(mock_System())
+    widget = AncillaryTrustDatabaseAdmin()
+    system_features_mock.on_next(
+        {
+            "changesets": [],
+            "ancillary_trust": MagicMock(trust=[mock_trust()], error=None),
+        }
+    )
+    widget.get_object("deployBtn").clicked()
+    system_features_mock.on_next(
+        {
+            "changesets": [],
+            "ancillary_trust": MagicMock(trust=[mock_trust()], error=None),
+        }
+    )
+    mock_dispatch.assert_any_call(
+        InstanceOf(Action)
+        & Attrs(
+            type=ADD_NOTIFICATION,
+            payload=Attrs(
+                type=NotificationType.SUCCESS, text=DEPLOY_ANCILLARY_SUCCESSFUL_MSG
+            ),
+        )
+    )
+    mock_dispatch.assert_not_any_call(
+        InstanceOf(Action) & Attrs(type=SET_SYSTEM_CHECKPOINT)
+    )
+    mock_dispatch.assert_not_any_call(InstanceOf(Action) & Attrs(type=CLEAR_CHANGESETS))
 
 
 @pytest.mark.parametrize("confirm_resp", [Gtk.ResponseType.YES])
 @pytest.mark.parametrize("revert_resp", [Gtk.ResponseType.YES])
-def test_on_neg_revert_deployment(widget, confirm_dialog, revert_dialog, state):
-    parent = Gtk.Window()
-    parent.add(widget.get_ref())
+@pytest.mark.usefixtures("confirm_dialog", "revert_dialog")
+def test_on_neg_revert_deployment(mock_dispatch, mocker):
+    system_features_mock = Subject()
+    mocker.patch(
+        "ui.ancillary_trust_database_admin.get_system_feature",
+        return_value=system_features_mock,
+    )
+    init_system(mock_System())
+    widget = AncillaryTrustDatabaseAdmin()
+    system_features_mock.on_next(
+        {
+            "changesets": [],
+            "ancillary_trust": MagicMock(trust=[mock_trust()], error=None),
+        }
+    )
+    widget.get_object("deployBtn").clicked()
+    system_features_mock.on_next(
+        {
+            "changesets": [],
+            "ancillary_trust": MagicMock(trust=[mock_trust()], error=None),
+        }
+    )
+    mock_dispatch.assert_any_call(
+        InstanceOf(Action)
+        & Attrs(
+            type=ADD_NOTIFICATION,
+            payload=Attrs(
+                type=NotificationType.SUCCESS, text=DEPLOY_ANCILLARY_SUCCESSFUL_MSG
+            ),
+        )
+    )
+    mock_dispatch.assert_any_call(
+        InstanceOf(Action) & Attrs(type=SET_SYSTEM_CHECKPOINT)
+    )
+    mock_dispatch.assert_any_call(InstanceOf(Action) & Attrs(type=CLEAR_CHANGESETS))
 
-    with patch("fapolicy_analyzer.System") as mock:
-        widget.system = mock.return_value
-        mockChangeset = MagicMock()
-        state.add_changeset_q(mockChangeset)
-        assert len(state.get_changeset_q()) == 1
-        widget.on_deployBtn_clicked()
-        assert len(state.get_changeset_q()) == 0
-        revert_dialog.run.assert_called()
-        revert_dialog.hide.assert_called()
+
+def test_add_trusted_files(widget, mock_dispatch):
+    widget.add_trusted_files("foo")
+    mock_dispatch.assert_called_with(
+        InstanceOf(Action)
+        & Attrs(type=APPLY_CHANGESETS, payload=Sequence(of=InstanceOf(Changeset)))
+    )
 
 
-def test_add_trusted_files(widget, state):
-    assert len(state.get_changeset_q()) == 0
-    tmpFile = tempfile.NamedTemporaryFile()
-    widget.add_trusted_files(tmpFile.name)
-    assert len(state.get_changeset_q()) == 1
-    changeset = state.next_changeset_q()
-    assert changeset.len() == 1
+def test_delete_trusted_files(widget, mock_dispatch):
+    widget.add_trusted_files("foo")
+    mock_dispatch.assert_called_with(
+        InstanceOf(Action)
+        & Attrs(
+            type=APPLY_CHANGESETS,
+            payload=Sequence(of=InstanceOf(Changeset)),
+        )
+    )
 
 
-def test_delete_trusted_files(widget, state):
-    assert len(state.get_changeset_q()) == 0
-    tmpFile = tempfile.NamedTemporaryFile()
-    widget.delete_trusted_files(tmpFile.name)
-    assert len(state.get_changeset_q()) == 1
-    changeset = state.next_changeset_q()
-    assert changeset.len() == 1
-
-
-def test_on_trustBtn_clicked(widget, state):
-    assert len(state.get_changeset_q()) == 0
-    tmpFile = tempfile.NamedTemporaryFile()
-    tmpFile.seek(0, 2)
-    trust = MagicMock(status="T", path=tmpFile.name, size=tmpFile.tell(), hash="abc")
+def test_on_trustBtn_clicked(widget, mock_dispatch, mocker):
+    mocker.patch.object(widget.trustFileDetails, "set_in_database_view")
+    mocker.patch.object(widget.trustFileDetails, "set_on_file_system_view")
+    mocker.patch.object(widget.trustFileDetails, "set_trust_status")
+    mocker.patch(
+        "ui.ancillary_trust_database_admin.fs.stat", return_value="stat for foo file"
+    )
+    trust = MagicMock(path="/tmp/foo")
     widget.on_trust_selection_changed(trust)
-    widget.on_trustBtn_clicked()
-    assert len(state.get_changeset_q()) == 1
+    widget.get_object("trustBtn").clicked()
+    mock_dispatch.assert_called_with(
+        InstanceOf(Action)
+        & Attrs(
+            type=APPLY_CHANGESETS,
+            payload=Sequence(of=InstanceOf(Changeset)),
+        )
+    )
 
 
-def test_on_trustBtn_clicked_empty(widget, state):
-    assert len(state.get_changeset_q()) == 0
-    widget.on_trustBtn_clicked()
-    assert len(state.get_changeset_q()) == 0
+def test_on_trustBtn_clicked_empty(widget, mock_dispatch):
+    widget.get_object("trustBtn").clicked()
+    mock_dispatch.assert_not_any_call(
+        InstanceOf(Action)
+        & Attrs(
+            type=APPLY_CHANGESETS,
+            payload=Sequence(of=InstanceOf(Changeset)),
+        )
+    )
 
 
-def test_on_untrustBtn_clicked(widget, state):
-    assert len(state.get_changeset_q()) == 0
-    tmpFile = tempfile.NamedTemporaryFile()
-    tmpFile.seek(0, 2)
-    trust = MagicMock(status="T", path=tmpFile.name, size=tmpFile.tell(), hash="abc")
+def test_on_untrustBtn_clicked(widget, mock_dispatch, mocker):
+    mocker.patch.object(widget.trustFileDetails, "set_in_database_view")
+    mocker.patch.object(widget.trustFileDetails, "set_on_file_system_view")
+    mocker.patch.object(widget.trustFileDetails, "set_trust_status")
+    mocker.patch(
+        "ui.ancillary_trust_database_admin.fs.stat", return_value="stat for foo file"
+    )
+    trust = MagicMock(path="/tmp/foo")
     widget.on_trust_selection_changed(trust)
-    widget.on_untrustBtn_clicked()
-    assert len(state.get_changeset_q()) == 1
+    widget.get_object("untrustBtn").clicked()
+    mock_dispatch.assert_called_with(
+        InstanceOf(Action)
+        & Attrs(
+            type=APPLY_CHANGESETS,
+            payload=Sequence(of=InstanceOf(Changeset)),
+        )
+    )
 
 
-def test_on_untrustBtn_clicked_empty(widget, state):
-    assert len(state.get_changeset_q()) == 0
-    widget.on_untrustBtn_clicked()
-    assert len(state.get_changeset_q()) == 0
+def test_on_untrustBtn_clicked_empty(widget, mock_dispatch):
+    widget.get_object("untrustBtn").clicked()
+    mock_dispatch.assert_not_any_call(
+        InstanceOf(Action)
+        & Attrs(
+            type=APPLY_CHANGESETS,
+            payload=Sequence(of=InstanceOf(Changeset)),
+        )
+    )
 
 
-def test_on_file_added(widget, state):
-    assert len(state.get_changeset_q()) == 0
-    tmpFile = tempfile.NamedTemporaryFile()
-    widget.on_files_added([tmpFile.name])
-    assert len(state.get_changeset_q()) == 1
+def test_on_file_added(widget, mock_dispatch):
+    widget.on_files_added("foo")
+    mock_dispatch.assert_called_with(
+        InstanceOf(Action)
+        & Attrs(type=APPLY_CHANGESETS, payload=Sequence(of=InstanceOf(Changeset)))
+    )
 
 
-def test_on_file_added_empty(widget, state):
-    assert len(state.get_changeset_q()) == 0
+def test_on_file_added_empty(widget, mock_dispatch):
     widget.on_files_added(None)
-    assert len(state.get_changeset_q()) == 0
+    mock_dispatch.assert_not_any_call(
+        InstanceOf(Action)
+        & Attrs(type=APPLY_CHANGESETS, payload=Sequence(of=InstanceOf(Changeset)))
+    )
 
 
-def test_on_file_deleted(widget, state):
-    assert len(state.get_changeset_q()) == 0
-    tmpFile = tempfile.NamedTemporaryFile()
-    widget.on_files_deleted([tmpFile.name])
-    assert len(state.get_changeset_q()) == 1
+def test_on_file_deleted(widget, mock_dispatch):
+    widget.on_files_deleted("foo")
+    mock_dispatch.assert_called_with(
+        InstanceOf(Action)
+        & Attrs(type=APPLY_CHANGESETS, payload=Sequence(of=InstanceOf(Changeset)))
+    )
 
 
-def test_on_file_deleted_empty(widget, state):
-    assert len(state.get_changeset_q()) == 0
+def test_on_file_deleted_empty(widget, mock_dispatch):
     widget.on_files_deleted(None)
-    assert len(state.get_changeset_q()) == 0
-
-
-# ########################## Edit Session Related ####################
-def test_on_session_load(widget, mocker):
-    # Submit to flake8/linting - Line was too long
-    strModule = "ui.ancillary_trust_database_admin.AncillaryTrustDatabaseAdmin"
-    mockAdd = mocker.patch("{}.on_files_added".format(strModule))
-    mockDel = mocker.patch("{}.on_files_deleted".format(strModule))
-
-    listPaTuples = [
-        ("/data_space/man_from_mars.txt", "Add"),
-        ("/data_space/this/is/a/longer/path/now_is_the_time.txt", "Del"),
-        ("/data_space/Integration.json", "Add"),
-    ]
-    listPaAddedExpected = [
-        "/data_space/man_from_mars.txt",
-        "/data_space/Integration.json",
-    ]
-    listPaDeletedExpected = ["/data_space/this/is/a/longer/path/now_is_the_time.txt"]
-
-    widget.on_session_load(listPaTuples)
-    mockAdd.assert_called_with(listPaAddedExpected)
-    mockDel.assert_called_with(listPaDeletedExpected)
+    mock_dispatch.assert_not_any_call(
+        InstanceOf(Action)
+        & Attrs(type=APPLY_CHANGESETS, payload=Sequence(of=InstanceOf(Changeset)))
+    )
 
 
 @pytest.mark.parametrize("confirm_resp", [Gtk.ResponseType.YES])
 def test_handle_deploy_exception(widget, confirm_dialog):
-    parent = Gtk.Window()
-    parent.add(widget.get_ref())
-
     with patch("fapolicy_analyzer.System") as mock:
         mock.deploy = MagicMock(
             return_value=None, side_effect=Exception("mocked error")
@@ -288,53 +377,3 @@ def test_handle_deploy_exception(widget, confirm_dialog):
         with pytest.raises(Exception) as excinfo:
             widget.on_deployBtn_clicked()
             assert excinfo.value.message == "mocked error"
-
-
-# ############### ###### System checkpoint / rollback ######################
-def test_system_rollback_to_checkpoint(widget):
-    # Set and verify current and checkpoint systems are different values
-    widget.system = 0x10101010
-    widget.system_checkpoint = 0xDEADBEEF
-    assert widget.system != widget.system_checkpoint
-
-    tmpPreOp = widget.system_checkpoint
-    widget.system_rollback_to_checkpoint()
-    assert widget.system == tmpPreOp
-    assert widget.system == widget.system_checkpoint
-
-
-def test_update_system_checkpoint(widget):
-    # Verify current and checkpoint systems are the same
-    widget.system = 0xDEADBEEF
-    widget.system_checkpoint = 0x10101010
-    widget.update_system_checkpoint()
-    assert widget.system == widget.system_checkpoint
-
-
-def test_set_system(widget):
-    # Assign an arbitrary hex number to the system
-    widget.system = 0xDEADBEEF
-    mockSystem = MagicMock()
-    sys = widget.set_system(mockSystem)
-    assert sys == widget.system
-    assert sys == mockSystem
-
-
-def test_get_system(widget):
-    widget.system = MagicMock()
-    sys = widget.get_system()
-    assert sys == widget.system
-
-
-def test_update_system(widget):
-    # with patch("fapolicy_analyzer.System") as mockSystem:
-    # Assign an arbitrary hex number to the system
-    widget.system = 0xDEADBEEF
-    assert not isinstance(widget.system, mocks.mock_System)
-
-    # Create a new System() instance
-    sys = widget.update_system()
-
-    # Verify that it's the expected mocked type.
-    assert sys == widget.system
-    assert isinstance(sys, mocks.mock_System)

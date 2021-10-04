@@ -4,51 +4,65 @@ import pytest
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
+from callee import Attrs, InstanceOf
 from unittest.mock import MagicMock
-from helpers import refresh_gui
+from mocks import mock_System, mock_events, mock_groups, mock_users
+from redux import Action
+from rx.subject import Subject
+from ui.actions import REQUEST_EVENTS, REQUEST_GROUPS, REQUEST_USERS
+from ui.epics import init_system
 from ui.policy_rules_admin_page import PolicyRulesAdminPage
 
-
-def mock_users():
-    mockUser1 = MagicMock(id=1)
-    mockUser1.name = "fooUser"
-    mockUser2 = MagicMock(id=2)
-    mockUser2.name = "otherUser"
-    return [mockUser1, mockUser2]
+_mock_file = "foo"
 
 
-def mock_groups():
-    mockGroup1 = MagicMock(id=100)
-    mockGroup1.name = "fooGroup"
-    mockGroup2 = MagicMock(id=101)
-    mockGroup2.name = "otherGroup"
-    return [mockGroup1, mockGroup2]
+def _build_state(**kwargs):
+    initial_state = {
+        "events": {"loading": False, "error": None, "events": []},
+        "groups": {"loading": False, "error": None, "groups": []},
+        "users": {"loading": False, "error": None, "users": []},
+    }
+
+    combined = {
+        **initial_state,
+        **{k: {**initial_state.get(k, {}), **v} for k, v in kwargs.items()},
+    }
+    return {k: MagicMock(**v) for k, v in combined.items()}
 
 
-mock_events = [
-    MagicMock(
-        uid=1,
-        gid=100,
-        subject=MagicMock(file="fooSubject", trust="ST", access="A"),
-        object=MagicMock(file="fooObject", trust="ST", access="A", mode="R"),
-    ),
-    MagicMock(
-        uid=2,
-        gid=101,
-        subject=MagicMock(file="otherSubject", trust="ST", access="A"),
-        object=MagicMock(file="otherObject", trust="ST", access="A", mode="R"),
-    ),
-]
+@pytest.fixture()
+def mock_dispatch(mocker):
+    return mocker.patch("ui.policy_rules_admin_page.dispatch")
+
+
+@pytest.fixture()
+def mock_system_features(mocker):
+    system_features_mock = Subject()
+    mocker.patch(
+        "ui.policy_rules_admin_page.get_system_feature",
+        return_value=system_features_mock,
+    )
+    yield system_features_mock
+    system_features_mock.on_completed()
+
+
+@pytest.fixture(name="states")
+def default_states():
+    """
+    Work around for the fact that parameterized arguments of a fixture cannot have default values.
+    Used in the widget fixture to provide a default for the states argument.
+    """
+    return [
+        _build_state(
+            events={"events": mock_events()},
+            groups={"groups": mock_groups()},
+            users={"users": mock_users()},
+        )
+    ]
 
 
 @pytest.fixture
-def widget(mocker):
-    mock_system = MagicMock(
-        users=MagicMock(return_value=mock_users()),
-        groups=MagicMock(return_value=mock_groups()),
-        events_from=MagicMock(return_value=mock_events),
-    )
-
+def widget(mock_dispatch, mock_system_features, mocker, states):
     mocker.patch(
         "ui.ancillary_trust_file_list.epoch_to_string",
         return_value="10-01-2020",
@@ -59,9 +73,12 @@ def widget(mocker):
         return_value="10-01-2020",
     )
 
-    mocker.patch("ui.policy_rules_admin_page.System", return_value=mock_system)
-    widget = PolicyRulesAdminPage("foo")
-    refresh_gui()
+    init_system(mock_System())
+    widget = PolicyRulesAdminPage(_mock_file)
+
+    for s in states:
+        mock_system_features.on_next(s)
+
     return widget
 
 
@@ -142,24 +159,27 @@ def test_switches_acl_subject_columns(widget, activeSwitcherButton):
     assert children[1] == aclColumn
 
 
-def test_loads_users_primary(widget, userListView):
+def test_loads_users_primary(userListView, mock_dispatch):
     model = userListView.get_model()
+    mock_dispatch.assert_any_call(InstanceOf(Action) & Attrs(type=REQUEST_USERS))
     assert len(model) == 2
     assert [x.name for x in mock_users()] == [x[0] for x in model]
     assert [x.id for x in mock_users()] == [x[1] for x in model]
 
 
-def test_loads_groups_primary(widget, groupListView):
+def test_loads_groups_primary(groupListView, mock_dispatch):
     model = groupListView.get_model()
+    mock_dispatch.assert_any_call(InstanceOf(Action) & Attrs(type=REQUEST_GROUPS))
     assert len(model) == 2
     assert [x.name for x in mock_groups()] == [x[0] for x in model]
     assert [x.id for x in mock_groups()] == [x[1] for x in model]
 
 
-def test_loads_subjects_primary(widget, subjectListView, activeSwitcherButton):
+def test_loads_subjects_primary(subjectListView, activeSwitcherButton, mock_dispatch):
     activeSwitcherButton.clicked()
     model = subjectListView.get_model()
-    expectedSubjects = [e.subject for e in mock_events]
+    mock_dispatch.assert_any_call(InstanceOf(Action) & Attrs(type=REQUEST_EVENTS))
+    expectedSubjects = [e.subject for e in mock_events()]
     assert len(model) == 2
     for idx, expectedSubject in enumerate(expectedSubjects):
         assert expectedSubject.trust in model[idx][0]
@@ -170,10 +190,11 @@ def test_loads_subjects_primary(widget, subjectListView, activeSwitcherButton):
 @pytest.mark.parametrize(
     "view", [pytest.lazy_fixture("userListView"), pytest.lazy_fixture("groupListView")]
 )
-def test_loads_subjects_secondary(widget, view, subjectListView):
+def test_loads_subjects_secondary(view, subjectListView, mock_dispatch):
     view.get_selection().select_path(Gtk.TreePath.new_first())
     model = subjectListView.get_model()
-    expectedSubject = mock_events[0].subject
+    mock_dispatch.assert_any_call(InstanceOf(Action) & Attrs(type=REQUEST_EVENTS))
+    expectedSubject = mock_events()[0].subject
     assert len(model) == 1
     assert expectedSubject.trust in next(iter([x[0] for x in model]))
     assert expectedSubject.access in next(iter([x[1] for x in model]))
@@ -181,8 +202,9 @@ def test_loads_subjects_secondary(widget, view, subjectListView):
 
 
 def test_loads_users_secondary(
-    widget, userListView, activeSwitcherButton, subjectListView
+    userListView, activeSwitcherButton, subjectListView, mock_dispatch
 ):
+    mock_dispatch.assert_any_call(InstanceOf(Action) & Attrs(type=REQUEST_USERS))
     activeSwitcherButton.clicked()
     model = userListView.get_model()
     assert len(model) == 0
@@ -196,8 +218,9 @@ def test_loads_users_secondary(
 
 
 def test_loads_groups_secondary(
-    widget, groupListView, activeSwitcherButton, subjectListView
+    groupListView, activeSwitcherButton, subjectListView, mock_dispatch
 ):
+    mock_dispatch.assert_any_call(InstanceOf(Action) & Attrs(type=REQUEST_GROUPS))
     activeSwitcherButton.clicked()
     model = groupListView.get_model()
     assert len(model) == 0
@@ -213,11 +236,11 @@ def test_loads_groups_secondary(
 @pytest.mark.parametrize(
     "view", [pytest.lazy_fixture("userListView"), pytest.lazy_fixture("groupListView")]
 )
-def test_loads_objects_from_subject(widget, view, subjectListView, objectListView):
+def test_loads_objects_from_subject(view, subjectListView, objectListView):
     view.get_selection().select_path(Gtk.TreePath.new_first())
     subjectListView.get_selection().select_path(Gtk.TreePath.new_first())
     model = objectListView.get_model()
-    expectedObject = mock_events[0].object
+    expectedObject = mock_events()[0].object
     assert expectedObject.trust in next(iter([x[0] for x in model]))
     assert expectedObject.mode in next(iter([x[1] for x in model]))
     assert expectedObject.access in next(iter([x[2] for x in model]))
@@ -228,13 +251,13 @@ def test_loads_objects_from_subject(widget, view, subjectListView, objectListVie
     "view", [pytest.lazy_fixture("userListView"), pytest.lazy_fixture("groupListView")]
 )
 def test_loads_objects_from_acl(
-    widget, view, subjectListView, objectListView, activeSwitcherButton
+    view, subjectListView, objectListView, activeSwitcherButton
 ):
     activeSwitcherButton.clicked()
     subjectListView.get_selection().select_path(Gtk.TreePath.new_first())
     view.get_selection().select_path(Gtk.TreePath.new_first())
     model = objectListView.get_model()
-    expectedObject = mock_events[0].object
+    expectedObject = mock_events()[0].object
     assert expectedObject.trust in next(iter([x[0] for x in model]))
     assert expectedObject.mode in next(iter([x[1] for x in model]))
     assert expectedObject.access in next(iter([x[2] for x in model]))
