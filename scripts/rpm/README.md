@@ -5,10 +5,7 @@ fapolicy analyzer rpm
 
 Args:
 
-	fedora_ver	Numeric fedora release
-			Used to choose the installation method for
-			python setuptools rust: package for fedora 34+
-			or pip for earlier.
+	pyrpm   	Python base RPM: python3, python39, etc.
 
 	git_commit	Git tag or commit to package
 			Used to contruct the URL for the package archive.
@@ -41,9 +38,9 @@ Build steps:
 
 ### build the rpm in docker
 
-`./build.sh /tmp/rpms 33 34`
+`./build.sh /tmp/rpms fedora:33 fedora:34 registry.access.redhat.com/ubi8/ubi:8.4`
 
-RPMs for Fedora 33 and 34 will end up in `/tmp/rpms` on the host machine.
+RPMs for Fedora 33/34 and el8 will end up in `/tmp/rpms` on the host machine.
 
 ### test installing rpm in a container
 
@@ -52,3 +49,9 @@ RPMs for Fedora 33 and 34 will end up in `/tmp/rpms` on the host machine.
 ### rebuild from src.rpm in a container
 
 `docker run --rm -it -v /tmp/rpms:/rpms fedora:34 sh -c 'dnf install -y rpm-build dnf-plugins-core ; dnf builddep -y /rpms/fapolicy-analyzer-*.fc34.src.rpm ; rpmbuild --rebuild /rpms/fapolicy-analyzer-*.fc34.src.rpm ; ls -lR /root/rpmbuild/RPMS'`
+
+### test script
+
+fapolicyd is not available in ubi, so use rocky for the test run:
+
+`./test.sh /tmp/rpms fedora:33 fedora:34 rockylinux/rockylinux:8.4`
