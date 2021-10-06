@@ -18,16 +18,16 @@ use std::time::SystemTime;
 /// An immutable view of host system state.
 /// This only a container for state, it has to be applied to the host system.
 pub struct PySystem {
-    state: State,
+    rs: State,
 }
 impl From<State> for PySystem {
-    fn from(state: State) -> Self {
-        Self { state }
+    fn from(rs: State) -> Self {
+        Self { rs }
     }
 }
 impl From<PySystem> for State {
-    fn from(s: PySystem) -> Self {
-        s.state
+    fn from(py: PySystem) -> Self {
+        py.rs
     }
 }
 
@@ -57,7 +57,7 @@ impl PySystem {
     /// This represents state in the current fapolicyd database, not necessarily
     /// matching what is currently in the RPM database.
     fn system_trust(&self) -> Vec<PyTrust> {
-        self.state
+        self.rs
             .trust_db
             .values()
             .iter()
@@ -72,7 +72,7 @@ impl PySystem {
     /// This represents state in the current fapolicyd database, not necessarily
     /// matching what is currently in the ancillary trust file.
     fn ancillary_trust(&self) -> Vec<PyTrust> {
-        self.state
+        self.rs
             .trust_db
             .values()
             .iter()
@@ -85,12 +85,12 @@ impl PySystem {
 
     /// Apply the changeset to the state of this System generating a new System
     fn apply_changeset(&self, change: PyChangeset) -> PySystem {
-        self.state.apply_trust_changes(change.into()).into()
+        self.rs.apply_trust_changes(change.into()).into()
     }
 
     /// Update the host system with this state of this System
     fn deploy(&self) -> PyResult<()> {
-        match deploy_app_state(&self.state) {
+        match deploy_app_state(&self.rs) {
             Ok(_) => Ok(()),
             Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{:?}", e))),
         }
@@ -104,18 +104,18 @@ impl PySystem {
 
     /// Load a list of system users
     fn users(&self) -> Vec<PyUser> {
-        self.state.users.iter().map(|u| u.clone().into()).collect()
+        self.rs.users.iter().map(|u| u.clone().into()).collect()
     }
 
     /// Load a list of system groups
     fn groups(&self) -> Vec<PyGroup> {
-        self.state.groups.iter().map(|g| g.clone().into()).collect()
+        self.rs.groups.iter().map(|g| g.clone().into()).collect()
     }
 
     /// Parse all Events from the log at the specified path
     fn events_from(&self, log: &str) -> Vec<PyEvent> {
         let xs = Event::from_file(log);
-        analyze(xs, &self.state.trust_db)
+        analyze(xs, &self.rs.trust_db)
             .iter()
             .map(|e| PyEvent::from(e.clone()))
             .collect()

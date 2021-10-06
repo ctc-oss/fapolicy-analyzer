@@ -5,16 +5,16 @@ use pyo3::prelude::*;
 #[pyclass(module = "acl", name = "User")]
 #[derive(Clone)]
 pub struct PyUser {
-    user: User,
+    rs: User,
 }
 impl From<User> for PyUser {
-    fn from(user: User) -> Self {
-        Self { user }
+    fn from(rs: User) -> Self {
+        Self { rs }
     }
 }
 impl From<PyUser> for User {
-    fn from(user: PyUser) -> Self {
-        user.user
+    fn from(py: PyUser) -> Self {
+        py.rs
     }
 }
 
@@ -23,19 +23,19 @@ impl PyUser {
     /// The user id (UID) of the user
     #[getter]
     fn id(&self) -> u32 {
-        self.user.uid
+        self.rs.uid
     }
-    #[getter]
 
     /// The username of the user
+    #[getter]
     fn name(&self) -> &str {
-        &self.user.name
+        &self.rs.name
     }
 
     /// The primary group id (GID) of the user
     #[getter]
     fn primary_group_id(&self) -> u32 {
-        self.user.gid
+        self.rs.gid
     }
 }
 
@@ -43,17 +43,17 @@ impl PyUser {
 #[pyclass(module = "acl", name = "Group")]
 #[derive(Clone)]
 pub struct PyGroup {
-    group: Group,
+    rs: Group,
 }
 
 impl From<Group> for PyGroup {
-    fn from(group: Group) -> Self {
-        Self { group }
+    fn from(rs: Group) -> Self {
+        Self { rs }
     }
 }
 impl From<PyGroup> for Group {
-    fn from(group: PyGroup) -> Self {
-        group.group
+    fn from(py: PyGroup) -> Self {
+        py.rs
     }
 }
 
@@ -62,19 +62,19 @@ impl PyGroup {
     /// The group id (GID) of the group
     #[getter]
     fn id(&self) -> u32 {
-        self.group.gid
+        self.rs.gid
     }
 
     /// The name of the group
     #[getter]
     fn name(&self) -> String {
-        self.group.name.clone()
+        self.rs.name.clone()
     }
 
     /// List of member UIDs that are members of this group
     #[getter]
     fn members(&self) -> Vec<String> {
-        self.group.users.clone()
+        self.rs.users.clone()
     }
 }
 

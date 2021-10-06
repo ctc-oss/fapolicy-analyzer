@@ -12,20 +12,20 @@ use fapolicy_trust::stat::{Actual, Status};
 #[pyclass(module = "trust", name = "Trust")]
 #[derive(Clone)]
 pub struct PyTrust {
-    pub trust: Trust,
-    pub actual: Option<Actual>,
+    pub rs_trust: Trust,
+    pub rs_actual: Option<Actual>,
     pub status: String,
 }
 impl From<Status> for PyTrust {
     fn from(status: Status) -> Self {
-        let (trust, actual, tag) = match status {
+        let (rs_trust, rs_actual, tag) = match status {
             Status::Trusted(t, act) => (t, Some(act), "T"),
             Status::Discrepancy(t, act) => (t, Some(act), "D"),
             Status::Missing(t) => (t, None, "U"),
         };
         Self {
-            trust,
-            actual,
+            rs_trust,
+            rs_actual,
             status: tag.to_string(),
         }
     }
@@ -35,24 +35,24 @@ impl From<Status> for PyTrust {
 impl PyTrust {
     #[getter]
     fn get_path(&self) -> &str {
-        &self.trust.path
+        &self.rs_trust.path
     }
 
     #[getter]
     fn get_size(&self) -> u64 {
-        self.trust.size
+        self.rs_trust.size
     }
 
     #[getter]
     fn get_hash(&self) -> &str {
-        &self.trust.hash
+        &self.rs_trust.hash
     }
 
     /// Optional actual metadata
     /// Will be None in the case of the file not existing
     #[getter]
     fn get_actual(&self) -> Option<PyActual> {
-        self.actual.as_ref().map(|a| a.clone().into())
+        self.rs_actual.as_ref().map(|a| a.clone().into())
     }
 
     #[getter]
@@ -101,18 +101,18 @@ impl PyActual {
 #[pyclass(module = "trust", name = "Changeset")]
 #[derive(Clone)]
 pub struct PyChangeset {
-    s: Changeset,
+    rs: Changeset,
 }
 
 impl From<Changeset> for PyChangeset {
-    fn from(s: Changeset) -> Self {
-        Self { s }
+    fn from(rs: Changeset) -> Self {
+        Self { rs }
     }
 }
 
 impl From<PyChangeset> for Changeset {
-    fn from(s: PyChangeset) -> Self {
-        s.s
+    fn from(py: PyChangeset) -> Self {
+        py.rs
     }
 }
 
@@ -124,15 +124,15 @@ impl PyChangeset {
     }
 
     pub fn add_trust(&mut self, path: &str) {
-        self.s.add(path)
+        self.rs.add(path)
     }
 
     pub fn del_trust(&mut self, path: &str) {
-        self.s.del(path)
+        self.rs.del(path)
     }
 
     pub fn len(&self) -> usize {
-        self.s.len()
+        self.rs.len()
     }
 
     pub fn is_empty(&self) -> bool {
@@ -140,7 +140,7 @@ impl PyChangeset {
     }
 
     pub fn get_path_action_map(&self) -> HashMap<String, String> {
-        get_path_action_map(&self.s)
+        get_path_action_map(&self.rs)
     }
 }
 
@@ -148,6 +148,5 @@ pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyTrust>()?;
     m.add_class::<PyActual>()?;
     m.add_class::<PyChangeset>()?;
-    // m.add_wrapped(pyo3::wrap_pyfunction!(apply_trust_change))?;
     Ok(())
 }
