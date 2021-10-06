@@ -9,8 +9,8 @@ use fapolicy_app::sys::deploy_app_state;
 use crate::acl::{PyGroup, PyUser};
 use crate::analysis::PyEvent;
 
-use super::trust::PyChangeset;
 use super::trust::PyTrust;
+use crate::change::PyChangeset;
 use std::time::SystemTime;
 
 #[pyclass(module = "app", name = "System")]
