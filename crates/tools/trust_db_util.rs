@@ -18,7 +18,7 @@ use fapolicy_trust::read;
 use fapolicy_trust::read::{check_trust_db, parse_trust_record};
 use fapolicy_util::sha::sha256_digest;
 
-use crate::Error::{DirTrustError, DpkgCommandFail, DpkgNotFound};
+use crate::Error::{DirTrustError, DpkgCommandFail, DpkgNotFound, TrustError};
 use crate::Subcommand::{Add, Check, Clear, Count, Del, Dump, Init, Load, Search};
 
 /// An Error that can occur in this app
@@ -405,9 +405,11 @@ fn load_ancillary_trust(path: &str) -> Result<Vec<Trust>, Error> {
     let f = File::open(path)?;
     let r = BufReader::new(f);
 
-    Ok(r.lines()
-        .map(|r| r.unwrap())
+    let lines: Result<Vec<String>, io::Error> = r.lines().collect();
+    lines?
+        .iter()
+        .map(|s| s.trim_start())
         .filter(|s| !s.is_empty() && !s.starts_with('#'))
-        .map(|l| parse_trust_record(&l).unwrap())
-        .collect())
+        .map(|l| parse_trust_record(l).map_err(TrustError))
+        .collect()
 }
