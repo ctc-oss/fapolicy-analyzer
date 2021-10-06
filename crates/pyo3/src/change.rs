@@ -23,11 +23,17 @@ impl From<PyChangeset> for Changeset {
     }
 }
 
+impl Default for PyChangeset {
+    fn default() -> Self {
+        Changeset::new().into()
+    }
+}
+
 #[pymethods]
 impl PyChangeset {
     #[new]
     pub fn new() -> Self {
-        Changeset::new().into()
+        PyChangeset::default()
     }
 
     pub fn add_trust(&mut self, path: &str) {
