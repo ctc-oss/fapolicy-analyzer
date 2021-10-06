@@ -1,5 +1,6 @@
-use fapolicy_analyzer::users::{Group, User};
 use pyo3::prelude::*;
+
+use fapolicy_analyzer::users::{Group, User};
 
 /// Represents a host system user parsed from /etc/passwd
 #[pyclass(module = "acl", name = "User")]

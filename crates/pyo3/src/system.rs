@@ -1,3 +1,5 @@
+use std::time::SystemTime;
+
 use pyo3::prelude::*;
 use pyo3::{exceptions, PyResult};
 
@@ -8,10 +10,9 @@ use fapolicy_app::sys::deploy_app_state;
 
 use crate::acl::{PyGroup, PyUser};
 use crate::analysis::PyEvent;
+use crate::change::PyChangeset;
 
 use super::trust::PyTrust;
-use crate::change::PyChangeset;
-use std::time::SystemTime;
 
 #[pyclass(module = "app", name = "System")]
 #[derive(Clone)]
