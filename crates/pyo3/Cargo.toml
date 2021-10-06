@@ -9,7 +9,7 @@ edition = "2018"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = "0.14.2"
+pyo3 = "0.14"
 
 fapolicy-api = { version = "0.4.0", path = "../api" }
 fapolicy-analyzer = { version = "0.4", path = "../analyzer" }
