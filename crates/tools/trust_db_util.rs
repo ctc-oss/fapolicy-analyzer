@@ -408,6 +408,7 @@ fn load_ancillary_trust(path: &str) -> Result<Vec<Trust>, Error> {
     let lines: Result<Vec<String>, io::Error> = r.lines().collect();
     lines?
         .iter()
+        .map(|s| s.trim_start())
         .filter(|s| !s.is_empty() && !s.starts_with('#'))
         .map(|l| parse_trust_record(l).map_err(TrustError))
         .collect()
