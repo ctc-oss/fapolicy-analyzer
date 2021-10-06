@@ -7,7 +7,7 @@ use fapolicy_app::cfg;
 use fapolicy_app::sys::deploy_app_state;
 
 use crate::acl::{PyGroup, PyUser};
-use crate::event::PyEvent;
+use crate::analysis::PyEvent;
 
 use super::trust::PyChangeset;
 use super::trust::PyTrust;
