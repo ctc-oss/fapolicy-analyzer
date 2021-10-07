@@ -153,6 +153,7 @@ SHA256: {fs.sha(trust.path)}"""
                     strings.DEPLOY_ANCILLARY_SUCCESSFUL_MSG,
                     NotificationType.SUCCESS,
                 )
+                self.trustFileList.refresh()
             except RuntimeError as e:
                 stateManager.add_system_notification(
                     f"Failed to deploy: {e}",
