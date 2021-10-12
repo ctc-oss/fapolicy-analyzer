@@ -23,8 +23,9 @@ def session():
 
 @pytest.fixture
 def mocks(mocker):
-    mocker.patch("ui.__main__.MainWindow")
+    mocker.patch("ui.__main__.SplashScreen")
     mocker.patch("ui.__main__.Gtk")
+    mocker.patch("ui.__main__.init_store")
 
 
 @pytest.mark.usefixtures("mocks", "session")
@@ -108,16 +109,18 @@ def test_main_no_options(mocker):
     expectTmpPath = xdg_state_home + "/fapolicy-analyzer/FaCurrentSession.tmp"
 
     with patch.object(sys, "argv", testargs):
-        mockMW = mocker.patch("ui.__main__.MainWindow")
+        mockSplash = mocker.patch("ui.__main__.SplashScreen")
         mockGtk = mocker.patch("ui.__main__.Gtk")
+        mockStore = mocker.patch("ui.__main__.init_store")
         main()
 
         assert logging.getLogger().level == logging.WARNING
         assert not sessionManager._SessionManager__bAutosaveEnabled
         assert sessionManager._SessionManager__iTmpFileCount == 2
         assert sessionManager._SessionManager__tmpFileBasename == expectTmpPath
-        mockMW.assert_called_once()
+        mockSplash.assert_called_once()
         mockGtk.main.assert_called_once()
+        mockStore.assert_called_once()
 
         # Tear down
         shutil.rmtree(xdg_state_home + "/fapolicy-analyzer/")
@@ -129,8 +132,9 @@ def test_main_all_options(mocker):
     testargs = ["prog", "-v", "-a", "-s", "/tmp/TmpFileTemplate.tmp", "-c", "3"]
 
     with patch.object(sys, "argv", testargs):
-        mockMW = mocker.patch("ui.__main__.MainWindow")
+        mockSplash = mocker.patch("ui.__main__.SplashScreen")
         mockGtk = mocker.patch("ui.__main__.Gtk")
+        mockStore = mocker.patch("ui.__main__.init_store")
         main()
 
         assert logging.getLogger().level == logging.DEBUG
@@ -140,8 +144,9 @@ def test_main_all_options(mocker):
             sessionManager._SessionManager__tmpFileBasename
             == "/tmp/TmpFileTemplate.tmp"
         )
-        mockMW.assert_called_once()
+        mockSplash.assert_called_once()
         mockGtk.main.assert_called_once()
+        mockStore.assert_called_once()
 
 
 def test_xdg_state_dir_prefix_w_exception(mocker):

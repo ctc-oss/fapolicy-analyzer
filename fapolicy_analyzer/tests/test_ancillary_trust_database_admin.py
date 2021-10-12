@@ -19,7 +19,7 @@ from ui.actions import (
     SET_SYSTEM_CHECKPOINT,
 )
 from ui.ancillary_trust_database_admin import AncillaryTrustDatabaseAdmin
-from ui.epics import init_system
+from ui.store import init_store
 from ui.strings import (
     DEPLOY_ANCILLARY_ERROR_MSG,
     DEPLOY_ANCILLARY_SUCCESSFUL_MSG,
@@ -36,7 +36,7 @@ def mock_dispatch(mocker):
 @pytest.fixture
 def widget(mock_dispatch, mocker):
     mocker.patch("ui.ancillary_trust_database_admin.fs.sha", return_value="abc")
-    init_system(mock_System())
+    init_store(mock_System())
     return AncillaryTrustDatabaseAdmin()
 
 
@@ -134,7 +134,7 @@ def test_on_deployment_w_exception(mock_dispatch, mocker):
         "ui.ancillary_trust_database_admin.get_system_feature",
         return_value=system_features_mock,
     )
-    init_system(mock_System())
+    init_store(mock_System())
     widget = AncillaryTrustDatabaseAdmin()
     system_features_mock.on_next(
         {
@@ -162,7 +162,7 @@ def test_on_neg_confirm_deployment(confirm_dialog, mock_dispatch, mocker):
         "ui.ancillary_trust_database_admin.get_system_feature",
         return_value=system_features_mock,
     )
-    init_system(mock_System())
+    init_store(mock_System())
     widget = AncillaryTrustDatabaseAdmin()
     system_features_mock.on_next(
         {
@@ -187,7 +187,7 @@ def test_on_revert_deployment(mock_dispatch, mocker):
         "ui.ancillary_trust_database_admin.get_system_feature",
         return_value=system_features_mock,
     )
-    init_system(mock_System())
+    init_store(mock_System())
     widget = AncillaryTrustDatabaseAdmin()
     system_features_mock.on_next(
         {
@@ -226,7 +226,7 @@ def test_on_neg_revert_deployment(mock_dispatch, mocker):
         "ui.ancillary_trust_database_admin.get_system_feature",
         return_value=system_features_mock,
     )
-    init_system(mock_System())
+    init_store(mock_System())
     widget = AncillaryTrustDatabaseAdmin()
     system_features_mock.on_next(
         {

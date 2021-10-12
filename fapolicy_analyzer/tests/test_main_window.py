@@ -15,8 +15,8 @@ from unittest.mock import MagicMock
 from ui.actions import ADD_NOTIFICATION
 from ui.main_window import MainWindow, router
 from ui.session_manager import sessionManager, NotificationType
+from ui.store import init_store
 from ui.strings import AUTOSAVE_RESTORE_ERROR_MSG
-from ui.epics import init_system
 
 test_changeset = Changeset()
 test_changeset.add_trust("/tmp/DeadBeef.txt")
@@ -28,8 +28,8 @@ def mock_dispatch(mocker):
 
 
 @pytest.fixture
-def mock_init_system(mocker):
-    return mocker.patch("ui.main_window.init_system")
+def mock_init_store():
+    init_store(mock_System())
 
 
 @pytest.fixture
@@ -51,10 +51,7 @@ def mock_dispatches(mocker):
 
 @pytest.fixture
 @pytest.mark.usefixtures("mock_system_features")
-def mainWindow(mock_init_system, mock_dispatches):
-    # mocker.patch("ui.main_window.PolicyRulesAdminPage.on_next_system")
-    # mocker.patch("ui.database_admin_page.AncillaryTrustDatabaseAdmin.on_next_system")
-    init_system(mock_System())
+def mainWindow(mock_init_store, mock_dispatches):
     return MainWindow()
 
 
@@ -156,7 +153,7 @@ def test_bad_router_option():
         assert excinfo.value.message == "Bad Selection"
 
 
-@pytest.mark.usefixtures("es_locale", "mock_init_system", "mock_dispatches")
+@pytest.mark.usefixtures("es_locale", "mock_init_store", "mock_dispatches")
 def test_localization():
     mainWindow = MainWindow()
     window = mainWindow.get_ref()
@@ -275,7 +272,7 @@ def test_on_saveMenu_activate_w_set_filename(mainWindow, mocker):
     )
 
 
-@pytest.mark.usefixtures("mock_init_system", "mock_dispatches")
+@pytest.mark.usefixtures("mock_init_store", "mock_dispatches")
 def test_on_start(mocker):
     mockDetectAutosave = mocker.patch(
         "ui.main_window.sessionManager.detect_previous_session", return_value=False
@@ -284,7 +281,7 @@ def test_on_start(mocker):
     mockDetectAutosave.assert_called()
 
 
-@pytest.mark.usefixtures("mock_init_system", "mock_dispatches")
+@pytest.mark.usefixtures("mock_init_store", "mock_dispatches")
 def test_on_start_w_declined_restore(mocker):
     """
     Test specifically for exercising the on_start() functionality.
@@ -310,7 +307,7 @@ def test_on_start_w_declined_restore(mocker):
     mockGtkDialog.assert_called()
 
 
-@pytest.mark.usefixtures("mock_init_system", "mock_dispatches")
+@pytest.mark.usefixtures("mock_init_store", "mock_dispatches")
 def test_on_start_w_accepted_restore(mocker):
     """
     Test specifically for exercising the on_start() functionality.
@@ -341,7 +338,7 @@ def test_on_start_w_accepted_restore(mocker):
     mockRestoreAutosave.assert_called()
 
 
-@pytest.mark.usefixtures("mock_init_system", "mock_dispatches")
+@pytest.mark.usefixtures("mock_init_store", "mock_dispatches")
 def test_on_start_w_restore_exception(mocker):
     """
     Test specifically for exercising the on_start() functionality.
@@ -372,7 +369,7 @@ def test_on_start_w_restore_exception(mocker):
     mockRestoreAutosave.assert_called()
 
 
-@pytest.mark.usefixtures("mock_init_system", "mock_dispatches")
+@pytest.mark.usefixtures("mock_init_store", "mock_dispatches")
 def test_on_start_w_failed_restore(mock_dispatch, mocker):
     mocker.patch(
         "ui.main_window.sessionManager.detect_previous_session", return_value=True

@@ -10,8 +10,8 @@ from mocks import mock_System, mock_events, mock_groups, mock_users
 from redux import Action
 from rx.subject import Subject
 from ui.actions import REQUEST_EVENTS, REQUEST_GROUPS, REQUEST_USERS
-from ui.epics import init_system
 from ui.policy_rules_admin_page import PolicyRulesAdminPage
+from ui.store import init_store
 
 _mock_file = "foo"
 
@@ -73,7 +73,7 @@ def widget(mock_dispatch, mock_system_features, mocker, states):
         return_value="10-01-2020",
     )
 
-    init_system(mock_System())
+    init_store(mock_System())
     widget = PolicyRulesAdminPage(_mock_file)
 
     for s in states:

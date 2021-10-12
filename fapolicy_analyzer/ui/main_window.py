@@ -14,7 +14,6 @@ from .notification import Notification
 from .policy_rules_admin_page import PolicyRulesAdminPage
 from .session_manager import sessionManager
 from .store import dispatch, get_system_feature
-from .epics import init_system
 from .unapplied_changes_dialog import UnappliedChangesDialog
 from .ui_widget import UIWidget
 
@@ -33,7 +32,6 @@ def router(selection, data=None):
 class MainWindow(UIWidget):
     def __init__(self):
         super().__init__()
-        init_system()
         self.strSessionFilename = None
         self.window = self.get_ref()
         self.windowTopLevel = self.window.get_toplevel()

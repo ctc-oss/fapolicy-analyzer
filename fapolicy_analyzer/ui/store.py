@@ -1,20 +1,29 @@
-from redux import Action, create_feature_module, create_store
+from fapolicy_analyzer import System
+from redux import Action, create_store
 from redux import select_feature
 from rx import operators
 from rx.core.typing import Observable
-from .epics import system_epic
-from .reducers import notification_reducer, system_reducer
+from .features import (
+    NOTIFICATIONS_FEATURE,
+    SYSTEM_FEATURE,
+    create_notification_feature,
+    create_system_feature,
+)
 
-NOTIFICATIONS_FEATURE = "notifications"
-SYSTEM_FEATURE = "system"
 
 store = create_store()
-store.add_feature_module(
-    create_feature_module(NOTIFICATIONS_FEATURE, notification_reducer)
-)
-store.add_feature_module(
-    create_feature_module(SYSTEM_FEATURE, system_reducer, epic=system_epic)
-)
+
+
+def init_store(system: System = None):
+    """
+    Initializes the Redux store.
+
+    Keyword arguments:
+    system -- the fapolicy_analyzer.System object, defaults to None. If not provided,
+              a new System object will be initialized.  Used for testing purposes only.
+    """
+    store.add_feature_module(create_notification_feature())
+    store.add_feature_module(create_system_feature(store.dispatch, system))
 
 
 def dispatch(action: Action) -> None:
