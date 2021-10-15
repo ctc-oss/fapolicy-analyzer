@@ -14,6 +14,7 @@ from ui.actions import (
     ADD_NOTIFICATION,
     APPLY_CHANGESETS,
     CLEAR_CHANGESETS,
+    REQUEST_ANCILLARY_TRUST,
     NotificationType,
     DEPLOY_ANCILLARY_TRUST,
     SET_SYSTEM_CHECKPOINT,
@@ -21,6 +22,7 @@ from ui.actions import (
 from ui.ancillary_trust_database_admin import AncillaryTrustDatabaseAdmin
 from ui.store import init_store
 from ui.strings import (
+    ANCILLARY_TRUST_LOAD_ERROR,
     DEPLOY_ANCILLARY_ERROR_MSG,
     DEPLOY_ANCILLARY_SUCCESSFUL_MSG,
     TRUSTED_FILE_MESSAGE,
@@ -377,3 +379,48 @@ def test_handle_deploy_exception(widget, confirm_dialog):
         with pytest.raises(Exception) as excinfo:
             widget.on_deployBtn_clicked()
             assert excinfo.value.message == "mocked error"
+
+
+def test_reloads_trust_w_changeset_change(mock_dispatch, mocker):
+    mockSystemFeature = Subject()
+    mocker.patch(
+        "ui.ancillary_trust_database_admin.get_system_feature",
+        return_value=mockSystemFeature,
+    )
+    mockSystemFeature.on_next({"changesets": []})
+    init_store(mock_System())
+    widget = AncillaryTrustDatabaseAdmin()
+    mockTrustListSetChangeset = mocker.patch.object(
+        widget.trustFileList, "set_changesets"
+    )
+
+    changesets = [MagicMock()]
+    mockSystemFeature.on_next(
+        {"changesets": changesets, "ancillary_trust": MagicMock(error=None)}
+    )
+    mockTrustListSetChangeset.assert_called_with(changesets)
+    mock_dispatch.assert_called_with(
+        InstanceOf(Action) & Attrs(type=REQUEST_ANCILLARY_TRUST)
+    )
+
+
+def test_load_trust_w_exception(mock_dispatch, mocker):
+    mockSystemFeature = Subject()
+    mocker.patch(
+        "ui.ancillary_trust_database_admin.get_system_feature",
+        return_value=mockSystemFeature,
+    )
+    mockSystemFeature.on_next({"changesets": []})
+    init_store(mock_System())
+    AncillaryTrustDatabaseAdmin()
+
+    mockSystemFeature.on_next(
+        {"changesets": [], "ancillary_trust": MagicMock(loading=False, error="foo")}
+    )
+    mock_dispatch.assert_called_with(
+        InstanceOf(Action)
+        & Attrs(
+            type=ADD_NOTIFICATION,
+            payload=Attrs(type=NotificationType.ERROR, text=ANCILLARY_TRUST_LOAD_ERROR),
+        )
+    )
