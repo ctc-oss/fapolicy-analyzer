@@ -3,7 +3,7 @@ import pytest
 import gi
 
 gi.require_version("Gtk", "3.0")
-from callee import InstanceOf, Attrs, Sequence
+from callee import InstanceOf, Attrs
 from callee.strings import Regex
 from gi.repository import Gtk
 from mocks import mock_System, mock_trust
