@@ -59,7 +59,7 @@ from ui.actions import (
     set_system_checkpoint,
     system_initialized,
 )
-from unittest.mock import MagicMock, Mock
+from unittest.mock import MagicMock
 
 
 @pytest.mark.parametrize("notification_type", [t for t in list(NotificationType)])

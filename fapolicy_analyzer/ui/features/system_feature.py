@@ -76,8 +76,9 @@ def create_system_feature(
                 GLib.idle_add(sys.exit, 1)
 
         def finish(system: System):
-            global _system
+            global _system, _checkpoint
             _system = system
+            _checkpoint = _system
             if executor:
                 executor.shutdown(cancel_futures=True)
             dispatch(system_initialized())
