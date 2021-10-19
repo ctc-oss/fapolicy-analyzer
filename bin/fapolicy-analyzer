@@ -17,10 +17,10 @@ else
     XAUTHORITY=$HOME/.Xauthority
     pkttyagent --notify-fd $fdCallback --process $$,$timestamp & pidAgent=$!
 
-    # Delay so that pkttyagent completes registration on the dbus.
-    echo Registering on dbus...
+    # Delay if needed so that pkttyagent completes registration on the dbus.
     while ls /proc/$pidAgent/fd | grep -q $fdCallback
     do
+	echo pkttyagent registering on the dbus...
         sleep 1
     done
 fi
