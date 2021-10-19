@@ -27,6 +27,10 @@ impl Subject {
             _ => None,
         }
     }
+
+    pub fn from_exe(path: &str) -> Subject {
+        Subject::new(vec![SubjPart::Exe(path.into())])
+    }
 }
 
 /// # Subject Field
