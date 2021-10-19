@@ -2,6 +2,11 @@
 
 # Initialize globals
 pidAgent=0
+strCallbackFile=/tmp/fileCallback.txt
+exec {fdCallback}>$strCallbackFile
+
+# Start timestamp added to shell PID. See note in pkttyagent manpage
+timestamp=$(cat /proc/$$/stat | awk '{print $22}')
 
 # Use local desktop's XAUTHORITY if DISPLAY == :0
 if (echo $DISPLAY | grep '^:0'); then
@@ -10,14 +15,22 @@ if (echo $DISPLAY | grep '^:0'); then
 else
     # Start the dbus service agent if ssh session with a remote DISPLAY
     XAUTHORITY=$HOME/.Xauthority
-    pkttyagent --process $$ & pidAgent=$!
+    pkttyagent --notify-fd $fdCallback --process $$,$timestamp & pidAgent=$!
+
+    # Delay so that pkttyagent completes registration on the dbus.
+    echo Registering on dbus...
+    while ls /proc/$pidAgent/fd | grep -q $fdCallback
+    do
+        sleep 1
+    done
 fi
 
 # Execute the fapolicy-analyzer with heightened privileges
-pkexec  --disable-internal-agent env DISPLAY=$DISPLAY  XAUTHORITY=$XAUTHORITY python3 -m fapolicy_analyzer.ui
+pkexec  --disable-internal-agent env NO_AT_BRIDGE=1 DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY python3 -m fapolicy_analyzer.ui
 
 # Terminate pkttyagent if started
 if [[ $pidAgent != 0 ]]; then
     echo Terminating pkttyagent.
     kill -SIGTERM $pidAgent
 fi
+rm -f $strCallbackFile
