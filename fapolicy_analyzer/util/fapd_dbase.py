@@ -1,4 +1,4 @@
-import subprocess
+import tarfile
 import time
 import os
 import glob
@@ -52,24 +52,21 @@ def fapd_dbase_snapshot(strArchiveFile=None, strListFile=None):
 
     # Verify the existence/access of the list file, otherwise use default args
     if os.path.isfile(strListFile):
-        listTarSourceArgs = ["-T", strListFile]
+        with open(strListFile) as fileListFile:
+            listInput = [e for e in fileListFile]
     else:
-        listTarSourceArgs = ["/var/lib/fapolicyd/", "/etc/fapolicyd/"]
+        listInput = ["/var/lib/fapolicyd/", "/etc/fapolicyd/"]
 
-    # Build the tar command w/source options to either use the list or defaults
-    listTarCmd = ["/usr/bin/tar", "-czf", strArchiveFile] + listTarSourceArgs
+    # Use the py tarfile module to creat and populate a tarball
     try:
-        p = subprocess.Popen(listTarCmd)
-        retCode = p.wait()
+        with tarfile.open(strArchiveFile, "w:gz") as fileTar:
+            for source_dir in listInput:
+                fileTar.add(source_dir)
 
-        # Delete oldest back-up file
-        if retCode == 0:
+            # Delete oldest back-up file
             fapd_dbase_cleanup_snapshots(strArchiveBasename)
-            return True
-        else:
-            # subprocess had failed did not throw an exception
-            print("Fapolicyd pre-deploy backup failed: tar had non zero exit")
-            return False
+        return True
+
     except Exception as e:
         print("Fapolicyd pre-deploy backup failed: ", e)
         return False

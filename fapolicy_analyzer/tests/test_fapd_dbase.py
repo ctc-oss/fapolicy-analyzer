@@ -9,5 +9,5 @@ def test_fapd_dbase_snapshot_fails():
 
 def test_fapd_dbase_snapshot_w_exception(mocker):
     # Mock the subprocess.Popen() call to throw an exception
-    mocker.patch("subprocess.Popen", side_effect=SubprocessError)
+    mocker.patch("util.fapd_dbase.os.remove", side_effect=SubprocessError)
     assert not fapd_dbase_snapshot()
