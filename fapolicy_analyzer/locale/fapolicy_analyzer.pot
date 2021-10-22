@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fapolicy-analyzer snapshot\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-09-27 13:17-0400\n"
+"POT-Creation-Date: 2021-10-22 12:54-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Generated-By: Babel 2.9.1\n"
 
 #: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:98
-#: fapolicy_analyzer/ui/system_trust_database_admin.py:86
+#: fapolicy_analyzer/ui/system_trust_database_admin.py:84
 msgid ""
 "File: {trust.path}\n"
 "Size: {trust.size}\n"
@@ -27,7 +27,7 @@ msgid ""
 msgstr ""
 
 #: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:108
-#: fapolicy_analyzer/ui/system_trust_database_admin.py:95
+#: fapolicy_analyzer/ui/system_trust_database_admin.py:93
 msgid ""
 "{fs.stat(trust.path)}\n"
 "SHA256: {fs.sha(trust.path)}"
@@ -37,7 +37,7 @@ msgstr ""
 msgid "Reverting to previous settings in {i+1} seconds"
 msgstr ""
 
-#: fapolicy_analyzer/ui/main_window.py:187
+#: fapolicy_analyzer/ui/main_window.py:186
 msgid ""
 "An error occurred trying to open the session file, "
 "{self.strSessionFilename}"
@@ -239,7 +239,7 @@ msgid "Scan System"
 msgstr ""
 
 #: fapolicy_analyzer/glade/analyzer_selection_dialog.glade:38
-#: fapolicy_analyzer/glade/main_window.glade:161
+#: fapolicy_analyzer/glade/main_window.glade:145
 msgid "Administer Trust Databases"
 msgstr ""
 
@@ -275,28 +275,29 @@ msgstr ""
 msgid "Visit our Wiki for more information"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:57
+#: fapolicy_analyzer/glade/main_window.glade:40
+#: fapolicy_analyzer/glade/splash_screen.glade:7
 msgid "File Access Policy Analyzer"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:80
+#: fapolicy_analyzer/glade/main_window.glade:64
 msgid "_File"
 msgstr ""
 
 #. Presents option to load prior sessions tmp file (if it exists.)
-#: fapolicy_analyzer/glade/main_window.glade:100
+#: fapolicy_analyzer/glade/main_window.glade:84
 msgid "Restore"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:143
+#: fapolicy_analyzer/glade/main_window.glade:127
 msgid "_Action"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:153
+#: fapolicy_analyzer/glade/main_window.glade:137
 msgid "Analyze From Audit Log"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:174
+#: fapolicy_analyzer/glade/main_window.glade:158
 msgid "_Help"
 msgstr ""
 
@@ -306,6 +307,10 @@ msgstr ""
 
 #: fapolicy_analyzer/glade/searchable_list.glade:108
 msgid "page0"
+msgstr ""
+
+#: fapolicy_analyzer/glade/splash_screen.glade:27
+msgid "Initializing File Access Policy Analyzer..."
 msgstr ""
 
 #: fapolicy_analyzer/glade/system_trust_database_admin.glade:44
