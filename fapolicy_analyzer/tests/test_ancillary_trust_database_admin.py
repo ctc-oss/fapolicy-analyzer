@@ -45,12 +45,25 @@ def widget(mock_dispatch, mocker):
 @pytest.fixture
 def confirm_dialog(confirm_resp, mocker):
     mock_confirm_dialog = MagicMock(
-        run=MagicMock(return_value=confirm_resp), hide=MagicMock()
+        run=MagicMock(return_value=confirm_resp),
+        hide=MagicMock(),
+        get_save_state=MagicMock(return_value=False),
     )
     mocker.patch(
         "ui.ancillary_trust_database_admin.ConfirmInfoDialog",
         return_value=mock_confirm_dialog,
     )
+
+    mocker.patch(
+        "ui.trust_file_list.epoch_to_string",
+        return_value="10-01-2020",
+    )
+
+    mocker.patch(
+        "ui.ancillary_trust_file_list.epoch_to_string",
+        return_value="10-01-2020",
+    )
+
     return mock_confirm_dialog
 
 
@@ -424,3 +437,16 @@ def test_load_trust_w_exception(mock_dispatch, mocker):
             payload=Attrs(type=NotificationType.ERROR, text=ANCILLARY_TRUST_LOAD_ERROR),
         )
     )
+
+
+def test_display_save_fapd_archive_dlg(widget, mocker):
+    # Mock the FileChooser dlg
+    mockFileChooserDlg = MagicMock()
+    mockFileChooserDlg.run.return_value = Gtk.ResponseType.OK
+    mockFileChooserDlg.get_filename.return_value = "/tmp/save_as_tmp.tgz"
+    mocker.patch(
+        "ui.ancillary_trust_database_admin.Gtk.FileChooserDialog",
+        return_value=mockFileChooserDlg,
+    )
+    widget.display_save_fapd_archive_dlg(MagicMock())
+    mockFileChooserDlg.run.assert_called()
