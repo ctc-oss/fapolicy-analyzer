@@ -5,8 +5,8 @@ import pytest
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from mocks import mock_System
-from ui.epics import init_system
 from ui.database_admin_page import DatabaseAdminPage
+from ui.store import init_store
 
 
 @pytest.fixture
@@ -25,7 +25,7 @@ def widget(mocker):
     mocker.patch(
         "ui.database_admin_page.SystemTrustDatabaseAdmin._SystemTrustDatabaseAdmin__load_trust"
     )
-    init_system(mock_System())
+    init_store(mock_System())
     return DatabaseAdminPage()
 
 
