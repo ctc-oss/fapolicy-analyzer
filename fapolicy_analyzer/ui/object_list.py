@@ -74,7 +74,7 @@ class ObjectList(SearchableList):
         return (
             Colors.LIGHT_GREEN
             if numModes == 3
-            else Colors.LIGHT_GREEN
+            else Colors.ORANGE
             if numModes > 0
             else Colors.LIGHT_RED
         )
