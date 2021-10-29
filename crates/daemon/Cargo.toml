@@ -15,4 +15,5 @@ version = "0.9"
 optional = true
 
 [features]
+default = []
 systemd = ["dbus"]
