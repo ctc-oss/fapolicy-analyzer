@@ -4,6 +4,9 @@ from itertools import count
 from redux import Action, create_action
 from typing import Any, Iterator, NamedTuple, Sequence
 
+INIT_SYSTEM = "INIT_SYSTEM"
+SYSTEM_INITIALIZED = "SYSTEM_INITIALIZED"
+
 ADD_NOTIFICATION = "ADD_NOTIFICATION"
 REMOVE_NOTIFICATION = "REMOVE_NOTIFICATION"
 
@@ -157,3 +160,11 @@ def received_groups(groups: Sequence[Group]) -> Action:
 
 def error_groups(error: str) -> Action:
     return _create_action(ERROR_GROUPS, error)
+
+
+def init_system() -> Action:
+    return _create_action(INIT_SYSTEM)
+
+
+def system_initialized() -> Action:
+    return _create_action(SYSTEM_INITIALIZED)
