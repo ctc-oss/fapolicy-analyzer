@@ -13,4 +13,7 @@ pub enum Error {
     #[cfg(feature = "systemd")]
     #[error("dbus method-call {0}")]
     DbusMethodCall(String),
+
+    #[error("{0}")]
+    ServiceStatusQueryFailure(String),
 }

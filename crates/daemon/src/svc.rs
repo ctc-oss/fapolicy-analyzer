@@ -1,4 +1,5 @@
 use std::fmt;
+use std::process::Command;
 use std::time::Duration;
 
 use dbus::blocking::{BlockingSender, Connection};
@@ -75,6 +76,18 @@ impl Handle {
     }
 
     pub fn active(&self) -> Result<bool, Error> {
-        Ok(true)
+        Command::new("systemctl")
+            .arg("status")
+            .arg(&self.name)
+            .arg("--no-pager")
+            .arg("-n0")
+            .output()
+            .map(|o| {
+                String::from_utf8(o.stdout).map_err(|_| {
+                    ServiceStatusQueryFailure("Failed to parse systemctl output".into())
+                })
+            })
+            .map_err(|_| ServiceStatusQueryFailure("Failed to execute systemctl".into()))?
+            .map(|txt| txt.contains("Active: active"))
     }
 }
