@@ -162,47 +162,61 @@
                         <property name="can-focus">False</property>
                         <child>
                           <object class="GtkImageMenuItem" id="fapaPreferencesMenu">
-                            <property name="label">gtk-preferences</property>
+                            <property name="label">FAPA Preferences</property>
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="use-underline">True</property>
-                            <property name="use-stock">True</property>
+			    <signal name="activate" handler="on_fapaPreferencesMenu_activate" swapped="no"/>
                           </object>
                         </child>
                         <child>
                           <object class="GtkImageMenuItem" id="fapdPreferencesMenu">
-                            <property name="label">gtk-preferences</property>
+                            <property name="label">FAPD Preferences</property>
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="use-underline">True</property>
                             <property name="use-stock">True</property>
+			    <signal name="activate" handler="on_fapdPreferencesMenu_activate" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkImageMenuItem" id="fapdReloadMenu">
+                            <property name="label">Reload Daemon</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="use-underline">True</property>
+                            <property name="use-stock">True</property>
+			    <signal name="activate" handler="on_fapdReloadMenu_activate" swapped="no"/>
                           </object>
                         </child>
                         <child>
                           <object class="GtkImageMenuItem" id="fapdStopMenu">
-                            <property name="label">gtk-stop</property>
+                            <property name="label">Stop Daemon</property>
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="use-underline">True</property>
                             <property name="use-stock">True</property>
+			    <signal name="activate" handler="on_fapdStopMenu_activate" swapped="no"/>
                           </object>
                         </child>
                         <child>
                           <object class="GtkImageMenuItem" id="fapdStartMenu">
-                            <property name="label">gtk-media-play</property>
+                            <property name="label">Start Daemon</property>
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="use-underline">True</property>
                             <property name="use-stock">True</property>
+			    <signal name="activate" handler="on_fapdStartMenu_activate" swapped="no"/>
                           </object>
                         </child>
                         <child>
                           <object class="GtkImageMenuItem" id="fapdStatusMenu">
-                            <property name="label">gtk-info</property>
+                            <property name="label">Daemon Status</property>
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="use-underline">True</property>
                             <property name="use-stock">True</property>
+			    <signal name="activate" handler="on_FapdStatusMenu_activate" swapped="no"/>
                           </object>
                         </child>
                       </object>
@@ -253,6 +267,63 @@
                 <property name="expand">True</property>
                 <property name="fill">True</property>
                 <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkStatusbar">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="margin-left">10</property>
+                <property name="margin-right">10</property>
+                <property name="margin-start">10</property>
+                <property name="margin-end">10</property>
+                <property name="margin-top">6</property>
+                <property name="margin-bottom">6</property>
+                <property name="spacing">2</property>
+                <child>
+                  <object class="GtkProgressBar" id="fapaStatusProgressBar">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="fraction">0.5</property>
+                    <property name="text" translatable="yes">Percent Complete</property>
+                    <property name="show-text">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="xpad">4</property>
+                    <property name="label" translatable="yes">fapolicyd:</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">False</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkImage" id="fapdStatusLight">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="stock">gtk-yes</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">3</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">3</property>
               </packing>
             </child>
           </object>

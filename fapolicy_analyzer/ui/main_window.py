@@ -281,3 +281,22 @@ class MainWindow(UIWidget):
     def on_trustDbMenu_activate(self, menuitem, *args):
         self.__pack_main_content(router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN))
         self.__set_trustDbMenu_sensitive(False)
+
+    def on_fapaPreferencesMenu_activate(self, menuitem, data=None):
+        logging.debug("on_fapaPreferencesMenu_activate() invoked.")
+
+    def on_fapdPreferencesMenu_activate(self, menuitem, data=None):
+        logging.debug("on_fapdPreferencesMenu_activate() invoked.")
+
+    def on_fapdReloadMenu_activate(self, menuitem, data=None):
+        logging.debug("on_fapdReloadMenu_activate() invoked.")
+
+    def on_fapdStopMenu_activate(self, menuitem, data=None):
+        logging.debug("on_fapdStopMenu_activate() invoked.")
+
+    def on_fapdStartMenu_activate(self, menuitem, data=None):
+        logging.debug("on_fapdStartMenu_activate() invoked.")
+
+    def on_FapdStatusMenu_activate(self, menuitem, data=None):
+        logging.debug("on_FapdStatusMenu_activate() invoked.")
+
