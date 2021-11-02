@@ -66,12 +66,83 @@
     /usr/local/bin/dbadmin.py
   ignore_errors: yes
 
-- name: dave tries to run rustc
-  become: yes
-  become_user: dave
-  shell: |
-    /home/dave/.cargo/bin/rustc --version
-  ignore_errors: yes
+- name: test developer dave
+  block:
+  - name: stat'ing dave's rust compiler
+    become: yes
+    become_user: dave
+    stat:
+      path: /home/dave/.cargo/bin/rustc
+      checksum_algorithm: sha256
+    register: rustcstat
+
+  - name: dave tries to run rustc - should be denied
+    become: yes
+    become_user: dave
+    shell: |
+      /home/dave/.cargo/bin/rustc --version
+    ignore_errors: yes
+
+  - name: dave's rust compiler is added to the fapolicyd trust database
+    become: yes
+    lineinfile:
+      path: /etc/fapolicyd/fapolicyd.trust
+      regexp: "^/{{ rustcstat.stat.path }} "
+      line: "{{ rustcstat.stat.path }} {{ rustcstat.stat.size }} {{ rustcstat.stat.checksum }}"
+
+  - name: restart fapolicyd service to activate changes
+    become: yes
+    systemd:
+      name: fapolicyd
+      state: restarted
+      enabled: true
+
+  - name: pause 5 seconds to allow fapolicyd service to come online
+    pause:
+      seconds: 5
+
+  - name: dave tries to run rustc - should now be allowed
+    become: yes
+    become_user: dave
+    shell: |
+      /home/dave/.cargo/bin/rustc --version
+
+  - name: dave saves a copy of his rust compiler
+    become: yes
+    become_user: dave
+    copy:
+      src: /home/dave/.cargo/bin/rustc
+      dest: /home/dave/.cargo/bin/rustc.orig
+      remote_src: yes
+
+  - name: dave copies xz over his rust compiler, changing the bits
+    become: yes
+    become_user: dave
+    copy:
+      src: /bin/xz
+      dest: /home/dave/.cargo/bin/rustc
+      remote_src: yes
+
+  - name: dave tries to run rustc that is now zx - should be denied
+    become: yes
+    become_user: dave
+    shell: |
+      /home/dave/.cargo/bin/rustc --version
+    ignore_errors: yes
+
+  - name: dave restores his rust compiler
+    become: yes
+    become_user: dave
+    copy:
+      src: /home/dave/.cargo/bin/rustc.orig
+      dest: /home/dave/.cargo/bin/rustc
+      remote_src: yes
+
+  - name: dave tries to run rustc - should now be allowed again
+    become: yes
+    become_user: dave
+    shell: |
+      /home/dave/.cargo/bin/rustc --version
 
 - name: capture events-1.txt
   become: yes
