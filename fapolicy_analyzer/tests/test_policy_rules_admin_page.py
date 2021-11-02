@@ -6,7 +6,7 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from callee import Attrs, InstanceOf
 from unittest.mock import MagicMock
-from mocks import mock_System, mock_events, mock_groups, mock_users
+from mocks import mock_System, mock_events, mock_groups, mock_log, mock_users
 from redux import Action
 from rx.subject import Subject
 from ui.actions import (
@@ -65,7 +65,7 @@ def default_states():
     """
     return [
         _build_state(
-            events={"events": mock_events()},
+            events={"log": mock_log()},
             groups={"groups": mock_groups()},
             users={"users": mock_users()},
         )

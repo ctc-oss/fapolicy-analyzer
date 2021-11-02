@@ -10,14 +10,14 @@ from ui.reducers.event_reducer import (
 
 @pytest.fixture()
 def initial_state():
-    return EventState(error=None, events=[])
+    return EventState(error=None, log=[])
 
 
 def test_handle_received_events(initial_state):
     result = handle_received_events(initial_state, MagicMock(payload=["foo"]))
-    assert result == EventState(error=None, events=["foo"])
+    assert result == EventState(error=None, log=["foo"])
 
 
 def test_handle_error_events(initial_state):
     result = handle_error_events(initial_state, MagicMock(payload="foo"))
-    assert result == EventState(error="foo", events=[])
+    assert result == EventState(error="foo", log=[])
