@@ -4,5 +4,5 @@ pub use fapolicyd::reload_databases;
 
 pub mod rpm;
 
-#[cfg(all(systemd))]
+#[cfg(feature = "systemd")]
 pub mod svc;

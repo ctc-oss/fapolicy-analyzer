@@ -1,10 +1,13 @@
 use std::fmt;
+use std::process::Command;
 use std::time::Duration;
 
 use dbus::blocking::{BlockingSender, Connection};
-use dbus::{Error, Message};
+use dbus::Message;
 
-use crate::svc::Method::{DisableUnitFiles, EnableUnitFiles, StartUnit, StopUnit};
+use crate::error::Error;
+use crate::error::Error::*;
+use crate::svc::Method::*;
 
 #[derive(Debug)]
 pub enum Method {
@@ -22,59 +25,69 @@ impl fmt::Display for Method {
 
 fn call(msg: Message) -> Result<Message, Error> {
     Connection::new_system()
-        .unwrap()
-        .send_with_reply_and_block(msg, Duration::from_millis(5000))
+        .and_then(|conn| conn.send_with_reply_and_block(msg, Duration::from_millis(5000)))
+        .map_err(Error::DbusFailure)
 }
 
-fn msg(m: Method) -> Message {
+fn msg(m: Method, unit: &str) -> Result<Message, Error> {
     dbus::Message::new_method_call(
         "org.freedesktop.systemd1",
         "/org/freedesktop/systemd1",
         "org.freedesktop.systemd1.Manager",
         m.to_string(),
     )
-    .unwrap_or_else(|e| panic!("{}", e))
+    .map_err(DbusMethodCall)
+    .map(|m| m.append2(unit, "fail"))
 }
 
 /// a handle to a service that can be signalled by dbus
 #[derive(Clone)]
-pub struct Daemon {
+pub struct Handle {
     name: String,
 }
 
-impl Daemon {
-    pub fn new(name: &str) -> Daemon {
-        Daemon {
+impl Default for Handle {
+    fn default() -> Self {
+        Handle::new("fapolicyd")
+    }
+}
+
+impl Handle {
+    pub fn new(name: &str) -> Handle {
+        Handle {
             name: name.to_string(),
         }
     }
 
-    pub fn start(&self) -> Result<(), String> {
-        let m = msg(StartUnit).append2(&self.name, "fail");
-        match call(m) {
-            Ok(_) => Ok(()),
-            Err(e) => Err(e.to_string()),
-        }
+    pub fn start(&self) -> Result<(), Error> {
+        msg(StartUnit, &self.name).and_then(call).map(|_| ())
     }
-    pub fn stop(&self) -> Result<(), String> {
-        let m = msg(StopUnit).append2(&self.name, "fail");
-        match call(m) {
-            Ok(_) => Ok(()),
-            Err(e) => Err(e.to_string()),
-        }
+
+    pub fn stop(&self) -> Result<(), Error> {
+        msg(StopUnit, &self.name).and_then(call).map(|_| ())
     }
-    pub fn enable(&self) -> Result<(), String> {
-        let m = msg(EnableUnitFiles).append3(vec![&self.name], true, false);
-        match call(m) {
-            Ok(_) => Ok(()),
-            Err(e) => Err(e.to_string()),
-        }
+
+    pub fn enable(&self) -> Result<(), Error> {
+        msg(EnableUnitFiles, &self.name).and_then(call).map(|_| ())
     }
-    pub fn disable(&self) -> Result<(), String> {
-        let m = msg(DisableUnitFiles).append2(vec![&self.name], true);
-        match call(m) {
-            Ok(_) => Ok(()),
-            Err(e) => Err(e.to_string()),
-        }
+
+    pub fn disable(&self) -> Result<(), Error> {
+        msg(DisableUnitFiles, &self.name).and_then(call).map(|_| ())
+    }
+
+    pub fn active(&self) -> Result<bool, Error> {
+        Command::new("systemctl")
+            .arg("status")
+            .arg(&self.name)
+            .arg("--no-pager")
+            .arg("-n0")
+            .output()
+            .map(|o| {
+                String::from_utf8(o.stdout).map_err(|_| {
+                    ServiceStatusQueryFailure("Failed to parse systemctl output".into())
+                })
+            })
+            .map_err(|_| ServiceStatusQueryFailure("Failed to execute systemctl".into()))?
+            .map(|txt| txt.contains("Active: active"))
     }
 }
