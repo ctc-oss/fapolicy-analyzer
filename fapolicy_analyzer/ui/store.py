@@ -6,15 +6,17 @@ from rx.core.typing import Observable
 from .features import (
     NOTIFICATIONS_FEATURE,
     SYSTEM_FEATURE,
+    DAEMON_FEATURE,
     create_notification_feature,
     create_system_feature,
+    create_daemon_feature,
 )
 
 
 store = create_store()
 
 
-def init_store(system: System = None):
+def init_store(system: System = None, daemon=None):
     """
     Initializes the Redux store.
 
@@ -24,6 +26,7 @@ def init_store(system: System = None):
     """
     store.add_feature_module(create_notification_feature())
     store.add_feature_module(create_system_feature(store.dispatch, system))
+    store.add_feature_module(create_daemon_feature(store.dispatch, daemon))
 
 
 def dispatch(action: Action) -> None:

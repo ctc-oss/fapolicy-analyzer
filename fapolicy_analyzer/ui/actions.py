@@ -1,3 +1,4 @@
+import logging
 from enum import Enum
 from fapolicy_analyzer import Changeset, Event, Group, Trust, User
 from itertools import count
@@ -41,6 +42,21 @@ REQUEST_GROUPS = "REQUEST_GROUPS"
 RECEIVED_GROUPS = "RECEIVED_GROUPS"
 ERROR_GROUPS = "ERROR_GROUPS"
 
+REQUEST_DAEMON_START = "REQUEST_DAEMON_START"
+RECEIVED_DAEMON_START = "RECEIVED_DAEMON_START"
+ERROR_DAEMON_START = "ERROR_DAEMON_START"
+
+REQUEST_DAEMON_STOP = "REQUEST_DAEMON_STOP"
+RECEIVED_DAEMON_STOP = "RECEIVED_DAEMON_STOP"
+ERROR_DAEMON_STOP = "ERROR_DAEMON_STOP"
+
+REQUEST_DAEMON_STATUS = "REQUEST_DAEMON_STATUS"
+RECEIVED_DAEMON_STATUS = "RECEIVED_DAEMON_STATUS"
+ERROR_DAEMON_STATUS = "ERROR_DAEMON_STATUS"
+
+REQUEST_DAEMON_RELOAD = "REQUEST_DAEMON_RELOAD"
+RECEIVED_DAEMON_RELOAD = "RECEIVED_DAEMON_RELOAD"
+ERROR_DAEMON_RELOAD = "ERROR_DAEMON_RELOAD"
 
 def _create_action(type: str, payload: Any = None) -> Action:
     return create_action(type)(payload)
@@ -168,3 +184,53 @@ def init_system() -> Action:
 
 def system_initialized() -> Action:
     return _create_action(SYSTEM_INITIALIZED)
+
+
+def request_daemon_reload() -> Action:
+    return _create_action(REQUEST_DAEMON_RELOAD)
+
+
+def received_daemon_reload(groups: Sequence[Group]) -> Action:
+    return _create_action(RECEIVED_DAEMON_RELOAD, daemon_reload)
+
+
+def error_daemon_reload(error: str) -> Action:
+    return _create_action(ERROR_DAEMON_RELOAD, error)
+
+
+def request_daemon_status() -> Action:
+    logging.debug("request_daemon_status() -> Action: REQUEST_DAEMON_STATUS")
+    return _create_action(REQUEST_DAEMON_STATUS)
+
+
+def received_daemon_status(groups: Sequence[Group]) -> Action:
+    return _create_action(RECEIVED_DAEMON_STATUS, daemon_status)
+
+
+def error_daemon_status(error: str) -> Action:
+    return _create_action(ERROR_DAEMON_STATUS, error)
+
+
+def request_daemon_stop() -> Action:
+    return _create_action(REQUEST_DAEMON_STOP)
+
+
+def received_daemon_stop(groups: Sequence[Group]) -> Action:
+    return _create_action(RECEIVED_DAEMON_STOP, daemon_stop)
+
+
+def error_daemon_stop(error: str) -> Action:
+    return _create_action(ERROR_DAEMON_STOP, error)
+
+
+def request_daemon_start() -> Action:
+    return _create_action(REQUEST_DAEMON_START)
+
+
+def received_daemon_start(groups: Sequence[Group]) -> Action:
+    return _create_action(RECEIVED_DAEMON_START, daemon_start)
+
+
+def error_daemon_start(error: str) -> Action:
+    return _create_action(ERROR_DAEMON_START, error)
+

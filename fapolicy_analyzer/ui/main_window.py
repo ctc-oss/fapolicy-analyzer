@@ -7,7 +7,14 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from locale import gettext as _
 from fapolicy_analyzer.util.format import f
-from .actions import add_notification, NotificationType
+from .actions import (
+    add_notification,
+    request_daemon_start,
+    request_daemon_stop,
+    request_daemon_reload,
+    request_daemon_status,
+    NotificationType
+    )
 from .analyzer_selection_dialog import ANALYZER_SELECTION  # , AnalyzerSelectionDialog
 from .database_admin_page import DatabaseAdminPage
 from .notification import Notification
@@ -288,15 +295,18 @@ class MainWindow(UIWidget):
     def on_fapdPreferencesMenu_activate(self, menuitem, data=None):
         logging.debug("on_fapdPreferencesMenu_activate() invoked.")
 
-    def on_fapdReloadMenu_activate(self, menuitem, data=None):
-        logging.debug("on_fapdReloadMenu_activate() invoked.")
-
-    def on_fapdStopMenu_activate(self, menuitem, data=None):
-        logging.debug("on_fapdStopMenu_activate() invoked.")
-
     def on_fapdStartMenu_activate(self, menuitem, data=None):
         logging.debug("on_fapdStartMenu_activate() invoked.")
+        dispatch(request_daemon_start())
+        
+    def on_fapdStopMenu_activate(self, menuitem, data=None):
+        logging.debug("on_fapdStopMenu_activate() invoked.")
+        dispatch(request_daemon_stop())
+        
+    def on_fapdReloadMenu_activate(self, menuitem, data=None):
+        logging.debug("on_fapdReloadMenu_activate() invoked.")
+        dispatch(request_daemon_reload())
 
     def on_FapdStatusMenu_activate(self, menuitem, data=None):
         logging.debug("on_FapdStatusMenu_activate() invoked.")
-
+        dispatch(request_daemon_status())
