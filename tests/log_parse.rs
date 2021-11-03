@@ -1,5 +1,5 @@
-use fapolicy_analyzer::event::Event;
-use fapolicy_analyzer::log;
+use fapolicy_analyzer::events::event::Event;
+use fapolicy_analyzer::events::parse;
 use nom::combinator::map;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
@@ -9,7 +9,7 @@ enum Line {
 }
 
 fn parser(i: &str) -> nom::IResult<&str, Line> {
-    map(log::parse_event, Line::AnEvent)(i)
+    map(parse::parse_event, Line::AnEvent)(i)
 }
 
 fn parse_lines(xs: Vec<String>) {

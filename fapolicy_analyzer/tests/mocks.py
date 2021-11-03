@@ -43,6 +43,15 @@ def mock_events():
     ]
 
 
+def mock_log():
+    return MagicMock(
+        subjects=lambda: [e.subject.file for e in mock_events()],
+        by_subject=lambda f: [e for e in mock_events() if e.subject.file == f],
+        by_user=lambda id: [e for e in mock_events() if e.uid == id],
+        by_group=lambda id: [e for e in mock_events() if e.gid == id],
+    )
+
+
 class mock_System:
     def ancillary_trust(self):
         return [mock_trust()]
@@ -62,5 +71,5 @@ class mock_System:
     def groups(self):
         return mock_groups()
 
-    def events_from(self, file):
-        return mock_events
+    def events(self, file):
+        return mock_log()
