@@ -26,8 +26,8 @@ from .confirm_info_dialog import ConfirmInfoDialog
 from .deploy_confirm_dialog import DeployConfirmDialog
 from .store import dispatch, get_system_feature
 from .trust_file_details import TrustFileDetails
-from .ui_widget import UIConnectedWidget
-
+from .ui_widget import UIWidget
+from fapolicy_analyzer import start_fapolicyd, stop_fapolicyd
 
 class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
     def __init__(self):
@@ -69,7 +69,9 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
             dispatch(set_system_checkpoint())
             dispatch(clear_changesets())
         else:
+            stop_fapolicyd()
             # TODO: revert here?
+            start_fapolicyd()
             return
 
     def add_trusted_files(self, *files):
