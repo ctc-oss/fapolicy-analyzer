@@ -25,7 +25,7 @@ impl fmt::Display for Method {
 
 fn call(msg: Message) -> Result<Message, Error> {
     Connection::new_system()
-        .and_then(|conn| conn.send_with_reply_and_block(msg, Duration::from_millis(5000)))
+        .and_then(|conn| conn.send_with_reply_and_block(msg, Duration::from_millis(2000)))
         .map_err(Error::DbusFailure)
 }
 
