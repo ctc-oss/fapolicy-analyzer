@@ -1,0 +1,3 @@
+rule=1 dec=allow perm=any uid=1 gid=777     pid=999 exe=/bin/bash :  path=/usr/bin/foo
+rule=1 dec=allow perm=any uid=1 gid=888,555 pid=999 exe=/bin/bash :  path=/usr/bin/foo
+rule=1 dec=allow perm=any uid=2 gid=999,555 pid=999 exe=/bin/bash :  path=/usr/bin/bar

@@ -124,7 +124,7 @@ def create_system_feature(
         return clear_changesets()
 
     def _get_events(action: Action) -> Action:
-        events = _system.events_from(action.payload)
+        events = _system.events(action.payload)
         return received_events(events)
 
     def _get_users(action: Action) -> Action:

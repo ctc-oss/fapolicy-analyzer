@@ -1,6 +1,11 @@
+use std::collections::HashSet;
+
 use pyo3::prelude::*;
 
-use fapolicy_analyzer::event::{Analysis, ObjAnalysis, SubjAnalysis};
+use fapolicy_analyzer::events::analysis::{analyze, Analysis, ObjAnalysis, SubjAnalysis};
+use fapolicy_analyzer::events::db::DB as EventDB;
+use fapolicy_analyzer::events::event::Perspective;
+use fapolicy_trust::db::DB as TrustDB;
 
 /// An Event parsed from a fapolicyd log
 #[pyclass(module = "log", name = "Event")]
@@ -131,9 +136,50 @@ impl PyObject {
     }
 }
 
+#[pyclass(module = "log", name = "EventLog")]
+#[derive(Clone)]
+pub struct PyEventLog {
+    pub(crate) rs: EventDB,
+    pub(crate) rs_trust: TrustDB,
+}
+
+#[pymethods]
+impl PyEventLog {
+    /// Get all subjects from the event log
+    fn subjects(&self) -> Vec<String> {
+        let m: HashSet<String> = self.rs.iter().filter_map(|e| e.subj.exe()).collect();
+        m.into_iter().collect()
+    }
+
+    /// Get events that fit the given subject perspective perspective
+    fn by_subject(&self, path: String) -> Vec<PyEvent> {
+        analyze(&self.rs, Perspective::Subject(path.clone()), &self.rs_trust)
+            .iter()
+            .map(|e| PyEvent::from(e.clone()))
+            .collect()
+    }
+
+    /// Get events that fit the given user perspective
+    fn by_user(&self, uid: i32) -> Vec<PyEvent> {
+        analyze(&self.rs, Perspective::User(uid), &self.rs_trust)
+            .iter()
+            .map(|e| PyEvent::from(e.clone()))
+            .collect()
+    }
+
+    /// Get events that fit the given group perspective
+    fn by_group(&self, gid: i32) -> Vec<PyEvent> {
+        analyze(&self.rs, Perspective::Group(gid), &self.rs_trust)
+            .iter()
+            .map(|e| PyEvent::from(e.clone()))
+            .collect()
+    }
+}
+
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyEvent>()?;
     m.add_class::<PySubject>()?;
     m.add_class::<PyObject>()?;
+    m.add_class::<PyEventLog>()?;
     Ok(())
 }
