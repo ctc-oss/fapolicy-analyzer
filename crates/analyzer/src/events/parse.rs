@@ -1,11 +1,11 @@
 use nom::bytes::complete::tag;
 use nom::character::complete::space0;
 use nom::character::complete::{digit1, space1};
+use nom::multi::separated_list1;
 use nom::sequence::{preceded, terminated};
 
-use crate::event::Event;
+use crate::events::event::Event;
 use crate::rules::*;
-use nom::multi::separated_list1;
 
 pub fn parse_event(i: &str) -> nom::IResult<&str, Event> {
     match nom::combinator::complete(nom::sequence::tuple((

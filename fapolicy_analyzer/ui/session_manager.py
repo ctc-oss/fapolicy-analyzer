@@ -69,7 +69,7 @@ class SessionManager:
         self.__force_cleanup_autosave_sessions()
 
     def on_next_system(self, system):
-        changesets = system.get("changesets")
+        changesets = (system and system.get("changesets")) or []
 
         # if changesets have changes request an auto save
         if self.__changesets != changesets:

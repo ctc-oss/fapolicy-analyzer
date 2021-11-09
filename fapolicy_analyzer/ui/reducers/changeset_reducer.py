@@ -10,14 +10,14 @@ from fapolicy_analyzer.ui.actions import (
 def handle_add_changesets(
     state: Sequence[Changeset], action: Action
 ) -> Sequence[Changeset]:
-    payload = cast(tuple[Changeset], action.payload)
+    payload = cast(Sequence[Changeset], action.payload)
     return (*state, *payload)
 
 
 def handle_clear_changesets(
     state: Sequence[Changeset], action: Action
 ) -> Sequence[Changeset]:
-    return state[:-1]
+    return []
 
 
 changeset_reducer: Reducer = handle_actions(

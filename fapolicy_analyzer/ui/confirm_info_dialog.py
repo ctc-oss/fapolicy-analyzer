@@ -21,6 +21,9 @@ class ConfirmInfoDialog(Gtk.Dialog):
             flags=0,
         )
 
+        self._bSaveStatePreDeploy = False
+        self._btnCbSaveState = None
+
         self.add_buttons(
             Gtk.STOCK_NO, Gtk.ResponseType.NO, Gtk.STOCK_YES, Gtk.ResponseType.YES
         )
@@ -52,9 +55,19 @@ class ConfirmInfoDialog(Gtk.Dialog):
 
         box = self.get_content_area()
         box.add(Gtk.Label(label=DEPLOY_ANCILLARY_CONFIRM_DIALOG_TEXT))
+
         box.pack_start(scrolled_window, True, True, 0)
+        self._btnCbSaveState = Gtk.CheckButton(
+            label='"Save As..." fapolicyd data and configuration to archive prior to deployment.'
+        )
+        frameCb = Gtk.Frame()
+        frameCb.add(self._btnCbSaveState)
+        box.add(frameCb)
 
         self.show_all()
+
+    def get_save_state(self):
+        return self._bSaveStatePreDeploy
 
     def __load_path_action_list(self, store, listPathActionPairs):
         if listPathActionPairs:
@@ -68,3 +81,8 @@ class ConfirmInfoDialog(Gtk.Dialog):
                     else ""
                 )
                 store.append((action, e[0]))
+
+    def run(self):
+        response = super().run()
+        self._bSaveStatePreDeploy = self._btnCbSaveState.get_active()
+        return response
