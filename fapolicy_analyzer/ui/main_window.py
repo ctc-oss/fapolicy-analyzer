@@ -6,6 +6,7 @@ import fapolicy_analyzer.ui.strings as strings
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from locale import gettext as _
+from os import geteuid
 from fapolicy_analyzer.util.format import f
 from .actions import (
     add_notification,
@@ -49,9 +50,15 @@ class MainWindow(UIWidget):
         self.get_object("overlay").add_overlay(toaster.get_ref())
         self.mainContent = self.get_object("mainContent")
 
-        # Disable 'File' menu items until backend support is available
+        # Set menu items in default initial state
         self.get_object("restoreMenu").set_sensitive(False)
         self.__set_trustDbMenu_sensitive(False)
+        
+        # Check if running with root permissions
+        if geteuid() != 0:
+            self.get_object("fapdStartMenu").set_sensitive(False)
+            self.get_object("fapdStopMenu").set_sensitive(False)
+            self.get_object("fapdReloadMenu").set_sensitive(False)
 
         self.window.show_all()
 

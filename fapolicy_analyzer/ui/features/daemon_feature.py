@@ -84,7 +84,7 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
 
     def _daemon_start(action: Action) -> Action:
         logging.debug("_daemon_start(action: Action) -> Action")
-        #start_fapolicyd()
+        start_fapolicyd()
         return received_daemon_start()
 
 
@@ -96,7 +96,7 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
 
     def _daemon_stop(action: Action) -> Action:
         logging.debug("_daemon_stop(action: Action) -> Action")
-        #stop_fapolicyd()
+        stop_fapolicyd()
         return received_daemon_stop()
 
     

@@ -224,13 +224,13 @@ def error_daemon_status(error: str) -> Action:
 
 
 def request_daemon_stop() -> Action:
-    logging.debug("request_daemon_status() -> Action: REQUEST_DAEMON_STOP")
+    logging.debug("request_daemon_stop() -> Action: REQUEST_DAEMON_STOP")
     return _create_action(REQUEST_DAEMON_STOP)
 
 
 def received_daemon_stop() -> Action:
-    logging.debug("received_daemon_status() -> Action: RECEIVED_DAEMON_STOP")
-    return _create_action(RECEIVED_DAEMON_STOP, daemon_stop)
+    logging.debug("received_daemon_stop() -> Action: RECEIVED_DAEMON_STOP")
+    return _create_action(RECEIVED_DAEMON_STOP)
 
 
 def error_daemon_stop(error: str) -> Action:
@@ -238,13 +238,13 @@ def error_daemon_stop(error: str) -> Action:
 
 
 def request_daemon_start() -> Action:
-    logging.debug("request_daemon_status() -> Action: REQUEST_DAEMON_START")
+    logging.debug("request_daemon_start() -> Action: REQUEST_DAEMON_START")
     return _create_action(REQUEST_DAEMON_START)
 
 
-def received_daemon_start(groups: Sequence[Group]) -> Action:
-    logging.debug("received_daemon_status() -> Action: RECEIVED_DAEMON_START")
-    return _create_action(RECEIVED_DAEMON_START, daemon_start)
+def received_daemon_start() -> Action:
+    logging.debug("received_daemon_start() -> Action: RECEIVED_DAEMON_START")
+    return _create_action(RECEIVED_DAEMON_START)
 
 
 def error_daemon_start(error: str) -> Action:
