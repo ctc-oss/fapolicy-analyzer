@@ -42,6 +42,9 @@ REQUEST_GROUPS = "REQUEST_GROUPS"
 RECEIVED_GROUPS = "RECEIVED_GROUPS"
 ERROR_GROUPS = "ERROR_GROUPS"
 
+INIT_DAEMON = "INIT_DAEMON"
+DAEMON_INITIALIZED = "DAEMON_INITIALIZED"
+
 REQUEST_DAEMON_START = "REQUEST_DAEMON_START"
 RECEIVED_DAEMON_START = "RECEIVED_DAEMON_START"
 ERROR_DAEMON_START = "ERROR_DAEMON_START"
@@ -186,12 +189,20 @@ def system_initialized() -> Action:
     return _create_action(SYSTEM_INITIALIZED)
 
 
+def init_daemon() -> Action:
+    return _create_action(INIT_DAEMON)
+
+
+def daemon_initialized() -> Action:
+    return _create_action(DAEMON_INITIALIZED)
+
+
 def request_daemon_reload() -> Action:
     return _create_action(REQUEST_DAEMON_RELOAD)
 
 
-def received_daemon_reload(groups: Sequence[Group]) -> Action:
-    return _create_action(RECEIVED_DAEMON_RELOAD, daemon_reload)
+def received_daemon_reload() -> Action:
+    return _create_action(RECEIVED_DAEMON_RELOAD)
 
 
 def error_daemon_reload(error: str) -> Action:
@@ -203,8 +214,9 @@ def request_daemon_status() -> Action:
     return _create_action(REQUEST_DAEMON_STATUS)
 
 
-def received_daemon_status(groups: Sequence[Group]) -> Action:
-    return _create_action(RECEIVED_DAEMON_STATUS, daemon_status)
+def received_daemon_status(status: bool) -> Action:
+    logging.debug(f"received_daemon_status({status}) -> Action: RECEIVED_DAEMON_STATUS")
+    return _create_action(RECEIVED_DAEMON_STATUS, status)
 
 
 def error_daemon_status(error: str) -> Action:
@@ -212,10 +224,12 @@ def error_daemon_status(error: str) -> Action:
 
 
 def request_daemon_stop() -> Action:
+    logging.debug("request_daemon_status() -> Action: REQUEST_DAEMON_STOP")
     return _create_action(REQUEST_DAEMON_STOP)
 
 
-def received_daemon_stop(groups: Sequence[Group]) -> Action:
+def received_daemon_stop() -> Action:
+    logging.debug("received_daemon_status() -> Action: RECEIVED_DAEMON_STOP")
     return _create_action(RECEIVED_DAEMON_STOP, daemon_stop)
 
 
@@ -224,10 +238,12 @@ def error_daemon_stop(error: str) -> Action:
 
 
 def request_daemon_start() -> Action:
+    logging.debug("request_daemon_status() -> Action: REQUEST_DAEMON_START")
     return _create_action(REQUEST_DAEMON_START)
 
 
 def received_daemon_start(groups: Sequence[Group]) -> Action:
+    logging.debug("received_daemon_status() -> Action: RECEIVED_DAEMON_START")
     return _create_action(RECEIVED_DAEMON_START, daemon_start)
 
 

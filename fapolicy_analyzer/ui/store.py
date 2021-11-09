@@ -24,6 +24,7 @@ def init_store(system: System = None, daemon=None):
     system -- the fapolicy_analyzer.System object, defaults to None. If not provided,
               a new System object will be initialized.  Used for testing purposes only.
     """
+
     store.add_feature_module(create_notification_feature())
     store.add_feature_module(create_system_feature(store.dispatch, system))
     store.add_feature_module(create_daemon_feature(store.dispatch, daemon))
@@ -38,6 +39,10 @@ def get_notifications_feature() -> Observable:
         operators.map(select_feature(NOTIFICATIONS_FEATURE))
     )
 
-
 def get_system_feature() -> Observable:
-    return store.as_observable().pipe(operators.map(select_feature(SYSTEM_FEATURE)))
+    return store.as_observable().pipe(
+        operators.map(select_feature(SYSTEM_FEATURE)))
+
+def get_daemon_feature() -> Observable:
+    return store.as_observable().pipe(
+        operators.map(select_feature(DAEMON_FEATURE)))

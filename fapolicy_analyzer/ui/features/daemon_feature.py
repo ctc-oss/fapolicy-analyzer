@@ -3,20 +3,28 @@ import logging
 import sys
 
 gi.require_version("Gtk", "3.0")
+from fapolicy_analyzer import (
+    Handle,
+    is_fapolicyd_active,
+    start_fapolicyd,
+    stop_fapolicyd,
+    )
 
 from fapolicy_analyzer.ui.actions import (
     REQUEST_DAEMON_START,
     REQUEST_DAEMON_STOP,
     REQUEST_DAEMON_RELOAD,
     REQUEST_DAEMON_STATUS,
-    error_daemon_start,
-    error_daemon_stop,
+    daemon_initialized,
     error_daemon_reload,
+    error_daemon_start,
     error_daemon_status,
-    received_daemon_start,
-    received_daemon_stop,
+    error_daemon_stop,
+    init_daemon,
     received_daemon_reload,
+    received_daemon_start,
     received_daemon_status,
+    received_daemon_stop,
 )
 from fapolicy_analyzer.ui.reducers import daemon_reducer
 from gi.repository import GLib
@@ -33,6 +41,8 @@ from rx.operators import catch, ignore_elements, map
 from typing import Callable, Sequence
 
 DAEMON_FEATURE = "daemon"
+_fapd_status: bool
+_fapd_ref: Handle
 
 def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule:
     """
@@ -44,22 +54,90 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
     provided, a new Daemon object will be initialized.  Used for testing 
     purposes only.
     """
- 
-    def _request_daemon_status(action: Action) -> Action:
-        breakpoint()
-        return received_daemon_status()
+    def _init_daemon() -> Action:
+        logging.debug("_init_daemon() -> Action")
+        def acquire_daemon():
+            logging.debug("acquire_daemon()")
+            try:
+                daemon = Handle("fapolicyd")
+                GLib.idle_add(finish, daemon)
+            except:
+                logging.exception(SYSTEM_INITIALIZATION_ERROR)
+                GLib.idle_add(sys.exit, 1)
 
+        def finish(daemon: Handle):
+            global _fapd_ref, _fapd_status
+            _fapd_ref = daemon
+            _fapd_status = is_fapolicyd_active()
+            dispatch(daemon_initialized())
 
-    def _request_daemon_reload(action: Action) -> Action:
+        if daemon:
+            finish(damon)
+        else:
+            acquire_daemon()
+        return init_daemon()
+    
+    def _daemon_reload(action: Action) -> Action:
+        logging.debug("_daemon_reload(action: Action) -> Action")
         return received_daemon_reload()
 
 
-    def _request_daemon_start(action: Action) -> Action:
+    def _daemon_start(action: Action) -> Action:
+        logging.debug("_daemon_start(action: Action) -> Action")
+        #start_fapolicyd()
         return received_daemon_start()
 
 
-    def _request_daemon_stop(action: Action) -> Action:
+    def _daemon_status(action: Action) -> Action:
+        logging.debug(f"_daemon_status(action: {action}) -> Action")
+        status = is_fapolicyd_active()
+        return received_daemon_status(status)
+
+
+    def _daemon_stop(action: Action) -> Action:
+        logging.debug("_daemon_stop(action: Action) -> Action")
+        #stop_fapolicyd()
         return received_daemon_stop()
 
+    
+    init_epic = pipe(
+        of_init_feature(DAEMON_FEATURE),
+        map(lambda _: _init_daemon()),
+    )
 
-    return create_feature_module(DAEMON_FEATURE)
+    request_daemon_reload_epic = pipe(
+        of_type(REQUEST_DAEMON_RELOAD),
+        map(_daemon_reload),
+        catch(lambda ex, source: of(error_daemon_reload(str(ex)))),
+    )
+    
+    request_daemon_start_epic = pipe(
+        of_type(REQUEST_DAEMON_START),
+        map(_daemon_start),
+        catch(lambda ex, source: of(error_daemon_start(str(ex)))),
+    )
+    
+    request_daemon_status_epic = pipe(
+        of_type(REQUEST_DAEMON_STATUS),
+        map(_daemon_status),
+        catch(lambda ex, source: of(error_daemon_status(str(ex)))),
+    )
+
+    request_daemon_stop_epic = pipe(
+        of_type(REQUEST_DAEMON_STOP),
+        map(_daemon_stop),
+        catch(lambda ex, source: of(error_daemon_stop(str(ex)))),
+    )
+    
+    daemon_epic = combine_epics(
+        init_epic,
+        request_daemon_reload_epic,
+        request_daemon_start_epic,
+        request_daemon_status_epic,
+        request_daemon_stop_epic,
+        )
+
+    return create_feature_module(DAEMON_FEATURE,
+                                 daemon_reducer,
+                                 epic=daemon_epic,
+                                 )
