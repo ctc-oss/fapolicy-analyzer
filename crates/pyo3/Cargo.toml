@@ -14,5 +14,5 @@ pyo3 = "0.14"
 fapolicy-api = { version = "0.4.0", path = "../api" }
 fapolicy-analyzer = { version = "0.4", path = "../analyzer" }
 fapolicy-app = { version = "0.4.0", path = "../app" }
-fapolicy-daemon = { version = "0.4", path = "../daemon" }
+fapolicy-daemon = { version = "0.4", path = "../daemon", features = ["systemd"] }
 fapolicy-trust = { version = "0.4", path = "../trust" }
