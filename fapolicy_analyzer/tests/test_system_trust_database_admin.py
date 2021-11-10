@@ -95,7 +95,10 @@ def test_load_trust(mock_dispatch, mock_system_feature, mocker):
 
     mockTrust = [mock_trust()]
     mock_system_feature.on_next(
-        {"changesets": [], "system_trust": MagicMock(error=None, trust=mockTrust)}
+        {
+            "changesets": [],
+            "system_trust": MagicMock(error=None, trust=mockTrust, loading=False),
+        }
     )
     mockTrustListLoad.assert_called_with(mockTrust)
 
