@@ -6,12 +6,23 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from callee import Attrs, InstanceOf
 from unittest.mock import MagicMock
-from mocks import mock_System, mock_events, mock_groups, mock_users
+from mocks import mock_System, mock_events, mock_groups, mock_log, mock_users
 from redux import Action
 from rx.subject import Subject
-from ui.actions import REQUEST_EVENTS, REQUEST_GROUPS, REQUEST_USERS
-from ui.epics import init_system
+from ui.actions import (
+    ADD_NOTIFICATION,
+    REQUEST_EVENTS,
+    REQUEST_GROUPS,
+    REQUEST_USERS,
+    NotificationType,
+)
 from ui.policy_rules_admin_page import PolicyRulesAdminPage
+from ui.strings import (
+    GET_GROUPS_LOG_ERROR_MSG,
+    GET_USERS_ERROR_MSG,
+    PARSE_EVENT_LOG_ERROR_MSG,
+)
+from ui.store import init_store
 
 _mock_file = "foo"
 
@@ -54,7 +65,7 @@ def default_states():
     """
     return [
         _build_state(
-            events={"events": mock_events()},
+            events={"log": mock_log()},
             groups={"groups": mock_groups()},
             users={"users": mock_users()},
         )
@@ -73,7 +84,7 @@ def widget(mock_dispatch, mock_system_features, mocker, states):
         return_value="10-01-2020",
     )
 
-    init_system(mock_System())
+    init_store(mock_System())
     widget = PolicyRulesAdminPage(_mock_file)
 
     for s in states:
@@ -399,3 +410,42 @@ def test_clears_selection_when_switching_acl_tabs(widget, userListView, groupLis
     userSelection.select_path(Gtk.TreePath.new_first())
     assert userSelection.count_selected_rows() == 1
     assert groupSelection.count_selected_rows() == 0
+
+
+def test_event_loading_w_exception(mock_system_features, states, mock_dispatch):
+    init_store(mock_System())
+    PolicyRulesAdminPage(_mock_file)
+    mock_system_features.on_next({**states[0], **{"events": MagicMock(error="foo")}})
+    mock_dispatch.assert_called_with(
+        InstanceOf(Action)
+        & Attrs(
+            type=ADD_NOTIFICATION,
+            payload=Attrs(type=NotificationType.ERROR, text=PARSE_EVENT_LOG_ERROR_MSG),
+        )
+    )
+
+
+def test_users_loading_w_exception(mock_system_features, states, mock_dispatch):
+    init_store(mock_System())
+    PolicyRulesAdminPage(_mock_file)
+    mock_system_features.on_next({**states[0], **{"users": MagicMock(error="foo")}})
+    mock_dispatch.assert_called_with(
+        InstanceOf(Action)
+        & Attrs(
+            type=ADD_NOTIFICATION,
+            payload=Attrs(type=NotificationType.ERROR, text=GET_USERS_ERROR_MSG),
+        )
+    )
+
+
+def test_groups_loading_w_exception(mock_system_features, states, mock_dispatch):
+    init_store(mock_System())
+    PolicyRulesAdminPage(_mock_file)
+    mock_system_features.on_next({**states[0], **{"groups": MagicMock(error="foo")}})
+    mock_dispatch.assert_called_with(
+        InstanceOf(Action)
+        & Attrs(
+            type=ADD_NOTIFICATION,
+            payload=Attrs(type=NotificationType.ERROR, text=GET_GROUPS_LOG_ERROR_MSG),
+        )
+    )

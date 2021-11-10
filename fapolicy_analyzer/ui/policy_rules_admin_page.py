@@ -31,7 +31,7 @@ from fapolicy_analyzer.util import acl, fs
 class PolicyRulesAdminPage(UIWidget):
     def __init__(self, auditFile=None):
         super().__init__()
-        self._events = []
+        self._log = None
         self._eventsLoading = False
         self._users = []
         self._usersLoading = False
@@ -70,7 +70,7 @@ class PolicyRulesAdminPage(UIWidget):
                     "selection_changed",
                     partial(
                         self.on_user_selection_changed,
-                        self.__populate_subjects_acl,
+                        self.__populate_subjects_from_acl,
                     ),
                     partial(self.on_user_selection_changed, self.__populate_objects),
                 ),
@@ -79,7 +79,7 @@ class PolicyRulesAdminPage(UIWidget):
                     "selection_changed",
                     partial(
                         self.on_group_selection_changed,
-                        self.__populate_subjects_acl,
+                        self.__populate_subjects_from_acl,
                     ),
                     partial(self.on_group_selection_changed, self.__populate_objects),
                 ),
@@ -93,7 +93,7 @@ class PolicyRulesAdminPage(UIWidget):
                     "subject_selection_changed",
                     partial(
                         self.on_subject_selection_changed,
-                        self.__populate_acls,
+                        self.__populate_acls_from_subject,
                     ),
                     partial(self.on_subject_selection_changed, self.__populate_objects),
                 ),
@@ -121,74 +121,105 @@ class PolicyRulesAdminPage(UIWidget):
         box.show_all()
         return box
 
+    def __populate_list(self, list, data, sensitive):
+        list.load_store(data)
+        list.get_ref().set_sensitive(sensitive)
+
     def __populate_acls(self):
-        if self._usersLoading or self._groupsLoading:
+        if self._usersLoading or self._groupsLoading or not self._log:
             return
 
         users = list(
             {
                 e.uid: {"id": u.id, "name": u.name}
                 for u in self._users
-                for e in self._events
-                if e.uid == u.id
-                and (not self.selectedSubject or e.subject.file == self.selectedSubject)
+                for e in self._log.by_user(u.id)
             }.values()
         )
         groups = list(
             {
                 e.gid: {"id": g.id, "name": g.name}
                 for g in self._groups
-                for e in self._events
-                if e.gid == g.id
-                and (not self.selectedSubject or e.subject.file == self.selectedSubject)
+                for e in self._log.by_group(g.id)
             }.values()
         )
-        self.userList.load_store(users)
-        self.userList.get_ref().set_sensitive(True)
-        self.groupList.load_store(groups)
-        self.groupList.get_ref().set_sensitive(True)
+        self.__populate_list(self.userList, users, True)
+        self.__populate_list(self.groupList, groups, True)
 
-    def __populate_acl_details(self, id, detailsFn):
-        userDetails = self.get_object("userDetails")
-        details = "\n".join(detailsFn(id).split(" ")) if id else ""
-        userDetails.get_buffer().set_text(details)
+    def __populate_acls_from_subject(self):
+        if not self.selectedSubject:
+            self.__populate_list(self.userList, [], False)
+            self.__populate_list(self.groupList, [], False)
+            return
 
-    def __populate_subjects(self, secondary=False):
-        if secondary and not self.selectedUser and not self.selectedGroup:
-            self.subjectList.get_ref().set_sensitive(False)
-            self.subjectList.load_store([])
+        users = list(
+            {
+                e.uid: {"id": u.id, "name": u.name}
+                for e in self._log.by_subject(self.selectedSubject)
+                for u in self._users
+                if e.uid == u.id
+            }.values()
+        )
+        groups = list(
+            {
+                e.gid: {"id": g.id, "name": g.name}
+                for e in self._log.by_subject(self.selectedSubject)
+                for g in self._groups
+                if e.gid == g.id
+            }.values()
+        )
+        self.__populate_list(self.userList, users, True)
+        self.__populate_list(self.groupList, groups, True)
+
+    def __populate_subjects(self):
+        if self._usersLoading or self._groupsLoading or not self._log:
             return
 
         subjects = list(
             {
                 e.subject.file: e.subject
-                for e in self._events
-                if (not self.selectedUser or e.uid == self.selectedUser)
-                and (not self.selectedGroup or e.gid == self.selectedGroup)
+                for s in self._log.subjects()
+                for e in self._log.by_subject(s)
             }.values()
         )
-        self.subjectList.load_store(subjects)
-        self.subjectList.get_ref().set_sensitive(True)
+        self.__populate_list(self.subjectList, subjects, True)
 
-    def __populate_subjects_acl(self):
-        self.__populate_subjects(True)
+    def __populate_subjects_from_acl(self):
+        if not self.selectedUser and not self.selectedGroup:
+            self.__populate_list(self.subjectList, [], False)
+            return
+
+        subjects = list(
+            {
+                e.subject.file: e.subject
+                for e in (
+                    self._log.by_user(self.selectedUser)
+                    if self.selectedUser
+                    else self._log.by_group(self.selectedGroup)
+                    if self.selectedGroup
+                    else []
+                )
+            }.values()
+        )
+        self.__populate_list(self.subjectList, subjects, True)
 
     def __populate_objects(self):
         if self.selectedSubject and (self.selectedUser or self.selectedGroup):
-            self.objectList.get_ref().set_sensitive(True)
             objects = list(
                 {
                     e.object.file: e.object
-                    for e in self._events
-                    if e.subject.file == self.selectedSubject
-                    and (e.uid == self.selectedUser or e.gid == self.selectedGroup)
+                    for e in self._log.by_subject(self.selectedSubject)
+                    if e.uid == self.selectedUser or e.gid == self.selectedGroup
                 }.values()
             )
+            self.__populate_list(self.objectList, objects, True)
         else:
-            self.objectList.get_ref().set_sensitive(False)
-            objects = []
+            self.__populate_list(self.objectList, [], False)
 
-        self.objectList.load_store(objects)
+    def __populate_acl_details(self, id, detailsFn):
+        userDetails = self.get_object("userDetails")
+        details = "\n".join(detailsFn(id).split(" ")) if id else ""
+        userDetails.get_buffer().set_text(details)
 
     def on_next_system(self, system):
         eventsState = system.get("events")
@@ -203,9 +234,9 @@ class PolicyRulesAdminPage(UIWidget):
                     NotificationType.ERROR,
                 )
             )
-        elif self._eventsLoading and self._events != eventsState.events:
+        elif self._eventsLoading and self._log != eventsState.log:
             self._eventsLoading = False
-            self._events = eventsState.events
+            self._log = eventsState.log
             self.__populate_acls()
 
         if userState.error and self._usersLoading:

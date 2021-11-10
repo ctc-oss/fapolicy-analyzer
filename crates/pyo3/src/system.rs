@@ -3,13 +3,14 @@ use std::time::SystemTime;
 use pyo3::prelude::*;
 use pyo3::{exceptions, PyResult};
 
-use fapolicy_analyzer::event::{analyze, Event};
+use fapolicy_analyzer::events::db::DB as EventDB;
+use fapolicy_analyzer::events::event::Event;
 use fapolicy_app::app::State;
 use fapolicy_app::cfg;
 use fapolicy_app::sys::deploy_app_state;
 
 use crate::acl::{PyGroup, PyUser};
-use crate::analysis::PyEvent;
+use crate::analysis::PyEventLog;
 use crate::change::PyChangeset;
 
 use super::trust::PyTrust;
@@ -113,13 +114,13 @@ impl PySystem {
         self.rs.groups.iter().map(|g| g.clone().into()).collect()
     }
 
-    /// Parse all Events from the log at the specified path
-    fn events_from(&self, log: &str) -> Vec<PyEvent> {
+    /// Parse an EventLog from the specified path
+    fn events(&self, log: &str) -> PyEventLog {
         let xs = Event::from_file(log);
-        analyze(xs, &self.rs.trust_db)
-            .iter()
-            .map(|e| PyEvent::from(e.clone()))
-            .collect()
+        PyEventLog {
+            rs: EventDB::from(xs),
+            rs_trust: self.rs.trust_db.clone(),
+        }
     }
 }
 

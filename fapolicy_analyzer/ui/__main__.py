@@ -8,8 +8,9 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from fapolicy_analyzer.util.xdg_utils import xdg_state_dir_prefix
-from .main_window import MainWindow
 from .session_manager import sessionManager
+from .splash_screen import SplashScreen
+from .store import init_store
 
 
 def _parse_cmdline():
@@ -55,7 +56,8 @@ def _parse_cmdline():
 
 def main():
     _parse_cmdline()
-    MainWindow()
+    init_store()
+    SplashScreen()
     Gtk.main()
 
 
