@@ -55,7 +55,7 @@ def test_uses_custom_markup_func():
     assert ["T/<b><u>D</u></b>", "<b><u>T</u></b>/D", "T/D"] == [
         x[0] for x in view.get_model()
     ]
-    assert [Colors.LIGHT_RED, Colors.LIGHT_GREEN, Colors.LIGHT_YELLOW] == [
+    assert [Colors.LIGHT_RED, Colors.LIGHT_GREEN, Colors.ORANGE] == [
         x[4] for x in view.get_model()
     ]
 
