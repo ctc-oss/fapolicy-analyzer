@@ -3,16 +3,39 @@ import pytest
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
-from unittest.mock import MagicMock
+from callee import InstanceOf, Attrs
 from callee.strings import Regex
-from ui.system_trust_database_admin import SystemTrustDatabaseAdmin
+from gi.repository import Gtk
+from mocks import mock_System, mock_trust
+from redux import Action
+from rx.subject import Subject
+from unittest.mock import MagicMock
+from ui.actions import ADD_NOTIFICATION, NotificationType
 from ui.configs import Colors
+from ui.strings import SYSTEM_TRUST_LOAD_ERROR
+from ui.store import init_store
+from ui.system_trust_database_admin import SystemTrustDatabaseAdmin
+
+
+@pytest.fixture()
+def mock_dispatch(mocker):
+    return mocker.patch("ui.system_trust_database_admin.dispatch")
+
+
+@pytest.fixture()
+def mock_system_feature(mocker):
+    mockSystemFeature = Subject()
+    mocker.patch(
+        "ui.system_trust_database_admin.get_system_feature",
+        return_value=mockSystemFeature,
+    )
+    yield mockSystemFeature
+    mockSystemFeature.on_completed()
 
 
 @pytest.fixture
-def widget(mocker):
-    mocker.patch("ui.system_trust_database_admin.dispatch")
+def widget(mock_dispatch):
+    init_store(mock_System())
     return SystemTrustDatabaseAdmin()
 
 
@@ -62,3 +85,33 @@ def test_fires_file_added_to_ancillary_trust(widget):
     addBtn = widget.get_object("addBtn")
     addBtn.clicked()
     handler.assert_called_with("foo")
+
+
+def test_load_trust(mock_dispatch, mock_system_feature, mocker):
+    mock_system_feature.on_next({"changesets": []})
+    init_store(mock_System())
+    widget = SystemTrustDatabaseAdmin()
+    mockTrustListLoad = mocker.patch.object(widget.trustFileList, "load_trust")
+
+    mockTrust = [mock_trust()]
+    mock_system_feature.on_next(
+        {"changesets": [], "system_trust": MagicMock(error=None, trust=mockTrust)}
+    )
+    mockTrustListLoad.assert_called_with(mockTrust)
+
+
+def test_load_trust_w_exception(mock_dispatch, mock_system_feature):
+    mock_system_feature.on_next({"changesets": []})
+    init_store(mock_System())
+    SystemTrustDatabaseAdmin()
+
+    mock_system_feature.on_next(
+        {"changesets": [], "system_trust": MagicMock(loading=False, error="foo")}
+    )
+    mock_dispatch.assert_called_with(
+        InstanceOf(Action)
+        & Attrs(
+            type=ADD_NOTIFICATION,
+            payload=Attrs(type=NotificationType.ERROR, text=SYSTEM_TRUST_LOAD_ERROR),
+        )
+    )

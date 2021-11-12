@@ -1,4 +1,4 @@
 class Colors:
     LIGHT_RED = "#FF3333"
-    LIGHT_YELLOW = "#FFFF33"
+    ORANGE = "#E69F00"
     LIGHT_GREEN = "light green"

@@ -27,6 +27,10 @@ impl Object {
             _ => None,
         }
     }
+
+    pub fn from_path(path: &str) -> Object {
+        Object::new(vec![ObjPart::Path(path.into())])
+    }
 }
 
 /// # Object Field

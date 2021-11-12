@@ -2,14 +2,14 @@ from fapolicy_analyzer.ui.actions import (
     ERROR_EVENTS,
     RECEIVED_EVENTS,
 )
-from fapolicy_analyzer import Event
+from fapolicy_analyzer import EventLog
 from redux import Action, Reducer, handle_actions
 from typing import Any, NamedTuple, Optional, Sequence, cast
 
 
 class EventState(NamedTuple):
     error: str
-    events: Sequence[Event]
+    log: Sequence[EventLog]
 
 
 def _create_state(state: EventState, **kwargs: Optional[Any]) -> EventState:
@@ -17,8 +17,8 @@ def _create_state(state: EventState, **kwargs: Optional[Any]) -> EventState:
 
 
 def handle_received_events(state: EventState, action: Action) -> EventState:
-    payload = cast(Sequence[Event], action.payload)
-    return _create_state(state, events=payload, error=None)
+    payload = cast(Sequence[EventLog], action.payload)
+    return _create_state(state, log=payload, error=None)
 
 
 def handle_error_events(state: EventState, action: Action) -> EventState:
@@ -31,5 +31,5 @@ event_reducer: Reducer = handle_actions(
         RECEIVED_EVENTS: handle_received_events,
         ERROR_EVENTS: handle_error_events,
     },
-    EventState(error=None, events=[]),
+    EventState(error=None, log=None),
 )
