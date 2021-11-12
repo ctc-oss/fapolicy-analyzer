@@ -2,7 +2,7 @@
 
 # Initialize globals
 pidAgent=0
-strCallbackFile=/tmp/fapolicy-analyzer-dbus.tmp
+strCallbackFile=/tmp/fapolicy-analyzer-dbus-callback.tmp
 exec {fdCallback}>$strCallbackFile
 
 # Start timestamp added to shell PID. See note in pkttyagent manpage
