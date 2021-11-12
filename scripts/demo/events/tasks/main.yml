@@ -90,14 +90,12 @@
       regexp: "^/{{ rustcstat.stat.path }} "
       line: "{{ rustcstat.stat.path }} {{ rustcstat.stat.size }} {{ rustcstat.stat.checksum }}"
 
-  - name: restart fapolicyd service to activate changes
+  - name: notify fapolicyd to perform an update of the trust database
     become: yes
-    systemd:
-      name: fapolicyd
-      state: restarted
-      enabled: true
+    shell: |
+      /usr/sbin/fapolicyd-cli --update
 
-  - name: pause 5 seconds to allow fapolicyd service to come online
+  - name: pause 5 seconds to allow fapolicyd to update
     pause:
       seconds: 5
 
