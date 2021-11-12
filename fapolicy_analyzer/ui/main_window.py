@@ -7,7 +7,9 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from locale import gettext as _
 from os import geteuid
+from threading import Timer
 from fapolicy_analyzer.util.format import f
+from fapolicy_analyzer import is_fapolicyd_active
 from .actions import (
     add_notification,
     request_daemon_start,
@@ -44,6 +46,8 @@ class MainWindow(UIWidget):
         self.window = self.get_ref()
         self.windowTopLevel = self.window.get_toplevel()
         self.strTopLevelTitle = self.windowTopLevel.get_title()
+        self.fapdStatus = self.get_object("fapdStatusLight")
+        self.timerCountdown = None
         self._changesets = []
 
         toaster = Notification()
@@ -53,6 +57,9 @@ class MainWindow(UIWidget):
         # Set menu items in default initial state
         self.get_object("restoreMenu").set_sensitive(False)
         self.__set_trustDbMenu_sensitive(False)
+
+        # Set fapd status UI element to 'No' = Red button
+        self.fapdStatus.set_from_stock(stock_id='gtk-no', size=4)
         
         # Check if running with root permissions
         if geteuid() != 0:
@@ -123,6 +130,14 @@ class MainWindow(UIWidget):
         menuItem = self.get_object("trustDbMenu")
         menuItem.set_sensitive(sensitive)
 
+    def __monitor_daemon(self, timeout=5):
+        if is_fapolicyd_active():
+            self.fapdStatus.set_from_stock(stock_id='gtk-yes', size=4)
+        else:
+            self.fapdStatus.set_from_stock(stock_id='gtk-no', size=4)
+        self.timerCountdown = Timer(5.0, self.__monitor_daemon)
+        self.timerCountdown.start()
+
     def on_start(self, *args):
         # For now the analyzer selection dialog is just commented out so we can revert back to it if needed
         # selectionDlg = AnalyzerSelectionDialog(self.window)
@@ -156,10 +171,16 @@ class MainWindow(UIWidget):
         else:
             self.get_object("restoreMenu").set_sensitive(False)
 
+        # Start monitoring the fapolicyd daemon
+        self.__monitor_daemon()
+
+
     def on_destroy(self, obj, *args):
         if not isinstance(obj, Gtk.Window) and self.__unapplied_changes():
             return True
 
+        # Stop monitor time
+        self.timerCountdown.cancel()
         Gtk.main_quit()
 
     def on_delete_event(self, *args):
