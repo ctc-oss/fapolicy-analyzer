@@ -63,7 +63,7 @@ class SubjectList(SearchableList):
         return (
             Colors.LIGHT_GREEN
             if a == "A"
-            else Colors.LIGHT_YELLOW
+            else Colors.ORANGE
             if a == "P"
             else Colors.LIGHT_RED
         )

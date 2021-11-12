@@ -2,22 +2,35 @@
 
 # Initialize globals
 pidAgent=0
+strCallbackFile=/tmp/fapolicy-analyzer-dbus-callback.tmp
+exec {fdCallback}>$strCallbackFile
 
-# Use local desktop's XAUTHORITY if DISPLAY == :0
-if (echo $DISPLAY | grep '^:0'); then
+# Start timestamp added to shell PID. See note in pkttyagent manpage
+timestamp=$(cat /proc/$$/stat | awk '{print $22}')
+
+# Determine if we are in a remote ssh session
+if [[ ! -v SSH_TTY ]]; then
     # Note: The Gnome desktop starts its own dbus agent.
     XAUTHORITY=$XAUTHORITY
 else
     # Start the dbus service agent if ssh session with a remote DISPLAY
     XAUTHORITY=$HOME/.Xauthority
-    pkttyagent --process $$ & pidAgent=$!
+    pkttyagent --notify-fd $fdCallback --process $$,$timestamp & pidAgent=$!
+
+    # Delay if needed so that pkttyagent completes registration on the dbus.
+    while ls /proc/$pidAgent/fd | grep -q $fdCallback
+    do
+	echo pkttyagent registering on the dbus...
+        sleep 1
+    done
 fi
 
 # Execute the fapolicy-analyzer with heightened privileges
-pkexec  --disable-internal-agent env DISPLAY=$DISPLAY  XAUTHORITY=$XAUTHORITY python3 -m fapolicy_analyzer.ui
+pkexec  --disable-internal-agent env NO_AT_BRIDGE=1 DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY python3 -m fapolicy_analyzer.ui
 
 # Terminate pkttyagent if started
 if [[ $pidAgent != 0 ]]; then
     echo Terminating pkttyagent.
     kill -SIGTERM $pidAgent
 fi
+rm -f $strCallbackFile

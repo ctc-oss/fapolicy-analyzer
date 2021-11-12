@@ -50,8 +50,9 @@ def manifest():
 def tarfile_fs(mocker, manifest):
     mocker.patch("fapolicy_analyzer.util.fapd_dbase.open", read_data=manifest)
     mocker.patch("fapolicy_analyzer.util.fapd_dbase.os.path.isfile", return_value=True)
-    mocker.patch("fapolicy_analyzer.util.fapd_dbase.glob.glob",
-                 side_effect=glob_fapd_archives)
+    mocker.patch(
+        "fapolicy_analyzer.util.fapd_dbase.glob.glob", side_effect=glob_fapd_archives
+    )
     mocker.patch(
         "fapolicy_analyzer.util.fapd_dbase.tarfile.open",
         side_effect=create_fapd_archive,
@@ -78,8 +79,10 @@ def test_fapd_dbase_snapshot_and_cleanup(mocker, tarfile_fs):
     for i in range(giBackupFileMaxCount + 1):
         assert fapd_dbase_snapshot()
     assert count_fapd_archives() == giBackupFileMaxCount
-    assert len(fnmatch.filter(listCreatedTgzFiles,
-                              r"*" + gstrBackupBasename + r"_*.tgz")) == giBackupFileMaxCount
+    assert (
+        len(fnmatch.filter(listCreatedTgzFiles, r"*" + gstrBackupBasename + r"_*.tgz"))
+        == giBackupFileMaxCount
+    )
 
     # Clean up: Delete and verify all archives have been removed.
     delete_fapd_archives()

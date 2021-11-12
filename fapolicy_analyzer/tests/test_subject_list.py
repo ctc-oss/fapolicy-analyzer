@@ -101,7 +101,7 @@ def test_path_color(widget):
     assert view.get_model()[0][4] == Colors.LIGHT_GREEN
     # Partial
     widget.load_store([_mock_subject(access="P")])
-    assert view.get_model()[0][4] == Colors.LIGHT_YELLOW
+    assert view.get_model()[0][4] == Colors.ORANGE
     # Denied
     widget.load_store([_mock_subject(access="D")])
     assert view.get_model()[0][4] == Colors.LIGHT_RED
