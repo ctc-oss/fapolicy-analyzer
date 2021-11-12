@@ -27,7 +27,7 @@ class AncillaryTrustFileList(TrustFileList):
             if s == "t"
             else ("T/<b><u>D</u></b>", Colors.LIGHT_RED)
             if s == "d"
-            else ("T/D", Colors.LIGHT_YELLOW)
+            else ("T/D", Colors.ORANGE)
         )
 
     def _changesets_to_map(self, changesets):
