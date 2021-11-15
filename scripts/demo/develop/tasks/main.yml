@@ -21,6 +21,7 @@
       - readline-devel
       - sqlite
       - sqlite-devel
+      - strace
       - tk-devel
       - zlib-devel
   when:
