@@ -200,7 +200,7 @@ SHA256: {fs.sha(trust.path)}"""
                 )
 
         # if not loading and the trust changes reload the view
-        if self._loading and self._trust != trustState.trust:
+        if self._loading and not trustState.loading and self._trust != trustState.trust:
             self._loading = False
             self._trust = trustState.trust
             self.trustFileList.load_trust(self._trust)

@@ -154,7 +154,9 @@ def test_on_deployment_w_exception(mock_dispatch, mocker):
     system_features_mock.on_next(
         {
             "changesets": [],
-            "ancillary_trust": MagicMock(trust=[mock_trust()], error=None),
+            "ancillary_trust": MagicMock(
+                trust=[mock_trust()], error=None, loading=False
+            ),
         }
     )
     widget.get_object("deployBtn").clicked()
