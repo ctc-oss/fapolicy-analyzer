@@ -7,7 +7,7 @@ use fapolicy_trust::db::Rec;
 use rand::distributions::{Distribution, Uniform};
 
 fn main() {
-    let cfg = All::load();
+    let cfg = All::load().unwrap();
     let sys = State::load(&cfg).expect("cant load state");
 
     let ss: Vec<Rec> = sys

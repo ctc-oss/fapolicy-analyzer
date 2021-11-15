@@ -1,12 +1,14 @@
 // todo;; tracking the fapolicyd specific bits in here to determine if bindings are worthwhile
 
+use std::io::Write;
+
 use crate::error::Error;
 use crate::error::Error::FapolicydReloadFail;
-use std::io::Write;
 
 pub const TRUST_DB_PATH: &str = "/var/lib/fapolicyd";
 pub const TRUST_DB_NAME: &str = "trust.db";
 pub const TRUST_FILE_PATH: &str = "/etc/fapolicyd/fapolicyd.trust";
+pub const RULES_FILE_PATH: &str = "/etc/fapolicyd/fapolicyd.rules";
 pub const RPM_DB_PATH: &str = "/var/lib/rpm";
 pub const FIFO_PIPE: &str = "/run/fapolicyd/fapolicyd.fifo";
 

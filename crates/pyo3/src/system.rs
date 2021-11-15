@@ -41,7 +41,9 @@ impl PySystem {
     #[new]
     fn new(py: Python) -> PyResult<PySystem> {
         py.allow_threads(|| {
-            let conf = cfg::All::load();
+            let conf = cfg::All::load().map_err(|e| {
+                PyErr::from(exceptions::PyRuntimeError::new_err(format!("{:?}", e)))
+            })?;
             let t = SystemTime::now();
             match State::load_checked(&conf) {
                 Ok(state) => {

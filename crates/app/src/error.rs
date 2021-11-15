@@ -1,5 +1,7 @@
-use crate::sys;
+use confy::ConfyError;
 use thiserror::Error;
+
+use crate::sys;
 
 /// An Error that can occur in this crate
 #[derive(Error, Debug)]
@@ -10,4 +12,6 @@ pub enum Error {
     TrustError(#[from] fapolicy_trust::error::Error),
     #[error("Analyzer error: {0}")]
     AnalyzerError(#[from] fapolicy_analyzer::error::Error),
+    #[error("XDG config error: {0}")]
+    ConfigError(#[from] ConfyError),
 }
