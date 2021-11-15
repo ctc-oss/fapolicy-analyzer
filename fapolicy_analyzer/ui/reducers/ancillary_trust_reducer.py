@@ -8,11 +8,13 @@ from fapolicy_analyzer.ui.actions import (
     ANCILLARY_TRUST_DEPLOYED,
     ADD_CHANGESETS,
     CLEAR_CHANGESETS,
+    REQUEST_ANCILLARY_TRUST,
 )
 
 
 class TrustState(NamedTuple):
     error: str
+    loading: bool
     trust: Sequence[Trust]
     deployed: bool
 
@@ -21,14 +23,18 @@ def _create_state(state: TrustState, **kwargs: Optional[Any]) -> TrustState:
     return TrustState(**{**state._asdict(), **kwargs})
 
 
+def handle_request_ancillary_trust(state: TrustState, action: Action) -> TrustState:
+    return _create_state(state, loading=True, error=None)
+
+
 def handle_received_ancillary_trust(state: TrustState, action: Action) -> TrustState:
     payload = cast(Sequence[Trust], action.payload)
-    return _create_state(state, trust=payload, error=None)
+    return _create_state(state, trust=payload, error=None, loading=False)
 
 
 def handle_error_ancillary_trust(state: TrustState, action: Action) -> TrustState:
     payload = cast(str, action.payload)
-    return _create_state(state, error=payload)
+    return _create_state(state, error=payload, loading=False)
 
 
 def handle_ancillary_trust_deployed(state: TrustState, action: Action) -> TrustState:
@@ -52,6 +58,7 @@ def handle_clear_changesets(state: TrustState, action: Action) -> TrustState:
 
 ancillary_trust_reducer: Reducer = handle_actions(
     {
+        REQUEST_ANCILLARY_TRUST: handle_request_ancillary_trust,
         RECEIVED_ANCILLARY_TRUST: handle_received_ancillary_trust,
         ERROR_ANCILLARY_TRUST: handle_error_ancillary_trust,
         ANCILLARY_TRUST_DEPLOYED: handle_ancillary_trust_deployed,
@@ -59,5 +66,5 @@ ancillary_trust_reducer: Reducer = handle_actions(
         ADD_CHANGESETS: handle_add_changesets,
         CLEAR_CHANGESETS: handle_clear_changesets,
     },
-    TrustState(error=None, trust=[], deployed=True),
+    TrustState(error=None, trust=[], deployed=True, loading=False),
 )

@@ -226,7 +226,7 @@ class PolicyRulesAdminPage(UIWidget):
         groupState = system.get("groups")
         userState = system.get("users")
 
-        if eventsState.error and self._eventsLoading:
+        if eventsState.error and not eventsState.loading and self._eventsLoading:
             self._eventsLoading = False
             dispatch(
                 add_notification(
@@ -234,12 +234,16 @@ class PolicyRulesAdminPage(UIWidget):
                     NotificationType.ERROR,
                 )
             )
-        elif self._eventsLoading and self._log != eventsState.log:
+        elif (
+            self._eventsLoading
+            and not eventsState.loading
+            and self._log != eventsState.log
+        ):
             self._eventsLoading = False
             self._log = eventsState.log
             self.__populate_acls()
 
-        if userState.error and self._usersLoading:
+        if userState.error and not userState.loading and self._usersLoading:
             self._usersLoading = False
             dispatch(
                 add_notification(
@@ -247,12 +251,16 @@ class PolicyRulesAdminPage(UIWidget):
                     NotificationType.ERROR,
                 )
             )
-        elif self._usersLoading and self._users != userState.users:
+        elif (
+            self._usersLoading
+            and not userState.loading
+            and self._users != userState.users
+        ):
             self._usersLoading = False
             self._users = userState.users
             self.__populate_acls()
 
-        if groupState.error and self._groupsLoading:
+        if groupState.error and not groupState.loading and self._groupsLoading:
             self._groupsLoading = False
             dispatch(
                 add_notification(
@@ -260,7 +268,11 @@ class PolicyRulesAdminPage(UIWidget):
                     NotificationType.ERROR,
                 )
             )
-        elif self._groupsLoading and self._groups != groupState.groups:
+        elif (
+            self._groupsLoading
+            and not groupState.loading
+            and self._groups != groupState.groups
+        ):
             self._groupsLoading = False
             self._groups = groupState.groups
             self.__populate_acls()

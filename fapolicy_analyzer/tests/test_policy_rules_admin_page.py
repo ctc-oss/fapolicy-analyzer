@@ -415,7 +415,9 @@ def test_clears_selection_when_switching_acl_tabs(widget, userListView, groupLis
 def test_event_loading_w_exception(mock_system_features, states, mock_dispatch):
     init_store(mock_System())
     PolicyRulesAdminPage(_mock_file)
-    mock_system_features.on_next({**states[0], **{"events": MagicMock(error="foo")}})
+    mock_system_features.on_next(
+        {**states[0], **{"events": MagicMock(error="foo", loading=False)}}
+    )
     mock_dispatch.assert_called_with(
         InstanceOf(Action)
         & Attrs(
@@ -428,7 +430,9 @@ def test_event_loading_w_exception(mock_system_features, states, mock_dispatch):
 def test_users_loading_w_exception(mock_system_features, states, mock_dispatch):
     init_store(mock_System())
     PolicyRulesAdminPage(_mock_file)
-    mock_system_features.on_next({**states[0], **{"users": MagicMock(error="foo")}})
+    mock_system_features.on_next(
+        {**states[0], **{"users": MagicMock(error="foo", loading=False)}}
+    )
     mock_dispatch.assert_called_with(
         InstanceOf(Action)
         & Attrs(
@@ -441,7 +445,9 @@ def test_users_loading_w_exception(mock_system_features, states, mock_dispatch):
 def test_groups_loading_w_exception(mock_system_features, states, mock_dispatch):
     init_store(mock_System())
     PolicyRulesAdminPage(_mock_file)
-    mock_system_features.on_next({**states[0], **{"groups": MagicMock(error="foo")}})
+    mock_system_features.on_next(
+        {**states[0], **{"groups": MagicMock(error="foo", loading=False)}}
+    )
     mock_dispatch.assert_called_with(
         InstanceOf(Action)
         & Attrs(
