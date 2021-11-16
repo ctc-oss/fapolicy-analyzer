@@ -56,7 +56,7 @@ class SystemTrustDatabaseAdmin(UIWidget, Events):
     def on_next_system(self, system):
         trustState = system.get("system_trust")
 
-        if self._error != trustState.error:
+        if not trustState.loading and self._error != trustState.error:
             self._error = trustState.error
             self._loading = False
             logging.error("%s: %s", strings.SYSTEM_TRUST_LOAD_ERROR, self._error)
@@ -65,7 +65,9 @@ class SystemTrustDatabaseAdmin(UIWidget, Events):
                     strings.SYSTEM_TRUST_LOAD_ERROR, NotificationType.ERROR
                 )
             )
-        elif self._loading and self._trust != trustState.trust:
+        elif (
+            self._loading and not trustState.loading and self._trust != trustState.trust
+        ):
             self._error = None
             self._loading = False
             self._trust = trustState.trust
