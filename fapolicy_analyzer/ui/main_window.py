@@ -4,10 +4,11 @@ import gi
 import fapolicy_analyzer.ui.strings as strings
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
+from gi.repository import GLib, Gtk
 from locale import gettext as _
 from os import geteuid
-from threading import Timer
+from time import sleep
+from threading import Timer, Thread
 from fapolicy_analyzer.util.format import f
 from fapolicy_analyzer import is_fapolicyd_active
 from .actions import (
@@ -47,7 +48,7 @@ class MainWindow(UIWidget):
         self.windowTopLevel = self.window.get_toplevel()
         self.strTopLevelTitle = self.windowTopLevel.get_title()
         self.fapdStatus = self.get_object("fapdStatusLight")
-        self.timerCountdown = None
+        #self.timerCountdown = None
         self._changesets = []
 
         toaster = Notification()
@@ -58,7 +59,7 @@ class MainWindow(UIWidget):
         self.get_object("restoreMenu").set_sensitive(False)
         self.__set_trustDbMenu_sensitive(False)
 
-        # Set fapd status UI element to 'No' = Red button
+        # Set fapd status UI element to default 'No' = Red button
         self.fapdStatus.set_from_stock(stock_id='gtk-no', size=4)
         
         # Check if running with root permissions
@@ -130,13 +131,18 @@ class MainWindow(UIWidget):
         menuItem = self.get_object("trustDbMenu")
         menuItem.set_sensitive(sensitive)
 
-    def __monitor_daemon(self, timeout=5):
-        if is_fapolicyd_active():
+    def __update_fapd_status(self, bStatus: bool):
+        if bStatus:
             self.fapdStatus.set_from_stock(stock_id='gtk-yes', size=4)
         else:
             self.fapdStatus.set_from_stock(stock_id='gtk-no', size=4)
-        self.timerCountdown = Timer(5.0, self.__monitor_daemon)
-        self.timerCountdown.start()
+            
+    def __monitor_daemon(self, timeout=5):
+        while True:
+            GLib.idle_add(self.__update_fapd_status, is_fapolicyd_active())
+            sleep(timeout)
+        #self.timerCountdown = Timer(5.0, self.__monitor_daemon)
+        #self.timerCountdown.start()
 
     def on_start(self, *args):
         # For now the analyzer selection dialog is just commented out so we can revert back to it if needed
@@ -172,7 +178,10 @@ class MainWindow(UIWidget):
             self.get_object("restoreMenu").set_sensitive(False)
 
         # Start monitoring the fapolicyd daemon
-        self.__monitor_daemon()
+        #self.__monitor_daemon()
+        thread = Thread(target=self.__monitor_daemon)
+        thread.daemon = True
+        thread.start()
 
 
     def on_destroy(self, obj, *args):
@@ -180,7 +189,7 @@ class MainWindow(UIWidget):
             return True
 
         # Stop monitor time
-        self.timerCountdown.cancel()
+        #self.timerCountdown.cancel()
         Gtk.main_quit()
 
     def on_delete_event(self, *args):
