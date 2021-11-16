@@ -5,13 +5,15 @@ from gi.repository import Gtk, Gio
 from importlib import resources
 from threading import Timer
 from .actions import NotificationType, remove_notification
-from .ui_widget import UIWidget
+from .ui_widget import UIConnectedWidget
 from .store import dispatch, get_notifications_feature
 
 
-class Notification(UIWidget):
+class Notification(UIConnectedWidget):
     def __init__(self, timer_duration=10):
-        super().__init__()
+        super().__init__(
+            get_notifications_feature(), on_next=self.on_next_notifications
+        )
         self.message = self.get_object("message")
         self.container = self.get_object("container")
         self.closeBtn = self.get_object("closeBtn")
@@ -28,7 +30,6 @@ class Notification(UIWidget):
         self.closeBtn.get_style_context().add_provider(
             styleProvider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
         )
-        get_notifications_feature().subscribe(on_next=self.on_next_notifications)
 
     def __start_timer(self):
         self.timer = Timer(self.timerDuration, self.closeBtn.clicked)

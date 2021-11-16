@@ -1,7 +1,7 @@
-from .ui_widget import UIWidget
+from .ui_widget import UIBuilderWidget
 
 
-class UnappliedChangesDialog(UIWidget):
+class UnappliedChangesDialog(UIBuilderWidget):
     def __init__(self, parent=None):
         super().__init__()
         if parent:

@@ -6,14 +6,14 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from events import Events
 from os import path
-from .ui_widget import UIWidget
+from .ui_widget import UIBuilderWidget
 
 
-class AddFileButton(UIWidget, Events):
+class AddFileButton(UIBuilderWidget, Events):
     __events__ = ["files_added"]
 
     def __init__(self):
-        UIWidget.__init__(self)
+        UIBuilderWidget.__init__(self)
         Events.__init__(self)
         self.dialog = self.get_object("fileChooserDialog")
 

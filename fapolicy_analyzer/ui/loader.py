@@ -4,10 +4,10 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import GdkPixbuf
 from importlib import resources
 from .strings import LOADER_MESSAGE
-from .ui_widget import UIWidget
+from .ui_widget import UIBuilderWidget
 
 
-class Loader(UIWidget):
+class Loader(UIBuilderWidget):
     def __init__(self, message=LOADER_MESSAGE):
         super().__init__()
         with resources.path(

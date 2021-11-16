@@ -5,7 +5,7 @@ from gi.repository import Gtk
 from enum import Enum
 from os import path
 from .strings import OPEN_FILE_LABEL
-from .ui_widget import UIWidget
+from .ui_widget import UIBuilderWidget
 
 
 class ANALYZER_SELECTION(Enum):
@@ -14,7 +14,7 @@ class ANALYZER_SELECTION(Enum):
     ANALYZE_FROM_AUDIT = 2
 
 
-class AnalyzerSelectionDialog(UIWidget):
+class AnalyzerSelectionDialog(UIBuilderWidget):
     def __init__(self, parent=None):
         super().__init__()
         if parent:
