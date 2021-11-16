@@ -40,22 +40,22 @@ fn event(s: &str, dec: Decision, o: &str, uid: i32, gid: i32) -> Event {
     }
 }
 
-fn analyze_from_user(es: &Vec<Event>, uid: i32, t: &TrustDB) -> Analysis {
-    analyze(es.clone(), Perspective::User(uid), t)
+fn analyze_from_user(es: &[Event], uid: i32, t: &TrustDB) -> Analysis {
+    analyze(Vec::from(es), Perspective::User(uid), t)
         .first()
         .unwrap()
         .clone()
 }
 
-fn analyze_from_group(es: &Vec<Event>, gid: i32, t: &TrustDB) -> Analysis {
-    analyze(es.clone(), Perspective::Group(gid), t)
+fn analyze_from_group(es: &[Event], gid: i32, t: &TrustDB) -> Analysis {
+    analyze(Vec::from(es), Perspective::Group(gid), t)
         .first()
         .unwrap()
         .clone()
 }
 
-fn analyze_from_subject(es: &Vec<Event>, s: &str, t: &TrustDB) -> Vec<Analysis> {
-    analyze(es.clone(), Perspective::Subject(s.into()), t)
+fn analyze_from_subject(es: &[Event], s: &str, t: &TrustDB) -> Vec<Analysis> {
+    analyze(Vec::from(es), Perspective::Subject(s.into()), t)
 }
 
 fn analyze(es: Vec<Event>, from: Perspective, t: &TrustDB) -> Vec<Analysis> {
@@ -114,10 +114,10 @@ fn simple_obj_ad_status() {
     let e1 = bash_denied("/foo/bar", uid, 1003);
     let e2 = bash_allowed("/foo/bin", uid, 1003);
 
-    let a1 = analyze_from_user(&vec![e1], uid, &trust);
+    let a1 = analyze_from_user(&*vec![e1], uid, &trust);
     assert_eq!(a1.object.access, "D");
 
-    let a2 = analyze_from_user(&vec![e2], uid, &trust);
+    let a2 = analyze_from_user(&*vec![e2], uid, &trust);
     assert_eq!(a2.object.access, "A");
 }
 
@@ -130,7 +130,7 @@ fn user_subj_apd_status() {
     let e2 = bash_allowed("/foo/bin", uid, 1003);
     let e3 = bash_allowed("/foo/baz", uid, 1003);
 
-    let a1 = analyze_from_user(&vec![e1.clone()], uid, &trust);
+    let a1 = analyze_from_user(&*vec![e1.clone()], uid, &trust);
 
     assert_eq!(a1.subject.access, "D");
 
@@ -153,10 +153,10 @@ fn user_obj_ad_status() {
     let e1 = bash_denied("/foo/bar", uid, 1003);
     let e2 = bash_allowed("/foo/bin", uid, 1003);
 
-    let a1 = analyze_from_user(&vec![e1], uid, &trust);
+    let a1 = analyze_from_user(&*vec![e1], uid, &trust);
     assert_eq!(a1.object.access, "D");
 
-    let a2 = analyze_from_user(&vec![e2], uid, &trust);
+    let a2 = analyze_from_user(&*vec![e2], uid, &trust);
     assert_eq!(a2.object.access, "A");
 }
 
