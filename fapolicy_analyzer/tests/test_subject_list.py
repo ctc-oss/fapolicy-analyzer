@@ -1,19 +1,31 @@
-import context  # noqa: F401
-import gi
-import pytest
 import re
 
+import gi
+import pytest
+from callee.collections import Sequence
+
+import context  # noqa: F401
+
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
 from unittest.mock import MagicMock
+
+from callee.attributes import Attrs
+from callee.types import InstanceOf
+from fapolicy_analyzer import Changeset
+from gi.repository import Gtk
+from redux import Action
+from ui.actions import APPLY_CHANGESETS
 from ui.configs import Colors
-from ui.subject_list import SubjectList
 from ui.strings import FILE_LABEL, FILES_LABEL
+from ui.subject_list import _TRUST_RESP, _UNTRUST_RESP, SubjectList
 
 
 def _mock_subject(trust="", access="", file=""):
     return MagicMock(trust=trust, access=access, file=file)
 
+
+_systemTrust = [MagicMock(path="/st/foo")]
+_ancillaryTrust = [MagicMock(path="/at/foo")]
 
 _subjects = [
     _mock_subject(trust="ST", access="A", file="/tmp/foo"),
@@ -126,11 +138,101 @@ def test_update_tree_count(widget):
     assert label.get_text() == f"2 {FILES_LABEL}"
 
 
-def test_fires_subject_selection_changed_event(widget):
+def test_fires_file_selection_changed_event(widget):
     mockHandler = MagicMock()
-    widget.subject_selection_changed += mockHandler
+    widget.file_selection_changed += mockHandler
     mockData = _mock_subject(file="foo")
     widget.load_store([mockData])
     view = widget.get_object("treeView")
     view.get_selection().select_path(Gtk.TreePath.new_first())
     mockHandler.assert_called_with(mockData)
+
+
+@pytest.mark.parametrize(
+    "subject, databaseTrust",
+    [
+        (_mock_subject(trust="st", access="a", file="/st/foo"), _systemTrust[0]),
+        (_mock_subject(trust="at", access="a", file="/at/foo"), _ancillaryTrust[0]),
+        (_mock_subject(trust="u", access="a", file="/u/foo"), None),
+    ],
+)
+def test_shows_reconciliation_dialog_on_double_click(
+    subject, databaseTrust, widget, mocker
+):
+    mockDialog = mocker.patch(
+        "ui.subject_list.TrustReconciliationDialog",
+        return_value=MagicMock(get_ref=MagicMock(spec=Gtk.Widget)),
+    )
+    widget.load_store(
+        [subject], systemTrust=_systemTrust, ancillaryTrust=_ancillaryTrust
+    )
+    view = widget.get_object("treeView")
+    view.row_activated(Gtk.TreePath.new_first(), view.get_column(0))
+    mockDialog.assert_called_once_with(
+        subject,
+        databaseTrust=databaseTrust,
+        parent=widget.get_ref().get_toplevel(),
+    )
+
+
+@pytest.mark.parametrize("response", [_UNTRUST_RESP, _TRUST_RESP])
+def test_dispatches_changeset(response, widget, mocker):
+    mockSubject = _mock_subject(trust="st", access="a", file="/foo")
+    mockDialog = MagicMock(
+        get_ref=MagicMock(return_value=MagicMock(run=MagicMock(return_value=response)))
+    )
+    mockChangeset = MagicMock(
+        del_trust=MagicMock(), add_trust=MagicMock(), spec=Changeset
+    )
+    mocker.patch("ui.subject_list.TrustReconciliationDialog", return_value=mockDialog)
+    mocker.patch("ui.subject_list.Changeset", return_value=mockChangeset)
+    mockDispatch = mocker.patch("ui.subject_list.dispatch")
+
+    widget.load_store([mockSubject])
+    view = widget.get_object("treeView")
+    view.row_activated(Gtk.TreePath.new_first(), view.get_column(0))
+    mockDispatch.assert_called_once_with(
+        InstanceOf(Action)
+        & Attrs(
+            type=APPLY_CHANGESETS,
+            payload=Sequence(
+                of=InstanceOf(Changeset),
+            ),
+        )
+    )
+
+    if response == _UNTRUST_RESP:
+        mockChangeset.del_trust.assert_called_once_with("/foo")
+    elif response == _TRUST_RESP:
+        mockChangeset.add_trust.assert_called_once_with("/foo")
+
+
+@pytest.mark.parametrize(
+    "subject, databaseTrust",
+    [
+        (_mock_subject(trust="st", access="a", file="/st/foo"), _systemTrust[0]),
+        (_mock_subject(trust="at", access="a", file="/at/foo"), _ancillaryTrust[0]),
+        (_mock_subject(trust="u", access="a", file="/u/foo"), None),
+    ],
+)
+def test_shows_reconciliation_dialog_from_context_menu(
+    subject, databaseTrust, widget, mocker
+):
+    mockDialog = mocker.patch(
+        "ui.subject_list.TrustReconciliationDialog",
+        return_value=MagicMock(get_ref=MagicMock(spec=Gtk.Widget)),
+    )
+    widget.load_store(
+        [subject], systemTrust=_systemTrust, ancillaryTrust=_ancillaryTrust
+    )
+    view = widget.get_object("treeView")
+    # select first item is list
+    view.get_selection().select_path(Gtk.TreePath.new_first())
+    # mock the reconile conext menu item click
+    next(iter(widget.contextMenu.get_children())).activate()
+
+    mockDialog.assert_called_once_with(
+        subject,
+        databaseTrust=databaseTrust,
+        parent=widget.get_ref().get_toplevel(),
+    )
