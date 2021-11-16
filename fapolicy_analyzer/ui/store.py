@@ -39,9 +39,11 @@ def get_notifications_feature() -> Observable:
         operators.map(select_feature(NOTIFICATIONS_FEATURE))
     )
 
+
 def get_system_feature() -> Observable:
     return store.as_observable().pipe(
         operators.map(select_feature(SYSTEM_FEATURE)))
+
 
 def get_daemon_feature() -> Observable:
     return store.as_observable().pipe(

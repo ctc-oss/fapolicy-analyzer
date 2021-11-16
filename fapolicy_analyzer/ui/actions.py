@@ -61,6 +61,7 @@ REQUEST_DAEMON_RELOAD = "REQUEST_DAEMON_RELOAD"
 RECEIVED_DAEMON_RELOAD = "RECEIVED_DAEMON_RELOAD"
 ERROR_DAEMON_RELOAD = "ERROR_DAEMON_RELOAD"
 
+
 def _create_action(type: str, payload: Any = None) -> Action:
     return create_action(type)(payload)
 
@@ -249,4 +250,3 @@ def received_daemon_start() -> Action:
 
 def error_daemon_start(error: str) -> Action:
     return _create_action(ERROR_DAEMON_START, error)
-

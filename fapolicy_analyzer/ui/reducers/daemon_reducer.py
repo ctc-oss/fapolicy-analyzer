@@ -1,7 +1,5 @@
 import logging
 from redux import Reducer, Action, handle_actions
-from .ancillary_trust_reducer import ancillary_trust_reducer
-from .event_reducer import event_reducer
 from typing import NamedTuple
 from fapolicy_analyzer.ui.actions import (
     RECEIVED_DAEMON_START,
@@ -11,31 +9,37 @@ from fapolicy_analyzer.ui.actions import (
 )
 from fapolicy_analyzer import is_fapolicyd_active, Handle
 
+
 class DaemonState(NamedTuple):
     error: str
     status: bool
     handle: Handle
-    
-def handle_received_daemon_start( state, action: Action):
-    logging.debug("handle_received_daemon_start( state, action: Action):")
+
+
+def handle_received_daemon_start(state, action: Action):
+    logging.debug("handle_received_daemon_start(state, action: Action):")
     payload = None
     return (*state, payload)
 
-def handle_received_daemon_stop( state, action: Action):
-    logging.debug("handle_received_daemon_stop( state, action: Action):")
+
+def handle_received_daemon_stop(state, action: Action):
+    logging.debug("handle_received_daemon_stop(state, action: Action):")
     payload = None
     return (*state, payload)
 
-def handle_received_daemon_reload( state, action: Action):
-    logging.debug("handle_received_daemon_reload( state, action: Action):")
+
+def handle_received_daemon_reload(state, action: Action):
+    logging.debug("handle_received_daemon_reload(state, action: Action):")
     payload = None
     return (*state, payload)
 
-def handle_received_daemon_status( state, action: Action):
-    logging.debug("handle_received_daemon_status( state, action: Action):")
+
+def handle_received_daemon_status(state, action: Action):
+    logging.debug("handle_received_daemon_status(state, action: Action):")
     logging.debug("Fapolicyd daemon status: {}".format(is_fapolicyd_active()))
     payload = None
     return (*state, payload)
+
 
 daemon_reducer: Reducer = handle_actions(
     {
@@ -46,4 +50,3 @@ daemon_reducer: Reducer = handle_actions(
     },
     DaemonState(error=None, status=False, handle=None),
 )
-

@@ -8,7 +8,7 @@ from fapolicy_analyzer import (
     is_fapolicyd_active,
     start_fapolicyd,
     stop_fapolicyd,
-    )
+)
 
 from fapolicy_analyzer.ui.actions import (
     REQUEST_DAEMON_START,
@@ -36,13 +36,15 @@ from redux import (
     of_type,
     ReduxFeatureModule,
 )
+from fapolicy_analyzer.ui.strings import DAEMON_INITIALIZATION_ERROR
 from rx import of, pipe
-from rx.operators import catch, ignore_elements, map
-from typing import Callable, Sequence
+from rx.operators import catch, map
+from typing import Callable
 
 DAEMON_FEATURE = "daemon"
 _fapd_status: bool
 _fapd_ref: Handle
+
 
 def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule:
     """
@@ -50,19 +52,20 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
 
     Keyword arguments:
     dispatch -- the Redux Store dispatch method, used for dispatching actions
-    daemon -- the fapolicy_analyzer.daemon object, defaults to None. If not 
-    provided, a new Daemon object will be initialized.  Used for testing 
+    daemon -- the fapolicy_analyzer.daemon object, defaults to None. If not
+    provided, a new Daemon object will be initialized.  Used for testing
     purposes only.
     """
     def _init_daemon() -> Action:
         logging.debug("_init_daemon() -> Action")
+
         def acquire_daemon():
             logging.debug("acquire_daemon()")
             try:
                 daemon = Handle("fapolicyd")
                 GLib.idle_add(finish, daemon)
-            except:
-                logging.exception(SYSTEM_INITIALIZATION_ERROR)
+            except RuntimeError:
+                logging.exception(DAEMON_INITIALIZATION_ERROR)
                 GLib.idle_add(sys.exit, 1)
 
         def finish(daemon: Handle):
@@ -72,34 +75,30 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
             dispatch(daemon_initialized())
 
         if daemon:
-            finish(damon)
+            finish(daemon)
         else:
             acquire_daemon()
         return init_daemon()
-    
+
     def _daemon_reload(action: Action) -> Action:
         logging.debug("_daemon_reload(action: Action) -> Action")
         return received_daemon_reload()
-
 
     def _daemon_start(action: Action) -> Action:
         logging.debug("_daemon_start(action: Action) -> Action")
         start_fapolicyd()
         return received_daemon_start()
 
-
     def _daemon_status(action: Action) -> Action:
         logging.debug(f"_daemon_status(action: {action}) -> Action")
         status = is_fapolicyd_active()
         return received_daemon_status(status)
-
 
     def _daemon_stop(action: Action) -> Action:
         logging.debug("_daemon_stop(action: Action) -> Action")
         stop_fapolicyd()
         return received_daemon_stop()
 
-    
     init_epic = pipe(
         of_init_feature(DAEMON_FEATURE),
         map(lambda _: _init_daemon()),
@@ -110,13 +109,13 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
         map(_daemon_reload),
         catch(lambda ex, source: of(error_daemon_reload(str(ex)))),
     )
-    
+
     request_daemon_start_epic = pipe(
         of_type(REQUEST_DAEMON_START),
         map(_daemon_start),
         catch(lambda ex, source: of(error_daemon_start(str(ex)))),
     )
-    
+
     request_daemon_status_epic = pipe(
         of_type(REQUEST_DAEMON_STATUS),
         map(_daemon_status),
@@ -128,14 +127,14 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
         map(_daemon_stop),
         catch(lambda ex, source: of(error_daemon_stop(str(ex)))),
     )
-    
+
     daemon_epic = combine_epics(
         init_epic,
         request_daemon_reload_epic,
         request_daemon_start_epic,
         request_daemon_status_epic,
         request_daemon_stop_epic,
-        )
+    )
 
     return create_feature_module(DAEMON_FEATURE,
                                  daemon_reducer,
