@@ -128,7 +128,7 @@ def activeSwitcherButton(widget):
 
 
 def test_creates_widget(widget):
-    assert type(widget.get_ref()) is Gtk.Box
+    assert type(widget.get_ref()) is Gtk.Grid
 
 
 def test_adds_user_tabs(widget):

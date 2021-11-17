@@ -369,7 +369,6 @@ class PolicyRulesAdminPage(UIWidget):
             handlers.__iadd__(handler)
 
         def set_as_primary(self):
-            #self.__panel.get_parent().reorder_child(self.__panel, 0)
             for x in self.__lists:
                 lst = x["list"]
                 lst.set_action_buttons(*lst.get_action_buttons(), x["button"])
