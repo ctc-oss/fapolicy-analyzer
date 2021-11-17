@@ -162,12 +162,12 @@ def test_switches_acl_subject_columns(widget, activeSwitcherButton):
     aclColumn = widget.get_object("userPanel")
     subjectColumn = widget.get_object("subjectPanel")
     children = widget.get_ref().get_children()
-    assert children[0] == aclColumn
+    assert children[2] == aclColumn
     assert children[1] == subjectColumn
     activeSwitcherButton.clicked()
     children = widget.get_ref().get_children()
-    assert children[0] == subjectColumn
-    assert children[1] == aclColumn
+    assert children[1] == subjectColumn
+    assert children[2] == aclColumn
 
 
 def test_loads_users_primary(userListView, mock_dispatch):
