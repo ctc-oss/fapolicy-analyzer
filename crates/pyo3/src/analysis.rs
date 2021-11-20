@@ -153,7 +153,7 @@ impl PyEventLog {
 
     /// Get events that fit the given subject perspective perspective
     fn by_subject(&self, path: String) -> Vec<PyEvent> {
-        analyze(&self.rs, Perspective::Subject(path.clone()), &self.rs_trust)
+        analyze(&self.rs, Perspective::Subject(path), &self.rs_trust)
             .iter()
             .map(|e| PyEvent::from(e.clone()))
             .collect()

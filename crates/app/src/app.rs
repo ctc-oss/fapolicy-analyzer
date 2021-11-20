@@ -1,15 +1,17 @@
+use directories::ProjectDirs;
+use serde::Deserialize;
+use serde::Serialize;
+
+use fapolicy_analyzer::rules::db::DB as RulesDB;
+use fapolicy_analyzer::rules::read::load_rules_db;
+use fapolicy_analyzer::users::{load_groups, load_users, Group, User};
+use fapolicy_trust::db::DB as TrustDB;
+use fapolicy_trust::ops::Changeset;
+use fapolicy_trust::read::{check_trust_db, load_trust_db};
+
 use crate::cfg::All;
 use crate::cfg::PROJECT_NAME;
 use crate::error::Error;
-use directories::ProjectDirs;
-use fapolicy_analyzer::users::{load_groups, load_users, Group, User};
-
-use fapolicy_trust::db::DB as TrustDB;
-
-use fapolicy_trust::ops::Changeset;
-use fapolicy_trust::read::{check_trust_db, load_trust_db};
-use serde::Deserialize;
-use serde::Serialize;
 
 /// Represents an immutable view of the application state.
 /// Carries along the configuration that provided the state.
@@ -17,6 +19,7 @@ use serde::Serialize;
 pub struct State {
     pub config: All,
     pub trust_db: TrustDB,
+    pub rules_db: RulesDB,
     pub users: Vec<User>,
     pub groups: Vec<Group>,
 }
@@ -26,6 +29,7 @@ impl State {
         State {
             config: cfg.clone(),
             trust_db: TrustDB::default(),
+            rules_db: RulesDB::default(),
             users: vec![],
             groups: vec![],
         }
@@ -33,9 +37,11 @@ impl State {
 
     pub fn load(cfg: &All) -> Result<State, Error> {
         let trust_db = load_trust_db(&cfg.system.trust_db_path)?;
+        let rules_db = load_rules_db(&cfg.system.rules_file_path)?;
         Ok(State {
             config: cfg.clone(),
             trust_db,
+            rules_db,
             users: load_users(),
             groups: load_groups(),
         })
@@ -54,6 +60,7 @@ impl State {
         Self {
             config: self.config.clone(),
             trust_db: modified,
+            rules_db: self.rules_db.clone(),
             users: self.users.clone(),
             groups: self.groups.clone(),
         }
