@@ -8,12 +8,24 @@ use crate::rules::Rule;
 /// Backed by a HashMap lookup table
 #[derive(Clone, Debug)]
 pub struct DB {
-    pub(crate) lookup: HashMap<usize, Rule>,
+    lookup: HashMap<usize, Rule>,
 }
 
 impl Default for DB {
     fn default() -> Self {
         DB::new()
+    }
+}
+
+impl From<Vec<Rule>> for DB {
+    fn from(src: Vec<Rule>) -> Self {
+        let lookup: HashMap<usize, Rule> = src
+            .iter()
+            .enumerate()
+            // fapolicyd rules are 1-based index
+            .map(|(k, v)| (k + 1, v.clone()))
+            .collect();
+        DB { lookup }
     }
 }
 
@@ -53,8 +65,6 @@ impl DB {
 
 #[cfg(test)]
 mod tests {
-    use std::iter::FromIterator;
-
     use super::*;
     use crate::rules::{Decision, Object, Permission, Subject};
 
@@ -69,8 +79,7 @@ mod tests {
             Object::all(),
             Decision::Allow,
         );
-        let lookup = HashMap::from_iter(vec![(0, r1)]);
-        let db: DB = DB { lookup };
+        let db: DB = vec![r1].into();
         assert!(!db.is_empty());
         assert!(db.get(1).is_some());
     }
