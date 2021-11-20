@@ -1,3 +1,4 @@
+use crate::system::PySystem;
 use fapolicy_daemon::svc::Handle;
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
@@ -82,6 +83,13 @@ fn stop_fapolicyd() -> PyResult<()> {
 }
 
 #[pyfunction]
+fn rollback_fapolicyd(to: PySystem) -> PyResult<()> {
+    stop_fapolicyd()
+        .and_then(|_| to.deploy())
+        .and_then(|_| start_fapolicyd())
+}
+
+#[pyfunction]
 fn is_fapolicyd_active() -> PyResult<bool> {
     fapolicy_daemon::svc::Handle::default()
         .active()
@@ -92,6 +100,7 @@ pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyHandle>()?;
     m.add_function(wrap_pyfunction!(start_fapolicyd, m)?)?;
     m.add_function(wrap_pyfunction!(stop_fapolicyd, m)?)?;
+    m.add_function(wrap_pyfunction!(rollback_fapolicyd, m)?)?;
     m.add_function(wrap_pyfunction!(is_fapolicyd_active, m)?)?;
     Ok(())
 }

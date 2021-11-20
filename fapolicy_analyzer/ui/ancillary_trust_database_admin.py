@@ -69,9 +69,9 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
             dispatch(set_system_checkpoint())
             dispatch(clear_changesets())
         else:
-            stop_fapolicyd()
-            # TODO: revert here?
-            start_fapolicyd()
+            rollback_fapolicyd(
+                # todo;; need the system to roll back to here
+            )
             return
 
     def add_trusted_files(self, *files):
