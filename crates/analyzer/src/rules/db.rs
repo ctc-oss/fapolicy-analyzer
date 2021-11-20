@@ -5,7 +5,6 @@ use crate::rules::Rule;
 
 /// Rules Database
 /// A container for rules and their metadata
-/// Backed by a HashMap lookup table
 #[derive(Clone, Debug)]
 pub struct DB {
     lookup: HashMap<usize, Rule>,
@@ -65,8 +64,9 @@ impl DB {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::rules::{Decision, Object, Permission, Subject};
+
+    use super::*;
 
     #[test]
     fn db_create() {
@@ -82,5 +82,32 @@ mod tests {
         let db: DB = vec![r1].into();
         assert!(!db.is_empty());
         assert!(db.get(1).is_some());
+    }
+
+    #[test]
+    fn maintain_order() {
+        assert!(DB::default().is_empty());
+        assert!(DB::new().is_empty());
+
+        let subjs = vec!["fee", "fi", "fo", "fum", "this", "is", "such", "fun"];
+        let rules: Vec<Rule> = subjs
+            .iter()
+            .map(|s| {
+                Rule::new(
+                    Subject::from_exe(s),
+                    Permission::Any,
+                    Object::all(),
+                    Decision::Allow,
+                )
+            })
+            .collect();
+
+        let db: DB = rules.into();
+        assert!(!db.is_empty());
+        assert_eq!(db.len(), 8);
+
+        for s in subjs.iter().enumerate() {
+            assert_eq!(db.get(s.0 + 1).unwrap().subj.exe().unwrap(), *s.1);
+        }
     }
 }
