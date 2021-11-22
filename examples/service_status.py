@@ -1,3 +1,5 @@
+import time
+
 from fapolicy_analyzer import *
 
 #
@@ -13,7 +15,9 @@ print(is_fapolicyd_active())
 
 # 2. Stateful object that takes a unit name
 d = Handle("fapolicyd")
-print(d.is_active)
-print(d.stop)
-print(d.is_active)
-print(d.start)
+print(d.is_active())
+d.stop()
+time.sleep(1)
+print(d.is_active())
+d.start()
+print(d.is_active())
