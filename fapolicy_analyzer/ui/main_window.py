@@ -7,8 +7,6 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import GLib, Gtk
 from locale import gettext as _
 from os import geteuid
-from time import sleep
-from threading import Thread
 from fapolicy_analyzer.util.format import f
 from fapolicy_analyzer import is_fapolicyd_active
 from .actions import (
@@ -24,7 +22,7 @@ from .database_admin_page import DatabaseAdminPage
 from .notification import Notification
 from .policy_rules_admin_page import PolicyRulesAdminPage
 from .session_manager import sessionManager
-from .store import dispatch, get_system_feature
+from .store import dispatch, get_system_feature, get_daemon_feature
 from .unapplied_changes_dialog import UnappliedChangesDialog
 from .ui_widget import UIWidget
 
@@ -70,6 +68,7 @@ class MainWindow(UIWidget):
         self.window.show_all()
 
         get_system_feature().subscribe(on_next=self.on_next_system)
+        get_daemon_feature().subscribe(on_next=self.on_update_daemon_status)
 
     def __unapplied_changes(self):
         # Check backend for unapplied changes
@@ -131,15 +130,21 @@ class MainWindow(UIWidget):
         menuItem.set_sensitive(sensitive)
 
     def __update_fapd_status(self, bStatus: bool):
+        logging.debug(f"__update_fapd_status({bStatus})")
         if bStatus:
             self.fapdStatus.set_from_stock(stock_id="gtk-yes", size=4)
         else:
             self.fapdStatus.set_from_stock(stock_id="gtk-no", size=4)
 
     def __monitor_daemon(self, timeout=5):
+        logging.debug("Should never be called: main_window.__monitor_daemon()")
         while True:
             GLib.idle_add(self.__update_fapd_status, is_fapolicyd_active())
             sleep(timeout)
+
+    def on_update_daemon_status(self, status: bool):
+        logging.debug(f"on_update_daemon_status({status})")
+        GLib.idle_add(self.__update_fapd_status, status[1])
 
     def on_start(self, *args):
         # For now the analyzer selection dialog is just commented out so we can revert back to it if needed
@@ -174,9 +179,6 @@ class MainWindow(UIWidget):
         else:
             self.get_object("restoreMenu").set_sensitive(False)
 
-        thread = Thread(target=self.__monitor_daemon)
-        thread.daemon = True
-        thread.start()
 
     def on_destroy(self, obj, *args):
         if not isinstance(obj, Gtk.Window) and self.__unapplied_changes():

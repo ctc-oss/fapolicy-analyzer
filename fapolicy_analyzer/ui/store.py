@@ -1,3 +1,4 @@
+import logging
 from fapolicy_analyzer import System
 from redux import Action, create_store
 from redux import select_feature
@@ -24,7 +25,7 @@ def init_store(system: System = None, daemon=None):
     system -- the fapolicy_analyzer.System object, defaults to None. If not provided,
               a new System object will be initialized.  Used for testing purposes only.
     """
-
+    logging.debug(f"store.init_store(system={system}, daemon={daemon})")
     store.add_feature_module(create_notification_feature())
     store.add_feature_module(create_system_feature(store.dispatch, system))
     store.add_feature_module(create_daemon_feature(store.dispatch, daemon))
