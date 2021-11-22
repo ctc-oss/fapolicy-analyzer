@@ -5,9 +5,10 @@ use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
 
+use fapolicy_daemon::fapolicyd::{RPM_DB_PATH, RULES_FILE_PATH, TRUST_DB_PATH, TRUST_FILE_PATH};
+
 use crate::app::State;
 use crate::sys::Error::{DaemonError, WriteAncillaryFail};
-use fapolicy_daemon::fapolicyd::{RPM_DB_PATH, TRUST_DB_PATH, TRUST_FILE_PATH};
 
 #[derive(Error, Debug)]
 pub enum Error {
@@ -42,14 +43,16 @@ pub fn deploy_app_state(state: &State) -> Result<(), Error> {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Config {
     pub trust_db_path: String,
+    pub rules_file_path: String,
     pub system_trust_path: String,
     pub ancillary_trust_path: String,
 }
 
-impl ::std::default::Default for Config {
+impl Default for Config {
     fn default() -> Self {
         Self {
             trust_db_path: TRUST_DB_PATH.to_string(),
+            rules_file_path: RULES_FILE_PATH.to_string(),
             system_trust_path: RPM_DB_PATH.to_string(),
             ancillary_trust_path: TRUST_FILE_PATH.to_string(),
         }
