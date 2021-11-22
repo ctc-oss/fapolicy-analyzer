@@ -1,7 +1,7 @@
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
-use crate::rules::{parse, Decision, Object, Permission, Subject};
+use crate::{parse, Decision, Object, Permission, Subject};
 
 /// # Rule
 /// A Rule is used by fapolicyd to make decisions about access rights. The rules follow a simple format of:
@@ -61,8 +61,8 @@ impl FromStr for Rule {
 
 #[cfg(test)]
 mod tests {
-    use crate::rules::object::Part as ObjPart;
-    use crate::rules::subject::Part as SubjPart;
+    use crate::object::Part as ObjPart;
+    use crate::subject::Part as SubjPart;
 
     use super::*;
 

@@ -2,9 +2,9 @@ use directories::ProjectDirs;
 use serde::Deserialize;
 use serde::Serialize;
 
-use fapolicy_analyzer::rules::db::DB as RulesDB;
-use fapolicy_analyzer::rules::read::load_rules_db;
 use fapolicy_analyzer::users::{load_groups, load_users, Group, User};
+use fapolicy_rules::db::DB as RulesDB;
+use fapolicy_rules::read::load_rules_db;
 use fapolicy_trust::db::DB as TrustDB;
 use fapolicy_trust::ops::Changeset;
 use fapolicy_trust::read::{check_trust_db, load_trust_db};

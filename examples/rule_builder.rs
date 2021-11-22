@@ -1,5 +1,5 @@
 use clap::Clap;
-use fapolicy_analyzer::rules::{Decision, Object, Permission, Rule, Subject};
+use fapolicy_rules::{Decision, Object, Permission, Rule, Subject};
 
 #[derive(Clap)]
 #[clap(name = "Rule Builder")]

@@ -1,7 +1,7 @@
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
-use crate::rules::{bool_to_c, parse, ObjPart, Rvalue};
+use crate::{bool_to_c, parse, ObjPart, Rvalue};
 
 /// # Object
 /// The object is the file that the subject is interacting with.
@@ -108,7 +108,7 @@ impl FromStr for Object {
 
 #[cfg(test)]
 mod tests {
-    use crate::rules::file_type::Rvalue::Literal;
+    use crate::file_type::Rvalue::Literal;
 
     use super::*;
 

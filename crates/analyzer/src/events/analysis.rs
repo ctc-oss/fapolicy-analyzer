@@ -4,7 +4,7 @@ use crate::error::Error;
 use crate::error::Error::AnalyzerError;
 use crate::events::db::DB as EventDB;
 use crate::events::event::{Event, Perspective};
-use crate::rules::Decision::*;
+use fapolicy_rules::Decision::*;
 
 #[derive(Clone, Debug)]
 pub struct Analysis {

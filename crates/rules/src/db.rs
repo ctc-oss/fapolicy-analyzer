@@ -1,7 +1,7 @@
 use std::collections::hash_map::Iter;
 use std::collections::HashMap;
 
-use crate::rules::Rule;
+use crate::Rule;
 
 /// Rules Database
 /// A container for rules and their metadata
@@ -64,7 +64,7 @@ impl DB {
 
 #[cfg(test)]
 mod tests {
-    use crate::rules::{Decision, Object, Permission, Subject};
+    use crate::{Decision, Object, Permission, Subject};
 
     use super::*;
 
