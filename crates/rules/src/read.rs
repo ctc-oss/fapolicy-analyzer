@@ -4,10 +4,10 @@ use std::io::{BufRead, BufReader};
 use nom::branch::alt;
 use nom::combinator::map;
 
+use crate::db::DB;
 use crate::error::Error;
-use crate::rules::db::DB;
-use crate::rules::read::Line::{Comment, SetDef, WellFormed};
-use crate::rules::{parse, Rule, Set};
+use crate::read::Line::{Comment, SetDef, WellFormed};
+use crate::{parse, Rule, Set};
 
 enum Line {
     Comment(String),

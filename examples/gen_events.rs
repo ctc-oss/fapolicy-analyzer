@@ -1,8 +1,8 @@
 use fapolicy_analyzer::events::event::Event;
-use fapolicy_analyzer::rules::{Decision, Object, Permission, Subject};
-use fapolicy_analyzer::rules::{ObjPart, SubjPart};
 use fapolicy_app::app::State;
 use fapolicy_app::cfg::All;
+use fapolicy_rules::{Decision, Object, Permission, Subject};
+use fapolicy_rules::{ObjPart, SubjPart};
 use fapolicy_trust::db::Rec;
 use rand::distributions::{Distribution, Uniform};
 
