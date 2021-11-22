@@ -1,6 +1,9 @@
-use crate::{app, sys};
 use serde::Deserialize;
 use serde::Serialize;
+
+use crate::error::Error;
+use crate::error::Error::ConfigError;
+use crate::{app, sys};
 
 pub const PROJECT_NAME: &str = "fapolicy-analyzer";
 
@@ -12,8 +15,8 @@ pub struct All {
 }
 
 impl All {
-    pub fn load() -> All {
-        confy::load(PROJECT_NAME).expect("unable to load xdg configuration")
+    pub fn load() -> Result<All, Error> {
+        confy::load(PROJECT_NAME).map_err(ConfigError)
     }
 
     pub fn data_dir(&self) -> &str {

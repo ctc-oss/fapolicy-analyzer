@@ -9,13 +9,13 @@ use nom::error::{Error, ErrorKind};
 use nom::multi::separated_list1;
 use nom::sequence::{preceded, separated_pair, terminated};
 
-use crate::rules::file_type::Rvalue::Literal;
-use crate::rules::object::Part as ObjPart;
-use crate::rules::set::Set;
-use crate::rules::subject::Part as SubjPart;
-use crate::rules::{Decision, Object, Permission, Rule, Subject};
+use crate::file_type::Rvalue::Literal;
+use crate::object::Part as ObjPart;
+use crate::set::Set;
+use crate::subject::Part as SubjPart;
+use crate::{Decision, Object, Permission, Rule, Subject};
 
-pub(crate) fn decision(i: &str) -> nom::IResult<&str, Decision> {
+pub fn decision(i: &str) -> nom::IResult<&str, Decision> {
     alt((
         map(tag("allow_audit"), |_| Decision::AllowAudit),
         map(tag("allow_syslog"), |_| Decision::AllowSyslog),
@@ -28,7 +28,7 @@ pub(crate) fn decision(i: &str) -> nom::IResult<&str, Decision> {
     ))(i)
 }
 
-pub(crate) fn permission(i: &str) -> nom::IResult<&str, Permission> {
+pub fn permission(i: &str) -> nom::IResult<&str, Permission> {
     alt((
         map(separated_pair(tag("perm"), tag("="), tag("any")), |_| {
             Permission::Any
@@ -73,7 +73,7 @@ fn subj_part(i: &str) -> nom::IResult<&str, SubjPart> {
     ))(i)
 }
 
-pub(crate) fn subject(i: &str) -> nom::IResult<&str, Subject> {
+pub fn subject(i: &str) -> nom::IResult<&str, Subject> {
     map(separated_list1(space1, subj_part), |parts| {
         Subject::new(parts)
     })(i)
@@ -105,7 +105,7 @@ fn obj_part(i: &str) -> nom::IResult<&str, ObjPart> {
     ))(i)
 }
 
-pub(crate) fn object(i: &str) -> nom::IResult<&str, Object> {
+pub fn object(i: &str) -> nom::IResult<&str, Object> {
     map(separated_list1(space1, obj_part), |parts| {
         Object::new(parts)
     })(i)

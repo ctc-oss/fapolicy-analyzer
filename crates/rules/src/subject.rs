@@ -1,7 +1,7 @@
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
-use crate::rules::{bool_to_c, parse, SubjPart};
+use crate::{bool_to_c, parse, SubjPart};
 
 /// # Subject
 /// The subject is the process that is performing actions on system resources.
