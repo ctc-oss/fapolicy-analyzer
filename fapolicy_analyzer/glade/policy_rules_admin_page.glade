@@ -18,24 +18,6 @@
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <signal name="switch-page" handler="on_userTabs_switch_page" swapped="no"/>
-            <child>
-              <placeholder/>
-            </child>
-            <child type="tab">
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child type="tab">
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child type="tab">
-              <placeholder/>
-            </child>
           </object>
           <packing>
             <property name="resize">True</property>
@@ -85,24 +67,6 @@
           <object class="GtkNotebook" id="subjectTabs">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <child>
-              <placeholder/>
-            </child>
-            <child type="tab">
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child type="tab">
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child type="tab">
-              <placeholder/>
-            </child>
           </object>
           <packing>
             <property name="resize">True</property>
@@ -152,24 +116,6 @@
           <object class="GtkNotebook" id="objectTabs">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <child>
-              <placeholder/>
-            </child>
-            <child type="tab">
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child type="tab">
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child type="tab">
-              <placeholder/>
-            </child>
           </object>
           <packing>
             <property name="resize">True</property>
@@ -208,24 +154,6 @@
         <property name="left-attach">2</property>
         <property name="top-attach">0</property>
       </packing>
-    </child>
-    <child>
-      <placeholder/>
-    </child>
-    <child>
-      <placeholder/>
-    </child>
-    <child>
-      <placeholder/>
-    </child>
-    <child>
-      <placeholder/>
-    </child>
-    <child>
-      <placeholder/>
-    </child>
-    <child>
-      <placeholder/>
     </child>
   </object>
 </interface>
