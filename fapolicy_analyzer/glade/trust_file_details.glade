@@ -1,36 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.22.2 -->
+<!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.22"/>
+  <!-- n-columns=3 n-rows=3 -->
   <object class="GtkGrid" id="trustFileDetails">
     <property name="visible">True</property>
-    <property name="can_focus">False</property>
+    <property name="can-focus">False</property>
     <property name="halign">baseline</property>
     <property name="hexpand">True</property>
     <property name="vexpand">False</property>
-    <property name="row_homogeneous">True</property>
-    <property name="column_homogeneous">True</property>
+    <property name="row-homogeneous">True</property>
+    <property name="column-homogeneous">True</property>
     <child>
       <object class="GtkFrame">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
+        <property name="can-focus">False</property>
         <property name="hexpand">False</property>
         <property name="vexpand">False</property>
-        <property name="label_xalign">0</property>
-        <property name="shadow_type">in</property>
+        <property name="label-xalign">0</property>
+        <property name="shadow-type">in</property>
         <child>
           <object class="GtkAlignment">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="left_padding">12</property>
+            <property name="can-focus">False</property>
+            <property name="left-padding">12</property>
             <child>
               <object class="GtkTextView" id="inDatabaseView">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="hexpand">True</property>
                 <property name="vexpand">False</property>
                 <property name="editable">False</property>
-                <property name="accepts_tab">False</property>
+                <property name="accepts-tab">False</property>
               </object>
             </child>
           </object>
@@ -38,37 +39,37 @@
         <child type="label">
           <object class="GtkLabel">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="label" translatable="yes">In Database</property>
           </object>
         </child>
       </object>
       <packing>
-        <property name="left_attach">0</property>
-        <property name="top_attach">0</property>
+        <property name="left-attach">0</property>
+        <property name="top-attach">0</property>
       </packing>
     </child>
     <child>
       <object class="GtkFrame">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
+        <property name="can-focus">False</property>
         <property name="hexpand">False</property>
         <property name="vexpand">False</property>
-        <property name="label_xalign">0</property>
-        <property name="shadow_type">in</property>
+        <property name="label-xalign">0</property>
+        <property name="shadow-type">in</property>
         <child>
           <object class="GtkAlignment">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="left_padding">12</property>
+            <property name="can-focus">False</property>
+            <property name="left-padding">12</property>
             <child>
               <object class="GtkTextView" id="onFileSystemView">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="hexpand">True</property>
                 <property name="vexpand">False</property>
                 <property name="editable">False</property>
-                <property name="accepts_tab">False</property>
+                <property name="accepts-tab">False</property>
               </object>
             </child>
           </object>
@@ -76,37 +77,37 @@
         <child type="label">
           <object class="GtkLabel">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="label" translatable="yes">On File System</property>
           </object>
         </child>
       </object>
       <packing>
-        <property name="left_attach">0</property>
-        <property name="top_attach">1</property>
+        <property name="left-attach">0</property>
+        <property name="top-attach">1</property>
       </packing>
     </child>
     <child>
       <object class="GtkFrame">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
+        <property name="can-focus">False</property>
         <property name="hexpand">False</property>
         <property name="vexpand">False</property>
-        <property name="label_xalign">0</property>
-        <property name="shadow_type">in</property>
+        <property name="label-xalign">0</property>
+        <property name="shadow-type">in</property>
         <child>
           <object class="GtkAlignment">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="left_padding">12</property>
+            <property name="can-focus">False</property>
+            <property name="left-padding">12</property>
             <child>
               <object class="GtkTextView" id="fileTrustStatusView">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="hexpand">True</property>
                 <property name="vexpand">False</property>
                 <property name="editable">False</property>
-                <property name="accepts_tab">False</property>
+                <property name="accepts-tab">False</property>
               </object>
             </child>
           </object>
@@ -114,15 +115,33 @@
         <child type="label">
           <object class="GtkLabel">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="label" translatable="yes">File Trust Status</property>
           </object>
         </child>
       </object>
       <packing>
-        <property name="left_attach">0</property>
-        <property name="top_attach">2</property>
+        <property name="left-attach">0</property>
+        <property name="top-attach">2</property>
       </packing>
+    </child>
+    <child>
+      <placeholder/>
+    </child>
+    <child>
+      <placeholder/>
+    </child>
+    <child>
+      <placeholder/>
+    </child>
+    <child>
+      <placeholder/>
+    </child>
+    <child>
+      <placeholder/>
+    </child>
+    <child>
+      <placeholder/>
     </child>
   </object>
 </interface>
