@@ -30,7 +30,6 @@ from fapolicy_analyzer.ui.actions import (
     received_daemon_status_update,
     request_daemon_status_update,
     received_daemon_stop,
-    received_daemon_status_update,
 )
 from fapolicy_analyzer.ui.reducers import daemon_reducer
 from gi.repository import GLib
@@ -50,7 +49,6 @@ from typing import Callable
 DAEMON_FEATURE = "daemon"
 _fapd_status: bool
 _fapd_ref: Handle
-
 
 
 def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule:
@@ -77,7 +75,7 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
 
         def monitor_daemon(timeout=5):
             while True:
-                #GLib.idle_add(update_fapd_status, is_fapolicyd_active())
+                # GLib.idle_add(update_fapd_status, is_fapolicyd_active())
                 logging.debug("monitor_daemon(): Dispatching update request")
                 dispatch(request_daemon_status_update())
                 sleep(timeout)
@@ -87,7 +85,7 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
             thread = Thread(target=monitor_daemon)
             thread.daemon = True
             thread.start()
-            #dispatch(received_daemon_status_update(is_fapolicyd_active()))
+            # dispatch(received_daemon_status_update(is_fapolicyd_active()))
 
         def finish(daemon: Handle):
             global _fapd_ref, _fapd_status
@@ -116,14 +114,14 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
         status = is_fapolicyd_active()
         logging.debug(f"_daemon_status::Fapolicyd status: {status}")
         _fapd_status = status
-        return received_daemon_status(status)
+        return received_daemon_status(_fapd_status)
 
     def _daemon_status_update(action: Action) -> Action:
         logging.debug(f"_daemon_status_update(action: {action})")
         status = is_fapolicyd_active()
         logging.debug(f"_daemon_status_update::Fapolicyd status: {status}")
         _fapd_status = status
-        return received_daemon_status_update(status)
+        return received_daemon_status_update(_fapd_status)
 
     def _daemon_stop(action: Action) -> Action:
         logging.debug("_daemon_stop(action: Action) -> Action")

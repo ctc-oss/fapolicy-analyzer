@@ -2,7 +2,7 @@ from os import path
 import logging
 import gi
 import fapolicy_analyzer.ui.strings as strings
-
+from time import sleep
 gi.require_version("Gtk", "3.0")
 from gi.repository import GLib, Gtk
 from locale import gettext as _
@@ -178,7 +178,6 @@ class MainWindow(UIWidget):
                     print("Restore failed")
         else:
             self.get_object("restoreMenu").set_sensitive(False)
-
 
     def on_destroy(self, obj, *args):
         if not isinstance(obj, Gtk.Window) and self.__unapplied_changes():

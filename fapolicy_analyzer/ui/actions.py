@@ -232,13 +232,16 @@ def request_daemon_status_update():
     logging.debug("request_daemon_status_update()")
     return _create_action(REQUEST_DAEMON_STATUS_UPDATE)
 
+
 def received_daemon_status_update(bStatus: bool):
     logging.debug(f"received_daemon_status_update({bStatus})")
     return _create_action(RECEIVED_DAEMON_STATUS_UPDATE, bStatus)
 
+
 def error_daemon_status_update(error: str):
     logging.debug(f"error_daemon_status_update({error})")
     return _create_action(ERROR_DAEMON_STATUS_UPDATE, error)
+
 
 def request_daemon_stop() -> Action:
     logging.debug("request_daemon_stop() -> Action: REQUEST_DAEMON_STOP")

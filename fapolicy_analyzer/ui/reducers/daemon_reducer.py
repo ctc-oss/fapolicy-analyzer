@@ -16,6 +16,7 @@ class DaemonState(NamedTuple):
     status: bool
     handle: Handle
 
+
 def _create_state(state: DaemonState, **kwargs: Optional[Any]) -> DaemonState:
     return DaemonState(**{**state._asdict(), **kwargs})
 
@@ -43,10 +44,12 @@ def handle_received_daemon_status(state: DaemonState, action: Action):
     payload = None
     return (*state, payload)
 
+
 def handle_received_daemon_status_update(state: DaemonState, action: Action):
     logging.debug(f"daemon_reducer::handle_received_daemon_status_update({state})")
-    payload = None
+    # payload = None
     return _create_state(state, status=is_fapolicyd_active())
+
 
 daemon_reducer: Reducer = handle_actions(
     {
