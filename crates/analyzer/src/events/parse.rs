@@ -5,7 +5,7 @@ use nom::multi::separated_list1;
 use nom::sequence::{preceded, terminated};
 
 use crate::events::event::Event;
-use crate::rules::*;
+use fapolicy_rules::*;
 
 pub fn parse_event(i: &str) -> nom::IResult<&str, Event> {
     match nom::combinator::complete(nom::sequence::tuple((

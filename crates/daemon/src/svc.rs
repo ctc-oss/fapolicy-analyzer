@@ -55,7 +55,7 @@ impl Default for Handle {
 impl Handle {
     pub fn new(name: &str) -> Handle {
         Handle {
-            name: name.to_string(),
+            name: format!("{}.service", name),
         }
     }
 
