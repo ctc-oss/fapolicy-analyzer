@@ -19,6 +19,7 @@ from .actions import (
     clear_changesets,
     deploy_ancillary_trust,
     request_ancillary_trust,
+    restore_system_checkpoint,
     set_system_checkpoint,
 )
 from .ancillary_trust_file_list import AncillaryTrustFileList
@@ -27,7 +28,7 @@ from .deploy_confirm_dialog import DeployConfirmDialog
 from .store import dispatch, get_system_feature
 from .trust_file_details import TrustFileDetails
 from .ui_widget import UIWidget
-from fapolicy_analyzer import start_fapolicyd, stop_fapolicyd
+
 
 class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
     def __init__(self):
@@ -69,10 +70,7 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
             dispatch(set_system_checkpoint())
             dispatch(clear_changesets())
         else:
-            rollback_fapolicyd(
-                # todo;; need the system to roll back to here
-            )
-            return
+            dispatch(restore_system_checkpoint())
 
     def add_trusted_files(self, *files):
         changeset = Changeset()
@@ -166,7 +164,7 @@ SHA256: {fs.sha(trust.path)}"""
 
             logging.debug("Deploying...")
             self._deploying = True
-            dispatch((deploy_ancillary_trust()))
+            dispatch(deploy_ancillary_trust())
 
     def on_next_system(self, system):
         changesets = system.get("changesets")
