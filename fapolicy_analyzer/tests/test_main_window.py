@@ -28,7 +28,8 @@ def mock_dispatch(mocker):
 
 
 @pytest.fixture
-def mock_init_store():
+def mock_init_store(monkeypatch):
+    monkeypatch.setenv("NO_DAEMON_MONITORING", "TRUE")
     init_store(mock_System())
 
 

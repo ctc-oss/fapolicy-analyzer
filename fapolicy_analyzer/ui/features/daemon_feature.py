@@ -1,4 +1,5 @@
 import gi
+import os
 import logging
 import sys
 from time import sleep
@@ -18,7 +19,6 @@ from fapolicy_analyzer.ui.actions import (
     REQUEST_DAEMON_RELOAD,
     REQUEST_DAEMON_STATUS,
     REQUEST_DAEMON_STATUS_UPDATE,
-    daemon_initialized,
     error_daemon_reload,
     error_daemon_start,
     error_daemon_status,
@@ -91,13 +91,13 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
             global _fapd_ref, _fapd_status
             _fapd_ref = daemon
             _fapd_status = is_fapolicyd_active()
-            dispatch(daemon_initialized())
 
         if daemon:
             finish(daemon)
         else:
             acquire_daemon()
-            start_daemon_monitor()
+            if "NO_DAEMON_MONITORING" not in os.environ:
+                start_daemon_monitor()
         return init_daemon()
 
     def _daemon_reload(action: Action) -> Action:
