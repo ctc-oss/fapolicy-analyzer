@@ -8,14 +8,14 @@ from gi.repository import Gtk
 from locale import gettext as _
 from fapolicy_analyzer.util.format import f
 from .actions import add_notification, NotificationType
-from .analyzer_selection_dialog import ANALYZER_SELECTION  # , AnalyzerSelectionDialog
+from .analyzer_selection_dialog import ANALYZER_SELECTION
 from .database_admin_page import DatabaseAdminPage
 from .notification import Notification
 from .policy_rules_admin_page import PolicyRulesAdminPage
 from .session_manager import sessionManager
 from .store import dispatch, get_system_feature
 from .unapplied_changes_dialog import UnappliedChangesDialog
-from .ui_widget import UIWidget
+from .ui_widget import UIConnectedWidget
 
 
 def router(selection, data=None):
@@ -25,18 +25,19 @@ def router(selection, data=None):
         ANALYZER_SELECTION.ANALYZE_FROM_AUDIT: PolicyRulesAdminPage,
     }.get(selection)
     if route:
-        return (route(data) if data else route()).get_ref()
+        return route(data) if data else route()
     raise Exception("Bad Selection")
 
 
-class MainWindow(UIWidget):
+class MainWindow(UIConnectedWidget):
     def __init__(self):
-        super().__init__()
+        super().__init__(get_system_feature(), on_next=self.on_next_system)
         self.strSessionFilename = None
         self.window = self.get_ref()
         self.windowTopLevel = self.window.get_toplevel()
         self.strTopLevelTitle = self.windowTopLevel.get_title()
         self._changesets = []
+        self._page = None
 
         toaster = Notification()
         self.get_object("overlay").add_overlay(toaster.get_ref())
@@ -47,8 +48,6 @@ class MainWindow(UIWidget):
         self.__set_trustDbMenu_sensitive(False)
 
         self.window.show_all()
-
-        get_system_feature().subscribe(on_next=self.on_next_system)
 
     def __unapplied_changes(self):
         # Check backend for unapplied changes
@@ -74,11 +73,10 @@ class MainWindow(UIWidget):
         dialog.add_filter(fileFilterAny)
 
     def __pack_main_content(self, page):
-        current = next(iter(self.mainContent.get_children()), None)
-        if current:
-            self.mainContent.remove(current)
-            current.destroy()
-        self.mainContent.pack_start(page, True, True, 0)
+        if self._page:
+            self._page.dispose()
+        self._page = page
+        self.mainContent.pack_start(page.get_ref(), True, True, 0)
 
     def __auto_save_restore_dialog(self):
         """
@@ -110,11 +108,7 @@ class MainWindow(UIWidget):
         menuItem.set_sensitive(sensitive)
 
     def on_start(self, *args):
-        # For now the analyzer selection dialog is just commented out so we can revert back to it if needed
-        # selectionDlg = AnalyzerSelectionDialog(self.window)
-        # page = router(selectionDlg.get_selection(), selectionDlg.get_data())
-        page = router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN)
-        self.mainContent.pack_start(page, True, True, 0)
+        self.__pack_main_content(router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN))
 
         # On startup check for the existing of a tmp session file
         # If detected, alert the user, enable the File|Restore menu item
