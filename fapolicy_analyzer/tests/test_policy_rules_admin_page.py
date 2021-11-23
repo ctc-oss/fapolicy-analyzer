@@ -166,9 +166,6 @@ def test_switches_acl_subject_columns(widget, activeSwitcherButton):
     assert children[1] == subjectColumn
     activeSwitcherButton.clicked()
     children = widget.get_ref().get_children()
-    for child in children:
-    	print(child, "\n")
-    
     assert children[0] == subjectColumn
     assert children[1] == aclColumn
 
