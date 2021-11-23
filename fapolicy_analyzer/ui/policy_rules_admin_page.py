@@ -24,13 +24,13 @@ from .strings import (
     USERS_LABEL,
 )
 from .subject_list import SubjectList
-from .ui_widget import UIWidget
+from .ui_widget import UIConnectedWidget
 from fapolicy_analyzer.util import acl, fs
 
 
-class PolicyRulesAdminPage(UIWidget):
+class PolicyRulesAdminPage(UIConnectedWidget):
     def __init__(self, auditFile=None):
-        super().__init__()
+        super().__init__(get_system_feature(), on_next=self.on_next_system)
         self._log = None
         self._eventsLoading = False
         self._users = []
@@ -101,8 +101,6 @@ class PolicyRulesAdminPage(UIWidget):
         ]
         for s in self.switchers:
             s.buttonClicked += self.on_switcher_button_clicked
-
-        get_system_feature().subscribe(on_next=self.on_next_system)
 
         if auditFile:
             self._usersLoading = True

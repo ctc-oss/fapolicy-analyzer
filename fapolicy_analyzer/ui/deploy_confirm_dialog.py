@@ -5,11 +5,11 @@ from gi.repository import Gtk, GLib
 from threading import Thread
 from time import sleep
 from locale import gettext as _
-from .ui_widget import UIWidget
+from .ui_widget import UIBuilderWidget
 from fapolicy_analyzer.util.format import f
 
 
-class DeployConfirmDialog(UIWidget):
+class DeployConfirmDialog(UIBuilderWidget):
     def __init__(self, parent=None, cancel_time=30):
         super().__init__()
         if parent:

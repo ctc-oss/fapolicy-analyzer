@@ -1,14 +1,17 @@
-import context  # noqa: F401
-import pytest
 import gi
+import pytest
+import ui.trust_file_list as trust_file_list
+
+import context  # noqa: F401
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
-from helpers import refresh_gui
+from time import localtime, mktime, strftime
 from unittest.mock import MagicMock
-from time import localtime, strftime, mktime
+
+from gi.repository import Gtk
 from ui.trust_file_list import TrustFileList, epoch_to_string
 
+from helpers import refresh_gui
 
 _trust = [
     MagicMock(status="u", path="/tmp/bar", actual=MagicMock(last_modified=123456789)),
@@ -56,6 +59,18 @@ def test_loads_trust_store(widget, mocker):
     view = widget.get_object("treeView")
     assert [t.status for t in _trust] == [x[0] for x in view.get_model()]
     assert [t.path for t in _trust] == [x[2] for x in view.get_model()]
+
+
+def test_cancels_load_trust_store(widget, mocker):
+    mocker.patch(
+        "ui.trust_file_list.ThreadPoolExecutor",
+        return_value=MagicMock(submit=lambda x: x()),
+    )
+    mockIdleAdd = mocker.patch("ui.trust_file_list.GLib.idle_add")
+    trust_file_list._executorCanceled = True
+    widget.load_trust(_trust)
+    refresh_gui()
+    mockIdleAdd.assert_not_called()
 
 
 def test_fires_trust_selection_changed(widget):

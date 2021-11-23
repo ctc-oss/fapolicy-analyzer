@@ -23,12 +23,12 @@ from .confirm_info_dialog import ConfirmInfoDialog
 from .deploy_confirm_dialog import DeployConfirmDialog
 from .store import dispatch, get_system_feature
 from .trust_file_details import TrustFileDetails
-from .ui_widget import UIWidget
+from .ui_widget import UIConnectedWidget
 
 
-class AncillaryTrustDatabaseAdmin(UIWidget):
+class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
     def __init__(self):
-        super().__init__()
+        super().__init__(get_system_feature(), on_next=self.on_next_system)
         self._changesets = []
         self._trust = []
         self._deploying = False
@@ -49,8 +49,6 @@ class AncillaryTrustDatabaseAdmin(UIWidget):
         )
 
         self._deployBtn = self.get_object("deployBtn")
-
-        get_system_feature().subscribe(on_next=self.on_next_system)
 
     def __load_trust(self):
         self._loading = True
