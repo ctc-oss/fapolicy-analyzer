@@ -4,7 +4,7 @@ from fapolicy_analyzer.ui.actions import (
     REQUEST_USERS,
 )
 from fapolicy_analyzer import User
-from redux import Action, Reducer, handle_actions
+from fapolicy_analyzer.redux import Action, Reducer, handle_actions
 from typing import Any, NamedTuple, Optional, Sequence, cast
 
 

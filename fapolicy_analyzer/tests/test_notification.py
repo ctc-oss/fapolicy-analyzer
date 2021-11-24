@@ -5,7 +5,7 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from callee import InstanceOf, Attrs
-from redux import Action
+from fapolicy_analyzer.redux import Action
 from rx.subject import Subject
 from time import sleep
 from ui.actions import Notification as Note, NotificationType, REMOVE_NOTIFICATION

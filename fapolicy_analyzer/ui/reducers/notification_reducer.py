@@ -1,4 +1,4 @@
-from redux import Action, Reducer, handle_actions
+from fapolicy_analyzer.redux import Action, Reducer, handle_actions
 from typing import Sequence, cast
 from fapolicy_analyzer.ui.actions import (
     ADD_NOTIFICATION,

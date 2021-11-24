@@ -9,7 +9,7 @@ from callee import Attrs, InstanceOf
 from fapolicy_analyzer import Changeset
 from helpers import refresh_gui
 from mocks import mock_System
-from redux import Action
+from fapolicy_analyzer.redux import Action
 from rx import create
 from unittest.mock import MagicMock
 from ui.actions import ADD_NOTIFICATION

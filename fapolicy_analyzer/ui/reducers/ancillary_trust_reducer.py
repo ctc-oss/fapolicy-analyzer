@@ -1,5 +1,5 @@
 from fapolicy_analyzer import Trust
-from redux import Action, Reducer, handle_actions
+from fapolicy_analyzer.redux import Action, Reducer, handle_actions
 from typing import Any, NamedTuple, Optional, Sequence, cast
 from fapolicy_analyzer.ui.actions import (
     ERROR_DEPLOYING_ANCILLARY_TRUST,

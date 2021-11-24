@@ -7,7 +7,7 @@ from gi.repository import Gtk
 from callee import Attrs, InstanceOf
 from unittest.mock import MagicMock
 from mocks import mock_System, mock_events, mock_groups, mock_log, mock_users
-from redux import Action
+from fapolicy_analyzer.redux import Action
 from rx.subject import Subject
 from ui.actions import (
     ADD_NOTIFICATION,

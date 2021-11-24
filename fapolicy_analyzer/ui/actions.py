@@ -1,8 +1,9 @@
 from enum import Enum
-from fapolicy_analyzer import Changeset, Event, Group, Trust, User
 from itertools import count
-from redux import Action, create_action
 from typing import Any, Iterator, NamedTuple, Sequence
+
+from fapolicy_analyzer import Changeset, Event, Group, Trust, User
+from fapolicy_analyzer.redux import Action, create_action
 
 INIT_SYSTEM = "INIT_SYSTEM"
 SYSTEM_INITIALIZED = "SYSTEM_INITIALIZED"

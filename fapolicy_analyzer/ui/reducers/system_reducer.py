@@ -1,5 +1,5 @@
 from fapolicy_analyzer.ui.actions import SYSTEM_INITIALIZED
-from redux import Reducer, combine_reducers, handle_actions
+from fapolicy_analyzer.redux import Reducer, combine_reducers, handle_actions
 from .ancillary_trust_reducer import ancillary_trust_reducer
 from .changeset_reducer import changeset_reducer
 from .event_reducer import event_reducer

@@ -1,6 +1,6 @@
 from fapolicy_analyzer import System
-from redux import Action, create_store
-from redux import select_feature
+from fapolicy_analyzer.redux import Action, create_store
+from fapolicy_analyzer.redux import select_feature
 from rx import operators
 from rx.core.typing import Observable
 from .features import (

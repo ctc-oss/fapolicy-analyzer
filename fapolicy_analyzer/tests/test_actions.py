@@ -1,6 +1,6 @@
 import context  # noqa: F401
 import pytest
-from redux import Action
+from fapolicy_analyzer.redux import Action
 from ui.actions import (
     ADD_CHANGESETS,
     ADD_NOTIFICATION,

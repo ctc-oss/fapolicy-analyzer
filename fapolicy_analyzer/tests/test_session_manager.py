@@ -13,7 +13,7 @@ from callee import Attr, InstanceOf, StartsWith, EndsWith
 from datetime import datetime as DT
 from unittest.mock import call, mock_open
 from fapolicy_analyzer import Changeset
-from redux import Action
+from fapolicy_analyzer.redux import Action
 from ui.session_manager import SessionManager
 
 test_changes = [

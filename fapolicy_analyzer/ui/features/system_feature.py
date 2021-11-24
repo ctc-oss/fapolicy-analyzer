@@ -37,7 +37,7 @@ from fapolicy_analyzer.ui.reducers import system_reducer
 from fapolicy_analyzer.ui.strings import SYSTEM_INITIALIZATION_ERROR
 from fapolicy_analyzer.util.fapd_dbase import fapd_dbase_snapshot
 from gi.repository import GLib
-from redux import (
+from fapolicy_analyzer.redux import (
     Action,
     combine_epics,
     create_feature_module,

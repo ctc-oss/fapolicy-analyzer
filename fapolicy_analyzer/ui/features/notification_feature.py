@@ -1,5 +1,5 @@
 from fapolicy_analyzer.ui.reducers import notification_reducer
-from redux import create_feature_module, ReduxFeatureModule
+from fapolicy_analyzer.redux import create_feature_module, ReduxFeatureModule
 
 NOTIFICATIONS_FEATURE = "notifications"
 

@@ -7,7 +7,7 @@ from gi.repository import Gtk
 from callee import InstanceOf, Attrs, Sequence
 from fapolicy_analyzer import Changeset, Trust
 from mocks import mock_System, mock_trust
-from redux import Action
+from fapolicy_analyzer.redux import Action
 from rx.subject import Subject
 from unittest.mock import MagicMock, patch
 from ui.actions import (
