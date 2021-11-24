@@ -5,7 +5,7 @@ use std::iter::Iterator;
 use std::str::FromStr;
 
 use crate::events::parse::parse_event;
-use crate::rules::*;
+use fapolicy_rules::*;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Event {

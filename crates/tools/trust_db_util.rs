@@ -39,6 +39,9 @@ pub enum Error {
     #[error("{0}")]
     TrustError(#[from] fapolicy_trust::error::Error),
 
+    #[error("{0}")]
+    AppError(#[from] fapolicy_app::error::Error),
+
     #[error("cant trust a directory")]
     DirTrustError,
 
@@ -158,7 +161,7 @@ struct LoadOpts {
 struct CountOpts {}
 
 fn main() -> Result<(), Error> {
-    let sys_conf = cfg::All::load();
+    let sys_conf = cfg::All::load()?;
     let all_opts: Opts = Opts::parse();
     let trust_db_path = match all_opts.dbdir {
         Some(ref p) => Path::new(p),

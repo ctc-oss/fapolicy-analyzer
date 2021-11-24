@@ -1,4 +1,4 @@
-use fapolicy_analyzer::rules::{parse, Rule, Set};
+use fapolicy_rules::{parse, Rule, Set};
 use nom::branch::alt;
 use nom::combinator::map;
 use std::fs::File;

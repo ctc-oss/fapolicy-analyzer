@@ -15,4 +15,5 @@ thiserror = "1.0"
 
 fapolicy-api = { version = "0.4.0", path = "../api" }
 fapolicy-daemon = { version = "0.4", path = "../daemon" }
+fapolicy-rules = { version = "0.4", path = "../rules" }
 fapolicy-trust = { version = "0.4", path = "../trust" }
