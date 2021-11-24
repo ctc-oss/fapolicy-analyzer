@@ -13,7 +13,7 @@ def widget():
 
 
 def test_creates_widget(widget):
-    assert type(widget.get_ref()) is Gtk.Box
+    assert type(widget.get_ref()) is Gtk.Grid
 
 
 def test_sets_In_Database_View(widget):

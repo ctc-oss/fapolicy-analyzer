@@ -10,6 +10,7 @@
       <object class="GtkPaned" id="userPanel">
         <property name="visible">True</property>
         <property name="can-focus">True</property>
+        <property name="vexpand">True</property>
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkNotebook" id="userTabs">
@@ -23,31 +24,35 @@
           </packing>
         </child>
         <child>
-          <object class="GtkFrame">
-            <property name="height-request">50</property>
+          <object class="GtkScrolledWindow">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="label-xalign">0</property>
-            <property name="label-yalign">0</property>
+            <property name="can-focus">True</property>
             <property name="shadow-type">in</property>
             <child>
-              <object class="GtkTextView" id="userDetails">
+              <object class="GtkViewport">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
+                <property name="can-focus">False</property>
+                <child>
+                  <object class="GtkTextView" id="userDetails">
+                    <property name="height-request">100</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="editable">False</property>
+                    <property name="wrap-mode">word-char</property>
+                    <property name="accepts-tab">False</property>
+                  </object>
+                </child>
               </object>
-            </child>
-            <child type="label_item">
-              <placeholder/>
             </child>
           </object>
           <packing>
             <property name="resize">True</property>
-            <property name="shrink">False</property>
+            <property name="shrink">True</property>
           </packing>
         </child>
       </object>
       <packing>
-        <property name="expand">True</property>
+        <property name="expand">False</property>
         <property name="fill">True</property>
         <property name="position">0</property>
       </packing>
@@ -56,6 +61,7 @@
       <object class="GtkPaned" id="subjectPanel">
         <property name="visible">True</property>
         <property name="can-focus">True</property>
+        <property name="vexpand">True</property>
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkNotebook" id="subjectTabs">
@@ -68,31 +74,35 @@
           </packing>
         </child>
         <child>
-          <object class="GtkFrame">
-            <property name="height-request">50</property>
+          <object class="GtkScrolledWindow">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="label-xalign">0</property>
-            <property name="label-yalign">0</property>
+            <property name="can-focus">True</property>
             <property name="shadow-type">in</property>
             <child>
-              <object class="GtkTextView" id="subjectDetails">
+              <object class="GtkViewport">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
+                <property name="can-focus">False</property>
+                <child>
+                  <object class="GtkTextView" id="subjectDetails">
+                    <property name="height-request">100</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="editable">False</property>
+                    <property name="wrap-mode">word-char</property>
+                    <property name="accepts-tab">False</property>
+                  </object>
+                </child>
               </object>
-            </child>
-            <child type="label_item">
-              <placeholder/>
             </child>
           </object>
           <packing>
             <property name="resize">True</property>
-            <property name="shrink">False</property>
+            <property name="shrink">True</property>
           </packing>
         </child>
       </object>
       <packing>
-        <property name="expand">True</property>
+        <property name="expand">False</property>
         <property name="fill">True</property>
         <property name="position">1</property>
       </packing>
@@ -101,6 +111,7 @@
       <object class="GtkPaned" id="objectPanel">
         <property name="visible">True</property>
         <property name="can-focus">True</property>
+        <property name="vexpand">True</property>
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkNotebook" id="objectTabs">
@@ -113,31 +124,35 @@
           </packing>
         </child>
         <child>
-          <object class="GtkFrame">
-            <property name="height-request">50</property>
+          <object class="GtkScrolledWindow">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="label-xalign">0</property>
-            <property name="label-yalign">0</property>
+            <property name="can-focus">True</property>
             <property name="shadow-type">in</property>
+            <property name="max-content-height">200</property>
             <child>
-              <object class="GtkTextView" id="objectDetails">
+              <object class="GtkViewport">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
+                <property name="can-focus">False</property>
+                <child>
+                  <object class="GtkTextView" id="objectDetails">
+                    <property name="height-request">100</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="editable">False</property>
+                    <property name="accepts-tab">False</property>
+                  </object>
+                </child>
               </object>
-            </child>
-            <child type="label_item">
-              <placeholder/>
             </child>
           </object>
           <packing>
             <property name="resize">True</property>
-            <property name="shrink">False</property>
+            <property name="shrink">True</property>
           </packing>
         </child>
       </object>
       <packing>
-        <property name="expand">True</property>
+        <property name="expand">False</property>
         <property name="fill">True</property>
         <property name="position">2</property>
       </packing>
