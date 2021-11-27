@@ -28,7 +28,6 @@ from fapolicy_analyzer.ui.actions import (
     received_daemon_start,
     received_daemon_status,
     received_daemon_status_update,
-    request_daemon_status_update,
     received_daemon_stop,
 )
 from fapolicy_analyzer.ui.reducers import daemon_reducer
@@ -47,8 +46,8 @@ from rx.operators import catch, map
 from typing import Callable
 
 DAEMON_FEATURE = "daemon"
-_fapd_status: bool
-_fapd_ref: Handle
+_fapd_status: bool = False
+_fapd_ref: Handle = None
 
 
 def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule:
@@ -74,10 +73,13 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
                 GLib.idle_add(sys.exit, 1)
 
         def monitor_daemon(timeout=5):
+            global _fapd_ref, _fapd_status
             while True:
-                # GLib.idle_add(update_fapd_status, is_fapolicyd_active())
-                logging.debug("monitor_daemon(): Dispatching update request")
-                dispatch(request_daemon_status_update())
+                bStatus = is_fapolicyd_active()
+                if(bStatus != _fapd_status):
+                    logging.debug("monitor_daemon():Dispatching update request")
+                    _fapd_status = bStatus
+                    dispatch(received_daemon_status_update(bStatus))
                 sleep(timeout)
 
         def start_daemon_monitor():
@@ -85,7 +87,6 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
             thread = Thread(target=monitor_daemon)
             thread.daemon = True
             thread.start()
-            # dispatch(received_daemon_status_update(is_fapolicyd_active()))
 
         def finish(daemon: Handle):
             global _fapd_ref, _fapd_status

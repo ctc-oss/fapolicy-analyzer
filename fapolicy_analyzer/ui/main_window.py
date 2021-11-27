@@ -2,13 +2,11 @@ from os import path
 import logging
 import gi
 import fapolicy_analyzer.ui.strings as strings
-from time import sleep
 gi.require_version("Gtk", "3.0")
 from gi.repository import GLib, Gtk
 from locale import gettext as _
 from os import geteuid
 from fapolicy_analyzer.util.format import f
-from fapolicy_analyzer import is_fapolicyd_active
 from .actions import (
     add_notification,
     request_daemon_start,
@@ -135,12 +133,6 @@ class MainWindow(UIWidget):
             self.fapdStatus.set_from_stock(stock_id="gtk-yes", size=4)
         else:
             self.fapdStatus.set_from_stock(stock_id="gtk-no", size=4)
-
-    def __monitor_daemon(self, timeout=5):
-        logging.debug("Should never be called: main_window.__monitor_daemon()")
-        while True:
-            GLib.idle_add(self.__update_fapd_status, is_fapolicyd_active())
-            sleep(timeout)
 
     def on_update_daemon_status(self, status: bool):
         logging.debug(f"on_update_daemon_status({status})")
