@@ -64,7 +64,6 @@ class MainWindow(UIWidget):
 
         self.window.show_all()
 
-        get_system_feature().subscribe(on_next=self.on_next_system)
         get_daemon_feature().subscribe(on_next=self.on_update_daemon_status)
 
     def __unapplied_changes(self):
