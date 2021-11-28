@@ -8,14 +8,13 @@ from locale import gettext as _
 from os import geteuid
 from fapolicy_analyzer.util.format import f
 from .actions import (
-    add_notification,
+    add_notification, NotificationType,
     request_daemon_start,
     request_daemon_stop,
     request_daemon_reload,
     request_daemon_status,
-    NotificationType
 )
-from .analyzer_selection_dialog import ANALYZER_SELECTION  # , AnalyzerSelectionDialog
+from .analyzer_selection_dialog import ANALYZER_SELECTION
 from .database_admin_page import DatabaseAdminPage
 from .notification import Notification
 from .policy_rules_admin_page import PolicyRulesAdminPage
