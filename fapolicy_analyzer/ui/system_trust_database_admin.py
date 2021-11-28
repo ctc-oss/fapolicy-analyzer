@@ -13,15 +13,17 @@ from .configs import Colors
 from .store import dispatch, get_system_feature
 from .trust_file_list import TrustFileList
 from .trust_file_details import TrustFileDetails
-from .ui_widget import UIWidget
+from .ui_widget import UIConnectedWidget
 
 
-class SystemTrustDatabaseAdmin(UIWidget, Events):
+class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
     __events__ = ["file_added_to_ancillary_trust"]
     selectedFile = None
 
     def __init__(self):
-        UIWidget.__init__(self)
+        UIConnectedWidget.__init__(
+            self, get_system_feature(), on_next=self.on_next_system
+        )
         Events.__init__(self)
         self._trust = []
         self._error = None
@@ -39,8 +41,6 @@ class SystemTrustDatabaseAdmin(UIWidget, Events):
         self.get_object("rightBox").pack_start(
             self.trustFileDetails.get_ref(), True, True, 0
         )
-
-        get_system_feature().subscribe(on_next=self.on_next_system)
 
     def __status_markup(self, status):
         return (

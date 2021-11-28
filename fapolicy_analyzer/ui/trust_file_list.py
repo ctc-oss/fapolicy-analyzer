@@ -1,12 +1,18 @@
-import gi
 import fapolicy_analyzer.ui.strings as strings
+import gi
 
 gi.require_version("Gtk", "3.0")
 from concurrent.futures import ThreadPoolExecutor
-from gi.repository import Gtk, GLib
-from time import localtime, strftime, strptime, mktime
+from time import localtime, mktime, strftime, strptime
+
+from gi.repository import GLib, Gtk
+
 from .searchable_list import SearchableList
 from .strings import FILE_LABEL, FILES_LABEL
+
+# global variable used for stopping the running executor from call for UI
+# updates if the widget was destroyed
+_executorCanceled = False
 
 
 def epoch_to_string(secsEpoch):
@@ -26,6 +32,8 @@ def epoch_to_string(secsEpoch):
 
 class TrustFileList(SearchableList):
     def __init__(self, trust_func, markup_func=None, *args):
+        global _executorCanceled
+
         self.__events__ = [
             *super().__events__,
             "files_added",
@@ -39,6 +47,7 @@ class TrustFileList(SearchableList):
         self.trust_func = trust_func
         self.markup_func = markup_func
         self.__executor = ThreadPoolExecutor(max_workers=1)
+        _executorCanceled = False
         self.refresh()
         self.selection_changed += self.__handle_selection_changed
         self.get_ref().connect("destroy", self.on_destroy)
@@ -80,6 +89,8 @@ class TrustFileList(SearchableList):
         self.treeCount.set_text(" ".join([str(count), label]))
 
     def on_destroy(self, *args):
+        global _executorCanceled
+        _executorCanceled = True
         self.__executor.shutdown(cancel_futures=True)
         return False
 
@@ -88,6 +99,7 @@ class TrustFileList(SearchableList):
 
     def load_trust(self, trust):
         def process():
+            global _executorCanceled
             store = Gtk.ListStore(str, str, str, object, str)
             for i, data in enumerate(trust):
                 status, *rest = (
@@ -100,7 +112,12 @@ class TrustFileList(SearchableList):
                 strDateTime = epoch_to_string(secsEpoch)
 
                 store.append([status, strDateTime, data.path, data, bgColor])
-            GLib.idle_add(self.load_store, store)
+
+                if _executorCanceled:
+                    return
+
+            if not _executorCanceled:
+                GLib.idle_add(self.load_store, store)
 
         self.set_loading(True)
         self.__executor.submit(process)

@@ -2,18 +2,21 @@
 <!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.22"/>
-  <object class="GtkBox" id="trustFileDetails">
+  <!-- n-columns=1 n-rows=3 -->
+  <object class="GtkGrid" id="trustFileDetails">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="margin-left">5</property>
-    <property name="margin-start">5</property>
-    <property name="margin-bottom">5</property>
-    <property name="orientation">vertical</property>
+    <property name="halign">baseline</property>
+    <property name="hexpand">True</property>
+    <property name="vexpand">False</property>
+    <property name="row-homogeneous">True</property>
+    <property name="column-homogeneous">True</property>
     <child>
       <object class="GtkFrame">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="margin-end">5</property>
+        <property name="hexpand">False</property>
+        <property name="vexpand">False</property>
         <property name="label-xalign">0</property>
         <property name="shadow-type">in</property>
         <child>
@@ -24,11 +27,10 @@
             <child>
               <object class="GtkTextView" id="inDatabaseView">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="margin-bottom">10</property>
+                <property name="can-focus">False</property>
+                <property name="hexpand">True</property>
+                <property name="vexpand">False</property>
                 <property name="editable">False</property>
-                <property name="wrap-mode">char</property>
-                <property name="cursor-visible">False</property>
                 <property name="accepts-tab">False</property>
               </object>
             </child>
@@ -43,16 +45,16 @@
         </child>
       </object>
       <packing>
-        <property name="expand">True</property>
-        <property name="fill">True</property>
-        <property name="position">0</property>
+        <property name="left-attach">0</property>
+        <property name="top-attach">0</property>
       </packing>
     </child>
     <child>
       <object class="GtkFrame">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="margin-end">5</property>
+        <property name="hexpand">False</property>
+        <property name="vexpand">False</property>
         <property name="label-xalign">0</property>
         <property name="shadow-type">in</property>
         <child>
@@ -63,12 +65,10 @@
             <child>
               <object class="GtkTextView" id="onFileSystemView">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="margin-bottom">10</property>
-                <property name="pixels-below-lines">10</property>
+                <property name="can-focus">False</property>
+                <property name="hexpand">True</property>
+                <property name="vexpand">False</property>
                 <property name="editable">False</property>
-                <property name="wrap-mode">char</property>
-                <property name="cursor-visible">False</property>
                 <property name="accepts-tab">False</property>
               </object>
             </child>
@@ -83,16 +83,16 @@
         </child>
       </object>
       <packing>
-        <property name="expand">True</property>
-        <property name="fill">True</property>
-        <property name="position">1</property>
+        <property name="left-attach">0</property>
+        <property name="top-attach">1</property>
       </packing>
     </child>
     <child>
       <object class="GtkFrame">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="margin-end">5</property>
+        <property name="hexpand">False</property>
+        <property name="vexpand">False</property>
         <property name="label-xalign">0</property>
         <property name="shadow-type">in</property>
         <child>
@@ -103,11 +103,10 @@
             <child>
               <object class="GtkTextView" id="fileTrustStatusView">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="margin-bottom">10</property>
+                <property name="can-focus">False</property>
+                <property name="hexpand">True</property>
+                <property name="vexpand">False</property>
                 <property name="editable">False</property>
-                <property name="wrap-mode">char</property>
-                <property name="cursor-visible">False</property>
                 <property name="accepts-tab">False</property>
               </object>
             </child>
@@ -122,9 +121,8 @@
         </child>
       </object>
       <packing>
-        <property name="expand">True</property>
-        <property name="fill">True</property>
-        <property name="position">2</property>
+        <property name="left-attach">0</property>
+        <property name="top-attach">2</property>
       </packing>
     </child>
   </object>
