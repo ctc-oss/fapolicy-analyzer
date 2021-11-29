@@ -66,8 +66,11 @@
                   <object class="GtkTreeView" id="treeView">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
+                    <property name="rubber-banding">True</property>
                     <child internal-child="selection">
-                      <object class="GtkTreeSelection"/>
+                      <object class="GtkTreeSelection" id="treeSelection">
+                        <property name="mode">multiple</property>
+                      </object>
                     </child>
                   </object>
                 </child>

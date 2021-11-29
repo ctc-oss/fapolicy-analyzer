@@ -98,9 +98,17 @@ class SearchableList(UIWidget, Events):
         return self.get_object("actionButtons").get_children()
 
     def on_view_selection_changed(self, selection):
-        model, treeiter = selection.get_selected()
-        data = model[treeiter] if model and treeiter else []
-        self.selection_changed(data)
+        model, treeiter = selection.get_selected_rows()
+        if model and treeiter:
+            if len(treeiter) == 1:
+                data = model[treeiter]
+                self.selection_changed(data)        
+            else:
+                data = [model[i] for i in treeiter]
+                for datum in data:
+                    self.selection_changed(datum)
+        else:
+            data = []
 
     def on_search_changed(self, search):
         self.treeViewFilter.refilter()
