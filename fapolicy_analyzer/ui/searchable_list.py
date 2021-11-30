@@ -4,10 +4,10 @@ gi.require_version("Gtk", "3.0")
 from events import Events
 from gi.repository import Gtk
 from .loader import Loader
-from .ui_widget import UIWidget
+from .ui_widget import UIBuilderWidget
 
 
-class SearchableList(UIWidget, Events):
+class SearchableList(UIBuilderWidget, Events):
     __events__ = ["selection_changed"]
 
     def __init__(
@@ -19,7 +19,7 @@ class SearchableList(UIWidget, Events):
         defaultSortDirection=Gtk.SortType.DESCENDING,
         view_headers_visible=True,
     ):
-        UIWidget.__init__(self, "searchable_list")
+        UIBuilderWidget.__init__(self, "searchable_list")
         Events.__init__(self)
 
         self.searchColumnIndex = searchColumnIndex

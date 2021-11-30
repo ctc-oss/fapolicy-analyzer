@@ -1,7 +1,7 @@
-from .ui_widget import UIWidget
+from .ui_widget import UIBuilderWidget
 
 
-class TrustFileDetails(UIWidget):
+class TrustFileDetails(UIBuilderWidget):
     def clear(self):
         self.set_in_database_view("")
         self.set_on_file_system_view("")
