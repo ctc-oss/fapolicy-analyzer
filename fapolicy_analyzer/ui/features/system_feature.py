@@ -8,7 +8,7 @@ gi.require_version("Gtk", "3.0")
 from concurrent.futures import ThreadPoolExecutor
 from typing import Callable, Sequence
 
-from fapolicy_analyzer import Changeset, System
+from fapolicy_analyzer import Changeset, System, rollback_fapolicyd
 from fapolicy_analyzer.ui.actions import (
     APPLY_CHANGESETS,
     DEPLOY_ANCILLARY_TRUST,
@@ -123,7 +123,7 @@ def create_system_feature(
     def _restore_checkpoint(action: Action) -> Action:
         global _system
         _system = _checkpoint
-        _system.rollback_fapolicyd()
+        rollback_fapolicyd(_system)
         return clear_changesets()
 
     def _get_events(action: Action) -> Action:
