@@ -73,41 +73,44 @@ class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
             self._trust = trustState.trust
             self.trustFileList.load_trust(self._trust)
 
-    def on_trust_selection_changed(self, trust):
-        self.selectedFile = trust
-        addBtn = self.get_object("addBtn")
-        if trust:
-            status = trust.status.lower()
-            trusted = status == "t"
-            addBtn.set_sensitive(not trusted)
+    def on_trust_selection_changed(self, trusts):
 
-            self.trustFileDetails.set_in_database_view(
-                f(
-                    _(
-                        """File: {trust.path}
-Size: {trust.size}
-SHA256: {trust.hash}"""
+        self.selectedFile = trusts
+        for trust in trusts:            
+            addBtn = self.get_object("addBtn")
+            if trust:
+                status = trust.status.lower()
+                trusted = status == "t"
+                addBtn.set_sensitive(not trusted)
+
+                self.trustFileDetails.set_in_database_view(
+                    f(
+                        _(
+                            """File: {trust.path}
+    Size: {trust.size}
+    SHA256: {trust.hash}"""
+                        )
                     )
                 )
-            )
-            self.trustFileDetails.set_on_file_system_view(
-                f(
-                    _(
-                        """{fs.stat(trust.path)}
-SHA256: {fs.sha(trust.path)}"""
+                self.trustFileDetails.set_on_file_system_view(
+                    f(
+                        _(
+                            """{fs.stat(trust.path)}
+    SHA256: {fs.sha(trust.path)}"""
+                        )
                     )
                 )
-            )
-            self.trustFileDetails.set_trust_status(
-                strings.TRUSTED_FILE_MESSAGE
-                if trusted
-                else strings.DISCREPANCY_FILE_MESSAGE
-                if status == "d"
-                else strings.UNKNOWN_FILE_MESSAGE
-            )
-        else:
-            addBtn.set_sensitive(False)
+                self.trustFileDetails.set_trust_status(
+                    strings.TRUSTED_FILE_MESSAGE
+                    if trusted
+                    else strings.DISCREPANCY_FILE_MESSAGE
+                    if status == "d"
+                    else strings.UNKNOWN_FILE_MESSAGE
+                )
+            else:
+                addBtn.set_sensitive(False)
 
     def on_addBtn_clicked(self, *args):
         if self.selectedFile:
-            self.file_added_to_ancillary_trust(self.selectedFile.path)
+            for sfile in self.selectedFile:
+                self.file_added_to_ancillary_trust(sfile.path)

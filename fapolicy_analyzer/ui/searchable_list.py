@@ -99,14 +99,10 @@ class SearchableList(UIBuilderWidget, Events):
 
     def on_view_selection_changed(self, selection):
         model, treeiter = selection.get_selected_rows()
-        if model and treeiter:
-            if len(treeiter) == 1:
-                data = model[treeiter]
-                self.selection_changed(data)        
-            else:
-                data = [model[i] for i in treeiter]
-                for datum in data:
-                    self.selection_changed(datum)
+        if model and treeiter: 
+            data = [model[i] for i in treeiter]
+            for datum in data:
+                 self.selection_changed(data)
         else:
             data = []
 
