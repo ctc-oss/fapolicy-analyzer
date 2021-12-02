@@ -8,3 +8,4 @@ show_missing = true
 fail_under = 90
 omit =
     */tests/*
+    */redux/*
