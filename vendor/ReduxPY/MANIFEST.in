@@ -1,0 +1,6 @@
+include requirements.txt 
+include test-requirements.txt
+include LICENSE
+
+recursive-include hpha_rx py.typed
+include hpha_rx/docs/objects.inv
