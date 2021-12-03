@@ -1,18 +1,21 @@
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
-from events import Events
 from functools import partial
-from .object_list import ObjectList
+
+from events import Events
+from fapolicy_analyzer.util import acl, fs
+from gi.repository import Gtk
+
 from .acl_list import ACLList
 from .actions import (
-    add_notification,
     NotificationType,
+    add_notification,
     request_events,
     request_groups,
     request_users,
 )
+from .object_list import ObjectList
 from .store import dispatch, get_system_feature
 from .strings import (
     GET_GROUPS_LOG_ERROR_MSG,
@@ -25,18 +28,19 @@ from .strings import (
 )
 from .subject_list import SubjectList
 from .ui_widget import UIConnectedWidget
-from fapolicy_analyzer.util import acl, fs
 
 
 class PolicyRulesAdminPage(UIConnectedWidget):
     def __init__(self, auditFile=None):
         super().__init__(get_system_feature(), on_next=self.on_next_system)
-        self._log = None
-        self._eventsLoading = False
-        self._users = []
-        self._usersLoading = False
-        self._groups = []
-        self._groupsLoading = False
+        self.__log = None
+        self.__eventsLoading = False
+        self.__users = []
+        self.__usersLoading = False
+        self.__groups = []
+        self.__groupsLoading = False
+        self.__systemTrust = []
+        self.__ancillaryTrust = []
         self.selectedUser = None
         self.selectedGroup = None
         self.selectedSubject = None
@@ -58,7 +62,7 @@ class PolicyRulesAdminPage(UIConnectedWidget):
 
         objectTabs = self.get_object("objectTabs")
         self.objectList = ObjectList()
-        self.objectList.object_selection_changed += self.on_object_selection_changed
+        self.objectList.file_selection_changed += self.on_object_selection_changed
         objectTabs.append_page(self.objectList.get_ref(), Gtk.Label(label="Object"))
 
         self.switchers = [
@@ -90,7 +94,7 @@ class PolicyRulesAdminPage(UIConnectedWidget):
                 self.__populate_subjects,
                 (
                     self.subjectList,
-                    "subject_selection_changed",
+                    "file_selection_changed",
                     partial(
                         self.on_subject_selection_changed,
                         self.__populate_acls_from_subject,
@@ -103,11 +107,11 @@ class PolicyRulesAdminPage(UIConnectedWidget):
             s.buttonClicked += self.on_switcher_button_clicked
 
         if auditFile:
-            self._usersLoading = True
+            self.__usersLoading = True
             dispatch(request_users())
-            self._groupsLoading = True
+            self.__groupsLoading = True
             dispatch(request_groups())
-            self._eventsLoading = True
+            self.__eventsLoading = True
             dispatch(request_events(auditFile))
 
     def __all_list(self):
@@ -119,26 +123,26 @@ class PolicyRulesAdminPage(UIConnectedWidget):
         box.show_all()
         return box
 
-    def __populate_list(self, list, data, sensitive):
-        list.load_store(data)
+    def __populate_list(self, list, data, sensitive, **kwargs):
+        list.load_store(data, **kwargs)
         list.get_ref().set_sensitive(sensitive)
 
     def __populate_acls(self):
-        if self._usersLoading or self._groupsLoading or not self._log:
+        if self.__usersLoading or self.__groupsLoading or not self.__log:
             return
 
         users = list(
             {
                 e.uid: {"id": u.id, "name": u.name}
-                for u in self._users
-                for e in self._log.by_user(u.id)
+                for u in self.__users
+                for e in self.__log.by_user(u.id)
             }.values()
         )
         groups = list(
             {
                 e.gid: {"id": g.id, "name": g.name}
-                for g in self._groups
-                for e in self._log.by_group(g.id)
+                for g in self.__groups
+                for e in self.__log.by_group(g.id)
             }.values()
         )
         self.__populate_list(self.userList, users, True)
@@ -153,16 +157,16 @@ class PolicyRulesAdminPage(UIConnectedWidget):
         users = list(
             {
                 e.uid: {"id": u.id, "name": u.name}
-                for e in self._log.by_subject(self.selectedSubject)
-                for u in self._users
+                for e in self.__log.by_subject(self.selectedSubject)
+                for u in self.__users
                 if e.uid == u.id
             }.values()
         )
         groups = list(
             {
                 e.gid: {"id": g.id, "name": g.name}
-                for e in self._log.by_subject(self.selectedSubject)
-                for g in self._groups
+                for e in self.__log.by_subject(self.selectedSubject)
+                for g in self.__groups
                 if e.gid == g.id
             }.values()
         )
@@ -170,17 +174,23 @@ class PolicyRulesAdminPage(UIConnectedWidget):
         self.__populate_list(self.groupList, groups, True)
 
     def __populate_subjects(self):
-        if self._usersLoading or self._groupsLoading or not self._log:
+        if self.__usersLoading or self.__groupsLoading or not self.__log:
             return
 
         subjects = list(
             {
                 e.subject.file: e.subject
-                for s in self._log.subjects()
-                for e in self._log.by_subject(s)
+                for s in self.__log.subjects()
+                for e in self.__log.by_subject(s)
             }.values()
         )
-        self.__populate_list(self.subjectList, subjects, True)
+        self.__populate_list(
+            self.subjectList,
+            subjects,
+            True,
+            systemTrust=self.__systemTrust,
+            ancillaryTrust=self.__ancillaryTrust,
+        )
 
     def __populate_subjects_from_acl(self):
         if not self.selectedUser and not self.selectedGroup:
@@ -191,26 +201,38 @@ class PolicyRulesAdminPage(UIConnectedWidget):
             {
                 e.subject.file: e.subject
                 for e in (
-                    self._log.by_user(self.selectedUser)
+                    self.__log.by_user(self.selectedUser)
                     if self.selectedUser
-                    else self._log.by_group(self.selectedGroup)
+                    else self.__log.by_group(self.selectedGroup)
                     if self.selectedGroup
                     else []
                 )
             }.values()
         )
-        self.__populate_list(self.subjectList, subjects, True)
+        self.__populate_list(
+            self.subjectList,
+            subjects,
+            True,
+            systemTrust=self.__systemTrust,
+            ancillaryTrust=self.__ancillaryTrust,
+        )
 
     def __populate_objects(self):
         if self.selectedSubject and (self.selectedUser or self.selectedGroup):
             objects = list(
                 {
                     e.object.file: e.object
-                    for e in self._log.by_subject(self.selectedSubject)
+                    for e in self.__log.by_subject(self.selectedSubject)
                     if e.uid == self.selectedUser or e.gid == self.selectedGroup
                 }.values()
             )
-            self.__populate_list(self.objectList, objects, True)
+            self.__populate_list(
+                self.objectList,
+                objects,
+                True,
+                systemTrust=self.__systemTrust,
+                ancillaryTrust=self.__ancillaryTrust,
+            )
         else:
             self.__populate_list(self.objectList, [], False)
 
@@ -224,8 +246,12 @@ class PolicyRulesAdminPage(UIConnectedWidget):
         groupState = system.get("groups")
         userState = system.get("users")
 
-        if eventsState.error and not eventsState.loading and self._eventsLoading:
-            self._eventsLoading = False
+        # these should already be loaded in state from the initial DB Admin Tool load
+        self.__systemTrust = system.get("system_trust").trust
+        self.__ancillaryTrust = system.get("ancillary_trust").trust
+
+        if eventsState.error and not eventsState.loading and self.__eventsLoading:
+            self.__eventsLoading = False
             dispatch(
                 add_notification(
                     PARSE_EVENT_LOG_ERROR_MSG,
@@ -233,16 +259,16 @@ class PolicyRulesAdminPage(UIConnectedWidget):
                 )
             )
         elif (
-            self._eventsLoading
+            self.__eventsLoading
             and not eventsState.loading
-            and self._log != eventsState.log
+            and self.__log != eventsState.log
         ):
-            self._eventsLoading = False
-            self._log = eventsState.log
+            self.__eventsLoading = False
+            self.__log = eventsState.log
             self.__populate_acls()
 
-        if userState.error and not userState.loading and self._usersLoading:
-            self._usersLoading = False
+        if userState.error and not userState.loading and self.__usersLoading:
+            self.__usersLoading = False
             dispatch(
                 add_notification(
                     GET_USERS_ERROR_MSG,
@@ -250,16 +276,16 @@ class PolicyRulesAdminPage(UIConnectedWidget):
                 )
             )
         elif (
-            self._usersLoading
+            self.__usersLoading
             and not userState.loading
-            and self._users != userState.users
+            and self.__users != userState.users
         ):
-            self._usersLoading = False
-            self._users = userState.users
+            self.__usersLoading = False
+            self.__users = userState.users
             self.__populate_acls()
 
-        if groupState.error and not groupState.loading and self._groupsLoading:
-            self._groupsLoading = False
+        if groupState.error and not groupState.loading and self.__groupsLoading:
+            self.__groupsLoading = False
             dispatch(
                 add_notification(
                     GET_GROUPS_LOG_ERROR_MSG,
@@ -267,19 +293,19 @@ class PolicyRulesAdminPage(UIConnectedWidget):
                 )
             )
         elif (
-            self._groupsLoading
+            self.__groupsLoading
             and not groupState.loading
-            and self._groups != groupState.groups
+            and self.__groups != groupState.groups
         ):
-            self._groupsLoading = False
-            self._groups = groupState.groups
+            self.__groupsLoading = False
+            self.__groups = groupState.groups
             self.__populate_acls()
 
         self.userList.set_loading(
-            self._eventsLoading or self._usersLoading or self._groupsLoading
+            self.__eventsLoading or self.__usersLoading or self.__groupsLoading
         )
         self.groupList.set_loading(
-            self._eventsLoading or self._usersLoading or self._groupsLoading
+            self.__eventsLoading or self.__usersLoading or self.__groupsLoading
         )
 
     def on_user_selection_changed(self, secondaryAction, data):
