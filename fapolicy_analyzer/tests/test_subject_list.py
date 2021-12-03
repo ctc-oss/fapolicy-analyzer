@@ -13,7 +13,7 @@ from callee.attributes import Attrs
 from callee.types import InstanceOf
 from fapolicy_analyzer import Changeset
 from gi.repository import Gtk
-from redux import Action
+from fapolicy_analyzer.redux import Action
 from ui.actions import APPLY_CHANGESETS
 from ui.configs import Colors
 from ui.strings import FILE_LABEL, FILES_LABEL
