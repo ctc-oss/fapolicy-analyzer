@@ -1,13 +1,14 @@
-import context  # noqa: F401
 import gi
 import pytest
 
+import context  # noqa: F401
+
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
-from callee import Attrs, InstanceOf
 from unittest.mock import MagicMock
 from mocks import mock_System, mock_events, mock_groups, mock_log, mock_users
 from fapolicy_analyzer.redux import Action
+from callee import Attrs, InstanceOf
+from gi.repository import Gtk
 from rx.subject import Subject
 from ui.actions import (
     ADD_NOTIFICATION,
@@ -17,12 +18,12 @@ from ui.actions import (
     NotificationType,
 )
 from ui.policy_rules_admin_page import PolicyRulesAdminPage
+from ui.store import init_store
 from ui.strings import (
     GET_GROUPS_LOG_ERROR_MSG,
     GET_USERS_ERROR_MSG,
     PARSE_EVENT_LOG_ERROR_MSG,
 )
-from ui.store import init_store
 
 _mock_file = "foo"
 
@@ -32,6 +33,8 @@ def _build_state(**kwargs):
         "events": {"loading": False, "error": None, "events": []},
         "groups": {"loading": False, "error": None, "groups": []},
         "users": {"loading": False, "error": None, "users": []},
+        "system_trust": {"loading": False, "error": None, "trust": []},
+        "ancillary_trust": {"loading": False, "error": None, "trust": []},
     }
 
     combined = {
@@ -253,9 +256,9 @@ def test_loads_objects_from_subject(view, subjectListView, objectListView):
     model = objectListView.get_model()
     expectedObject = mock_events()[0].object
     assert expectedObject.trust in next(iter([x[0] for x in model]))
-    assert expectedObject.mode in next(iter([x[1] for x in model]))
-    assert expectedObject.access in next(iter([x[2] for x in model]))
-    assert expectedObject.file == next(iter([x[3] for x in model]))
+    assert expectedObject.access in next(iter([x[1] for x in model]))
+    assert expectedObject.file == next(iter([x[2] for x in model]))
+    assert expectedObject.mode in next(iter([x[5] for x in model]))
 
 
 @pytest.mark.parametrize(
@@ -270,9 +273,9 @@ def test_loads_objects_from_acl(
     model = objectListView.get_model()
     expectedObject = mock_events()[0].object
     assert expectedObject.trust in next(iter([x[0] for x in model]))
-    assert expectedObject.mode in next(iter([x[1] for x in model]))
-    assert expectedObject.access in next(iter([x[2] for x in model]))
-    assert expectedObject.file == next(iter([x[3] for x in model]))
+    assert expectedObject.access in next(iter([x[1] for x in model]))
+    assert expectedObject.file == next(iter([x[2] for x in model]))
+    assert expectedObject.mode in next(iter([x[5] for x in model]))
 
 
 @pytest.mark.parametrize(

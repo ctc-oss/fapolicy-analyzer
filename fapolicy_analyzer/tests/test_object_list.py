@@ -1,11 +1,14 @@
-import context  # noqa: F401
-import gi
-import pytest
 import re
 
+import gi
+import pytest
+
+import context  # noqa: F401
+
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
 from unittest.mock import MagicMock
+
+from gi.repository import Gtk
 from ui.configs import Colors
 from ui.object_list import ObjectList
 from ui.strings import FILE_LABEL, FILES_LABEL
@@ -41,13 +44,13 @@ def test_loads_store(widget):
     assert [t.trust for t in sortedObjects] == [
         strip_markup(x[0]) for x in view.get_model()
     ]
-    assert [t.mode for t in sortedObjects] == [
+    assert [t.access for t in sortedObjects] == [
         strip_markup(x[1]) for x in view.get_model()
     ]
-    assert [t.access for t in sortedObjects] == [
-        strip_markup(x[2]) for x in view.get_model()
+    assert [t.file for t in sortedObjects] == [x[2] for x in view.get_model()]
+    assert [t.mode for t in sortedObjects] == [
+        strip_markup(x[5]) for x in view.get_model()
     ]
-    assert [t.file for t in sortedObjects] == [x[3] for x in view.get_model()]
 
 
 def test_status_markup(widget):
@@ -78,34 +81,34 @@ def test_mode_markup(widget):
 
     # Read
     widget.load_store([_mock_object(mode="R")])
-    assert view.get_model()[0][1] == "<b><u>R</u></b>WX"
+    assert view.get_model()[0][5] == "<b><u>R</u></b>WX"
     # Write
     widget.load_store([_mock_object(mode="W")])
-    assert view.get_model()[0][1] == "R<b><u>W</u></b>X"
+    assert view.get_model()[0][5] == "R<b><u>W</u></b>X"
     # Execute
     widget.load_store([_mock_object(mode="X")])
-    assert view.get_model()[0][1] == "RW<b><u>X</u></b>"
+    assert view.get_model()[0][5] == "RW<b><u>X</u></b>"
     # Read/Write
     widget.load_store([_mock_object(mode="RW")])
-    assert view.get_model()[0][1] == "<b><u>R</u></b><b><u>W</u></b>X"
+    assert view.get_model()[0][5] == "<b><u>R</u></b><b><u>W</u></b>X"
     # Read/Execute
     widget.load_store([_mock_object(mode="RX")])
-    assert view.get_model()[0][1] == "<b><u>R</u></b>W<b><u>X</u></b>"
+    assert view.get_model()[0][5] == "<b><u>R</u></b>W<b><u>X</u></b>"
     # Write/Execute
     widget.load_store([_mock_object(mode="WX")])
-    assert view.get_model()[0][1] == "R<b><u>W</u></b><b><u>X</u></b>"
+    assert view.get_model()[0][5] == "R<b><u>W</u></b><b><u>X</u></b>"
     # Full Access
     widget.load_store([_mock_object(mode="RWX")])
-    assert view.get_model()[0][1] == "<b><u>R</u></b><b><u>W</u></b><b><u>X</u></b>"
+    assert view.get_model()[0][5] == "<b><u>R</u></b><b><u>W</u></b><b><u>X</u></b>"
     # Bad data
     widget.load_store([_mock_object(mode="foo")])
-    assert view.get_model()[0][1] == "RWX"
+    assert view.get_model()[0][5] == "RWX"
     # Empty data
     widget.load_store([_mock_object()])
-    assert view.get_model()[0][1] == "RWX"
+    assert view.get_model()[0][5] == "RWX"
     # Lowercase
     widget.load_store([_mock_object(mode="r")])
-    assert view.get_model()[0][1] == "<b><u>R</u></b>WX"
+    assert view.get_model()[0][5] == "<b><u>R</u></b>WX"
 
 
 def test_access_markup(widget):
@@ -113,19 +116,19 @@ def test_access_markup(widget):
 
     # Allowed
     widget.load_store([_mock_object(access="A")])
-    assert view.get_model()[0][2] == "<b><u>A</u></b>/D"
+    assert view.get_model()[0][1] == "<b><u>A</u></b>/D"
     # Denied
     widget.load_store([_mock_object(access="D")])
-    assert view.get_model()[0][2] == "A/<b><u>D</u></b>"
+    assert view.get_model()[0][1] == "A/<b><u>D</u></b>"
     # Bad data
     widget.load_store([_mock_object(access="foo")])
-    assert view.get_model()[0][2] == "A/D"
+    assert view.get_model()[0][1] == "A/D"
     # Empty data
     widget.load_store([_mock_object()])
-    assert view.get_model()[0][2] == "A/D"
+    assert view.get_model()[0][1] == "A/D"
     # Lowercase
     widget.load_store([_mock_object(access="a")])
-    assert view.get_model()[0][2] == "<b><u>A</u></b>/D"
+    assert view.get_model()[0][1] == "<b><u>A</u></b>/D"
 
 
 def test_path_color(widget):
@@ -133,22 +136,22 @@ def test_path_color(widget):
 
     # Denied
     widget.load_store([_mock_object(access="D", mode="RWX")])
-    assert view.get_model()[0][5] == Colors.LIGHT_RED
+    assert view.get_model()[0][4] == Colors.LIGHT_RED
     # Full Access
     widget.load_store([_mock_object(access="A", mode="RWX")])
-    assert view.get_model()[0][5] == Colors.LIGHT_GREEN
+    assert view.get_model()[0][4] == Colors.LIGHT_GREEN
     # Partical Access
     widget.load_store([_mock_object(access="A", mode="R")])
-    assert view.get_model()[0][5] == Colors.ORANGE
+    assert view.get_model()[0][4] == Colors.ORANGE
     # Bad data
     widget.load_store([_mock_object(access="foo")])
-    assert view.get_model()[0][5] == Colors.LIGHT_RED
+    assert view.get_model()[0][4] == Colors.LIGHT_RED
     # Empty data
     widget.load_store([_mock_object()])
-    assert view.get_model()[0][5] == Colors.LIGHT_RED
+    assert view.get_model()[0][4] == Colors.LIGHT_RED
     # Lowercase
     widget.load_store([_mock_object(access="a", mode="rwx")])
-    assert view.get_model()[0][5] == Colors.LIGHT_GREEN
+    assert view.get_model()[0][4] == Colors.LIGHT_GREEN
 
 
 def test_update_tree_count(widget):
@@ -161,9 +164,9 @@ def test_update_tree_count(widget):
     assert label.get_text() == f"2 {FILES_LABEL}"
 
 
-def test_fires_object_selection_changed_event(widget):
+def test_fires_file_selection_changed_event(widget):
     mockHandler = MagicMock()
-    widget.object_selection_changed += mockHandler
+    widget.file_selection_changed += mockHandler
     mockData = _mock_object(file="foo")
     widget.load_store([mockData])
     view = widget.get_object("treeView")

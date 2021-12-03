@@ -30,6 +30,7 @@ PyGObject = "3.38.0"
 events = "0.4"
 argparse = "1.4.0"
 rx = "*"
+more-itertools = "*"
 
 [pipenv]
 allow_prereleases = true

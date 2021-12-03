@@ -12,7 +12,7 @@ Source0: %{url}/archive/%{git_commit}/%{name}-%{git_commit}.tar.gz
 BuildArch:      x86_64
 Requires:       {{ pyrpm }} >= 3.9
 BuildRequires:  {{ pyrpm }} >= 3.9, {{ pyrpm }}-rpm-macros, {{ pyrpm }}-devel, {{ pyrpm }}-pip, {{ pyrpm }}-wheel
-Recommends:     {{ pyrpm }}-gobject, {{ pyrpm }}-events, {{ pyrpm }}-configargparse, {{ pyrpm }}-rx
+Recommends:     {{ pyrpm }}-gobject, {{ pyrpm }}-events, {{ pyrpm }}-configargparse, {{ pyrpm }}-rx, {{ pyrpm }}-more-itertools
 Requires:       gtk3, dbus-libs
 BuildRequires:  dbus-devel, cargo
 AutoReqProv:    no
