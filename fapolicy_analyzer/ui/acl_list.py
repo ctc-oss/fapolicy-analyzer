@@ -2,6 +2,7 @@ import gi
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
+
 from .searchable_list import SearchableList
 
 
@@ -21,7 +22,7 @@ class ACLList(SearchableList):
         lbl = self.label if count == 1 else self.label_plural
         self.treeCount.set_text(" ".join([str(count), lbl or ""]).strip())
 
-    def load_store(self, acls):
+    def load_store(self, acls, **kwargs):
         store = Gtk.ListStore(str, int)
 
         for acl in acls:

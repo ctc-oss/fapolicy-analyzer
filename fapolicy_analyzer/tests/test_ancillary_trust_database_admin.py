@@ -1,33 +1,36 @@
-import context  # noqa: F401
-import pytest
 import gi
+import pytest
+
+import context  # noqa: F401
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
-from callee import InstanceOf, Attrs, Sequence
+from unittest.mock import MagicMock, patch
+
+from callee import Attrs, InstanceOf, Sequence
 from fapolicy_analyzer import Changeset, Trust
-from mocks import mock_System, mock_trust
+from gi.repository import Gtk
 from redux import Action
 from rx.subject import Subject
-from unittest.mock import MagicMock, patch
 from ui.actions import (
     ADD_NOTIFICATION,
     APPLY_CHANGESETS,
     CLEAR_CHANGESETS,
-    REQUEST_ANCILLARY_TRUST,
-    NotificationType,
     DEPLOY_ANCILLARY_TRUST,
+    REQUEST_ANCILLARY_TRUST,
     SET_SYSTEM_CHECKPOINT,
+    NotificationType,
 )
 from ui.ancillary_trust_database_admin import AncillaryTrustDatabaseAdmin
 from ui.store import init_store
 from ui.strings import (
     ANCILLARY_TRUST_LOAD_ERROR,
+    ANCILLARY_TRUSTED_FILE_MESSAGE,
+    ANCILLARY_UNKNOWN_FILE_MESSAGE,
     DEPLOY_ANCILLARY_ERROR_MSG,
     DEPLOY_ANCILLARY_SUCCESSFUL_MSG,
-    TRUSTED_FILE_MESSAGE,
-    UNKNOWN_FILE_MESSAGE,
 )
+
+from mocks import mock_System, mock_trust
 
 
 @pytest.fixture()
@@ -98,7 +101,9 @@ def test_updates_trust_details(widget, mocker):
     widget.trustFileDetails.set_on_file_system_view.assert_called_with(
         "stat for foo file\nSHA256: abc"
     )
-    widget.trustFileDetails.set_trust_status.assert_called_with(TRUSTED_FILE_MESSAGE)
+    widget.trustFileDetails.set_trust_status.assert_called_with(
+        ANCILLARY_TRUSTED_FILE_MESSAGE
+    )
 
 
 def test_updates_trust_details_for_deleted_files(widget, mocker):
@@ -114,7 +119,9 @@ def test_updates_trust_details_for_deleted_files(widget, mocker):
     widget.trustFileDetails.set_on_file_system_view.assert_called_with(
         "stat for foo file\nSHA256: abc"
     )
-    widget.trustFileDetails.set_trust_status.assert_called_with(UNKNOWN_FILE_MESSAGE)
+    widget.trustFileDetails.set_trust_status.assert_called_with(
+        ANCILLARY_UNKNOWN_FILE_MESSAGE
+    )
 
 
 def test_clears_trust_details(widget, mocker):
