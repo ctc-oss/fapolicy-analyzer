@@ -42,8 +42,8 @@ def handle_received_daemon_status(state: DaemonState, action: Action):
 
 
 def handle_received_daemon_status_update(state: DaemonState, action: Action):
-    logging.debug(f"daemon_reducer::handle_received_daemon_status_update({state})")
-    return _create_state(state, status=is_fapolicyd_active())
+    logging.debug(f"daemon_reducer::handle_received_daemon_status_update({state}), {action}")
+    return _create_state(state, status=action.payload)
 
 
 daemon_reducer: Reducer = handle_actions(
