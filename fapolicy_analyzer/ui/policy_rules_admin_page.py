@@ -283,20 +283,22 @@ class PolicyRulesAdminPage(UIConnectedWidget):
         )
 
     def on_user_selection_changed(self, secondaryAction, data):
-        uid = data[1] if data else None
-        if uid != self.selectedUser:
-            self.selectedUser = uid
-            self.selectedGroup = None
-            self.__populate_acl_details(uid, acl.getUserDetails)
-            secondaryAction()
+        uids = [datum[1] for datum in data] if data else None
+        for uid in uids:
+            if uid != self.selectedUser:
+                self.selectedUser = uid
+                self.selectedGroup = None
+                self.__populate_acl_details(uid, acl.getUserDetails)
+                secondaryAction()
 
     def on_group_selection_changed(self, secondaryAction, data):
-        gid = data[1] if data else None
-        if gid != self.selectedGroup:
-            self.selectedGroup = gid
-            self.selectedUser = None
-            self.__populate_acl_details(gid, acl.getGroupDetails)
-            secondaryAction()
+        gids = [datum[1] for datum in data] if data else None
+        for gid in gids:
+            if gid != self.selectedGroup:
+                self.selectedGroup = gid
+                self.selectedUser = None
+                self.__populate_acl_details(gid, acl.getGroupDetails)
+                secondaryAction()
 
     def on_subject_selection_changed(self, secondaryAction, data):
         subject = data.file if data else None

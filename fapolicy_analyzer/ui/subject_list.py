@@ -69,8 +69,10 @@ class SubjectList(SearchableList):
         )
 
     def __handle_selection_changed(self, data):
-        subject = data[3] if data else None
-        self.subject_selection_changed(subject)
+        subjects = [datum[3] for datum in data] if data else None
+        for subject in subjects: 
+            self.subject_selection_changed(subject)
+                
 
     def _update_tree_count(self, count):
         label = FILE_LABEL if count == 1 else FILES_LABEL

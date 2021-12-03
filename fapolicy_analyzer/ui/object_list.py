@@ -80,8 +80,9 @@ class ObjectList(SearchableList):
         )
 
     def __handle_selection_changed(self, data):
-        object = data[4] if data else None
-        self.object_selection_changed(object)
+        objects = [datum[4] for datum in data] if data else None
+        for obj in objects:
+            self.object_selection_changed(obj)
 
     def _update_tree_count(self, count):
         label = FILE_LABEL if count == 1 else FILES_LABEL
