@@ -19,7 +19,6 @@ from ui.strings import SYSTEM_TRUST_LOAD_ERROR, SYSTEM_TRUSTED_FILE_MESSAGE
 from ui.system_trust_database_admin import SystemTrustDatabaseAdmin
 
 
-
 @pytest.fixture()
 def mock_dispatch(mocker):
     return mocker.patch("ui.system_trust_database_admin.dispatch")
