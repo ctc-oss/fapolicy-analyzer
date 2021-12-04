@@ -1,20 +1,23 @@
-import context  # noqa: F401
-import pytest
 import gi
+import pytest
+
+import context  # noqa: F401
 
 gi.require_version("Gtk", "3.0")
-from callee import InstanceOf, Attrs
+from unittest.mock import MagicMock
+
+from callee import Attrs, InstanceOf
 from callee.strings import Regex
 from gi.repository import Gtk
-from mocks import mock_System, mock_trust
 from redux import Action
 from rx.subject import Subject
-from unittest.mock import MagicMock
 from ui.actions import ADD_NOTIFICATION, NotificationType
 from ui.configs import Colors
-from ui.strings import SYSTEM_TRUST_LOAD_ERROR
 from ui.store import init_store
+from ui.strings import SYSTEM_TRUST_LOAD_ERROR, SYSTEM_TRUSTED_FILE_MESSAGE
 from ui.system_trust_database_admin import SystemTrustDatabaseAdmin
+
+from mocks import mock_System, mock_trust
 
 
 @pytest.fixture()
@@ -67,7 +70,9 @@ def test_updates_trust_details(widget, mocker):
     widget.trustFileDetails.set_on_file_system_view.assert_called_with(
         Regex(r"stat: cannot statx? '/tmp/foo': No such file or directory\nSHA256: abc")
     )
-    widget.trustFileDetails.set_trust_status.assert_called_with("This file is trusted.")
+    widget.trustFileDetails.set_trust_status.assert_called_with(
+        SYSTEM_TRUSTED_FILE_MESSAGE
+    )
 
 
 def test_disables_add_button(widget):

@@ -1,5 +1,8 @@
 from locale import gettext as _
 
+FILE = _("FILE")
+SIZE = _("SIZE")
+
 SYSTEM_INITIALIZATION_ERROR = _("Error initializing System")
 ANCILLARY_TRUST_LOAD_ERROR = _("Error loading Ancillary Trust")
 SYSTEM_TRUST_LOAD_ERROR = _("Error loading System Trust")
@@ -17,9 +20,25 @@ DEPLOY_ANCILLARY_ERROR_MSG = _(
     "An error occurred trying to deploy the changes. Please try again."
 )
 
-TRUSTED_FILE_MESSAGE = _("This file is trusted.")
-DISCREPANCY_FILE_MESSAGE = _("There is a discrepancy with this file.")
-UNKNOWN_FILE_MESSAGE = _("The trust status of this file is unknown.")
+SYSTEM_TRUSTED_FILE_MESSAGE = _("This file is trusted in the System Trust Database.")
+SYSTEM_DISCREPANCY_FILE_MESSAGE = _(
+    "There is a discrepancy between this file and the System Trust Database."
+)
+SYSTEM_UNKNOWN_FILE_MESSAGE = _(
+    "The trust status of this file is unknown in the System Trust Database."
+)
+
+ANCILLARY_TRUSTED_FILE_MESSAGE = _(
+    "This file is trusted in the Ancillary Trust Database."
+)
+ANCILLARY_DISCREPANCY_FILE_MESSAGE = _(
+    "There is a discrepancy between this file and the Ancillary Trust Database."
+)
+ANCILLARY_UNKNOWN_FILE_MESSAGE = _(
+    "The trust status of this file is unknown in the Ancillary Trust Database."
+)
+
+UNKNOWN_FILE_MESSAGE = _("The trust status of this file is unknown")
 
 SYSTEM_TRUST_TAB_LABEL = _("System Trust Database")
 ANCILLARY_TRUST_TAB_LABEL = _("Ancillary Trust Database")
