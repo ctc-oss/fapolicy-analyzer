@@ -113,7 +113,7 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
 
     def _daemon_status(action: Action) -> Action:
         logging.debug(f"_daemon_status(action: {action}) -> Action")
-        status = is_fapolicyd_active()
+        status = _fapd_ref.is_active()
         logging.debug(f"_daemon_status::Fapolicyd status: {status}")
         _fapd_status = status
         return received_daemon_status(_fapd_status)

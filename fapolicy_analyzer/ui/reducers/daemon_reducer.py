@@ -8,7 +8,7 @@ from fapolicy_analyzer.ui.actions import (
     RECEIVED_DAEMON_RELOAD,
     RECEIVED_DAEMON_STATUS_UPDATE,
 )
-from fapolicy_analyzer import is_fapolicyd_active, Handle
+from fapolicy_analyzer import Handle
 
 
 class DaemonState(NamedTuple):
