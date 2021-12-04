@@ -23,22 +23,22 @@ def _create_state(state: DaemonState, **kwargs: Optional[Any]) -> DaemonState:
 
 def handle_received_daemon_start(state: DaemonState, action: Action):
     logging.debug("daemon_reducer::handle_received_daemon_start()")
-    return _create_state(state, status=is_fapolicyd_active())
+    return _create_state(state, status=action.payload)
 
 
 def handle_received_daemon_stop(state: DaemonState, action: Action):
     logging.debug("daemon_reducer::handle_received_daemon_stop()")
-    return _create_state(state, status=is_fapolicyd_active())
+    return _create_state(state, status=action.payload)
 
 
 def handle_received_daemon_reload(state: DaemonState, action: Action):
     logging.debug("daemon_reducer::handle_received_daemon_reload()")
-    return _create_state(state, status=is_fapolicyd_active())
+    return _create_state(state, status=action.payload)
 
 
 def handle_received_daemon_status(state: DaemonState, action: Action):
     logging.debug(f"daemon_reducer::handle_received_daemon_status({state})")
-    return _create_state(state, status=is_fapolicyd_active())
+    return _create_state(state, status=action.payload)
 
 
 def handle_received_daemon_status_update(state: DaemonState, action: Action):

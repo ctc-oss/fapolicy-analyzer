@@ -197,7 +197,7 @@
                             <property name="can-focus">False</property>
                             <property name="use-underline">True</property>
                             <property name="use-stock">True</property>
-			    <signal name="activate" handler="on_FapdStatusMenu_activate" swapped="no"/>
+			    <signal name="activate" handler="on_fapdStatusMenu_activate" swapped="no"/>
                           </object>
                         </child>
                       </object>

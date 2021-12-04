@@ -305,12 +305,6 @@ class MainWindow(UIConnectedWidget):
         self.__pack_main_content(router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN))
         self.__set_trustDbMenu_sensitive(False)
 
-    def on_fapaPreferencesMenu_activate(self, menuitem, data=None):
-        logging.debug("on_fapaPreferencesMenu_activate() invoked.")
-
-    def on_fapdPreferencesMenu_activate(self, menuitem, data=None):
-        logging.debug("on_fapdPreferencesMenu_activate() invoked.")
-
     def on_fapdStartMenu_activate(self, menuitem, data=None):
         logging.debug("on_fapdStartMenu_activate() invoked.")
         dispatch(request_daemon_start())
@@ -323,6 +317,6 @@ class MainWindow(UIConnectedWidget):
         logging.debug("on_fapdReloadMenu_activate() invoked.")
         dispatch(request_daemon_reload())
 
-    def on_FapdStatusMenu_activate(self, menuitem, data=None):
-        logging.debug("on_FapdStatusMenu_activate() invoked.")
+    def on_fapdStatusMenu_activate(self, menuitem, data=None):
+        logging.debug("on_fapdStatusMenu_activate() invoked.")
         dispatch(request_daemon_status())
