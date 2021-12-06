@@ -44,7 +44,7 @@ setup(
     ],
     install_requires=read_requirements('requirements.txt'),
     tests_require=read_requirements('test-requirements.txt'),
-    packages=find_packages(exclude=("tests",)),
+    packages=find_packages(exclude=("tests", "tests.*",)),
     include_package_data=True,
     zip_safe=False
 )
