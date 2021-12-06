@@ -55,7 +55,7 @@ pub enum ChangesetErr {
 }
 
 /// mutable append-only container for change operations
-#[derive(Clone, Debug)]
+#[derive(Default, Clone, Debug)]
 pub struct Changeset {
     changes: Vec<TrustOp>,
 }
@@ -91,12 +91,6 @@ impl Changeset {
 
 pub fn get_path_action_map(cs: &Changeset) -> HashMap<String, String> {
     cs.changes.iter().map(to_pair).collect()
-}
-
-impl ::std::default::Default for Changeset {
-    fn default() -> Self {
-        Self { changes: vec![] }
-    }
 }
 
 fn new_trust_record(path: &str) -> Result<Trust, Error> {
