@@ -85,7 +85,7 @@ fn stop_fapolicyd() -> PyResult<()> {
 #[pyfunction]
 fn rollback_fapolicyd(to: PySystem) -> PyResult<()> {
     stop_fapolicyd()
-        .and_then(|_| to.deploy())
+        .and_then(|_| to.deploy_only())
         .and_then(|_| start_fapolicyd())
 }
 

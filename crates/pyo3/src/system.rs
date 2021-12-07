@@ -93,6 +93,13 @@ impl PySystem {
 
     /// Update the host system with this state of this System
     pub fn deploy(&self) -> PyResult<()> {
+        self.deploy_only().and_then(|_| {
+            fapolicy_daemon::reload_databases()
+                .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))
+        })
+    }
+
+    pub fn deploy_only(&self) -> PyResult<()> {
         match deploy_app_state(&self.rs) {
             Ok(_) => Ok(()),
             Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{:?}", e))),
