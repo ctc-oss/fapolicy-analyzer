@@ -27,7 +27,7 @@ from .confirm_info_dialog import ConfirmInfoDialog
 from .deploy_confirm_dialog import DeployConfirmDialog
 from .store import dispatch, get_system_feature
 from .trust_file_details import TrustFileDetails
-from .ui_widget import UIWidget
+from .ui_widget import UIConnectedWidget
 
 
 class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
