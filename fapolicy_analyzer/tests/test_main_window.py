@@ -1,22 +1,26 @@
-import context  # noqa: F401
-import pytest
 import locale
+
 import gi
+import pytest
+
+import context  # noqa: F401
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
+from unittest.mock import MagicMock
+
 from callee import Attrs, InstanceOf
 from fapolicy_analyzer import Changeset
-from helpers import refresh_gui
-from mocks import mock_System
+from gi.repository import Gtk
 from redux import Action
 from rx import create
-from unittest.mock import MagicMock
 from ui.actions import ADD_NOTIFICATION
 from ui.main_window import MainWindow, router
-from ui.session_manager import sessionManager, NotificationType
+from ui.session_manager import NotificationType, sessionManager
 from ui.store import init_store
 from ui.strings import AUTOSAVE_RESTORE_ERROR_MSG
+
+from helpers import refresh_gui
+from mocks import mock_System
 
 test_changeset = Changeset()
 test_changeset.add_trust("/tmp/DeadBeef.txt")
@@ -390,3 +394,10 @@ def test_on_start_w_failed_restore(mock_dispatch, mocker):
             ),
         )
     )
+
+
+def test_toolbar_deploy_operation(mainWindow, mocker):
+    mocker.patch("ui.operations.deploy_changesets_op.get_system_feature")
+    mockDeploy = mocker.patch("ui.main_window.DeployChangesetsOp.deploy")
+    mainWindow.get_object("deployChanges").get_child().clicked()
+    mockDeploy.assert_called_once()

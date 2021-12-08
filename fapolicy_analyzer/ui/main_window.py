@@ -1,21 +1,24 @@
-from os import path
 import logging
-import gi
-import fapolicy_analyzer.ui.strings as strings
-
-gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
 from locale import gettext as _
+from os import path
+
+import fapolicy_analyzer.ui.strings as strings
+import gi
 from fapolicy_analyzer.util.format import f
-from .actions import add_notification, NotificationType
+
+from .actions import NotificationType, add_notification
 from .analyzer_selection_dialog import ANALYZER_SELECTION
 from .database_admin_page import DatabaseAdminPage
 from .notification import Notification
+from .operations import DeployChangesetsOp
 from .policy_rules_admin_page import PolicyRulesAdminPage
 from .session_manager import sessionManager
 from .store import dispatch, get_system_feature
-from .unapplied_changes_dialog import UnappliedChangesDialog
 from .ui_widget import UIConnectedWidget
+from .unapplied_changes_dialog import UnappliedChangesDialog
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk  # isort: skip
 
 
 def router(selection, data=None):
@@ -275,3 +278,7 @@ class MainWindow(UIConnectedWidget):
     def on_trustDbMenu_activate(self, menuitem, *args):
         self.__pack_main_content(router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN))
         self.__set_trustDbMenu_sensitive(False)
+
+    def on_deployChanges_clicked(self, *args):
+        with DeployChangesetsOp(self.window) as op:
+            op.deploy(self._changesets)
