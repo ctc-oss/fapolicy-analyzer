@@ -91,7 +91,7 @@ impl PySystem {
         self.rs.apply_trust_changes(change.into()).into()
     }
 
-    /// Update the host system with this state of this System
+    /// Update the host system with this state of this System and signal fapolicyd to reload trust
     pub fn deploy(&self) -> PyResult<()> {
         self.deploy_only().and_then(|_| {
             fapolicy_daemon::reload_databases()
@@ -99,11 +99,10 @@ impl PySystem {
         })
     }
 
+    /// Update the host system with this state of this System
     pub fn deploy_only(&self) -> PyResult<()> {
-        match deploy_app_state(&self.rs) {
-            Ok(_) => Ok(()),
-            Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{:?}", e))),
-        }
+        deploy_app_state(&self.rs)
+            .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))
     }
 
     /// Check the host system state against the state of this System

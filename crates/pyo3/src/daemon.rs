@@ -2,6 +2,8 @@ use crate::system::PySystem;
 use fapolicy_daemon::svc::Handle;
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
+use std::thread::sleep;
+use std::time::Duration;
 
 #[pyclass(module = "svc", name = "Handle")]
 #[derive(Clone)]
@@ -86,6 +88,7 @@ fn stop_fapolicyd() -> PyResult<()> {
 fn rollback_fapolicyd(to: PySystem) -> PyResult<()> {
     stop_fapolicyd()
         .and_then(|_| to.deploy_only())
+        .and_then(|_| wait_for_daemon())
         .and_then(|_| start_fapolicyd())
 }
 
@@ -94,6 +97,19 @@ fn is_fapolicyd_active() -> PyResult<bool> {
     fapolicy_daemon::svc::Handle::default()
         .active()
         .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
+}
+
+fn wait_for_daemon() -> PyResult<()> {
+    for _ in 0..10 {
+        sleep(Duration::from_secs(1));
+        if fapolicy_daemon::svc::Handle::default()
+            .active()
+            .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))?
+        {
+            return Ok(());
+        }
+    }
+    Err(PyRuntimeError::new_err("Daemon unresponsive"))
 }
 
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
