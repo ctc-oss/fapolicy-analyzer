@@ -41,16 +41,6 @@ class ObjectList(SubjectList):
             else Colors.LIGHT_RED
         )
 
-
-    def __handle_selection_changed(self, data):
-        objects = [datum[4] for datum in data] if data else None
-        for obj in objects:
-            self.object_selection_changed(obj)
-
-    def _update_tree_count(self, count):
-        label = FILE_LABEL if count == 1 else FILES_LABEL
-        self.treeCount.set_text(" ".join([str(count), label]))
-
     def load_store(self, objects, **kwargs):
         self._systemTrust = kwargs.get("systemTrust", [])
         self._ancillaryTrust = kwargs.get("ancillaryTrust", [])
