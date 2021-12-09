@@ -116,11 +116,11 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
                 )
 
                 self.trustFileDetails.set_trust_status(
-                    strings.TRUSTED_FILE_MESSAGE
+                    strings.SYSTEM_TRUSTED_FILE_MESSAGE
                     if trusted
-                    else strings.DISCREPANCY_FILE_MESSAGE
+                    else strings.SYSTEM_DISCREPANCY_FILE_MESSAGE
                     if status == "d"
-                    else strings.UNKNOWN_FILE_MESSAGE
+                    else strings.SYSTEM_UNKNOWN_FILE_MESSAGE
                 )
             else:
                 trustBtn.set_sensitive(False)
