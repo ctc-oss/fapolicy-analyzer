@@ -1,18 +1,16 @@
 import logging
+from locale import gettext as _
+
 import fapolicy_analyzer.ui.strings as strings
 from events import Events
-from locale import gettext as _
-from fapolicy_analyzer.util.format import f
 from fapolicy_analyzer.util import fs  # noqa: F401
-from .actions import (
-    NotificationType,
-    add_notification,
-    request_system_trust,
-)
+from fapolicy_analyzer.util.format import f
+
+from .actions import NotificationType, add_notification, request_system_trust
 from .configs import Colors
 from .store import dispatch, get_system_feature
-from .trust_file_list import TrustFileList
 from .trust_file_details import TrustFileDetails
+from .trust_file_list import TrustFileList
 from .ui_widget import UIConnectedWidget
 
 
@@ -109,6 +107,17 @@ class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
                 )
             else:
                 addBtn.set_sensitive(False)
+            )
+            self.trustFileDetails.set_trust_status(
+                strings.SYSTEM_TRUSTED_FILE_MESSAGE
+                if trusted
+                else strings.SYSTEM_DISCREPANCY_FILE_MESSAGE
+                if status == "d"
+                else strings.SYSTEM_UNKNOWN_FILE_MESSAGE
+            )
+        else:
+            addBtn.set_sensitive(False)
+
 
     def on_addBtn_clicked(self, *args):
         if self.selectedFile:

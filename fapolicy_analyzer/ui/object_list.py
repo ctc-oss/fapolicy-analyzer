@@ -1,62 +1,24 @@
-import gi
 import fapolicy_analyzer.ui.strings as strings
+import gi
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
-from .add_file_button import AddFileButton
+
 from .configs import Colors
-from .searchable_list import SearchableList
-from .strings import FILE_LABEL, FILES_LABEL
+from .subject_list import SubjectList
 
 
-class ObjectList(SearchableList):
-    def __init__(self):
-        self.__events__ = [
-            *super().__events__,
-            "object_selection_changed",
-        ]
-
-        add_button = AddFileButton()
-        add_button.files_added += lambda files: print(files)
-        add_button.get_ref().set_sensitive(False)  # disable for now in readonly-view
-
-        super().__init__(
-            self.__columns(),
-            add_button.get_ref(),
-            searchColumnIndex=3,
-            defaultSortIndex=3,
-        )
-
-        self.load_store([])
-        self.selection_changed += self.__handle_selection_changed
-
-    def __columns(self):
-        trustCell = Gtk.CellRendererText()
-        trustCell.set_property("background", "light gray")
-        trustColumn = Gtk.TreeViewColumn(
-            strings.FILE_LIST_TRUST_HEADER, trustCell, markup=0
-        )
-        trustColumn.set_sort_column_id(0)
+class ObjectList(SubjectList):
+    def _columns(self):
+        columns = super()._columns()
         modeCell = Gtk.CellRendererText()
         modeCell.set_property("background", "light gray")
         modeColumn = Gtk.TreeViewColumn(
-            strings.FILE_LIST_MODE_HEADER, modeCell, markup=1
+            strings.FILE_LIST_MODE_HEADER, modeCell, markup=5
         )
-        modeColumn.set_sort_column_id(1)
-        accessCell = Gtk.CellRendererText()
-        accessCell.set_property("background", "light gray")
-        accessColumn = Gtk.TreeViewColumn(
-            strings.FILE_LIST_ACCESS_HEADER, accessCell, markup=2
-        )
-        accessColumn.set_sort_column_id(2)
-        fileColumn = Gtk.TreeViewColumn(
-            strings.FILE_LIST_FILE_HEADER,
-            Gtk.CellRendererText(),
-            text=3,
-            cell_background=5,
-        )
-        fileColumn.set_sort_column_id(3)
-        return [trustColumn, modeColumn, accessColumn, fileColumn]
+        modeColumn.set_sort_column_id(5)
+        columns.insert(1, modeColumn)
+        return columns
 
     def __markup(self, value, options, seperator="/", multiValue=False):
         def wrap(x):
@@ -79,6 +41,7 @@ class ObjectList(SearchableList):
             else Colors.LIGHT_RED
         )
 
+
     def __handle_selection_changed(self, data):
         objects = [datum[4] for datum in data] if data else None
         for obj in objects:
@@ -88,8 +51,11 @@ class ObjectList(SearchableList):
         label = FILE_LABEL if count == 1 else FILES_LABEL
         self.treeCount.set_text(" ".join([str(count), label]))
 
-    def load_store(self, objects):
-        store = Gtk.ListStore(str, str, str, str, object, str)
+    def load_store(self, objects, **kwargs):
+        self._systemTrust = kwargs.get("systemTrust", [])
+        self._ancillaryTrust = kwargs.get("ancillaryTrust", [])
+        store = Gtk.ListStore(str, str, str, object, str, str)
+
         for o in objects:
             status = self.__markup(o.trust.upper(), ["ST", "AT", "U"])
             mode = self.__markup(
@@ -100,6 +66,7 @@ class ObjectList(SearchableList):
             )
             access = self.__markup(o.access.upper(), ["A", "D"])
             bgColor = self.__color(o.access, o.mode)
-            store.append([status, mode, access, o.file, o, bgColor])
+            store.append([status, access, o.file, o, bgColor, mode])
 
-        super().load_store(store)
+        # call grandfather SearchableList's load_store method
+        super(SubjectList, self).load_store(store)

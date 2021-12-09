@@ -3,6 +3,7 @@ import gi
 gi.require_version("Gtk", "3.0")
 from events import Events
 from gi.repository import Gtk
+
 from .loader import Loader
 from .ui_widget import UIBuilderWidget
 
@@ -49,7 +50,7 @@ class SearchableList(UIBuilderWidget, Events):
     def _update_tree_count(self, count):
         self.treeCount.set_text(str(count))
 
-    def load_store(self, store):
+    def load_store(self, store, **kwargs):
         def apply_prev_sort(model):
             if currentModel := self.treeView.get_model():
                 currentSort = currentModel.get_sort_column_id()

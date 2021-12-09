@@ -42,7 +42,7 @@ class TrustFileList(SearchableList):
         ]
 
         super().__init__(
-            self._columns(), *args, searchColumnIndex=1, defaultSortIndex=1
+            self._columns(), *args, searchColumnIndex=2, defaultSortIndex=2
         )
         self.trust_func = trust_func
         self.markup_func = markup_func

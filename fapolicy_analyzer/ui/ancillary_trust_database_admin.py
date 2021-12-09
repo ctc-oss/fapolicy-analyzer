@@ -1,21 +1,24 @@
-import gi
 import logging
+
 import fapolicy_analyzer.ui.strings as strings
+import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
-from fapolicy_analyzer import Changeset, Trust
 from locale import gettext as _
+
+from fapolicy_analyzer import Changeset, Trust
 from fapolicy_analyzer.util import fs  # noqa: F401
-from fapolicy_analyzer.util.format import f
 from fapolicy_analyzer.util.fapd_dbase import fapd_dbase_snapshot
+from fapolicy_analyzer.util.format import f
+from gi.repository import Gtk
+
 from .actions import (
-    apply_changesets,
-    add_notification,
-    clear_changesets,
     NotificationType,
-    request_ancillary_trust,
+    add_notification,
+    apply_changesets,
+    clear_changesets,
     deploy_ancillary_trust,
+    request_ancillary_trust,
     set_system_checkpoint,
 )
 from .ancillary_trust_file_list import AncillaryTrustFileList
