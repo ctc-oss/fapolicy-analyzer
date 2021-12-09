@@ -12,7 +12,7 @@ Source0: %{url}/archive/%{git_commit}/%{name}-%{git_commit}.tar.gz
 BuildArch:      x86_64
 Requires:       {{ pyrpm }} >= 3.9
 BuildRequires:  {{ pyrpm }} >= 3.9, {{ pyrpm }}-rpm-macros, {{ pyrpm }}-devel, {{ pyrpm }}-pip, {{ pyrpm }}-wheel
-Recommends:     {{ pyrpm }}-gobject, {{ pyrpm }}-events, {{ pyrpm }}-configargparse, {{ pyrpm }}-more-itertools
+Recommends:     {{ pyrpm }}-gobject, {{ pyrpm }}-events, {{ pyrpm }}-configargparse, {{ pyrpm }}-more-itertools, {{ pyrpm }}-rx
 Requires:       gtk3, dbus-libs
 BuildRequires:  dbus-devel, cargo
 AutoReqProv:    no
@@ -33,10 +33,12 @@ VERSION=%{version} %{python3} setup.py bdist_wheel
 
 %install
 %{python3} -m pip install --no-deps --no-input -v --target %{buildroot}%{python3_sitelib} dist/*.whl
+%{python3} -m pip install --no-deps --no-input -v --target %{buildroot}%{python3_sitelib} vendor/ReduxPY
 install bin/fapolicy-analyzer %{buildroot}%{_sbindir}/fapolicy-analyzer -D
 
 %files
 %{python3_sitelib}/fapolicy_analyzer*
+%{python3_sitelib}/redux*
 %{_sbindir}/fapolicy-analyzer
 
 %defattr(-,root,root)
