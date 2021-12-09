@@ -26,6 +26,7 @@ from fapolicy_analyzer.ui.actions import (
     received_daemon_status,
     received_daemon_status_update,
     received_daemon_stop,
+    DaemonState,
 )
 from fapolicy_analyzer.ui.reducers import daemon_reducer
 from gi.repository import GLib
@@ -90,7 +91,11 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
             logging.debug(f"daemon_feature::finish({daemon})")
             _fapd_ref = daemon
             _fapd_status = _fapd_ref.is_active()
-            dispatch(received_daemon_status_update(_fapd_status))
+            dispatch(received_daemon_status_update(DaemonState(
+                status=_fapd_status,
+                handle=_fapd_ref,
+                error=None
+            )))
 
         if daemon:
             finish(daemon)

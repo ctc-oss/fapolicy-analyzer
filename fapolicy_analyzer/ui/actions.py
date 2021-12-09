@@ -1,6 +1,6 @@
 import logging
 from enum import Enum
-from fapolicy_analyzer import Changeset, Event, Group, Trust, User
+from fapolicy_analyzer import Changeset, Event, Group, Handle, Trust, User
 from itertools import count
 from redux import Action, create_action
 from typing import Any, Iterator, NamedTuple, Sequence
@@ -84,6 +84,12 @@ class Notification(NamedTuple):
     id: int
     text: str
     type: NotificationType
+
+
+class DaemonState(NamedTuple):
+    error: str
+    status: bool
+    handle: Handle
 
 
 def add_notification(text: str, type: NotificationType) -> Action:
@@ -219,9 +225,9 @@ def request_daemon_status() -> Action:
     return _create_action(REQUEST_DAEMON_STATUS)
 
 
-def received_daemon_status(status: bool) -> Action:
-    logging.debug(f"received_daemon_status({status}) -> Action: RECEIVED_DAEMON_STATUS")
-    return _create_action(RECEIVED_DAEMON_STATUS, status)
+def received_daemon_status(state: DaemonState) -> Action:
+    logging.debug(f"received_daemon_status({state}) -> RECEIVED_DAEMON_STATUS")
+    return _create_action(RECEIVED_DAEMON_STATUS, state)
 
 
 def error_daemon_status(error: str) -> Action:
@@ -233,9 +239,9 @@ def request_daemon_status_update():
     return _create_action(REQUEST_DAEMON_STATUS_UPDATE)
 
 
-def received_daemon_status_update(bStatus: bool):
-    logging.debug(f"received_daemon_status_update({bStatus})")
-    return _create_action(RECEIVED_DAEMON_STATUS_UPDATE, bStatus)
+def received_daemon_status_update(state: DaemonState):
+    logging.debug(f"received_daemon_status_update({state})")
+    return _create_action(RECEIVED_DAEMON_STATUS_UPDATE, state)
 
 
 def error_daemon_status_update(error: str):

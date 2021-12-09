@@ -1,20 +1,14 @@
 import logging
 from redux import Reducer, Action, handle_actions
-from typing import NamedTuple, Optional, Any
+from typing import Optional, Any
 from fapolicy_analyzer.ui.actions import (
     RECEIVED_DAEMON_START,
     RECEIVED_DAEMON_STOP,
     RECEIVED_DAEMON_STATUS,
     RECEIVED_DAEMON_RELOAD,
     RECEIVED_DAEMON_STATUS_UPDATE,
+    DaemonState,
 )
-from fapolicy_analyzer import Handle
-
-
-class DaemonState(NamedTuple):
-    error: str
-    status: bool
-    handle: Handle
 
 
 def _create_state(state: DaemonState, **kwargs: Optional[Any]) -> DaemonState:

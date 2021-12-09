@@ -13,6 +13,7 @@ from .actions import (
     request_daemon_stop,
     request_daemon_reload,
     request_daemon_status,
+    DaemonState,
 )
 from .analyzer_selection_dialog import ANALYZER_SELECTION
 from .database_admin_page import DatabaseAdminPage
@@ -125,16 +126,16 @@ class MainWindow(UIConnectedWidget):
         menuItem = self.get_object("trustDbMenu")
         menuItem.set_sensitive(sensitive)
 
-    def __update_fapd_status(self, bStatus: bool):
-        logging.debug(f"__update_fapd_status({bStatus})")
-        if bStatus:
+    def __update_fapd_status(self, status: bool):
+        logging.debug(f"__update_fapd_status({status})")
+        if status:
             self.fapdStatus.set_from_stock(stock_id="gtk-yes", size=4)
         else:
             self.fapdStatus.set_from_stock(stock_id="gtk-no", size=4)
 
-    def on_update_daemon_status(self, status: bool):
-        logging.debug(f"on_update_daemon_status({status})")
-        GLib.idle_add(self.__update_fapd_status, status[1])
+    def on_update_daemon_status(self, state: DaemonState):
+        logging.debug(f"on_update_daemon_status({state})")
+        GLib.idle_add(self.__update_fapd_status, state.status)
 
     def on_start(self, *args):
         self.__pack_main_content(router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN))
