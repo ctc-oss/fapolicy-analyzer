@@ -14,16 +14,14 @@ from fapolicy_analyzer.ui.actions import (
     REQUEST_DAEMON_START,
     REQUEST_DAEMON_STOP,
     REQUEST_DAEMON_RELOAD,
-    REQUEST_DAEMON_STATUS,
     REQUEST_DAEMON_STATUS_UPDATE,
     error_daemon_reload,
     error_daemon_start,
-    error_daemon_status,
+    error_daemon_status_update,
     error_daemon_stop,
     init_daemon,
     received_daemon_reload,
     received_daemon_start,
-    received_daemon_status,
     received_daemon_status_update,
     received_daemon_stop,
     DaemonState,
@@ -77,7 +75,11 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
                 if(bStatus != _fapd_status):
                     logging.debug("monitor_daemon():Dispatching update request")
                     _fapd_status = bStatus
-                    dispatch(received_daemon_status_update(bStatus))
+                    dispatch(received_daemon_status_update(DaemonState(
+                        status=_fapd_status,
+                        handle=_fapd_ref,
+                        error=None
+                    )))
                 sleep(timeout)
 
         def start_daemon_monitor():
@@ -116,18 +118,9 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
         _fapd_ref.start()
         return received_daemon_start()
 
-    def _daemon_status(action: Action) -> Action:
-        logging.debug(f"_daemon_status(action: {action}) -> Action")
-        status = _fapd_ref.is_active()
-        logging.debug(f"_daemon_status::Fapolicyd status: {status}")
-        _fapd_status = status
-        return received_daemon_status(_fapd_status)
-
     def _daemon_status_update(action: Action) -> Action:
-        logging.debug(f"_daemon_status_update(action: {action})")
-        status = _fapd_ref.is_active()
-        logging.debug(f"_daemon_status_update::Fapolicyd status: {status}")
-        _fapd_status = status
+        _fapd_status = _fapd_ref.is_active()
+        logging.debug(f"_daemon_status_update({action}): status:{_fapd_status}")
         return received_daemon_status_update(_fapd_status)
 
     def _daemon_stop(action: Action) -> Action:
@@ -152,16 +145,10 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
         catch(lambda ex, source: of(error_daemon_start(str(ex)))),
     )
 
-    request_daemon_status_epic = pipe(
-        of_type(REQUEST_DAEMON_STATUS),
-        map(_daemon_status),
-        catch(lambda ex, source: of(error_daemon_status(str(ex)))),
-    )
-
     request_daemon_status_update_epic = pipe(
         of_type(REQUEST_DAEMON_STATUS_UPDATE),
         map(_daemon_status_update),
-        catch(lambda ex, source: of(error_daemon_status(str(ex)))),
+        catch(lambda ex, source: of(error_daemon_status_update(str(ex)))),
     )
 
     request_daemon_stop_epic = pipe(
@@ -174,7 +161,6 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
         init_epic,
         request_daemon_reload_epic,
         request_daemon_start_epic,
-        request_daemon_status_epic,
         request_daemon_status_update_epic,
         request_daemon_stop_epic,
     )

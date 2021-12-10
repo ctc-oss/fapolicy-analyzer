@@ -53,10 +53,6 @@ REQUEST_DAEMON_STOP = "REQUEST_DAEMON_STOP"
 RECEIVED_DAEMON_STOP = "RECEIVED_DAEMON_STOP"
 ERROR_DAEMON_STOP = "ERROR_DAEMON_STOP"
 
-REQUEST_DAEMON_STATUS = "REQUEST_DAEMON_STATUS"
-RECEIVED_DAEMON_STATUS = "RECEIVED_DAEMON_STATUS"
-ERROR_DAEMON_STATUS = "ERROR_DAEMON_STATUS"
-
 REQUEST_DAEMON_STATUS_UPDATE = "REQUEST_DAEMON_STATUS_UPDATE"
 RECEIVED_DAEMON_STATUS_UPDATE = "RECEIVED_DAEMON_STATUS_UPDATE"
 ERROR_DAEMON_STATUS_UPDATE = "ERROR_DAEMON_STATUS_UPDATE"
@@ -218,20 +214,6 @@ def received_daemon_reload() -> Action:
 
 def error_daemon_reload(error: str) -> Action:
     return _create_action(ERROR_DAEMON_RELOAD, error)
-
-
-def request_daemon_status() -> Action:
-    logging.debug("request_daemon_status() -> Action: REQUEST_DAEMON_STATUS")
-    return _create_action(REQUEST_DAEMON_STATUS)
-
-
-def received_daemon_status(state: DaemonState) -> Action:
-    logging.debug(f"received_daemon_status({state}) -> RECEIVED_DAEMON_STATUS")
-    return _create_action(RECEIVED_DAEMON_STATUS, state)
-
-
-def error_daemon_status(error: str) -> Action:
-    return _create_action(ERROR_DAEMON_STATUS, error)
 
 
 def request_daemon_status_update():

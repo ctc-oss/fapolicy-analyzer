@@ -12,7 +12,6 @@ from .actions import (
     request_daemon_start,
     request_daemon_stop,
     request_daemon_reload,
-    request_daemon_status,
     DaemonState,
 )
 from .analyzer_selection_dialog import ANALYZER_SELECTION
@@ -135,7 +134,8 @@ class MainWindow(UIConnectedWidget):
 
     def on_update_daemon_status(self, state: DaemonState):
         logging.debug(f"on_update_daemon_status({state})")
-        GLib.idle_add(self.__update_fapd_status, state.status)
+        # GLib.idle_add(self.__update_fapd_status, state.status)
+        self.__update_fapd_status(state.status)
 
     def on_start(self, *args):
         self.__pack_main_content(router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN))
@@ -317,7 +317,3 @@ class MainWindow(UIConnectedWidget):
     def on_fapdReloadMenu_activate(self, menuitem, data=None):
         logging.debug("on_fapdReloadMenu_activate() invoked.")
         dispatch(request_daemon_reload())
-
-    def on_fapdStatusMenu_activate(self, menuitem, data=None):
-        logging.debug("on_fapdStatusMenu_activate() invoked.")
-        dispatch(request_daemon_status())
