@@ -3,7 +3,7 @@ import logging
 import gi
 import fapolicy_analyzer.ui.strings as strings
 gi.require_version("Gtk", "3.0")
-from gi.repository import GLib, Gtk
+from gi.repository import Gtk  # , GLib
 from locale import gettext as _
 from os import geteuid
 from fapolicy_analyzer.util.format import f
