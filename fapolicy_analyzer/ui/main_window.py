@@ -3,7 +3,7 @@ import logging
 import gi
 import fapolicy_analyzer.ui.strings as strings
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk  # , GLib
+from gi.repository import Gtk
 from locale import gettext as _
 from os import geteuid
 from fapolicy_analyzer.util.format import f
@@ -134,7 +134,6 @@ class MainWindow(UIConnectedWidget):
 
     def on_update_daemon_status(self, state: DaemonState):
         logging.debug(f"on_update_daemon_status({state})")
-        # GLib.idle_add(self.__update_fapd_status, state.status)
         self.__update_fapd_status(state.status)
 
     def on_start(self, *args):
