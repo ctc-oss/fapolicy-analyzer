@@ -1,4 +1,4 @@
-import fapolicy_analyzer.tests.context  # noqa: F401 # isort: skip
+import context  # noqa: F401 # isort: skip
 from unittest.mock import MagicMock, patch
 
 import gi
