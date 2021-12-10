@@ -14,7 +14,6 @@ from fapolicy_analyzer.ui.actions import (
     REQUEST_DAEMON_START,
     REQUEST_DAEMON_STOP,
     REQUEST_DAEMON_RELOAD,
-    REQUEST_DAEMON_STATUS_UPDATE,
     error_daemon_reload,
     error_daemon_start,
     error_daemon_status_update,
@@ -145,12 +144,6 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
         catch(lambda ex, source: of(error_daemon_start(str(ex)))),
     )
 
-    request_daemon_status_update_epic = pipe(
-        of_type(REQUEST_DAEMON_STATUS_UPDATE),
-        map(_daemon_status_update),
-        catch(lambda ex, source: of(error_daemon_status_update(str(ex)))),
-    )
-
     request_daemon_stop_epic = pipe(
         of_type(REQUEST_DAEMON_STOP),
         map(_daemon_stop),
@@ -161,7 +154,6 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
         init_epic,
         request_daemon_reload_epic,
         request_daemon_start_epic,
-        request_daemon_status_update_epic,
         request_daemon_stop_epic,
     )
 
