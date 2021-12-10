@@ -17,6 +17,7 @@ from ui.actions import (
     CLEAR_CHANGESETS,
     DEPLOY_ANCILLARY_TRUST,
     REQUEST_ANCILLARY_TRUST,
+    RESTORE_SYSTEM_CHECKPOINT,
     SET_SYSTEM_CHECKPOINT,
     NotificationType,
 )
@@ -235,10 +236,9 @@ def test_on_revert_deployment(mock_dispatch, mocker):
             ),
         )
     )
-    mock_dispatch.assert_not_any_call(
-        InstanceOf(Action) & Attrs(type=SET_SYSTEM_CHECKPOINT)
+    mock_dispatch.assert_any_call(
+        InstanceOf(Action) & Attrs(type=RESTORE_SYSTEM_CHECKPOINT)
     )
-    mock_dispatch.assert_not_any_call(InstanceOf(Action) & Attrs(type=CLEAR_CHANGESETS))
 
 
 @pytest.mark.parametrize("confirm_resp", [Gtk.ResponseType.YES])
