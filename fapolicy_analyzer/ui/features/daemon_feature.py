@@ -16,7 +16,6 @@ from fapolicy_analyzer.ui.actions import (
     REQUEST_DAEMON_RELOAD,
     error_daemon_reload,
     error_daemon_start,
-    error_daemon_status_update,
     error_daemon_stop,
     init_daemon,
     received_daemon_reload,
