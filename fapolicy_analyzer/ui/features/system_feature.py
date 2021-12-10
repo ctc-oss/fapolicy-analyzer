@@ -1,11 +1,14 @@
-import gi
 import logging
 import sys
+
+import gi
 
 gi.require_version("Gtk", "3.0")
 
 from concurrent.futures import ThreadPoolExecutor
-from fapolicy_analyzer import Changeset, System
+from typing import Callable, Sequence
+
+from fapolicy_analyzer import Changeset, System, rollback_fapolicyd
 from fapolicy_analyzer.ui.actions import (
     APPLY_CHANGESETS,
     DEPLOY_ANCILLARY_TRUST,
@@ -39,15 +42,14 @@ from fapolicy_analyzer.util.fapd_dbase import fapd_dbase_snapshot
 from gi.repository import GLib
 from redux import (
     Action,
+    ReduxFeatureModule,
     combine_epics,
     create_feature_module,
     of_init_feature,
     of_type,
-    ReduxFeatureModule,
 )
 from rx import of, pipe
 from rx.operators import catch, ignore_elements, map
-from typing import Callable, Sequence
 
 SYSTEM_FEATURE = "system"
 _system: System
@@ -121,6 +123,7 @@ def create_system_feature(
     def _restore_checkpoint(action: Action) -> Action:
         global _system
         _system = _checkpoint
+        rollback_fapolicyd(_system)
         return clear_changesets()
 
     def _get_events(action: Action) -> Action:
@@ -168,7 +171,9 @@ def create_system_feature(
     )
 
     restore_system_checkpoint_epic = pipe(
-        of_type(RESTORE_SYSTEM_CHECKPOINT), map(_restore_checkpoint)
+        of_type(RESTORE_SYSTEM_CHECKPOINT),
+        map(_restore_checkpoint),
+        catch(lambda ex, source: of(error_deploying_ancillary_trust(str(ex)))),
     )
 
     request_events_epic = pipe(

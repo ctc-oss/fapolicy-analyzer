@@ -19,6 +19,7 @@ from .actions import (
     clear_changesets,
     deploy_ancillary_trust,
     request_ancillary_trust,
+    restore_system_checkpoint,
     set_system_checkpoint,
 )
 from .ancillary_trust_file_list import AncillaryTrustFileList
@@ -69,8 +70,7 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
             dispatch(set_system_checkpoint())
             dispatch(clear_changesets())
         else:
-            # TODO: revert here?
-            return
+            dispatch(restore_system_checkpoint())
 
     def add_trusted_files(self, *files):
         changeset = Changeset()
@@ -164,7 +164,7 @@ SHA256: {fs.sha(trust.path)}"""
 
             logging.debug("Deploying...")
             self._deploying = True
-            dispatch((deploy_ancillary_trust()))
+            dispatch(deploy_ancillary_trust())
 
     def on_next_system(self, system):
         changesets = system.get("changesets")
