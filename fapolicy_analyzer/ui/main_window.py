@@ -321,6 +321,7 @@ class MainWindow(UIConnectedWidget):
     def on_fapdReloadMenu_activate(self, menuitem, data=None):
         logging.debug("on_fapdReloadMenu_activate() invoked.")
         dispatch(request_daemon_reload())
+
     def on_deployChanges_clicked(self, *args):
         with DeployChangesetsOp(self.window) as op:
             op.deploy(self._changesets)

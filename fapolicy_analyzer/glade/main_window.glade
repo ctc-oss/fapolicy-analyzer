@@ -280,11 +280,11 @@
                 <property name="spacing">2</property>
                 <child>
                   <object class="GtkProgressBar" id="fapaStatusProgressBar">
-                    <property name="visible">True</property>
+                    <property name="visible">False</property>
                     <property name="can-focus">False</property>
-                    <property name="fraction">0.5</property>
+                    <property name="fraction">0.0</property>
                     <property name="text" translatable="yes">Percent Complete</property>
-                    <property name="show-text">True</property>
+                    <property name="show-text">False</property>
                   </object>
                   <packing>
                     <property name="expand">True</property>
