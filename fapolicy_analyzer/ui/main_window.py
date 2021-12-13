@@ -7,7 +7,8 @@ import gi
 from fapolicy_analyzer.util.format import f
 
 from .actions import (
-    NotificationType, add_notification
+    NotificationType,
+    add_notification,
     request_daemon_start,
     request_daemon_stop,
     request_daemon_reload,
