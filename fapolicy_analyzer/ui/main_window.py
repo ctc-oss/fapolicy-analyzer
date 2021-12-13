@@ -153,6 +153,7 @@ class MainWindow(UIConnectedWidget):
         dirty = len(self._changesets) > 0
         title = f"*{self.strTopLevelTitle}" if dirty else self.strTopLevelTitle
         self.windowTopLevel.set_title(title)
+        self.get_object("deployChanges").set_sensitive(dirty)
 
     def on_openMenu_activate(self, menuitem, data=None):
         logging.debug("Callback entered: MainWindow::on_openMenu_activate()")

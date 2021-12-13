@@ -13,6 +13,7 @@ from fapolicy_analyzer import Changeset
 from gi.repository import Gtk
 from redux import Action
 from rx import create
+from rx.subject import Subject
 from ui.actions import ADD_NOTIFICATION
 from ui.main_window import MainWindow, router
 from ui.session_manager import NotificationType, sessionManager
@@ -401,3 +402,33 @@ def test_toolbar_deploy_operation(mainWindow, mocker):
     mockDeploy = mocker.patch("ui.main_window.DeployChangesetsOp.deploy")
     mainWindow.get_object("deployChanges").get_child().clicked()
     mockDeploy.assert_called_once()
+
+
+def test_toggles_deploy_changes_toolbar_btn(mocker):
+    system_features_mock = Subject()
+    mocker.patch(
+        "ui.main_window.get_system_feature",
+        return_value=system_features_mock,
+    )
+    init_store(mock_System())
+    deployBtn = MainWindow().get_object("deployChanges")
+    assert not deployBtn.get_sensitive()
+    system_features_mock.on_next({"changesets": ["foo"]})
+    assert deployBtn.get_sensitive()
+    system_features_mock.on_next({"changesets": []})
+    assert not deployBtn.get_sensitive()
+
+
+def test_toggles_dirty_title(mocker):
+    system_features_mock = Subject()
+    mocker.patch(
+        "ui.main_window.get_system_feature",
+        return_value=system_features_mock,
+    )
+    init_store(mock_System())
+    windowRef = MainWindow().get_ref()
+    assert not windowRef.get_title().startswith("*")
+    system_features_mock.on_next({"changesets": ["foo"]})
+    assert windowRef.get_title().startswith("*")
+    system_features_mock.on_next({"changesets": []})
+    assert not windowRef.get_title().startswith("*")
