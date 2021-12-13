@@ -1,14 +1,13 @@
-from os import path
 import logging
-import gi
-import fapolicy_analyzer.ui.strings as strings
-gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
 from locale import gettext as _
-from os import geteuid
+from os import path, geteuid
+
+import fapolicy_analyzer.ui.strings as strings
+import gi
 from fapolicy_analyzer.util.format import f
+
 from .actions import (
-    add_notification, NotificationType,
+    NotificationType, add_notification
     request_daemon_start,
     request_daemon_stop,
     request_daemon_reload,
@@ -17,11 +16,15 @@ from .actions import (
 from .analyzer_selection_dialog import ANALYZER_SELECTION
 from .database_admin_page import DatabaseAdminPage
 from .notification import Notification
+from .operations import DeployChangesetsOp
 from .policy_rules_admin_page import PolicyRulesAdminPage
 from .session_manager import sessionManager
 from .store import dispatch, get_system_feature, get_daemon_feature
-from .unapplied_changes_dialog import UnappliedChangesDialog
 from .ui_widget import UIConnectedWidget
+from .unapplied_changes_dialog import UnappliedChangesDialog
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk  # isort: skip
 
 
 def router(selection, data=None):
@@ -179,6 +182,7 @@ class MainWindow(UIConnectedWidget):
         dirty = len(self._changesets) > 0
         title = f"*{self.strTopLevelTitle}" if dirty else self.strTopLevelTitle
         self.windowTopLevel.set_title(title)
+        self.get_object("deployChanges").set_sensitive(dirty)
 
     def on_openMenu_activate(self, menuitem, data=None):
         logging.debug("Callback entered: MainWindow::on_openMenu_activate()")
@@ -316,3 +320,6 @@ class MainWindow(UIConnectedWidget):
     def on_fapdReloadMenu_activate(self, menuitem, data=None):
         logging.debug("on_fapdReloadMenu_activate() invoked.")
         dispatch(request_daemon_reload())
+    def on_deployChanges_clicked(self, *args):
+        with DeployChangesetsOp(self.window) as op:
+            op.deploy(self._changesets)
