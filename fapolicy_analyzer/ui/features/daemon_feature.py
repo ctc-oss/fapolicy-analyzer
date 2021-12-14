@@ -102,7 +102,7 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
         else:
             acquire_daemon()
 
-        if os.getenv("NO_DAEMON_MONITORING", "false").lower() == "true":
+        if os.getenv("NO_DAEMON_MONITORING", "false").lower() == "false":
             start_daemon_monitor()
 
         return init_daemon()
