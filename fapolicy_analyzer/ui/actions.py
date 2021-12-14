@@ -56,10 +56,6 @@ ERROR_DAEMON_STOP = "ERROR_DAEMON_STOP"
 RECEIVED_DAEMON_STATUS_UPDATE = "RECEIVED_DAEMON_STATUS_UPDATE"
 ERROR_DAEMON_STATUS_UPDATE = "ERROR_DAEMON_STATUS_UPDATE"
 
-REQUEST_DAEMON_RELOAD = "REQUEST_DAEMON_RELOAD"
-RECEIVED_DAEMON_RELOAD = "RECEIVED_DAEMON_RELOAD"
-ERROR_DAEMON_RELOAD = "ERROR_DAEMON_RELOAD"
-
 
 def _create_action(type: str, payload: Any = None) -> Action:
     return create_action(type)(payload)
@@ -201,18 +197,6 @@ def init_daemon() -> Action:
 
 def daemon_initialized() -> Action:
     return _create_action(DAEMON_INITIALIZED)
-
-
-def request_daemon_reload() -> Action:
-    return _create_action(REQUEST_DAEMON_RELOAD)
-
-
-def received_daemon_reload() -> Action:
-    return _create_action(RECEIVED_DAEMON_RELOAD)
-
-
-def error_daemon_reload(error: str) -> Action:
-    return _create_action(ERROR_DAEMON_RELOAD, error)
 
 
 def received_daemon_status_update(state: DaemonState):

@@ -13,12 +13,9 @@ from fapolicy_analyzer import (
 from fapolicy_analyzer.ui.actions import (
     REQUEST_DAEMON_START,
     REQUEST_DAEMON_STOP,
-    REQUEST_DAEMON_RELOAD,
-    error_daemon_reload,
     error_daemon_start,
     error_daemon_stop,
     init_daemon,
-    received_daemon_reload,
     received_daemon_start,
     received_daemon_status_update,
     received_daemon_stop,
@@ -102,14 +99,10 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
         else:
             acquire_daemon()
 
-        if os.getenv("NO_DAEMON_MONITORING", "false").lower() == "false":
+        if os.getenv("DISABLE_DAEMON_MONITORING", "false").lower() == "false":
             start_daemon_monitor()
 
         return init_daemon()
-
-    def _daemon_reload(action: Action) -> Action:
-        logging.debug("_daemon_reload(action: Action) -> Action")
-        return received_daemon_reload()
 
     def _daemon_start(action: Action) -> Action:
         logging.debug("_daemon_start(action: Action) -> Action")
@@ -131,12 +124,6 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
         map(lambda _: _init_daemon()),
     )
 
-    request_daemon_reload_epic = pipe(
-        of_type(REQUEST_DAEMON_RELOAD),
-        map(_daemon_reload),
-        catch(lambda ex, source: of(error_daemon_reload(str(ex)))),
-    )
-
     request_daemon_start_epic = pipe(
         of_type(REQUEST_DAEMON_START),
         map(_daemon_start),
@@ -151,7 +138,6 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
 
     daemon_epic = combine_epics(
         init_epic,
-        request_daemon_reload_epic,
         request_daemon_start_epic,
         request_daemon_stop_epic,
     )

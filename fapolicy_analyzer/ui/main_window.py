@@ -11,7 +11,6 @@ from .actions import (
     add_notification,
     request_daemon_start,
     request_daemon_stop,
-    request_daemon_reload,
     DaemonState,
 )
 from .analyzer_selection_dialog import ANALYZER_SELECTION
@@ -65,7 +64,6 @@ class MainWindow(UIConnectedWidget):
         if geteuid() != 0:
             self.get_object("fapdStartMenu").set_sensitive(False)
             self.get_object("fapdStopMenu").set_sensitive(False)
-            self.get_object("fapdReloadMenu").set_sensitive(False)
 
         self.window.show_all()
 
@@ -317,10 +315,6 @@ class MainWindow(UIConnectedWidget):
     def on_fapdStopMenu_activate(self, menuitem, data=None):
         logging.debug("on_fapdStopMenu_activate() invoked.")
         dispatch(request_daemon_stop())
-
-    def on_fapdReloadMenu_activate(self, menuitem, data=None):
-        logging.debug("on_fapdReloadMenu_activate() invoked.")
-        dispatch(request_daemon_reload())
 
     def on_deployChanges_clicked(self, *args):
         with DeployChangesetsOp(self.window) as op:
