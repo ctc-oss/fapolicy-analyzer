@@ -8,7 +8,7 @@ use thiserror::Error;
 use fapolicy_daemon::fapolicyd::{RPM_DB_PATH, RULES_FILE_PATH, TRUST_DB_PATH, TRUST_FILE_PATH};
 
 use crate::app::State;
-use crate::sys::Error::{DaemonError, WriteAncillaryFail};
+use crate::sys::Error::WriteAncillaryFail;
 
 #[derive(Error, Debug)]
 pub enum Error {
@@ -35,7 +35,7 @@ pub fn deploy_app_state(state: &State) -> Result<(), Error> {
             .map_err(|_| WriteAncillaryFail("unable to write ancillary trust entry".to_string()))?;
         }
     }
-    fapolicy_daemon::reload_databases().map_err(DaemonError)
+    Ok(())
 }
 
 /// host system configuration information
