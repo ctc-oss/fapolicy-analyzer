@@ -130,7 +130,7 @@ def test_clears_trust_details(widget, mocker):
     untrustBtn = widget.get_object("untrustBtn")
     trustBtn.set_sensitive(True)
     untrustBtn.set_sensitive(True)
-    widget.on_trust_selection_changed(None)
+    widget.on_trust_selection_changed([None])
     assert not trustBtn.get_sensitive()
     assert not untrustBtn.get_sensitive()
     widget.trustFileDetails.clear.assert_called()

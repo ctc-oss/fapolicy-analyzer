@@ -94,8 +94,9 @@ class SubjectList(SearchableList):
 
     def __handle_selection_changed(self, data):
         fileObjs = [datum[3] for datum in data] if data else None
-        for fileObj in fileObjs: 
-            self.file_selection_changed(fileObj)
+#        for fileObj in fileObjs: 
+        fileObj = fileObjs[-1]
+        self.file_selection_changed(fileObj)
                 
 
 
