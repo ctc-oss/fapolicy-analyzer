@@ -1,26 +1,19 @@
-import gi
 import logging
-import fapolicy_analyzer.ui.strings as strings
-
-gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
-from fapolicy_analyzer import Changeset, Trust
 from locale import gettext as _
+
+import fapolicy_analyzer.ui.strings as strings
+from fapolicy_analyzer import Changeset, Trust
+from fapolicy_analyzer.ui.operations.deploy_changesets_op import DeployChangesetsOp
 from fapolicy_analyzer.util import fs  # noqa: F401
 from fapolicy_analyzer.util.format import f
-from fapolicy_analyzer.util.fapd_dbase import fapd_dbase_snapshot
+
 from .actions import (
-    apply_changesets,
-    add_notification,
-    clear_changesets,
     NotificationType,
+    add_notification,
+    apply_changesets,
     request_ancillary_trust,
-    deploy_ancillary_trust,
-    set_system_checkpoint,
 )
 from .ancillary_trust_file_list import AncillaryTrustFileList
-from .confirm_info_dialog import ConfirmInfoDialog
-from .deploy_confirm_dialog import DeployConfirmDialog
 from .store import dispatch, get_system_feature
 from .trust_file_details import TrustFileDetails
 from .ui_widget import UIConnectedWidget
@@ -31,7 +24,6 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
         super().__init__(get_system_feature(), on_next=self.on_next_system)
         self._changesets = []
         self._trust = []
-        self._deploying = False
         self._loading = False
         self.selectedFile = None
 
@@ -56,18 +48,6 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
 
     def __apply_changeset(self, changeset):
         dispatch(apply_changesets(changeset))
-
-    def __display_deploy_confirmation_dialog(self):
-        parent = self.get_ref().get_toplevel()
-        deployConfirmDialog = DeployConfirmDialog(parent).get_ref()
-        revert_resp = deployConfirmDialog.run()
-        deployConfirmDialog.hide()
-        if revert_resp == Gtk.ResponseType.YES:
-            dispatch(set_system_checkpoint())
-            dispatch(clear_changesets())
-        else:
-            # TODO: revert here?
-            return
 
     def add_trusted_files(self, *files):
         changeset = Changeset()
@@ -112,11 +92,11 @@ SHA256: {fs.sha(trust.path)}"""
             )
 
             self.trustFileDetails.set_trust_status(
-                strings.TRUSTED_FILE_MESSAGE
+                strings.ANCILLARY_TRUSTED_FILE_MESSAGE
                 if trusted
-                else strings.DISCREPANCY_FILE_MESSAGE
+                else strings.ANCILLARY_DISCREPANCY_FILE_MESSAGE
                 if status == "d"
-                else strings.UNKNOWN_FILE_MESSAGE
+                else strings.ANCILLARY_UNKNOWN_FILE_MESSAGE
             )
         else:
             trustBtn.set_sensitive(False)
@@ -140,28 +120,8 @@ SHA256: {fs.sha(trust.path)}"""
             self.delete_trusted_files(self.selectedFile)
 
     def on_deployBtn_clicked(self, *args):
-        def changesets_to_path_action_pairs(changesets):
-            """Converts to list of human-readable undeployed path/operation pairs"""
-            return [t for e in changesets for t in e.get_path_action_map().items()]
-
-        listPathActionTuples = changesets_to_path_action_pairs(self._changesets)
-        logging.debug(listPathActionTuples)
-        parent = self.get_ref().get_toplevel()
-        dlgDeployList = ConfirmInfoDialog(parent, listPathActionTuples)
-        confirm_resp = dlgDeployList.run()
-        dlgDeployList.hide()
-
-        if confirm_resp == Gtk.ResponseType.YES:
-            bSaveFapolicydState = dlgDeployList.get_save_state()
-            logging.debug("Save fapolicyd data = {}".format(bSaveFapolicydState))
-            if bSaveFapolicydState:
-                # Invoke a file chooser dlg and generate the fapd state tarball
-                if strArchiveName := self.display_save_fapd_archive_dlg(parent):
-                    fapd_dbase_snapshot(strArchiveName)
-
-            logging.debug("Deploying...")
-            self._deploying = True
-            dispatch((deploy_ancillary_trust()))
+        with DeployChangesetsOp(parentWindow=self.get_ref().get_toplevel()) as op:
+            op.deploy(self._changesets)
 
     def on_next_system(self, system):
         changesets = system.get("changesets")
@@ -174,86 +134,20 @@ SHA256: {fs.sha(trust.path)}"""
             self.trustFileList.set_changesets(changesets)
             self.__load_trust()
 
-        # if there was an error check if we were loading or deploying and show appropriate notification
-        if trustState.error:
-            if self._loading:
-                self._loading = False
-                logging.error(
-                    "%s: %s", strings.ANCILLARY_TRUST_LOAD_ERROR, trustState.error
+        # if there was an error loading show appropriate notification
+        if trustState.error and self._loading:
+            self._loading = False
+            logging.error(
+                "%s: %s", strings.ANCILLARY_TRUST_LOAD_ERROR, trustState.error
+            )
+            dispatch(
+                add_notification(
+                    strings.ANCILLARY_TRUST_LOAD_ERROR, NotificationType.ERROR
                 )
-                dispatch(
-                    add_notification(
-                        strings.ANCILLARY_TRUST_LOAD_ERROR, NotificationType.ERROR
-                    )
-                )
-            elif self._deploying:
-                self._deploying = False
-                logging.error(
-                    "%s: %s", strings.DEPLOY_ANCILLARY_ERROR_MSG, trustState.error
-                )
-                dispatch(
-                    add_notification(
-                        strings.DEPLOY_ANCILLARY_ERROR_MSG, NotificationType.ERROR
-                    )
-                )
+            )
 
         # if not loading and the trust changes reload the view
         if self._loading and not trustState.loading and self._trust != trustState.trust:
             self._loading = False
             self._trust = trustState.trust
             self.trustFileList.load_trust(self._trust)
-
-        # if not deploying and we were deploying then confirm
-        if self._deploying and trustState.deployed:
-            self._deploying = False
-            dispatch(
-                add_notification(
-                    strings.DEPLOY_ANCILLARY_SUCCESSFUL_MSG,
-                    NotificationType.SUCCESS,
-                )
-            )
-            self.__display_deploy_confirmation_dialog()
-
-    # ########## Fapd backup ########
-    def display_save_fapd_archive_dlg(self, parent):
-        """Display a file chooser dialog to specify the output archive file."""
-        logging.debug("atda::display_save_fapd_archive_dlg()")
-
-        # Display file chooser dialog
-        fcd = Gtk.FileChooserDialog(
-            strings.SAVE_AS_FILE_LABEL,
-            parent,
-            Gtk.FileChooserAction.SAVE,
-            (
-                Gtk.STOCK_CANCEL,
-                Gtk.ResponseType.CANCEL,
-                Gtk.STOCK_SAVE,
-                Gtk.ResponseType.OK,
-            ),
-        )
-
-        self.__apply_tgz_file_filters(fcd)
-        fcd.set_do_overwrite_confirmation(True)
-        response = fcd.run()
-        fcd.hide()
-
-        strFilename = None
-        if response == Gtk.ResponseType.OK:
-            strFilename = fcd.get_filename()
-            logging.debug(
-                f"fadp_dbase::display_save_fapd_archive_dlg::strFilename = {strFilename}"
-            )
-
-        fcd.destroy()
-        return strFilename
-
-    def __apply_tgz_file_filters(self, dialog):
-        fileFilterTgz = Gtk.FileFilter()
-        fileFilterTgz.set_name(strings.FA_ARCHIVE_FILES_FILTER_LABEL)
-        fileFilterTgz.add_pattern("*.tgz")
-        dialog.add_filter(fileFilterTgz)
-
-        fileFilterAny = Gtk.FileFilter()
-        fileFilterAny.set_name(strings.ANY_FILES_FILTER_LABEL)
-        fileFilterAny.add_pattern("*")
-        dialog.add_filter(fileFilterAny)

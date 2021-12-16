@@ -1,15 +1,9 @@
 use crate::events::event::Event;
 use std::slice::Iter;
 
-#[derive(Clone)]
+#[derive(Default, Clone)]
 pub struct DB {
     pub(crate) events: Vec<Event>,
-}
-
-impl Default for DB {
-    fn default() -> Self {
-        DB { events: vec![] }
-    }
 }
 
 impl DB {
