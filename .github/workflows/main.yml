@@ -16,10 +16,9 @@ jobs:
     steps:
       - name: Install requirements
         run: |
-          ! grep -R -L \
-             --include='*.py' --include='*.rs' --include='*.sh' --include='*.glade' --include='*.yml'\
-             --exclude-dir=target --exclude-dir=vendor \
-             'Copyright Concurrent Technologies Corporation' *
+          ! grep -R -L --exclude-dir=vendor \
+            --include='*.py' --include='*.rs' --include='*.glade' --include='*.sh' \
+            'Copyright Concurrent Technologies Corporation' *
 
   check:
     name: Check
