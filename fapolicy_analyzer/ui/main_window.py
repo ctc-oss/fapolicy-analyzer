@@ -130,9 +130,9 @@ class MainWindow(UIConnectedWidget):
 
     def __update_fapd_status(self, status: ServiceStatus):
         logging.debug(f"__update_fapd_status({status})")
-        if status == True:
+        if status is True:
             self.fapdStatus.set_from_stock(stock_id="gtk-yes", size=4)
-        elif status == False:
+        elif status is False:
             self.fapdStatus.set_from_stock(stock_id="gtk-no", size=4)
         else:
             self.fapdStatus.set_from_stock(stock_id="gtk-no", size=4)
