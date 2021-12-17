@@ -12,6 +12,7 @@ from .actions import (
     request_daemon_start,
     request_daemon_stop,
     DaemonState,
+    ServiceStatus,
 )
 from .analyzer_selection_dialog import ANALYZER_SELECTION
 from .database_admin_page import DatabaseAdminPage
@@ -127,10 +128,12 @@ class MainWindow(UIConnectedWidget):
         menuItem = self.get_object("trustDbMenu")
         menuItem.set_sensitive(sensitive)
 
-    def __update_fapd_status(self, status: bool):
+    def __update_fapd_status(self, status: ServiceStatus):
         logging.debug(f"__update_fapd_status({status})")
-        if status:
+        if status == True:
             self.fapdStatus.set_from_stock(stock_id="gtk-yes", size=4)
+        elif status == False:
+            self.fapdStatus.set_from_stock(stock_id="gtk-no", size=4)
         else:
             self.fapdStatus.set_from_stock(stock_id="gtk-no", size=4)
 

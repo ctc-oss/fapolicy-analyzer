@@ -6,6 +6,7 @@ from fapolicy_analyzer.ui.actions import (
     RECEIVED_DAEMON_STOP,
     RECEIVED_DAEMON_STATUS_UPDATE,
     DaemonState,
+    ServiceStatus,
 )
 
 
@@ -26,7 +27,6 @@ def handle_received_daemon_stop(state: DaemonState, action: Action):
 def handle_received_daemon_status_update(state: DaemonState, action: Action):
     logging.debug(f"daemon_reducer::handle_received_daemon_status_update({state}), {action}")
     return _create_state(state, status=action.payload.status,
-                         handle=action.payload.handle,
                          error=action.payload.error)
 
 
@@ -36,5 +36,5 @@ daemon_reducer: Reducer = handle_actions(
         RECEIVED_DAEMON_STOP: handle_received_daemon_stop,
         RECEIVED_DAEMON_STATUS_UPDATE: handle_received_daemon_status_update,
     },
-    DaemonState(error=None, status=False, handle=None),
+    DaemonState(error=None, status=ServiceStatus.UNKNOWN),
 )

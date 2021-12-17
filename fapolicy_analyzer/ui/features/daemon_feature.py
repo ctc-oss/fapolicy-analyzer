@@ -20,6 +20,7 @@ from fapolicy_analyzer.ui.actions import (
     received_daemon_status_update,
     received_daemon_stop,
     DaemonState,
+    ServiceStatus,
 )
 from fapolicy_analyzer.ui.reducers import daemon_reducer
 from gi.repository import GLib
@@ -37,7 +38,7 @@ from rx.operators import catch, map
 from typing import Callable
 
 DAEMON_FEATURE = "daemon"
-_fapd_status: bool = False
+_fapd_status: ServiceStatus = ServiceStatus.UNKNOWN
 _fapd_ref: Handle = None
 
 
@@ -66,15 +67,17 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
         def monitor_daemon(timeout=5):
             global _fapd_ref, _fapd_status
             while True:
-                bStatus = _fapd_ref.is_active()
-                if(bStatus != _fapd_status):
-                    logging.debug("monitor_daemon():Dispatching update request")
-                    _fapd_status = bStatus
-                    dispatch(received_daemon_status_update(DaemonState(
-                        status=_fapd_status,
-                        handle=_fapd_ref,
-                        error=None
-                    )))
+                try:
+                    bStatus = _fapd_ref.is_active()
+                    if(bStatus != _fapd_status):
+                        logging.debug("monitor_daemon:Dispatch update request")
+                        _fapd_status = bStatus
+                        dispatch(received_daemon_status_update(DaemonState(
+                            status=_fapd_status,
+                            error=None
+                        )))
+                except Exception:
+                    print("Bwoke")
                 sleep(timeout)
 
         def start_daemon_monitor():
@@ -90,7 +93,6 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
             _fapd_status = _fapd_ref.is_active()
             dispatch(received_daemon_status_update(DaemonState(
                 status=_fapd_status,
-                handle=_fapd_ref,
                 error=None
             )))
 

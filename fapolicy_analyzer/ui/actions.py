@@ -1,6 +1,6 @@
 import logging
 from enum import Enum
-from fapolicy_analyzer import Changeset, Event, Group, Handle, Trust, User
+from fapolicy_analyzer import Changeset, Event, Group, Trust, User
 from itertools import count
 from redux import Action, create_action
 from typing import Any, Iterator, NamedTuple, Sequence
@@ -77,10 +77,15 @@ class Notification(NamedTuple):
     type: NotificationType
 
 
+class ServiceStatus(Enum):
+    TRUE = True,
+    FALSE = False
+    UNKNOWN = None
+
+
 class DaemonState(NamedTuple):
     error: str
-    status: bool
-    handle: Handle
+    status: ServiceStatus
 
 
 def add_notification(text: str, type: NotificationType) -> Action:
