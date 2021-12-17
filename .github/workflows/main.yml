@@ -10,6 +10,17 @@ on:
 name: Continuous integration
 
 jobs:
+  headers:
+    name: License header check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install requirements
+        run: |
+          ! grep -R -L \
+             --include='*.py' --include='*.rs' --include='*.sh' --include='*.glade' --include='*.yml'\
+             --exclude-dir=target --exclude-dir=vendor \
+             'Copyright Concurrent Technologies Corporation' *
+
   check:
     name: Check
     runs-on: ubuntu-latest
