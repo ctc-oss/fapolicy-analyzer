@@ -2,6 +2,7 @@ on:
   push:
     branches:
       - master
+      - "demo-*"
     tags:
       - 'v*'
   pull_request:
