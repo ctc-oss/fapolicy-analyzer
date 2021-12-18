@@ -8,7 +8,8 @@
 
 use std::fmt::Display;
 use std::fs::File;
-use std::io::{prelude::*, BufReader};
+use std::io::BufRead;
+use std::io::BufReader;
 use std::iter::Iterator;
 use std::str::FromStr;
 
@@ -68,14 +69,14 @@ impl Display for Event {
 
 impl Event {
     pub fn from_file(path: &str) -> Vec<Event> {
-        let f = File::open(path).unwrap();
-        let r = BufReader::new(f);
+        // todo;; unhack
+        let es = if path == "/var/log/messages" {
+            syslog_entries(path)
+        } else {
+            debug_entries(path)
+        };
 
-        r.lines()
-            .map(|r| r.unwrap())
-            .filter(|s| !s.is_empty() && !s.starts_with('#'))
-            .map(|l| parse_event(&l).unwrap().1)
-            .collect()
+        es.iter().map(|l| parse_event(&l).unwrap().1).collect()
     }
 }
 
@@ -94,4 +95,24 @@ impl Perspective {
             Perspective::Subject(subj) => &e.subj.exe().unwrap() == subj,
         }
     }
+}
+
+fn debug_entries(path: &str) -> Vec<String> {
+    let f = File::open(path).unwrap();
+    let r = BufReader::new(f);
+
+    r.lines()
+        .map(|r| r.unwrap())
+        .filter(|s| !s.is_empty() && !s.starts_with('#'))
+        .collect()
+}
+
+fn syslog_entries(path: &str) -> Vec<String> {
+    let f = File::open(path).expect("failed to open file");
+    let buff = BufReader::new(f);
+
+    buff.lines()
+        .map(|r| r.unwrap())
+        .filter(|s| s.contains("fedora fapolicyd") && s.contains("rule="))
+        .collect()
 }
