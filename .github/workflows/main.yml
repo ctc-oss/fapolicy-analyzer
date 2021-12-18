@@ -14,6 +14,7 @@ jobs:
     name: License header check
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - name: Install requirements
         run: |
           ! grep -R -L --exclude-dir=vendor \
