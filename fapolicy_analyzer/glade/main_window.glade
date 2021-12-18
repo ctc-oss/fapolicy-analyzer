@@ -148,10 +148,18 @@
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <child>
+                          <object class="GtkMenuItem" id="analyzeSyslogMenu">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="label" translatable="yes">Analyze From Syslog</property>
+                            <signal name="activate" handler="on_analyzeSyslogMenu_activate" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
                           <object class="GtkMenuItem" id="analyzeMenu">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">Analyze From Audit Log</property>
+                            <property name="label" translatable="yes">Analyze From Audit File</property>
                             <signal name="activate" handler="on_analyzeMenu_activate" swapped="no"/>
                           </object>
                         </child>

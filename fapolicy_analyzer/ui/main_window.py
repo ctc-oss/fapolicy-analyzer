@@ -269,6 +269,13 @@ class MainWindow(UIConnectedWidget):
         aboutDialog.run()
         aboutDialog.hide()
 
+    def on_analyzeSyslogMenu_activate(self, menuitem, *args):
+        file = '/var/log/messages'
+        self.__pack_main_content(
+            router(ANALYZER_SELECTION.ANALYZE_FROM_AUDIT, file)
+        )
+        self.__set_trustDbMenu_sensitive(True)
+
     def on_analyzeMenu_activate(self, menuitem, *args):
         fcd = Gtk.FileChooserDialog(
             title=strings.OPEN_FILE_LABEL,
