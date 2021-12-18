@@ -9,6 +9,7 @@
       - xorg-x11-xauth
       - dbus-x11
       - dconf
+      - rsyslog
   when:
     - ansible_facts['os_family'] == "RedHat"
 
@@ -40,3 +41,9 @@
 - name: rotate journald
   shell: |
     journalctl --rotate
+
+- name: enable syslog
+  systemd:
+    name: rsyslog
+    state: started
+    enabled: true
