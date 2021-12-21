@@ -88,7 +88,7 @@ class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
 
     def on_trust_selection_changed(self, trusts):
         self.selectedFile = trusts
-        addBtn = self.get_object("addBtn")       
+        addBtn = self.get_object("addBtn")
         if trusts:
             trust = trusts[-1]
             status = trust.status.lower()

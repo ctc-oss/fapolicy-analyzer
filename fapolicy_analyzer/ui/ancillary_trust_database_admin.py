@@ -79,7 +79,7 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
     def on_trust_selection_changed(self, trusts):
         self.selectedFile = trusts if trusts else None
         trustBtn = self.get_object("trustBtn")
-        untrustBtn = self.get_object("untrustBtn")        
+        untrustBtn = self.get_object("untrustBtn")
         for trust in trusts:
             if trust:
                 status = getattr(trust, "status", "").lower()
