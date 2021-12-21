@@ -63,12 +63,14 @@ impl PyHandle {
             .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
     }
 
+    /// returns the unit status, throws if invalid unit
     pub fn is_active(&self) -> PyResult<bool> {
         self.rs
             .active()
             .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
     }
 
+    /// returns true if the unit exists, false otherwise
     pub fn is_valid(&self) -> bool {
         match self.rs.active() {
             Ok(_) => true,
