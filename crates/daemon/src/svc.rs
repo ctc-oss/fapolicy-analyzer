@@ -106,7 +106,7 @@ impl Handle {
                         Some(4) => Err(ServiceCheckFailure(
                             String::from_utf8(o.stderr)?.trim().into(),
                         )),
-                        // unlikely; either got a unused 2 code, or a sig killed the query
+                        // unlikely; either got an unused 2-code or a sigint
                         _ => Err(ServiceCheckFailure("Unexpected".into())),
                     }
                 }
