@@ -328,14 +328,12 @@ class PolicyRulesAdminPage(UIConnectedWidget):
             uids = [datum[1] for datum in data]
         else:
             uids = [None]
-            
         for uid in uids:
             if uid != self.selectedUser:
                 self.selectedUser = uid
                 self.selectedGroup = None
                 self.__populate_acl_details(uid, acl.getUserDetails)
-                secondaryAction()    
-
+                secondaryAction()
 
     def on_group_selection_changed(self, secondaryAction, data):
         gids = [datum[1] for datum in data] if data else [None]

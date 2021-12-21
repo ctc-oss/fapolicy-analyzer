@@ -124,7 +124,5 @@ SHA256: {fs.sha(trust.path)}"""
 
     def on_addBtn_clicked(self, *args):
         if self.selectedFile:
-            print(self.selectedFile)
             for sfile in self.selectedFile:
-                print(sfile.path)
                 self.file_added_to_ancillary_trust(sfile.path)

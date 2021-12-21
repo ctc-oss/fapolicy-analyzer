@@ -60,7 +60,6 @@ class ObjectList(SubjectList):
         self._systemTrust = kwargs.get("systemTrust", [])
         self._ancillaryTrust = kwargs.get("ancillaryTrust", [])
         store = Gtk.ListStore(str, str, str, object, str, str)
-
         for o in objects:
             status = self.__markup(o.trust.upper(), ["ST", "AT", "U"])
             mode = self.__markup(
