@@ -1,3 +1,11 @@
+/*
+ * Copyright Concurrent Technologies Corporation 2021
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+
 use crate::system::PySystem;
 use fapolicy_daemon::svc::Handle;
 use pyo3::exceptions::PyRuntimeError;
@@ -55,10 +63,19 @@ impl PyHandle {
             .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
     }
 
+    /// returns the unit status, throws if invalid unit
     pub fn is_active(&self) -> PyResult<bool> {
         self.rs
             .active()
             .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
+    }
+
+    /// returns true if the unit exists, false otherwise
+    pub fn is_valid(&self) -> bool {
+        match self.rs.active() {
+            Ok(_) => true,
+            Err(_) => false,
+        }
     }
 }
 
