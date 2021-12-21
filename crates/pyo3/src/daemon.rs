@@ -68,6 +68,13 @@ impl PyHandle {
             .active()
             .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
     }
+
+    pub fn is_valid(&self) -> bool {
+        match self.rs.active() {
+            Ok(_) => true,
+            Err(_) => false,
+        }
+    }
 }
 
 #[pyfunction]
