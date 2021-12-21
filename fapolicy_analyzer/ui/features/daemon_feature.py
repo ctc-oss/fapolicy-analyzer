@@ -33,6 +33,7 @@ from fapolicy_analyzer.ui.actions import (
     init_daemon,
     received_daemon_start,
     received_daemon_status_update,
+    error_daemon_status_update,
     received_daemon_stop,
     DaemonState,
     ServiceStatus,
@@ -82,7 +83,7 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
                 GLib.idle_add(sys.exit, 1)
 
         def monitor_daemon(timeout=5):
-            global _fapd_ref, _fapd_status
+            global _fapd_status
             while True:
                 try:
                     bStatus = _fapd_ref.is_active()
@@ -94,24 +95,37 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
                             error=None
                         )))
                 except Exception:
-                    print("Bwoke")
+                    print("Daemon monitor query/update dispatch failed.")
                 sleep(timeout)
 
         def start_daemon_monitor():
-            logging.debug("start_daemon_monitor()")
-            thread = Thread(target=monitor_daemon)
-            thread.daemon = True
-            thread.start()
+            logging.debug(f"start_daemon_monitor({daemon})")
+
+            # Only start monitoring thread if fapolicy is installed
+            if _fapd_ref and _fapd_ref.is_valid():
+                logging.debug("Spawning monitor thread...")
+                thread = Thread(target=monitor_daemon)
+                thread.daemon = True
+                thread.start()
 
         def finish(daemon: Handle):
             global _fapd_ref, _fapd_status
             logging.debug(f"daemon_feature::finish({daemon})")
             _fapd_ref = daemon
-            _fapd_status = _fapd_ref.is_active()
-            dispatch(received_daemon_status_update(DaemonState(
-                status=_fapd_status,
-                error=None
-            )))
+            if daemon.is_valid():
+                _fapd_status = _fapd_ref.is_active()
+                logging.debug("Dispatching: received_daemon_status_update()")
+                dispatch(received_daemon_status_update(DaemonState(
+                    status=_fapd_status,
+                    error=None)))
+
+            else:
+                _fapd_status = ServiceStatus.UNKNOWN
+                strError = "The fapolicyd serice is not installed"
+                logging.debug("Dispatching: error_daemon_status_update()")
+                dispatch(error_daemon_status_update(DaemonState(
+                    status=_fapd_status,
+                    error=strError)))
 
         if daemon:
             finish(daemon)
