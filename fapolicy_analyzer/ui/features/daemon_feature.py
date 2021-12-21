@@ -59,6 +59,8 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
             logging.debug("acquire_daemon()")
             try:
                 daemon = Handle("fapolicyd")
+                logging.debug(f"daemon = {daemon}")
+                logging.debug(f"daemon.is_valid() = {daemon.is_valid()}")
                 finish(daemon)
             except RuntimeError:
                 logging.exception(DAEMON_INITIALIZATION_ERROR)
