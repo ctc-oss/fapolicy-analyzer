@@ -83,19 +83,35 @@ impl Handle {
         msg(DisableUnitFiles, &self.name).and_then(call).map(|_| ())
     }
 
+    // todo;; replace with direct dbus calls
+    // systemctl return codes
+    // 0 - unit is active
+    // 1 - unit not failed
+    // 2 - unused
+    // 3 - unit is not active
+    // 4 - no such unit
     pub fn active(&self) -> Result<bool, Error> {
         Command::new("systemctl")
-            .arg("status")
-            .arg(&self.name)
             .arg("--no-pager")
             .arg("-n0")
+            .arg("status")
+            .arg(&self.name)
             .output()
             .map(|o| {
-                String::from_utf8(o.stdout).map_err(|_| {
-                    ServiceStatusQueryFailure("Failed to parse systemctl output".into())
-                })
+                if o.status.success() {
+                    Ok(String::from_utf8(o.stdout)?)
+                } else {
+                    match o.status.code() {
+                        Some(1 | 3) => Ok(String::from_utf8(o.stdout)?),
+                        Some(4) => Err(ServiceCheckFailure(
+                            String::from_utf8(o.stderr)?.trim().into(),
+                        )),
+                        // unlikely; either got a unused 2 code, or a sig killed the query
+                        _ => Err(ServiceCheckFailure("Unexpected".into())),
+                    }
+                }
             })
-            .map_err(|_| ServiceStatusQueryFailure("Failed to execute systemctl".into()))?
+            .map_err(|_| ServiceCheckFailure("Failed to execute systemctl".into()))?
             .map(|txt| txt.contains("Active: active"))
     }
 }
