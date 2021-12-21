@@ -63,7 +63,6 @@ class PolicyRulesAdminPage(UIConnectedWidget):
         objectTabs = self.get_object("objectTabs")
         self.objectList = ObjectList()
         self.objectList.file_selection_changed += self.on_object_selection_changed
-        print("init")
         objectTabs.append_page(self.objectList.get_ref(), Gtk.Label(label="Object"))
 
         self.switchers = [
@@ -310,16 +309,21 @@ class PolicyRulesAdminPage(UIConnectedWidget):
         )
 
     def on_user_selection_changed(self, secondaryAction, data):
-        uids = [datum[1] for datum in data] if data else None
+        if data:
+            uids = [datum[1] for datum in data]
+        else:
+            uids = [None]
+            
         for uid in uids:
             if uid != self.selectedUser:
                 self.selectedUser = uid
                 self.selectedGroup = None
                 self.__populate_acl_details(uid, acl.getUserDetails)
-                secondaryAction()
+                secondaryAction()    
+
 
     def on_group_selection_changed(self, secondaryAction, data):
-        gids = [datum[1] for datum in data] if data else None
+        gids = [datum[1] for datum in data] if data else [None]
         for gid in gids:
             if gid != self.selectedGroup:
                 self.selectedGroup = gid
@@ -331,7 +335,6 @@ class PolicyRulesAdminPage(UIConnectedWidget):
         fileObj = data.file if data else None
         if fileObj == self.selectedSubject:
             return
-
         self.selectedSubject = fileObj
         subjectDetails = self.get_object("subjectDetails")
         subjectDetails.get_buffer().set_text(fs.stat(fileObj) if fileObj else "")

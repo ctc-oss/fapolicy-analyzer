@@ -64,7 +64,7 @@ def test_fires_selection_changed_event(widget):
     widget.load_store(store)
     view = widget.get_object("treeView")
     view.get_selection().select_path(Gtk.TreePath.new_first())
-    mockHandler.assert_called_with(Contains("baz"))
+    mockHandler.assert_called_with([Contains("baz")])
 
 
 def test_sorting(widget):

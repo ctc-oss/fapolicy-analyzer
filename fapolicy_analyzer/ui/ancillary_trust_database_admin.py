@@ -77,8 +77,8 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
                         f(
                             _(
                                 """File: {trust.path}
-    Size: {trust.size}
-    SHA256: {trust.hash}"""
+Size: {trust.size}
+SHA256: {trust.hash}"""
                             )
                         )
                     )
@@ -87,17 +87,17 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
                     f(
                         _(
                             """{fs.stat(trust.path)}
-    SHA256: {fs.sha(trust.path)}"""
+SHA256: {fs.sha(trust.path)}"""
                         )
                     )
                 )
 
                 self.trustFileDetails.set_trust_status(
-                    strings.SYSTEM_TRUSTED_FILE_MESSAGE
+                    strings.ANCILLARY_TRUSTED_FILE_MESSAGE
                     if trusted
-                    else strings.SYSTEM_DISCREPANCY_FILE_MESSAGE
+                    else strings.ANCILLARY_DISCREPANCY_FILE_MESSAGE
                     if status == "d"
-                    else strings.SYSTEM_UNKNOWN_FILE_MESSAGE
+                    else strings.ANCILLARY_UNKNOWN_FILE_MESSAGE
                 )
             else:
                 trustBtn.set_sensitive(False)
