@@ -13,9 +13,32 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Tuple
+from abc import ABC, abstractmethod
 
-from .deploy_changesets_op import DeployChangesetsOp
-from .ui_operation import UIOperation
 
-__all__: Tuple[str, ...] = ("DeployChangesetsOp", "UIOperation")
+class UIOperation(ABC):
+    """
+    An abstract base class implemented by any class providing an operation that can be
+    initiated by the user on the system. (i.e. Deploying Changsets)
+    """
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self.dispose()
+
+    @abstractmethod
+    def get_text(self) -> str:
+        pass
+
+    @abstractmethod
+    def get_icon(self) -> str:
+        pass
+
+    @abstractmethod
+    def run(self):
+        pass
+
+    def dispose(self):
+        pass
