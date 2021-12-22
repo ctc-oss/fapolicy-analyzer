@@ -18,7 +18,6 @@ from locale import gettext as _
 
 import fapolicy_analyzer.ui.strings as strings
 from fapolicy_analyzer import Changeset, Trust
-from fapolicy_analyzer.ui.operations.deploy_changesets_op import DeployChangesetsOp
 from fapolicy_analyzer.util import fs  # noqa: F401
 from fapolicy_analyzer.util.format import f
 
@@ -54,8 +53,6 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
         self.get_object("rightBox").pack_start(
             self.trustFileDetails.get_ref(), True, True, 0
         )
-
-        self._deployBtn = self.get_object("deployBtn")
 
     def __load_trust(self):
         self._loading = True
@@ -137,10 +134,6 @@ SHA256: {fs.sha(trust.path)}"""
             for sfile in self.selectedFile:
                 self.delete_trusted_files(sfile.path)
 
-    def on_deployBtn_clicked(self, *args):
-        with DeployChangesetsOp(parentWindow=self.get_ref().get_toplevel()) as op:
-            op.deploy(self._changesets)
-
     def on_next_system(self, system):
         changesets = system.get("changesets")
         trustState = system.get("ancillary_trust")
@@ -148,7 +141,6 @@ SHA256: {fs.sha(trust.path)}"""
         # if changesets have changes request a new ancillary trust
         if self._changesets != changesets:
             self._changesets = changesets
-            self._deployBtn.set_sensitive(len(changesets) != 0)
             self.trustFileList.set_changesets(changesets)
             self.__load_trust()
 
