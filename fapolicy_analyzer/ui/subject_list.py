@@ -108,12 +108,9 @@ class SubjectList(SearchableList):
         )
 
     def __handle_selection_changed(self, data):
-        if data:
-            fileObjs = [datum[3] for datum in data]
-            for fileObj in fileObjs:
-                self.file_selection_changed(fileObj)
-        else:
-            self.file_selection_changed(None)
+        fileObjs = [datum[3] for datum in data] if data else None
+        self.file_selection_changed(fileObjs)
+
 
     def __show_reconciliation_dialog(self, subject):
         def find_db_trust(subject):

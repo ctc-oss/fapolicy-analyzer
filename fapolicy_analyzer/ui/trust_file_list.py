@@ -68,10 +68,7 @@ class TrustFileList(SearchableList):
         self.get_ref().connect("destroy", self.on_destroy)
 
     def __handle_selection_changed(self, data):
-        if data:
-            trust = [datum[3] for datum in data]
-        else:
-            trust = None
+        trust = [datum[3] for datum in data] if data else None
         self.trust_selection_changed(trust)
 
     def _columns(self):

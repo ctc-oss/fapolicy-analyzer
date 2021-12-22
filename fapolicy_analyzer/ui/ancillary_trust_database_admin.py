@@ -74,47 +74,47 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
         self.__apply_changeset(changeset)
 
     def on_trust_selection_changed(self, trusts):
-        self.selectedFile = trusts if trusts else None
+        self.selectedFile = [t.path for t in trusts] if trusts else None
         trustBtn = self.get_object("trustBtn")
         untrustBtn = self.get_object("untrustBtn")
-        for trust in trusts:
-            if trust:
-                status = getattr(trust, "status", "").lower()
-                trusted = status == "t"
-                trustBtn.set_sensitive(not trusted)
-                untrustBtn.set_sensitive(trusted)
+        if trusts:
+            trust = trusts[-1]
+            status = getattr(trust, "status", "").lower()
+            trusted = status == "t"
+            trustBtn.set_sensitive(not trusted)
+            untrustBtn.set_sensitive(trusted)
 
-                if isinstance(trust, Trust):
-                    self.trustFileDetails.set_in_database_view(
-                        f(
-                            _(
-                                """File: {trust.path}
-Size: {trust.size}
-SHA256: {trust.hash}"""
-                            )
-                        )
-                    )
-
-                self.trustFileDetails.set_on_file_system_view(
+            if isinstance(trust, Trust):
+                self.trustFileDetails.set_in_database_view(
                     f(
                         _(
-                            """{fs.stat(trust.path)}
-SHA256: {fs.sha(trust.path)}"""
+                            """File: {trust.path}
+Size: {trust.size}
+SHA256: {trust.hash}"""
                         )
                     )
                 )
 
-                self.trustFileDetails.set_trust_status(
-                    strings.ANCILLARY_TRUSTED_FILE_MESSAGE
-                    if trusted
-                    else strings.ANCILLARY_DISCREPANCY_FILE_MESSAGE
-                    if status == "d"
-                    else strings.ANCILLARY_UNKNOWN_FILE_MESSAGE
+            self.trustFileDetails.set_on_file_system_view(
+                f(
+                    _(
+                        """{fs.stat(trust.path)}
+SHA256: {fs.sha(trust.path)}"""
+                    )
                 )
-            else:
-                trustBtn.set_sensitive(False)
-                untrustBtn.set_sensitive(False)
-                self.trustFileDetails.clear()
+            )
+
+            self.trustFileDetails.set_trust_status(
+                strings.ANCILLARY_TRUSTED_FILE_MESSAGE
+                if trusted
+                else strings.ANCILLARY_DISCREPANCY_FILE_MESSAGE
+                if status == "d"
+                else strings.ANCILLARY_UNKNOWN_FILE_MESSAGE
+            )
+        else:
+            trustBtn.set_sensitive(False)
+            untrustBtn.set_sensitive(False)
+            self.trustFileDetails.clear()
 
     def on_files_deleted(self, files):
         if files:
@@ -127,12 +127,12 @@ SHA256: {fs.sha(trust.path)}"""
     def on_trustBtn_clicked(self, *args):
         if self.selectedFile:
             for sfile in self.selectedFile:
-                self.add_trusted_files(sfile.path)
+                self.add_trusted_files(sfile)
 
     def on_untrustBtn_clicked(self, *args):
         if self.selectedFile:
             for sfile in self.selectedFile:
-                self.delete_trusted_files(sfile.path)
+                self.delete_trusted_files(sfile)
 
     def on_next_system(self, system):
         changesets = system.get("changesets")

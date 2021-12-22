@@ -111,10 +111,10 @@ class PolicyRulesAdminPage(UIConnectedWidget):
                     self.subjectList,
                     "file_selection_changed",
                     partial(
-                        self.on_file_selection_changed,
+                        self.on_subject_selection_changed,
                         self.__populate_acls_from_subject,
                     ),
-                    partial(self.on_file_selection_changed, self.__populate_objects),
+                    partial(self.on_subject_selection_changed, self.__populate_objects),
                 ),
             ),
         ]
@@ -324,10 +324,7 @@ class PolicyRulesAdminPage(UIConnectedWidget):
         )
 
     def on_user_selection_changed(self, secondaryAction, data):
-        if data:
-            uids = [datum[1] for datum in data]
-        else:
-            uids = [None]
+        uids = [datum[1] for datum in data] if data else [None]
         for uid in uids:
             if uid != self.selectedUser:
                 self.selectedUser = uid
@@ -344,8 +341,8 @@ class PolicyRulesAdminPage(UIConnectedWidget):
                 self.__populate_acl_details(gid, acl.getGroupDetails)
                 secondaryAction()
 
-    def on_file_selection_changed(self, secondaryAction, data):
-        fileObj = data.file if data else None
+    def on_subject_selection_changed(self, secondaryAction, data):
+        fileObj = data[-1].file if data else None
         if fileObj == self.selectedSubject:
             return
         self.selectedSubject = fileObj
@@ -355,7 +352,7 @@ class PolicyRulesAdminPage(UIConnectedWidget):
 
     def on_object_selection_changed(self, data):
         objectDetails = self.get_object("objectDetails")
-        objectDetails.get_buffer().set_text(fs.stat(data.file) if data else "")
+        objectDetails.get_buffer().set_text(fs.stat(data) if data else "")
 
     def on_switcher_button_clicked(self, switcher):
         switcher.set_as_secondary()
