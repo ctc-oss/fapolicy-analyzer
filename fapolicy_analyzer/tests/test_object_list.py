@@ -186,4 +186,4 @@ def test_fires_file_selection_changed_event(widget):
     widget.load_store([mockData])
     view = widget.get_object("treeView")
     view.get_selection().select_path(Gtk.TreePath.new_first())
-    mockHandler.assert_called_with(mockData)
+    mockHandler.assert_called_with([mockData])

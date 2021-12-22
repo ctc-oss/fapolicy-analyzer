@@ -317,7 +317,7 @@ def test_updates_acl_details(widget, view, mockFnName, mocker):
 def test_updates_subject_details(widget, mocker):
     mocker.patch("ui.policy_rules_admin_page.fs.stat", return_value="foo")
     textBuffer = widget.get_object("subjectDetails").get_buffer()
-    widget.on_file_selection_changed(MagicMock(), MagicMock(file="baz"))
+    widget.on_subject_selection_changed(MagicMock(), MagicMock(file="baz"))
     assert (
         textBuffer.get_text(
             textBuffer.get_start_iter(), textBuffer.get_end_iter(), True
