@@ -20,7 +20,8 @@ pub fn from_file(path: &str) -> Result<Vec<Event>, Error> {
     Ok(lines?
         .iter()
         .filter(|s| !s.is_empty() && !s.starts_with('#'))
-        .map(|l| parse_event(&l).unwrap().1)
+        // todo;; should log the failures here instead of just flattening
+        .flat_map(|l| parse_event(&l).map(|r| r.1))
         .collect())
 }
 
