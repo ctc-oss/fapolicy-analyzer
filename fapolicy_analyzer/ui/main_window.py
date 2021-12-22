@@ -336,4 +336,4 @@ class MainWindow(UIConnectedWidget):
 
     def on_deployChanges_clicked(self, *args):
         with DeployChangesetsOp(self.window) as op:
-            op.deploy(self._changesets)
+            op.run(self._changesets)

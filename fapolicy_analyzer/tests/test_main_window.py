@@ -415,7 +415,7 @@ def test_on_start_w_failed_restore(mock_dispatch, mocker):
 
 def test_toolbar_deploy_operation(mainWindow, mocker):
     mocker.patch("ui.operations.deploy_changesets_op.get_system_feature")
-    mockDeploy = mocker.patch("ui.main_window.DeployChangesetsOp.deploy")
+    mockDeploy = mocker.patch("ui.main_window.DeployChangesetsOp.run")
     mainWindow.get_object("deployChanges").get_child().clicked()
     mockDeploy.assert_called_once()
 
