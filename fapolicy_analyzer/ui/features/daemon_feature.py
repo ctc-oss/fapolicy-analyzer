@@ -139,17 +139,30 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
 
     def _daemon_start(action: Action) -> Action:
         logging.debug("_daemon_start(action: Action) -> Action")
-        _fapd_ref.start()
+        try:
+            if _fapd_ref and _fapd_ref.is_valid():
+                _fapd_ref.start()
+        except Exception:
+            dispatch(error_daemon_start("fapolicyd Start failed"))
         return received_daemon_start()
 
     def _daemon_status_update(action: Action) -> Action:
-        _fapd_status = _fapd_ref.is_active()
-        logging.debug(f"_daemon_status_update({action}): status:{_fapd_status}")
+        try:
+            if _fapd_ref and _fapd_ref.is_valid():
+                _fapd_status = _fapd_ref.is_active()
+                logging.debug(f"_daemon_status_update({action}):"
+                              "status:{_fapd_status}")
+        except Exception:
+            dispatch(error_daemon_status_update("fapolicyd Status failed"))
         return received_daemon_status_update(_fapd_status)
 
     def _daemon_stop(action: Action) -> Action:
         logging.debug("_daemon_stop(action: Action) -> Action")
-        _fapd_ref.stop()
+        try:
+            if _fapd_ref and _fapd_ref.is_valid():
+                _fapd_ref.stop()
+        except Exception:
+            dispatch(error_daemon_stop("fapolicyd Stop failed"))
         return received_daemon_stop()
 
     init_epic = pipe(
