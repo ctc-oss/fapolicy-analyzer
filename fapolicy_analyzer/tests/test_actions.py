@@ -22,21 +22,31 @@ from ui.actions import (
     ANCILLARY_TRUST_DEPLOYED,
     APPLY_CHANGESETS,
     CLEAR_CHANGESETS,
+    DAEMON_INITIALIZED,
     DEPLOY_ANCILLARY_TRUST,
     ERROR_ANCILLARY_TRUST,
+    ERROR_DAEMON_START,
+    ERROR_DAEMON_STATUS_UPDATE,
+    ERROR_DAEMON_STOP,
     ERROR_DEPLOYING_ANCILLARY_TRUST,
     ERROR_EVENTS,
     ERROR_GROUPS,
     ERROR_SYSTEM_TRUST,
     ERROR_USERS,
+    INIT_DAEMON,
     INIT_SYSTEM,
     RECEIVED_ANCILLARY_TRUST,
+    RECEIVED_DAEMON_START,
+    RECEIVED_DAEMON_STATUS_UPDATE,
+    RECEIVED_DAEMON_STOP,
     RECEIVED_EVENTS,
     RECEIVED_GROUPS,
     RECEIVED_SYSTEM_TRUST,
     RECEIVED_USERS,
     REMOVE_NOTIFICATION,
     REQUEST_ANCILLARY_TRUST,
+    REQUEST_DAEMON_START,
+    REQUEST_DAEMON_STOP,
     REQUEST_EVENTS,
     REQUEST_GROUPS,
     REQUEST_SYSTEM_TRUST,
@@ -46,26 +56,38 @@ from ui.actions import (
     SYSTEM_INITIALIZED,
     Notification,
     NotificationType,
+    DaemonState,
+    ServiceStatus,
     add_changesets,
     add_notification,
     ancillary_trust_deployed,
     apply_changesets,
     clear_changesets,
+    daemon_initialized,
     deploy_ancillary_trust,
     error_ancillary_trust,
+    error_daemon_start,
+    error_daemon_status_update,
+    error_daemon_stop,
     error_deploying_ancillary_trust,
     error_events,
     error_groups,
     error_system_trust,
     error_users,
+    init_daemon,
     init_system,
     received_ancillary_trust,
+    received_daemon_start,
+    received_daemon_status_update,
+    received_daemon_stop,
     received_events,
     received_groups,
     received_system_trust,
     received_users,
     remove_notification,
     request_ancillary_trust,
+    request_daemon_start,
+    request_daemon_stop,
     request_events,
     request_groups,
     request_system_trust,
@@ -276,3 +298,78 @@ def test_system_initialized():
     assert type(action) is Action
     assert action.type == SYSTEM_INITIALIZED
     assert not action.payload
+
+
+def test_init_daemon():
+    action = init_daemon()
+    assert type(action) is Action
+    assert action.type == INIT_DAEMON
+    assert not action.payload
+
+
+def test_daemon_initialized():
+    action = daemon_initialized()
+    assert type(action) is Action
+    assert action.type == DAEMON_INITIALIZED
+    assert not action.payload
+
+
+def test_received_daemon_status_update():
+    action = received_daemon_status_update(DaemonState(error=None,
+                                                       status=ServiceStatus.TRUE))
+    assert type(action) is Action
+    assert action.type == RECEIVED_DAEMON_STATUS_UPDATE
+    assert action.payload
+    print(action.payload)
+
+
+def test_error_daemon_status_update():
+    action = error_daemon_status_update("We are handling an error!")
+    assert type(action) is Action
+    assert action.type == ERROR_DAEMON_STATUS_UPDATE
+    assert action.payload
+    print(action.payload)
+
+
+def test_request_daemon_stop():
+    action = request_daemon_stop()
+    assert type(action) is Action
+    assert action.type == REQUEST_DAEMON_STOP
+    assert not action.payload
+
+
+def test_received_daemon_stop():
+    action = received_daemon_stop()
+    assert type(action) is Action
+    assert action.type == RECEIVED_DAEMON_STOP
+    assert not action.payload
+
+
+def test_error_daemon_stop():
+    action = error_daemon_stop("We are handling an error!")
+    assert type(action) is Action
+    assert action.type == ERROR_DAEMON_STOP
+    assert action.payload
+    print(action.payload)
+
+
+def test_request_daemon_start():
+    action = request_daemon_start()
+    assert type(action) is Action
+    assert action.type == REQUEST_DAEMON_START
+    assert not action.payload
+
+
+def test_received_daemon_start():
+    action = received_daemon_start()
+    assert type(action) is Action
+    assert action.type == RECEIVED_DAEMON_START
+    assert not action.payload
+
+
+def test_error_daemon_start():
+    action = error_daemon_start("We are handling an error!")
+    assert type(action) is Action
+    assert action.type == ERROR_DAEMON_START
+    assert action.payload
+    print(action.payload)
