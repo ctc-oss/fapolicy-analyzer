@@ -92,7 +92,7 @@ class Notification(NamedTuple):
 
 
 class ServiceStatus(Enum):
-    TRUE = True,
+    TRUE = (True,)
     FALSE = False
     UNKNOWN = None
 

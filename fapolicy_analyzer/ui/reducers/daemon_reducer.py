@@ -31,18 +31,25 @@ def _create_state(state: DaemonState, **kwargs: Optional[Any]) -> DaemonState:
 
 def handle_received_daemon_start(state: DaemonState, action: Action):
     logging.debug("daemon_reducer::handle_received_daemon_start()")
-    return _create_state(state, status=action.payload)
+    return _create_state(
+        state, status=action.payload.status, error=action.payload.error
+    )
 
 
 def handle_received_daemon_stop(state: DaemonState, action: Action):
     logging.debug("daemon_reducer::handle_received_daemon_stop()")
-    return _create_state(state, status=action.payload)
+    return _create_state(
+        state, status=action.payload.status, error=action.payload.error
+    )
 
 
 def handle_received_daemon_status_update(state: DaemonState, action: Action):
-    logging.debug(f"daemon_reducer::handle_received_daemon_status_update({state}), {action}")
-    return _create_state(state, status=action.payload.status,
-                         error=action.payload.error)
+    logging.debug(
+        f"daemon_reducer::handle_received_daemon_status_update({state}), {action}"
+    )
+    return _create_state(
+        state, status=action.payload.status, error=action.payload.error
+    )
 
 
 daemon_reducer: Reducer = handle_actions(

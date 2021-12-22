@@ -68,6 +68,7 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
     provided, a new Daemon object will be initialized.  Used for testing
     purposes only.
     """
+
     def _init_daemon() -> Action:
         logging.debug("_init_daemon() -> Action")
 
@@ -87,13 +88,14 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
             while True:
                 try:
                     bStatus = _fapd_ref.is_active()
-                    if(bStatus != _fapd_status):
+                    if bStatus != _fapd_status:
                         logging.debug("monitor_daemon:Dispatch update request")
                         _fapd_status = bStatus
-                        dispatch(received_daemon_status_update(DaemonState(
-                            status=_fapd_status,
-                            error=None
-                        )))
+                        dispatch(
+                            received_daemon_status_update(
+                                DaemonState(status=_fapd_status, error=None)
+                            )
+                        )
                 except Exception:
                     print("Daemon monitor query/update dispatch failed.")
                 sleep(timeout)
@@ -115,17 +117,21 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
             if daemon.is_valid():
                 _fapd_status = _fapd_ref.is_active()
                 logging.debug("Dispatching: received_daemon_status_update()")
-                dispatch(received_daemon_status_update(DaemonState(
-                    status=_fapd_status,
-                    error=None)))
+                dispatch(
+                    received_daemon_status_update(
+                        DaemonState(status=_fapd_status, error=None)
+                    )
+                )
 
             else:
                 _fapd_status = ServiceStatus.UNKNOWN
                 strError = "The fapolicyd serice is not installed"
                 logging.debug("Dispatching: error_daemon_status_update()")
-                dispatch(error_daemon_status_update(DaemonState(
-                    status=_fapd_status,
-                    error=strError)))
+                dispatch(
+                    error_daemon_status_update(
+                        DaemonState(status=_fapd_status, error=strError)
+                    )
+                )
 
         if daemon:
             finish(daemon)
@@ -150,8 +156,9 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
         try:
             if _fapd_ref and _fapd_ref.is_valid():
                 _fapd_status = _fapd_ref.is_active()
-                logging.debug(f"_daemon_status_update({action}):"
-                              "status:{_fapd_status}")
+                logging.debug(
+                    f"_daemon_status_update({action}):" "status:{_fapd_status}"
+                )
         except Exception:
             dispatch(error_daemon_status_update("fapolicyd Status failed"))
         return received_daemon_status_update(_fapd_status)
@@ -188,7 +195,8 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
         request_daemon_stop_epic,
     )
 
-    return create_feature_module(DAEMON_FEATURE,
-                                 daemon_reducer,
-                                 epic=daemon_epic,
-                                 )
+    return create_feature_module(
+        DAEMON_FEATURE,
+        daemon_reducer,
+        epic=daemon_epic,
+    )
