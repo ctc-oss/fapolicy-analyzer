@@ -56,6 +56,7 @@ from typing import Callable
 DAEMON_FEATURE = "daemon"
 _fapd_status: ServiceStatus = ServiceStatus.UNKNOWN
 _fapd_ref: Handle = None
+_fapd_installed: bool = False
 
 
 def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule:
@@ -76,8 +77,6 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
             logging.debug("acquire_daemon()")
             try:
                 daemon = Handle("fapolicyd")
-                logging.debug(f"daemon = {daemon}")
-                logging.debug(f"daemon.is_valid() = {daemon.is_valid()}")
                 finish(daemon)
             except RuntimeError:
                 logging.exception(DAEMON_INITIALIZATION_ERROR)
@@ -104,17 +103,21 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
             logging.debug(f"start_daemon_monitor({daemon})")
 
             # Only start monitoring thread if fapolicy is installed
-            if _fapd_ref and _fapd_ref.is_valid():
+            if _fapd_installed:
                 logging.debug("Spawning monitor thread...")
                 thread = Thread(target=monitor_daemon)
                 thread.daemon = True
                 thread.start()
 
         def finish(daemon: Handle):
-            global _fapd_ref, _fapd_status
+            global _fapd_ref, _fapd_installed, _fapd_status
             logging.debug(f"daemon_feature::finish({daemon})")
-            _fapd_ref = daemon
-            if daemon.is_valid():
+
+            if daemon:
+                _fapd_ref = daemon
+                _fapd_installed = daemon.is_valid()
+                logging.debug(f"_fapd_installed = {_fapd_installed}")
+            if _fapd_installed:
                 _fapd_status = _fapd_ref.is_active()
                 logging.debug("Dispatching: received_daemon_status_update()")
                 dispatch(
@@ -146,7 +149,7 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
     def _daemon_start(action: Action) -> Action:
         logging.debug("_daemon_start(action: Action) -> Action")
         try:
-            if _fapd_ref and _fapd_ref.is_valid():
+            if _fapd_installed:
                 _fapd_ref.start()
         except Exception:
             dispatch(error_daemon_start("fapolicyd Start failed"))
@@ -154,7 +157,7 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
 
     def _daemon_status_update(action: Action) -> Action:
         try:
-            if _fapd_ref and _fapd_ref.is_valid():
+            if _fapd_installed:
                 _fapd_status = _fapd_ref.is_active()
                 logging.debug(
                     f"_daemon_status_update({action}):" "status:{_fapd_status}"
@@ -166,7 +169,7 @@ def create_daemon_feature(dispatch: Callable, daemon=None) -> ReduxFeatureModule
     def _daemon_stop(action: Action) -> Action:
         logging.debug("_daemon_stop(action: Action) -> Action")
         try:
-            if _fapd_ref and _fapd_ref.is_valid():
+            if _fapd_installed:
                 _fapd_ref.stop()
         except Exception:
             dispatch(error_daemon_stop("fapolicyd Stop failed"))
