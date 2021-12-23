@@ -22,7 +22,7 @@ pub fn from_syslog(path: &str) -> Result<Vec<Event>, Error> {
     from_file(path, |s| s.contains("fapolicyd") && s.contains("rule="))
 }
 
-fn from_file<P>(path: &str, filter: P) -> Result<Vec<Event>, Error>
+fn from_file<P>(path: &str, predicate: P) -> Result<Vec<Event>, Error>
 where
     P: FnMut(&&String) -> bool,
 {
@@ -30,7 +30,7 @@ where
     let lines: Result<Vec<String>, io::Error> = buff.lines().collect();
     Ok(lines?
         .iter()
-        .filter(filter)
+        .filter(predicate)
         // todo;; should log the failures here instead of just flattening
         .flat_map(|l| parse_event(&l).map(|r| r.1))
         .collect())
