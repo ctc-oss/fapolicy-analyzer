@@ -14,6 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+from locale import gettext as _
 from typing import Mapping, Sequence, Tuple
 
 import gi
@@ -37,6 +38,8 @@ from fapolicy_analyzer.ui.strings import (
     SAVE_AS_FILE_LABEL,
 )
 from fapolicy_analyzer.util.fapd_dbase import fapd_dbase_snapshot
+
+from .ui_operation import UIOperation
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
@@ -69,7 +72,7 @@ class _FapdArchiveFileChooserDialog(Gtk.FileChooserDialog):
         self.show_all()
 
 
-class DeployChangesetsOp:
+class DeployChangesetsOp(UIOperation):
     """Encapsulates the operation of deploying changesets.
 
     Attributes
@@ -93,12 +96,6 @@ class DeployChangesetsOp:
         self.__window = parentWindow
         self.__deploying = False
         self.__subscription = get_system_feature().subscribe(on_next=self.__on_next)
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, *args):
-        self.dispose()
 
     def __changesets_to_path_action_pairs(
         self,
@@ -145,13 +142,19 @@ class DeployChangesetsOp:
             )
             self.__display_deploy_confirmation_dialog()
 
-    def deploy(self, changesets: Changeset):
+    def get_text(self) -> str:
+        return _("Deploy Changes")
+
+    def get_icon(self) -> str:
+        return "system-software-update"
+
+    def run(self, changesets: Changeset):
         """
         Deploys the given changesets.
 
         Parameters
         ----------
-        changesets : : fapolicy_analyze.Changeset
+        changesets: fapolicy_analyze.Changeset
             Changesets to deploy
 
         Returns

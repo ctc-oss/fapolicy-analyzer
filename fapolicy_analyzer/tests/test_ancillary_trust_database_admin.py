@@ -290,14 +290,3 @@ def test_load_trust_w_exception(mock_dispatch, mocker):
             payload=Attrs(type=NotificationType.ERROR, text=ANCILLARY_TRUST_LOAD_ERROR),
         )
     )
-
-
-def test_deploy_operation(widget, mocker):
-    mocker.patch(
-        "fapolicy_analyzer.ui.operations.deploy_changesets_op.get_system_feature"
-    )
-    mockDeploy = mocker.patch(
-        "ui.ancillary_trust_database_admin.DeployChangesetsOp.deploy"
-    )
-    widget.get_object("deployBtn").clicked()
-    mockDeploy.assert_called_once()

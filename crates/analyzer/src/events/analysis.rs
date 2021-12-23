@@ -13,6 +13,7 @@ use crate::error::Error::AnalyzerError;
 use crate::events::db::DB as EventDB;
 use crate::events::event::{Event, Perspective};
 use fapolicy_rules::Decision::*;
+use fapolicy_trust::stat::Status::{Discrepancy, Missing, Trusted};
 
 #[derive(Clone, Debug)]
 pub struct Analysis {
@@ -25,6 +26,7 @@ pub struct Analysis {
 pub struct SubjAnalysis {
     pub file: String,
     pub trust: String,
+    pub status: String,
     pub access: String,
 }
 
@@ -32,6 +34,7 @@ pub struct SubjAnalysis {
 pub struct ObjAnalysis {
     pub file: String,
     pub trust: String,
+    pub status: String,
     pub access: String,
     pub mode: String,
 }
@@ -62,12 +65,14 @@ pub fn analyze(db: &EventDB, from: Perspective, trust: &TrustDB) -> Vec<Analysis
             Analysis {
                 event: e.clone(),
                 subject: SubjAnalysis {
-                    trust: trust_check(&sp, trust).unwrap(),
+                    trust: trust_source(&sp, trust).unwrap(),
+                    status: trust_status(&sp, trust).unwrap(),
                     access: sa,
                     file: sp,
                 },
                 object: ObjAnalysis {
-                    trust: trust_check(&op, trust).unwrap(),
+                    trust: trust_source(&op, trust).unwrap(),
+                    status: trust_status(&op, trust).unwrap(),
                     access: ed,
                     mode: "R".to_string(),
                     file: op,
@@ -77,12 +82,23 @@ pub fn analyze(db: &EventDB, from: Perspective, trust: &TrustDB) -> Vec<Analysis
         .collect()
 }
 
-fn trust_check(path: &str, db: &TrustDB) -> Result<String, Error> {
+fn trust_source(path: &str, db: &TrustDB) -> Result<String, Error> {
     match db.get(path) {
         Some(r) if r.is_system() => Ok("ST".into()),
         Some(r) if r.is_ancillary() => Ok("AT".into()),
         None => Ok("U".into()),
         _ => Err(AnalyzerError("unexpected trust check state".into())),
+    }
+}
+
+fn trust_status(path: &str, db: &TrustDB) -> Result<String, Error> {
+    match db.get(path) {
+        Some(r) if r.status.as_ref().is_some() => match r.status.as_ref().unwrap() {
+            Trusted(_, _) => Ok("T".into()),
+            Discrepancy(_, _) => Ok("D".into()),
+            Missing(_) => Ok("U".into()),
+        },
+        _ => Ok("U".into()),
     }
 }
 

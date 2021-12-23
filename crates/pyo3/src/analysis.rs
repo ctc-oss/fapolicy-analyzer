@@ -86,10 +86,16 @@ impl PySubject {
         self.rs.file.clone()
     }
 
-    /// Trust status of the log event subject
+    /// Trust source of the log event subject
     #[getter]
     fn trust(&self) -> String {
         self.rs.trust.clone()
+    }
+
+    /// Trust status of the log event subject
+    #[getter]
+    fn trust_status(&self) -> String {
+        self.rs.status.clone()
     }
 
     /// Access status of the log event subject
@@ -125,10 +131,16 @@ impl PyObject {
         self.rs.file.clone()
     }
 
-    /// Trust status of the log event object
+    /// Trust source of the log event object
     #[getter]
     fn trust(&self) -> String {
         self.rs.trust.clone()
+    }
+
+    /// Trust status of the log event object
+    #[getter]
+    fn trust_status(&self) -> String {
+        self.rs.status.clone()
     }
 
     /// Access status of the log event object
