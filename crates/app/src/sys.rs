@@ -46,6 +46,9 @@ pub fn deploy_app_state(state: &State) -> Result<(), Error> {
     Ok(())
 }
 
+/// default path for the syslog log file in RH environments
+const RHEL_SYSLOG_LOG_FILE_PATH: &str = "/var/log/messages";
+
 /// host system configuration information
 /// generally loaded from the XDG user configuration
 #[derive(Clone, Serialize, Deserialize)]
@@ -54,6 +57,7 @@ pub struct Config {
     pub rules_file_path: String,
     pub system_trust_path: String,
     pub ancillary_trust_path: String,
+    pub syslog_file_path: String,
 }
 
 impl Default for Config {
@@ -63,6 +67,7 @@ impl Default for Config {
             rules_file_path: RULES_FILE_PATH.to_string(),
             system_trust_path: RPM_DB_PATH.to_string(),
             ancillary_trust_path: TRUST_FILE_PATH.to_string(),
+            syslog_file_path: RHEL_SYSLOG_LOG_FILE_PATH.to_string(),
         }
     }
 }

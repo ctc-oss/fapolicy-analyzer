@@ -140,8 +140,8 @@ impl PySystem {
     }
 
     /// Parse events from syslog at the specified path
-    fn load_syslog(&self, log: &str) -> PyResult<PyEventLog> {
-        let xs = events::read::from_syslog(log)
+    fn load_syslog(&self) -> PyResult<PyEventLog> {
+        let xs = events::read::from_syslog(&self.rs.config.system.syslog_file_path)
             .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))?;
         Ok(PyEventLog {
             rs: EventDB::from(xs),
