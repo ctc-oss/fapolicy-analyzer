@@ -48,6 +48,7 @@ def router(selection, data=None):
         ANALYZER_SELECTION.TRUST_DATABASE_ADMIN: DatabaseAdminPage,
         ANALYZER_SELECTION.SCAN_SYSTEM: PolicyRulesAdminPage,
         ANALYZER_SELECTION.ANALYZE_FROM_AUDIT: PolicyRulesAdminPage,
+        ANALYZER_SELECTION.ANALYZE_SYSLOG: PolicyRulesAdminPage,
     }.get(selection)
     if route:
         return route(data) if data else route()
@@ -294,13 +295,17 @@ class MainWindow(UIConnectedWidget):
 
         fcd.destroy()
 
-    def on_aboutMenu_activate(self, menuitem, data=None):
+    def on_aboutMenu_activate(self, *args):
         aboutDialog = self.get_object("aboutDialog")
         aboutDialog.set_transient_for(self.window)
         aboutDialog.run()
         aboutDialog.hide()
 
-    def on_analyzeMenu_activate(self, menuitem, *args):
+    def on_syslogMenu_activate(self, *args):
+        self.__pack_main_content(router(ANALYZER_SELECTION.ANALYZE_SYSLOG))
+        self.__set_trustDbMenu_sensitive(True)
+
+    def on_analyzeMenu_activate(self, *args):
         fcd = Gtk.FileChooserDialog(
             title=strings.OPEN_FILE_LABEL,
             transient_for=self.get_ref(),

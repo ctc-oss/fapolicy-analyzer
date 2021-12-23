@@ -77,18 +77,24 @@ impl State {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Config {
+    #[serde(default = "data_dir")]
     pub data_dir: String,
 }
 
 impl Default for Config {
     fn default() -> Self {
-        let proj_dirs =
-            ProjectDirs::from("rs", "", PROJECT_NAME).expect("failed to init project dirs");
-
-        let dd = proj_dirs.data_dir();
-
         Self {
-            data_dir: dd.to_path_buf().into_os_string().into_string().unwrap(),
+            data_dir: data_dir(),
         }
     }
+}
+
+//
+// private helpers for serde
+//
+
+fn data_dir() -> String {
+    let proj_dirs = ProjectDirs::from("rs", "", PROJECT_NAME).expect("failed to init project dirs");
+    let dd = proj_dirs.data_dir();
+    dd.to_path_buf().into_os_string().into_string().unwrap()
 }

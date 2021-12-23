@@ -168,6 +168,14 @@ def test_opens_analyze_with_audit_page(mainWindow, mocker):
     assert Gtk.Buildable.get_name(content) == "policyRulesAdminPage"
 
 
+def test_opens_analyze_with_syslog_page(mainWindow, mocker):
+    menuItem = mainWindow.get_object("syslogMenu")
+    menuItem.activate()
+    refresh_gui()
+    content = next(iter(mainWindow.get_object("mainContent").get_children()))
+    assert Gtk.Buildable.get_name(content) == "policyRulesAdminPage"
+
+
 def test_bad_router_option():
     with pytest.raises(Exception) as excinfo:
         router("foo")

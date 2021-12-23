@@ -13,7 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import context  # noqa: F401
+import context  # noqa: F401 # isort: skip
+from unittest.mock import MagicMock
+
 import pytest
 from redux import Action
 from ui.actions import (
@@ -96,7 +98,6 @@ from ui.actions import (
     set_system_checkpoint,
     system_initialized,
 )
-from unittest.mock import MagicMock
 
 
 @pytest.mark.parametrize("notification_type", [t for t in list(NotificationType)])
@@ -220,11 +221,18 @@ def test_restore_system_checkpoint():
     assert not action.payload
 
 
-def test_request_events():
-    action = request_events("fooFile")
+def test_request_sys_log_events():
+    action = request_events("syslog")
     assert type(action) is Action
     assert action.type == REQUEST_EVENTS
-    assert action.payload == "fooFile"
+    assert action.payload == ("syslog", None)
+
+
+def test_request_debug_log_events():
+    action = request_events("debug", "foo")
+    assert type(action) is Action
+    assert action.type == REQUEST_EVENTS
+    assert action.payload == ("debug", "foo")
 
 
 def test_received_events():

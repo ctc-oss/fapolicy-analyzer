@@ -14,10 +14,11 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import logging
 from enum import Enum
-from fapolicy_analyzer import Changeset, Event, Group, Trust, User
 from itertools import count
-from redux import Action, create_action
 from typing import Any, Iterator, NamedTuple, Sequence
+
+from fapolicy_analyzer import Changeset, Event, Group, Trust, User
+from redux import Action, create_action
 
 INIT_SYSTEM = "INIT_SYSTEM"
 SYSTEM_INITIALIZED = "SYSTEM_INITIALIZED"
@@ -166,8 +167,8 @@ def restore_system_checkpoint() -> Action:
     return _create_action(RESTORE_SYSTEM_CHECKPOINT)
 
 
-def request_events(file: str) -> Action:
-    return _create_action(REQUEST_EVENTS, file)
+def request_events(log_type: str, file: str = None) -> Action:
+    return _create_action(REQUEST_EVENTS, (log_type, file))
 
 
 def received_events(events: Sequence[Event]) -> Action:
