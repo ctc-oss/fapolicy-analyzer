@@ -131,7 +131,7 @@ impl PySystem {
 
     /// Parse events from debug mode log at the specified path
     fn load_debuglog(&self, log: &str) -> PyResult<PyEventLog> {
-        let xs = events::read::from_file(log)
+        let xs = events::read::from_debug(log)
             .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))?;
         Ok(PyEventLog {
             rs: EventDB::from(xs),
