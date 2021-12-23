@@ -13,25 +13,36 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import gi
-
-gi.require_version("Gtk", "3.0")
 from functools import partial
 
+import gi
 from events import Events
 from fapolicy_analyzer.util import acl, fs
-from gi.repository import Gtk
 
 from .acl_list import ACLList
-from .actions import (NotificationType, add_notification, request_events,
-                      request_groups, request_users)
+from .actions import (
+    NotificationType,
+    add_notification,
+    request_events,
+    request_groups,
+    request_users,
+)
 from .object_list import ObjectList
 from .store import dispatch, get_system_feature
-from .strings import (GET_GROUPS_LOG_ERROR_MSG, GET_USERS_ERROR_MSG,
-                      GROUP_LABEL, GROUPS_LABEL, PARSE_EVENT_LOG_ERROR_MSG,
-                      USER_LABEL, USERS_LABEL)
+from .strings import (
+    GET_GROUPS_LOG_ERROR_MSG,
+    GET_USERS_ERROR_MSG,
+    GROUP_LABEL,
+    GROUPS_LABEL,
+    PARSE_EVENT_LOG_ERROR_MSG,
+    USER_LABEL,
+    USERS_LABEL,
+)
 from .subject_list import SubjectList
 from .ui_widget import UIConnectedWidget
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk  # isort: skip
 
 
 class PolicyRulesAdminPage(UIConnectedWidget):
