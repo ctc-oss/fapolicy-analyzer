@@ -53,10 +53,15 @@ const RHEL_SYSLOG_LOG_FILE_PATH: &str = "/var/log/messages";
 /// generally loaded from the XDG user configuration
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Config {
+    #[serde(default = "trust_db_path")]
     pub trust_db_path: String,
+    #[serde(default = "rules_file_path")]
     pub rules_file_path: String,
+    #[serde(default = "system_trust_path")]
     pub system_trust_path: String,
+    #[serde(default = "ancillary_trust_path")]
     pub ancillary_trust_path: String,
+    #[serde(default = "syslog_file_path")]
     pub syslog_file_path: String,
 }
 
@@ -70,4 +75,28 @@ impl Default for Config {
             syslog_file_path: RHEL_SYSLOG_LOG_FILE_PATH.to_string(),
         }
     }
+}
+
+//
+// private helpers for serde
+//
+
+fn trust_db_path() -> String {
+    TRUST_DB_PATH.into()
+}
+
+fn rules_file_path() -> String {
+    RULES_FILE_PATH.into()
+}
+
+fn system_trust_path() -> String {
+    RPM_DB_PATH.into()
+}
+
+fn ancillary_trust_path() -> String {
+    TRUST_FILE_PATH.into()
+}
+
+fn syslog_file_path() -> String {
+    RHEL_SYSLOG_LOG_FILE_PATH.into()
 }
