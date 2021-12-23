@@ -114,15 +114,15 @@ def create_system_feature(
             _system = _system.apply_changeset(c)
         return changesets
 
-    def _get_ancillary_trust(action: Action) -> Action:
+    def _get_ancillary_trust(_: Action) -> Action:
         trust = _system.ancillary_trust()
         return received_ancillary_trust(trust)
 
-    def _get_system_trust(action: Action) -> Action:
+    def _get_system_trust(_: Action) -> Action:
         trust = _system.system_trust()
         return received_system_trust(trust)
 
-    def _deploy_ancillary_trust(action: Action) -> Action:
+    def _deploy_ancillary_trust(_: Action) -> Action:
         if not fapd_dbase_snapshot():
             logging.warning(
                 "Fapolicyd pre-deploy backup failed, continuing with deployment."
@@ -135,21 +135,27 @@ def create_system_feature(
         _checkpoint = _system
         return action
 
-    def _restore_checkpoint(action: Action) -> Action:
+    def _restore_checkpoint(_: Action) -> Action:
         global _system
         _system = _checkpoint
         rollback_fapolicyd(_system)
         return clear_changesets()
 
     def _get_events(action: Action) -> Action:
-        events = _system.events(action.payload)
+        log_type, file = action.payload
+        if log_type == "debug":
+            events = _system.load_debuglog(file)
+        elif log_type == "syslog":
+            events = _system.load_syslog()
+        else:
+            events = []
         return received_events(events)
 
-    def _get_users(action: Action) -> Action:
+    def _get_users(_: Action) -> Action:
         users = _system.users()
         return received_users(users)
 
-    def _get_groups(action: Action) -> Action:
+    def _get_groups(_: Action) -> Action:
         groups = _system.groups()
         return received_groups(groups)
 

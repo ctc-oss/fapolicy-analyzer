@@ -72,10 +72,7 @@ impl PyHandle {
 
     /// returns true if the unit exists, false otherwise
     pub fn is_valid(&self) -> bool {
-        match self.rs.active() {
-            Ok(_) => true,
-            Err(_) => false,
-        }
+        self.rs.active().is_ok()
     }
 }
 

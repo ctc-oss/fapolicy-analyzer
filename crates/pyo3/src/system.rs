@@ -11,8 +11,8 @@ use std::time::SystemTime;
 use pyo3::prelude::*;
 use pyo3::{exceptions, PyResult};
 
+use fapolicy_analyzer::events;
 use fapolicy_analyzer::events::db::DB as EventDB;
-use fapolicy_analyzer::events::event::Event;
 use fapolicy_app::app::State;
 use fapolicy_app::cfg;
 use fapolicy_app::sys::deploy_app_state;
@@ -129,13 +129,24 @@ impl PySystem {
         self.rs.groups.iter().map(|g| g.clone().into()).collect()
     }
 
-    /// Parse an EventLog from the specified path
-    fn events(&self, log: &str) -> PyEventLog {
-        let xs = Event::from_file(log);
-        PyEventLog {
+    /// Parse events from debug mode log at the specified path
+    fn load_debuglog(&self, log: &str) -> PyResult<PyEventLog> {
+        let xs = events::read::from_debug(log)
+            .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))?;
+        Ok(PyEventLog {
             rs: EventDB::from(xs),
             rs_trust: self.rs.trust_db.clone(),
-        }
+        })
+    }
+
+    /// Parse events from syslog at the specified path
+    fn load_syslog(&self) -> PyResult<PyEventLog> {
+        let xs = events::read::from_syslog(&self.rs.config.system.syslog_file_path)
+            .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))?;
+        Ok(PyEventLog {
+            rs: EventDB::from(xs),
+            rs_trust: self.rs.trust_db.clone(),
+        })
     }
 }
 
