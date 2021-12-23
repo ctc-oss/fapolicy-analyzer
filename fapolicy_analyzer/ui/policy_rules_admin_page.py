@@ -23,24 +23,13 @@ from fapolicy_analyzer.util import acl, fs
 from gi.repository import Gtk
 
 from .acl_list import ACLList
-from .actions import (
-    NotificationType,
-    add_notification,
-    request_events,
-    request_groups,
-    request_users,
-)
+from .actions import (NotificationType, add_notification, request_events,
+                      request_groups, request_users)
 from .object_list import ObjectList
 from .store import dispatch, get_system_feature
-from .strings import (
-    GET_GROUPS_LOG_ERROR_MSG,
-    GET_USERS_ERROR_MSG,
-    GROUP_LABEL,
-    GROUPS_LABEL,
-    PARSE_EVENT_LOG_ERROR_MSG,
-    USER_LABEL,
-    USERS_LABEL,
-)
+from .strings import (GET_GROUPS_LOG_ERROR_MSG, GET_USERS_ERROR_MSG,
+                      GROUP_LABEL, GROUPS_LABEL, PARSE_EVENT_LOG_ERROR_MSG,
+                      USER_LABEL, USERS_LABEL)
 from .subject_list import SubjectList
 from .ui_widget import UIConnectedWidget
 
@@ -121,13 +110,15 @@ class PolicyRulesAdminPage(UIConnectedWidget):
         for s in self.switchers:
             s.buttonClicked += self.on_switcher_button_clicked
 
+        self.__usersLoading = True
+        dispatch(request_users())
+        self.__groupsLoading = True
+        dispatch(request_groups())
+        self.__eventsLoading = True
         if auditFile:
-            self.__usersLoading = True
-            dispatch(request_users())
-            self.__groupsLoading = True
-            dispatch(request_groups())
-            self.__eventsLoading = True
-            dispatch(request_events(auditFile))
+            dispatch(request_events("debug", auditFile))
+        else:
+            dispatch(request_events("syslog"))
 
     def __all_list(self):
         box = Gtk.Box()
