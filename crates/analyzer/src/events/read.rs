@@ -32,6 +32,6 @@ where
         .iter()
         .filter(predicate)
         // todo;; should log the failures here instead of just flattening
-        .flat_map(|l| parse_event(&l).map(|r| r.1))
+        .flat_map(|l| parse_event(l).map(|r| r.1))
         .collect())
 }
