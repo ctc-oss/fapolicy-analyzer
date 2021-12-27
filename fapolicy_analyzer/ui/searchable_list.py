@@ -34,8 +34,10 @@ class SearchableList(UIBuilderWidget, Events):
         defaultSortIndex=0,
         defaultSortDirection=Gtk.SortType.DESCENDING,
         view_headers_visible=True,
+        selection_type = 'single'
     ):
-        UIBuilderWidget.__init__(self, "searchable_list")
+        selection = 'searchable_list_multiselect' if selection_type == "multi" else "searchable_list"
+        UIBuilderWidget.__init__(self, selection)
         Events.__init__(self)
 
         self.searchColumnIndex = searchColumnIndex

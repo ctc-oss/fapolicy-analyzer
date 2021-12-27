@@ -24,6 +24,12 @@ from .subject_list import SubjectList
 
 
 class ObjectList(SubjectList):
+
+    def __init__(self):
+        super().__init__(
+            selection_type = "multi",
+        )
+
     def _columns(self):
         columns = super()._columns()
         modeCell = Gtk.CellRendererText()

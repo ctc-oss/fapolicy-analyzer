@@ -34,7 +34,7 @@ _TRUST_RESP = 1
 
 
 class SubjectList(SearchableList):
-    def __init__(self):
+    def __init__(self, **kwargs):
         self.__events__ = [
             *super().__events__,
             "file_selection_changed",
@@ -49,6 +49,7 @@ class SubjectList(SearchableList):
             add_button.get_ref(),
             searchColumnIndex=2,
             defaultSortIndex=2,
+            **kwargs
         )
 
         self._systemTrust = []
