@@ -101,7 +101,7 @@ def test_disables_add_button(widget):
 def test_fires_file_added_to_ancillary_trust(widget):
     handler = MagicMock()
     widget.file_added_to_ancillary_trust += handler
-    widget.selectedFile = [MagicMock(path="foo")]
+    widget.selectedFiles = [MagicMock(path="foo")]
     addBtn = widget.get_object("addBtn")
     addBtn.clicked()
     handler.assert_called_with("foo")

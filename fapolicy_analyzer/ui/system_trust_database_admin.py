@@ -87,7 +87,7 @@ class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
             self.trustFileList.load_trust(self._trust)
 
     def on_trust_selection_changed(self, trusts):
-        self.selectedFile = trusts
+        self.selectedFiles = trusts
         addBtn = self.get_object("addBtn")
         if trusts:
             trust = trusts[-1]
@@ -123,6 +123,5 @@ SHA256: {fs.sha(trust.path)}"""
             addBtn.set_sensitive(False)
 
     def on_addBtn_clicked(self, *args):
-        if self.selectedFile:
-            for sfile in self.selectedFile:
-                self.file_added_to_ancillary_trust(sfile.path)
+        if self.selectedFiles:
+            self.file_added_to_ancillary_trust(*[sfile.path for sfile in self.selectedFiles])

@@ -13,23 +13,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import gi
-
-gi.require_version("Gtk", "3.0")
-from events import Events
-from gi.repository import Gtk
 from .searchable_list import SearchableList
 
-from .ui_widget import UIBuilderWidget
-from .loader import Loader
 
 class SearchableListMultiselect(SearchableList):
 
     def __init__(
         self,
+        *args,
         **kwargs
     ):
-    
-        super().__init__(selection_type='multi', **kwargs)
 
-
+        super().__init__(selection_type="multi", *args, **kwargs)

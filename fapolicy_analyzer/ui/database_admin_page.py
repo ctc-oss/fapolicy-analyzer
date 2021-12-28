@@ -46,8 +46,8 @@ class DatabaseAdminPage(UIWidget):
         notebook.set_current_page(1)
         notebook.show_all()
 
-    def on_added_to_ancillary_trust(self, file):
-        self.ancillaryTrustDbAdmin.add_trusted_files(file)
+    def on_added_to_ancillary_trust(self, *files):
+        self.ancillaryTrustDbAdmin.add_trusted_files(*files)
 
     def _dispose(self):
         self.ancillaryTrustDbAdmin.dispose()

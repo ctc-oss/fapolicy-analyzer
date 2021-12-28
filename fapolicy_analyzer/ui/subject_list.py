@@ -24,7 +24,7 @@ from more_itertools import first_true
 from .actions import apply_changesets
 from .add_file_button import AddFileButton
 from .configs import Colors
-from .searchable_list import SearchableList
+from .searchable_list_multiselect import SearchableListMultiselect
 from .store import dispatch
 from .strings import FILE_LABEL, FILES_LABEL
 from .trust_reconciliation_dialog import TrustReconciliationDialog
@@ -33,8 +33,8 @@ _UNTRUST_RESP = 0
 _TRUST_RESP = 1
 
 
-class SubjectList(SearchableList):
-    def __init__(self, **kwargs):
+class SubjectList(SearchableListMultiselect):
+    def __init__(self):
         self.__events__ = [
             *super().__events__,
             "file_selection_changed",
@@ -49,7 +49,6 @@ class SubjectList(SearchableList):
             add_button.get_ref(),
             searchColumnIndex=2,
             defaultSortIndex=2,
-            **kwargs
         )
 
         self._systemTrust = []

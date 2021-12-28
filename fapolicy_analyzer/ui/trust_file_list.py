@@ -22,7 +22,7 @@ from time import localtime, mktime, strftime, strptime
 
 from gi.repository import GLib, Gtk
 
-from .searchable_list import SearchableList
+from .searchable_list_multiselect import SearchableListMultiselect
 from .strings import FILE_LABEL, FILES_LABEL
 
 # global variable used for stopping the running executor from call for UI
@@ -45,7 +45,7 @@ def epoch_to_string(secsEpoch):
         return "Missing"
 
 
-class TrustFileList(SearchableList):
+class TrustFileList(SearchableListMultiselect):
     def __init__(self, trust_func, markup_func=None, *args):
         global _executorCanceled
 

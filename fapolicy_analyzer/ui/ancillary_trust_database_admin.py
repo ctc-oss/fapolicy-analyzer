@@ -39,7 +39,7 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
         self._changesets = []
         self._trust = []
         self._loading = False
-        self.selectedFile = None
+        self.selectedFiles = None
 
         self.trustFileList = AncillaryTrustFileList(trust_func=self.__load_trust)
         self.trustFileList.trust_selection_changed += self.on_trust_selection_changed
@@ -74,7 +74,7 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
         self.__apply_changeset(changeset)
 
     def on_trust_selection_changed(self, trusts):
-        self.selectedFile = [t.path for t in trusts] if trusts else None
+        self.selectedFiles = [t.path for t in trusts] if trusts else None
         trustBtn = self.get_object("trustBtn")
         untrustBtn = self.get_object("untrustBtn")
         if trusts:
@@ -125,14 +125,12 @@ SHA256: {fs.sha(trust.path)}"""
             self.add_trusted_files(*files)
 
     def on_trustBtn_clicked(self, *args):
-        if self.selectedFile:
-            for sfile in self.selectedFile:
-                self.add_trusted_files(sfile)
+        if self.selectedFiles:
+            self.add_trusted_files(*self.selectedFiles)
 
     def on_untrustBtn_clicked(self, *args):
-        if self.selectedFile:
-            for sfile in self.selectedFile:
-                self.delete_trusted_files(sfile)
+        if self.selectedFiles:
+            self.delete_trusted_files(*self.selectedFiles)
 
     def on_next_system(self, system):
         changesets = system.get("changesets")
