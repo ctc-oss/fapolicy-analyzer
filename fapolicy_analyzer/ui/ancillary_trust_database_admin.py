@@ -78,31 +78,44 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
         trustBtn = self.get_object("trustBtn")
         untrustBtn = self.get_object("untrustBtn")
         if trusts:
-            trust = trusts[-1]
-            status = getattr(trust, "status", "").lower()
-            trusted = status == "t"
+            nFiles = len(trusts)
+            nTrue = sum([True for trust in trusts if getattr(trust, "status", "").lower() == "t"])
+            nFalse = sum([True for trust in trusts if not getattr(trust, "status", "").lower() == "t"])
+
+            if nFiles == nTrue:
+                trusted = True
+            elif nFiles == nFalse:
+                trusted = False
+            else:
+                trustBtn.set_sensitive(False)
+                untrustBtn.set_sensitive(False)
+                return
+
             trustBtn.set_sensitive(not trusted)
             untrustBtn.set_sensitive(trusted)
 
-            if isinstance(trust, Trust):
-                self.trustFileDetails.set_in_database_view(
-                    f(
-                        _(
-                            """File: {trust.path}
+            for trust in trusts:
+                status = getattr(trust, "status", "").lower()
+
+                if isinstance(trust, Trust):
+                    self.trustFileDetails.set_in_database_view(
+                        f(
+                            _(
+                                """File: {trust.path}
 Size: {trust.size}
 SHA256: {trust.hash}"""
+                            )
+                        )
+                    )
+
+                self.trustFileDetails.set_on_file_system_view(
+                    f(
+                        _(
+                            """{fs.stat(trust.path)}
+SHA256: {fs.sha(trust.path)}"""
                         )
                     )
                 )
-
-            self.trustFileDetails.set_on_file_system_view(
-                f(
-                    _(
-                        """{fs.stat(trust.path)}
-SHA256: {fs.sha(trust.path)}"""
-                    )
-                )
-            )
 
             self.trustFileDetails.set_trust_status(
                 strings.ANCILLARY_TRUSTED_FILE_MESSAGE

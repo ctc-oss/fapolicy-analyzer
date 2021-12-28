@@ -93,7 +93,7 @@ class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
             nFiles = len(trusts)
             nTrue = sum([True for trust in trusts if trust.status.lower() == "t"])
             nFalse = sum([True for trust in trusts if not trust.status.lower() == "t"])
-            
+
             if nFiles == nTrue:
                 trusted = True
             elif nFiles == nFalse:
@@ -101,7 +101,7 @@ class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
             else:
                 addBtn.set_sensitive(False)
                 return
-            
+
             addBtn.set_sensitive(not trusted)
 
             for trust in trusts:
