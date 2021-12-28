@@ -17,6 +17,7 @@ from fapolicy_analyzer.ui.actions import SYSTEM_INITIALIZED
 from redux import Reducer, combine_reducers, handle_actions
 from .ancillary_trust_reducer import ancillary_trust_reducer
 from .changeset_reducer import changeset_reducer
+from .daemon_reducer import daemon_reducer
 from .event_reducer import event_reducer
 from .group_reducer import group_reducer
 from .system_trust_reducer import system_trust_reducer
@@ -32,6 +33,7 @@ system_reducer: Reducer = combine_reducers(
         "initialized": system_initialized_reducer,
         "ancillary_trust": ancillary_trust_reducer,
         "changesets": changeset_reducer,
+        "daemon": daemon_reducer,
         "events": event_reducer,
         "groups": group_reducer,
         "system_trust": system_trust_reducer,

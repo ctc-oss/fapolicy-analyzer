@@ -12,7 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
+import logging
 from enum import Enum
 from itertools import count
 from typing import Any, Iterator, NamedTuple, Sequence
@@ -57,6 +57,20 @@ REQUEST_GROUPS = "REQUEST_GROUPS"
 RECEIVED_GROUPS = "RECEIVED_GROUPS"
 ERROR_GROUPS = "ERROR_GROUPS"
 
+INIT_DAEMON = "INIT_DAEMON"
+DAEMON_INITIALIZED = "DAEMON_INITIALIZED"
+
+REQUEST_DAEMON_START = "REQUEST_DAEMON_START"
+RECEIVED_DAEMON_START = "RECEIVED_DAEMON_START"
+ERROR_DAEMON_START = "ERROR_DAEMON_START"
+
+REQUEST_DAEMON_STOP = "REQUEST_DAEMON_STOP"
+RECEIVED_DAEMON_STOP = "RECEIVED_DAEMON_STOP"
+ERROR_DAEMON_STOP = "ERROR_DAEMON_STOP"
+
+RECEIVED_DAEMON_STATUS_UPDATE = "RECEIVED_DAEMON_STATUS_UPDATE"
+ERROR_DAEMON_STATUS_UPDATE = "ERROR_DAEMON_STATUS_UPDATE"
+
 
 def _create_action(type: str, payload: Any = None) -> Action:
     return create_action(type)(payload)
@@ -76,6 +90,17 @@ class Notification(NamedTuple):
     id: int
     text: str
     type: NotificationType
+
+
+class ServiceStatus(Enum):
+    TRUE = True
+    FALSE = False
+    UNKNOWN = None
+
+
+class DaemonState(NamedTuple):
+    error: str
+    status: ServiceStatus
 
 
 def add_notification(text: str, type: NotificationType) -> Action:
@@ -184,3 +209,49 @@ def init_system() -> Action:
 
 def system_initialized() -> Action:
     return _create_action(SYSTEM_INITIALIZED)
+
+
+def init_daemon() -> Action:
+    return _create_action(INIT_DAEMON)
+
+
+def daemon_initialized() -> Action:
+    return _create_action(DAEMON_INITIALIZED)
+
+
+def received_daemon_status_update(state: DaemonState):
+    logging.debug(f"received_daemon_status_update({state})")
+    return _create_action(RECEIVED_DAEMON_STATUS_UPDATE, state)
+
+
+def error_daemon_status_update(error: str):
+    logging.debug(f"error_daemon_status_update({error})")
+    return _create_action(ERROR_DAEMON_STATUS_UPDATE, error)
+
+
+def request_daemon_stop() -> Action:
+    logging.debug("request_daemon_stop() -> Action: REQUEST_DAEMON_STOP")
+    return _create_action(REQUEST_DAEMON_STOP)
+
+
+def received_daemon_stop() -> Action:
+    logging.debug("received_daemon_stop() -> Action: RECEIVED_DAEMON_STOP")
+    return _create_action(RECEIVED_DAEMON_STOP)
+
+
+def error_daemon_stop(error: str) -> Action:
+    return _create_action(ERROR_DAEMON_STOP, error)
+
+
+def request_daemon_start() -> Action:
+    logging.debug("request_daemon_start() -> Action: REQUEST_DAEMON_START")
+    return _create_action(REQUEST_DAEMON_START)
+
+
+def received_daemon_start() -> Action:
+    logging.debug("received_daemon_start() -> Action: RECEIVED_DAEMON_START")
+    return _create_action(RECEIVED_DAEMON_START)
+
+
+def error_daemon_start(error: str) -> Action:
+    return _create_action(ERROR_DAEMON_START, error)

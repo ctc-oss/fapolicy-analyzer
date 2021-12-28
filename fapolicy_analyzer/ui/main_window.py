@@ -15,20 +15,29 @@
 
 import logging
 from locale import gettext as _
-from os import path
+from os import path, geteuid
 
+from fapolicy_analyzer import is_fapolicyd_active
 import fapolicy_analyzer.ui.strings as strings
 import gi
 from fapolicy_analyzer.util.format import f
+import os
 
-from .actions import NotificationType, add_notification
+from .actions import (
+    NotificationType,
+    add_notification,
+    request_daemon_start,
+    request_daemon_stop,
+    DaemonState,
+    ServiceStatus,
+)
 from .analyzer_selection_dialog import ANALYZER_SELECTION
 from .database_admin_page import DatabaseAdminPage
 from .notification import Notification
 from .operations import DeployChangesetsOp
 from .policy_rules_admin_page import PolicyRulesAdminPage
 from .session_manager import sessionManager
-from .store import dispatch, get_system_feature
+from .store import dispatch, get_system_feature, get_daemon_feature
 from .ui_widget import UIConnectedWidget
 from .unapplied_changes_dialog import UnappliedChangesDialog
 
@@ -55,6 +64,9 @@ class MainWindow(UIConnectedWidget):
         self.window = self.get_ref()
         self.windowTopLevel = self.window.get_toplevel()
         self.strTopLevelTitle = self.windowTopLevel.get_title()
+        self.fapdStatusLight = self.get_object("fapdStatusLight")
+        self._fapd_status = ServiceStatus.UNKNOWN
+        self._fapd_monitor_thread=False
         self._changesets = []
         self._page = None
 
@@ -62,11 +74,21 @@ class MainWindow(UIConnectedWidget):
         self.get_object("overlay").add_overlay(toaster.get_ref())
         self.mainContent = self.get_object("mainContent")
 
-        # Disable 'File' menu items until backend support is available
+        # Set menu items in default initial state
         self.get_object("restoreMenu").set_sensitive(False)
         self.__set_trustDbMenu_sensitive(False)
 
+        # Set fapd status UI element to default 'No' = Red button
+        self.fapdStatusLight.set_from_stock(stock_id="gtk-no", size=4)
+
+        # Check if running with root permissions
+        if geteuid() != 0:
+            self.get_object("fapdStartMenu").set_sensitive(False)
+            self.get_object("fapdStopMenu").set_sensitive(False)
+
         self.window.show_all()
+
+        get_daemon_feature().subscribe(on_next=self.on_update_daemon_status)
 
     def __unapplied_changes(self):
         # Check backend for unapplied changes
@@ -126,6 +148,52 @@ class MainWindow(UIConnectedWidget):
         menuItem = self.get_object("trustDbMenu")
         menuItem.set_sensitive(sensitive)
 
+    def __update_fapd_status(self, status: ServiceStatus):
+        logging.debug(f"__update_fapd_status({status})")
+        if status is True:
+            self.fapdStatusLight.set_from_stock(stock_id="gtk-yes", size=4)
+        elif status is False:
+            self.fapdStatusLight.set_from_stock(stock_id="gtk-no", size=4)
+        else:
+            self.fapdStatusLight.set_from_stock(stock_id="gtk-no", size=4)
+
+    def on_update_daemon_status(self, state: DaemonState):
+        logging.debug(f"on_update_daemon_status({state})")
+        self.__fapd_status=state.status
+        self.__update_fapd_status(state.status)
+
+        # Start monitor thread if not running
+        if self._fapd_monitor_thread is False:
+            self.__start_daemon_monitor()
+
+    def __monitor_daemon(self, timeout=5):
+        global _fapd_status
+        while True:
+            try:
+                bStatus = is_fapolicyd_active()
+                if bStatus != self._fapd_status:
+                    logging.debug("monitor_daemon:Dispatch update request")
+                    #self._fapd_status = bStatus
+                    dispatch(
+                        received_daemon_status_update(
+                            DaemonState(status=_fapd_status, error=None)
+                        )
+                    )
+            except Exception:
+                print("Daemon monitor query/update dispatch failed.")
+            sleep(timeout)
+
+    def __start_daemon_monitor(self):
+        logging.debug(f"start_daemon_monitor(): {self._fapd_status}")
+
+        # Only start monitoring thread if fapolicy is installed
+        if self._fapd_status is not ServiceStatus.UNKNOWN:
+            logging.debug("Spawning monitor thread...")
+            thread = Thread(target=self.__monitor_daemon)
+            thread.daemon = True
+            self.__fapd_monitor_thread=True
+            thread.start()
+
     def on_start(self, *args):
         self.__pack_main_content(router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN))
 
@@ -154,6 +222,10 @@ class MainWindow(UIConnectedWidget):
                     print("Restore failed")
         else:
             self.get_object("restoreMenu").set_sensitive(False)
+
+        # Start fapd status monitoring
+        if os.getenv("DISABLE_DAEMON_MONITORING", "false").lower() == "false":
+            self.__start_daemon_monitor()
 
     def on_destroy(self, obj, *args):
         if not isinstance(obj, Gtk.Window) and self.__unapplied_changes():
@@ -299,6 +371,14 @@ class MainWindow(UIConnectedWidget):
     def on_trustDbMenu_activate(self, menuitem, *args):
         self.__pack_main_content(router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN))
         self.__set_trustDbMenu_sensitive(False)
+
+    def on_fapdStartMenu_activate(self, menuitem, data=None):
+        logging.debug("on_fapdStartMenu_activate() invoked.")
+        dispatch(request_daemon_start())
+
+    def on_fapdStopMenu_activate(self, menuitem, data=None):
+        logging.debug("on_fapdStopMenu_activate() invoked.")
+        dispatch(request_daemon_stop())
 
     def on_deployChanges_clicked(self, *args):
         with DeployChangesetsOp(self.window) as op:

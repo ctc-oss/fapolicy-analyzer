@@ -21,6 +21,7 @@ SIZE = _("SIZE")
 SYSTEM_INITIALIZATION_ERROR = _("Error initializing System")
 ANCILLARY_TRUST_LOAD_ERROR = _("Error loading Ancillary Trust")
 SYSTEM_TRUST_LOAD_ERROR = _("Error loading System Trust")
+DAEMON_INITIALIZATION_ERROR = _("Error initializing communications with daemon")
 
 DEPLOY_ANCILLARY_CONFIRM_DIALOG_TITLE = _("Deploy Ancillary Trust Changes?")
 DEPLOY_ANCILLARY_CONFIRM_DIALOG_TEXT = _(
