@@ -90,35 +90,47 @@ class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
         self.selectedFiles = trusts
         addBtn = self.get_object("addBtn")
         if trusts:
-            trust = trusts[-1]
-            status = trust.status.lower()
-            trusted = status == "t"
+            nFiles = len(trusts)
+            nTrue = sum([True for trust in trusts if trust.status.lower() == "t"])
+            nFalse = sum([True for trust in trusts if not trust.status.lower() == "t"])
+            
+            if nFiles == nTrue:
+                trusted = True
+            elif nFiles == nFalse:
+                trusted = False
+            else:
+                addBtn.set_sensitive(False)
+                return
+            
             addBtn.set_sensitive(not trusted)
 
-            self.trustFileDetails.set_in_database_view(
-                f(
-                    _(
-                        """File: {trust.path}
+            for trust in trusts:
+                status = trust.status.lower()
+
+                self.trustFileDetails.set_in_database_view(
+                    f(
+                        _(
+                            """File: {trust.path}
 Size: {trust.size}
 SHA256: {trust.hash}"""
+                        )
                     )
                 )
-            )
-            self.trustFileDetails.set_on_file_system_view(
-                f(
-                    _(
-                        """{fs.stat(trust.path)}
+                self.trustFileDetails.set_on_file_system_view(
+                    f(
+                        _(
+                            """{fs.stat(trust.path)}
 SHA256: {fs.sha(trust.path)}"""
+                        )
                     )
                 )
-            )
-            self.trustFileDetails.set_trust_status(
-                strings.SYSTEM_TRUSTED_FILE_MESSAGE
-                if trusted
-                else strings.SYSTEM_DISCREPANCY_FILE_MESSAGE
-                if status == "d"
-                else strings.SYSTEM_UNKNOWN_FILE_MESSAGE
-            )
+                self.trustFileDetails.set_trust_status(
+                    strings.SYSTEM_TRUSTED_FILE_MESSAGE
+                    if trusted
+                    else strings.SYSTEM_DISCREPANCY_FILE_MESSAGE
+                    if status == "d"
+                    else strings.SYSTEM_UNKNOWN_FILE_MESSAGE
+                )
         else:
             addBtn.set_sensitive(False)
 
