@@ -53,7 +53,8 @@ class SubjectList(SearchableListMultiselect):
 
         self._systemTrust = []
         self._ancillaryTrust = []
-        self.contextMenu = self.__build_context_menu()
+        self.reconcileContextMenu = self.__build_reconcile_context_menu()
+        self.fileChangeContextMenu = self.__build_change_trust_context_menu()
         self.load_store([])
         self.selection_changed += self.__handle_selection_changed
         self.get_object("treeView").connect("row-activated", self.on_view_row_activated)
@@ -61,14 +62,25 @@ class SubjectList(SearchableListMultiselect):
             "button-press-event", self.on_view_button_press_event
         )
 
-    def __build_context_menu(self):
+    def __build_reconcile_context_menu(self):    
         menu = Gtk.Menu()
         reconcileItem = Gtk.MenuItem.new_with_label("Reconcile File")
         reconcileItem.connect("activate", self.on_reconcile_file_activate)
         menu.append(reconcileItem)
         menu.show_all()
         return menu
-
+        
+    def __build_change_trust_context_menu(self):
+        menu = Gtk.Menu()
+        trustItem = Gtk.MenuItem.new_with_label("Trust Files")    
+        untrustItem = Gtk.MenuItem.new_with_label("Untrust Files")  
+        trustItem.connect("activate", self.on_change_file_trust_activate)   
+        untrustItem.connect("activate", self.on_change_file_trust_activate)
+        menu.append(trustItem)
+        menu.append(untrustItem)
+        menu.show_all()
+        return menu
+        
     def _columns(self):
         trustCell = Gtk.CellRendererText()
         trustCell.set_property("background", "light gray")
@@ -164,8 +176,17 @@ class SubjectList(SearchableListMultiselect):
         self.__show_reconciliation_dialog(subject)
 
     def on_view_button_press_event(self, widget, event):
+        treeView = self.get_object("treeView")
+        model, pathlist = treeView.get_selection().get_selected_rows()
+        n_paths = len(pathlist)
         if event.type == Gdk.EventType.BUTTON_PRESS and event.button == 3:
-            self.contextMenu.popup_at_pointer()
+            if n_paths == 1:
+                self.reconcileContextMenu.popup_at_pointer()
+            elif n_paths > 1:
+                print(self.fileChangeContextMenu)
+                self.fileChangeContextMenu.popup_at_pointer()
+            else:
+                pass
 
     def on_reconcile_file_activate(self, *args):
         treeView = self.get_object("treeView")
@@ -173,3 +194,14 @@ class SubjectList(SearchableListMultiselect):
         iter_ = model.get_iter(next(iter(pathlist)))  # single select use first path
         subject = model.get_value(iter_, 3)
         self.__show_reconciliation_dialog(subject)
+        
+        
+    def on_change_file_trust_activate(self, *args):
+        treeView = self.get_object("treeView")
+        model, pathlist = treeView.get_selection().get_selected_rows()
+        trust = []
+        for path in iter(pathlist):
+            iter_ = model.get_iter(path)
+            subject = model.get_value(iter_,3)
+            trust.append(subject.trust.lower())
+        matching = trust.count(trust[0]) == len(trust)

@@ -36,8 +36,8 @@ class SearchableList(UIBuilderWidget, Events):
         view_headers_visible=True,
         selection_type="single",
     ):
-        selection = "searchable_list_multiselect" if selection_type == "multi" else "searchable_list"
-        UIBuilderWidget.__init__(self, selection)
+        list_selection_type = "searchable_list_multiselect" if selection_type == "multi" else "searchable_list"
+        UIBuilderWidget.__init__(self, list_selection_type)
         Events.__init__(self)
 
         self.searchColumnIndex = searchColumnIndex

@@ -90,13 +90,13 @@ class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
         self.selectedFiles = trusts
         addBtn = self.get_object("addBtn")
         if trusts:
-            nFiles = len(trusts)
-            nTrue = sum([True for trust in trusts if trust.status.lower() == "t"])
-            nFalse = sum([True for trust in trusts if not trust.status.lower() == "t"])
+            n_files = len(trusts)
+            n_true = sum([True for trust in trusts if trust.status.lower() == "t"])
+            n_false = sum([True for trust in trusts if not trust.status.lower() == "t"])
 
-            if nFiles == nTrue:
+            if n_files == n_true:
                 trusted = True
-            elif nFiles == nFalse:
+            elif n_files == n_false:
                 trusted = False
             else:
                 addBtn.set_sensitive(False)
