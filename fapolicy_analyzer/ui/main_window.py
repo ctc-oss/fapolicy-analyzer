@@ -22,10 +22,13 @@ import fapolicy_analyzer.ui.strings as strings
 import gi
 from fapolicy_analyzer.util.format import f
 import os
+from threading import Thread, Lock
+from time import sleep
 
 from .actions import (
     NotificationType,
     add_notification,
+    received_daemon_status_update,
     request_daemon_start,
     request_daemon_stop,
     DaemonState,
@@ -42,7 +45,7 @@ from .ui_widget import UIConnectedWidget
 from .unapplied_changes_dialog import UnappliedChangesDialog
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk  # isort: skip
+from gi.repository import Gtk, GLib  # isort: skip
 
 
 def router(selection, data=None):
@@ -66,7 +69,8 @@ class MainWindow(UIConnectedWidget):
         self.strTopLevelTitle = self.windowTopLevel.get_title()
         self.fapdStatusLight = self.get_object("fapdStatusLight")
         self._fapd_status = ServiceStatus.UNKNOWN
-        self._fapd_monitor_thread=False
+        self._fapd_monitoring = False
+        self._fapd_lock = Lock()
         self._changesets = []
         self._page = None
 
@@ -147,52 +151,6 @@ class MainWindow(UIConnectedWidget):
     def __set_trustDbMenu_sensitive(self, sensitive):
         menuItem = self.get_object("trustDbMenu")
         menuItem.set_sensitive(sensitive)
-
-    def __update_fapd_status(self, status: ServiceStatus):
-        logging.debug(f"__update_fapd_status({status})")
-        if status is True:
-            self.fapdStatusLight.set_from_stock(stock_id="gtk-yes", size=4)
-        elif status is False:
-            self.fapdStatusLight.set_from_stock(stock_id="gtk-no", size=4)
-        else:
-            self.fapdStatusLight.set_from_stock(stock_id="gtk-no", size=4)
-
-    def on_update_daemon_status(self, state: DaemonState):
-        logging.debug(f"on_update_daemon_status({state})")
-        self.__fapd_status=state.status
-        self.__update_fapd_status(state.status)
-
-        # Start monitor thread if not running
-        if self._fapd_monitor_thread is False:
-            self.__start_daemon_monitor()
-
-    def __monitor_daemon(self, timeout=5):
-        global _fapd_status
-        while True:
-            try:
-                bStatus = is_fapolicyd_active()
-                if bStatus != self._fapd_status:
-                    logging.debug("monitor_daemon:Dispatch update request")
-                    #self._fapd_status = bStatus
-                    dispatch(
-                        received_daemon_status_update(
-                            DaemonState(status=_fapd_status, error=None)
-                        )
-                    )
-            except Exception:
-                print("Daemon monitor query/update dispatch failed.")
-            sleep(timeout)
-
-    def __start_daemon_monitor(self):
-        logging.debug(f"start_daemon_monitor(): {self._fapd_status}")
-
-        # Only start monitoring thread if fapolicy is installed
-        if self._fapd_status is not ServiceStatus.UNKNOWN:
-            logging.debug("Spawning monitor thread...")
-            thread = Thread(target=self.__monitor_daemon)
-            thread.daemon = True
-            self.__fapd_monitor_thread=True
-            thread.start()
 
     def on_start(self, *args):
         self.__pack_main_content(router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN))
@@ -383,3 +341,51 @@ class MainWindow(UIConnectedWidget):
     def on_deployChanges_clicked(self, *args):
         with DeployChangesetsOp(self.window) as op:
             op.run(self._changesets)
+
+    def __update_fapd_status(self, status: ServiceStatus):
+        logging.debug(f"__update_fapd_status({status})")
+        if status is True:
+            self.fapdStatusLight.set_from_stock(stock_id="gtk-yes", size=4)
+        elif status is False:
+            self.fapdStatusLight.set_from_stock(stock_id="gtk-no", size=4)
+        else:
+            self.fapdStatusLight.set_from_stock(stock_id="gtk-no", size=4)
+
+    def on_update_daemon_status(self, state: DaemonState):
+        logging.debug(f"on_update_daemon_status({state})")
+        self._fapd_status = state.status
+        GLib.idle_add(self.__update_fapd_status, state.status)
+
+        # Start monitor thread if not running
+        if not self._fapd_monitoring:
+            self.__start_daemon_monitor()
+
+    def __monitor_daemon(self, timeout=5):
+        global _fapd_status
+        while True:
+            try:
+                if self._fapd_lock.acquire(blocking=False):
+                    bStatus = is_fapolicyd_active()
+                    if bStatus != self._fapd_status:
+                        logging.debug("monitor_daemon:Dispatch update request")
+                        dispatch(
+                            received_daemon_status_update(
+                                DaemonState(status=bStatus, error=None)
+                            )
+                        )
+                    self._fapd_lock.release()
+            except Exception:
+                print("Daemon monitor query/update dispatch failed.")
+            sleep(timeout)
+
+    def __start_daemon_monitor(self):
+        logging.debug(f"start_daemon_monitor(): {self._fapd_status}")
+
+        # Only start monitoring thread if fapolicy is installed
+        if self._fapd_status is not ServiceStatus.UNKNOWN:
+            logging.debug("Spawning monitor thread...")
+            thread = Thread(target=self.__monitor_daemon)
+            thread.daemon = True
+            thread.start()
+            self._fapd_monitoring = True
+            logging.debug(f"Thread={thread}, Running={self._fapd_monitoring}")

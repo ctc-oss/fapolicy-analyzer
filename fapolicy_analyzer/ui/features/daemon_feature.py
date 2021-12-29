@@ -14,11 +14,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import gi
-import os
 import logging
 import sys
-from time import sleep
-from threading import Thread
 
 gi.require_version("Gtk", "3.0")
 from fapolicy_analyzer import (
