@@ -22,6 +22,7 @@ from fapolicy_analyzer import (
     is_fapolicyd_active,
     start_fapolicyd,
     stop_fapolicyd,
+    Handle,
 )
 
 import fapolicy_analyzer.ui.strings as strings
@@ -188,9 +189,10 @@ class MainWindow(UIConnectedWidget):
         else:
             self.get_object("restoreMenu").set_sensitive(False)
 
-        # Start fapd status monitoring
+        # Initialize and start fapd status monitoring
+        self.init_daemon()
         if getenv("DISABLE_DAEMON_MONITORING", "false").lower() == "false":
-            self.__start_daemon_monitor()
+            self._start_daemon_monitor()
 
     def on_destroy(self, obj, *args):
         if not isinstance(obj, Gtk.Window) and self.__unapplied_changes():
@@ -353,7 +355,8 @@ class MainWindow(UIConnectedWidget):
         with DeployChangesetsOp(self.window) as op:
             op.run(self._changesets)
 
-    def __update_fapd_status(self, status: ServiceStatus):
+# ###################### fapolicyd interfacing ##########################
+    def _update_fapd_status(self, status: ServiceStatus):
         logging.debug(f"__update_fapd_status({status})")
         if status is True:
             self.fapdStatusLight.set_from_stock(stock_id="gtk-yes", size=4)
@@ -362,13 +365,23 @@ class MainWindow(UIConnectedWidget):
         else:
             self.fapdStatusLight.set_from_stock(stock_id="gtk-no", size=4)
 
+    def init_daemon(self):
+        if self._fapd_lock.acquire():
+            h = Handle("fapolicyd")
+            if h.is_valid():
+                self._fapd_status = h.is_active()
+                self.on_update_daemon_status(self._fapd_status)
+            else:
+                self._fapd_status = ServiceStatus.UNKNOWN
+        self._fapd_lock.release()
+
     def on_update_daemon_status(self, status: ServiceStatus):
         logging.debug(f"on_update_daemon_status({status})")
         self._fapd_status = status
-        GLib.idle_add(self.__update_fapd_status, status)
+        GLib.idle_add(self._update_fapd_status, status)
 
-    def __monitor_daemon(self, timeout=5):
-        logging.debug("__monitor_daemon() executing")
+    def _monitor_daemon(self, timeout=5):
+        logging.debug("_monitor_daemon() executing")
         while True:
             try:
                 if self._fapd_lock.acquire(blocking=False):
@@ -381,16 +394,12 @@ class MainWindow(UIConnectedWidget):
                 print("Daemon monitor query/update dispatch failed.")
             sleep(timeout)
 
-    def __start_daemon_monitor(self):
+    def _start_daemon_monitor(self):
         logging.debug(f"start_daemon_monitor(): {self._fapd_status}")
-        if self._fapd_lock.acquire(blocking=False):
-            self._fapd_status = is_fapolicyd_active()
-            self._fapd_lock.release()
-
         # Only start monitoring thread if fapolicy is installed
         if self._fapd_status is not ServiceStatus.UNKNOWN:
             logging.debug("Spawning monitor thread...")
-            thread = Thread(target=self.__monitor_daemon)
+            thread = Thread(target=self._monitor_daemon)
             thread.daemon = True
             thread.start()
             self._fapd_monitoring = True
