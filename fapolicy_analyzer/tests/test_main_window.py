@@ -461,6 +461,7 @@ def test_toggles_dirty_title(mocker):
 def test_on_fapdStartMenu_activate(mainWindow, mocker):
     mockHandle = MagicMock()
     mainWindow._fapd_ref = mockHandle
+    mainWindow._fapd_status = False
     mainWindow.get_object("fapdStartMenu").activate()
     mockHandle.start.assert_called()
 
@@ -468,6 +469,7 @@ def test_on_fapdStartMenu_activate(mainWindow, mocker):
 def test_on_fapdStopMenu_activate(mainWindow, mocker):
     mockHandle = MagicMock()
     mainWindow._fapd_ref = mockHandle
+    mainWindow._fapd_status = True
     mainWindow.get_object("fapdStopMenu").activate()
     mockHandle.stop.assert_called()
 
