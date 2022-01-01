@@ -18,12 +18,7 @@ from locale import gettext as _
 from os import path, geteuid, getenv
 
 from enum import Enum
-from fapolicy_analyzer import (
-    is_fapolicyd_active,
-    start_fapolicyd,
-    stop_fapolicyd,
-    Handle,
-)
+from fapolicy_analyzer import Handle
 
 import fapolicy_analyzer.ui.strings as strings
 import gi
@@ -80,6 +75,7 @@ class MainWindow(UIConnectedWidget):
         self.fapdStatusLight = self.get_object("fapdStatusLight")
         self._fapd_status = ServiceStatus.UNKNOWN
         self._fapd_monitoring = False
+        self._fapd_ref = None
         self._fapd_lock = Lock()
         self._changesets = []
         self._page = None
@@ -339,23 +335,23 @@ class MainWindow(UIConnectedWidget):
         self.__pack_main_content(router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN))
         self.__set_trustDbMenu_sensitive(False)
 
-    def on_fapdStartMenu_activate(self, menuitem, data=None):
-        logging.debug("on_fapdStartMenu_activate() invoked.")
-        if self._fapd_lock.acquire():
-            start_fapolicyd()
-            self._fapd_lock.release()
-
-    def on_fapdStopMenu_activate(self, menuitem, data=None):
-        logging.debug("on_fapdStopMenu_activate() invoked.")
-        if self._fapd_lock.acquire():
-            stop_fapolicyd()
-            self._fapd_lock.release()
-
     def on_deployChanges_clicked(self, *args):
         with DeployChangesetsOp(self.window) as op:
             op.run(self._changesets)
 
 # ###################### fapolicyd interfacing ##########################
+    def on_fapdStartMenu_activate(self, menuitem, data=None):
+        logging.debug("on_fapdStartMenu_activate() invoked.")
+        if (self._fapd_status != ServiceStatus.UNKNOWN) and (self._fapd_lock.acquire()):
+            self._fapd_ref.start()
+            self._fapd_lock.release()
+
+    def on_fapdStopMenu_activate(self, menuitem, data=None):
+        logging.debug("on_fapdStopMenu_activate() invoked.")
+        if (self._fapd_status != ServiceStatus.UNKNOWN) and (self._fapd_lock.acquire()):
+            self._fapd_ref.stop()
+            self._fapd_lock.release()
+
     def _update_fapd_status(self, status: ServiceStatus):
         logging.debug(f"__update_fapd_status({status})")
         if status is True:
@@ -367,13 +363,13 @@ class MainWindow(UIConnectedWidget):
 
     def init_daemon(self):
         if self._fapd_lock.acquire():
-            h = Handle("fapolicyd")
-            if h.is_valid():
-                self._fapd_status = h.is_active()
-                self.on_update_daemon_status(self._fapd_status)
+            self._fapd_ref = Handle("fapolicyd")
+            if self._fapd_ref.is_valid():
+                self._fapd_status = self._fapd_ref.is_active()
             else:
                 self._fapd_status = ServiceStatus.UNKNOWN
-        self._fapd_lock.release()
+            self.on_update_daemon_status(self._fapd_status)
+            self._fapd_lock.release()
 
     def on_update_daemon_status(self, status: ServiceStatus):
         logging.debug(f"on_update_daemon_status({status})")
@@ -385,7 +381,7 @@ class MainWindow(UIConnectedWidget):
         while True:
             try:
                 if self._fapd_lock.acquire(blocking=False):
-                    bStatus = is_fapolicyd_active()
+                    bStatus = self._fapd_ref.is_active()
                     if bStatus != self._fapd_status:
                         logging.debug("monitor_daemon:Dispatch update request")
                         self.on_update_daemon_status(bStatus)

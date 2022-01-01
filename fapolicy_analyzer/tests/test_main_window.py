@@ -30,7 +30,7 @@ from redux import Action
 from rx import create
 from rx.subject import Subject
 from ui.actions import ADD_NOTIFICATION
-from ui.main_window import MainWindow, router
+from ui.main_window import MainWindow, router, ServiceStatus
 from ui.session_manager import NotificationType, sessionManager
 from ui.store import init_store
 from ui.strings import AUTOSAVE_RESTORE_ERROR_MSG
@@ -455,3 +455,48 @@ def test_toggles_dirty_title(mocker):
     assert windowRef.get_title().startswith("*")
     system_features_mock.on_next({"changesets": []})
     assert not windowRef.get_title().startswith("*")
+
+
+# Testing fapd daemon interfacing
+def test_on_fapdStartMenu_activate(mainWindow, mocker):
+    mockStartFapd = mocker.patch(
+        "ui.main_window.Handle.start",
+    )
+    mainWindow.get_object("fapdStartMenu").activate()
+    mockStartFapd.assert_called()
+
+
+def test_on_fapdStopMenu_activate(mainWindow, mocker):
+    mockStopFapd = mocker.patch(
+        "ui.main_window.Handle.stop",
+    )
+    mainWindow.get_object("fapdStopMenu").activate()
+    mockStopFapd.assert_called()
+
+
+def test_on_update_daemon_status(mainWindow, mocker):
+    mainWindow.on_update_daemon_status(True)
+    assert mainWindow._fapd_status
+
+    mainWindow.on_update_daemon_status(False)
+    assert not mainWindow._fapd_status
+
+
+def test_start_daemon_monitor(mainWindow, mocker):
+    mocker.patch(
+        "ui.main_window.Thread",
+    )
+    mainWindow._start_daemon_monitor()
+    assert mainWindow._fapd_monitoring
+
+
+def test_update_fapd_status(mainWindow, mocker):
+    mainWindow._update_fapd_status(True)
+    tupleIdSize = mainWindow.get_object("fapdStatusLight").get_stock()
+    assert tupleIdSize == ("gtk-yes", 4)
+    mainWindow._update_fapd_status(False)
+    tupleIdSize = mainWindow.get_object("fapdStatusLight").get_stock()
+    assert tupleIdSize == ("gtk-no", 4)
+    mainWindow._update_fapd_status(ServiceStatus.UNKNOWN)
+    tupleIdSize = mainWindow.get_object("fapdStatusLight").get_stock()
+    assert tupleIdSize == ("gtk-no", 4)
