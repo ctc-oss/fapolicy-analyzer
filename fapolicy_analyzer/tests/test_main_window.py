@@ -460,14 +460,14 @@ def test_toggles_dirty_title(mocker):
 # Testing fapd daemon interfacing
 def test_on_fapdStartMenu_activate(mainWindow, mocker):
     mockHandle = MagicMock()
-    mainWindow._fapd_ref=mockHandle
+    mainWindow._fapd_ref = mockHandle
     mainWindow.get_object("fapdStartMenu").activate()
     mockHandle.start.assert_called()
 
 
 def test_on_fapdStopMenu_activate(mainWindow, mocker):
     mockHandle = MagicMock()
-    mainWindow._fapd_ref=mockHandle
+    mainWindow._fapd_ref = mockHandle
     mainWindow.get_object("fapdStopMenu").activate()
     mockHandle.stop.assert_called()
 
