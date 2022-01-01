@@ -459,19 +459,17 @@ def test_toggles_dirty_title(mocker):
 
 # Testing fapd daemon interfacing
 def test_on_fapdStartMenu_activate(mainWindow, mocker):
-    mockStartFapd = mocker.patch(
-        "ui.main_window.Handle.start",
-    )
+    mockHandle = MagicMock()
+    mainWindow._fapd_ref=mockHandle
     mainWindow.get_object("fapdStartMenu").activate()
-    mockStartFapd.assert_called()
+    mockHandle.start.assert_called()
 
 
 def test_on_fapdStopMenu_activate(mainWindow, mocker):
-    mockStopFapd = mocker.patch(
-        "ui.main_window.Handle.stop",
-    )
+    mockHandle = MagicMock()
+    mainWindow._fapd_ref=mockHandle
     mainWindow.get_object("fapdStopMenu").activate()
-    mockStopFapd.assert_called()
+    mockHandle.stop.assert_called()
 
 
 def test_on_update_daemon_status(mainWindow, mocker):
@@ -483,11 +481,13 @@ def test_on_update_daemon_status(mainWindow, mocker):
 
 
 def test_start_daemon_monitor(mainWindow, mocker):
+    mockThread = MagicMock()
     mocker.patch(
         "ui.main_window.Thread",
+        return_value=mockThread,
     )
     mainWindow._start_daemon_monitor()
-    assert mainWindow._fapd_monitoring
+    mockThread.start.assert_called_once()
 
 
 def test_update_fapd_status(mainWindow, mocker):
