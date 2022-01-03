@@ -89,7 +89,7 @@ class MainWindow(UIConnectedWidget):
         self.__set_trustDbMenu_sensitive(False)
 
         # Set fapd status UI element to default 'No' = Red button
-        self.fapdStatusLight.set_from_stock(stock_id="gtk-no", size=4)
+        self.fapdStatusLight.set_from_icon_name("process-stop", size=4)
 
         # Check if running with root permissions
         if geteuid() != 0:
@@ -355,11 +355,11 @@ class MainWindow(UIConnectedWidget):
     def _update_fapd_status(self, status: ServiceStatus):
         logging.debug(f"__update_fapd_status({status})")
         if status is True:
-            self.fapdStatusLight.set_from_stock(stock_id="gtk-yes", size=4)
+            self.fapdStatusLight.set_from_icon_name("emblem-default", size=4)
         elif status is False:
-            self.fapdStatusLight.set_from_stock(stock_id="gtk-no", size=4)
+            self.fapdStatusLight.set_from_icon_name("process-stop", size=4)
         else:
-            self.fapdStatusLight.set_from_stock(stock_id="gtk-no", size=4)
+            self.fapdStatusLight.set_from_icon_name("edit-delete", size=4)
 
     def init_daemon(self):
         if self._fapd_lock.acquire():
