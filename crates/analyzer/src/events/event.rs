@@ -7,13 +7,12 @@
  */
 
 use std::fmt::Display;
-use std::fs::File;
-use std::io::{prelude::*, BufReader};
 use std::iter::Iterator;
 use std::str::FromStr;
 
-use crate::events::parse::parse_event;
 use fapolicy_rules::*;
+
+use crate::events::parse::parse_event;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Event {
@@ -63,19 +62,6 @@ impl Display for Event {
         f.write_fmt(format_args!("{} ", o))?;
 
         Ok(())
-    }
-}
-
-impl Event {
-    pub fn from_file(path: &str) -> Vec<Event> {
-        let f = File::open(path).unwrap();
-        let r = BufReader::new(f);
-
-        r.lines()
-            .map(|r| r.unwrap())
-            .filter(|s| !s.is_empty() && !s.starts_with('#'))
-            .map(|l| parse_event(&l).unwrap().1)
-            .collect()
     }
 }
 

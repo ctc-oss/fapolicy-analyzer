@@ -6,17 +6,19 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use nom::bytes::complete::tag;
+use nom::bytes::complete::{tag, take_until};
 use nom::character::complete::space0;
 use nom::character::complete::{digit1, space1};
 use nom::multi::separated_list1;
 use nom::sequence::{preceded, terminated};
 
-use crate::events::event::Event;
 use fapolicy_rules::*;
+
+use crate::events::event::Event;
 
 pub fn parse_event(i: &str) -> nom::IResult<&str, Event> {
     match nom::combinator::complete(nom::sequence::tuple((
+        take_until("rule="),
         terminated(preceded(tag("rule="), digit1), space1),
         terminated(preceded(tag("dec="), parse::decision), space1),
         terminated(parse::permission, space1),
@@ -31,7 +33,7 @@ pub fn parse_event(i: &str) -> nom::IResult<&str, Event> {
         parse::object,
     )))(i)
     {
-        Ok((remaining_input, (id, dec, perm, uid, gid, pid, subj, _, obj))) => Ok((
+        Ok((remaining_input, (_, id, dec, perm, uid, gid, pid, subj, _, obj))) => Ok((
             remaining_input,
             Event {
                 rule_id: id.parse().unwrap(),
@@ -44,10 +46,7 @@ pub fn parse_event(i: &str) -> nom::IResult<&str, Event> {
                 obj,
             },
         )),
-        Err(e) => {
-            println!("foo");
-            Err(e)
-        }
+        Err(e) => Err(e),
     }
 }
 
