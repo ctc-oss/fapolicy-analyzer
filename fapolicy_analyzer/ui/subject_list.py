@@ -62,25 +62,25 @@ class SubjectList(SearchableListMultiselect):
             "button-press-event", self.on_view_button_press_event
         )
 
-    def __build_reconcile_context_menu(self):    
+    def __build_reconcile_context_menu(self):
         menu = Gtk.Menu()
         reconcileItem = Gtk.MenuItem.new_with_label("Reconcile File")
         reconcileItem.connect("activate", self.on_reconcile_file_activate)
         menu.append(reconcileItem)
         menu.show_all()
         return menu
-        
+
     def __build_change_trust_context_menu(self):
         menu = Gtk.Menu()
-        trustItem = Gtk.MenuItem.new_with_label("Trust Files")    
-        untrustItem = Gtk.MenuItem.new_with_label("Untrust Files")  
-        trustItem.connect("activate", self.on_change_file_trust_activate)   
-        untrustItem.connect("activate", self.on_change_file_trust_activate)
-        menu.append(trustItem)
-        menu.append(untrustItem)
+        menu.trustItem = Gtk.MenuItem.new_with_label("Trust Files")
+        menu.untrustItem = Gtk.MenuItem.new_with_label("Untrust Files")
+        menu.trustItem.connect("activate", self.on_change_file_trust_activate)
+        menu.untrustItem.connect("activate", self.on_change_file_untrust_activate)
+        menu.append(menu.trustItem)
+        menu.append(menu.untrustItem)
         menu.show_all()
         return menu
-        
+
     def _columns(self):
         trustCell = Gtk.CellRendererText()
         trustCell.set_property("background", "light gray")
@@ -183,7 +183,23 @@ class SubjectList(SearchableListMultiselect):
             if n_paths == 1:
                 self.reconcileContextMenu.popup_at_pointer()
             elif n_paths > 1:
-                print(self.fileChangeContextMenu)
+                trust = []
+                for path in iter(pathlist):
+                    iter_ = model.get_iter(path)
+                    subject = model.get_value(iter_, 3)
+                    trust.append(subject.trust.lower())
+                matching = trust.count(trust[0]) == len(trust)
+                self.fileChangeContextMenu.remove(self.fileChangeContextMenu.trustItem)
+                self.fileChangeContextMenu.remove(self.fileChangeContextMenu.untrustItem)
+                if matching:
+                    if trust[0] == "u":
+                        self.fileChangeContextMenu.append(self.fileChangeContextMenu.trustItem)
+                    else:
+                        self.fileChangeContextMenu.append(self.fileChangeContextMenu.untrustItem)
+                else:
+                    pass
+
+                self.fileChangeContextMenu.show_all()
                 self.fileChangeContextMenu.popup_at_pointer()
             else:
                 pass
@@ -194,14 +210,9 @@ class SubjectList(SearchableListMultiselect):
         iter_ = model.get_iter(next(iter(pathlist)))  # single select use first path
         subject = model.get_value(iter_, 3)
         self.__show_reconciliation_dialog(subject)
-        
-        
+
     def on_change_file_trust_activate(self, *args):
-        treeView = self.get_object("treeView")
-        model, pathlist = treeView.get_selection().get_selected_rows()
-        trust = []
-        for path in iter(pathlist):
-            iter_ = model.get_iter(path)
-            subject = model.get_value(iter_,3)
-            trust.append(subject.trust.lower())
-        matching = trust.count(trust[0]) == len(trust)
+        pass
+
+    def on_change_file_untrust_activate(self, *args):
+        pass

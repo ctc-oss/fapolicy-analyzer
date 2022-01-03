@@ -244,7 +244,7 @@ def test_shows_reconciliation_dialog_from_context_menu(
     # select first item is list
     view.get_selection().select_path(Gtk.TreePath.new_first())
     # mock the reconile conext menu item click
-    next(iter(widget.contextMenu.get_children())).activate()
+    next(iter(widget.reconcileContextMenu.get_children())).activate()
 
     mockDialog.assert_called_once_with(
         subject,
