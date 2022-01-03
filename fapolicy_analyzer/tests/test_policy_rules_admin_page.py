@@ -151,6 +151,22 @@ def test_creates_widget(widget):
     assert type(widget.get_ref()) is Gtk.Box
 
 
+def test_loads_debug_file(mock_dispatch):
+    init_store(mock_System())
+    PolicyRulesAdminPage(_mock_file)
+    mock_dispatch.assert_any_call(
+        InstanceOf(Action) & Attrs(type=REQUEST_EVENTS, payload=("debug", _mock_file))
+    )
+
+
+def test_loads_syslog(mock_dispatch):
+    init_store(mock_System())
+    PolicyRulesAdminPage()
+    mock_dispatch.assert_any_call(
+        InstanceOf(Action) & Attrs(type=REQUEST_EVENTS, payload=("syslog", None))
+    )
+
+
 def test_adds_user_tabs(widget):
     tabs = widget.get_object("userTabs")
     page = tabs.get_nth_page(0)

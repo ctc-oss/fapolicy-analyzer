@@ -13,20 +13,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import gi
-
-gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
 from enum import Enum
 from os import path
+
+import gi
+
 from .strings import OPEN_FILE_LABEL
 from .ui_widget import UIBuilderWidget
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk  # isort: skip
 
 
 class ANALYZER_SELECTION(Enum):
     TRUST_DATABASE_ADMIN = 0
     SCAN_SYSTEM = 1
     ANALYZE_FROM_AUDIT = 2
+    ANALYZE_SYSLOG = 3
 
 
 class AnalyzerSelectionDialog(UIBuilderWidget):
