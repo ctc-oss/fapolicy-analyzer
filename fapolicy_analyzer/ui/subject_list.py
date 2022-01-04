@@ -196,13 +196,9 @@ class SubjectList(SearchableListMultiselect):
                         self.fileChangeContextMenu.append(self.fileChangeContextMenu.trustItem)
                     else:
                         self.fileChangeContextMenu.append(self.fileChangeContextMenu.untrustItem)
-                else:
-                    pass
 
                 self.fileChangeContextMenu.show_all()
                 self.fileChangeContextMenu.popup_at_pointer()
-            else:
-                pass
 
     def on_reconcile_file_activate(self, *args):
         treeView = self.get_object("treeView")
@@ -212,7 +208,9 @@ class SubjectList(SearchableListMultiselect):
         self.__show_reconciliation_dialog(subject)
 
     def on_change_file_trust_activate(self, *args):
-        pass
+        treeView = self.get_object("treeView")
+        model, pathlist = treeView.get_selection().get_selected_rows()
 
     def on_change_file_untrust_activate(self, *args):
-        pass
+        treeView = self.get_object("treeView")
+        model, pathlist = treeView.get_selection().get_selected_rows()
