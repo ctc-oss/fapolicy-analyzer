@@ -73,6 +73,9 @@ class MainWindow(UIConnectedWidget):
         self.windowTopLevel = self.window.get_toplevel()
         self.strTopLevelTitle = self.windowTopLevel.get_title()
         self.fapdStatusLight = self.get_object("fapdStatusLight")
+        self._fapdControlPermitted = (geteuid() == 0)  # set if root user
+        self._fapdStartMenuItem = self.get_object("fapdStartMenu")
+        self._fapdStopMenuItem = self.get_object("fapdStopMenu")
         self._fapd_status = ServiceStatus.UNKNOWN
         self._fapd_monitoring = False
         self._fapd_ref = None
@@ -91,10 +94,9 @@ class MainWindow(UIConnectedWidget):
         # Set fapd status UI element to default 'No' = Red button
         self.fapdStatusLight.set_from_stock(stock_id="gtk-no", size=4)
 
-        # Check if running with root permissions
-        if geteuid() != 0:
-            self.get_object("fapdStartMenu").set_sensitive(False)
-            self.get_object("fapdStopMenu").set_sensitive(False)
+        # Set initial fapd menu item state
+        self._fapdStartMenuItem.set_sensitive(False)
+        self._fapdStopMenuItem.set_sensitive(False)
 
         self.window.show_all()
 
@@ -352,8 +354,19 @@ class MainWindow(UIConnectedWidget):
             self._fapd_ref.stop()
             self._fapd_lock.release()
 
+    def _enable_fapd_menu_items(self, status):
+        if self._fapdControlPermitted and (status != ServiceStatus.UNKNOWN):
+            self._fapdStartMenuItem.set_sensitive(not status)
+            self._fapdStopMenuItem.set_sensitive(status)
+        else:
+            self._fapdStartMenuItem.set_sensitive(False)
+            self._fapdStopMenuItem.set_sensitive(False)
+
     def _update_fapd_status(self, status: ServiceStatus):
         logging.debug(f"__update_fapd_status({status})")
+
+        # Enable/Disable fapd menu items
+        self._enable_fapd_menu_items(status)
         if status is True:
             self.fapdStatusLight.set_from_stock(stock_id="gtk-yes", size=4)
         elif status is False:
