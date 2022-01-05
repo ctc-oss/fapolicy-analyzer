@@ -350,8 +350,13 @@ class MainWindow(UIConnectedWidget):
 
     def _enable_fapd_menu_items(self, status: ServiceStatus):
         if self._fapdControlPermitted and (status != ServiceStatus.UNKNOWN):
-            self._fapdStartMenuItem.set_sensitive(not status)
-            self._fapdStopMenuItem.set_sensitive(status)
+            # Convert ServiceStatus to bool
+            if status == ServiceStatus.TRUE:
+                bStatus = True
+            else:
+                bStatus = False
+            self._fapdStartMenuItem.set_sensitive(not bStatus)
+            self._fapdStopMenuItem.set_sensitive(bStatus)
         else:
             self._fapdStartMenuItem.set_sensitive(False)
             self._fapdStopMenuItem.set_sensitive(False)
