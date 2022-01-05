@@ -25,7 +25,6 @@ import gi
 from fapolicy_analyzer.util.format import f
 from threading import Thread, Lock
 from time import sleep
-from typing import NamedTuple
 
 from .actions import NotificationType, add_notification
 from .analyzer_selection_dialog import ANALYZER_SELECTION
@@ -55,14 +54,9 @@ def router(selection, data=None):
 
 
 class ServiceStatus(Enum):
-    TRUE = True
     FALSE = False
+    TRUE = True
     UNKNOWN = None
-
-
-class DaemonState(NamedTuple):
-    error: str
-    status: ServiceStatus
 
 
 class MainWindow(UIConnectedWidget):
@@ -354,7 +348,7 @@ class MainWindow(UIConnectedWidget):
             self._fapd_ref.stop()
             self._fapd_lock.release()
 
-    def _enable_fapd_menu_items(self, status):
+    def _enable_fapd_menu_items(self, status: ServiceStatus):
         if self._fapdControlPermitted and (status != ServiceStatus.UNKNOWN):
             self._fapdStartMenuItem.set_sensitive(not status)
             self._fapdStopMenuItem.set_sensitive(status)
@@ -367,9 +361,9 @@ class MainWindow(UIConnectedWidget):
 
         # Enable/Disable fapd menu items
         self._enable_fapd_menu_items(status)
-        if status is True:
+        if status is ServiceStatus.TRUE:
             self.fapdStatusLight.set_from_stock(stock_id="gtk-yes", size=4)
-        elif status is False:
+        elif status is ServiceStatus.FALSE:
             self.fapdStatusLight.set_from_stock(stock_id="gtk-no", size=4)
         else:
             self.fapdStatusLight.set_from_stock(stock_id="gtk-no", size=4)
@@ -378,7 +372,7 @@ class MainWindow(UIConnectedWidget):
         if self._fapd_lock.acquire():
             self._fapd_ref = Handle("fapolicyd")
             if self._fapd_ref.is_valid():
-                self._fapd_status = self._fapd_ref.is_active()
+                self._fapd_status = ServiceStatus(self._fapd_ref.is_active())
             else:
                 self._fapd_status = ServiceStatus.UNKNOWN
             self.on_update_daemon_status(self._fapd_status)
@@ -394,7 +388,7 @@ class MainWindow(UIConnectedWidget):
         while True:
             try:
                 if self._fapd_lock.acquire(blocking=False):
-                    bStatus = self._fapd_ref.is_active()
+                    bStatus = ServiceStatus(self._fapd_ref.is_active())
                     if bStatus != self._fapd_status:
                         logging.debug("monitor_daemon:Dispatch update request")
                         self.on_update_daemon_status(bStatus)
