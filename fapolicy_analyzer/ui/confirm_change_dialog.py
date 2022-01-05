@@ -15,6 +15,10 @@
 
 from fapolicy_analyzer.ui.ui_widget import UIBuilderWidget
 
+
 class ConfirmChangeDialog(UIBuilderWidget):
-    def __init__(self):
-        super.__init__()
+    def __init__(self, parent=None):
+        super().__init__()
+
+        if parent:
+            self.get_ref().set_transient_for(parent)

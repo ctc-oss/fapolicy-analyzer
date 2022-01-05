@@ -156,16 +156,23 @@ class SubjectList(SearchableListMultiselect):
 
     def __show_confirmation_dialog(self, subjects):
         changeset = None
-        confirmationDialog = ConfirmChangeDialog()
+        parent = self.get_ref().get_toplevel()
+        confirmationDialog = ConfirmChangeDialog(parent=parent).get_ref()
         confirm = confirmationDialog.run()
         confirmationDialog.destroy()
-        
-#        if confirm:
-#            changeset = Changeset()
-#            #changeset.add_trust(subjects) or changeset.del_trust(subjects)
-#        if changeset:
-#            dispatch(apply_changesets(changeset))
-            
+
+        trust = subjects[0].trust.lower()
+
+        if confirm == 1:
+            changeset = Changeset()
+            paths = [subject.file for subject in subjects]
+            if trust == "u":
+                changeset.add_trust(*paths)
+            else:
+                changeset.del_trust(*paths)
+
+        if changeset:
+            dispatch(apply_changesets(changeset))
 
     def _update_tree_count(self, count):
         label = FILE_LABEL if count == 1 else FILES_LABEL
@@ -221,9 +228,8 @@ class SubjectList(SearchableListMultiselect):
         subject = model.get_value(iter_, 3)
         self.__show_reconciliation_dialog(subject)
 
-    def on_change_file_trust_activate(self, *args): 
+    def on_change_file_trust_activate(self, *args):
         treeView = self.get_object("treeView")
         model, pathlist = treeView.get_selection().get_selected_rows()
-        subjects = [model.get_value(model.get_iter(path)) for path in pathlist]
+        subjects = [model.get_value(model.get_iter(path), 3) for path in pathlist]
         self.__show_confirmation_dialog(subjects)
-
