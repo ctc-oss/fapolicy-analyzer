@@ -24,6 +24,7 @@ from more_itertools import first_true
 from .actions import apply_changesets
 from .add_file_button import AddFileButton
 from .configs import Colors
+from .confirm_change_dialog import ConfirmChangeDialog
 from .searchable_list_multiselect import SearchableListMultiselect
 from .store import dispatch
 from .strings import FILE_LABEL, FILES_LABEL
@@ -75,7 +76,7 @@ class SubjectList(SearchableListMultiselect):
         menu.trustItem = Gtk.MenuItem.new_with_label("Trust Files")
         menu.untrustItem = Gtk.MenuItem.new_with_label("Untrust Files")
         menu.trustItem.connect("activate", self.on_change_file_trust_activate)
-        menu.untrustItem.connect("activate", self.on_change_file_untrust_activate)
+        menu.untrustItem.connect("activate", self.on_change_file_trust_activate)
         menu.append(menu.trustItem)
         menu.append(menu.untrustItem)
         menu.show_all()
@@ -153,6 +154,19 @@ class SubjectList(SearchableListMultiselect):
         if changeset:
             dispatch(apply_changesets(changeset))
 
+    def __show_confirmation_dialog(self, subjects):
+        changeset = None
+        confirmationDialog = ConfirmChangeDialog()
+        confirm = confirmationDialog.run()
+        confirmationDialog.destroy()
+        
+#        if confirm:
+#            changeset = Changeset()
+#            #changeset.add_trust(subjects) or changeset.del_trust(subjects)
+#        if changeset:
+#            dispatch(apply_changesets(changeset))
+            
+
     def _update_tree_count(self, count):
         label = FILE_LABEL if count == 1 else FILES_LABEL
         self.treeCount.set_text(" ".join([str(count), label]))
@@ -207,10 +221,9 @@ class SubjectList(SearchableListMultiselect):
         subject = model.get_value(iter_, 3)
         self.__show_reconciliation_dialog(subject)
 
-    def on_change_file_trust_activate(self, *args):
+    def on_change_file_trust_activate(self, *args): 
         treeView = self.get_object("treeView")
         model, pathlist = treeView.get_selection().get_selected_rows()
+        subjects = [model.get_value(model.get_iter(path)) for path in pathlist]
+        self.__show_confirmation_dialog(subjects)
 
-    def on_change_file_untrust_activate(self, *args):
-        treeView = self.get_object("treeView")
-        model, pathlist = treeView.get_selection().get_selected_rows()
