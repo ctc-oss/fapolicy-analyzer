@@ -494,10 +494,10 @@ def test_start_daemon_monitor(mainWindow, mocker):
 
 
 def test_update_fapd_status(mainWindow, mocker):
-    mainWindow._update_fapd_status(True)
+    mainWindow._update_fapd_status(ServiceStatus.TRUE)
     tupleIdSize = mainWindow.get_object("fapdStatusLight").get_stock()
     assert tupleIdSize == ("gtk-yes", 4)
-    mainWindow._update_fapd_status(False)
+    mainWindow._update_fapd_status(ServiceStatus.FALSE)
     tupleIdSize = mainWindow.get_object("fapdStatusLight").get_stock()
     assert tupleIdSize == ("gtk-no", 4)
     mainWindow._update_fapd_status(ServiceStatus.UNKNOWN)
