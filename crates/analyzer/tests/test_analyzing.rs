@@ -45,6 +45,7 @@ fn event(s: &str, dec: Decision, o: &str, uid: i32, gid: i32) -> Event {
         pid: 1,
         subj: Subject::from_exe(s),
         obj: Object::from_path(o),
+        when: None,
     }
 }
 
