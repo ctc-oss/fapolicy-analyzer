@@ -206,7 +206,7 @@ class SubjectList(SearchableList):
             elif n_paths > 1:
                 trust = list(
                     {
-                        self.find_db_trust(model.get_value(model.get_iter(path),3))
+                        self.find_db_trust(model.get_value(model.get_iter(path), 3))
                         for path in iter(pathlist)
                     }
                 )
@@ -215,7 +215,7 @@ class SubjectList(SearchableList):
 
                 self.fileChangeContextMenu.remove(self.fileChangeContextMenu.trustItem)
                 self.fileChangeContextMenu.remove(self.fileChangeContextMenu.untrustItem)
-                if isinstance(trust[0],Trust):
+                if isinstance(trust[0], Trust):
                     self.fileChangeContextMenu.append(self.fileChangeContextMenu.untrustItem)
                 else:
                     self.fileChangeContextMenu.append(self.fileChangeContextMenu.trustItem)
