@@ -326,8 +326,7 @@ class PolicyRulesAdminPage(UIConnectedWidget):
         )
 
     def on_user_selection_changed(self, secondaryAction, data):
-        uids = [datum[1] for datum in data] if data else [None]
-        uid = uids[-1]
+        uid = data[-1][1] if data else [None]
         if uid != self.selectedUser:
             self.selectedUser = uid
             self.selectedGroup = None
@@ -335,8 +334,7 @@ class PolicyRulesAdminPage(UIConnectedWidget):
             secondaryAction()
 
     def on_group_selection_changed(self, secondaryAction, data):
-        gids = [datum[1] for datum in data] if data else [None]
-        gid = gids[-1]
+        gid = data[-1][1] if data else [None]
         if gid != self.selectedGroup:
             self.selectedGroup = gid
             self.selectedUser = None

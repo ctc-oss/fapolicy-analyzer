@@ -17,7 +17,7 @@ import fapolicy_analyzer.ui.strings as strings
 import gi
 
 gi.require_version("Gtk", "3.0")
-from fapolicy_analyzer import Changeset
+from fapolicy_analyzer import Changeset, Trust
 from gi.repository import Gdk, Gtk
 from more_itertools import first_true
 
@@ -25,7 +25,7 @@ from .actions import apply_changesets
 from .add_file_button import AddFileButton
 from .configs import Colors
 from .confirm_change_dialog import ConfirmChangeDialog
-from .searchable_list_multiselect import SearchableListMultiselect
+from .searchable_list import SearchableList
 from .store import dispatch
 from .strings import FILE_LABEL, FILES_LABEL
 from .trust_reconciliation_dialog import TrustReconciliationDialog
@@ -34,7 +34,7 @@ _UNTRUST_RESP = 0
 _TRUST_RESP = 1
 
 
-class SubjectList(SearchableListMultiselect):
+class SubjectList(SearchableList):
     def __init__(self):
         self.__events__ = [
             *super().__events__,
@@ -50,6 +50,7 @@ class SubjectList(SearchableListMultiselect):
             add_button.get_ref(),
             searchColumnIndex=2,
             defaultSortIndex=2,
+            selection_type="multi",
         )
 
         self._systemTrust = []
@@ -124,23 +125,23 @@ class SubjectList(SearchableListMultiselect):
         fileObjs = [datum[3] for datum in data] if data else None
         self.file_selection_changed(fileObjs)
 
-    def __show_reconciliation_dialog(self, subject):
-        def find_db_trust(subject):
-            trust = subject.trust.lower()
-            file = subject.file
-            trustList = (
-                self._systemTrust
-                if trust == "st"
-                else self._ancillaryTrust
-                if trust == "at"
-                else []
-            )
-            return first_true(trustList, pred=lambda x: x.path == file)
+    def find_db_trust(self, subject):
+        trust = subject.trust.lower()
+        file = subject.file
+        trustList = (
+            self._systemTrust
+            if trust == "st"
+            else self._ancillaryTrust
+            if trust == "at"
+            else []
+        )
+        return first_true(trustList, pred=lambda x: x.path == file)
 
+    def __show_reconciliation_dialog(self, subject):
         changeset = None
         parent = self.get_ref().get_toplevel()
         reconciliationDialog = TrustReconciliationDialog(
-            subject, databaseTrust=find_db_trust(subject), parent=parent
+            subject, databaseTrust=self.find_db_trust(subject), parent=parent
         ).get_ref()
         resp = reconciliationDialog.run()
         reconciliationDialog.destroy()
@@ -161,15 +162,14 @@ class SubjectList(SearchableListMultiselect):
         confirm = confirmationDialog.run()
         confirmationDialog.destroy()
 
-        trust = subjects[0].trust.lower()
-
+        trust = self.find_db_trust(subjects[0])
         if confirm == 1:
             changeset = Changeset()
             paths = [subject.file for subject in subjects]
-            if trust == "u":
-                changeset.add_trust(*paths)
-            else:
+            if isinstance(trust, Trust):
                 changeset.del_trust(*paths)
+            else:
+                changeset.add_trust(*paths)
 
         if changeset:
             dispatch(apply_changesets(changeset))
@@ -204,19 +204,21 @@ class SubjectList(SearchableListMultiselect):
             if n_paths == 1:
                 self.reconcileContextMenu.popup_at_pointer()
             elif n_paths > 1:
-                trust = []
-                for path in iter(pathlist):
-                    iter_ = model.get_iter(path)
-                    subject = model.get_value(iter_, 3)
-                    trust.append(subject.trust.lower())
-                matching = trust.count(trust[0]) == len(trust)
+                trust = list(
+                    {
+                        self.find_db_trust(model.get_value(model.get_iter(path),3))
+                        for path in iter(pathlist)
+                    }
+                )
+                if len(trust) > 1:
+                    return
+
                 self.fileChangeContextMenu.remove(self.fileChangeContextMenu.trustItem)
                 self.fileChangeContextMenu.remove(self.fileChangeContextMenu.untrustItem)
-                if matching:
-                    if trust[0] == "u":
-                        self.fileChangeContextMenu.append(self.fileChangeContextMenu.trustItem)
-                    else:
-                        self.fileChangeContextMenu.append(self.fileChangeContextMenu.untrustItem)
+                if isinstance(trust[0],Trust):
+                    self.fileChangeContextMenu.append(self.fileChangeContextMenu.untrustItem)
+                else:
+                    self.fileChangeContextMenu.append(self.fileChangeContextMenu.trustItem)
 
                 self.fileChangeContextMenu.show_all()
                 self.fileChangeContextMenu.popup_at_pointer()

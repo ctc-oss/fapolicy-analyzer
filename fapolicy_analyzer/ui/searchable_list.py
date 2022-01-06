@@ -36,8 +36,7 @@ class SearchableList(UIBuilderWidget, Events):
         view_headers_visible=True,
         selection_type="single",
     ):
-        list_selection_type = "searchable_list_multiselect" if selection_type == "multi" else "searchable_list"
-        UIBuilderWidget.__init__(self, list_selection_type)
+        UIBuilderWidget.__init__(self, "searchable_list")
         Events.__init__(self)
 
         self.searchColumnIndex = searchColumnIndex
@@ -48,6 +47,11 @@ class SearchableList(UIBuilderWidget, Events):
         self.treeView.set_headers_visible(view_headers_visible)
         for column in columns:
             self.treeView.append_column(column)
+
+        if selection_type == "multi":
+            self.treeSelection = self.get_object("treeSelection")
+            self.treeSelection.set_mode(Gtk.SelectionMode.MULTIPLE)
+            self.treeView.set_rubber_banding(True)
 
         self.search = self.get_object("search")
         self.viewSwitcher = self.get_object("viewStack")
