@@ -41,3 +41,15 @@
 - name: rotate journald
   shell: |
     journalctl --rotate
+
+- name: set syslog format
+  replace:
+    path: /etc/rsyslog.conf
+    regexp: "RSYSLOG_TraditionalFileFormat"
+    replace: "RSYSLOG_FileFormat"
+
+- name: enable syslog service
+  systemd:
+    name: rsyslog
+    state: restarted
+    enabled: true
