@@ -495,11 +495,11 @@ def test_start_daemon_monitor(mainWindow, mocker):
 
 def test_update_fapd_status(mainWindow, mocker):
     mainWindow._update_fapd_status(ServiceStatus.TRUE)
-    tupleIdSize = mainWindow.get_object("fapdStatusLight").get_stock()
-    assert tupleIdSize == ("gtk-yes", 4)
+    tupleIdSize = mainWindow.get_object("fapdStatusLight").get_icon_name()
+    assert tupleIdSize == ("emblem-default", 4)
     mainWindow._update_fapd_status(ServiceStatus.FALSE)
-    tupleIdSize = mainWindow.get_object("fapdStatusLight").get_stock()
-    assert tupleIdSize == ("gtk-no", 4)
+    tupleIdSize = mainWindow.get_object("fapdStatusLight").get_icon_name()
+    assert tupleIdSize == ("process-stop", 4)
     mainWindow._update_fapd_status(ServiceStatus.UNKNOWN)
-    tupleIdSize = mainWindow.get_object("fapdStatusLight").get_stock()
-    assert tupleIdSize == ("gtk-no", 4)
+    tupleIdSize = mainWindow.get_object("fapdStatusLight").get_icon_name()
+    assert tupleIdSize == ("edit-delete", 4)

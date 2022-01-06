@@ -86,7 +86,7 @@ class MainWindow(UIConnectedWidget):
         self.__set_trustDbMenu_sensitive(False)
 
         # Set fapd status UI element to default 'No' = Red button
-        self.fapdStatusLight.set_from_stock(stock_id="gtk-no", size=4)
+        self.fapdStatusLight.set_from_icon_name("process-stop", size=4)
 
         # Set initial fapd menu item state
         self._fapdStartMenuItem.set_sensitive(False)
@@ -367,11 +367,11 @@ class MainWindow(UIConnectedWidget):
         # Enable/Disable fapd menu items
         self._enable_fapd_menu_items(status)
         if status is ServiceStatus.TRUE:
-            self.fapdStatusLight.set_from_stock(stock_id="gtk-yes", size=4)
+            self.fapdStatusLight.set_from_icon_name("emblem-default", size=4)
         elif status is ServiceStatus.FALSE:
-            self.fapdStatusLight.set_from_stock(stock_id="gtk-no", size=4)
+            self.fapdStatusLight.set_from_icon_name("process-stop", size=4)
         else:
-            self.fapdStatusLight.set_from_stock(stock_id="gtk-no", size=4)
+            self.fapdStatusLight.set_from_icon_name("edit-delete", size=4)
 
     def init_daemon(self):
         if self._fapd_lock.acquire():
