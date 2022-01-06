@@ -30,7 +30,7 @@ from redux import Action
 from rx import create
 from rx.subject import Subject
 from ui.actions import ADD_NOTIFICATION
-from ui.main_window import MainWindow, router
+from ui.main_window import MainWindow, router, ServiceStatus
 from ui.session_manager import NotificationType, sessionManager
 from ui.store import init_store
 from ui.strings import AUTOSAVE_RESTORE_ERROR_MSG
@@ -455,3 +455,51 @@ def test_toggles_dirty_title(mocker):
     assert windowRef.get_title().startswith("*")
     system_features_mock.on_next({"changesets": []})
     assert not windowRef.get_title().startswith("*")
+
+
+# Testing fapd daemon interfacing
+def test_on_fapdStartMenu_activate(mainWindow, mocker):
+    mockHandle = MagicMock()
+    mainWindow._fapd_ref = mockHandle
+    mainWindow._fapd_status = False
+    mainWindow.get_object("fapdStartMenu").activate()
+    mockHandle.start.assert_called()
+
+
+def test_on_fapdStopMenu_activate(mainWindow, mocker):
+    mockHandle = MagicMock()
+    mainWindow._fapd_ref = mockHandle
+    mainWindow._fapd_status = True
+    mainWindow.get_object("fapdStopMenu").activate()
+    mockHandle.stop.assert_called()
+
+
+def test_on_update_daemon_status(mainWindow, mocker):
+    mainWindow.on_update_daemon_status(True)
+    assert mainWindow._fapd_status
+
+    mainWindow.on_update_daemon_status(False)
+    assert not mainWindow._fapd_status
+
+
+def test_start_daemon_monitor(mainWindow, mocker):
+    mockThread = MagicMock()
+    mocker.patch(
+        "ui.main_window.Thread",
+        return_value=mockThread,
+    )
+    mainWindow._fapd_status = False
+    mainWindow._start_daemon_monitor()
+    mockThread.start.assert_called_once()
+
+
+def test_update_fapd_status(mainWindow, mocker):
+    mainWindow._update_fapd_status(ServiceStatus.TRUE)
+    tupleIdSize = mainWindow.get_object("fapdStatusLight").get_stock()
+    assert tupleIdSize == ("gtk-yes", 4)
+    mainWindow._update_fapd_status(ServiceStatus.FALSE)
+    tupleIdSize = mainWindow.get_object("fapdStatusLight").get_stock()
+    assert tupleIdSize == ("gtk-no", 4)
+    mainWindow._update_fapd_status(ServiceStatus.UNKNOWN)
+    tupleIdSize = mainWindow.get_object("fapdStatusLight").get_stock()
+    assert tupleIdSize == ("gtk-no", 4)
