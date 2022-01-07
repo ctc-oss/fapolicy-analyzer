@@ -28,6 +28,7 @@ from fapolicy_analyzer import __version__ as app_version
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.util.format import f
 
+from .action_toolbar import ActionToolbar
 from .actions import NotificationType, add_notification
 from .analyzer_selection_dialog import ANALYZER_SELECTION
 from .database_admin_page import DatabaseAdminPage
@@ -75,8 +76,8 @@ class MainWindow(UIConnectedWidget):
         self._fapd_monitoring = False
         self._fapd_ref = None
         self._fapd_lock = Lock()
-        self._changesets = []
-        self._page = None
+        self.__changesets = []
+        self.__page = None
 
         toaster = Notification()
         self.get_object("overlay").add_overlay(toaster.get_ref())
@@ -93,6 +94,11 @@ class MainWindow(UIConnectedWidget):
         self._fapdStartMenuItem.set_sensitive(False)
         self._fapdStopMenuItem.set_sensitive(False)
 
+        self.__add_toolbar()
+
+        self.window.show_all()
+
+    def __add_toolbar(self):
         # Set of actions available to all UIPages
         self.__actions = {
             "actions": [
@@ -101,15 +107,18 @@ class MainWindow(UIConnectedWidget):
                     tooltip="Deploy Changesets",
                     icon="system-software-update",
                     signals={"clicked": self.on_deployChanges_clicked},
+                    sensitivity_func=self.__dirty_changesets,
                 )
             ],
         }
-
-        self.window.show_all()
+        self.__toolbar = ActionToolbar(self.__actions)
+        app_area = self.get_object("appArea")
+        app_area.pack_start(self.__toolbar, False, True, 0)
+        app_area.reorder_child(self.__toolbar, 1)
 
     def __unapplied_changes(self):
         # Check backend for unapplied changes
-        if not self._changesets:
+        if not self.__changesets:
             return False
 
         # Warn user pending changes will be lost.
@@ -171,8 +180,8 @@ class MainWindow(UIConnectedWidget):
         self._page = page
         self.mainContent.pack_start(page.get_ref(), True, True, 0)
 
-        actions = merge_actions(self.__actions, page.actions)
-        build_toolbar(actions)
+        actions = UIPage.merge_actions(self.__actions, page.actions)
+        self.__toolbar.rebuild_toolbar(actions)
 
     def __auto_save_restore_dialog(self):
         """
@@ -202,6 +211,9 @@ class MainWindow(UIConnectedWidget):
     def __set_trustDbMenu_sensitive(self, sensitive):
         menuItem = self.get_object("trustDbMenu")
         menuItem.set_sensitive(sensitive)
+
+    def __dirty_changesets(self):
+        return len(self.__changesets) > 0
 
     def on_start(self, *args):
         self.__pack_main_content(router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN))
@@ -247,11 +259,11 @@ class MainWindow(UIConnectedWidget):
         return self.__unapplied_changes()
 
     def on_next_system(self, system):
-        self._changesets = system["changesets"]
-        dirty = len(self._changesets) > 0
+        self.__changesets = system["changesets"]
+        dirty = self.__dirty_changesets()
         title = f"*{self.strTopLevelTitle}" if dirty else self.strTopLevelTitle
         self.windowTopLevel.set_title(title)
-        self.get_object("deployChanges").set_sensitive(dirty)
+        self.__toolbar.refresh_buttons_sensitivity()
 
     def on_openMenu_activate(self, menuitem, data=None):
         logging.debug("Callback entered: MainWindow::on_openMenu_activate()")
@@ -312,7 +324,7 @@ class MainWindow(UIConnectedWidget):
             self.on_saveAsMenu_activate(menuitem, None)
         else:
             sessionManager.save_edit_session(
-                self._changesets,
+                self.__changesets,
                 self.strSessionFilename,
             )
 
@@ -340,7 +352,7 @@ class MainWindow(UIConnectedWidget):
             strFilename = fcd.get_filename()
             self.strSessionFilename = strFilename
             sessionManager.save_edit_session(
-                self._changesets,
+                self.__changesets,
                 self.strSessionFilename,
             )
 
@@ -385,7 +397,7 @@ class MainWindow(UIConnectedWidget):
 
     def on_deployChanges_clicked(self, *args):
         with DeployChangesetsOp(self.window) as op:
-            op.run(self._changesets)
+            op.run(self.__changesets)
 
     # ###################### fapolicyd interfacing ##########################
     def on_fapdStartMenu_activate(self, menuitem, data=None):
