@@ -244,20 +244,7 @@
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <child>
-                  <object class="GtkToolButton" id="deployChanges">
-                    <property name="visible">True</property>
-                    <property name="sensitive">False</property>
-                    <property name="can-focus">False</property>
-                    <property name="tooltip-text" translatable="yes">Deploy Changes</property>
-                    <property name="label" translatable="yes">Deploy</property>
-                    <property name="use-underline">True</property>
-                    <property name="icon-name">system-software-update</property>
-                    <signal name="clicked" handler="on_deployChanges_clicked" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="homogeneous">True</property>
-                  </packing>
+                  <placeholder/>
                 </child>
               </object>
               <packing>

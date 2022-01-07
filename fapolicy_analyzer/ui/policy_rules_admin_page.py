@@ -39,15 +39,31 @@ from .strings import (
     USERS_LABEL,
 )
 from .subject_list import SubjectList
+from .ui_page import UIAction, UIPage
 from .ui_widget import UIConnectedWidget
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
 
 
-class PolicyRulesAdminPage(UIConnectedWidget):
-    def __init__(self, auditFile=None):
-        super().__init__(get_system_feature(), on_next=self.on_next_system)
+class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
+    def __init__(self, auditFile: str = None):
+        UIConnectedWidget.__init__(
+            self, get_system_feature(), on_next=self.on_next_system
+        )
+
+        actions = {
+            "analyze": [
+                UIAction(
+                    "Refresh",
+                    "Refresh Data",
+                    "view-refresh",
+                    {"clicked": self.on_refresh_clicked},
+                )
+            ]
+        }
+        UIPage.__init__(self, actions)
+
         self.__log = None
         self.__eventsLoading = False
         self.__users = []
@@ -365,6 +381,9 @@ class PolicyRulesAdminPage(UIConnectedWidget):
             self.userList.treeView.get_selection().unselect_all()
         if page_num != 1:
             self.groupList.treeView.get_selection().unselect_all()
+
+    def on_refresh_clicked(self, *args):
+        pass
 
     class Switcher(Events):
         __events__ = ["buttonClicked"]
