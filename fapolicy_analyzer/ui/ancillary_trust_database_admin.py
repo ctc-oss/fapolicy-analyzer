@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import gi
 import logging
 from locale import gettext as _
 
@@ -20,6 +21,8 @@ import fapolicy_analyzer.ui.strings as strings
 from fapolicy_analyzer import Changeset, Trust
 from fapolicy_analyzer.util import fs  # noqa: F401
 from fapolicy_analyzer.util.format import f
+from gi.repository import Gdk, Gtk
+import os.path
 
 from .actions import (
     NotificationType,
@@ -41,6 +44,7 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
         self._loading = False
         self.selectedFile = None
 
+        self.removeMenu = self.__build_remove_deleted_menu()
         self.trustFileList = AncillaryTrustFileList(trust_func=self.__load_trust)
         self.trustFileList.trust_selection_changed += self.on_trust_selection_changed
         self.trustFileList.files_added += self.on_files_added
@@ -53,6 +57,17 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
         self.get_object("rightBox").pack_start(
             self.trustFileDetails.get_ref(), True, True, 0
         )
+        self.trustFileList.get_object("treeView").connect(
+            "button-press-event", self.on_view_button_press_event
+        )
+
+    def __build_remove_deleted_menu(self):
+        menu = Gtk.Menu()
+        removeItem = Gtk.MenuItem.new_with_label("Remove File")
+        removeItem.connect("activate", self.on_remove_file_activate)
+        menu.append(removeItem)
+        menu.show_all()
+        return menu
 
     def __load_trust(self):
         self._loading = True
@@ -60,6 +75,15 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
 
     def __apply_changeset(self, changeset):
         dispatch(apply_changesets(changeset))
+
+    def on_view_button_press_event(self, widget, event):
+        if event.type == Gdk.EventType.BUTTON_PRESS and event.button == 3:
+            treeView = self.trustFileList.get_object("treeView")
+            model, pathlist = treeView.get_selection().get_selected_rows()
+            iter_ = model.get_iter(next(iter(pathlist)))  # single select use first path
+            subject = model.get_value(iter_, 3)
+            
+            self.removeMenu.popup_at_pointer() if not os.path.isfile(subject.path) else None
 
     def add_trusted_files(self, *files):
         changeset = Changeset()
@@ -158,3 +182,13 @@ SHA256: {fs.sha(trust.path)}"""
             self._loading = False
             self._trust = trustState.trust
             self.trustFileList.load_trust(self._trust)
+
+    def on_remove_file_activate(self, *args):
+        treeView = self.trustFileList.get_object("treeView")
+        model, pathlist = treeView.get_selection().get_selected_rows()
+        child_model = model.get_model().get_model()
+        iter_ = child_model.get_iter(next(iter(pathlist)))  # single select use first pat
+        subject = child_model.get_value(iter_, 3)
+        self.delete_trusted_files(subject.path)
+        child_model.remove(iter_)
+
