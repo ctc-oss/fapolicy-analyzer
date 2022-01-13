@@ -86,7 +86,6 @@ def create_system_feature(
     def _init_system() -> Action:
         def execute_system():
             try:
-                raise RuntimeError("Yikes!")
                 system = System()
                 GLib.idle_add(finish, system)
             except RuntimeError:
