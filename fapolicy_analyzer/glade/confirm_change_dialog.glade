@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.38.2 -->
 <!--
   Copyright Concurrent Technologies Corporation 2021
 
@@ -15,8 +16,6 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
-
-<!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
   <object class="GtkDialog" id="confirmChangeDialog">
@@ -80,7 +79,19 @@
           </packing>
         </child>
         <child>
-          <placeholder/>
+          <object class="GtkTextView" id="confirmInfo">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="editable">False</property>
+            <property name="justification">center</property>
+            <property name="cursor-visible">False</property>
+            <property name="accepts-tab">False</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
         </child>
       </object>
     </child>

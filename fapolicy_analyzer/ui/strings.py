@@ -118,3 +118,9 @@ GET_USERS_ERROR_MSG = _(
 GET_GROUPS_LOG_ERROR_MSG = _(
     "An error occurred trying to retrieve the group list. Please try again."
 )
+CONFIRM_UNTRUST_SELECTION = _(
+    "Untrust selected files?"
+)
+CONFIRM_TRUST_SELECTION = _(
+    "Trust selected files?"
+)
