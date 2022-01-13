@@ -35,7 +35,7 @@ pub fn deploy_app_state(state: &State) -> Result<(), Error> {
                 format!(
                     "{} {} {}\n",
                     path,
-                    meta.trusted.size.to_string(),
+                    meta.trusted.size,
                     meta.trusted.hash
                 )
                 .as_bytes(),
