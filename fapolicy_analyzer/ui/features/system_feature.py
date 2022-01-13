@@ -14,7 +14,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-import sys
 
 import gi
 
@@ -49,6 +48,7 @@ from fapolicy_analyzer.ui.actions import (
     received_groups,
     received_system_trust,
     received_users,
+    system_initialization_error,
     system_initialized,
 )
 from fapolicy_analyzer.ui.reducers import system_reducer
@@ -86,19 +86,26 @@ def create_system_feature(
     def _init_system() -> Action:
         def execute_system():
             try:
+                raise RuntimeError("Yikes!")
                 system = System()
                 GLib.idle_add(finish, system)
             except RuntimeError:
                 logging.exception(SYSTEM_INITIALIZATION_ERROR)
-                GLib.idle_add(sys.exit, 1)
+                GLib.idle_add(finish, None)
 
         def finish(system: System):
             global _system, _checkpoint
+            logging.debug(f"system_feature::finish::system = {type(system)}")
             _system = system
             _checkpoint = _system
+
             if executor:
                 executor.shutdown(cancel_futures=True)
-            dispatch(system_initialized())
+
+            if system:
+                dispatch(system_initialized())
+            else:
+                dispatch(system_initialization_error())
 
         if system:
             executor = None

@@ -118,3 +118,24 @@ GET_USERS_ERROR_MSG = _(
 GET_GROUPS_LOG_ERROR_MSG = _(
     "An error occurred trying to retrieve the group list. Please try again."
 )
+
+TRUST_DB_READ_FAILURE_DIALOG_TITLE = _("Trust Database Read Failure")
+TRUST_DB_READ_FAILURE_DIALOG_TEXT = _(
+    """
+              The fapolicyd trusted resources database
+                   could not be opened and/or read.
+
+                   Typical reasons for this failure:
+
+    1. The user does not have read permissions to access
+               the database directory or its contents.
+                    [Default: /var/lib/fapolicyd]
+
+    2. The database does not exist or was not initialized.
+
+           Either the fapolicyd daemon package has not been
+       installed or if installed, has not been executed. The first
+           execution of the fapolicyd daemon will create and
+                     populate the trust database.
+    """
+)
