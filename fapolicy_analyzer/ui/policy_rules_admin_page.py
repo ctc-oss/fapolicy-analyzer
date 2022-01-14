@@ -14,6 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from functools import partial
+from typing import Optional
 
 import gi
 from events import Events
@@ -43,11 +44,11 @@ from .ui_page import UIAction, UIPage
 from .ui_widget import UIConnectedWidget
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk  # isort: skip
+from gi.repository import GObject, Gtk  # isort: skip
 
 
 class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
-    def __init__(self, auditFile: str = None):
+    def __init__(self, audit_file: str = None):
         UIConnectedWidget.__init__(
             self, get_system_feature(), on_next=self.on_next_system
         )
@@ -64,6 +65,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         }
         UIPage.__init__(self, actions)
 
+        self.__audit_file: str = audit_file
         self.__log = None
         self.__eventsLoading = False
         self.__users = []
@@ -72,9 +74,10 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         self.__groupsLoading = False
         self.__systemTrust = []
         self.__ancillaryTrust = []
-        self.selectedUser = None
-        self.selectedGroup = None
-        self.selectedSubject = None
+        self.__selected_user: Optional[int] = None
+        self.__selected_group: Optional[int] = None
+        self.__selected_subject: Optional[str] = None
+        self.__selected_object: Optional[str] = None
 
         userTabs = self.get_object("userTabs")
         self.userList = ACLList(label=USER_LABEL, label_plural=USERS_LABEL)
@@ -137,13 +140,16 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         for s in self.switchers:
             s.buttonClicked += self.on_switcher_button_clicked
 
+        self.__refresh()
+
+    def __refresh(self):
         self.__usersLoading = True
         dispatch(request_users())
         self.__groupsLoading = True
         dispatch(request_groups())
         self.__eventsLoading = True
-        if auditFile:
-            dispatch(request_events("debug", auditFile))
+        if self.__audit_file:
+            dispatch(request_events("debug", self.__audit_file))
         else:
             dispatch(request_events("syslog"))
 
@@ -156,11 +162,51 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         box.show_all()
         return box
 
-    def __populate_list(self, list, data, sensitive, **kwargs):
+    def __populate_list(
+        self,
+        list,
+        data,
+        sensitive,
+        selection=None,
+        select_func=None,
+        **kwargs,
+    ):
+        """
+        Populates the list with the data then selects the rows. The rows will be
+        selected only if the give selection data can be found in the row using the
+        select_func. If found the row is selected and returned if not found None is
+        returned.
+        """
+
+        def disable_change_events():
+            change_events = []
+            for e in list.selection_changed:
+                change_events.append(e)
+                list.selection_changed -= e
+            return change_events
+
+        def enable_change_events(change_events):
+            for e in change_events:
+                list.selection_changed += e
+
+        # disable changed event handling while loading
+        change_events = disable_change_events()
+
         list.load_store(data, **kwargs)
         list.get_ref().set_sensitive(sensitive)
 
+        # re-enable change event handling
+        enable_change_events(change_events)
+
+        # if the selected row still exists in the list, select it again
+        if selection and select_func and (row := select_func(selection)):
+            list.select_rows(row)
+            return selection
+
+        return None
+
     def __populate_acls(self):
+
         if self.__usersLoading or self.__groupsLoading or not self.__log:
             return
 
@@ -171,6 +217,14 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
                 for e in self.__log.by_user(u.id)
             }.values()
         )
+        self.__selected_user = self.__populate_list(
+            self.userList,
+            users,
+            True,
+            self.__selected_user,
+            self.userList.get_selected_row_by_acl_id,
+        )
+
         groups = list(
             {
                 e.gid: {"id": g.id, "name": g.name}
@@ -178,33 +232,51 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
                 for e in self.__log.by_group(g.id)
             }.values()
         )
-        self.__populate_list(self.userList, users, True)
-        self.__populate_list(self.groupList, groups, True)
+        self.__selected_group = self.__populate_list(
+            self.groupList,
+            groups,
+            True,
+            self.__selected_group,
+            self.groupList.get_selected_row_by_acl_id,
+        )
 
     def __populate_acls_from_subject(self):
-        if not self.selectedSubject:
-            self.__populate_list(self.userList, [], False)
-            self.__populate_list(self.groupList, [], False)
+        if not self.__selected_subject:
+            self.__selected_user = self.__populate_list(self.userList, [], False)
+            self.__selected_group = self.__populate_list(self.groupList, [], False)
             return
 
         users = list(
             {
                 e.uid: {"id": u.id, "name": u.name}
-                for e in self.__log.by_subject(self.selectedSubject)
+                for e in self.__log.by_subject(self.__selected_subject)
                 for u in self.__users
                 if e.uid == u.id
             }.values()
         )
+        self.__selected_user = self.__populate_list(
+            self.userList,
+            users,
+            True,
+            self.__selected_user,
+            self.userList.get_selected_row_by_acl_id,
+        )
+
         groups = list(
             {
                 e.gid: {"id": g.id, "name": g.name}
-                for e in self.__log.by_subject(self.selectedSubject)
+                for e in self.__log.by_subject(self.__selected_subject)
                 for g in self.__groups
                 if e.gid == g.id
             }.values()
         )
-        self.__populate_list(self.userList, users, True)
-        self.__populate_list(self.groupList, groups, True)
+        self.__selected_group = self.__populate_list(
+            self.groupList,
+            groups,
+            True,
+            self.__selected_group,
+            self.groupList.get_selected_row_by_acl_id,
+        )
 
     def __populate_subjects(self):
         if self.__usersLoading or self.__groupsLoading or not self.__log:
@@ -217,57 +289,63 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
                 for e in self.__log.by_subject(s)
             }.values()
         )
-        self.__populate_list(
+        self.__selected_subject = self.__populate_list(
             self.subjectList,
             subjects,
             True,
+            self.__selected_subject,
+            self.subjectList.get_selected_row_by_file,
             systemTrust=self.__systemTrust,
             ancillaryTrust=self.__ancillaryTrust,
         )
 
     def __populate_subjects_from_acl(self):
-        if not self.selectedUser and not self.selectedGroup:
-            self.__populate_list(self.subjectList, [], False)
+        if not self.__selected_user and not self.__selected_group:
+            self.__selected_subject = self.__populate_list(self.subjectList, [], False)
             return
 
         subjects = list(
             {
                 e.subject.file: e.subject
                 for e in (
-                    self.__log.by_user(self.selectedUser)
-                    if self.selectedUser
-                    else self.__log.by_group(self.selectedGroup)
-                    if self.selectedGroup
+                    self.__log.by_user(self.__selected_user)
+                    if self.__selected_user
+                    else self.__log.by_group(self.__selected_group)
+                    if self.__selected_group
                     else []
                 )
             }.values()
         )
-        self.__populate_list(
+        self.__selected_subject = self.__populate_list(
             self.subjectList,
             subjects,
             True,
+            self.__selected_subject,
+            self.subjectList.get_selected_row_by_file,
             systemTrust=self.__systemTrust,
             ancillaryTrust=self.__ancillaryTrust,
         )
 
     def __populate_objects(self):
-        if self.selectedSubject and (self.selectedUser or self.selectedGroup):
+        if self.__selected_subject and (self.__selected_user or self.__selected_group):
             objects = list(
                 {
                     e.object.file: e.object
-                    for e in self.__log.by_subject(self.selectedSubject)
-                    if e.uid == self.selectedUser or e.gid == self.selectedGroup
+                    for e in self.__log.by_subject(self.__selected_subject)
+                    if e.uid == self.__selected_user or e.gid == self.__selected_group
                 }.values()
             )
-            self.__populate_list(
+            self.__selected_object = self.__populate_list(
                 self.objectList,
                 objects,
                 True,
+                self.__selected_object,
+                self.subjectList.get_selected_row_by_file,
                 systemTrust=self.__systemTrust,
                 ancillaryTrust=self.__ancillaryTrust,
             )
         else:
-            self.__populate_list(self.objectList, [], False)
+            self.__selected_object = self.__populate_list(self.objectList, [], False)
 
     def __populate_acl_details(self, id, detailsFn):
         userDetails = self.get_object("userDetails")
@@ -343,32 +421,35 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
 
     def on_user_selection_changed(self, secondaryAction, data):
         uid = data[-1][1] if data else None
-        if uid != self.selectedUser:
-            self.selectedUser = uid
-            self.selectedGroup = None
+        if uid != self.__selected_user:
+            self.__selected_user = uid
+            self.__selected_group = None
             self.__populate_acl_details(uid, acl.getUserDetails)
             secondaryAction()
 
     def on_group_selection_changed(self, secondaryAction, data):
         gid = data[-1][1] if data else None
-        if gid != self.selectedGroup:
-            self.selectedGroup = gid
-            self.selectedUser = None
+        if gid != self.__selected_group:
+            self.__selected_group = gid
+            self.__selected_user = None
             self.__populate_acl_details(gid, acl.getGroupDetails)
             secondaryAction()
 
     def on_subject_selection_changed(self, secondaryAction, data):
-        fileObj = data[-1].file if data else None
-        if fileObj == self.selectedSubject:
+        subject = data[-1].file if data else None
+        if subject == self.__selected_subject:
             return
-        self.selectedSubject = fileObj
+
+        self.__selected_subject = subject
         subjectDetails = self.get_object("subjectDetails")
-        subjectDetails.get_buffer().set_text(fs.stat(fileObj) if fileObj else "")
+        subjectDetails.get_buffer().set_text(fs.stat(subject) if subject else "")
         secondaryAction()
 
     def on_object_selection_changed(self, data):
+        object = data[-1].file if data else None
+        self.__selected_object = object
         objectDetails = self.get_object("objectDetails")
-        objectDetails.get_buffer().set_text(fs.stat(data) if data else "")
+        objectDetails.get_buffer().set_text(fs.stat(object) if object else "")
 
     def on_switcher_button_clicked(self, switcher):
         switcher.set_as_secondary()
@@ -383,7 +464,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             self.groupList.treeView.get_selection().unselect_all()
 
     def on_refresh_clicked(self, *args):
-        pass
+        self.__refresh()
 
     class Switcher(Events):
         __events__ = ["buttonClicked"]

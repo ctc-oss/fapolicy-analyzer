@@ -13,6 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from typing import Any
+
 import gi
 
 gi.require_version("Gtk", "3.0")
@@ -117,6 +119,24 @@ class SearchableList(UIBuilderWidget, Events):
 
     def get_action_buttons(self):
         return self.get_object("actionButtons").get_children()
+
+    def select_rows(self, *paths):
+        selection = self.treeView.get_selection()
+        for p in paths:
+            selection.select_path(p)
+
+    def find_selected_row_by_data(
+        self, column_data: Any, data_index: int
+    ) -> Gtk.TreePath:
+        def search(model, path, iter, *_):
+            nonlocal selected
+            if model[iter][data_index] == column_data:
+                selected = path
+            return selected is not None
+
+        selected = None
+        self.treeView.get_model().foreach(search)
+        return selected
 
     def on_view_selection_changed(self, selection):
         model, treeiter = selection.get_selected_rows()

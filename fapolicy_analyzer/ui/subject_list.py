@@ -188,6 +188,9 @@ class SubjectList(SearchableList):
 
         super().load_store(store)
 
+    def get_selected_row_by_file(self, file: str) -> Gtk.TreePath:
+        return self.find_selected_row_by_data(file, 3)
+
     def on_view_row_activated(self, treeView, row, *args):
         model = treeView.get_model()
         iter_ = model.get_iter(row)

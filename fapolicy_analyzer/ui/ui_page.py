@@ -1,6 +1,6 @@
 from abc import ABC
 from dataclasses import dataclass, field
-from typing import Callable, Dict, Sequence
+from typing import Callable, Mapping, Sequence
 
 
 @dataclass
@@ -8,7 +8,7 @@ class UIAction:
     name: str
     tooltip: str
     icon: str
-    signals: Dict[str, Callable]
+    signals: Mapping[str, Callable]
     sensitivity_func: Callable[..., bool] = lambda: True
 
 
@@ -23,12 +23,13 @@ class UIPage(ABC):
     defining the grouping name of the actions and the value is a list of UIActions for
     the group.
     """
-    actions: Dict[str, Sequence[UIAction]] = field(default_factory=dict)
+    actions: Mapping[str, Sequence[UIAction]] = field(default_factory=dict)
 
     @staticmethod
     def merge_actions(
-        actions1: Dict[str, Sequence[UIAction]], actions2: Dict[str, Sequence[UIAction]]
-    ) -> Dict[str, Sequence[UIAction]]:
+        actions1: Mapping[str, Sequence[UIAction]],
+        actions2: Mapping[str, Sequence[UIAction]],
+    ) -> Mapping[str, Sequence[UIAction]]:
         """
         Static util method to merge 2 sets of actions into a new set of actions
         """
