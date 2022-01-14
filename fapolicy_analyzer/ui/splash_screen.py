@@ -37,6 +37,7 @@ def trust_db_access_failure_dlg():
 
     label = Gtk.Label(label=strings.TRUST_DB_READ_FAILURE_DIALOG_TEXT)
     hbox = dlgSessionRestorePrompt.get_content_area()
+    label.set_justify(Gtk.Justification.CENTER)
     hbox.add(label)
     dlgSessionRestorePrompt.show_all()
     dlgSessionRestorePrompt.run()
