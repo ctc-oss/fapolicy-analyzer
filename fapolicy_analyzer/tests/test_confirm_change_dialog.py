@@ -24,9 +24,11 @@ from fapolicy_analyzer.ui.strings import (
     CONFIRM_TRUST_SELECTION
 )
 
+
 def test_creates_widget():
     widget = ConfirmChangeDialog(parent=Gtk.Window())
     assert type(widget) is ConfirmChangeDialog
+
 
 def test_confirm_trust_dialog_message():
     n_files = 2
@@ -36,4 +38,16 @@ def test_confirm_trust_dialog_message():
     end = buff.get_end_iter()
     dialog_string = buff.get_text(start, end, False)
     assert_string = f"{n_files} files will be trusted. " + CONFIRM_TRUST_SELECTION
+    assert dialog_string == assert_string
+
+
+def test_confirm_untrust_dialog_message():
+    n_files, n_ancillary = 2, 1
+    widget = ConfirmChangeDialog(parent=Gtk.Window(), n_total=n_files, n_atdb=n_ancillary)
+    buff = widget.get_object("confirmInfo").get_buffer()
+    start = buff.get_start_iter()
+    end = buff.get_end_iter()
+    dialog_string = buff.get_text(start, end, False)
+    assert_string = f"""{n_files} files will be untrusted.
+             {n_ancillary} files from the System Trust Database will be unaffected. """ + CONFIRM_UNTRUST_SELECTION
     assert dialog_string == assert_string
