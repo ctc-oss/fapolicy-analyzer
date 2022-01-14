@@ -1,15 +1,15 @@
 # Translations template for fapolicy-analyzer.
-# Copyright (C) 2021 ORGANIZATION
+# Copyright (C) 2022 ORGANIZATION
 # This file is distributed under the same license as the fapolicy-analyzer
 # project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2021.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: fapolicy-analyzer snapshot\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-12-30 11:35-0500\n"
+"POT-Creation-Date: 2022-01-14 08:52-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,16 +18,16 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.9.1\n"
 
-#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:89
-#: fapolicy_analyzer/ui/system_trust_database_admin.py:99
+#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:94
+#: fapolicy_analyzer/ui/system_trust_database_admin.py:103
 msgid ""
 "File: {trust.path}\n"
 "Size: {trust.size}\n"
 "SHA256: {trust.hash}"
 msgstr ""
 
-#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:99
-#: fapolicy_analyzer/ui/system_trust_database_admin.py:108
+#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:104
+#: fapolicy_analyzer/ui/system_trust_database_admin.py:112
 msgid ""
 "{fs.stat(trust.path)}\n"
 "SHA256: {fs.sha(trust.path)}"
@@ -37,7 +37,7 @@ msgstr ""
 msgid "Reverting to previous settings in {i+1} seconds"
 msgstr ""
 
-#: fapolicy_analyzer/ui/main_window.py:239
+#: fapolicy_analyzer/ui/main_window.py:231
 msgid ""
 "An error occurred trying to open the session file, "
 "{self.strSessionFilename}"
@@ -267,6 +267,14 @@ msgstr ""
 msgid "An error occurred trying to retrieve the group list. Please try again."
 msgstr ""
 
+#: fapolicy_analyzer/ui/strings.py:121
+msgid "Untrust selected files?"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:124
+msgid "Trust selected files?"
+msgstr ""
+
 #: fapolicy_analyzer/glade/main_window.glade:252
 #: fapolicy_analyzer/ui/operations/deploy_changesets_op.py:146
 msgid "Deploy Changes"
@@ -292,6 +300,23 @@ msgstr ""
 #: fapolicy_analyzer/glade/ancillary_trust_database_admin.glade:75
 #: fapolicy_analyzer/glade/trust_reconciliation_dialog.glade:54
 msgid "Untrust"
+msgstr ""
+
+#: fapolicy_analyzer/glade/confirm_change_dialog.glade:23
+msgid "Confirm Trust Changes"
+msgstr ""
+
+#: fapolicy_analyzer/glade/confirm_change_dialog.glade:37
+msgid "Yes"
+msgstr ""
+
+#: fapolicy_analyzer/glade/confirm_change_dialog.glade:50
+msgid "No"
+msgstr ""
+
+#: fapolicy_analyzer/glade/confirm_change_dialog.glade:63
+#: fapolicy_analyzer/glade/trust_reconciliation_dialog.glade:67
+msgid "Cancel"
 msgstr ""
 
 #: fapolicy_analyzer/glade/deploy_confirm_dialog.glade:27
@@ -348,11 +373,7 @@ msgstr ""
 msgid "Deploy"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:301
-msgid "Percent Complete"
-msgstr ""
-
-#: fapolicy_analyzer/glade/main_window.glade:315
+#: fapolicy_analyzer/glade/main_window.glade:304
 msgid "fapolicyd:"
 msgstr ""
 
@@ -360,7 +381,7 @@ msgstr ""
 msgid "x"
 msgstr ""
 
-#: fapolicy_analyzer/glade/searchable_list.glade:126
+#: fapolicy_analyzer/glade/searchable_list.glade:125
 msgid "page0"
 msgstr ""
 
@@ -368,8 +389,8 @@ msgstr ""
 msgid "Initializing File Access Policy Analyzer..."
 msgstr ""
 
-#: fapolicy_analyzer/glade/system_trust_database_admin.glade:61
-msgid "Add File To Ancillary Trust Database"
+#: fapolicy_analyzer/glade/system_trust_database_admin.glade:60
+msgid "Add To Ancillary Trust Database"
 msgstr ""
 
 #: fapolicy_analyzer/glade/trust_file_details.glade:60
@@ -386,10 +407,6 @@ msgstr ""
 
 #: fapolicy_analyzer/glade/trust_reconciliation_dialog.glade:24
 msgid "Trust Reconsiliation"
-msgstr ""
-
-#: fapolicy_analyzer/glade/trust_reconciliation_dialog.glade:67
-msgid "Cancel"
 msgstr ""
 
 #: fapolicy_analyzer/glade/unapplied_changes_dialog.glade:25
