@@ -119,7 +119,7 @@ GET_GROUPS_LOG_ERROR_MSG = _(
     "An error occurred trying to retrieve the group list. Please try again."
 )
 
-TRUST_DB_READ_FAILURE_DIALOG_TITLE = _("Trust Database Read Failure")
+TRUST_DB_READ_FAILURE_DIALOG_TITLE = _("Trust Database")
 TRUST_DB_READ_FAILURE_DIALOG_TEXT = _(
     """
               The fapolicyd trusted resources database
