@@ -13,7 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fapolicy_analyzer.ui.actions import SYSTEM_INITIALIZED
+from fapolicy_analyzer.ui.actions import (SYSTEM_INITIALIZED,
+                                          ERROR_SYSTEM_INITIALIZATION,
+                                          )
 from redux import Reducer, combine_reducers, handle_actions
 from .ancillary_trust_reducer import ancillary_trust_reducer
 from .changeset_reducer import changeset_reducer
@@ -27,8 +29,13 @@ system_initialized_reducer: Reducer = handle_actions(
     {SYSTEM_INITIALIZED: lambda *_: True}, False
 )
 
+system_initialization_error_reducer: Reducer = handle_actions(
+    {ERROR_SYSTEM_INITIALIZATION: lambda *_: True}, False
+)
+
 system_reducer: Reducer = combine_reducers(
     {
+        "initialization_error": system_initialization_error_reducer,
         "initialized": system_initialized_reducer,
         "ancillary_trust": ancillary_trust_reducer,
         "changesets": changeset_reducer,
