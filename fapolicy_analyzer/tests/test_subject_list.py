@@ -251,3 +251,28 @@ def test_shows_reconciliation_dialog_from_context_menu(
         databaseTrust=databaseTrust,
         parent=widget.get_ref().get_toplevel(),
     )
+
+@pytest.mark.parametrize(
+    "subject",
+    [
+        _mock_subject(trust="st", access="a", file="/st/foo"),
+        _mock_subject(trust="at", access="a", file="/at/foo"),
+        _mock_subject(trust="u", access="a", file="/u/foo"),
+    ],
+)
+def test_shows_change_trust_dialog_from_context_menu(subject, widget, mocker):
+    mockDialog = mocker.patch(
+        "ui.subject_list.ConfirmChangeDialog",
+        return_value=MagicMock(get_ref=MagicMock(spec=Gtk.Widget)),
+    )
+    widget.load_store(
+        [subject], systemTrust=_systemTrust, ancillaryTrust=_ancillaryTrust
+    )
+    view = widget.get_object("treeView")
+    view.get_selection().select_all()
+    next(iter(widget.fileChangeContextMenu.get_children())).activate()
+    mockDialog.assert_called_once_with(
+        parent=widget.get_ref().get_toplevel(),
+        n_total = 0,
+        n_atdb = 0,
+    )
