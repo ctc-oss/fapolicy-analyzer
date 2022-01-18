@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fapolicy-analyzer snapshot\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-01-14 08:52-0600\n"
+"POT-Creation-Date: 2022-01-18 08:49-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -267,12 +267,37 @@ msgstr ""
 msgid "An error occurred trying to retrieve the group list. Please try again."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:121
+#: fapolicy_analyzer/ui/strings.py:122
 msgid "Untrust selected files?"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:124
+#: fapolicy_analyzer/ui/strings.py:125
 msgid "Trust selected files?"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:128
+msgid "Trust Database"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:129
+msgid ""
+"\n"
+"The fapolicyd trusted resources database\n"
+"could not be opened and/or read.\n"
+"\n"
+"Typical reasons for this failure:\n"
+"\n"
+"1. The user does not have read permissions to access\n"
+"the database directory or its contents.\n"
+"[Default: /var/lib/fapolicyd]\n"
+"\n"
+"2. The database does not exist or was not initialized.\n"
+"\n"
+"Either the fapolicyd daemon package has not been\n"
+"installed or if installed, has not been executed. The first\n"
+"execution of the fapolicyd daemon will create and\n"
+"populate the trust database.\n"
+"    "
 msgstr ""
 
 #: fapolicy_analyzer/glade/main_window.glade:252
