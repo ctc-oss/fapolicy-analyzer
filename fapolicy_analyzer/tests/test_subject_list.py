@@ -27,7 +27,7 @@ from unittest.mock import MagicMock
 from callee.attributes import Attrs
 from callee.types import InstanceOf
 from fapolicy_analyzer import Changeset
-from gi.repository import Gtk
+from gi.repository import Gtk, Gdk
 from redux import Action
 from ui.actions import APPLY_CHANGESETS
 from ui.configs import Colors
@@ -252,6 +252,7 @@ def test_shows_reconciliation_dialog_from_context_menu(
         parent=widget.get_ref().get_toplevel(),
     )
 
+
 @pytest.mark.parametrize(
     "subject",
     [
@@ -273,6 +274,36 @@ def test_shows_change_trust_dialog_from_context_menu(subject, widget, mocker):
     next(iter(widget.fileChangeContextMenu.get_children())).activate()
     mockDialog.assert_called_once_with(
         parent=widget.get_ref().get_toplevel(),
-        n_total = 0,
-        n_atdb = 0,
+        n_total=0,
+        n_atdb=0,
     )
+
+@pytest.mark.parametrize(
+    "subjects",
+    [
+        [
+            _mock_subject(trust="st", access="a", file="/st/foo"),
+            _mock_subject(trust="st", access="a", file="/st/bar"),
+        ],
+        [
+            _mock_subject(trust="at", access="a", file="/at/foo"),
+            _mock_subject(trust="at", access="a", file="/at/bar"),
+        ],
+        [
+            _mock_subject(trust="u", access="a", file="/u/foo"),
+            _mock_subject(trust="u", access="a", file="/u/bar"),
+        ],
+    ],
+)
+def test_right_click_menu_and_select(subjects, widget):
+    widget.load_store(
+        subjects, systemTrust=_systemTrust, ancillaryTrust=_ancillaryTrust
+    )
+    view = widget.get_object("treeView")
+    selection = widget.get_object("treeSelection").select_all()
+    event = Gdk.EventButton
+    event.type = Gdk.EventType.BUTTON_PRESS 
+    event.button = 3
+    widget.on_view_button_press_event(widget, event)
+    next(iter(widget.fileChangeContextMenu.get_children())).activate()
+#on_view_button_press -> on_change_file_trust_activate -> __show_confirmation_dialog
