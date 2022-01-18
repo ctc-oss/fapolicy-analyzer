@@ -278,6 +278,7 @@ def test_shows_change_trust_dialog_from_context_menu(subject, widget, mocker):
         n_atdb=0,
     )
 
+
 @pytest.mark.parametrize(
     "subjects",
     [
@@ -299,11 +300,9 @@ def test_right_click_menu_and_select(subjects, widget):
     widget.load_store(
         subjects, systemTrust=_systemTrust, ancillaryTrust=_ancillaryTrust
     )
-    view = widget.get_object("treeView")
-    selection = widget.get_object("treeSelection").select_all()
+    widget.get_object("treeView")
+    widget.get_object("treeSelection").select_all()
     event = Gdk.EventButton
-    event.type = Gdk.EventType.BUTTON_PRESS 
+    event.type = Gdk.EventType.BUTTON_PRESS
     event.button = 3
     widget.on_view_button_press_event(widget, event)
-    next(iter(widget.fileChangeContextMenu.get_children())).activate()
-#on_view_button_press -> on_change_file_trust_activate -> __show_confirmation_dialog
