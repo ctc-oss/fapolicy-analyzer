@@ -238,6 +238,8 @@ class SubjectList(SearchableList):
                 self.fileChangeContextMenu.show_all()
                 self.fileChangeContextMenu.popup_at_pointer()
 
+            return True
+
     def on_reconcile_file_activate(self, *args):
         treeView = self.get_object("treeView")
         model, pathlist = treeView.get_selection().get_selected_rows()

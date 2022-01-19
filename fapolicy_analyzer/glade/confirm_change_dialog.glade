@@ -17,7 +17,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <interface>
-  <requires lib="gtk+" version="3.24"/>
+  <requires lib="gtk+" version="3.22"/>
   <object class="GtkDialog" id="confirmChangeDialog">
     <property name="can-focus">False</property>
     <property name="title" translatable="yes">Confirm Trust Changes</property>
