@@ -119,12 +119,6 @@ GET_GROUPS_LOG_ERROR_MSG = _(
     "An error occurred trying to retrieve the group list. Please try again."
 )
 
-CONFIRM_UNTRUST_SELECTION = _(
-    "Untrust selected files?"
-)
-CONFIRM_TRUST_SELECTION = _(
-    "Trust selected files?"
-)
 TRUST_DB_READ_FAILURE_DIALOG_TITLE = _("Trust Database")
 TRUST_DB_READ_FAILURE_DIALOG_TEXT = _(
     """

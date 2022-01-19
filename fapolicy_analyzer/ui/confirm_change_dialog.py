@@ -14,10 +14,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from fapolicy_analyzer.ui.ui_widget import UIBuilderWidget
-from fapolicy_analyzer.ui.strings import (
-    CONFIRM_UNTRUST_SELECTION,
-    CONFIRM_TRUST_SELECTION
-)
+from fapolicy_analyzer.util.format import f
+from locale import gettext as _
 
 
 class ConfirmChangeDialog(UIBuilderWidget):
@@ -30,11 +28,10 @@ class ConfirmChangeDialog(UIBuilderWidget):
         textView = self.get_object("confirmInfo")
         textBuffer = textView.get_buffer()
 
-        if n_atdb:
-            n_stdb = n_total - n_atdb
-            display_text = f"""{n_total} files will be untrusted.
-             {n_stdb} files from the System Trust Database will be unaffected. """ + CONFIRM_UNTRUST_SELECTION
+        if n_atdb > 0:
+            display_text = f(_("""{n_total} files will be untrusted.
+ {n_total - n_atdb} files from the System Trust Database will be unaffected. Untrust selected files?"""))
         else:
-            display_text = f"{n_total} files will be trusted. " + CONFIRM_TRUST_SELECTION
+            display_text = f(_("{n_total} files will be trusted. Trust selected files?"))
 
         textBuffer.set_text(display_text)

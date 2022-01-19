@@ -156,21 +156,19 @@ class SubjectList(SearchableList):
         if changeset:
             dispatch(apply_changesets(changeset))
 
-    def __show_confirmation_dialog(self, subjects):
+    def __apply_changeset_with_dialog(self, subjects):
         n_subjects = len(subjects)
         n_atdb = 0
         changeset = Changeset()
         for subject in subjects:
             dbtrust = self.__find_db_trust(subject)
             path = subject.file
-
             if dbtrust:
                 if dbtrust.status.lower() == "t":
                     if subject.trust.lower() == "at":
                         changeset.del_trust(path)
                         n_atdb += 1
-                else:
-                    changeset.add_trust(path)
+
             else:
                 changeset.add_trust(path)
 
@@ -178,7 +176,6 @@ class SubjectList(SearchableList):
         confirmationDialog = ConfirmChangeDialog(parent=parent, n_total=n_subjects, n_atdb=n_atdb).get_ref()
         confirm = confirmationDialog.run()
         confirmationDialog.destroy()
-
         if confirm == 1:
             dispatch(apply_changesets(changeset))
 
@@ -248,4 +245,4 @@ class SubjectList(SearchableList):
         self.__show_reconciliation_dialog(subject)
 
     def on_change_file_trust_activate(self, *args):
-        self.__show_confirmation_dialog(self.selection)
+        self.__apply_changeset_with_dialog(self.selection)
