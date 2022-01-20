@@ -82,7 +82,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             "object": None,
         }
 
-        user_tabs = self.get_object("user_tabs")
+        user_tabs = self.get_object("userTabs")
         self.user_list = ACLList(label=USER_LABEL, label_plural=USERS_LABEL)
         self.group_list = ACLList(label=GROUP_LABEL, label_plural=GROUPS_LABEL)
         user_tabs.append_page(self.user_list.get_ref(), Gtk.Label(label="User"))
@@ -93,13 +93,13 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             Gtk.Label(label="All"),
         )
 
-        subject_tabs = self.get_object("subject_tabs")
+        subject_tabs = self.get_object("subjectTabs")
         self.subject_list = SubjectList()
         subject_tabs.append_page(
             self.subject_list.get_ref(), Gtk.Label(label="Subject")
         )
 
-        object_tabs = self.get_object("object_tabs")
+        object_tabs = self.get_object("objectTabs")
         self.object_list = ObjectList()
         self.object_list.file_selection_changed += self.on_object_selection_changed
         object_tabs.append_page(self.object_list.get_ref(), Gtk.Label(label="Object"))
@@ -447,6 +447,9 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
 
     def on_object_selection_changed(self, data):
         object = data[-1].file if data else None
+        if object == self.__selection_state["object"]:
+            return
+
         self.__selection_state["object"] = object
         objectDetails = self.get_object("objectDetails")
         objectDetails.get_buffer().set_text(fs.stat(object) if object else "")
@@ -459,7 +462,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         self.__selection_state = dict.fromkeys(self.__selection_state, None)
         self.__populate_objects()
 
-    def on_user_tabs_switch_page(self, notebook, page, page_num):
+    def on_userTabs_switch_page(self, notebook, page, page_num):
         if page_num != 0:
             self.user_list.unselect_all_rows()
         if page_num != 1:

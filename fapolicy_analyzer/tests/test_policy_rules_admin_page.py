@@ -115,22 +115,22 @@ def widget(mock_dispatch, mock_system_features, mocker, states):
 
 @pytest.fixture
 def userListView(widget):
-    return widget.userList.get_object("treeView")
+    return widget.user_list.get_object("treeView")
 
 
 @pytest.fixture
 def groupListView(widget):
-    return widget.groupList.get_object("treeView")
+    return widget.group_list.get_object("treeView")
 
 
 @pytest.fixture
 def subjectListView(widget):
-    return widget.subjectList.get_object("treeView")
+    return widget.subject_list.get_object("treeView")
 
 
 @pytest.fixture
 def objectListView(widget):
-    return widget.objectList.get_object("treeView")
+    return widget.object_list.get_object("treeView")
 
 
 @pytest.fixture
@@ -140,8 +140,8 @@ def activeSwitcherButton(widget):
     return next(
         iter(
             [
-                *widget.userList.get_action_buttons()[0:],
-                *widget.subjectList.get_action_buttons()[1:],
+                *widget.user_list.get_action_buttons()[0:],
+                *widget.subject_list.get_action_buttons()[1:],
             ]
         )
     )
@@ -345,7 +345,7 @@ def test_updates_subject_details(widget, mocker):
 def test_updates_object_details(widget, mocker):
     mocker.patch("ui.policy_rules_admin_page.fs.stat", return_value="foo")
     textBuffer = widget.get_object("objectDetails").get_buffer()
-    widget.on_object_selection_changed(MagicMock(file=""))
+    widget.on_object_selection_changed(MagicMock(file="baz"))
     assert (
         textBuffer.get_text(
             textBuffer.get_start_iter(), textBuffer.get_end_iter(), True
@@ -359,7 +359,7 @@ def test_updates_object_details(widget, mocker):
 )
 def test_handles_empty_acl_select(widget, view, subjectListView):
     view.get_selection().select_path(Gtk.TreePath.new_first())
-    assert widget.subjectList.get_ref().get_sensitive()
+    assert widget.subject_list.get_ref().get_sensitive()
     assert len([x for x in subjectListView.get_model()]) > 0
     view.get_selection().unselect_all()
     textBuffer = widget.get_object("userDetails").get_buffer()
@@ -369,7 +369,7 @@ def test_handles_empty_acl_select(widget, view, subjectListView):
         )
         == ""
     )
-    assert not widget.subjectList.get_ref().get_sensitive()
+    assert not widget.subject_list.get_ref().get_sensitive()
     assert len([x for x in subjectListView.get_model()]) == 0
 
 
@@ -387,7 +387,7 @@ def test_handles_empty_subject_select(
         )
         != 0
     )
-    assert widget.objectList.get_ref().get_sensitive()
+    assert widget.object_list.get_ref().get_sensitive()
     assert len([x for x in objectListView.get_model()]) > 0
 
     subjectListView.get_selection().unselect_all()
@@ -399,7 +399,7 @@ def test_handles_empty_subject_select(
         )
         == 0
     )
-    assert not widget.objectList.get_ref().get_sensitive()
+    assert not widget.object_list.get_ref().get_sensitive()
     assert len([x for x in objectListView.get_model()]) == 0
 
 

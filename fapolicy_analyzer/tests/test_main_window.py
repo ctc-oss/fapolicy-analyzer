@@ -30,7 +30,7 @@ from redux import Action
 from rx import create
 from rx.subject import Subject
 from ui.actions import ADD_NOTIFICATION
-from ui.main_window import MainWindow, router, ServiceStatus
+from ui.main_window import MainWindow, ServiceStatus, router
 from ui.session_manager import NotificationType, sessionManager
 from ui.store import init_store
 from ui.strings import AUTOSAVE_RESTORE_ERROR_MSG
@@ -423,7 +423,9 @@ def test_on_start_w_failed_restore(mock_dispatch, mocker):
 def test_toolbar_deploy_operation(mainWindow, mocker):
     mocker.patch("ui.operations.deploy_changesets_op.get_system_feature")
     mockDeploy = mocker.patch("ui.main_window.DeployChangesetsOp.run")
-    mainWindow.get_object("deployChanges").get_child().clicked()
+    tool_bar = MainWindow().get_object("appArea").get_children()[1]
+    deploy_btn = tool_bar.get_nth_item(0)
+    deploy_btn.get_child().clicked()
     mockDeploy.assert_called_once()
 
 
@@ -434,12 +436,13 @@ def test_toggles_deploy_changes_toolbar_btn(mocker):
         return_value=system_features_mock,
     )
     init_store(mock_System())
-    deployBtn = MainWindow().get_object("deployChanges")
-    assert not deployBtn.get_sensitive()
+    tool_bar = MainWindow().get_object("appArea").get_children()[1]
+    deploy_btn = tool_bar.get_nth_item(0)
+    assert not deploy_btn.get_sensitive()
     system_features_mock.on_next({"changesets": ["foo"]})
-    assert deployBtn.get_sensitive()
+    assert deploy_btn.get_sensitive()
     system_features_mock.on_next({"changesets": []})
-    assert not deployBtn.get_sensitive()
+    assert not deploy_btn.get_sensitive()
 
 
 def test_toggles_dirty_title(mocker):
