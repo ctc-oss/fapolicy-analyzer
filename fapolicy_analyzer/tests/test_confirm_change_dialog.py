@@ -22,6 +22,7 @@ from ui.confirm_change_dialog import ConfirmChangeDialog
 from fapolicy_analyzer.util.format import f
 from locale import gettext as _
 
+
 def test_creates_widget():
     widget = ConfirmChangeDialog(parent=Gtk.Window())
     assert type(widget) is ConfirmChangeDialog
