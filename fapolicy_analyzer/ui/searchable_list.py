@@ -125,6 +125,9 @@ class SearchableList(UIBuilderWidget, Events):
         for p in paths:
             selection.select_path(p)
 
+    def unselect_all_rows(self):
+        self.treeView.get_selection().unselect_all()
+
     def find_selected_row_by_data(
         self, column_data: Any, data_index: int
     ) -> Gtk.TreePath:
