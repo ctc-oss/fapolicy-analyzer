@@ -19,11 +19,8 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from ui.confirm_change_dialog import ConfirmChangeDialog
 
-from fapolicy_analyzer.ui.strings import (
-    CONFIRM_UNTRUST_SELECTION,
-    CONFIRM_TRUST_SELECTION
-)
-
+from fapolicy_analyzer.util.format import f
+from locale import gettext as _
 
 def test_creates_widget():
     widget = ConfirmChangeDialog(parent=Gtk.Window())
@@ -37,7 +34,7 @@ def test_confirm_trust_dialog_message():
     start = buff.get_start_iter()
     end = buff.get_end_iter()
     dialog_string = buff.get_text(start, end, False)
-    assert_string = f"{n_files} files will be trusted. " + CONFIRM_TRUST_SELECTION
+    assert_string = f(_("{n_files} files will be trusted. Trust selected files?"))
     assert dialog_string == assert_string
 
 
@@ -48,6 +45,6 @@ def test_confirm_untrust_dialog_message():
     start = buff.get_start_iter()
     end = buff.get_end_iter()
     dialog_string = buff.get_text(start, end, False)
-    assert_string = f"""{n_files} files will be untrusted.
-             {n_ancillary} files from the System Trust Database will be unaffected. """ + CONFIRM_UNTRUST_SELECTION
+    assert_string = f(_("""{n_files} files will be untrusted.
+ {n_ancillary} files from the System Trust Database will be unaffected. Untrust selected files?"""))
     assert dialog_string == assert_string

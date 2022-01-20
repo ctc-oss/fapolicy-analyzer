@@ -27,7 +27,6 @@ class ConfirmChangeDialog(UIBuilderWidget):
 
         textView = self.get_object("confirmInfo")
         textBuffer = textView.get_buffer()
-
         if n_atdb > 0:
             display_text = f(_("""{n_total} files will be untrusted.
  {n_total - n_atdb} files from the System Trust Database will be unaffected. Untrust selected files?"""))

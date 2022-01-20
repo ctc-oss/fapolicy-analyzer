@@ -162,21 +162,21 @@ class SubjectList(SearchableList):
         changeset = Changeset()
         for subject in subjects:
             dbtrust = self.__find_db_trust(subject)
-            path = subject.file
             if dbtrust:
                 if dbtrust.status.lower() == "t":
                     if subject.trust.lower() == "at":
-                        changeset.del_trust(path)
+                        changeset.del_trust(subject.file)
                         n_atdb += 1
 
             else:
-                changeset.add_trust(path)
+                changeset.add_trust(subject.file)
 
         parent = self.get_ref().get_toplevel()
         confirmationDialog = ConfirmChangeDialog(parent=parent, n_total=n_subjects, n_atdb=n_atdb).get_ref()
         confirm = confirmationDialog.run()
         confirmationDialog.destroy()
         if confirm == 1:
+
             dispatch(apply_changesets(changeset))
 
     def _update_tree_count(self, count):
@@ -218,10 +218,8 @@ class SubjectList(SearchableList):
                     dbtrust = self.__find_db_trust(subject)
                     self.selection.append(subject)
                     if dbtrust:
-                        if dbtrust.status.lower() == "t":
+                        if dbtrust.status.lower() == "t" and subject.trust.lower() == "at":
                             n_trust += 1
-                        else:
-                            n_untrust += 1
                     else:
                         n_untrust += 1
 
