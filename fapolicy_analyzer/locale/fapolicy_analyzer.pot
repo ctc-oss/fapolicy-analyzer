@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fapolicy-analyzer snapshot\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-01-13 11:49-0500\n"
+"POT-Creation-Date: 2022-01-21 10:10-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,19 +18,37 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.9.1\n"
 
-#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:89
-#: fapolicy_analyzer/ui/system_trust_database_admin.py:99
+#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:94
+#: fapolicy_analyzer/ui/system_trust_database_admin.py:103
 msgid ""
 "File: {trust.path}\n"
 "Size: {trust.size}\n"
 "SHA256: {trust.hash}"
 msgstr ""
 
-#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:99
-#: fapolicy_analyzer/ui/system_trust_database_admin.py:108
+#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:104
+#: fapolicy_analyzer/ui/system_trust_database_admin.py:112
 msgid ""
 "{fs.stat(trust.path)}\n"
 "SHA256: {fs.sha(trust.path)}"
+msgstr ""
+
+#: fapolicy_analyzer/ui/confirm_change_dialog.py:37
+msgid "{deletions} file{plural(deletions)} will be untrusted."
+msgstr ""
+
+#: fapolicy_analyzer/ui/confirm_change_dialog.py:42
+msgid "{additions} file{plural(additions)} will be trusted."
+msgstr ""
+
+#: fapolicy_analyzer/ui/confirm_change_dialog.py:48
+msgid ""
+"{total - (total_changes)} file{plural(total - (total_changes))} from the "
+"System Trust Database will be unaffected."
+msgstr ""
+
+#: fapolicy_analyzer/ui/confirm_change_dialog.py:58
+msgid "Do you wish to continue?"
 msgstr ""
 
 #: fapolicy_analyzer/ui/deploy_confirm_dialog.py:44
@@ -268,27 +286,27 @@ msgid "An error occurred trying to retrieve the group list. Please try again."
 msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:122
-msgid "Trust Database Read Failure"
+msgid "Trust Database"
 msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:123
 msgid ""
 "\n"
-"              The fapolicyd trusted resources database\n"
-"                   could not be opened and/or read.\n"
+"The fapolicyd trusted resources database\n"
+"could not be opened and/or read.\n"
 "\n"
-"                   Typical reasons for this failure:\n"
+"Typical reasons for this failure:\n"
 "\n"
-"    1. The user does not have read permissions to access\n"
-"               the database directory or its contents.\n"
-"                    [Default: /var/lib/fapolicyd]\n"
+"1. The user does not have read permissions to access\n"
+"the database directory or its contents.\n"
+"[Default: /var/lib/fapolicyd]\n"
 "\n"
-"    2. The database does not exist or was not initialized.\n"
+"2. The database does not exist or was not initialized.\n"
 "\n"
-"           Either the fapolicyd daemon package has not been\n"
-"       installed or if installed, has not been executed. The first\n"
-"           execution of the fapolicyd daemon will create and\n"
-"                     populate the trust database.\n"
+"Either the fapolicyd daemon package has not been\n"
+"installed or if installed, has not been executed. The first\n"
+"execution of the fapolicyd daemon will create and\n"
+"populate the trust database.\n"
 "    "
 msgstr ""
 
@@ -317,6 +335,23 @@ msgstr ""
 #: fapolicy_analyzer/glade/ancillary_trust_database_admin.glade:75
 #: fapolicy_analyzer/glade/trust_reconciliation_dialog.glade:54
 msgid "Untrust"
+msgstr ""
+
+#: fapolicy_analyzer/glade/confirm_change_dialog.glade:23
+msgid "Confirm Trust Changes"
+msgstr ""
+
+#: fapolicy_analyzer/glade/confirm_change_dialog.glade:37
+msgid "Yes"
+msgstr ""
+
+#: fapolicy_analyzer/glade/confirm_change_dialog.glade:50
+msgid "No"
+msgstr ""
+
+#: fapolicy_analyzer/glade/confirm_change_dialog.glade:63
+#: fapolicy_analyzer/glade/trust_reconciliation_dialog.glade:67
+msgid "Cancel"
 msgstr ""
 
 #: fapolicy_analyzer/glade/deploy_confirm_dialog.glade:27
@@ -381,7 +416,7 @@ msgstr ""
 msgid "x"
 msgstr ""
 
-#: fapolicy_analyzer/glade/searchable_list.glade:126
+#: fapolicy_analyzer/glade/searchable_list.glade:125
 msgid "page0"
 msgstr ""
 
@@ -389,8 +424,8 @@ msgstr ""
 msgid "Initializing File Access Policy Analyzer..."
 msgstr ""
 
-#: fapolicy_analyzer/glade/system_trust_database_admin.glade:61
-msgid "Add File To Ancillary Trust Database"
+#: fapolicy_analyzer/glade/system_trust_database_admin.glade:60
+msgid "Add To Ancillary Trust Database"
 msgstr ""
 
 #: fapolicy_analyzer/glade/trust_file_details.glade:60
@@ -407,10 +442,6 @@ msgstr ""
 
 #: fapolicy_analyzer/glade/trust_reconciliation_dialog.glade:24
 msgid "Trust Reconsiliation"
-msgstr ""
-
-#: fapolicy_analyzer/glade/trust_reconciliation_dialog.glade:67
-msgid "Cancel"
 msgstr ""
 
 #: fapolicy_analyzer/glade/unapplied_changes_dialog.glade:25

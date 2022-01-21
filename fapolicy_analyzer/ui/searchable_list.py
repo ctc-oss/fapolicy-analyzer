@@ -34,6 +34,7 @@ class SearchableList(UIBuilderWidget, Events):
         defaultSortIndex=0,
         defaultSortDirection=Gtk.SortType.DESCENDING,
         view_headers_visible=True,
+        selection_type="single",
     ):
         UIBuilderWidget.__init__(self, "searchable_list")
         Events.__init__(self)
@@ -46,6 +47,11 @@ class SearchableList(UIBuilderWidget, Events):
         self.treeView.set_headers_visible(view_headers_visible)
         for column in columns:
             self.treeView.append_column(column)
+
+        if selection_type == "multi":
+            self.treeSelection = self.get_object("treeSelection")
+            self.treeSelection.set_mode(Gtk.SelectionMode.MULTIPLE)
+            self.treeView.set_rubber_banding(True)
 
         self.search = self.get_object("search")
         self.viewSwitcher = self.get_object("viewStack")
@@ -80,7 +86,6 @@ class SearchableList(UIBuilderWidget, Events):
 
         sortableModel = apply_prev_sort(Gtk.TreeModelSort(model=self.treeViewFilter))
         self.treeView.set_model(sortableModel)
-
         self.treeView.get_selection().connect("changed", self.on_view_selection_changed)
         self._update_tree_count(self.__get_tree_count())
         self.set_loading(False)
@@ -114,8 +119,8 @@ class SearchableList(UIBuilderWidget, Events):
         return self.get_object("actionButtons").get_children()
 
     def on_view_selection_changed(self, selection):
-        model, treeiter = selection.get_selected()
-        data = model[treeiter] if model and treeiter else []
+        model, treeiter = selection.get_selected_rows()
+        data = [model[i] for i in treeiter] if model and treeiter else []
         self.selection_changed(data)
 
     def on_search_changed(self, search):
