@@ -14,73 +14,127 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 # Makefile -  execution wrapper for common fapolicy-analyzer development tasks
+#
+# Developer note: If any new targets are added to this file, pls add a
+#   description comment immediately preceding the target:dependency line so
+#   that the list-all extraction scripting can work correctly.
+#
+GRN=\033[0;32m
+RED=\033[0;31m
+NC=\033[0m # No Color
 
+# List the common developer targets
 list:
 	@echo
 	@echo "  Usage: make [target]"
 	@echo
 	@echo "       fapolicy-analyzer - High level common operation targets"
 	@echo
-	@echo "     list    - Display common development targets"
-	@echo "     dev-shell  - Install deps, build bindings, start venv shell"
-	@echo "     run     - Execute the fapolicy-analyzer"
-	@echo "     listall - Display all targets"
-	@echo "    "
+	@echo "     list     - Display common development targets"
+	@echo "     shell    - Install deps, build bindings, start venv shell"
+	@echo "     run      - Execute the fapolicy-analyzer"
+	@echo "     test     - Execute all unit-tests"
+	@echo "     lint     - Execute source code linting tools"
+	@echo "     format   - Execute source code formatting"
+	@echo "     check    - Perform pre-git push tests and formatting"
+	@echo "     list-all - Display all targets"
+	@echo
+	@echo "     Note: Options can be passed to fapolicy-analyzer by"
+	@echo "           setting the OPTIONS environment variable, for example"
+	@echo "             $$ OPTIONS='-v' make run"
+	@echo
+	@echo "     Note: Errors stop make, ignore them with the '-k' option:"
+	@echo "             $$ make -k [target]"
+	@echo
 
 ###############################################################################
 # Development environment population and creation
-dev-shell: pipenv-install pybindings
+# Start a shell session in a python virtual environment
+shell: install build
 	@echo
-	@echo "--- Starting a fapolicy-analyzer development shell"
+	@echo -e "${GRN}--- Starting a fapolicy-analyzer development shell${NC}"
 	pipenv shell
-	@echo "--- Development shell terminated"
+	@echo -e "${GRN}--- Development shell terminated${NC}"
 
-dev-env: pipenv-install pybindings
+# Update the virtual environment suitable for pipenv run
+env: install build
+	@echo -e "${GRN}--- Updating the virtual environment complete${NC}"
 
-pipenv-install:
-	@echo "  |--- Installing pipenv dependencies..."
+# Install python dependencies into the virtual environment
+install:
+	@echo -e "${GRN}  |--- Installing pipenv dependencies...${NC}"
 	pipenv install --dev
 
-pybindings: pipenv-install
-	@echo "  |--- Generating python bindings..."
+# Build the python/rust bindings
+build: install
+	@echo -e "${GRN}  |--- Generating python bindings...${NC}"
 	pipenv run python setup.py develop
 
 ###############################################################################
 # fapolicy-analyzer execution
-run: dev-env
-	pipenv run python -m fapolicy_analyzer.ui
-
-run-verbose: dev-env
-	pipenv run python -m fapolicy_analyzer.ui -v
+# Execute fapolicy-analyzer [OPTIONS]
+run: env
+	pipenv run python -m fapolicy_analyzer.ui ${OPTIONS}
 
 ###############################################################################
 # Development unit-testing and source code style tools
-test: 
-	@echo "--- Invoking pytest unit-test suite"
+# Execute the full unit-test suite
+test: pytest cargo-test
+	@echo -e "${GRN}--- Testing complete.${NC}"
+
+# Execute the python unit tests
+pytest: build
+	@echo -e "${GRN}  |--- Python unit-testing: Invoking pytest...${NC}"
 	pipenv run xvfb-run -a pytest -s --cov fapolicy_analyzer/
 
-format: pyformat rsformat
-	@echo "--- Invoking formatting tools"
+# Execute the Rust unit-tests
+cargo-test: build
+	@echo -e "${GRN}  |--- Rust unit-testing: Invoking cargo test...${NC}"
+	cargo test --all
 
+# Format project source code
+format: pyformat cargo-fmt
+	@echo -e "${GRN}--- Formatting complete${NC}"
+
+# Format python source code
 pyformat:
+	@echo -e "${GRN}  |--- Python formating...${NC}"
 	pipenv run black fapolicy_analyzer/
 
-rsformat:
+# Format rust source code
+cargo-fmt:
+	@echo -e "${GRN}-  |--- Rust formatting...${NC}"
 	pipenv run cargo fmt
 
-lint: pylint rslint
-	@echo "--- Source linting completed"
+# Perform linting on the project source code
+lint: pylint clippy
+	@echo -e "${GRN}--- Source linting complete${NC}"
 
+# Perform linting on the Python source code
 pylint:
-	@echo "  |--- Python linting..."
+	@echo -e "${GRN}-  |--- Python linting...${NC}"
 	pipenv run flake8 fapolicy_analyzer/
 
-rslint:
-	@echo "  |--- Rust linting..."
+# Perform linting on the rust source code
+clippy:
+	@echo -e "${GRN}-  |--- Rust linting...${NC}"
 	pipenv run cargo clippy --all
 
-
-pushprep: format lint test
-	@echo "--- Pre-Push checks"
+# Perform pre- git push unit-testing, formating, and linting
+check: format lint test
+	@echo -e "${GRN}--- Pre-Push checks complete${NC}"
 	git status
 
+# Display all Makefile targets
+list-all:
+	@echo
+	@echo -e "${GRN}---Displaying all fapolicy-analyzer targets${NC}"
+	@echo
+	# Input to the loop is a list of targets extracted from this Makefile
+	@for t in `grep -E -o '^[^#].+*:' Makefile | egrep -v 'echo|@'`;\
+	do # Output the target w/o a newline\
+	echo -e -n "$$t    \t";\
+	# grep the Makefile for the target; print line immediately preceding it\
+	grep  -B1 "^$$t" Makefile | head -1 | sed 's/\#//';\
+	done
+	@echo
