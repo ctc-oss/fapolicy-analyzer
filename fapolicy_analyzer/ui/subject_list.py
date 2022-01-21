@@ -156,27 +156,20 @@ class SubjectList(SearchableList):
         if changeset:
             dispatch(apply_changesets(changeset))
 
-    def __apply_changeset_with_dialog(self, subjects):
-        n_subjects = len(subjects)
-        n_atdb = 0
-        changeset = Changeset()
-        for subject in subjects:
-            dbtrust = self.__find_db_trust(subject)
-            if dbtrust:
-                if dbtrust.status.lower() == "t":
-                    if subject.trust.lower() == "at":
-                        changeset.del_trust(subject.file)
-                        n_atdb += 1
-
-            else:
-                changeset.add_trust(subject.file)
-
+    def __apply_changeset_with_dialog(self, total_selections, changeset):
+        action_items = changeset.get_path_action_map().items()
+        additions = len([k for k, v in action_items if v.lower() == "add"])
+        deletions = len([k for k, v in action_items if v.lower() == "del"])
         parent = self.get_ref().get_toplevel()
-        confirmationDialog = ConfirmChangeDialog(parent=parent, n_total=n_subjects, n_atdb=n_atdb).get_ref()
+        confirmationDialog = ConfirmChangeDialog(
+            parent=parent,
+            total=total_selections,
+            additions=additions,
+            deletions=deletions,
+        ).get_ref()
         confirm = confirmationDialog.run()
         confirmationDialog.destroy()
-        if confirm == 1:
-
+        if confirm == Gtk.ResponseType.YES:
             dispatch(apply_changesets(changeset))
 
     def _update_tree_count(self, count):
@@ -209,26 +202,47 @@ class SubjectList(SearchableList):
             if n_paths == 1:
                 self.reconcileContextMenu.popup_at_pointer()
             elif n_paths > 1:
-                self.fileChangeContextMenu.remove(self.fileChangeContextMenu.trustItem)
-                self.fileChangeContextMenu.remove(self.fileChangeContextMenu.untrustItem)
-                n_trust, n_untrust = 0, 0
-                self.selection = []
-                for path in pathlist:
-                    subject = model.get_value(model.get_iter(path), 3)
-                    dbtrust = self.__find_db_trust(subject)
-                    self.selection.append(subject)
-                    if dbtrust:
-                        if dbtrust.status.lower() == "t" and subject.trust.lower() == "at":
-                            n_trust += 1
-                    else:
-                        n_untrust += 1
+                trustable, untrustable = 0, 0
+                subjects = [model.get_value(model.get_iter(p), 3) for p in pathlist]
+                changeset = Changeset()
+                for subject in subjects:
+                    status = (
+                        dbtrust.status.lower()
+                        if (dbtrust := self.__find_db_trust(subject))
+                        else None
+                    )
+                    if not status or status == "d":
+                        changeset.add_trust(subject.file)
+                        trustable += 1
+                    elif status == "t" and subject.trust.lower() == "at":
+                        changeset.del_trust(subject.file)
+                        untrustable += 1
 
-                if n_paths == n_trust:
-                    self.fileChangeContextMenu.append(self.fileChangeContextMenu.untrustItem)
-                elif n_paths == n_untrust:
-                    self.fileChangeContextMenu.append(self.fileChangeContextMenu.trustItem)
+                self.fileChangeContextMenu.remove(self.fileChangeContextMenu.trustItem)
+                self.fileChangeContextMenu.remove(
+                    self.fileChangeContextMenu.untrustItem
+                )
+                self.fileChangeContextMenu.trustItem.selection_data = None
+                self.fileChangeContextMenu.untrustItem.selection_data = None
+
+                if untrustable and not trustable:
+                    self.fileChangeContextMenu.append(
+                        self.fileChangeContextMenu.untrustItem
+                    )
+                    self.fileChangeContextMenu.untrustItem.selection_data = (
+                        len(subjects),
+                        changeset,
+                    )
+                elif trustable and not untrustable:
+                    self.fileChangeContextMenu.append(
+                        self.fileChangeContextMenu.trustItem
+                    )
+                    self.fileChangeContextMenu.trustItem.selection_data = (
+                        len(subjects),
+                        changeset,
+                    )
                 else:
-                    return
+                    return True
 
                 self.fileChangeContextMenu.show_all()
                 self.fileChangeContextMenu.popup_at_pointer()
@@ -242,5 +256,5 @@ class SubjectList(SearchableList):
         subject = model.get_value(iter_, 3)
         self.__show_reconciliation_dialog(subject)
 
-    def on_change_file_trust_activate(self, *args):
-        self.__apply_changeset_with_dialog(self.selection)
+    def on_change_file_trust_activate(self, menu_item):
+        self.__apply_changeset_with_dialog(*menu_item.selection_data)

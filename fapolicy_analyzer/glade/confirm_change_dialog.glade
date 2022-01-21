@@ -96,8 +96,8 @@
       </object>
     </child>
     <action-widgets>
-      <action-widget response="1">yesButton</action-widget>
-      <action-widget response="0">noButton</action-widget>
+      <action-widget response="-8">yesButton</action-widget>
+      <action-widget response="-9">noButton</action-widget>
       <action-widget response="-6">cancelButton</action-widget>
     </action-widgets>
   </object>

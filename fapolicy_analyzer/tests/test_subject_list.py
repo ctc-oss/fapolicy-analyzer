@@ -27,7 +27,7 @@ from unittest.mock import MagicMock
 from callee.attributes import Attrs
 from callee.types import InstanceOf
 from fapolicy_analyzer import Changeset
-from gi.repository import Gtk, Gdk
+from gi.repository import Gdk, Gtk
 from redux import Action
 from ui.actions import APPLY_CHANGESETS
 from ui.configs import Colors
@@ -271,11 +271,11 @@ def test_shows_change_trust_dialog_from_context_menu(subject, widget, mocker):
     )
     view = widget.get_object("treeView")
     view.get_selection().select_all()
-    next(iter(widget.fileChangeContextMenu.get_children())).activate()
+    menu_item = next(iter(widget.fileChangeContextMenu.get_children()))
+    menu_item.selection_data = (1, Changeset())
+    menu_item.activate()
     mockDialog.assert_called_once_with(
-        parent=widget.get_ref().get_toplevel(),
-        n_total=0,
-        n_atdb=0,
+        parent=widget.get_ref().get_toplevel(), total=1, additions=0, deletions=0
     )
 
 

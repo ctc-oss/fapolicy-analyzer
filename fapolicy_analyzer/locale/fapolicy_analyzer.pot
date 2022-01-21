@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fapolicy-analyzer snapshot\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-01-18 08:49-0600\n"
+"POT-Creation-Date: 2022-01-21 10:10-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -31,6 +31,24 @@ msgstr ""
 msgid ""
 "{fs.stat(trust.path)}\n"
 "SHA256: {fs.sha(trust.path)}"
+msgstr ""
+
+#: fapolicy_analyzer/ui/confirm_change_dialog.py:37
+msgid "{deletions} file{plural(deletions)} will be untrusted."
+msgstr ""
+
+#: fapolicy_analyzer/ui/confirm_change_dialog.py:42
+msgid "{additions} file{plural(additions)} will be trusted."
+msgstr ""
+
+#: fapolicy_analyzer/ui/confirm_change_dialog.py:48
+msgid ""
+"{total - (total_changes)} file{plural(total - (total_changes))} from the "
+"System Trust Database will be unaffected."
+msgstr ""
+
+#: fapolicy_analyzer/ui/confirm_change_dialog.py:58
+msgid "Do you wish to continue?"
 msgstr ""
 
 #: fapolicy_analyzer/ui/deploy_confirm_dialog.py:44
@@ -268,18 +286,10 @@ msgid "An error occurred trying to retrieve the group list. Please try again."
 msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:122
-msgid "Untrust selected files?"
-msgstr ""
-
-#: fapolicy_analyzer/ui/strings.py:125
-msgid "Trust selected files?"
-msgstr ""
-
-#: fapolicy_analyzer/ui/strings.py:128
 msgid "Trust Database"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:129
+#: fapolicy_analyzer/ui/strings.py:123
 msgid ""
 "\n"
 "The fapolicyd trusted resources database\n"
