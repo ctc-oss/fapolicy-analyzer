@@ -19,6 +19,7 @@ from os import path, geteuid, getenv
 
 from enum import Enum
 from fapolicy_analyzer import Handle
+from fapolicy_analyzer import __version__ as app_version
 
 import fapolicy_analyzer.ui.strings as strings
 import gi
@@ -298,6 +299,7 @@ class MainWindow(UIConnectedWidget):
     def on_aboutMenu_activate(self, *args):
         aboutDialog = self.get_object("aboutDialog")
         aboutDialog.set_transient_for(self.window)
+        aboutDialog.set_version(f"v{app_version}")
         aboutDialog.run()
         aboutDialog.hide()
 

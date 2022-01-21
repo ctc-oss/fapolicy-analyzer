@@ -16,6 +16,17 @@
 import os
 from setuptools import setup, find_namespace_packages
 from setuptools_rust import RustExtension
+import version
+
+
+def get_version():
+    if "VERSION" in os.environ:
+        return os.getenv("VERSION")
+    else:
+        meta = version.get_versions()
+        if "version" not in meta:
+            raise RuntimeError("Could not parse version from Git")
+        return meta["version"]
 
 
 #
@@ -23,7 +34,7 @@ from setuptools_rust import RustExtension
 #
 setup(
     name="fapolicy-analyzer",
-    version=os.getenv("VERSION", "snapshot"),
+    version=get_version(),
     packages=find_namespace_packages(
         include=["fapolicy_analyzer", "fapolicy_analyzer.*"], exclude=["*.tests"]
     ),
