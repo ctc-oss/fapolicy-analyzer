@@ -37,6 +37,10 @@ jobs:
           ref: ${{ github.ref }}
           fetch-depth: 0
 
+      - name: Generate package version
+        id: package_version
+        run: echo ::set-output name=TAG::$(./version.py)
+
       - name: Generate the standalone spec file from the template and args
         run: |
           mkdir -p $HOME/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
@@ -49,9 +53,12 @@ jobs:
           jinja2                          \
             -D pyrpm=${PYRPM}             \
             -D git_commit=${GIT_COMMIT}   \
+            -D app_version=${APP_VERSION} \
             -D rpm_version=${RPM_VERSION} \
             -D rpm_release=${RPM_RELEASE} \
             fapolicy-analyzer.spec.j2 > $HOME/rpmbuild/SPECS/fapolicy-analyzer.spec
+        env:
+          APP_VERSION: ${{ steps.package_version.outputs.TAG }}
         working-directory: scripts/rpm
 
       - name: Download package source
