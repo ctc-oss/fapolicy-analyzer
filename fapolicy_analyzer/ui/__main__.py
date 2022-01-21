@@ -23,6 +23,7 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from fapolicy_analyzer.util.xdg_utils import xdg_state_dir_prefix
+from fapolicy_analyzer import __version__ as app_version
 from .session_manager import sessionManager
 from .splash_screen import SplashScreen
 from .store import init_store
@@ -69,8 +70,13 @@ def _parse_cmdline():
         )
 
 
+def show_banner():
+    print(f"fapolicy-analyzer v{app_version}")
+
+
 def main():
     _parse_cmdline()
+    show_banner()
     init_store()
     SplashScreen()
     Gtk.main()
