@@ -19,7 +19,7 @@ from locale import gettext as _
 from os import getenv, geteuid, path
 from threading import Lock, Thread
 from time import sleep
-from typing import Any, Dict, List, Sequence
+from typing import Any
 
 import fapolicy_analyzer.ui.strings as strings
 import gi
@@ -140,44 +140,9 @@ class MainWindow(UIConnectedWidget):
         dialog.add_filter(fileFilterAny)
 
     def __pack_main_content(self, page: UIPage):
-        def merge_actions(
-            actions1: Dict[str, Sequence[UIAction]],
-            actions2: Dict[str, Sequence[UIAction]],
-        ) -> Dict[str, List[UIAction]]:
-            result = {k: [*v] for k, v in actions1.items()}  # copy actions 1
-            for k, v in actions2.items():
-                result[k] = [*result.get(k, []), *v]  # merge group from action 1 with 2
-            return result
-
-        def build_toolbar(actions: Dict[str, List[UIAction]]):
-            def remove_buttons(buttons):
-                for btn in buttons:
-                    btn.destroy()
-
-            def create_button(action: UIAction) -> Gtk.ToolButton:
-                btn = Gtk.ToolButton(
-                    label=action.name,
-                    icon_name=action.icon,
-                    tooltip_text=action.tooltip,
-                )
-                for signal, handler in action.signals.items():
-                    btn.connect(signal, handler)
-                return btn
-
-            toolbar = self.get_object("toolbar")
-            remove_buttons(toolbar.get_children())
-
-            for idx, k in enumerate(actions.keys()):
-                if idx > 0:
-                    toolbar.insert(Gtk.SeparatorToolItem(), -1)
-                for action in actions[k]:
-                    btn = create_button(action)
-                    toolbar.insert(btn, -1)
-            toolbar.show_all()
-
-        if self._page:
-            self._page.dispose()
-        self._page = page
+        if self.__page:
+            self.__page.dispose()
+        self.__page = page
         self.mainContent.pack_start(page.get_ref(), True, True, 0)
 
         actions = UIPage.merge_actions(self.__actions, page.actions)
