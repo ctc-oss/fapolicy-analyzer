@@ -68,7 +68,7 @@ class MainWindow(UIConnectedWidget):
         self.windowTopLevel = self.window.get_toplevel()
         self.strTopLevelTitle = self.windowTopLevel.get_title()
         self.fapdStatusLight = self.get_object("fapdStatusLight")
-        self._fapdControlPermitted = (geteuid() == 0)  # set if root user
+        self._fapdControlPermitted = geteuid() == 0  # set if root user
         self._fapdStartMenuItem = self.get_object("fapdStartMenu")
         self._fapdStopMenuItem = self.get_object("fapdStopMenu")
         self._fapd_status = ServiceStatus.UNKNOWN
@@ -337,7 +337,7 @@ class MainWindow(UIConnectedWidget):
         with DeployChangesetsOp(self.window) as op:
             op.run(self._changesets)
 
-# ###################### fapolicyd interfacing ##########################
+    # ###################### fapolicyd interfacing ##########################
     def on_fapdStartMenu_activate(self, menuitem, data=None):
         logging.debug("on_fapdStartMenu_activate() invoked.")
         if (self._fapd_status != ServiceStatus.UNKNOWN) and (self._fapd_lock.acquire()):
