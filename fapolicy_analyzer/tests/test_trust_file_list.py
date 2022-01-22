@@ -96,7 +96,7 @@ def test_fires_trust_selection_changed(widget):
     widget.trust_selection_changed += mockHandler
     view = widget.get_object("treeView")
     view.get_selection().select_path(Gtk.TreePath.new_first())
-    mockHandler.assert_called_with(_trust[0])
+    mockHandler.assert_called_with([_trust[0]])
 
 
 def test_epoch_to_string():
