@@ -326,7 +326,7 @@ class PolicyRulesAdminPage(UIConnectedWidget):
         )
 
     def on_user_selection_changed(self, secondaryAction, data):
-        uid = data[1] if data else None
+        uid = data[-1][1] if data else None
         if uid != self.selectedUser:
             self.selectedUser = uid
             self.selectedGroup = None
@@ -334,7 +334,7 @@ class PolicyRulesAdminPage(UIConnectedWidget):
             secondaryAction()
 
     def on_group_selection_changed(self, secondaryAction, data):
-        gid = data[1] if data else None
+        gid = data[-1][1] if data else None
         if gid != self.selectedGroup:
             self.selectedGroup = gid
             self.selectedUser = None
@@ -342,18 +342,17 @@ class PolicyRulesAdminPage(UIConnectedWidget):
             secondaryAction()
 
     def on_subject_selection_changed(self, secondaryAction, data):
-        subject = data.file if data else None
-        if subject == self.selectedSubject:
+        fileObj = data[-1].file if data else None
+        if fileObj == self.selectedSubject:
             return
-
-        self.selectedSubject = subject
+        self.selectedSubject = fileObj
         subjectDetails = self.get_object("subjectDetails")
-        subjectDetails.get_buffer().set_text(fs.stat(subject) if subject else "")
+        subjectDetails.get_buffer().set_text(fs.stat(fileObj) if fileObj else "")
         secondaryAction()
 
     def on_object_selection_changed(self, data):
         objectDetails = self.get_object("objectDetails")
-        objectDetails.get_buffer().set_text(fs.stat(data.file) if data else "")
+        objectDetails.get_buffer().set_text(fs.stat(data) if data else "")
 
     def on_switcher_button_clicked(self, switcher):
         switcher.set_as_secondary()

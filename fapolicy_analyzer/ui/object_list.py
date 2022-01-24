@@ -24,6 +24,7 @@ from .subject_list import SubjectList
 
 
 class ObjectList(SubjectList):
+
     def _columns(self):
         columns = super()._columns()
         modeCell = Gtk.CellRendererText()

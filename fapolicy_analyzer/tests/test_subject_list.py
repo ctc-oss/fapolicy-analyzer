@@ -27,7 +27,7 @@ from unittest.mock import MagicMock
 from callee.attributes import Attrs
 from callee.types import InstanceOf
 from fapolicy_analyzer import Changeset
-from gi.repository import Gtk
+from gi.repository import Gdk, Gtk
 from redux import Action
 from ui.actions import APPLY_CHANGESETS
 from ui.configs import Colors
@@ -160,7 +160,7 @@ def test_fires_file_selection_changed_event(widget):
     widget.load_store([mockData])
     view = widget.get_object("treeView")
     view.get_selection().select_path(Gtk.TreePath.new_first())
-    mockHandler.assert_called_with(mockData)
+    mockHandler.assert_called_with([mockData])
 
 
 @pytest.mark.parametrize(
@@ -244,10 +244,65 @@ def test_shows_reconciliation_dialog_from_context_menu(
     # select first item is list
     view.get_selection().select_path(Gtk.TreePath.new_first())
     # mock the reconile conext menu item click
-    next(iter(widget.contextMenu.get_children())).activate()
+    next(iter(widget.reconcileContextMenu.get_children())).activate()
 
     mockDialog.assert_called_once_with(
         subject,
         databaseTrust=databaseTrust,
         parent=widget.get_ref().get_toplevel(),
     )
+
+
+@pytest.mark.parametrize(
+    "subject",
+    [
+        _mock_subject(trust="st", access="a", file="/st/foo"),
+        _mock_subject(trust="at", access="a", file="/at/foo"),
+        _mock_subject(trust="u", access="a", file="/u/foo"),
+    ],
+)
+def test_shows_change_trust_dialog_from_context_menu(subject, widget, mocker):
+    mockDialog = mocker.patch(
+        "ui.subject_list.ConfirmChangeDialog",
+        return_value=MagicMock(get_ref=MagicMock(spec=Gtk.Widget)),
+    )
+    widget.load_store(
+        [subject], systemTrust=_systemTrust, ancillaryTrust=_ancillaryTrust
+    )
+    view = widget.get_object("treeView")
+    view.get_selection().select_all()
+    menu_item = next(iter(widget.fileChangeContextMenu.get_children()))
+    menu_item.selection_data = (1, Changeset())
+    menu_item.activate()
+    mockDialog.assert_called_once_with(
+        parent=widget.get_ref().get_toplevel(), total=1, additions=0, deletions=0
+    )
+
+
+@pytest.mark.parametrize(
+    "subjects",
+    [
+        [
+            _mock_subject(trust="st", access="a", file="/st/foo"),
+            _mock_subject(trust="st", access="a", file="/st/bar"),
+        ],
+        [
+            _mock_subject(trust="at", access="a", file="/at/foo"),
+            _mock_subject(trust="at", access="a", file="/at/bar"),
+        ],
+        [
+            _mock_subject(trust="u", access="a", file="/u/foo"),
+            _mock_subject(trust="u", access="a", file="/u/bar"),
+        ],
+    ],
+)
+def test_right_click_menu_and_select(subjects, widget):
+    widget.load_store(
+        subjects, systemTrust=_systemTrust, ancillaryTrust=_ancillaryTrust
+    )
+    widget.get_object("treeView")
+    widget.get_object("treeSelection").select_all()
+    event = Gdk.EventButton
+    event.type = Gdk.EventType.BUTTON_PRESS
+    event.button = 3
+    widget.on_view_button_press_event(widget, event)

@@ -10,6 +10,8 @@ use std::fmt::Display;
 use std::iter::Iterator;
 use std::str::FromStr;
 
+use chrono::{DateTime, Utc};
+
 use fapolicy_rules::*;
 
 use crate::events::parse::parse_event;
@@ -24,6 +26,7 @@ pub struct Event {
     pub pid: i32,
     pub subj: Subject,
     pub obj: Object,
+    pub when: Option<DateTime<Utc>>,
 }
 
 impl FromStr for Event {

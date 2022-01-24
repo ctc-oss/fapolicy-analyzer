@@ -22,6 +22,7 @@ from redux import Action, create_action
 
 INIT_SYSTEM = "INIT_SYSTEM"
 SYSTEM_INITIALIZED = "SYSTEM_INITIALIZED"
+ERROR_SYSTEM_INITIALIZATION = "ERROR_SYSTEM_INITIALIZATION"
 
 ADD_NOTIFICATION = "ADD_NOTIFICATION"
 REMOVE_NOTIFICATION = "REMOVE_NOTIFICATION"
@@ -184,3 +185,7 @@ def init_system() -> Action:
 
 def system_initialized() -> Action:
     return _create_action(SYSTEM_INITIALIZED)
+
+
+def system_initialization_error() -> Action:
+    return _create_action(ERROR_SYSTEM_INITIALIZATION)

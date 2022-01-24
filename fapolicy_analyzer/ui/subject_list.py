@@ -24,6 +24,7 @@ from more_itertools import first_true
 from .actions import apply_changesets
 from .add_file_button import AddFileButton
 from .configs import Colors
+from .confirm_change_dialog import ConfirmChangeDialog
 from .searchable_list import SearchableList
 from .store import dispatch
 from .strings import FILE_LABEL, FILES_LABEL
@@ -49,23 +50,37 @@ class SubjectList(SearchableList):
             add_button.get_ref(),
             searchColumnIndex=2,
             defaultSortIndex=2,
+            selection_type="multi",
         )
 
         self._systemTrust = []
         self._ancillaryTrust = []
-        self.contextMenu = self.__build_context_menu()
+        self.reconcileContextMenu = self.__build_reconcile_context_menu()
+        self.fileChangeContextMenu = self.__build_change_trust_context_menu()
         self.load_store([])
         self.selection_changed += self.__handle_selection_changed
         self.get_object("treeView").connect("row-activated", self.on_view_row_activated)
         self.get_object("treeView").connect(
             "button-press-event", self.on_view_button_press_event
         )
+        self.selection = []
 
-    def __build_context_menu(self):
+    def __build_reconcile_context_menu(self):
         menu = Gtk.Menu()
         reconcileItem = Gtk.MenuItem.new_with_label("Reconcile File")
         reconcileItem.connect("activate", self.on_reconcile_file_activate)
         menu.append(reconcileItem)
+        menu.show_all()
+        return menu
+
+    def __build_change_trust_context_menu(self):
+        menu = Gtk.Menu()
+        menu.trustItem = Gtk.MenuItem.new_with_label("Trust Files")
+        menu.untrustItem = Gtk.MenuItem.new_with_label("Untrust Files")
+        menu.trustItem.connect("activate", self.on_change_file_trust_activate)
+        menu.untrustItem.connect("activate", self.on_change_file_trust_activate)
+        menu.append(menu.trustItem)
+        menu.append(menu.untrustItem)
         menu.show_all()
         return menu
 
@@ -108,26 +123,26 @@ class SubjectList(SearchableList):
         )
 
     def __handle_selection_changed(self, data):
-        fileObj = data[3] if data else None
-        self.file_selection_changed(fileObj)
+        fileObjs = [datum[3] for datum in data] if data else None
+        self.file_selection_changed(fileObjs)
+
+    def __find_db_trust(self, subject):
+        trust = subject.trust.lower()
+        file = subject.file
+        trustList = (
+            self._systemTrust
+            if trust == "st"
+            else self._ancillaryTrust
+            if trust == "at"
+            else []
+        )
+        return first_true(trustList, pred=lambda x: x.path == file)
 
     def __show_reconciliation_dialog(self, subject):
-        def find_db_trust(subject):
-            trust = subject.trust.lower()
-            file = subject.file
-            trustList = (
-                self._systemTrust
-                if trust == "st"
-                else self._ancillaryTrust
-                if trust == "at"
-                else []
-            )
-            return first_true(trustList, pred=lambda x: x.path == file)
-
         changeset = None
         parent = self.get_ref().get_toplevel()
         reconciliationDialog = TrustReconciliationDialog(
-            subject, databaseTrust=find_db_trust(subject), parent=parent
+            subject, databaseTrust=self.__find_db_trust(subject), parent=parent
         ).get_ref()
         resp = reconciliationDialog.run()
         reconciliationDialog.destroy()
@@ -139,6 +154,22 @@ class SubjectList(SearchableList):
             changeset.add_trust(subject.file)
 
         if changeset:
+            dispatch(apply_changesets(changeset))
+
+    def __apply_changeset_with_dialog(self, total_selections, changeset):
+        action_items = changeset.get_path_action_map().items()
+        additions = len([k for k, v in action_items if v.lower() == "add"])
+        deletions = len([k for k, v in action_items if v.lower() == "del"])
+        parent = self.get_ref().get_toplevel()
+        confirmationDialog = ConfirmChangeDialog(
+            parent=parent,
+            total=total_selections,
+            additions=additions,
+            deletions=deletions,
+        ).get_ref()
+        confirm = confirmationDialog.run()
+        confirmationDialog.destroy()
+        if confirm == Gtk.ResponseType.YES:
             dispatch(apply_changesets(changeset))
 
     def _update_tree_count(self, count):
@@ -164,8 +195,59 @@ class SubjectList(SearchableList):
         self.__show_reconciliation_dialog(subject)
 
     def on_view_button_press_event(self, widget, event):
+        treeView = self.get_object("treeView")
+        model, pathlist = treeView.get_selection().get_selected_rows()
+        n_paths = len(pathlist)
         if event.type == Gdk.EventType.BUTTON_PRESS and event.button == 3:
-            self.contextMenu.popup_at_pointer()
+            if n_paths == 1:
+                self.reconcileContextMenu.popup_at_pointer()
+            elif n_paths > 1:
+                trustable, untrustable = 0, 0
+                subjects = [model.get_value(model.get_iter(p), 3) for p in pathlist]
+                changeset = Changeset()
+                for subject in subjects:
+                    status = (
+                        dbtrust.status.lower()
+                        if (dbtrust := self.__find_db_trust(subject))
+                        else None
+                    )
+                    if not status or status == "d":
+                        changeset.add_trust(subject.file)
+                        trustable += 1
+                    elif status == "t" and subject.trust.lower() == "at":
+                        changeset.del_trust(subject.file)
+                        untrustable += 1
+
+                self.fileChangeContextMenu.remove(self.fileChangeContextMenu.trustItem)
+                self.fileChangeContextMenu.remove(
+                    self.fileChangeContextMenu.untrustItem
+                )
+                self.fileChangeContextMenu.trustItem.selection_data = None
+                self.fileChangeContextMenu.untrustItem.selection_data = None
+
+                if untrustable and not trustable:
+                    self.fileChangeContextMenu.append(
+                        self.fileChangeContextMenu.untrustItem
+                    )
+                    self.fileChangeContextMenu.untrustItem.selection_data = (
+                        len(subjects),
+                        changeset,
+                    )
+                elif trustable and not untrustable:
+                    self.fileChangeContextMenu.append(
+                        self.fileChangeContextMenu.trustItem
+                    )
+                    self.fileChangeContextMenu.trustItem.selection_data = (
+                        len(subjects),
+                        changeset,
+                    )
+                else:
+                    return True
+
+                self.fileChangeContextMenu.show_all()
+                self.fileChangeContextMenu.popup_at_pointer()
+
+            return True
 
     def on_reconcile_file_activate(self, *args):
         treeView = self.get_object("treeView")
@@ -173,3 +255,6 @@ class SubjectList(SearchableList):
         iter_ = model.get_iter(next(iter(pathlist)))  # single select use first path
         subject = model.get_value(iter_, 3)
         self.__show_reconciliation_dialog(subject)
+
+    def on_change_file_trust_activate(self, menu_item):
+        self.__apply_changeset_with_dialog(*menu_item.selection_data)
