@@ -104,7 +104,7 @@ pyformat:
 # Format rust source code
 cargo-fmt:
 	@echo -e "${GRN}-  |--- Rust formatting...${NC}"
-	pipenv run cargo fmt
+	pipenv run cargo +nightly fmt
 
 # Perform linting on the project source code
 lint: pylint clippy
