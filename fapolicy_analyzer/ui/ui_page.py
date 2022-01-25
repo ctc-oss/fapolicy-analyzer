@@ -18,7 +18,6 @@ from dataclasses import dataclass, field
 from typing import Callable, Mapping, Sequence
 
 
-
 @dataclass
 class UIAction:
     name: str

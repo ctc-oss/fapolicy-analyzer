@@ -314,8 +314,8 @@ def test_loads_objects_from_acl(
 @pytest.mark.parametrize(
     "view, mockFnName",
     [
-        (pytest.lazy_fixture("userListView"), "getUserDetails"),
-        (pytest.lazy_fixture("groupListView"), "getGroupDetails"),
+        (pytest.lazy_fixture("userListView"), "get_user_details"),
+        (pytest.lazy_fixture("groupListView"), "get_group_details"),
     ],
 )
 def test_updates_acl_details(widget, view, mockFnName, mocker):
@@ -333,7 +333,7 @@ def test_updates_acl_details(widget, view, mockFnName, mocker):
 def test_updates_subject_details(widget, mocker):
     mocker.patch("ui.policy_rules_admin_page.fs.stat", return_value="foo")
     textBuffer = widget.get_object("subjectDetails").get_buffer()
-    widget.on_subject_selection_changed(MagicMock(), MagicMock(file="baz"))
+    widget.on_file_selection_changed([MagicMock(file="baz")])
     assert (
         textBuffer.get_text(
             textBuffer.get_start_iter(), textBuffer.get_end_iter(), True
@@ -345,7 +345,9 @@ def test_updates_subject_details(widget, mocker):
 def test_updates_object_details(widget, mocker):
     mocker.patch("ui.policy_rules_admin_page.fs.stat", return_value="foo")
     textBuffer = widget.get_object("objectDetails").get_buffer()
-    widget.on_object_selection_changed(MagicMock(file="baz"))
+    widget.on_file_selection_changed(
+        [MagicMock(file="baz")], type="objects", details_widget_name="objectDetails"
+    )
     assert (
         textBuffer.get_text(
             textBuffer.get_start_iter(), textBuffer.get_end_iter(), True
