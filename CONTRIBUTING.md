@@ -31,7 +31,7 @@ python3 setup.py [develop | install]
 ```
 ### Using the make command driver
 
-There are a number of make targets to kick-off common development tasks. Invoking make without a command-line target with list the higher level targets with a short summary:
+There are a number of make targets to kick-off common development tasks. Invoking make without a command-line target will list the higher level targets with a short summary:
 
 ```{shell}
 $ make
