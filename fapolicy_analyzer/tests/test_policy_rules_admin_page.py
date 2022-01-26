@@ -174,9 +174,6 @@ def test_adds_user_tabs(widget):
     page = tabs.get_nth_page(1)
     assert type(page) is Gtk.Box
     assert tabs.get_tab_label_text(page) == "Group"
-    page = tabs.get_nth_page(2)
-    assert type(page) is Gtk.Box
-    assert tabs.get_tab_label_text(page) == "All"
 
 
 def test_adds_subject_tabs(widget):

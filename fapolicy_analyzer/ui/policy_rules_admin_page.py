@@ -88,11 +88,6 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         user_tabs.append_page(self.user_list.get_ref(), Gtk.Label(label="User"))
         user_tabs.append_page(self.group_list.get_ref(), Gtk.Label(label="Group"))
 
-        user_tabs.append_page(
-            self.__all_list(),
-            Gtk.Label(label="All"),
-        )
-
         subject_tabs = self.get_object("subjectTabs")
         self.subject_list = SubjectList()
         subject_tabs.append_page(
@@ -174,15 +169,6 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             dispatch(request_events("debug", self.__audit_file))
         else:
             dispatch(request_events("syslog"))
-
-    def __all_list(self):
-        box = Gtk.Box()
-        box.set_border_width(10)
-        box.add(
-            Gtk.Label(label="Show something here that makes sense for the All tab??")
-        )
-        box.show_all()
-        return box
 
     def __populate_list(
         self,
