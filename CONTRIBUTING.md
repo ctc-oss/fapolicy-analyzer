@@ -22,39 +22,11 @@ To build and install the bindings run the following from the top level directory
 make shell
 ```
 
-which under the hood is executing the following with the `develop` argument to setup.py:
-
-```{shell}
-pipenv install --dev
-pipenv shell
-python3 setup.py [develop | install]
-```
-### Using the make command driver
-
-There are a number of make targets to kick-off common development tasks. Invoking make without a command-line target will list the higher level targets with a short summary:
+To see the higher-level make targets associated with a number of common
+development tasks, invoke make without a target:
 
 ```{shell}
 $ make
-
-  Usage: make [target]
-
-       fapolicy-analyzer - High level common operation targets
-
-     list     - Display common development targets
-     shell    - Install deps, build bindings, start venv shell
-     run      - Execute the fapolicy-analyzer
-     test     - Execute all unit-tests
-     lint     - Execute source code linting tools
-     format   - Execute source code formatting
-     check    - Perform pre-git push tests and formatting
-     list-all - Display all targets
-
-     Note: Options can be passed to fapolicy-analyzer by
-           setting the OPTIONS environment variable, for example
-             $ OPTIONS='-v' make run
-
-     Note: Errors stop make, ignore them with the '-k' option:
-             $ make -k [target]
 
 ```
 
