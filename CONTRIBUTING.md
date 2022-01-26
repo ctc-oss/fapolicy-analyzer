@@ -16,7 +16,7 @@ We use [pipenv](https://pipenv.pypa.io/en/latest/) for creating a sand-boxed dev
 pip3 install --user pipenv
 ```
 
-To build and install the bindings run the following from the top level directory of this repository:
+To build and install the bindings, and to start the virtual development environment, run the following from the top level directory of this repository:
 
 ```{shell}
 make shell
