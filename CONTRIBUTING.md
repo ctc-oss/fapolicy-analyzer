@@ -22,14 +22,6 @@ To build and install the bindings run the following from the top level directory
 make shell
 ```
 
-To see the higher-level make targets associated with a number of common
-development tasks, invoke make without a target:
-
-```{shell}
-$ make
-
-```
-
 Note: There may be some additional build-time requirements.  See [the development wiki page](https://github.com/ctc-oss/fapolicy-analyzer/wiki/Development) for more details.
 
 ## More Resources
