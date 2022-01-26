@@ -13,16 +13,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import gi
-import pytest
-
-import context  # noqa: F401
-
-gi.require_version("Gtk", "3.0")
+import context  # noqa: F401 # isort: skip
 from unittest.mock import MagicMock
 
+import gi
+import pytest
 from callee import Attrs, InstanceOf
-from gi.repository import Gtk
 from redux import Action
 from rx.subject import Subject
 from ui.actions import (
@@ -41,6 +37,9 @@ from ui.strings import (
 )
 
 from mocks import mock_events, mock_groups, mock_log, mock_System, mock_users
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk  # isort: skip
 
 _mock_file = "foo"
 
@@ -226,12 +225,13 @@ def test_loads_subjects_primary(subjectListView, activeSwitcherButton, mock_disp
     activeSwitcherButton.clicked()
     model = subjectListView.get_model()
     mock_dispatch.assert_any_call(InstanceOf(Action) & Attrs(type=REQUEST_EVENTS))
+    assert len(model) == 3
     expectedSubjects = [e.subject for e in mock_events()]
-    assert len(model) == 2
-    for idx, expectedSubject in enumerate(expectedSubjects):
-        assert expectedSubject.trust in model[idx][0]
-        assert expectedSubject.access in model[idx][1]
-        assert expectedSubject.file == model[idx][2]
+    actualSubjects = [(s[0], s[1], s[2]) for s in model]
+    for expectedSubject in expectedSubjects:
+        assert [a[0] for a in actualSubjects if expectedSubject.trust in a[0]]
+        assert [a[1] for a in actualSubjects if expectedSubject.access in a[1]]
+        assert [a[2] for a in actualSubjects if expectedSubject.file == a[2]]
 
 
 @pytest.mark.parametrize(
@@ -241,11 +241,13 @@ def test_loads_subjects_secondary(view, subjectListView, mock_dispatch):
     view.get_selection().select_path(Gtk.TreePath.new_first())
     model = subjectListView.get_model()
     mock_dispatch.assert_any_call(InstanceOf(Action) & Attrs(type=REQUEST_EVENTS))
-    expectedSubject = mock_events()[0].subject
-    assert len(model) == 1
-    assert expectedSubject.trust in next(iter([x[0] for x in model]))
-    assert expectedSubject.access in next(iter([x[1] for x in model]))
-    assert expectedSubject.file == next(iter([x[2] for x in model]))
+    assert len(model) == 2
+    expectedSubjects = [e.subject for e in mock_events()[0]]
+    actualSubjects = [(s[0], s[1], s[2]) for s in model]
+    for expectedSubject in expectedSubjects:
+        assert [a[0] for a in actualSubjects if expectedSubject.trust in a[0]]
+        assert [a[1] for a in actualSubjects if expectedSubject.access in a[1]]
+        assert [a[2] for a in actualSubjects if expectedSubject.file == a[2]]
 
 
 def test_loads_users_secondary(
@@ -287,11 +289,14 @@ def test_loads_objects_from_subject(view, subjectListView, objectListView):
     view.get_selection().select_path(Gtk.TreePath.new_first())
     subjectListView.get_selection().select_path(Gtk.TreePath.new_first())
     model = objectListView.get_model()
-    expectedObject = mock_events()[0].object
-    assert expectedObject.trust in next(iter([x[0] for x in model]))
-    assert expectedObject.access in next(iter([x[1] for x in model]))
-    assert expectedObject.file == next(iter([x[2] for x in model]))
-    assert expectedObject.mode in next(iter([x[5] for x in model]))
+    assert len(model) == 1
+    expectedObjects = [e.object for e in mock_events()[0]]
+    actualObjects = [(o[0], o[1], o[2], o[5]) for o in model]
+    for expectedObject in expectedObjects:
+        assert [a[0] for a in actualObjects if expectedObject.trust in a[0]]
+        assert [a[1] for a in actualObjects if expectedObject.access in a[1]]
+        assert [a[2] for a in actualObjects if expectedObject.file == a[2]]
+        assert [a[2] for a in actualObjects if expectedObject.mode in a[3]]
 
 
 @pytest.mark.parametrize(
@@ -304,11 +309,187 @@ def test_loads_objects_from_acl(
     subjectListView.get_selection().select_path(Gtk.TreePath.new_first())
     view.get_selection().select_path(Gtk.TreePath.new_first())
     model = objectListView.get_model()
-    expectedObject = mock_events()[0].object
-    assert expectedObject.trust in next(iter([x[0] for x in model]))
-    assert expectedObject.access in next(iter([x[1] for x in model]))
-    assert expectedObject.file == next(iter([x[2] for x in model]))
-    assert expectedObject.mode in next(iter([x[5] for x in model]))
+    assert len(model) == 1
+    expectedObjects = [e.object for e in mock_events()[0]]
+    actualObjects = [(o[0], o[1], o[2], o[5]) for o in model]
+    for expectedObject in expectedObjects:
+        assert [a[0] for a in actualObjects if expectedObject.trust in a[0]]
+        assert [a[1] for a in actualObjects if expectedObject.access in a[1]]
+        assert [a[2] for a in actualObjects if expectedObject.file == a[2]]
+        assert [a[2] for a in actualObjects if expectedObject.mode in a[3]]
+
+
+@pytest.mark.parametrize(
+    "aclListView",
+    [pytest.lazy_fixture("userListView"), pytest.lazy_fixture("groupListView")],
+)
+def test_reloads_views_after_refresh(
+    aclListView,
+    subjectListView,
+    objectListView,
+    widget,
+    mock_dispatch,
+    mock_system_features,
+    states,
+):
+    def get_selected_values(view, data_column_num):
+        model, paths = view.get_selection().get_selected_rows()
+        return [model.get_value(model.get_iter(p), data_column_num) for p in paths]
+
+    aclListView.get_selection().select_path(Gtk.TreePath.new_first())
+    prev_selected_acl = get_selected_values(aclListView, 0)
+    subjectListView.get_selection().select_path(Gtk.TreePath.new_first())
+    prev_selected_subjects = get_selected_values(subjectListView, 2)
+    objectListView.get_selection().select_path(Gtk.TreePath.new_first())
+    prev_selected_objects = get_selected_values(objectListView, 2)
+
+    # reset the mock from the initial load
+    mock_dispatch.reset_mock()
+    mock_dispatch.assert_not_any_call(InstanceOf(Action) & Attrs(type=REQUEST_EVENTS))
+
+    refresh_click = next(
+        iter(
+            [
+                a.signals["clicked"]
+                for a in widget.actions["analyze"]
+                if a.name == "Refresh"
+            ]
+        )
+    )
+    refresh_click()
+    mock_dispatch.assert_any_call(InstanceOf(Action) & Attrs(type=REQUEST_EVENTS))
+
+    # need to manually execute state reload since we are mocking
+    # states array must be rebuild its refs change for the comparison in the
+    # PolicyRulesAdminPage.on_next method
+    reloaded_states = [
+        _build_state(
+            events={"log": mock_log()},
+            groups={"groups": mock_groups()},
+            users={"users": mock_users()},
+        )
+    ]
+    for s in reloaded_states:
+        mock_system_features.on_next(s)
+
+    cur_selected_acl = get_selected_values(aclListView, 0)
+    assert len(cur_selected_acl) > 0
+    assert prev_selected_acl == cur_selected_acl
+    cur_selected_subjects = get_selected_values(subjectListView, 2)
+    assert len(cur_selected_subjects) > 0
+    assert prev_selected_subjects == cur_selected_subjects
+    cur_selected_objects = get_selected_values(objectListView, 2)
+    assert len(cur_selected_objects) > 0
+    assert prev_selected_objects == cur_selected_objects
+
+
+@pytest.mark.parametrize(
+    "aclListView",
+    [pytest.lazy_fixture("userListView"), pytest.lazy_fixture("groupListView")],
+)
+def test_handles_data_changed_after_refresh(
+    aclListView,
+    subjectListView,
+    objectListView,
+    widget,
+    mock_system_features,
+):
+    def get_selected_values(view, data_column_num):
+        model, paths = view.get_selection().get_selected_rows()
+        return [model.get_value(model.get_iter(p), data_column_num) for p in paths]
+
+    aclListView.get_selection().select_path(Gtk.TreePath.new_first())
+    subjectListView.get_selection().select_path(Gtk.TreePath.new_first())
+    objectListView.get_selection().select_path(Gtk.TreePath.new_first())
+
+    refresh_click = next(
+        iter(
+            [
+                a.signals["clicked"]
+                for a in widget.actions["analyze"]
+                if a.name == "Refresh"
+            ]
+        )
+    )
+    refresh_click()
+
+    new_events = [
+        MagicMock(
+            uid=1,
+            gid=100,
+            subject=MagicMock(file="newFooSubject", trust="ST", access="A"),
+            object=MagicMock(file="fooObject", trust="ST", access="A", mode="R"),
+        )
+    ]
+    new_states = [
+        _build_state(
+            events={
+                "log": MagicMock(
+                    subjects=lambda: [e.subject.file for e in new_events],
+                    by_subject=lambda f: [e for e in new_events if e.subject.file == f],
+                    by_user=lambda id: [e for e in new_events if e.uid == id],
+                    by_group=lambda id: [e for e in new_events if e.gid == id],
+                )
+            },
+            groups={"groups": mock_groups()},
+            users={"users": mock_users()},
+        )
+    ]
+
+    # need to manually execute state reload since we are mocking
+    for s in new_states:
+        mock_system_features.on_next(s)
+
+    assert len(get_selected_values(aclListView, 0)) == 1
+    assert len(get_selected_values(subjectListView, 2)) == 0
+    assert len(get_selected_values(objectListView, 2)) == 0
+
+
+@pytest.mark.parametrize(
+    "aclListView",
+    [pytest.lazy_fixture("userListView")],  # , pytest.lazy_fixture("groupListView")],
+)
+def test_refresh_with_multi_select(
+    aclListView, subjectListView, objectListView, widget, mock_system_features
+):
+    def get_selected_values(view, data_column_num):
+        model, paths = view.get_selection().get_selected_rows()
+        return [model.get_value(model.get_iter(p), data_column_num) for p in paths]
+
+    print("selecting user")
+    aclListView.get_selection().select_path(Gtk.TreePath.new_first())
+    print(f"selecting subject, model length: {len(subjectListView.get_model())}")
+    subjectListView.get_selection().select_all()
+    objectListView.get_selection().select_path(Gtk.TreePath.new_first())
+
+    refresh_click = next(
+        iter(
+            [
+                a.signals["clicked"]
+                for a in widget.actions["analyze"]
+                if a.name == "Refresh"
+            ]
+        )
+    )
+    print("refreshing")
+    refresh_click()
+
+    # need to manually execute state reload since we are mocking
+    # states array must be rebuild its refs change for the comparison in the
+    # PolicyRulesAdminPage.on_next method
+    reloaded_states = [
+        _build_state(
+            events={"log": mock_log()},
+            groups={"groups": mock_groups()},
+            users={"users": mock_users()},
+        )
+    ]
+    for s in reloaded_states:
+        mock_system_features.on_next(s)
+
+    assert len(get_selected_values(aclListView, 0)) == 1
+    assert len(get_selected_values(subjectListView, 2)) == 2
+    assert len(get_selected_values(objectListView, 2)) == 1
 
 
 @pytest.mark.parametrize(

@@ -50,6 +50,12 @@ def mock_events():
             object=MagicMock(file="fooObject", trust="ST", access="A", mode="R"),
         ),
         MagicMock(
+            uid=1,
+            gid=100,
+            subject=MagicMock(file="barSubject", trust="AT", access="A"),
+            object=MagicMock(file="barObject", trust="AT", access="A", mode="R"),
+        ),
+        MagicMock(
             uid=2,
             gid=101,
             subject=MagicMock(file="otherSubject", trust="ST", access="A"),
