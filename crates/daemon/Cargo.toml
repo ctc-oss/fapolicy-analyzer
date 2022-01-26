@@ -8,7 +8,7 @@ edition = "2018"
 [dependencies]
 nom = "6.1.0"
 thiserror = "1.0"
-fapolicy-api = { version = "0.4.0", path = "../api" }
+fapolicy-api = { version = "*", path = "../api" }
 
 [dependencies.dbus]
 version = "0.9"
