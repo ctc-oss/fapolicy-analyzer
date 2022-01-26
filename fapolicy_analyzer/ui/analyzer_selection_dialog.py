@@ -27,7 +27,7 @@ from gi.repository import Gtk  # isort: skip
 
 class ANALYZER_SELECTION(Enum):
     TRUST_DATABASE_ADMIN = 0
-    SCAN_SYSTEM = 1
+    RULES_ADMIN = 1
     ANALYZE_FROM_AUDIT = 2
     ANALYZE_SYSLOG = 3
 
