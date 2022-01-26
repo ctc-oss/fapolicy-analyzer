@@ -27,5 +27,8 @@ def get_user_details(uid):
 def get_group_details(gid):
     if not gid:
         return None
-    result = grp.getgrgid(gid)
-    return f"name={result[0]} gid={result[2]} users={','.join(result[3])}"
+    try:
+        result = grp.getgrgid(gid)
+        return f"name={result[0]} gid={result[2]} users={','.join(result[3])}"
+    except KeyError:
+        return ""

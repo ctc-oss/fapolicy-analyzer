@@ -506,3 +506,19 @@ def test_update_fapd_status(mainWindow, mocker):
     mainWindow._update_fapd_status(ServiceStatus.UNKNOWN)
     tupleIdSize = mainWindow.get_object("fapdStatusLight").get_icon_name()
     assert tupleIdSize == ("edit-delete", 4)
+
+
+def test_added_page_specific_toolbar_buttons(mainWindow):
+    menuItem = mainWindow.get_object("syslogMenu")
+    menuItem.activate()
+    toolbar = mainWindow.get_object("appArea").get_children()[1]
+    assert (
+        len(
+            [
+                tb
+                for tb in toolbar.get_children()
+                if isinstance(tb, Gtk.ToolButton) and tb.get_label() == "Refresh"
+            ]
+        )
+        == 1
+    )

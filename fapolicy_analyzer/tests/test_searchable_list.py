@@ -13,23 +13,30 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import context  # noqa: F401
-import pytest
+import context  # noqa: F401 # isort: skip
+
+from unittest.mock import MagicMock
+
 import gi
+import pytest
+from callee import Contains
+from ui.searchable_list import SearchableList
+
+from helpers import refresh_gui
 
 gi.require_version("Gtk", "3.0")
-from callee import Contains
-from gi.repository import Gtk
-from unittest.mock import MagicMock
-from helpers import refresh_gui
-from ui.searchable_list import SearchableList
+from gi.repository import Gtk  # isort: skip
 
 
 @pytest.fixture()
 def widget():
     column = Gtk.TreeViewColumn("foo", Gtk.CellRendererText(), text=0)
     column.set_sort_column_id(0)
-    widget = SearchableList([column])
+    widget = SearchableList([column], selection_type="multi")
+    store = Gtk.ListStore(str)
+    store.append(["baz"])
+    store.append(["foo"])
+    widget.load_store(store)
     return widget
 
 
@@ -50,10 +57,10 @@ def test_adds_action_button():
 
 def test_load_store(widget):
     store = Gtk.ListStore(str)
-    store.append(["baz"])
+    store.append(["blah"])
     widget.load_store(store)
     view = widget.get_object("treeView")
-    assert ["baz"] == [x[0] for x in view.get_model()]
+    assert ["blah"] == [x[0] for x in view.get_model()]
 
 
 def test_toggle_loader(widget):
@@ -74,19 +81,12 @@ def test_toggle_loader(widget):
 def test_fires_selection_changed_event(widget):
     mockHandler = MagicMock()
     widget.selection_changed += mockHandler
-    store = Gtk.ListStore(str)
-    store.append(["baz"])
-    widget.load_store(store)
     view = widget.get_object("treeView")
     view.get_selection().select_path(Gtk.TreePath.new_first())
     mockHandler.assert_called_with([Contains("baz")])
 
 
 def test_sorting(widget):
-    store = Gtk.ListStore(str)
-    store.append(["foo"])
-    store.append(["baz"])
-    widget.load_store(store)
     view = widget.get_object("treeView")
     assert ["baz", "foo"] == [x[0] for x in view.get_model()]  # default sort
     view.get_column(0).clicked()
@@ -94,10 +94,6 @@ def test_sorting(widget):
 
 
 def test_filtering(widget):
-    store = Gtk.ListStore(str)
-    store.append(["baz"])
-    store.append(["foo"])
-    widget.load_store(store)
     view = widget.get_object("treeView")
     viewFilter = widget.get_object("search")
     viewFilter.set_text("foo")
@@ -111,3 +107,30 @@ def test_loads_data_on_refresh(widget, mocker):
     widget._load_data = MagicMock(side_effect=widget._load_data)
     widget.refresh()
     widget._load_data.assert_called()
+
+
+def test_select_rows(widget):
+    view = widget.get_object("treeView")
+    assert view.get_selection().count_selected_rows() == 0
+
+    expected_path = Gtk.TreePath.new_from_indices([1])
+    widget.select_rows(expected_path)
+    model, paths = view.get_selection().get_selected_rows()
+    assert len(paths) == 1
+    assert model.get_value(model.get_iter(paths[0]), 0) == "foo"
+
+
+def test_unselect_all_rows(widget):
+    view = widget.get_object("treeView")
+    view.get_selection().select_all()
+    assert view.get_selection().count_selected_rows() == 2
+    widget.unselect_all_rows()
+    assert view.get_selection().count_selected_rows() == 0
+
+
+def test_find_selected_row_by_data(widget):
+    view = widget.get_object("treeView")
+    model = view.get_model()
+    view.get_selection().select_path(Gtk.TreePath.new_from_indices([1]))
+    actual_path = widget.find_selected_row_by_data("foo", 0)
+    assert model.get_value(model.get_iter(actual_path), 0) == "foo"
