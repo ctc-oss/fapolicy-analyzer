@@ -25,8 +25,10 @@ from .acl_list import ACLList
 from .actions import (
     NotificationType,
     add_notification,
+    request_ancillary_trust,
     request_events,
     request_groups,
+    request_system_trust,
     request_users,
 )
 from .object_list import ObjectList
@@ -163,6 +165,8 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         self.__users_loading = True
         self.__groups_loading = True
         self.__events_loading = True
+        dispatch(request_ancillary_trust())
+        dispatch(request_system_trust())
         dispatch(request_users())
         dispatch(request_groups())
         if self.__audit_file:
