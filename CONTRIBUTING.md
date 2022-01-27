@@ -24,14 +24,6 @@ make shell
 
 Note: There may be some additional build-time requirements.  See [the development wiki page](https://github.com/ctc-oss/fapolicy-analyzer/wiki/Development) for more details.
 
-## More Resources
-
-## Getting Help
-Feel free to ask a question or start a discussion in the [Discussion](https://github.com/ctc-oss/fapolicy-analyzer/discussions)
-
-
-See the [Wiki](https://github.com/ctc-oss/fapolicy-analyzer/wiki) for more resources.
-
 ### Before Submitting a Pull Request
 
 -   Clone the repository
@@ -50,6 +42,17 @@ make format
 ```bash
 make test
 ```
+
+### Getting Help
+Feel free to ask a question or start a discussion in the [Discussion](https://github.com/ctc-oss/fapolicy-analyzer/discussions) section of this project.
+
+### More Resources
+
+As mentioned above, there is a dedicated [Development](https://github.com/ctc-oss/fapolicy-analyzer/wiki/Development) section on the wiki.
+
+See the [Wiki](https://github.com/ctc-oss/fapolicy-analyzer/wiki) for more general resources.
+
+The [fapolicyd](https://github.com/linux-application-whitelisting/fapolicyd) project.
 
 ## Reporting an issue
 
