@@ -6,8 +6,8 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use nom::bytes::complete::{is_not, tag};
-use nom::character::complete::{alphanumeric1, digit1};
+use nom::bytes::complete::{is_not, tag, take_while};
+use nom::character::complete::digit1;
 use nom::combinator::opt;
 use nom::multi::separated_list0;
 use nom::sequence::terminated;
@@ -37,7 +37,7 @@ use crate::users::{Group, User};
 ///
 pub fn user(i: &str) -> nom::IResult<&str, User> {
     match nom::combinator::complete(nom::sequence::tuple((
-        terminated(alphanumeric1, tag(":")),
+        terminated(valid_name, tag(":")),
         terminated(opt(tag("x")), tag(":")),
         terminated(digit1, tag(":")),
         terminated(digit1, tag(":")),
@@ -78,7 +78,7 @@ pub fn user(i: &str) -> nom::IResult<&str, User> {
 ///
 pub fn group(i: &str) -> nom::IResult<&str, Group> {
     match nom::combinator::complete(nom::sequence::tuple((
-        terminated(alphanumeric1, tag(":")),
+        terminated(valid_name, tag(":")),
         terminated(opt(tag("x")), tag(":")),
         terminated(digit1, tag(":")),
         separated_list0(tag(","), is_not(",")),
@@ -100,6 +100,10 @@ fn any(i: &str) -> nom::IResult<&str, &str> {
     nom::bytes::complete::is_not(":")(i)
 }
 
+fn valid_name(i: &str) -> nom::IResult<&str, &str> {
+    take_while(|x| nom::character::is_alphanumeric(x as u8) || x == '-' || x == '_')(i)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -116,6 +120,18 @@ mod tests {
         assert_eq!(1, u.gid);
         assert_eq!("/usr/sbin", &u.home);
         assert_eq!("/usr/sbin/nologin", &u.shell);
+
+        let (rem, u) = user("i-have-dashes:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin")
+            .ok()
+            .unwrap();
+        assert!(rem.is_empty());
+        assert_eq!("i-have-dashes", &u.name);
+
+        let (rem, u) = user("i_have_underscores:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin")
+            .ok()
+            .unwrap();
+        assert!(rem.is_empty());
+        assert_eq!("i_have_underscores", &u.name);
     }
 
     #[test]
@@ -137,5 +153,13 @@ mod tests {
         assert_eq!("fake", &g.name);
         assert_eq!(999, g.gid);
         assert_eq!(vec!["a", "b", "c"], g.users);
+
+        let (rem, g) = group("i-have-dashes:x:999:a").ok().unwrap();
+        assert!(rem.is_empty());
+        assert_eq!("i-have-dashes", &g.name);
+
+        let (rem, g) = group("i_have_underscores:x:999:a").ok().unwrap();
+        assert!(rem.is_empty());
+        assert_eq!("i_have_underscores", &g.name);
     }
 }
