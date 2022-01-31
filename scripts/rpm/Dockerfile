@@ -32,6 +32,7 @@ COPY fapolicy-analyzer.spec.j2 ./
 
 ARG pyrpm=python3
 ARG git_commit=
+ARG app_version=${git_commit}
 ARG rpm_version=
 ARG rpm_release=
 
@@ -40,6 +41,7 @@ ARG rpm_release=
 RUN jinja2 \
         -D pyrpm=${pyrpm} \
         -D git_commit=${git_commit} \
+        -D app_version=${app_version} \
         -D rpm_version=${rpm_version} \
         -D rpm_release=${rpm_release} \
         fapolicy-analyzer.spec.j2 > /root/rpmbuild/SPECS/fapolicy-analyzer.spec

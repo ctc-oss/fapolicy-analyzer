@@ -10,7 +10,7 @@ use directories::ProjectDirs;
 use serde::Deserialize;
 use serde::Serialize;
 
-use fapolicy_analyzer::users::{load_groups, load_users, Group, User};
+use fapolicy_analyzer::users::{read_groups, read_users, Group, User};
 use fapolicy_rules::db::DB as RulesDB;
 use fapolicy_rules::read::load_rules_db;
 use fapolicy_trust::db::DB as TrustDB;
@@ -50,8 +50,8 @@ impl State {
             config: cfg.clone(),
             trust_db,
             rules_db,
-            users: load_users(),
-            groups: load_groups(),
+            users: read_users()?,
+            groups: read_groups()?,
         })
     }
 
