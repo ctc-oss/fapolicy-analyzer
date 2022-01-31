@@ -89,7 +89,11 @@ pub fn group(i: &str) -> nom::IResult<&str, Group> {
             Group {
                 name: user.into(),
                 gid: gid.parse().unwrap(),
-                users: list.iter().map(|s| s.to_string()).collect(),
+                users: list
+                    .iter()
+                    .filter(|s| !s.is_empty())
+                    .map(|s| s.to_string())
+                    .collect(),
             },
         )),
         Err(e) => Err(e),
