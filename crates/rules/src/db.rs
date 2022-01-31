@@ -6,8 +6,8 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use std::collections::hash_map::Iter;
-use std::collections::HashMap;
+use std::collections::btree_map::Iter;
+use std::collections::BTreeMap;
 
 use crate::Rule;
 
@@ -15,7 +15,7 @@ use crate::Rule;
 /// A container for rules and their metadata
 #[derive(Clone, Debug)]
 pub struct DB {
-    lookup: HashMap<usize, Rule>,
+    lookup: BTreeMap<usize, Rule>,
 }
 
 impl Default for DB {
@@ -26,7 +26,7 @@ impl Default for DB {
 
 impl From<Vec<Rule>> for DB {
     fn from(src: Vec<Rule>) -> Self {
-        let lookup: HashMap<usize, Rule> = src
+        let lookup: BTreeMap<usize, Rule> = src
             .iter()
             .enumerate()
             // fapolicyd rules are 1-based index
@@ -40,7 +40,7 @@ impl DB {
     /// Create a new empty database
     pub fn new() -> Self {
         DB {
-            lookup: HashMap::default(),
+            lookup: BTreeMap::default(),
         }
     }
 

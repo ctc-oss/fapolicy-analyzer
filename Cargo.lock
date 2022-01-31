@@ -270,6 +270,7 @@ dependencies = [
  "fapolicy-api",
  "fapolicy-app",
  "fapolicy-daemon",
+ "fapolicy-rules",
  "fapolicy-trust",
  "pyo3",
 ]

@@ -22,6 +22,7 @@ use crate::analysis::PyEventLog;
 use crate::change::PyChangeset;
 
 use super::trust::PyTrust;
+use crate::rules::PyRule;
 
 #[pyclass(module = "app", name = "System")]
 #[derive(Clone)]
@@ -147,6 +148,15 @@ impl PySystem {
             rs: EventDB::from(xs),
             rs_trust: self.rs.trust_db.clone(),
         })
+    }
+
+    fn rules(&self) -> PyResult<Vec<PyRule>> {
+        Ok(self
+            .rs
+            .rules_db
+            .iter()
+            .map(|(id, r)| PyRule::new(*id, r.to_string()))
+            .collect())
     }
 }
 
