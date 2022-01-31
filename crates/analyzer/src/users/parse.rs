@@ -6,7 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use nom::bytes::complete::{is_not, tag, take_while};
+use nom::bytes::complete::{tag, take_while};
 use nom::character::complete::digit1;
 use nom::combinator::opt;
 use nom::multi::separated_list0;
@@ -43,7 +43,7 @@ pub fn user(i: &str) -> nom::IResult<&str, User> {
         terminated(digit1, tag(":")),
         terminated(opt(any), tag(":")),
         terminated(any, tag(":")),
-        any,
+        filepath,
     )))(i)
     {
         Ok((remaining_input, (user, _, uid, gid, _, home, shell))) => Ok((
@@ -81,7 +81,7 @@ pub fn group(i: &str) -> nom::IResult<&str, Group> {
         terminated(valid_name, tag(":")),
         terminated(opt(tag("x")), tag(":")),
         terminated(digit1, tag(":")),
-        separated_list0(tag(","), is_not(",")),
+        separated_list0(tag(","), valid_name),
     )))(i)
     {
         Ok((remaining_input, (user, _, gid, list))) => Ok((
@@ -102,6 +102,10 @@ fn any(i: &str) -> nom::IResult<&str, &str> {
 
 fn valid_name(i: &str) -> nom::IResult<&str, &str> {
     take_while(|x| nom::character::is_alphanumeric(x as u8) || x == '-' || x == '_')(i)
+}
+
+fn filepath(i: &str) -> nom::IResult<&str, &str> {
+    nom::bytes::complete::is_not(" \t\n")(i)
 }
 
 #[cfg(test)]
@@ -132,6 +136,11 @@ mod tests {
             .unwrap();
         assert!(rem.is_empty());
         assert_eq!("i_have_underscores", &u.name);
+
+        let (rem, _) = user("someuser:x:1:1:SuperUser/hostname:/usr/sbin:/usr/sbin/nologin")
+            .ok()
+            .unwrap();
+        assert!(rem.is_empty());
     }
 
     #[test]
