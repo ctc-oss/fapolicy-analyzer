@@ -15,4 +15,5 @@ fapolicy-api = { version = "*", path = "../api" }
 fapolicy-analyzer = { version = "*", path = "../analyzer" }
 fapolicy-app = { version = "*", path = "../app" }
 fapolicy-daemon = { version = "*", path = "../daemon", features = ["systemd"] }
+fapolicy-rules = { version = "*", path = "../rules" }
 fapolicy-trust = { version = "*", path = "../trust" }

@@ -6,8 +6,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use std::time::SystemTime;
-
 use pyo3::prelude::*;
 use pyo3::{exceptions, PyResult};
 
@@ -22,6 +20,7 @@ use crate::analysis::PyEventLog;
 use crate::change::PyChangeset;
 
 use super::trust::PyTrust;
+use crate::rules::PyRule;
 
 #[pyclass(module = "app", name = "System")]
 #[derive(Clone)]
@@ -51,13 +50,8 @@ impl PySystem {
         py.allow_threads(|| {
             let conf = cfg::All::load()
                 .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))?;
-            let t = SystemTime::now();
             match State::load_checked(&conf) {
-                Ok(state) => {
-                    let d = t.elapsed().unwrap().as_secs();
-                    println!("loaded system in {} seconds", d);
-                    Ok(state.into())
-                }
+                Ok(state) => Ok(state.into()),
                 Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{:?}", e))),
             }
         })
@@ -147,6 +141,15 @@ impl PySystem {
             rs: EventDB::from(xs),
             rs_trust: self.rs.trust_db.clone(),
         })
+    }
+
+    fn rules(&self) -> PyResult<Vec<PyRule>> {
+        Ok(self
+            .rs
+            .rules_db
+            .iter()
+            .map(|(id, r)| PyRule::new(*id, r.to_string()))
+            .collect())
     }
 }
 
