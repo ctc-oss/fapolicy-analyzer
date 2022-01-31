@@ -14,7 +14,7 @@ serde = { version = "1.0", features = ["derive"] }
 thiserror = "1.0"
 chrono = "0.4"
 
-fapolicy-api = { version = "0.4.0", path = "../api" }
-fapolicy-daemon = { version = "0.4", path = "../daemon" }
-fapolicy-rules = { version = "0.4", path = "../rules" }
-fapolicy-trust = { version = "0.4", path = "../trust" }
+fapolicy-api = { version = "*", path = "../api" }
+fapolicy-daemon = { version = "*", path = "../daemon" }
+fapolicy-rules = { version = "*", path = "../rules" }
+fapolicy-trust = { version = "*", path = "../trust" }
