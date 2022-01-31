@@ -8,6 +8,7 @@
 
 use std::io;
 
+use std::string::FromUtf8Error;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -26,4 +27,10 @@ pub enum Error {
 
     #[error("{0}")]
     AnalyzerError(String),
+
+    #[error("Failed to read {0} database")]
+    UserGroupLookupFailure(String),
+
+    #[error("Failed to parse getent output")]
+    UserGroupDatabaseParseFailure(#[from] FromUtf8Error),
 }
