@@ -136,11 +136,6 @@ mod tests {
             .unwrap();
         assert!(rem.is_empty());
         assert_eq!("i_have_underscores", &u.name);
-
-        let (rem, _) = user("someuser:x:1:1:SuperUser/hostname:/usr/sbin:/usr/sbin/nologin")
-            .ok()
-            .unwrap();
-        assert!(rem.is_empty());
     }
 
     #[test]
