@@ -13,9 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import context  # noqa: F401
 import gi
 import pytest
+
+import context  # noqa: F401
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
@@ -48,3 +49,14 @@ def test_update_tree_count():
     widget.load_store([{"id": 1, "name": "foo"}, {"id": 2, "name": "baz"}])
     label = widget.get_object("treeCount")
     assert label.get_text() == "2 foos"
+
+
+def test_get_selected_row_by_acl_id(widget):
+    users = [{"id": 1, "name": "baz"}, {"id": 2, "name": "foo"}]
+    widget.load_store(users)
+    view = widget.get_object("treeView")
+    view.get_selection().set_mode(Gtk.SelectionMode.MULTIPLE)
+    view.get_selection().select_all()
+    model = view.get_model()
+    selection = widget.get_selected_row_by_acl_id(2)
+    assert model.get_value(model.get_iter(selection), 0) == "foo"

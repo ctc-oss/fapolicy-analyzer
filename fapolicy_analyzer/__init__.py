@@ -17,5 +17,5 @@ from importlib.metadata import version
 
 from .rust import *  # noqa: F401,F403
 
-__version__ = version('fapolicy-analyzer')
+__version__ = version("fapolicy-analyzer")
 del version

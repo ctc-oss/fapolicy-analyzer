@@ -15,10 +15,7 @@
 
 import fapolicy_analyzer.ui.strings as strings
 import gi
-
-gi.require_version("Gtk", "3.0")
 from fapolicy_analyzer import Changeset
-from gi.repository import Gdk, Gtk
 from more_itertools import first_true
 
 from .actions import apply_changesets
@@ -29,6 +26,9 @@ from .searchable_list import SearchableList
 from .store import dispatch
 from .strings import FILE_LABEL, FILES_LABEL
 from .trust_reconciliation_dialog import TrustReconciliationDialog
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gdk, Gtk  # isort: skip
 
 _UNTRUST_RESP = 0
 _TRUST_RESP = 1
@@ -187,6 +187,9 @@ class SubjectList(SearchableList):
             store.append([status, access, s.file, s, bgColor])
 
         super().load_store(store)
+
+    def get_selected_row_by_file(self, file: str) -> Gtk.TreePath:
+        return self.find_selected_row_by_data(file, 2)
 
     def on_view_row_activated(self, treeView, row, *args):
         model = treeView.get_model()
