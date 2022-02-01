@@ -12,6 +12,7 @@ pub mod acl;
 pub mod analysis;
 pub mod change;
 pub mod daemon;
+pub mod rules;
 pub mod system;
 pub mod trust;
 
@@ -21,6 +22,7 @@ fn rust(_py: Python, m: &PyModule) -> PyResult<()> {
     analysis::init_module(_py, m)?;
     change::init_module(_py, m)?;
     daemon::init_module(_py, m)?;
+    rules::init_module(_py, m)?;
     system::init_module(_py, m)?;
     trust::init_module(_py, m)?;
     Ok(())

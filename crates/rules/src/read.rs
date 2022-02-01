@@ -55,7 +55,5 @@ pub fn load_rules_db(path: &str) -> Result<DB, Error> {
         })
         .collect();
 
-    println!("loaded {} rules", lookup.len());
-
     Ok(lookup.into())
 }
