@@ -13,9 +13,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Any
+from typing import Any, Optional, Sequence
 
-from fapolicy_analyzer.ui.store import get_system_feature
+from fapolicy_analyzer import Rule
+from fapolicy_analyzer.ui.actions import request_rules
+from fapolicy_analyzer.ui.store import dispatch, get_system_feature
 from fapolicy_analyzer.ui.ui_page import UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 
@@ -26,6 +28,15 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
             self, get_system_feature(), on_next=self.on_next_system
         )
         UIPage.__init__(self, {})
+        self.__rules: Sequence[Rule] = []
+        self.__error: Optional[str] = None
+        self.__loading: bool = False
+        self.__load_rules()
+
+    def __load_rules(self):
+        self.__loading = True
+        dispatch(request_rules())
 
     def on_next_system(self, system: Any):
-        pass
+        ruleState = system.get("rules")
+        print(f"{ruleState}")
