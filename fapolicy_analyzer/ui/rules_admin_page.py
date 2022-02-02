@@ -13,11 +13,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 from typing import Any, Optional, Sequence
 
 from fapolicy_analyzer import Rule
-from fapolicy_analyzer.ui.actions import request_rules
+from fapolicy_analyzer.ui.actions import (
+    NotificationType,
+    add_notification,
+    request_rules,
+)
 from fapolicy_analyzer.ui.store import dispatch, get_system_feature
+from fapolicy_analyzer.ui.strings import RULES_LOAD_ERROR
 from fapolicy_analyzer.ui.ui_page import UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 
@@ -37,6 +43,25 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         self.__loading = True
         dispatch(request_rules())
 
+    def __populate_rules(self):
+        view = self.get_object("legacyTextView")
+        text = "\n".join([f"{r.id}: {r.text}" for r in self.__rules])
+        view.get_buffer().set_text(text)
+
     def on_next_system(self, system: Any):
-        ruleState = system.get("rules")
-        print(f"{ruleState}")
+        rules_state = system.get("rules")
+
+        if not rules_state.loading and self.__error != rules_state.error:
+            self.__error = rules_state.error
+            self.__loading = False
+            logging.error("%s: %s", RULES_LOAD_ERROR, self.__error)
+            dispatch(add_notification(RULES_LOAD_ERROR, NotificationType.ERROR))
+        elif (
+            self.__loading
+            and not rules_state.loading
+            and self.__rules != rules_state.rules
+        ):
+            self.__error = None
+            self.__loading = False
+            self.__rules = rules_state.rules
+            self.__populate_rules()
