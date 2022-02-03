@@ -92,6 +92,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
 
         subject_tabs = self.get_object("subjectTabs")
         self.subject_list = SubjectList()
+        self.subject_list.dispatch_then_refresh += self.__refresh()
         subject_tabs.append_page(
             self.subject_list.get_ref(), Gtk.Label(label="Subject")
         )
