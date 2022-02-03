@@ -39,7 +39,6 @@ class SubjectList(SearchableList):
         self.__events__ = [
             *super().__events__,
             "file_selection_changed",
-            "dispatch_then_refresh",
         ]
 
         add_button = AddFileButton()
@@ -156,7 +155,6 @@ class SubjectList(SearchableList):
 
         if changeset:
             dispatch(apply_changesets(changeset))
-            self.dispatch_then_refresh
 
     def __apply_changeset_with_dialog(self, total_selections, changeset):
         action_items = changeset.get_path_action_map().items()

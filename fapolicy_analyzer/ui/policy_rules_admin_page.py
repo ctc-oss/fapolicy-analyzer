@@ -68,6 +68,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         }
         UIPage.__init__(self, actions)
 
+        self.__n_changesets = 0
         self.__audit_file: Optional[str] = audit_file
         self.__log: Optional[Sequence[EventLog]] = None
         self.__events_loading = False
@@ -92,7 +93,6 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
 
         subject_tabs = self.get_object("subjectTabs")
         self.subject_list = SubjectList()
-        self.subject_list.dispatch_then_refresh += self.__refresh()
         subject_tabs.append_page(
             self.subject_list.get_ref(), Gtk.Label(label="Subject")
         )
@@ -437,6 +437,11 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         self.group_list.set_loading(
             self.__events_loading or self.__users_loading or self.__groups_loading
         )
+
+        if system.get("changesets"):
+            if not self.__n_changesets == len(system.get("changesets")):
+                self.__n_changesets = len(system.get("changesets"))
+                self.__refresh()
 
     def on_acl_selection_changed(self, data, type=None, secondary_action=None):
         id = data[-1][1] if data else None
