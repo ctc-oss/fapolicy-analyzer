@@ -20,7 +20,7 @@
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <child>
-                  <object class="GtkTextView" id="legacyTextView">
+                  <object class="GtkSourceView" id="legacyTextView">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                   </object>

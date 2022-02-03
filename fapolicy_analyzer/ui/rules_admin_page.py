@@ -16,6 +16,7 @@
 import logging
 from typing import Any, Optional, Sequence
 
+import gi
 from fapolicy_analyzer import Rule
 from fapolicy_analyzer.ui.actions import (
     NotificationType,
@@ -27,6 +28,9 @@ from fapolicy_analyzer.ui.strings import RULES_LOAD_ERROR
 from fapolicy_analyzer.ui.ui_page import UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 
+gi.require_version("GtkSource", "3.0")
+from gi.repository import GtkSource
+
 
 class RulesAdminPage(UIConnectedWidget, UIPage):
     def __init__(self):
@@ -34,19 +38,24 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
             self, get_system_feature(), on_next=self.on_next_system
         )
         UIPage.__init__(self, {})
+        self.__view: GtkSource = self.get_object("legacyTextView")
         self.__rules: Sequence[Rule] = []
         self.__error: Optional[str] = None
         self.__loading: bool = False
+
+        self.__setup_view()
         self.__load_rules()
+
+    def __setup_view(self):
+        self.__view.set_show_line_numbers(True)
 
     def __load_rules(self):
         self.__loading = True
         dispatch(request_rules())
 
     def __populate_rules(self):
-        view = self.get_object("legacyTextView")
-        text = "\n".join([f"{r.id}: {r.text}" for r in self.__rules])
-        view.get_buffer().set_text(text)
+        text = "\n".join([r.text for r in self.__rules])
+        self.__view.get_buffer().set_text(text)
 
     def on_next_system(self, system: Any):
         rules_state = system.get("rules")
