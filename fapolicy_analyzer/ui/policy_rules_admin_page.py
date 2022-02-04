@@ -438,7 +438,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             self.__events_loading or self.__users_loading or self.__groups_loading
         )
 
-        num_changesets = len(system.get("changesets",[]))
+        num_changesets = len(system.get("changesets", []))
         if self.__n_changesets != num_changesets:
             self.__n_changesets = num_changesets
             self.__refresh()
