@@ -73,6 +73,10 @@ def mock_log():
     )
 
 
+def mock_rule():
+    return MagicMock(id=1, text="Mock Rule Number 1")
+
+
 class mock_System:
     def ancillary_trust(self):
         return [mock_trust()]
@@ -94,3 +98,6 @@ class mock_System:
 
     def events(self, file):
         return mock_log()
+
+    def rules(self):
+        return [mock_rule()]
