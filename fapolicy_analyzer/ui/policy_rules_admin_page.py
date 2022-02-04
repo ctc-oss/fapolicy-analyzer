@@ -438,10 +438,10 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             self.__events_loading or self.__users_loading or self.__groups_loading
         )
 
-        if system.get("changesets"):
-            if not self.__n_changesets == len(system.get("changesets")):
-                self.__n_changesets = len(system.get("changesets"))
-                self.__refresh()
+        num_changesets = len(system.get("changesets",[]))
+        if self.__n_changesets != num_changesets:
+            self.__n_changesets = num_changesets
+            self.__refresh()
 
     def on_acl_selection_changed(self, data, type=None, secondary_action=None):
         id = data[-1][1] if data else None
