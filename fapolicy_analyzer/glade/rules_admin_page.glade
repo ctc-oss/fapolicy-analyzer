@@ -39,6 +39,7 @@
                   <object class="GtkSourceView" id="legacyTextView">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
+                    <property name="editable">False</property>
                   </object>
                 </child>
               </object>
