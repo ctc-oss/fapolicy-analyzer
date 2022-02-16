@@ -1,0 +1,3 @@
+[submodule "vendor/events"]
+	path = vendor/events
+	url = https://github.com/pyeve/events.git
