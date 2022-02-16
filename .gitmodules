@@ -1,3 +1,9 @@
 [submodule "vendor/events"]
 	path = vendor/events
 	url = https://github.com/pyeve/events.git
+[submodule "vendor/RxPY"]
+	path = vendor/RxPY
+	url = https://github.com/ReactiveX/RxPY.git
+[submodule "vendor/more-itertools"]
+	path = vendor/more-itertools
+	url = https://github.com/more-itertools/more-itertools.git
