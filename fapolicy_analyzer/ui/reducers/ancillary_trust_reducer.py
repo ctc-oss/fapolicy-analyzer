@@ -13,22 +13,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fapolicy_analyzer import Trust
-from redux import Action, Reducer, handle_actions
 from typing import Any, NamedTuple, Optional, Sequence, cast
+
+from fapolicy_analyzer import Trust
 from fapolicy_analyzer.ui.actions import (
+    ADD_CHANGESETS,
+    ANCILLARY_TRUST_DEPLOYED,
+    CLEAR_CHANGESETS,
+    ERROR_ANCILLARY_TRUST,
     ERROR_DEPLOYING_ANCILLARY_TRUST,
     RECEIVED_ANCILLARY_TRUST,
-    ERROR_ANCILLARY_TRUST,
-    ANCILLARY_TRUST_DEPLOYED,
-    ADD_CHANGESETS,
-    CLEAR_CHANGESETS,
     REQUEST_ANCILLARY_TRUST,
 )
+from redux import Action, Reducer, handle_actions
 
 
 class TrustState(NamedTuple):
-    error: str
+    error: Optional[str]
     loading: bool
     trust: Sequence[Trust]
     deployed: bool

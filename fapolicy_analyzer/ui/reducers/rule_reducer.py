@@ -1,4 +1,4 @@
-# Copyright Concurrent Technologies Corporation 2021
+# Copyright Concurrent Technologies Corporation 2022
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,40 +15,40 @@
 
 from typing import Any, NamedTuple, Optional, Sequence, cast
 
-from fapolicy_analyzer import EventLog
-from fapolicy_analyzer.ui.actions import ERROR_EVENTS, RECEIVED_EVENTS, REQUEST_EVENTS
+from fapolicy_analyzer import Rule
+from fapolicy_analyzer.ui.actions import ERROR_RULES, RECEIVED_RULES, REQUEST_RULES
 from redux import Action, Reducer, handle_actions
 
 
-class EventState(NamedTuple):
+class RuleState(NamedTuple):
     error: Optional[str]
     loading: bool
-    log: Sequence[EventLog]
+    rules: Sequence[Rule]
 
 
-def _create_state(state: EventState, **kwargs: Optional[Any]) -> EventState:
-    return EventState(**{**state._asdict(), **kwargs})
+def _create_state(state: RuleState, **kwargs: Optional[Any]) -> RuleState:
+    return RuleState(**{**state._asdict(), **kwargs})
 
 
-def handle_request_events(state: EventState, action: Action) -> EventState:
+def handle_request_rules(state: RuleState, action: Action) -> RuleState:
     return _create_state(state, loading=True, error=None)
 
 
-def handle_received_events(state: EventState, action: Action) -> EventState:
-    payload = cast(Sequence[EventLog], action.payload)
-    return _create_state(state, log=payload, error=None, loading=False)
+def handle_received_rules(state: RuleState, action: Action) -> RuleState:
+    payload = cast(Sequence[Rule], action.payload)
+    return _create_state(state, rules=payload, error=None, loading=False)
 
 
-def handle_error_events(state: EventState, action: Action) -> EventState:
+def handle_error_rules(state: RuleState, action: Action) -> RuleState:
     payload = cast(str, action.payload)
     return _create_state(state, error=payload, loading=False)
 
 
-event_reducer: Reducer = handle_actions(
+rule_reducer: Reducer = handle_actions(
     {
-        REQUEST_EVENTS: handle_request_events,
-        RECEIVED_EVENTS: handle_received_events,
-        ERROR_EVENTS: handle_error_events,
+        REQUEST_RULES: handle_request_rules,
+        RECEIVED_RULES: handle_received_rules,
+        ERROR_RULES: handle_error_rules,
     },
-    EventState(error=None, log=None, loading=False),
+    RuleState(error=None, rules=[], loading=False),
 )
