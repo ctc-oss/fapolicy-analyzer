@@ -7,3 +7,6 @@
 [submodule "vendor/more-itertools"]
 	path = vendor/more-itertools
 	url = https://github.com/more-itertools/more-itertools.git
+[submodule "vendor/pygobject"]
+	path = vendor/pygobject
+	url = https://gitlab.gnome.org/GNOME/pygobject.git
