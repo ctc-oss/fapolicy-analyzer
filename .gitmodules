@@ -10,3 +10,6 @@
 [submodule "vendor/pygobject"]
 	path = vendor/pygobject
 	url = https://gitlab.gnome.org/GNOME/pygobject.git
+[submodule "vendor/pycairo"]
+	path = vendor/pycairo
+	url = https://github.com/pygobject/pycairo.git
