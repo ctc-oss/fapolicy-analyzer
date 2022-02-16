@@ -67,7 +67,7 @@ def mock_dispatches(mocker):
     mocker.patch("ui.ancillary_trust_database_admin.dispatch")
     mocker.patch("ui.system_trust_database_admin.dispatch")
     mocker.patch("ui.policy_rules_admin_page.dispatch")
-    mocker.patch("ui.rules_admin_page.dispatch")
+    mocker.patch("ui.rules.rules_admin_page.dispatch")
 
 
 @pytest.fixture
@@ -177,7 +177,7 @@ def test_opens_analyze_with_syslog_page(mainWindow):
 
 
 def test_opens_rules_admin_page(mainWindow, mocker):
-    mocker.patch("ui.rules_admin_page.get_system_feature")
+    mocker.patch("ui.rules.rules_admin_page.get_system_feature")
     menuItem = mainWindow.get_object("rulesAdminMenu")
     menuItem.activate()
     refresh_gui()

@@ -25,15 +25,18 @@ from gi.repository import Gtk  # isort: skip
 
 class RulesListView(SearchableList):
     def __init__(self):
-        super().__init__(self.__columns())
+        super().__init__(self.__columns(), view_headers_visible=False)
 
     def __columns(self):
-        return [Gtk.TreeViewColumn("", Gtk.CellRendererText(), text=0)]
+        return [
+            Gtk.TreeViewColumn("", Gtk.CellRendererText(), text=0, cell_background=2)
+        ]
 
     def render_rules(self, rules: Sequence[Rule]):
-        store = Gtk.ListStore(str, int)
+        store = Gtk.ListStore(str, int, str)
 
-        for rule in rules:
-            store.append([rule.text, rule.id])
+        for idx, rule in enumerate(rules):
+            row_color = "white" if idx % 2 else "gainsboro"
+            store.append([rule.text, rule.id, row_color])
 
         self.load_store(store)
