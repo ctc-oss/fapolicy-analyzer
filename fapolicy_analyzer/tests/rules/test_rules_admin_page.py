@@ -19,14 +19,13 @@ from unittest.mock import MagicMock
 import gi
 import pytest
 from callee import Attrs, InstanceOf
+from mocks import mock_rule, mock_System
 from redux import Action
 from rx.subject import Subject
 from ui.actions import ADD_NOTIFICATION
 from ui.rules import RulesAdminPage
 from ui.store import init_store
 from ui.strings import RULES_LOAD_ERROR
-
-from mocks import mock_rule, mock_System
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
@@ -77,14 +76,6 @@ def test_populates_rules(widget, mock_system_feature, mocker):
     )
     mock_list_renderer.assert_called_once_with(mock_rules)
     mock_text_renderer.assert_called_once_with(mock_rules)
-    # textView = widget.get_object("legacyTextView")
-    # textBuffer = textView.get_buffer()
-    # assert (
-    #     textBuffer.get_text(
-    #         textBuffer.get_start_iter(), textBuffer.get_end_iter(), True
-    #     )
-    #     == mock_rule().text
-    # )
 
 
 @pytest.mark.usefixtures("widget")
