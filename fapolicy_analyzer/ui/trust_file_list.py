@@ -13,17 +13,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import fapolicy_analyzer.ui.strings as strings
-import gi
-
-gi.require_version("Gtk", "3.0")
 from concurrent.futures import ThreadPoolExecutor
 from time import localtime, mktime, strftime, strptime
 
-from gi.repository import GLib, Gtk
+import fapolicy_analyzer.ui.strings as strings
+import gi
 
 from .searchable_list import SearchableList
 from .strings import FILE_LABEL, FILES_LABEL
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import GLib, Gtk  # isort: skip
 
 # global variable used for stopping the running executor from call for UI
 # updates if the widget was destroyed
@@ -57,7 +57,11 @@ class TrustFileList(SearchableList):
         ]
 
         super().__init__(
-            self._columns(), *args, searchColumnIndex=2, defaultSortIndex=2, selection_type="multi",
+            self._columns(),
+            *args,
+            searchColumnIndex=2,
+            defaultSortIndex=2,
+            selection_type="multi",
         )
         self.trust_func = trust_func
         self.markup_func = markup_func

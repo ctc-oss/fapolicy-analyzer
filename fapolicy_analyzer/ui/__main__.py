@@ -27,6 +27,7 @@ from .splash_screen import SplashScreen
 from .store import init_store
 
 gi.require_version("Gtk", "3.0")
+gi.require_version("GtkSource", "3.0")
 from gi.repository import Gtk, GtkSource, GObject  # isort: skip
 
 

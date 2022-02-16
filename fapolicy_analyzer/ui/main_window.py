@@ -35,7 +35,7 @@ from .database_admin_page import DatabaseAdminPage
 from .notification import Notification
 from .operations import DeployChangesetsOp
 from .policy_rules_admin_page import PolicyRulesAdminPage
-from .rules_admin_page import RulesAdminPage
+from .rules import RulesAdminPage
 from .session_manager import sessionManager
 from .store import dispatch, get_system_feature
 from .ui_widget import UIConnectedWidget

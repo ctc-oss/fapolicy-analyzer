@@ -19,10 +19,10 @@ from unittest.mock import MagicMock
 import gi
 import pytest
 from callee import Attrs, InstanceOf
+from fapolicy_analyzer.ui.rules import RulesAdminPage
 from redux import Action
 from rx.subject import Subject
 from ui.actions import ADD_NOTIFICATION
-from ui.rules_admin_page import RulesAdminPage
 from ui.store import init_store
 from ui.strings import RULES_LOAD_ERROR
 
