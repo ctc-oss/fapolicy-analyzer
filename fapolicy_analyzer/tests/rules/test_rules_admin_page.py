@@ -19,14 +19,13 @@ from unittest.mock import MagicMock
 import gi
 import pytest
 from callee import Attrs, InstanceOf
+from mocks import mock_rule, mock_System
 from redux import Action
 from rx.subject import Subject
 from ui.actions import ADD_NOTIFICATION
-from ui.rules_admin_page import RulesAdminPage
+from ui.rules import RulesAdminPage
 from ui.store import init_store
 from ui.strings import RULES_LOAD_ERROR
-
-from mocks import mock_rule, mock_System
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
@@ -34,14 +33,14 @@ from gi.repository import Gtk  # isort: skip
 
 @pytest.fixture()
 def mock_dispatch(mocker):
-    return mocker.patch("ui.rules_admin_page.dispatch")
+    return mocker.patch("ui.rules.rules_admin_page.dispatch")
 
 
 @pytest.fixture()
 def mock_system_feature(mocker):
     mockSystemFeature = Subject()
     mocker.patch(
-        "ui.rules_admin_page.get_system_feature",
+        "ui.rules.rules_admin_page.get_system_feature",
         return_value=mockSystemFeature,
     )
     yield mockSystemFeature
@@ -58,20 +57,25 @@ def test_creates_widget(widget):
     assert type(widget.get_ref()) is Gtk.Notebook
 
 
-def test_populates_rules(widget, mock_system_feature):
+def test_populates_rules(widget, mock_system_feature, mocker):
+    mock_rules = [mock_rule()]
+    mock_list_renderer = MagicMock()
+    mock_text_renderer = MagicMock()
+    mocker.patch(
+        "fapolicy_analyzer.ui.rules.rules_list_view.RulesListView.render_rules",
+        mock_list_renderer,
+    )
+    mocker.patch(
+        "fapolicy_analyzer.ui.rules.rules_text_view.RulesTextView.render_rules",
+        mock_text_renderer,
+    )
     mock_system_feature.on_next(
         {
-            "rules": MagicMock(error=None, rules=[mock_rule()], loading=False),
+            "rules": MagicMock(error=None, rules=mock_rules, loading=False),
         }
     )
-    textView = widget.get_object("legacyTextView")
-    textBuffer = textView.get_buffer()
-    assert (
-        textBuffer.get_text(
-            textBuffer.get_start_iter(), textBuffer.get_end_iter(), True
-        )
-        == mock_rule().text
-    )
+    mock_list_renderer.assert_called_once_with(mock_rules)
+    mock_text_renderer.assert_called_once_with(mock_rules)
 
 
 @pytest.mark.usefixtures("widget")
