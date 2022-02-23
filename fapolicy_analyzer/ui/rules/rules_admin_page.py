@@ -17,16 +17,13 @@ import logging
 from typing import Any, Mapping, Optional, Sequence
 
 from fapolicy_analyzer import Rule
-from fapolicy_analyzer.ui.actions import (
-    NotificationType,
-    add_notification,
-    request_rules,
-    request_rules_config,
-)
+from fapolicy_analyzer.ui.actions import (NotificationType, add_notification,
+                                          request_rules, request_rules_config)
 from fapolicy_analyzer.ui.rules.rules_list_view import RulesListView
 from fapolicy_analyzer.ui.rules.rules_text_view import RulesTextView
 from fapolicy_analyzer.ui.store import dispatch, get_system_feature
-from fapolicy_analyzer.ui.strings import RULES_CONFIG_LOAD_ERROR, RULES_LOAD_ERROR
+from fapolicy_analyzer.ui.strings import (RULES_CONFIG_LOAD_ERROR,
+                                          RULES_LOAD_ERROR)
 from fapolicy_analyzer.ui.ui_page import UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 
@@ -70,7 +67,7 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         if not rules_state.loading and self.__error_rules != rules_state.error:
             self.__error_rules = rules_state.error
             self.__loading_rules = False
-            logging.error("%s: %s", RULES_LOAD_ERROR, self.__error)
+            logging.error("%s: %s", RULES_LOAD_ERROR, self.__error_rules)
             dispatch(add_notification(RULES_LOAD_ERROR, NotificationType.ERROR))
         elif (
             self.__loading_rules
@@ -85,7 +82,7 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         if not config_state.loading and self.__error_config != config_state.error:
             self.__error_config = config_state.error
             self.__loading_config = False
-            logging.error("%s: %s", RULES_CONFIG_LOAD_ERROR, self.__error)
+            logging.error("%s: %s", RULES_CONFIG_LOAD_ERROR, self.__error_config)
             dispatch(add_notification(RULES_CONFIG_LOAD_ERROR, NotificationType.ERROR))
         elif (
             self.__loading_config

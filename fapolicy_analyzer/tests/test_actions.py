@@ -30,6 +30,7 @@ from ui.actions import (
     ERROR_EVENTS,
     ERROR_GROUPS,
     ERROR_RULES,
+    ERROR_RULES_CONFIG,
     ERROR_SYSTEM_INITIALIZATION,
     ERROR_SYSTEM_TRUST,
     ERROR_USERS,
@@ -38,6 +39,7 @@ from ui.actions import (
     RECEIVED_EVENTS,
     RECEIVED_GROUPS,
     RECEIVED_RULES,
+    RECEIVED_RULES_CONFIG,
     RECEIVED_SYSTEM_TRUST,
     RECEIVED_USERS,
     REMOVE_NOTIFICATION,
@@ -45,6 +47,7 @@ from ui.actions import (
     REQUEST_EVENTS,
     REQUEST_GROUPS,
     REQUEST_RULES,
+    REQUEST_RULES_CONFIG,
     REQUEST_SYSTEM_TRUST,
     REQUEST_USERS,
     RESTORE_SYSTEM_CHECKPOINT,
@@ -63,6 +66,7 @@ from ui.actions import (
     error_events,
     error_groups,
     error_rules,
+    error_rules_config,
     error_system_trust,
     error_users,
     init_system,
@@ -70,6 +74,7 @@ from ui.actions import (
     received_events,
     received_groups,
     received_rules,
+    received_rules_config,
     received_system_trust,
     received_users,
     remove_notification,
@@ -77,6 +82,7 @@ from ui.actions import (
     request_events,
     request_groups,
     request_rules,
+    request_rules_config,
     request_system_trust,
     request_users,
     restore_system_checkpoint,
@@ -299,6 +305,28 @@ def test_error_rules():
     action = error_rules("foo")
     assert type(action) is Action
     assert action.type == ERROR_RULES
+    assert action.payload == "foo"
+
+
+def test_request_rules_config():
+    action = request_rules_config()
+    assert type(action) is Action
+    assert action.type == REQUEST_RULES_CONFIG
+    assert not action.payload
+
+
+def test_received_rules_config():
+    config = {"rules_path": "/foo/path"}
+    action = received_rules_config(config)
+    assert type(action) is Action
+    assert action.type == RECEIVED_RULES_CONFIG
+    assert action.payload == config
+
+
+def test_error_rules_config():
+    action = error_rules_config("foo")
+    assert type(action) is Action
+    assert action.type == ERROR_RULES_CONFIG
     assert action.payload == "foo"
 
 
