@@ -13,14 +13,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fapolicy_analyzer.ui.actions import ERROR_GROUPS, RECEIVED_GROUPS, REQUEST_GROUPS
-from fapolicy_analyzer import Group
-from redux import Action, Reducer, handle_actions
 from typing import Any, NamedTuple, Optional, Sequence, cast
+
+from fapolicy_analyzer import Group
+from fapolicy_analyzer.ui.actions import ERROR_GROUPS, RECEIVED_GROUPS, REQUEST_GROUPS
+from redux import Action, Reducer, handle_actions
 
 
 class GroupState(NamedTuple):
-    error: str
+    error: Optional[str]
     loading: bool
     groups: Sequence[Group]
 

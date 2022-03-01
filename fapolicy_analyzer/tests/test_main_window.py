@@ -67,6 +67,7 @@ def mock_dispatches(mocker):
     mocker.patch("ui.ancillary_trust_database_admin.dispatch")
     mocker.patch("ui.system_trust_database_admin.dispatch")
     mocker.patch("ui.policy_rules_admin_page.dispatch")
+    mocker.patch("ui.rules.rules_admin_page.dispatch")
 
 
 @pytest.fixture
@@ -167,12 +168,21 @@ def test_opens_analyze_with_audit_page(mainWindow, mocker):
     assert Gtk.Buildable.get_name(content) == "policyRulesAdminPage"
 
 
-def test_opens_analyze_with_syslog_page(mainWindow, mocker):
+def test_opens_analyze_with_syslog_page(mainWindow):
     menuItem = mainWindow.get_object("syslogMenu")
     menuItem.activate()
     refresh_gui()
     content = next(iter(mainWindow.get_object("mainContent").get_children()))
     assert Gtk.Buildable.get_name(content) == "policyRulesAdminPage"
+
+
+def test_opens_rules_admin_page(mainWindow, mocker):
+    mocker.patch("ui.rules.rules_admin_page.get_system_feature")
+    menuItem = mainWindow.get_object("rulesAdminMenu")
+    menuItem.activate()
+    refresh_gui()
+    content = next(iter(mainWindow.get_object("mainContent").get_children()))
+    assert Gtk.Buildable.get_name(content) == "rulesAdminPage"
 
 
 def test_bad_router_option():

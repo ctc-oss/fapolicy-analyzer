@@ -35,6 +35,7 @@ from .database_admin_page import DatabaseAdminPage
 from .notification import Notification
 from .operations import DeployChangesetsOp
 from .policy_rules_admin_page import PolicyRulesAdminPage
+from .rules import RulesAdminPage
 from .session_manager import sessionManager
 from .store import dispatch, get_system_feature
 from .ui_widget import UIConnectedWidget
@@ -49,6 +50,7 @@ def router(selection: ANALYZER_SELECTION, data: Any = None) -> UIPage:
         ANALYZER_SELECTION.TRUST_DATABASE_ADMIN: DatabaseAdminPage,
         ANALYZER_SELECTION.ANALYZE_FROM_AUDIT: PolicyRulesAdminPage,
         ANALYZER_SELECTION.ANALYZE_SYSLOG: PolicyRulesAdminPage,
+        ANALYZER_SELECTION.RULES_ADMIN: RulesAdminPage,
     }.get(selection)
     if route:
         return route(data) if data else route()
@@ -359,6 +361,11 @@ class MainWindow(UIConnectedWidget):
     def on_trustDbMenu_activate(self, menuitem, *args):
         self.__pack_main_content(router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN))
         self.__set_trustDbMenu_sensitive(False)
+
+    def on_rulesAdminMenu_activate(self, *args):
+        self.__pack_main_content(router(ANALYZER_SELECTION.RULES_ADMIN))
+        # TODO: figure out a good way to set sensitivity on the menu items based on what is selected
+        self.__set_trustDbMenu_sensitive(True)
 
     def on_deployChanges_clicked(self, *args):
         with DeployChangesetsOp(self.window) as op:

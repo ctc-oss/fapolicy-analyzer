@@ -134,7 +134,7 @@ def test_load_trust_w_exception(mock_dispatch, mock_system_feature):
     mock_dispatch.assert_called_with(
         InstanceOf(Action)
         & Attrs(
-            type=ADD_NOTIFICATION,
             payload=Attrs(type=NotificationType.ERROR, text=SYSTEM_TRUST_LOAD_ERROR),
+            type=ADD_NOTIFICATION,
         )
     )

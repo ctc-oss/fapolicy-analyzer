@@ -29,18 +29,22 @@ from ui.actions import (
     ERROR_DEPLOYING_ANCILLARY_TRUST,
     ERROR_EVENTS,
     ERROR_GROUPS,
+    ERROR_RULES,
+    ERROR_SYSTEM_INITIALIZATION,
     ERROR_SYSTEM_TRUST,
     ERROR_USERS,
     INIT_SYSTEM,
     RECEIVED_ANCILLARY_TRUST,
     RECEIVED_EVENTS,
     RECEIVED_GROUPS,
+    RECEIVED_RULES,
     RECEIVED_SYSTEM_TRUST,
     RECEIVED_USERS,
     REMOVE_NOTIFICATION,
     REQUEST_ANCILLARY_TRUST,
     REQUEST_EVENTS,
     REQUEST_GROUPS,
+    REQUEST_RULES,
     REQUEST_SYSTEM_TRUST,
     REQUEST_USERS,
     RESTORE_SYSTEM_CHECKPOINT,
@@ -58,22 +62,26 @@ from ui.actions import (
     error_deploying_ancillary_trust,
     error_events,
     error_groups,
+    error_rules,
     error_system_trust,
     error_users,
     init_system,
     received_ancillary_trust,
     received_events,
     received_groups,
+    received_rules,
     received_system_trust,
     received_users,
     remove_notification,
     request_ancillary_trust,
     request_events,
     request_groups,
+    request_rules,
     request_system_trust,
     request_users,
     restore_system_checkpoint,
     set_system_checkpoint,
+    system_initialization_error,
     system_initialized,
 )
 
@@ -272,6 +280,28 @@ def test_error_groups():
     assert action.payload == "foo"
 
 
+def test_request_rules():
+    action = request_rules()
+    assert type(action) is Action
+    assert action.type == REQUEST_RULES
+    assert not action.payload
+
+
+def test_received_rules():
+    rules = [MagicMock()]
+    action = received_rules(rules)
+    assert type(action) is Action
+    assert action.type == RECEIVED_RULES
+    assert action.payload == rules
+
+
+def test_error_rules():
+    action = error_rules("foo")
+    assert type(action) is Action
+    assert action.type == ERROR_RULES
+    assert action.payload == "foo"
+
+
 def test_init_system():
     action = init_system()
     assert type(action) is Action
@@ -283,4 +313,11 @@ def test_system_initialized():
     action = system_initialized()
     assert type(action) is Action
     assert action.type == SYSTEM_INITIALIZED
+    assert not action.payload
+
+
+def test_system_initialization_error():
+    action = system_initialization_error()
+    assert type(action) is Action
+    assert action.type == ERROR_SYSTEM_INITIALIZATION
     assert not action.payload

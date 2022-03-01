@@ -12,8 +12,14 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 from unittest.mock import Mock
+
+import gi
+
+gi.require_version("GtkSource", "3.0")
+from gi.repository import GtkSource, GObject  # isort: skip
+
+GObject.type_register(GtkSource.View)
 
 
 def assert_not_any_call(self, *args, **kwargs):
