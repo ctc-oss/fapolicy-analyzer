@@ -26,7 +26,6 @@ from .searchable_list import SearchableList
 from .store import dispatch
 from .strings import FILE_LABEL, FILES_LABEL
 from .trust_reconciliation_dialog import TrustReconciliationDialog
-
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gdk, Gtk  # isort: skip
 
@@ -106,7 +105,22 @@ class SubjectList(SearchableList):
         fileColumn.set_sort_column_id(2)
         return [trustColumn, accessColumn, fileColumn]
 
+    def __trust_markup(self, subject):
+        u_str = "U"
+        at_str = '<span color=\"red\"><b>AT</b></span>'
+        st_str = '<span color=\"red\"><b>ST</b></span>'
+
+        if subject.trust.lower() == "at":
+            at_str = '<span color=\"green\"><b><u>AT</u></b></span>'
+        elif subject.trust.lower() == "st":
+            st_str = '<span color=\"green\"><b><u>ST</u></b></span>'
+        elif subject.trust.lower() == "u":
+            u_str = '<span color=\"green\"><b><u>U</u></b></span>'
+
+        return "/".join([st_str, at_str, u_str])
+
     def __markup(self, value, options):
+
         idx = options.index(value) if value in options else -1
         return "/".join(
             [f"<b><u>{o}</u></b>" if i == idx else o for i, o in enumerate(options)]
@@ -181,11 +195,10 @@ class SubjectList(SearchableList):
         self._ancillaryTrust = kwargs.get("ancillaryTrust", [])
         store = Gtk.ListStore(str, str, str, object, str)
         for s in subjects:
-            status = self.__markup(s.trust.upper(), ["ST", "AT", "U"])
+            status = self.__trust_markup(s)
             access = self.__markup(s.access.upper(), ["A", "P", "D"])
             bgColor = self.__color(s.access)
             store.append([status, access, s.file, s, bgColor])
-
         super().load_store(store)
 
     def get_selected_row_by_file(self, file: str) -> Gtk.TreePath:
