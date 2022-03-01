@@ -105,7 +105,7 @@ class SubjectList(SearchableList):
         fileColumn.set_sort_column_id(2)
         return [trustColumn, accessColumn, fileColumn]
 
-    def __trust_markup(self, subject):
+    def _trust_markup(self, subject):
         u_str = "U"
         at_str = '<span color=\"red\"><b>AT</b></span>'
         st_str = '<span color=\"red\"><b>ST</b></span>'
@@ -195,7 +195,7 @@ class SubjectList(SearchableList):
         self._ancillaryTrust = kwargs.get("ancillaryTrust", [])
         store = Gtk.ListStore(str, str, str, object, str)
         for s in subjects:
-            status = self.__trust_markup(s)
+            status = self._trust_markup(s)
             access = self.__markup(s.access.upper(), ["A", "P", "D"])
             bgColor = self.__color(s.access)
             store.append([status, access, s.file, s, bgColor])
