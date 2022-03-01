@@ -171,6 +171,15 @@
                             <signal name="activate" handler="on_trustDbMenu_activate" swapped="no"/>
                           </object>
                         </child>
+                        <child>
+                          <object class="GtkMenuItem" id="rulesAdminMenu">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="label" translatable="yes">Administer Rules</property>
+                            <property name="use-underline">True</property>
+                            <signal name="activate" handler="on_rulesAdminMenu_activate"  swapped="no"/>
+                          </object>
+                        </child>
                       </object>
                     </child>
                   </object>

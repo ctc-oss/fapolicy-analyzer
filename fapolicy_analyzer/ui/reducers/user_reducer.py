@@ -13,18 +13,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fapolicy_analyzer.ui.actions import (
-    ERROR_USERS,
-    RECEIVED_USERS,
-    REQUEST_USERS,
-)
-from fapolicy_analyzer import User
-from redux import Action, Reducer, handle_actions
 from typing import Any, NamedTuple, Optional, Sequence, cast
+
+from fapolicy_analyzer import User
+from fapolicy_analyzer.ui.actions import ERROR_USERS, RECEIVED_USERS, REQUEST_USERS
+from redux import Action, Reducer, handle_actions
 
 
 class UserState(NamedTuple):
-    error: str
+    error: Optional[str]
     loading: bool
     users: Sequence[User]
 

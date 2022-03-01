@@ -19,14 +19,16 @@ logging.basicConfig(level=logging.WARNING)
 import argparse
 
 import gi
-
-gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
-from fapolicy_analyzer.util.xdg_utils import xdg_state_dir_prefix
 from fapolicy_analyzer import __version__ as app_version
+from fapolicy_analyzer.util.xdg_utils import xdg_state_dir_prefix
+
 from .session_manager import sessionManager
 from .splash_screen import SplashScreen
 from .store import init_store
+
+gi.require_version("Gtk", "3.0")
+gi.require_version("GtkSource", "3.0")
+from gi.repository import Gtk, GtkSource, GObject  # isort: skip
 
 
 def _parse_cmdline():
@@ -70,12 +72,17 @@ def _parse_cmdline():
         )
 
 
+def _register_types():
+    GObject.type_register(GtkSource.View)
+
+
 def show_banner():
     print(f"fapolicy-analyzer v{app_version}")
 
 
 def main():
     _parse_cmdline()
+    _register_types()
     show_banner()
     init_store()
     SplashScreen()
