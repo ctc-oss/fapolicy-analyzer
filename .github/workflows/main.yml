@@ -66,10 +66,10 @@ jobs:
           sudo apt-get install libgirepository1.0-dev
           sudo apt-get install xvfb
           sudo apt-get install libdbus-1-dev
-      - name: Set up Python 3.9
+      - name: Set up Python 3.6
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9
+          python-version: 3.6
       - name: Set up Rust Stable
         uses: actions-rs/toolchain@v1
         with:
@@ -98,10 +98,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.9
+      - name: Set up Python 3.6
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9
+          python-version: 3.6
       - name: Install dependencies
         id: install_deps
         run: |
@@ -123,10 +123,10 @@ jobs:
           sudo apt-get install libgirepository1.0-dev
           sudo apt-get install xvfb
           sudo apt-get install libgtksourceview-3.0-dev
-      - name: Set up Python 3.9
+      - name: Set up Python 3.6
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9
+          python-version: 3.6
       - name: Install extra locales
         id: install_locales
         run: |
