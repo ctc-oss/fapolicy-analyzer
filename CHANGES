@@ -1,0 +1,61 @@
+Events Changelog
+================
+
+Here you can see the full list of changes between each Events release.
+
+In development
+--------------
+
+- hic sunt leones
+
+Version 0.4
+-----------
+
+Released on October 31, 2020
+
+- Add Python 3.7 and 3.8 to CI matrix.
+- Drop Python 2.6 and Python 3.3 and pypy from CI matrix.
+- Add section on unsubscribing to documentation (Michael Kennedy)
+- Fix Events.__len__ counting __events__
+- Add event_slot_cls argument to Events to allow custom EventSlot class.
+
+Version 0.3
+-----------
+
+Released on June 1, 2017.
+
+- Add Python 3.5 and 3.6 to CI.
+- Add support for defining event names in constructor. Closes #1 (Anfernee
+  Jervis).
+
+Version 0.2.2
+-------------
+
+Released on January 2, 2017.
+
+- Limit events to only trigger current subscribers (Thomas Hanssen Nornes)
+- Docs: fix (Evan Klitzke)
+
+Version 0.2.1
+-------------
+
+Released on May 15 2014.
+
+- Python 3.4 support.
+- tox support.
+- Prevent overriding of '__' attributes (Petr Jašek).
+
+Version 0.2.0
+-------------
+
+Released on September 22 2013.
+
+- Fixed a minor encoding issue which made installing on Windows/Python3
+  impossible (Eric Smith).
+
+Version 0.1.0
+-------------
+
+Released on March 13 2013.
+
+First public release.
