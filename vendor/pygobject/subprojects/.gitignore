@@ -1,0 +1,4 @@
+glib
+libffi
+gobject-introspection
+pycairo
