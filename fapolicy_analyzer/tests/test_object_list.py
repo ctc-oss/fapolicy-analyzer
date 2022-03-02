@@ -71,24 +71,30 @@ def test_loads_store(widget):
 def test_status_markup(widget):
     view = widget.get_object("treeView")
 
+    st_trust = '<span color=\"green\"><b><u>ST</u></b></span>'
+    at_trust = '<span color=\"green\"><b><u>AT</u></b></span>'
+    st_untrust = '<span color=\"red\"><b>ST</b></span>'
+    at_untrust = '<span color=\"red\"><b>AT</b></span>'
+    untrust = '<span color="green"><b><u>U</u></b></span>'
+
     # System trust
     widget.load_store([_mock_object(trust="ST")])
-    assert view.get_model()[0][0] == "<b><u>ST</u></b>/AT/U"
+    assert view.get_model()[0][0] == st_trust + "/" + at_untrust + "/U"
     # Ancillary trust
     widget.load_store([_mock_object(trust="AT")])
-    assert view.get_model()[0][0] == "ST/<b><u>AT</u></b>/U"
+    assert view.get_model()[0][0] == st_untrust + "/" + at_trust + "/U"
     # Untrusted
     widget.load_store([_mock_object(trust="U")])
-    assert view.get_model()[0][0] == "ST/AT/<b><u>U</u></b>"
+    assert view.get_model()[0][0] == st_untrust + "/" + at_untrust + "/" + untrust
     # Bad data
     widget.load_store([_mock_object(trust="foo")])
-    assert view.get_model()[0][0] == "ST/AT/U"
+    assert view.get_model()[0][0] == st_untrust + "/" + at_untrust + "/U"
     # Empty data
     widget.load_store([_mock_object()])
-    assert view.get_model()[0][0] == "ST/AT/U"
+    assert view.get_model()[0][0] == st_untrust + "/" + at_untrust + "/U"
     # Lowercase
     widget.load_store([_mock_object(trust="st")])
-    assert view.get_model()[0][0] == "<b><u>ST</u></b>/AT/U"
+    assert view.get_model()[0][0] == st_trust + "/" + at_untrust + "/U"
 
 
 def test_mode_markup(widget):
