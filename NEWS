@@ -1,0 +1,1051 @@
+.. _v1.22.0:
+
+1.22.0 - 2022-??-??
+-------------------
+
+* Require Python 3.7+ :pr:`201`
+* Using `setup.py` directly to build/install pycairo is deprecated.
+  Use meson instead.
+
+
+.. _v1.20.1:
+
+1.20.1 - 2021-06-03
+-------------------
+
+* Use poetry for development :pr:`232`
+* setup.py: Respect the PKG_CONFIG environment variable :pr:`235`
+* Make import_cairo inline in addition to static :pr:`224`
+* docs: Fix example in Pattern.set_filter() docs :pr:`221`
+* docs: Fix build with newer sphinx :pr:`222`
+* docs: Fix NumPy width, height-conventions in examples :pr:`231`
+* docs: Last parameter of rel_curve_to should be dy3, not dy4 :pr:`230`
+* mypy: Fixes for mypy 0.800+ :pr:`233`
+* mypy: Don't run mypy via pytest :pr:`234`
+
+.. _v1.20.0:
+
+1.20.0 - 2020-10-05
+-------------------
+
+* Require Python 3.6+ :pr:`201`
+* Require cairo 1.15.10+ :pr:`204`
+* docs: support Sphinx 3.0 :pr:`207`
+* meson: add 'tests' option to skip tests :pr:`188`
+* Windows: build wheels :pr:`197`
+* Add support for Python 3.9 and 3.10 :pr:`198` :pr:`202`
+* examples: add a Jupyter Notebook example :pr:`181`
+* Raise an error early when being passed a file object not opened in binary mode :pr:`205`
+* Add a pyproject.toml file :pr:`206`
+
+
+.. _v1.19.1:
+
+1.19.1 - 2020-02-16
+-------------------
+
+* docs: Add moderngl in the integration section. :pr:`174` (:user:`Einar Forselv <einarf>`)
+* Support os.PathLike with PyPy3 >= 7.3.0
+
+
+.. _v1.19.0:
+
+1.19.0 - 2020-01-23
+-------------------
+
+* Python 2 is no longer supported :pr:`172`
+* Add machine-readable license statement :pr:`158` (:user:`Maxim Ivanov <ulidtko>`)
+* travis-ci: Manually set sysroot so correct SDK is used (:user:`Stuart Axon <stuaxo>`)
+* Support Python 3.8 on Windows (because of DLL lookup changes)
+* Fix wrong type for set_dash() offset parameter in the docs/types.
+
+
+.. _v1.18.2:
+
+1.18.2 - 2019-10-24
+-------------------
+
+* Fix a minor compatibility issue with Python 3.8 (fixes the test suite)
+
+
+.. _v1.18.1:
+
+1.18.1 - 2019-04-19
+-------------------
+
+* meson: install .egg-info to platlib
+* meson: fix configure error with meson 0.50 re absolute paths :pr:`145`
+* PyPy: don't use PyOS_FSPath() with PyPy3.6, it's missing: https://bitbucket.org/pypy/pypy/issues/2961
+* Docs fixes :pr:`134` (:user:`Matteo Italia <cvtsi2sd>`)
+
+
+.. _v1.18.0:
+
+1.18.0 - 2018-11-04
+-------------------
+
+Build:
+  * Dropped Python 3.3 support
+  * meson build requires meson >=0.47 (was >=0.46)
+  * Fix various build warnings with GCC8
+  * meson: Don't link against libpython on non-Windows systems :pr:`120`
+  * meson: Improve support for Visual Studio builds
+    :pr:`121` (:user:`Chun-wei Fan <fanc999>`)
+  * setup.py: Support specifying custom ``--pkgconfigdir``
+    :pr:`127` (:user:`Michał Górny <mgorny>`)
+
+Fixes:
+  * docs: Remove a broken link :pr:`124` (:user:`Nik Nyby <nikolas@gnu.org>`)
+  * typing: Add missing annotations for __enter__/__exit__ :pr:`126`
+
+New API:
+  Some are only available when building with newer cairo versions, see the
+  linked API docs for details.
+
+  * :data:`CAIRO_VERSION`, :data:`CAIRO_VERSION_STRING`,
+    :data:`CAIRO_VERSION_MAJOR`, :data:`CAIRO_VERSION_MINOR`,
+    :data:`CAIRO_VERSION_MICRO`
+  * :attr:`Status.TAG_ERROR`, :attr:`Status.FREETYPE_ERROR`,
+    :attr:`Status.PNG_ERROR`, :attr:`Status.WIN32_GDI_ERROR`
+  * :class:`SVGUnit`, :class:`PDFMetadata`, :class:`PDFOutlineFlags`
+  * :meth:`FontOptions.set_variations`, :meth:`FontOptions.get_variations`
+  * :meth:`Context.tag_begin`, :meth:`Context.tag_end`,
+    :data:`TAG_DEST`, :data:`TAG_LINK`
+  * :meth:`PDFSurface.set_page_label`, :meth:`PDFSurface.set_metadata`,
+    :meth:`PDFSurface.set_thumbnail_size`, :meth:`PDFSurface.add_outline`,
+    :data:`PDF_OUTLINE_ROOT`
+  * :meth:`SVGSurface.set_document_unit`, :meth:`SVGSurface.get_document_unit`
+  * :data:`MIME_TYPE_CCITT_FAX`, :data:`MIME_TYPE_CCITT_FAX_PARAMS`,
+    :data:`MIME_TYPE_EPS`, :data:`MIME_TYPE_EPS_PARAMS`,
+    :data:`MIME_TYPE_JBIG2`, :data:`MIME_TYPE_JBIG2_GLOBAL`,
+    :data:`MIME_TYPE_JBIG2_GLOBAL_ID`
+
+
+.. _v1.17.1:
+
+1.17.1 - 2018-07-07
+-------------------
+
+* `Meson <https://mesonbuild.com/>`__ support (>=0.46). :bug:`114`
+
+
+.. _v1.17.0:
+
+1.17.0 - 2018-04-15
+-------------------
+
+* :class:`cairo.Surface` and :class:`cairo.Device` can now be used as context
+  managers. :bug:`103`
+* Fix a leak when a cairo error was raised.
+* Fix a leak when a mapped surface was GCed instead of unmapped.
+* Make it possible to use the C API with Python 3 outside of the compilation
+  unit doing the import by defining ``PYCAIRO_NO_IMPORT``. :bug:`110`
+* Implement PEP 561 (added a py.typed marker)
+
+
+.. _v1.16.3:
+
+1.16.3 - 2018-02-27
+-------------------
+
+* Ship Python type annotation stubs. They are currently supported by mypy and
+  PyCharm. :bug:`99` :pr:`101`
+
+
+.. _v1.16.2:
+
+1.16.2 - 2018-02-10
+-------------------
+
+* setup.py: Some fixes for Debian pybuild quirks. :bug:`98`
+
+
+.. _v1.16.1:
+
+1.16.1 - 2018-02-06
+-------------------
+
+* setup.py: correctly install pkgconfig into /usr/lib* again.
+  To make JHBuild on Fedora work the following patch is needed:
+  https://bugzilla.gnome.org/show_bug.cgi?id=793216
+
+
+.. _v1.16.0:
+
+1.16.0 - 2018-02-05
+-------------------
+
+* Add a :func:`get_include` function which returns the compiler include path
+  needed for interfacing with the Pycairo C API :bug:`92`
+* Note for packagers: The default header installation path has changed, but a
+  compat header is installed to the old location to prevent breakage in case
+  anyone has hardcoded the old path instead of using pkg-config.
+  Just in case anyone is wondering why there are two header files now.
+
+
+.. _v1.15.6:
+
+1.15.6 - 2018-01-30
+-------------------
+
+* Experimental PyPy and PyPy3 support :bug:`90`
+
+
+.. _v1.15.5:
+
+1.15.5 - 2018-01-29
+-------------------
+
+* Support Unicode paths under Windows with cairo 1.15.10+ :pr:`87`
+* Don't include the pkg-config file when building a wheel :bug:`83`
+
+
+.. _v1.15.4:
+
+1.15.4 - 2017-11-08
+-------------------
+
+Fixes:
+  * Fix some enum conversation errors with (unused) large and negative values.
+    :pr:`81`
+
+Tests:
+  * Fix a rare test error :pr:`80` (:user:`Sergei Trofimovich <trofi>`)
+
+
+.. _v1.15.3:
+
+1.15.3 - 2017-09-17
+-------------------
+
+Fixes:
+  * setup.py: Install pkgconfig file into /usr/share/pkgconfig to work around
+    JHBuild on Fedora not picking it up.
+  * Fix tests on big endian machines. :bug:`75`
+  * Support building with MSVC :pr:`72` (:user:`Chun-wei Fan <fanc999>`)
+
+Tests:
+  * Test MSVC builds on appveyor
+
+
+.. _v1.15.2:
+
+1.15.2 - 2017-09-03
+-------------------
+
+Fixes:
+  * setup.py: Install pkgconfig file to the same library prefix that Python
+    uses. (/usr/lib64 instead of /usr/lib under Fedora for example) :bug:`70`
+    :pr:`71` (:user:`Sander Sweers <infirit>`)
+
+
+.. _v1.15.1:
+
+1.15.1 - 2017-08-19
+-------------------
+
+Fixes:
+  * Improved support for Python filesystem paths including
+    :class:`os.PathLike`. See :class:`_PathLike` for details.
+  * Various minor fixes
+
+Changes:
+  * Expose :class:`cairo.Path`
+
+Tests:
+  * Improved test coverage from ~70% to ~90%
+
+
+.. _v1.15.0:
+
+1.15.0 - 2017-07-24
+-------------------
+
+New Features:
+  * Add :meth:`Surface.map_to_image` and :meth:`Surface.unmap_image` :bug:`51`
+  * Add :class:`RasterSourcePattern` :bug:`48`
+  * Add :class:`Glyph` :bug:`53`
+  * Add :class:`Rectangle` :bug:`54`
+  * Add :class:`TextCluster` :bug:`61`
+  * Add :meth:`ScaledFont.text_to_glyphs` and :meth:`ScaledFont.glyph_extents`
+  * Add :meth:`Context.show_text_glyphs`
+  * Add :class:`TextExtents` :bug:`62`
+
+Changes:
+  * Pycairo instances wrapping the same underlying cairo object now hash and
+    compare equally e.g. ``context.get_target() == context.get_target()``
+  * Functions which returned a cairo error with :attr:`Status.NO_MEMORY` no
+    longer raise :exc:`python3:MemoryError`, but a subclass of :exc:`Error`
+    and :exc:`python3:MemoryError`. Similarly errors with
+    :attr:`Status.READ_ERROR` and :attr:`Status.WRITE_ERROR` no longer raise
+    :exc:`python3:IOError`, but a subclass of :exc:`Error` and
+    :exc:`python3:IOError`. :bug:`55`
+  * Some functions which previously returned a tuple now return a tuple
+    subclass like :class:`Rectangle`, :class:`Glyph`, :class:`TextCluster` and
+    :class:`TextExtents`
+
+
+.. _v1.14.1:
+
+1.14.1 - 2017-07-24
+-------------------
+
+Fixes:
+  * Fix a crash with :meth:`Surface.get_device` :bug:`57`
+
+
+.. _v1.14.0:
+
+1.14.0 - 2017-07-12
+-------------------
+
+General:
+  * Requires at least cairo 1.13.1 (The snapshop in Ubuntu 14.04)
+
+Tests:
+  * Optional `Hypothesis <https://hypothesis.readthedocs.io>`__ tests.
+
+New Features:
+  * Add :meth:`Surface.set_device_scale` and :meth:`Surface.get_device_scale`.
+    :pr:`44` (:user:`Sander Sweers <infirit>`)
+  * Add :class:`Device` :pr:`45`
+  * Add :meth:`Surface.get_device` :pr:`45`
+  * Add :class:`ScriptDevice` and :class:`ScriptMode` :pr:`46`
+  * Add :class:`ScriptSurface` :bug:`17`
+  * Add :attr:`Status.JBIG2_GLOBAL_MISSING`
+  * Add :meth:`Format.stride_for_width`
+  * Add :class:`TextClusterFlags` and :class:`SurfaceObserverMode`
+  * Add :meth:`Gradient.get_color_stops_rgba`
+  * Add :class:`TeeSurface`
+  * Add :class:`MeshPattern`
+
+
+.. _v1.13.4:
+
+1.13.4 - 2017-07-12
+-------------------
+
+Fixes:
+  * Fix a rare crash with :meth:`get_data() <ImageSurface.get_data>` under
+    Python 3 (1.13.3 regression).
+
+
+.. _v1.13.3:
+
+1.13.3 - 2017-06-01
+-------------------
+
+Fixes:
+  * Fix ImageSurface leaking in case :meth:`get_data() <ImageSurface.get_data>` is used under Python 3.
+    :bug:`41`
+
+Documentation:
+  * Add Pillow to ImageSurface example. :pr:`40` (:user:`Stuart Axon <stuaxo>`)
+  * Describe Freetype-py intergration. :bug:`25` :pr:`43`
+    (:user:`Hin-Tak Leung <HinTak>`)
+
+
+.. _v1.13.2:
+
+1.13.2 - 2017-05-21
+-------------------
+
+Fixes:
+  * Fix pip failing to install pycairo in some cases. :bug:`39`
+
+Testing:
+  * Added continuous testing for Windows using MSYS2 and appveyor. :bug:`19`
+
+
+.. _v1.13.1:
+
+1.13.1 - 2017-05-07
+-------------------
+
+Fixes:
+  * setup.py install: Fix generated pkg-config file if ``--home`` or
+    ``--user`` is specified. :bug:`34`
+  * Fix a build error on macOS Sierra. :pr:`36`
+    (:user:`Nicolas P. Rougier <rougier>`)
+  * examples: Fix snippet examples when .pyc files are present. :bug:`35`
+
+Documentation:
+  * Add Pyglet integration example. :pr:`33` (:user:`Stuart Axon <stuaxo>`)
+
+
+.. _v1.13.0:
+
+1.13.0 - 2017-05-03
+-------------------
+
+New Features:
+  * The buffer returned by :meth:`ImageSurface.get_data` under Python 2 now
+    implements the character buffer interface to make it work with
+    pygame.image.frombuffer(). :pr:`29`
+  * All C enum types now have their own corresponding Python enum type:
+    :class:`Antialias`, :class:`Content`, :class:`Extend`, :class:`FillRule`,
+    :class:`Filter`, :class:`FontSlant`, :class:`FontWeight`, :class:`Format`,
+    :class:`HintMetrics`, :class:`HintStyle`, :class:`LineCap`,
+    :class:`LineJoin`, :class:`Operator`, :class:`PDFVersion`,
+    :class:`PSLevel`, :class:`PathDataType`, :class:`RegionOverlap`,
+    :class:`SVGVersion`, :class:`Status`, :class:`SubpixelOrder`. :bug:`26`
+
+    All relevant constants are now an alias to attributes of those types e.g.
+    :data:`ANTIALIAS_DEFAULT` is the same as :attr:`Antialias.DEFAULT`.
+
+    All functions returning enum values now return instances of the new types
+    e.g. :meth:`Context.get_antialias` returns a :class:`Antialias`.
+
+    :attr:`Error.status` is now a :class:`Status`.
+  * All included examples now work with Python 2 & 3
+  * All included examples using GTK+ have been ported to GTK+ 3/PyGObject 3
+
+Fixes:
+  * Fix the signature of the :class:`ImageSurface` buffer interface for Python 2
+    (int -> Py_ssize_t)
+  * setup.py: Ensure "-fno-strict-aliasing" is used with Python 2.
+
+Testing:
+  * Added travis-ci tests for flake8 and sphinx. :pr:`30`, :pr:`32`
+  * The test suite now has optional tests for numpy and pygame integration.
+
+
+.. _v1.12.0:
+
+1.12.0 - 2017-04-18
+-------------------
+
+General:
+  * Require cairo 1.12.0
+  * Use C90 and enforce it on travis-ci. :bug:`5`, :fdobug:`22940`
+
+Constants:
+  * Add various new cairo.OPERATOR_*, cairo.ANTIALIAS_* and
+    cairo.FORMAT_* constants. :bug:`1`
+  * Add :data:`HAS_MIME_SURFACE` and cairo.MIME_TYPE_*. :bug:`7`,
+    :fdobug:`58771`
+  * Add cairo.PDF_VERSION_*. :pr:`16`
+  * Add cairo.SVG_VERSION_*
+
+:exc:`Error`:
+  * Add a :data:`Error.status` attribute exposing cairo.STATUS_*
+  * Add :exc:`CairoError` alias for :exc:`Error` for cairocffi compatibility
+
+:class:`Matrix`:
+  * Expose matrix components as read/write properties. e.g. :data:`Matrix.xx`
+  * Fix type checking of the multiplication operator under
+    Python 3. :bug:`8`, :fdobug:`89162` (Lawrence D'Oliveiro)
+
+:class:`Surface`:
+  * Add :meth:`Surface.set_mime_data`. :bug:`7`, :fdobug:`58771`
+  * Add :meth:`Surface.get_mime_data`. :bug:`7`, :fdobug:`58771`
+  * Add :meth:`Surface.supports_mime_type`. :bug:`7`, :fdobug:`58771`
+  * Add :meth:`Surface.create_for_rectangle`. :pr:`13`
+  * Add :meth:`Surface.create_similar_image`. :pr:`15`
+  * Add :meth:`Surface.has_show_text_glyphs`
+  * Fix crash when the surface wrapper gets deallocated before the surface
+    object. :bug:`11`
+
+:class:`Context`:
+  * Add :meth:`Context.in_clip`. :pr:`14`
+
+:class:`PDFSurface`:
+  * Add :meth:`PDFSurface.restrict_to_version`. :pr:`16`
+  * Add :meth:`PDFSurface.get_versions`. :pr:`16`
+  * Add :meth:`PDFSurface.version_to_string`. :pr:`16`
+
+:class:`SVGSurface`:
+  * Add :meth:`SVGSurface.restrict_to_version`
+  * Add :meth:`SVGSurface.get_versions`
+  * Add :meth:`SVGSurface.version_to_string`
+
+:class:`XCBSurface`:
+  * Add :meth:`XCBSurface.set_size`
+
+:class:`PSSurface`:
+  * Add :meth:`PSSurface.get_levels`
+  * Add :meth:`PSSurface.level_to_string`
+
+:class:`Pattern`:
+  * Add :meth:`Pattern.set_filter`
+  * Add :meth:`Pattern.get_filter`
+
+:class:`RecordingSurface`:
+  * Add :meth:`RecordingSurface.get_extents`
+
+:class:`FontOptions`:
+  * Implement ``__eq__`` and ``__ne__``
+  * Add :meth:`FontOptions.copy`
+  * Add :meth:`FontOptions.hash`
+  * Add :meth:`FontOptions.equal`
+  * Add :meth:`FontOptions.merge`
+
+:class:`ScaledFont`:
+  * Add :meth:`ScaledFont.get_ctm`
+  * Add :meth:`ScaledFont.get_font_matrix`
+  * Add :meth:`ScaledFont.get_font_options`
+
+
+.. _v1.11.1:
+
+1.11.1 - 2017-04-12
+-------------------
+
+This release fixes an ABI breakage. I missed that the original pycairo master
+had already broken ABI compared to 1.10.0.
+
+
+.. _v1.11.0:
+
+1.11.0 - 2017-04-09
+-------------------
+
+This version is based on the Python 2 version of pycairo 1.10.0 and is API/ABI
+compatible with both py2cairo 1.10.0 and py3cairo 1.10.0.
+
+General Changes:
+    * Requires cairo 1.10.2+
+    * Switch to semantic versioning
+    * Switch build system to distutils/setup.py (xpyb integration can be
+      enabled with passing ``--enable-xpyb`` to setup.py build)
+    * Moved to GitHub: https://github.com/pygobject/pycairo
+
+New Features:
+    * Python 3 support (API/ABI compatible with py3cairo 1.10.0) including
+      support for :exc:`cairo.Error`, :meth:`cairo.ImageSurface.get_data` and
+      :meth:`cairo.ImageSurface.create_for_data`, which were missing in
+      py3cairo.
+    * :class:`cairo.RecordingSurface` (:fdobug:`36854`,
+      `Torsten Landschoff <t.landschoff@gmx.net>`__)
+    * :class:`cairo.Region`, :class:`cairo.RectangleInt` and
+      cairo.REGION_OVERLAP_*
+      (:fdobug:`44336`, `Bug Fly <mozbugbox@yahoo.com.au>`__)
+
+Bug Fixes:
+    * Fix crash when read()/write() methods of file objects passed to pycairo
+      raise exceptions.
+    * Fix possible value truncation of handles passed to Win32Surface and
+      Win32PrintingSurface on 64bit Windows. :fdobug:`57493`
+
+
+1.10.0 - 2011-05-01
+-------------------
+
+General Changes:
+    py2cairo 1.10.0 requires cairo 1.10.0 (or later).
+
+New Constants:
+    cairo.FORMAT_RGB16_565
+
+Bug Fixes:
+    * context.get_source().get_surface() fails :fdobug:`33013`
+    * Add support for './waf configure --libdir=XXX' :fdobug:`30230`
+
+Documentation Changes:
+    * Upgrade to using Sphinx 1.0.7.
+    * Include html documentation in the pycairo archive file.
+
+Build Changes:
+    * Update waf to 1.6.3
+    * Remove setup.py
+
+Other Changes:
+    * Improve/simplify unicode filename support.
+    * Improve/simplify unicode text support.
+
+
+1.8.10 - 2010-05-20
+-------------------
+
+General Changes:
+    Pycairo 1.8.10 requires cairo 1.8.10 (or later).
+
+New Classes/Types:
+    * Win32PrintingSurface
+    * XCBSurface - add XCB support using xpyb
+
+Bug Fixes:
+    * Fix for libtool 2.2 (:fdobug:`27974`).
+    * Mingw32 and pypy fixes (:fdobug:`25203`).
+
+Other Changes:
+    Tests updated.
+
+The Win32PrintingSurface and XCBSurface changes mean that pycairo 1.8.10 is
+not binary compatible with pycairo 1.8.8. So modules that use the pycairo C
+API (like pygtk) will need to be recompiled to use pycairo 1.8.10.
+
+
+1.8.8 - 2009-08-26
+------------------
+
+General Changes:
+    * Pycairo 1.8.8 requires cairo 1.8.8 (or later).
+    * Move from CVS to git.
+    * Add support for the waf build tool.
+
+Updated Methods:
+    * The PDF/PS/SVGSurface constructors now accept None as a filename.
+
+
+1.8.6 - 2009-06-25
+------------------
+
+General Changes:
+    Pycairo 1.8.6 requires cairo 1.8.6 (or later)
+
+Bug Fixes:
+    * ImageSurface.create_from_png _read_func fix
+    * ToyFontFace type fix
+    * :fdobug:`19221`: restore cairo.Matrix '*' operator to the way it
+      originally worked.
+
+Other Changes:
+    Documentation completed.
+
+
+1.8.4 - 2009-03-19
+------------------
+
+General Changes:
+    Pycairo 1.8.4 requires cairo 1.8.4 (or later) and Python 2.6
+
+Bug Fixes:
+    * 20674: Add get/set_extend for Gradient Patterns
+
+New Classes:
+    cairo.ToyFontFace
+
+New Methods:
+    | Pattern.get_extend
+    | Pattern.set_extend
+    | ToyFontFace.get_family
+    | ToyFontFace.get_slant
+    | ToyFontFace.get_weight
+
+Deleted Methods:
+    | SurfacePattern.get_extend
+    | SurfacePattern.set_extend
+
+Other Changes:
+    Threading for surfaces with stream functions has been reenabled.
+    Documentation updates.
+
+
+1.8.2 - 2009-01-15
+------------------
+
+Pycairo 1.8.0 resulted in crashes for some applications using threads. So
+upgrading to 1.8.2 is recommended for threaded applications.
+
+Bug Fixes:
+    * :fdobug:`19287`: Threading support results in crashes in
+      cairo.ImageSurface
+
+New Methods:
+    Context.set_scaled_font
+
+API Changes:
+    Matrix multiplication::
+
+        old code: matrix3 = matrix1 * matrix2
+        new equivalent code: matrix3 = matrix1.multiply(matrix2)
+        matrix3 = matrix1 * matrix2
+        is now equivalent to matrix3 = matrix2.multiply(matrix1)
+        which is consistent with standard matrix multiplication.
+
+
+1.8.0 - 2008-12-15
+------------------
+
+General Changes:
+    Pycairo 1.8.0 requires cairo 1.8.0 (or later).
+    Add documentation (available separately)
+
+Bug Fixes:
+    * :fdobug:`18101`: Add support for threading
+    * :fdobug:`18947`: cairo.SurfacePattern should INCREF the used surface
+
+New Methods:
+    | ScaledFont.get_scale_matrix
+    | Surface.mark_dirty_rectangle
+    | Surface.set_fallback_resolution
+
+New Constants:
+    | cairo.EXTEND_PAD
+    | cairo.HAS_IMAGE_SURFACE
+    | cairo.HAS_USER_FONT
+
+API Changes:
+    * Surface.mark_dirty: no longer accepts keyword arguments with default
+      values.
+    * PycairoPattern_FromPattern (C API): has a new 'base' argument - to fix
+      :fdobug:`18947`.
+
+Other Changes:
+    Allow unknown cairo Pattern/Surface types to use the pycairo base
+    Pattern/Surface type.
+
+
+1.6.4 - 2008-08-18
+------------------
+
+General changes:
+    Pycairo 1.6.4 requires cairo 1.6.4 (or later).
+                  requires Python 2.5 (or later).
+
+Bug fixes:
+    :fdobug:`16112`: Fix win32 'python setup.py ...' build -- use double quotes
+
+New Methods:
+    | Context.has_current_point
+    | Context.path_extents
+    | ImageSurface.format_stride_for_width
+    | PSSurface.get_eps
+    | PSSurface.set_eps
+    | PSSurface.ps_level_to_string
+    | PSSurface.restrict_to_level
+    | Surface.copy_page
+    | Surface.show_page
+
+New Constants:
+    cairo.PS_LEVEL_2, cairo.PS_LEVEL_3
+
+Other changes:
+    test/pygame-test1.py, test/pygame-test2.py : pygame tests
+
+    examples/cairo_snippets/snippets/ellipse.py : Update
+    so line-width is a constant width in device-space not user-space
+
+
+1.4.12 - 2007-12-13
+-------------------
+
+General changes:
+    Pycairo 1.4.12 requires cairo 1.4.12 (or later).
+    requires Python 2.4 (or later).
+
+Bug fixes:
+    * :fdobug:`10006`: update autogen.sh to support automake >= 1.10
+    * :fdobug:`13460`: use python-config to get python includes
+
+Other changes:
+    * allow cairo.Context to be subclassed
+    * create a 'doc' subdirectory and start a FAQ file
+
+
+1.4.0 - 2007-03-14
+------------------
+
+General changes:
+    Pycairo 1.4.0 requires cairo 1.4.0 (or later).
+
+New methods:
+    | Context.clip_extents
+    | Context.copy_clip_rectangles
+    | Context.get_dash
+    | Context.get_dash_count
+    | Context.get_scaled_font
+    | Context.glyph_extents
+    | Context.glyph_path
+    | Context.show_glyphs
+    | LinearGradient.get_linear_points
+    | RadialGradient.get_radial_circles
+    | SolidPattern.get_rgba
+    | SurfacePattern.get_surface
+
+Deleted methods:
+    ImageSurface.create_for_array
+    Remove Numeric Python support, since Numeric has been made obsolete by
+    numpy, and numpy data can be read using ImageSurface.create_for_data.
+
+Other changes:
+    the module cairo.gtk has been removed (pygtk 2.7.0 onwards has cairo
+    support built in).
+
+
+1.2.6 - 2006-11-27
+------------------
+
+* Pycairo 1.2.6 requires cairo 1.2.6 (or later).
+* mingw32 compiler fixes (Cedric Gustin)
+* setup.py improvements  (Cedric Gustin)
+* ImageSurface.get_data() new method added
+  ImageSurface.get_data_as_rgba() method removed
+
+
+1.2.2 - 2006-08-21
+------------------
+
+* Pycairo requires cairo 1.2.2 (or later).
+* setup.py has been updated to allow installation by executing
+  $ python setup.py install
+* examples/cairo_snippets/snippets/gradient_mask.py
+  A new example to demonstrate pattern masks.
+* The cairo.svg module has been removed because:
+
+  1) Cairo does not include SVG parsing, so this module does not belong
+     in pycairo.
+  2) libsvg-cairo (the underlying C library) is unmaintained.
+
+
+1.2.0 - 2006-07-03
+------------------
+
+General changes:
+    Pycairo has been updated to work with cairo 1.2.0.
+
+New methods:
+    | Surface.set_fallback_resolution
+    | Surface_get_content
+    | ImageSurface_get_format
+    | Image_surface_get_stride
+
+Deleted methods:
+    PDFSurface.set_dpi, PSSurface.set_dpi, SVGSurface.set_dpi
+     - replaced by Surface.set_fallback_resolution
+
+Other changes:
+    cairo.FORMAT_RGB16_565 added
+
+
+1.1.6 - 2006-05-29
+------------------
+
+General changes:
+    Pycairo has been updated to work with cairo 1.1.6.
+
+New objects:
+    SVGSurface
+
+New methods:
+    | Context.get_group_target
+    | Context.new_sub_path
+    | Context.pop_group
+    | Context.pop_group_to_source
+    | Context.push_group
+    | Context.push_group_with_content
+    | FontOptions.get_antialias
+    | FontOptions.get_hint_metrics
+    | FontOptions.get_hint_style
+    | FontOptions.get_subpixel_order
+    | FontOptions.set_antialias
+    | FontOptions.set_hint_metrics
+    | FontOptions.set_hint_style
+    | FontOptions.set_subpixel_order
+    | PDFSurface.set_size
+    | PSSurface.dsc_begin_page_setup
+    | PSSurface.dsc_begin_setup
+    | PSSurface.dsc_comment
+    | PSSurface.set_size
+    | ScaledFont.get_font_face
+    | ScaledFont.text_extents
+    | Surface.get_device_offset
+    | XlibSurface.get_depth
+
+Updated methods:
+    PDFSurface()/PSSurface() - can now write to file-like objects (like
+    StringIO).
+
+    surface.write_to_png() and ImageSurface.create_from_png() can now write to
+    file-like objects (like StringIO).
+
+    select_font_face, show_text, text_extents and text_path now accept unicode
+    objects.
+
+Other changes:
+    misc bug fixes.
+
+New examples:
+    | examples/cairo_snippets/snippets_svg.py
+    | examples/cairo_snippets/snippets/ellipse.py
+    | examples/cairo_snippets/snippets/group.py
+    | examples/svg/svgconvert.py
+
+
+1.0.2 - 2005-10-11
+------------------
+
+General changes:
+    Pycairo has been updated to work with cairo 1.0.2.
+
+New cairo functions supported:
+    cairo.ImageSurface.create_for_data()
+
+Updated functions:
+    ctx.set_source_rgba (r, g, b, a=1.0) now supports a default alpha argument
+
+Other changes:
+    cairo.Matrix now supports the Python sequence protocol, so you can do:
+    xx, yx, xy, yy, x0, y0 = matrix
+
+
+1.0.0 - 2005-08-31
+------------------
+
+General changes:
+    Pycairo has been updated to work with cairo 1.0.0.
+
+New cairo functions supported:
+    | cairo.cairo_version()
+    | cairo.cairo_version_string()
+    | PSSurface.set_dpi()
+
+Patterns are now implemented in a class hierarchy, the new constructors are:
+    | cairo.SolidPattern (r, g, b, a=1.0)
+    | cairo.SurfacePattern (surface)
+    | cairo.LinearGradient (x0, y0, x1, y1)
+    | cairo.RadialGradient (cx0, cy0, radius0, cx1, cy1, radius1)
+
+Updated functions:
+    Surface.write_to_png() now accepts a file object as well as a filename
+
+Updated examples:
+    The gtk examples now work with pygtk >= 2.7.0 without requiring the
+    cairo.gtk module
+
+Bug Fixes:
+    fix "initializer element is not constant" compiler warnings
+
+
+0.9.0 - 2005-08-10
+------------------
+
+General changes:
+    Pycairo has been updated to work with cairo 0.9.0.
+
+New cairo functions supported:
+    | cairo_get_antialias
+    | cairo_set_antialias
+    | cairo_surface_mark_dirty_rectangle
+    | cairo_surface_flush
+
+Bug Fixes:
+    * double buffering now works with the cairo.gtk module
+
+
+0.6.0 - 2005-08-01
+------------------
+
+This version has many changes which update Pycairo to the new cairo API. The
+change list is not duplicated here, instead see the cairo/NEWS file for full
+details of all these API changes.
+
+Pycairo method names that were different from the underlying cairo function
+names have been changed to make Pycairo more closely follow cairo and so
+enable the cairo documentation to be used for writing Pycairo programs. NOTES
+has been updated to list the differences between the C API and the Pycairo
+API.
+
+Context.copy_path() has been implemented, it returns a Path instance which
+supports the iterator protocol.
+
+Python 2.3 is now required.
+
+New examples:
+    examples/warpedtext.py: shows usage of the Path iterator
+
+    examples/cairo_snippets/: shows many of the 'cairo-demo/cairo_snippets'
+    examples
+
+    examples/gtk/png_view.py: example using cairo.ImageSurface.create_from_png()
+
+General changes:
+    Pycairo has been updated to work with cairo 0.6.0, including using cairo's
+    new error handling scheme.
+
+New features:
+    cairo.CONTENT_COLOR, cairo.ALPHA, cairo.COLOR_ALPHA have been added for
+    working with surfaces.
+
+    A new class cairo.FontOptions has been added.
+
+    cairo.ImageSurface.create_from_png() now accepts a filename string or a
+    file object
+
+    New wrapper functions have been added for cairo_get_font_options,
+    cairo_set_font_options and cairo_surface_get_font_options.
+
+
+0.5.1 - 2005-06-22
+------------------
+
+New features:
+    * new class cairo.Win32Surface (Niki Spahiev)
+    * cairo.HAS_WIN32_SURFACE, cairo.HAS_PS_SURFACE etc are defined to give
+      access to the values from cairo-features.h
+
+Fixes:
+    * fix cairo_mask, cairo_mask_surface and cairo_stroke_preserve wrappers
+    * compile properly against GTK+ 2.7 (Gustavo Carneiro)
+    * other small fixes, including fixes for gcc 4.0 warnings
+
+
+0.4.0 - 2005-03-10
+------------------
+
+New cairo bindings:
+    | cairo_font_extents
+
+Bindings removed:
+    | cairo_font_set_transform
+    | cairo_font_current_transform
+
+New examples:
+    gtk/hangman.py
+
+Other:
+    Changed version numbering to correspond directly with the Cairo version
+    Pycairo was developed to work with. So, for example, Pycairo version 0.4.0
+    represents the Pycairo version that has been developed and tested with
+    Cairo 0.4.0.
+
+
+0.1.4 - 2005-01-14
+------------------
+
+The Pycairo license has changed so that it is now dual-licensed under the LGPL
+and the MPL, the same as Cairo itself. For details see the COPYING file as
+well as COPYING-LGPL-2.1 and COPYING-MPL-1.1.
+
+New cairo bindings:
+    | cairo_pdf_surface_create
+    | cairo_set_target_pdf
+
+New libsvg-cairo bindings:
+    | svg_cairo_parse
+    | svg_cairo_parse_buffer
+    | svg_cairo_render
+    | svg_cairo_get_size
+
+Other:
+    * Added --without-pygtk configure option.
+    * Renamed the Pycairo API _new() functions to _wrap() to allow _new() to
+    * be used for python __new__ functions.
+    * New examples: svg2png.py and svgview.py.
+
+
+0.1.3 - 2004-11-24
+------------------
+
+After the recent server compromise we discarded all unsigned
+snapshots. That left us without a pycairo snapshot.
+
+Additionally, there were no tags in the source repository so I
+couldn't recreate the 0.1.2 snapshot, so here's a new 0.1.3 snapshot.
+
+I apologize if I botched the version number or left something
+significant out of this announcement---I'm not the one who will
+usually be doing pycairo maintenance.
+
+New bindings:
+    | current_path
+    | current_path_flat
+    | current_font_extents
+
+Changes:
+    fill_extents,stroke_extents: Remove unnecessary args and
+    change from a method to an attribute.
+
+Other:
+    Added two new examples: context-subclass.py and warpedtext.py

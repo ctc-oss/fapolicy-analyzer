@@ -1,0 +1,14 @@
+include COPYING*
+include NEWS
+include README.rst
+include MANIFEST.in
+include PKG-INFO.in
+include pyproject.toml
+include setup.cfg
+include meson_options.txt
+recursive-include . meson.build
+recursive-include docs *.py Makefile *.rst *.css *.svg
+prune docs/_build
+recursive-include tests *.py README *.c *.h
+recursive-include examples *.py README *.ipynb
+include cairo/*.h
