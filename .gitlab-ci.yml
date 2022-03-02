@@ -1,0 +1,119 @@
+image: registry.gitlab.gnome.org/gnome/pygobject/main:v17
+
+stages:
+  - build_and_test
+  - coverage
+  - deploy
+
+cache:
+  paths:
+    - _ccache/
+
+.defaults: &defaults
+  stage: build_and_test
+  artifacts:
+    paths:
+      - coverage/
+  script:
+   - bash -x ./.gitlab-ci/test-docker.sh
+
+.mingw-defaults: &mingw-defaults
+  stage: build_and_test
+  tags:
+    - win32-ps
+  artifacts:
+    paths:
+      - coverage/
+  script:
+    - $env:CHERE_INVOKING = 'yes'
+    - C:\msys64\usr\bin\pacman --noconfirm -Syyuu
+    - C:\msys64\usr\bin\bash -lc "bash -x ./.gitlab-ci/test-msys2.sh"
+
+coverage:
+  stage: coverage
+  artifacts:
+    paths:
+      - coverage/
+  variables:
+    PYENV_VERSION: "3.7.11-debug"
+  script:
+    - bash -x ./.gitlab-ci/coverage-docker.sh
+
+pages:
+  stage: deploy
+  dependencies:
+    - coverage
+  script:
+    - mv coverage/ public/
+  artifacts:
+    paths:
+      - public
+    expire_in: 30 days
+  only:
+    - master
+
+mingw32:
+  variables:
+    MSYSTEM: "MINGW32"
+  <<: *mingw-defaults
+
+mingw64:
+  variables:
+    MSYSTEM: "MINGW64"
+  <<: *mingw-defaults
+
+python3.7:
+  variables:
+    PYENV_VERSION: "3.7.11-debug"
+  <<: *defaults
+
+python3.8:
+  variables:
+    PYENV_VERSION: "3.8.12-debug"
+  <<: *defaults
+
+python3.9:
+  variables:
+    PYENV_VERSION: "3.9.7-debug"
+  <<: *defaults
+
+python3.10:
+  variables:
+    PYENV_VERSION: "3.10.0rc2-debug"
+  <<: *defaults
+
+pypy3.7:
+  allow_failure: true
+  variables:
+    PYENV_VERSION: "pypy3.7-7.3.5"
+  <<: *defaults
+
+old-i386-py3:
+  stage: build_and_test
+  image: registry.gitlab.gnome.org/gnome/pygobject/old:v5
+  artifacts:
+    paths:
+      - coverage/
+  script:
+   - bash -x ./.gitlab-ci/test-docker-old.sh
+
+gnome-master:
+  allow_failure: true
+  stage: build_and_test
+  image: registry.gitlab.gnome.org/gnome/gnome-runtime-images/gnome:master
+  tags:
+    - flatpak
+  script:
+    - xvfb-run -a flatpak run --filesystem=host --share=network --socket=x11 --command=bash org.gnome.Sdk//master -x .gitlab-ci/test-flatpak.sh
+
+gnome-master-gtk4:
+  allow_failure: true
+  stage: build_and_test
+  image: registry.gitlab.gnome.org/gnome/gnome-runtime-images/gnome:master
+  tags:
+    - flatpak
+  script:
+    - xvfb-run -a flatpak run --filesystem=host --share=network --socket=x11 --command=bash org.gnome.Sdk//master -x .gitlab-ci/test-flatpak-gtk4.sh
+  artifacts:
+    paths:
+      - coverage/
