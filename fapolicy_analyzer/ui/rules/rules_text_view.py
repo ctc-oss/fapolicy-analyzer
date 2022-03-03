@@ -29,7 +29,6 @@ class RulesTextView(UIBuilderWidget):
 
     def render_rules(self, rules_path: str):
         text = ""
-        print(open)
         try:
             with open(rules_path, "r") as f:
                 text = f.read()
