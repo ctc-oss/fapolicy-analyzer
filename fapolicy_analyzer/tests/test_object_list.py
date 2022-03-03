@@ -71,10 +71,10 @@ def test_loads_store(widget):
 def test_status_markup(widget):
     view = widget.get_object("treeView")
 
-    st_trust = '<span color=\"green\"><b><u>ST</u></b></span>'
-    at_trust = '<span color=\"green\"><b><u>AT</u></b></span>'
-    st_untrust = '<span color=\"red\"><b>ST</b></span>'
-    at_untrust = '<span color=\"red\"><b>AT</b></span>'
+    st_trust = '<span color="green"><b><u>ST</u></b></span>'
+    at_trust = '<span color="green"><b><u>AT</u></b></span>'
+    st_untrust = '<span color="red"><b>ST</b></span>'
+    at_untrust = '<span color="red"><b>AT</b></span>'
     untrust = '<span color="green"><b><u>U</u></b></span>'
 
     # System trust

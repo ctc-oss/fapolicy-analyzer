@@ -107,15 +107,15 @@ class SubjectList(SearchableList):
 
     def _trust_markup(self, subject):
         u_str = "U"
-        at_str = '<span color=\"red\"><b>AT</b></span>'
-        st_str = '<span color=\"red\"><b>ST</b></span>'
+        at_str = '<span color="red"><b>AT</b></span>'
+        st_str = '<span color="red"><b>ST</b></span>'
 
         if subject.trust.lower() == "at":
-            at_str = '<span color=\"green\"><b><u>AT</u></b></span>'
+            at_str = '<span color="green"><b><u>AT</u></b></span>'
         elif subject.trust.lower() == "st":
-            st_str = '<span color=\"green\"><b><u>ST</u></b></span>'
+            st_str = '<span color="green"><b><u>ST</u></b></span>'
         elif subject.trust.lower() == "u":
-            u_str = '<span color=\"green\"><b><u>U</u></b></span>'
+            u_str = '<span color="green"><b><u>U</u></b></span>'
 
         return "/".join([st_str, at_str, u_str])
 
