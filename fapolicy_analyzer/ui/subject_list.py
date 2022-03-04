@@ -106,29 +106,21 @@ class SubjectList(SearchableList):
         return [trustColumn, accessColumn, fileColumn]
 
     def _trust_markup(self, subject):
-        u_str = "U"
-        at_str = "AT"
-        st_str = "ST"
 
-        status = (
-            dbtrust.status.lower()
-            if (dbtrust := self.__find_db_trust(subject))
-            else None
-        )
+        status = subject.trust_status.lower()
 
-        if subject.trust.lower() == "at":
-            if not status or status == "d":
-                at_str = '<span color="red"><b>AT</b></span>'
-            else:
-                at_str = '<span color="green"><u><b>AT</b></u></span>'
-        elif subject.trust.lower() == "st":
-            if not status or status == "d":
-                st_str = '<span color="red"><b>ST</b></span>'
-            else:
-                st_str = '<span color="green"><u><b>ST</b></u></span>'
-        elif subject.trust.lower() == "u":
-            if not status or status == "d":
-                u_str = '<span color="green"><u><b>U</b></u></span>'
+        if status == "u":
+            at_str = '<span color="red"><b>AT</b></span>' if subject.trust.lower() == "at" else "AT"
+            st_str = '<span color="red"><b>ST</b></span>' if subject.trust.lower() == "st" else "ST"
+            u_str = '<span color="green"><u><b>U</b></u></span>' if subject.trust.lower() == "u" else "U"
+        elif status == "t":
+            at_str = '<span color="green"><u><b>AT</b></u></span>' if subject.trust.lower() == "at" else "AT"
+            st_str = '<span color="green"><u><b>ST</b></u></span>' if subject.trust.lower() == "st" else "ST"
+            u_str = "U"
+        else:
+            at_str = "AT"
+            st_str = "ST"
+            u_str = "U"
 
         return "/".join([st_str, at_str, u_str])
 

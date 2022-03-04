@@ -29,14 +29,14 @@ from ui.object_list import ObjectList
 from ui.strings import FILE_LABEL, FILES_LABEL
 
 
-def _mock_object(trust="", mode="", access="", file=""):
-    return MagicMock(trust=trust, mode=mode, access=access, file=file)
+def _mock_object(trust="", mode="", access="", file="", trust_status=""):
+    return MagicMock(trust=trust, mode=mode, access=access, file=file, trust_status=trust_status)
 
 
 _objects = [
-    _mock_object(trust="ST", mode="R", access="A", file="/tmp/foo"),
-    _mock_object(trust="AT", mode="W", access="A", file="/tmp/baz"),
-    _mock_object(trust="U", mode="X", access="D", file="/tmp/bar"),
+    _mock_object(trust="ST", mode="R", access="A", file="/tmp/foo", trust_status="U"),
+    _mock_object(trust="AT", mode="W", access="A", file="/tmp/baz", trust_status="U"),
+    _mock_object(trust="U", mode="X", access="D", file="/tmp/bar", trust_status="U"),
 ]
 
 
@@ -73,15 +73,23 @@ def test_status_markup(widget):
     st_red = '<span color="red"><b>ST</b></span>'
     at_red = '<span color="red"><b>AT</b></span>'
     u_green = '<span color="green"><u><b>U</b></u></span>'
+    st_green = '<span color="green"><u><b>ST</b></u></span>'
+    at_green = '<span color="green"><u><b>AT</b></u></span>'
 
     # System trust
-    widget.load_store([_mock_object(trust="ST")])
+    widget.load_store([_mock_object(trust="ST", trust_status="U")])
     assert view.get_model()[0][0] == st_red + "/AT/U"
-    # Ancillary trust
-    widget.load_store([_mock_object(trust="AT")])
+    # System trust
+    widget.load_store([_mock_object(trust="ST", trust_status="T")])
+    assert view.get_model()[0][0] == st_green + "/AT/U"
+    # Ancillary trust, untrusted
+    widget.load_store([_mock_object(trust="AT", trust_status="U")])
     assert view.get_model()[0][0] == "ST/" + at_red + "/U"
+    # Ancillary trust, trusted
+    widget.load_store([_mock_object(trust="AT", trust_status="T")])
+    assert view.get_model()[0][0] == "ST/" + at_green + "/U"
     # Untrusted
-    widget.load_store([_mock_object(trust="U")])
+    widget.load_store([_mock_object(trust="U", trust_status="U")])
     assert view.get_model()[0][0] == "ST/AT/" + u_green
     # Bad data
     widget.load_store([_mock_object(trust="foo")])
@@ -90,8 +98,17 @@ def test_status_markup(widget):
     widget.load_store([_mock_object()])
     assert view.get_model()[0][0] == "ST/AT/U"
     # Lowercase
-    widget.load_store([_mock_object(trust="st")])
+    widget.load_store([_mock_object(trust="st", trust_status="u")])
     assert view.get_model()[0][0] == st_red + "/AT/U"
+    # Lowercase
+    widget.load_store([_mock_object(trust="st", trust_status="t")])
+    assert view.get_model()[0][0] == st_green + "/AT/U"
+    # Lowercase
+    widget.load_store([_mock_object(trust="at", trust_status="u")])
+    assert view.get_model()[0][0] == "ST/" + at_red + "/U"
+    # Lowercase
+    widget.load_store([_mock_object(trust="at", trust_status="t")])
+    assert view.get_model()[0][0] == "ST/" + at_green + "/U"
 
 
 def test_mode_markup(widget):
