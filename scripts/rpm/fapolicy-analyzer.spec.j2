@@ -52,6 +52,8 @@ VERSION=%{app_version} %{python3} setup.py bdist_wheel
 %{python3} -m pip install --no-deps --no-input -v --target %{buildroot}%{python3_sitelib} vendor/ReduxPY
 install bin/fapolicy-analyzer %{buildroot}%{_sbindir}/fapolicy-analyzer -D
 
+install share/sourceview/* %{buildroot}%{_datadir}/gtksourceview-3.0
+
 %files
 %{python3_sitelib}/fapolicy_analyzer*
 %{python3_sitelib}/redux*
