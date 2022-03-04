@@ -51,7 +51,7 @@ def test_creates_widget(widget):
 
 def test_loads_store(widget):
     def strip_markup(markup):
-        return re.search(r"<u>([A-Z]*)</u>", markup).group(1)
+        return re.search(r"<b>([A-Z]*)</b>", markup).group(1)
 
     widget.load_store(_objects)
     view = widget.get_object("treeView")
@@ -70,57 +70,53 @@ def test_loads_store(widget):
 
 def test_status_markup(widget):
     view = widget.get_object("treeView")
-
-    st_trust = '<span color="green"><b><u>ST</u></b></span>'
-    at_trust = '<span color="green"><b><u>AT</u></b></span>'
-    st_untrust = '<span color="red"><b>ST</b></span>'
-    at_untrust = '<span color="red"><b>AT</b></span>'
-    untrust = '<span color="green"><b><u>U</u></b></span>'
+    st_red = '<span color="red"><b>ST</b></span>'
+    at_red = '<span color="red"><b>AT</b></span>'
+    u_green = '<span color="green"><u><b>U</b></u></span>'
 
     # System trust
     widget.load_store([_mock_object(trust="ST")])
-    assert view.get_model()[0][0] == st_trust + "/" + at_untrust + "/U"
+    assert view.get_model()[0][0] == st_red + "/AT/U"
     # Ancillary trust
     widget.load_store([_mock_object(trust="AT")])
-    assert view.get_model()[0][0] == st_untrust + "/" + at_trust + "/U"
+    assert view.get_model()[0][0] == "ST/" + at_red + "/U"
     # Untrusted
     widget.load_store([_mock_object(trust="U")])
-    assert view.get_model()[0][0] == st_untrust + "/" + at_untrust + "/" + untrust
+    assert view.get_model()[0][0] == "ST/AT/" + u_green
     # Bad data
     widget.load_store([_mock_object(trust="foo")])
-    assert view.get_model()[0][0] == st_untrust + "/" + at_untrust + "/U"
+    assert view.get_model()[0][0] == "ST/AT/U"
     # Empty data
     widget.load_store([_mock_object()])
-    assert view.get_model()[0][0] == st_untrust + "/" + at_untrust + "/U"
+    assert view.get_model()[0][0] == "ST/AT/U"
     # Lowercase
     widget.load_store([_mock_object(trust="st")])
-    assert view.get_model()[0][0] == st_trust + "/" + at_untrust + "/U"
+    assert view.get_model()[0][0] == st_red + "/AT/U"
 
 
 def test_mode_markup(widget):
     view = widget.get_object("treeView")
-
     # Read
     widget.load_store([_mock_object(mode="R")])
-    assert view.get_model()[0][5] == "<b><u>R</u></b>WX"
+    assert view.get_model()[0][5] == "<u><b>R</b></u>WX"
     # Write
     widget.load_store([_mock_object(mode="W")])
-    assert view.get_model()[0][5] == "R<b><u>W</u></b>X"
+    assert view.get_model()[0][5] == "R<u><b>W</b></u>X"
     # Execute
     widget.load_store([_mock_object(mode="X")])
-    assert view.get_model()[0][5] == "RW<b><u>X</u></b>"
+    assert view.get_model()[0][5] == "RW<u><b>X</b></u>"
     # Read/Write
     widget.load_store([_mock_object(mode="RW")])
-    assert view.get_model()[0][5] == "<b><u>R</u></b><b><u>W</u></b>X"
+    assert view.get_model()[0][5] == "<u><b>R</b></u><u><b>W</b></u>X"
     # Read/Execute
     widget.load_store([_mock_object(mode="RX")])
-    assert view.get_model()[0][5] == "<b><u>R</u></b>W<b><u>X</u></b>"
+    assert view.get_model()[0][5] == "<u><b>R</b></u>W<u><b>X</b></u>"
     # Write/Execute
     widget.load_store([_mock_object(mode="WX")])
-    assert view.get_model()[0][5] == "R<b><u>W</u></b><b><u>X</u></b>"
+    assert view.get_model()[0][5] == "R<u><b>W</b></u><u><b>X</b></u>"
     # Full Access
     widget.load_store([_mock_object(mode="RWX")])
-    assert view.get_model()[0][5] == "<b><u>R</u></b><b><u>W</u></b><b><u>X</u></b>"
+    assert view.get_model()[0][5] == "<u><b>R</b></u><u><b>W</b></u><u><b>X</b></u>"
     # Bad data
     widget.load_store([_mock_object(mode="foo")])
     assert view.get_model()[0][5] == "RWX"
@@ -129,7 +125,7 @@ def test_mode_markup(widget):
     assert view.get_model()[0][5] == "RWX"
     # Lowercase
     widget.load_store([_mock_object(mode="r")])
-    assert view.get_model()[0][5] == "<b><u>R</u></b>WX"
+    assert view.get_model()[0][5] == "<u><b>R</b></u>WX"
 
 
 def test_access_markup(widget):
@@ -137,10 +133,10 @@ def test_access_markup(widget):
 
     # Allowed
     widget.load_store([_mock_object(access="A")])
-    assert view.get_model()[0][1] == "<b><u>A</u></b>/D"
+    assert view.get_model()[0][1] == "<u><b>A</b></u>/D"
     # Denied
     widget.load_store([_mock_object(access="D")])
-    assert view.get_model()[0][1] == "A/<b><u>D</u></b>"
+    assert view.get_model()[0][1] == "A/<u><b>D</b></u>"
     # Bad data
     widget.load_store([_mock_object(access="foo")])
     assert view.get_model()[0][1] == "A/D"
@@ -149,7 +145,7 @@ def test_access_markup(widget):
     assert view.get_model()[0][1] == "A/D"
     # Lowercase
     widget.load_store([_mock_object(access="a")])
-    assert view.get_model()[0][1] == "<b><u>A</u></b>/D"
+    assert view.get_model()[0][1] == "<u><b>A</b></u>/D"
 
 
 def test_path_color(widget):

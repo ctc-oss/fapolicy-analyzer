@@ -107,15 +107,28 @@ class SubjectList(SearchableList):
 
     def _trust_markup(self, subject):
         u_str = "U"
-        at_str = '<span color="red"><b>AT</b></span>'
-        st_str = '<span color="red"><b>ST</b></span>'
+        at_str = "AT"
+        st_str = "ST"
+
+        status = (
+            dbtrust.status.lower()
+            if (dbtrust := self.__find_db_trust(subject))
+            else None
+        )
 
         if subject.trust.lower() == "at":
-            at_str = '<span color="green"><b><u>AT</u></b></span>'
+            if not status or status == "d":
+                at_str = '<span color="red"><b>AT</b></span>'
+            else:
+                at_str = '<span color="green"><u><b>AT</b></u></span>'
         elif subject.trust.lower() == "st":
-            st_str = '<span color="green"><b><u>ST</u></b></span>'
+            if not status or status == "d":
+                st_str = '<span color="red"><b>ST</b></span>'
+            else:
+                st_str = '<span color="green"><u><b>ST</b></u></span>'
         elif subject.trust.lower() == "u":
-            u_str = '<span color="green"><b><u>U</u></b></span>'
+            if not status or status == "d":
+                u_str = '<span color="green"><u><b>U</b></u></span>'
 
         return "/".join([st_str, at_str, u_str])
 
@@ -123,7 +136,7 @@ class SubjectList(SearchableList):
 
         idx = options.index(value) if value in options else -1
         return "/".join(
-            [f"<b><u>{o}</u></b>" if i == idx else o for i, o in enumerate(options)]
+            [f"<u><b>{o}</b></u>" if i == idx else o for i, o in enumerate(options)]
         )
 
     def __color(self, access):

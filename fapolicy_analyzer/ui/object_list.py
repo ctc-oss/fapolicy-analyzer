@@ -38,7 +38,7 @@ class ObjectList(SubjectList):
 
     def __markup(self, value, options, seperator="/", multiValue=False):
         def wrap(x):
-            return f"<b><u>{x}</u></b>"
+            return f"<u><b>{x}</b></u>"
 
         valueSet = set(value.upper()) if multiValue else {value.upper()}
         matches = set(options).intersection(valueSet)
