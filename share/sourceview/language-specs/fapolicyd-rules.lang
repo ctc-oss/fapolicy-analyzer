@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<language id="fapolicyd-rules" name="File Access Policy Daemon Rules" version="2.0" _section="Markup">
+  <metadata>
+    <property name="globs">*.rules</property>
+  </metadata>
+
+  <styles>
+    <style id="variable" name="Variable" map-to="makefile:variable"/>
+    <style id="decision" name="Decision" map-to="def:constant"/>
+    <style id="permission" name="Permission" map-to="def:keyword"/>
+    <style id="included-file" _name="Included File" map-to="def:string"/>
+    <style id="type" _name="Data Type" map-to="def:type"/>
+    <style id="s" name="Subject" map-to="def:constant"/>
+  </styles>
+
+  <definitions>
+    <context id="decisions" style-ref="decision">
+      <keyword>allow</keyword>
+      <keyword>allow_log</keyword>
+      <keyword>allow_audit</keyword>
+      <keyword>allow_syslog</keyword>
+      <keyword>deny</keyword>
+      <keyword>deny_log</keyword>
+      <keyword>deny_audit</keyword>
+      <keyword>deny_syslog</keyword>
+    </context>
+
+    <context id="keywords" style-ref="permission">
+      <prefix>\s</prefix>
+      <keyword>perm</keyword>
+    </context>
+
+    <context id="values" style-ref="type">
+      <keyword>all</keyword>
+      <keyword>any</keyword>
+      <keyword>open</keyword>
+      <keyword>execute</keyword>
+    </context>
+
+    <context id="permission-assignment">
+      <match>(perm)=(any|open|execute)</match>
+      <include>
+        <context sub-pattern="1" style-ref="permission"/>
+        <context sub-pattern="2" style-ref="type"/>
+      </include>
+    </context>
+
+    <context id="subjects" style-ref="s">
+      <prefix>[ ]*</prefix>
+      <suffix>\s*:</suffix>
+      <keyword>all</keyword>
+      <keyword>uid=\d</keyword>
+    </context>
+
+    <context id="objects" style-ref="s">
+      <prefix>[ ]*</prefix>
+      <suffix>\s*:</suffix>
+      <keyword>all</keyword>
+      <keyword>uid=\d</keyword>
+    </context>
+
+
+    <context id="fapolicyd">
+      <include>
+        <context ref="subjects"/>
+        <context ref="decisions"/>
+        <context ref="permission-assignment"/>
+        <context ref="keywords"/>
+        <context ref="values"/>
+        <context ref="def:shell-like-comment"/>
+      </include>
+    </context>
+  </definitions>
+</language>
