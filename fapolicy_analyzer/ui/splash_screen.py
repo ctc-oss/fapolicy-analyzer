@@ -14,12 +14,34 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import gi
+import sys
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import GLib
+from gi.repository import GLib, Gtk
+import fapolicy_analyzer.ui.strings as strings
 from .main_window import MainWindow
 from .store import get_system_feature
 from .ui_widget import UIConnectedWidget
+
+
+def trust_db_access_failure_dlg():
+    """
+    Presents a modal dialog alerting the user that Trust database read
+    access failed.
+    """
+
+    dlgSessionRestorePrompt = Gtk.Dialog(
+        title=strings.TRUST_DB_READ_FAILURE_DIALOG_TITLE
+    )
+    dlgSessionRestorePrompt.add_buttons(Gtk.STOCK_OK, Gtk.ResponseType.OK)
+
+    label = Gtk.Label(label=strings.TRUST_DB_READ_FAILURE_DIALOG_TEXT)
+    hbox = dlgSessionRestorePrompt.get_content_area()
+    label.set_justify(Gtk.Justification.CENTER)
+    hbox.add(label)
+    dlgSessionRestorePrompt.show_all()
+    dlgSessionRestorePrompt.run()
+    dlgSessionRestorePrompt.destroy()
 
 
 class SplashScreen(UIConnectedWidget):
@@ -32,6 +54,11 @@ class SplashScreen(UIConnectedWidget):
         self.progressBar.pulse()
 
     def on_next_system(self, system):
+        if system.get("initialization_error", False):
+            self.dispose()
+            trust_db_access_failure_dlg()
+            sys.exit(1)
+
         if system.get("initialized", False):
             self.dispose()
             MainWindow()

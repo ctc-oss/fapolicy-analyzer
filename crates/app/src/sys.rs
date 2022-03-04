@@ -32,13 +32,7 @@ pub fn deploy_app_state(state: &State) -> Result<(), Error> {
     for (path, meta) in state.trust_db.iter() {
         if meta.is_ancillary() {
             tf.write_all(
-                format!(
-                    "{} {} {}\n",
-                    path,
-                    meta.trusted.size.to_string(),
-                    meta.trusted.hash
-                )
-                .as_bytes(),
+                format!("{} {} {}\n", path, meta.trusted.size, meta.trusted.hash).as_bytes(),
             )
             .map_err(|_| WriteAncillaryFail("unable to write ancillary trust entry".to_string()))?;
         }

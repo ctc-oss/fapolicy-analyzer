@@ -14,6 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 %global git_commit {{ git_commit }}
+%global app_version {{ app_version }}
 
 Name:           fapolicy-analyzer
 Version:        {{ rpm_version }}
@@ -28,7 +29,7 @@ BuildArch:      x86_64
 Requires:       {{ pyrpm }} >= 3.9
 BuildRequires:  {{ pyrpm }} >= 3.9, {{ pyrpm }}-rpm-macros, {{ pyrpm }}-devel, {{ pyrpm }}-pip, {{ pyrpm }}-wheel
 Recommends:     {{ pyrpm }}-gobject, {{ pyrpm }}-events, {{ pyrpm }}-configargparse, {{ pyrpm }}-more-itertools, {{ pyrpm }}-rx
-Requires:       gtk3, dbus-libs
+Requires:       gtk3, dbus-libs, gtksourceview3
 BuildRequires:  dbus-devel, cargo
 AutoReqProv:    no
 
@@ -43,8 +44,8 @@ GUI and CLI tools to assist with the configuration and maintenance of fapolicyd
 %global debug_package %{nil}
 
 %build
-VERSION=%{version} %{python3} setup.py compile_catalog -f
-VERSION=%{version} %{python3} setup.py bdist_wheel
+VERSION=%{app_version} %{python3} setup.py compile_catalog -f
+VERSION=%{app_version} %{python3} setup.py bdist_wheel
 
 %install
 %{python3} -m pip install --no-deps --no-input -v --target %{buildroot}%{python3_sitelib} dist/*.whl

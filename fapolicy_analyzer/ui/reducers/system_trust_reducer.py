@@ -13,18 +13,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fapolicy_analyzer import Trust
-from redux import Action, Reducer, handle_actions
 from typing import Any, NamedTuple, Optional, Sequence, cast
+
+from fapolicy_analyzer import Trust
 from fapolicy_analyzer.ui.actions import (
-    RECEIVED_SYSTEM_TRUST,
     ERROR_SYSTEM_TRUST,
+    RECEIVED_SYSTEM_TRUST,
     REQUEST_SYSTEM_TRUST,
 )
+from redux import Action, Reducer, handle_actions
 
 
 class TrustState(NamedTuple):
-    error: str
+    error: Optional[str]
     loading: bool
     trust: Sequence[Trust]
 

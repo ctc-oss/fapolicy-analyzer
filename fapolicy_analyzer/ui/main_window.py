@@ -14,24 +14,28 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from locale import gettext as _
-from os import path, geteuid, getenv
-
 from enum import Enum
-from fapolicy_analyzer import Handle
+from locale import gettext as _
+from os import getenv, geteuid, path
+from threading import Lock, Thread
+from time import sleep
+from typing import Any
 
 import fapolicy_analyzer.ui.strings as strings
 import gi
+from fapolicy_analyzer import Handle
+from fapolicy_analyzer import __version__ as app_version
+from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.util.format import f
-from threading import Thread, Lock
-from time import sleep
 
+from .action_toolbar import ActionToolbar
 from .actions import NotificationType, add_notification
 from .analyzer_selection_dialog import ANALYZER_SELECTION
 from .database_admin_page import DatabaseAdminPage
 from .notification import Notification
 from .operations import DeployChangesetsOp
 from .policy_rules_admin_page import PolicyRulesAdminPage
+from .rules import RulesAdminPage
 from .session_manager import sessionManager
 from .store import dispatch, get_system_feature
 from .ui_widget import UIConnectedWidget
@@ -41,12 +45,12 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, GLib  # isort: skip
 
 
-def router(selection, data=None):
+def router(selection: ANALYZER_SELECTION, data: Any = None) -> UIPage:
     route = {
         ANALYZER_SELECTION.TRUST_DATABASE_ADMIN: DatabaseAdminPage,
-        ANALYZER_SELECTION.SCAN_SYSTEM: PolicyRulesAdminPage,
         ANALYZER_SELECTION.ANALYZE_FROM_AUDIT: PolicyRulesAdminPage,
         ANALYZER_SELECTION.ANALYZE_SYSLOG: PolicyRulesAdminPage,
+        ANALYZER_SELECTION.RULES_ADMIN: RulesAdminPage,
     }.get(selection)
     if route:
         return route(data) if data else route()
@@ -67,15 +71,15 @@ class MainWindow(UIConnectedWidget):
         self.windowTopLevel = self.window.get_toplevel()
         self.strTopLevelTitle = self.windowTopLevel.get_title()
         self.fapdStatusLight = self.get_object("fapdStatusLight")
-        self._fapdControlPermitted = (geteuid() == 0)  # set if root user
+        self._fapdControlPermitted = geteuid() == 0  # set if root user
         self._fapdStartMenuItem = self.get_object("fapdStartMenu")
         self._fapdStopMenuItem = self.get_object("fapdStopMenu")
         self._fapd_status = ServiceStatus.UNKNOWN
         self._fapd_monitoring = False
         self._fapd_ref = None
         self._fapd_lock = Lock()
-        self._changesets = []
-        self._page = None
+        self.__changesets = []
+        self.__page = None
 
         toaster = Notification()
         self.get_object("overlay").add_overlay(toaster.get_ref())
@@ -92,11 +96,31 @@ class MainWindow(UIConnectedWidget):
         self._fapdStartMenuItem.set_sensitive(False)
         self._fapdStopMenuItem.set_sensitive(False)
 
+        self.__add_toolbar()
+
         self.window.show_all()
+
+    def __add_toolbar(self):
+        # Set of actions available to all UIPages
+        self.__actions = {
+            "actions": [
+                UIAction(
+                    name="Deploy",
+                    tooltip="Deploy Changesets",
+                    icon="system-software-update",
+                    signals={"clicked": self.on_deployChanges_clicked},
+                    sensitivity_func=self.__dirty_changesets,
+                )
+            ],
+        }
+        self.__toolbar = ActionToolbar(self.__actions)
+        app_area = self.get_object("appArea")
+        app_area.pack_start(self.__toolbar, False, True, 0)
+        app_area.reorder_child(self.__toolbar, 1)
 
     def __unapplied_changes(self):
         # Check backend for unapplied changes
-        if not self._changesets:
+        if not self.__changesets:
             return False
 
         # Warn user pending changes will be lost.
@@ -117,11 +141,14 @@ class MainWindow(UIConnectedWidget):
         fileFilterAny.add_pattern("*")
         dialog.add_filter(fileFilterAny)
 
-    def __pack_main_content(self, page):
-        if self._page:
-            self._page.dispose()
-        self._page = page
+    def __pack_main_content(self, page: UIPage):
+        if self.__page:
+            self.__page.dispose()
+        self.__page = page
         self.mainContent.pack_start(page.get_ref(), True, True, 0)
+
+        actions = UIPage.merge_actions(self.__actions, page.actions)
+        self.__toolbar.rebuild_toolbar(actions)
 
     def __auto_save_restore_dialog(self):
         """
@@ -151,6 +178,9 @@ class MainWindow(UIConnectedWidget):
     def __set_trustDbMenu_sensitive(self, sensitive):
         menuItem = self.get_object("trustDbMenu")
         menuItem.set_sensitive(sensitive)
+
+    def __dirty_changesets(self):
+        return len(self.__changesets) > 0
 
     def on_start(self, *args):
         self.__pack_main_content(router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN))
@@ -196,11 +226,11 @@ class MainWindow(UIConnectedWidget):
         return self.__unapplied_changes()
 
     def on_next_system(self, system):
-        self._changesets = system["changesets"]
-        dirty = len(self._changesets) > 0
+        self.__changesets = system["changesets"]
+        dirty = self.__dirty_changesets()
         title = f"*{self.strTopLevelTitle}" if dirty else self.strTopLevelTitle
         self.windowTopLevel.set_title(title)
-        self.get_object("deployChanges").set_sensitive(dirty)
+        self.__toolbar.refresh_buttons_sensitivity()
 
     def on_openMenu_activate(self, menuitem, data=None):
         logging.debug("Callback entered: MainWindow::on_openMenu_activate()")
@@ -261,7 +291,7 @@ class MainWindow(UIConnectedWidget):
             self.on_saveAsMenu_activate(menuitem, None)
         else:
             sessionManager.save_edit_session(
-                self._changesets,
+                self.__changesets,
                 self.strSessionFilename,
             )
 
@@ -289,7 +319,7 @@ class MainWindow(UIConnectedWidget):
             strFilename = fcd.get_filename()
             self.strSessionFilename = strFilename
             sessionManager.save_edit_session(
-                self._changesets,
+                self.__changesets,
                 self.strSessionFilename,
             )
 
@@ -298,6 +328,7 @@ class MainWindow(UIConnectedWidget):
     def on_aboutMenu_activate(self, *args):
         aboutDialog = self.get_object("aboutDialog")
         aboutDialog.set_transient_for(self.window)
+        aboutDialog.set_version(f"v{app_version}")
         aboutDialog.run()
         aboutDialog.hide()
 
@@ -331,11 +362,16 @@ class MainWindow(UIConnectedWidget):
         self.__pack_main_content(router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN))
         self.__set_trustDbMenu_sensitive(False)
 
+    def on_rulesAdminMenu_activate(self, *args):
+        self.__pack_main_content(router(ANALYZER_SELECTION.RULES_ADMIN))
+        # TODO: figure out a good way to set sensitivity on the menu items based on what is selected
+        self.__set_trustDbMenu_sensitive(True)
+
     def on_deployChanges_clicked(self, *args):
         with DeployChangesetsOp(self.window) as op:
-            op.run(self._changesets)
+            op.run(self.__changesets)
 
-# ###################### fapolicyd interfacing ##########################
+    # ###################### fapolicyd interfacing ##########################
     def on_fapdStartMenu_activate(self, menuitem, data=None):
         logging.debug("on_fapdStartMenu_activate() invoked.")
         if (self._fapd_status != ServiceStatus.UNKNOWN) and (self._fapd_lock.acquire()):

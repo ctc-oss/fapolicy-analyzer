@@ -67,7 +67,7 @@ def test_updates_trust_details(widget, mocker):
     mocker.patch(
         "ui.ancillary_trust_database_admin.fs.stat", return_value="stat for foo file"
     )
-    trust = MagicMock(status="T", path="/tmp/foo", size=1, hash="abc", spec=Trust)
+    trust = [MagicMock(status="T", path="/tmp/foo", size=1, hash="abc", spec=Trust)]
     widget.on_trust_selection_changed(trust)
     widget.trustFileDetails.set_in_database_view.assert_called_with(
         "File: /tmp/foo\nSize: 1\nSHA256: abc"
@@ -87,7 +87,7 @@ def test_updates_trust_details_for_deleted_files(widget, mocker):
     mocker.patch(
         "ui.ancillary_trust_database_admin.fs.stat", return_value="stat for foo file"
     )
-    trust = MagicMock(path="/tmp/foo")
+    trust = [MagicMock(path="/tmp/foo")]
     widget.on_trust_selection_changed(trust)
     widget.trustFileDetails.set_in_database_view.assert_not_called()
     widget.trustFileDetails.set_on_file_system_view.assert_called_with(
@@ -136,7 +136,7 @@ def test_on_trustBtn_clicked(widget, mock_dispatch, mocker):
     mocker.patch(
         "ui.ancillary_trust_database_admin.fs.stat", return_value="stat for foo file"
     )
-    trust = MagicMock(path="/tmp/foo")
+    trust = [MagicMock(path="/tmp/foo")]
     widget.on_trust_selection_changed(trust)
     widget.get_object("trustBtn").clicked()
     mock_dispatch.assert_called_with(
@@ -166,7 +166,7 @@ def test_on_untrustBtn_clicked(widget, mock_dispatch, mocker):
     mocker.patch(
         "ui.ancillary_trust_database_admin.fs.stat", return_value="stat for foo file"
     )
-    trust = MagicMock(path="/tmp/foo")
+    trust = [MagicMock(path="/tmp/foo")]
     widget.on_trust_selection_changed(trust)
     widget.get_object("untrustBtn").clicked()
     mock_dispatch.assert_called_with(

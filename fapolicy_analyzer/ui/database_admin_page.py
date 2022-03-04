@@ -13,20 +13,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import gi
 import fapolicy_analyzer.ui.strings as strings
+import gi
+from fapolicy_analyzer.ui.ui_page import UIPage
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
+
 from .ancillary_trust_database_admin import AncillaryTrustDatabaseAdmin
 from .system_trust_database_admin import SystemTrustDatabaseAdmin
 from .ui_widget import UIWidget
 
 
-class DatabaseAdminPage(UIWidget):
+class DatabaseAdminPage(UIWidget, UIPage):
     def __init__(self):
         notebook = Gtk.Notebook()
-        super().__init__(notebook)
+        UIWidget.__init__(self, notebook)
+        UIPage.__init__(self)
 
         self.ancillaryTrustDbAdmin = AncillaryTrustDatabaseAdmin()
         self.systemTrustDbAdmin = SystemTrustDatabaseAdmin()
@@ -46,8 +49,8 @@ class DatabaseAdminPage(UIWidget):
         notebook.set_current_page(1)
         notebook.show_all()
 
-    def on_added_to_ancillary_trust(self, file):
-        self.ancillaryTrustDbAdmin.add_trusted_files(file)
+    def on_added_to_ancillary_trust(self, *files):
+        self.ancillaryTrustDbAdmin.add_trusted_files(*files)
 
     def _dispose(self):
         self.ancillaryTrustDbAdmin.dispose()

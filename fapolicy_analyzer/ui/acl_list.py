@@ -15,10 +15,10 @@
 
 import gi
 
-gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
-
 from .searchable_list import SearchableList
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk  # isort: skip
 
 
 class ACLList(SearchableList):
@@ -44,3 +44,6 @@ class ACLList(SearchableList):
             store.append([acl.get("name"), acl.get("id")])
 
         super().load_store(store)
+
+    def get_selected_row_by_acl_id(self, id: int) -> Gtk.TreePath:
+        return self.find_selected_row_by_data(id, 1)

@@ -77,7 +77,7 @@ def test_updates_trust_details(widget, mocker):
     mocker.patch.object(widget.trustFileDetails, "set_on_file_system_view")
     mocker.patch.object(widget.trustFileDetails, "set_trust_status")
     mocker.patch("ui.ancillary_trust_database_admin.fs.sha", return_value="abc")
-    trust = MagicMock(status="T", path="/tmp/foo", size=1, hash="abc")
+    trust = [MagicMock(status="T", path="/tmp/foo", size=1, hash="abc")]
     widget.on_trust_selection_changed(trust)
     widget.trustFileDetails.set_in_database_view.assert_called_with(
         "File: /tmp/foo\nSize: 1\nSHA256: abc"
@@ -101,7 +101,7 @@ def test_disables_add_button(widget):
 def test_fires_file_added_to_ancillary_trust(widget):
     handler = MagicMock()
     widget.file_added_to_ancillary_trust += handler
-    widget.selectedFile = MagicMock(path="foo")
+    widget.selectedFiles = [MagicMock(path="foo")]
     addBtn = widget.get_object("addBtn")
     addBtn.clicked()
     handler.assert_called_with("foo")
@@ -134,7 +134,7 @@ def test_load_trust_w_exception(mock_dispatch, mock_system_feature):
     mock_dispatch.assert_called_with(
         InstanceOf(Action)
         & Attrs(
-            type=ADD_NOTIFICATION,
             payload=Attrs(type=NotificationType.ERROR, text=SYSTEM_TRUST_LOAD_ERROR),
+            type=ADD_NOTIFICATION,
         )
     )

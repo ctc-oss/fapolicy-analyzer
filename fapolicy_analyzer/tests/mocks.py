@@ -50,6 +50,12 @@ def mock_events():
             object=MagicMock(file="fooObject", trust="ST", access="A", mode="R"),
         ),
         MagicMock(
+            uid=1,
+            gid=100,
+            subject=MagicMock(file="barSubject", trust="AT", access="A"),
+            object=MagicMock(file="barObject", trust="AT", access="A", mode="R"),
+        ),
+        MagicMock(
             uid=2,
             gid=101,
             subject=MagicMock(file="otherSubject", trust="ST", access="A"),
@@ -65,6 +71,10 @@ def mock_log():
         by_user=lambda id: [e for e in mock_events() if e.uid == id],
         by_group=lambda id: [e for e in mock_events() if e.gid == id],
     )
+
+
+def mock_rule():
+    return MagicMock(id=1, text="Mock Rule Number 1")
 
 
 class mock_System:
@@ -88,3 +98,6 @@ class mock_System:
 
     def events(self, file):
         return mock_log()
+
+    def rules(self):
+        return [mock_rule()]

@@ -14,6 +14,6 @@ pub use self::user::User;
 
 mod parse;
 
-mod load;
-pub use self::load::groups as load_groups;
-pub use self::load::users as load_users;
+mod read;
+pub use self::read::groups as read_groups;
+pub use self::read::users as read_users;

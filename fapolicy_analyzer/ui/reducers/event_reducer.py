@@ -13,18 +13,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fapolicy_analyzer.ui.actions import (
-    ERROR_EVENTS,
-    RECEIVED_EVENTS,
-    REQUEST_EVENTS,
-)
-from fapolicy_analyzer import EventLog
-from redux import Action, Reducer, handle_actions
 from typing import Any, NamedTuple, Optional, Sequence, cast
+
+from fapolicy_analyzer import EventLog
+from fapolicy_analyzer.ui.actions import ERROR_EVENTS, RECEIVED_EVENTS, REQUEST_EVENTS
+from redux import Action, Reducer, handle_actions
 
 
 class EventState(NamedTuple):
-    error: str
+    error: Optional[str]
     loading: bool
     log: Sequence[EventLog]
 

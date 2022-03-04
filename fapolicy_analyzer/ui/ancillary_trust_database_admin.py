@@ -42,7 +42,7 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
         self._changesets = []
         self._trust = []
         self._loading = False
-        self.selectedFile = None
+        self.selectedFiles = None
 
         self.removeMenu = self.__build_remove_deleted_menu()
         self.trustFileList = AncillaryTrustFileList(trust_func=self.__load_trust)
@@ -97,15 +97,20 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
             changeset.del_trust(file)
         self.__apply_changeset(changeset)
 
-    def on_trust_selection_changed(self, trust):
-        self.selectedFile = trust.path if trust else None
+    def on_trust_selection_changed(self, trusts):
+        self.selectedFiles = [t.path for t in trusts] if trusts else None
         trustBtn = self.get_object("trustBtn")
         untrustBtn = self.get_object("untrustBtn")
-        if trust:
+        if trusts:
+            n_files = len(trusts)
+            n_true = sum([True for trust in trusts if getattr(trust, "status", "").lower() == "t"])
+            n_false = sum([True for trust in trusts if not getattr(trust, "status", "").lower() == "t"])
+            trustBtn.set_sensitive(n_files == n_false)
+            untrustBtn.set_sensitive(n_files == n_true)
+
+            trust = trusts[-1]
             status = getattr(trust, "status", "").lower()
             trusted = status == "t"
-            trustBtn.set_sensitive(not trusted)
-            untrustBtn.set_sensitive(trusted)
 
             if isinstance(trust, Trust):
                 self.trustFileDetails.set_in_database_view(
@@ -148,12 +153,12 @@ SHA256: {fs.sha(trust.path)}"""
             self.add_trusted_files(*files)
 
     def on_trustBtn_clicked(self, *args):
-        if self.selectedFile:
-            self.add_trusted_files(self.selectedFile)
+        if self.selectedFiles:
+            self.add_trusted_files(*self.selectedFiles)
 
     def on_untrustBtn_clicked(self, *args):
-        if self.selectedFile:
-            self.delete_trusted_files(self.selectedFile)
+        if self.selectedFiles:
+            self.delete_trusted_files(*self.selectedFiles)
 
     def on_next_system(self, system):
         changesets = system.get("changesets")

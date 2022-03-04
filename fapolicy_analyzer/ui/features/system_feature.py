@@ -14,7 +14,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-import sys
 
 import gi
 
@@ -30,6 +29,7 @@ from fapolicy_analyzer.ui.actions import (
     REQUEST_ANCILLARY_TRUST,
     REQUEST_EVENTS,
     REQUEST_GROUPS,
+    REQUEST_RULES,
     REQUEST_SYSTEM_TRUST,
     REQUEST_USERS,
     RESTORE_SYSTEM_CHECKPOINT,
@@ -41,14 +41,17 @@ from fapolicy_analyzer.ui.actions import (
     error_deploying_ancillary_trust,
     error_events,
     error_groups,
+    error_rules,
     error_system_trust,
     error_users,
     init_system,
     received_ancillary_trust,
     received_events,
     received_groups,
+    received_rules,
     received_system_trust,
     received_users,
+    system_initialization_error,
     system_initialized,
 )
 from fapolicy_analyzer.ui.reducers import system_reducer
@@ -90,15 +93,21 @@ def create_system_feature(
                 GLib.idle_add(finish, system)
             except RuntimeError:
                 logging.exception(SYSTEM_INITIALIZATION_ERROR)
-                GLib.idle_add(sys.exit, 1)
+                GLib.idle_add(finish, None)
 
         def finish(system: System):
             global _system, _checkpoint
+            logging.debug(f"system_feature::finish::system = {type(system)}")
             _system = system
             _checkpoint = _system
+
             if executor:
                 executor.shutdown(cancel_futures=True)
-            dispatch(system_initialized())
+
+            if system:
+                dispatch(system_initialized())
+            else:
+                dispatch(system_initialization_error())
 
         if system:
             executor = None
@@ -159,6 +168,10 @@ def create_system_feature(
         groups = _system.groups()
         return received_groups(groups)
 
+    def _get_rules(_: Action) -> Action:
+        rules = _system.rules()
+        return received_rules(rules)
+
     init_epic = pipe(
         of_init_feature(SYSTEM_FEATURE),
         map(lambda _: _init_system()),
@@ -209,10 +222,16 @@ def create_system_feature(
         catch(lambda ex, source: of(error_users(str(ex)))),
     )
 
-    request_group_epic = pipe(
+    request_groups_epic = pipe(
         of_type(REQUEST_GROUPS),
         map(_get_groups),
         catch(lambda ex, source: of(error_groups(str(ex)))),
+    )
+
+    request_rules_epic = pipe(
+        of_type(REQUEST_RULES),
+        map(_get_rules),
+        catch(lambda ex, source: of(error_rules(str(ex)))),
     )
 
     system_epic = combine_epics(
@@ -221,7 +240,8 @@ def create_system_feature(
         request_ancillary_trust_epic,
         deploy_ancillary_trust_epic,
         request_events_epic,
-        request_group_epic,
+        request_groups_epic,
+        request_rules_epic,
         request_system_trust_epic,
         request_users_epic,
         restore_system_checkpoint_epic,
