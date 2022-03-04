@@ -1,33 +1,36 @@
+#![allow(dead_code)]
+#![allow(unused_variables)]
+
 extern crate nom;
 
-use crate::CustomError::{
-    ExpectedAssignment, ExpectedDecision, ExpectedEndOfInput, ExpectedPerm, UnknownDecision,
-};
-use codespan_reporting::diagnostic::{Diagnostic, Label};
-use codespan_reporting::files::SimpleFiles;
-use codespan_reporting::term;
-use codespan_reporting::term::emit;
-use codespan_reporting::term::termcolor::{ColorChoice, StandardStream};
-use nom::branch::alt;
-use nom::bytes::complete::tag;
-use nom::character::complete::{alphanumeric1, line_ending, space0, space1};
-use nom::combinator::{eof, map, opt};
-use nom::error::ParseError;
-use nom::error::{Error, ErrorKind};
-use nom::multi::separated_list1;
-use nom::sequence::{separated_pair, terminated, tuple};
-use nom::{Err, IResult, InputTake, Slice};
 use std::fmt::{Display, Formatter};
 use std::io;
 use std::io::BufRead;
+
+use codespan_reporting::diagnostic::{Diagnostic, Label};
+use codespan_reporting::files::SimpleFiles;
+use codespan_reporting::term;
+use codespan_reporting::term::termcolor::{ColorChoice, StandardStream};
+use nom::branch::alt;
+use nom::bytes::complete::tag;
+use nom::character::complete::{alphanumeric1, space1};
+use nom::combinator::{eof, map, opt};
+use nom::error::ErrorKind;
+use nom::error::ParseError;
+use nom::sequence::{terminated, tuple};
+use nom::{Err, IResult};
+
+use crate::CustomError::*;
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum CustomError<I> {
     ExpectedDecision(I, usize),
     UnknownDecision(I, usize),
-    ExpectedPerm(I, usize),
-    ExpectedAssignment(I, usize),
+    ExpectedPermTag(I, usize),
+    ExpectedPermType(I, usize),
+    ExpectedPermAssignment(I, usize),
     ExpectedEndOfInput(I, usize),
+    ExpectedWhitespace(I, usize),
     Nom(I, ErrorKind),
 }
 
@@ -36,9 +39,11 @@ impl Display for CustomError<&str> {
         match self {
             ExpectedDecision(_, _) => f.write_str("Expected Decision"),
             UnknownDecision(_, _) => f.write_str("Unknown Decision"),
-            ExpectedPerm(_, _) => f.write_str("Expected perm"),
-            ExpectedAssignment(_, _) => f.write_str("Expected assignment (=)"),
+            ExpectedPermTag(_, _) => f.write_str("Expected tag 'perm'"),
+            ExpectedPermType(_, _) => f.write_str("Expected one of 'any', 'open', 'execute'"),
+            ExpectedPermAssignment(_, _) => f.write_str("Expected assignment (=)"),
             ExpectedEndOfInput(_, _) => f.write_str("Unexpected trailing chars"),
+            ExpectedWhitespace(_, _) => f.write_str("Expected whitespace"),
             other => f.write_fmt(format_args!("{:?}", other)),
         }
     }
@@ -117,23 +122,23 @@ pub fn decision(i: &str) -> nom::IResult<&str, Decision, CustomError<&str>> {
 
 pub fn parse_perm_tag(i: &str) -> nom::IResult<&str, (), CustomError<&str>> {
     match nom::combinator::complete(tuple((alphanumeric1, opt(tag("=")))))(i) {
-        Ok((r, (k, v))) if k == "perm" => {
-            if v.is_some() {
+        Ok((r, (k, a))) if k == "perm" => {
+            if a.is_some() {
                 Ok((r, ()))
             } else {
-                Err(nom::Err::Error(ExpectedAssignment(k, i.len() - 4)))
+                Err(nom::Err::Error(ExpectedPermAssignment(k, i.len() - 4)))
             }
         }
-        Ok((r, (k, _))) => Err(nom::Err::Error(ExpectedPerm(k, i.len()))),
+        Ok((r, (k, _))) => Err(nom::Err::Error(ExpectedPermTag(k, i.len()))),
         Err(e) => Err(e),
     }
 }
 
 pub fn parse_perm_opts(i: &str) -> nom::IResult<&str, Permission, CustomError<&str>> {
     match opt(alt((parse_perm_any, parse_perm_open, parse_perm_execute)))(i) {
-        Ok((r, (Some(p)))) => Ok((r, p)),
-        Ok((r, (None))) => Err(nom::Err::Error(ExpectedPerm(i, i.len()))),
-        _ => Err(nom::Err::Error(ExpectedPerm(i, i.len()))),
+        Ok((r, Some(p))) => Ok((r, p)),
+        Ok((r, None)) => Err(nom::Err::Error(ExpectedPermType(i, i.len()))),
+        _ => Err(nom::Err::Error(ExpectedPermType(i, i.len()))),
     }
 }
 
@@ -177,24 +182,35 @@ pub fn both(i: &str) -> nom::IResult<&str, Both, ErrorAt<&str>> {
                 fulllen - *pos,
                 ii.len(),
             ))),
-            ee @ ExpectedPerm(ii, pos) => Err(nom::Err::Error(ErrorAt(
+            ee @ ExpectedPermTag(ii, pos) => Err(nom::Err::Error(ErrorAt(
                 ee.clone(),
                 fulllen - *pos,
                 ii.len(),
             ))),
-            ee @ ExpectedAssignment(ii, pos) => Err(nom::Err::Error(ErrorAt(
-                ee.clone(),
-                fulllen - *pos,
-                ii.len(),
-            ))),
+            ee @ ExpectedPermType(ii, pos) => {
+                println!("{} {}", fulllen - pos, pos);
+                Err(nom::Err::Error(ErrorAt(ee.clone(), fulllen - *pos, *pos)))
+            }
+            ee @ ExpectedPermAssignment(ii, pos) => {
+                Err(nom::Err::Error(ErrorAt(ee.clone(), fulllen - *pos, 0)))
+            }
             ee @ ExpectedEndOfInput(ii, pos) => Err(nom::Err::Error(ErrorAt(
                 ee.clone(),
                 fulllen - *pos,
                 ii.len(),
             ))),
-            _ => panic!("missing pattern"),
+            ee @ ExpectedWhitespace(ii, pos) => Err(nom::Err::Error(ErrorAt(
+                ee.clone(),
+                fulllen - *pos,
+                ii.len(),
+            ))),
+            ee @ Nom(ii, ErrorKind::Space) => {
+                let at = fulllen - ii.len();
+                Err(nom::Err::Error(ErrorAt(ExpectedWhitespace(ii, at), at, 0)))
+            }
+            e => panic!("unhandled pattern {:?}", e),
         },
-        _ => panic!("missing pattern"),
+        e => panic!("unhandled pattern {:?}", e),
     }
 }
 
@@ -272,11 +288,12 @@ fn to_diagnostic(
         nom::Err::Error(e) => Diagnostic::error()
             .with_message("failed to compile rule")
             .with_labels(vec![
-                Label::primary(file_id, e.1..e.2).with_message(format!("{}", e.0))
+                Label::primary(file_id, e.1..(e.1 + e.2)).with_message(format!("{}", e.0))
             ])
             .with_notes(vec![unindent::unindent(
                 "
-            check the fapolicyd rule man page
+            check the fapolicyd rules man page,
+                https://www.mankier.com/5/fapolicyd.rules
         ",
             )]),
         _ => panic!("ugh"),
