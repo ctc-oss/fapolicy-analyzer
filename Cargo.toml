@@ -26,7 +26,6 @@ members = [
 ]
 
 [dev-dependencies]
-rand = "0.8"
 
 [dependencies]
 clap = "3.0.0-beta.2"
@@ -34,6 +33,9 @@ lmdb-rkv = "0.14.0"
 nom = "6.1.0"
 rayon = "1.5"
 thiserror = "1.0"
+codespan-reporting = "0.11"
+unindent = "0.1"
+termcolor = "1.0"
 
 fapolicy-api = { version = "*", path = "crates/api" }
 fapolicy-analyzer = { version = "*", path = "crates/analyzer" }

@@ -21,3 +21,4 @@ dist
 src/bin
 target
 venvs
+examples/local_*
