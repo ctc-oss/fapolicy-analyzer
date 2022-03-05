@@ -269,10 +269,12 @@ fn to_diagnostic(
             .iter()
             .map(|e| match e {
                 Err(nom::Err::Error(e)) => {
-                    Label::primary(file_id, e.1..(e.1 + e.2)).with_message(format!("{}", e.0))
+                    Some(Label::primary(file_id, e.1..(e.1 + e.2)).with_message(format!("{}", e.0)))
                 }
+                Ok(_) => None,
                 _ => panic!("ugh"),
             })
+            .flatten()
             .collect();
 
         Some(
