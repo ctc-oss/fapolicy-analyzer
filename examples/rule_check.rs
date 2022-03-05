@@ -198,21 +198,49 @@ pub fn both(i: &str) -> nom::IResult<&str, Both, ErrorAt<&str>> {
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Enter a rule, or Enter to exit...");
     loop {
-        let line: String = io::stdin()
-            .lock()
-            .lines()
-            .next()
-            .unwrap()
-            .unwrap()
-            .trim()
-            .to_string();
-        if line.is_empty() {
+        let mut contents = vec![];
+        loop {
+            let line: String = io::stdin()
+                .lock()
+                .lines()
+                .next()
+                .unwrap()
+                .unwrap()
+                .to_string();
+            if line.is_empty() {
+                break;
+            }
+
+            contents.push(line);
+        }
+        if contents.is_empty() {
             break;
         }
 
         let mut files = SimpleFiles::new();
-        let file_id = files.add("fapolicyd.rules", line.clone());
-        to_diagnostic(file_id, both(&line)).map(|d| emit_diagnostic(&files, d));
+        let file_id = files.add("fapolicyd.rules", contents.join("\n"));
+        let offsets = contents
+            .iter()
+            .map(|s| format!("{}\n", s))
+            .fold(vec![0], |a, b| {
+                let off: usize = a.iter().sum();
+                let mut aa = a.clone();
+                aa.push(off + b.len());
+                aa
+            });
+
+        let results: Vec<IResult<&str, Both, ErrorAt<&str>>> = contents
+            .iter()
+            .map(|s| both(&s))
+            .enumerate()
+            .map(|(i, r)| match r {
+                ok @ Ok(_) => ok,
+                Err(nom::Err::Error(e)) => ErrorAt(e.0, e.1 + offsets[i], e.2).into(),
+                _ => panic!("unhandled"),
+            })
+            .collect();
+
+        to_diagnostic(file_id, results).map(|d| emit_diagnostic(&files, d));
     }
 
     Ok(())
@@ -231,21 +259,32 @@ fn emit_diagnostic(
 
 fn to_diagnostic(
     file_id: usize,
-    r: IResult<&str, Both, ErrorAt<&str>>,
+    results: Vec<IResult<&str, Both, ErrorAt<&str>>>,
 ) -> Option<Diagnostic<usize>> {
-    r.as_ref().ok().map(|_| println!("Valid!"));
-    r.err().map(|e| match e {
-        nom::Err::Error(e) => Diagnostic::error()
-            .with_message("failed to compile rule")
-            .with_labels(vec![
-                Label::primary(file_id, e.1..(e.1 + e.2)).with_message(format!("{}", e.0))
-            ])
-            .with_notes(vec![unindent::unindent(
-                "
+    if results.iter().all(|r| r.as_ref().is_ok()) {
+        println!("Valid!");
+        None
+    } else {
+        let labels: Vec<Label<usize>> = results
+            .iter()
+            .map(|e| match e {
+                Err(nom::Err::Error(e)) => {
+                    Label::primary(file_id, e.1..(e.1 + e.2)).with_message(format!("{}", e.0))
+                }
+                _ => panic!("ugh"),
+            })
+            .collect();
+
+        Some(
+            Diagnostic::error()
+                .with_message("failed to compile rule")
+                .with_labels(labels)
+                .with_notes(vec![unindent::unindent(
+                    "
             check the fapolicyd rules man page,
                 https://www.mankier.com/5/fapolicyd.rules
         ",
-            )]),
-        _ => panic!("ugh"),
-    })
+                )]),
+        )
+    }
 }
