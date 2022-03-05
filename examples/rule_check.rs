@@ -155,6 +155,12 @@ pub fn permission(i: &str) -> nom::IResult<&str, Permission, CustomError<&str>> 
     }
 }
 
+impl<T, I> Into<Result<T, nom::Err<ErrorAt<I>>>> for ErrorAt<I> {
+    fn into(self) -> Result<T, nom::Err<ErrorAt<I>>> {
+        Err(nom::Err::Error(self))
+    }
+}
+
 #[derive(Debug)]
 pub struct Both {
     dec: Decision,
@@ -172,27 +178,13 @@ pub fn both(i: &str) -> nom::IResult<&str, Both, ErrorAt<&str>> {
     {
         Ok((remaining_input, (dec, perm, _))) => Ok((remaining_input, Both { dec, perm })),
         Err(Err::Error(ref e)) => match e {
-            ee @ ExpectedDecision(ii, pos) => {
-                Err(nom::Err::Error(ErrorAt(*ee, fulllen - *pos, ii.len())))
-            }
-            ee @ UnknownDecision(ii, pos) => {
-                Err(nom::Err::Error(ErrorAt(*ee, fulllen - *pos, ii.len())))
-            }
-            ee @ ExpectedPermTag(ii, pos) => {
-                Err(nom::Err::Error(ErrorAt(*ee, fulllen - *pos, ii.len())))
-            }
-            ee @ ExpectedPermType(ii, pos) => {
-                Err(nom::Err::Error(ErrorAt(*ee, fulllen - *pos, *pos)))
-            }
-            ee @ ExpectedPermAssignment(ii, pos) => {
-                Err(nom::Err::Error(ErrorAt(*ee, fulllen - *pos, 0)))
-            }
-            ee @ ExpectedEndOfInput(ii, pos) => {
-                Err(nom::Err::Error(ErrorAt(*ee, fulllen - *pos, ii.len())))
-            }
-            ee @ ExpectedWhitespace(ii, pos) => {
-                Err(nom::Err::Error(ErrorAt(*ee, fulllen - *pos, ii.len())))
-            }
+            ee @ ExpectedDecision(ii, pos) => ErrorAt(*ee, fulllen - *pos, ii.len()).into(),
+            ee @ UnknownDecision(ii, pos) => ErrorAt(*ee, fulllen - *pos, ii.len()).into(),
+            ee @ ExpectedPermTag(ii, pos) => ErrorAt(*ee, fulllen - *pos, ii.len()).into(),
+            ee @ ExpectedPermType(ii, pos) => ErrorAt(*ee, fulllen - *pos, *pos).into(),
+            ee @ ExpectedPermAssignment(ii, pos) => ErrorAt(*ee, fulllen - *pos, 0).into(),
+            ee @ ExpectedEndOfInput(ii, pos) => ErrorAt(*ee, fulllen - *pos, ii.len()).into(),
+            ee @ ExpectedWhitespace(ii, pos) => ErrorAt(*ee, fulllen - *pos, ii.len()).into(),
             ee @ Nom(ii, ErrorKind::Space) => {
                 let at = fulllen - ii.len();
                 Err(nom::Err::Error(ErrorAt(ExpectedWhitespace(ii, at), at, 0)))
