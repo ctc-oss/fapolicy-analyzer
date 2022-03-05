@@ -196,8 +196,6 @@ pub fn both(i: &str) -> nom::IResult<&str, Both, ErrorAt<&str>> {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // println!("{:?}", decision("allow"));
-
     println!("Enter a rule, or Enter to exit...");
     loop {
         let line: String = io::stdin()
@@ -217,35 +215,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         to_diagnostic(file_id, both(&line)).map(|d| emit_diagnostic(&files, d));
     }
 
-    // let mut files = SimpleFiles::new();
-    // let file_1 = files.add("fapolicyd.rules", "xallow perm=open".to_string());
-    // let file_2 = files.add("fapolicyd.rules", "perm=open".to_string());
-    // let file_3 = files.add("fapolicyd.rules", "allow perm=open".to_string());
-    // let file_4 = files.add("fapolicyd.rules", "allow perm=openx".to_string());
-    // let file_5 = files.add("fapolicyd.rules", "allow pexrm=openx".to_string());
-
-    // println!("1 {:?}", both("xallow perm=open"));
-    // println!("2 {:?}", both("perm=open"));
-    // println!("3 {:?}", both("allow perm=open"));
-    // println!("4 {:?}", both("allow perm=openx"));
-    // println!("5 {:?}", both("allow pexrm=openx"));
-    // println!("6 {:?}", both("allow perm openx"));
-    // println!("7 {:?}", both("deny perm=execute"));
-
-    // to_diagnostic(file_1, both("xallow perm=open")).map(|d| emit_diagnostic(&files, d));
-    // to_diagnostic(file_2, both("perm=open")).map(|d| emit_diagnostic(&files, d));
-    // to_diagnostic(file_3, both("allow perm=open")).map(|d| emit_diagnostic(&files, d));
-    // to_diagnostic(file_4, both("allow perm=openx")).map(|d| emit_diagnostic(&files, d));
-    // to_diagnostic(file_5, both("allow pexrm=openx")).map(|d| emit_diagnostic(&files, d));
-
-    // match to_diagnostic(file_id, both("allow perm=openx")) {
-    //     None => println!("clean!"),
-    //     Some(diagnostic) => emit_diagnostic(files, diagnostic)?,
-    // }
-
-    // println!("{:?}", terminated(decision, space1)(" allow".trim()));
-    // println!("{:?}", decision("allow foo"));
-    //
     Ok(())
 }
 
