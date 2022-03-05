@@ -13,7 +13,7 @@ use codespan_reporting::term;
 use codespan_reporting::term::termcolor::{ColorChoice, StandardStream};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::{alphanumeric1, space1};
+use nom::character::complete::{alphanumeric1, space0, space1};
 use nom::combinator::{eof, map, opt};
 use nom::error::ErrorKind;
 use nom::error::ParseError;
@@ -122,8 +122,8 @@ pub fn decision(i: &str) -> nom::IResult<&str, Decision, CustomError<&str>> {
 
 pub fn parse_perm_tag(i: &str) -> nom::IResult<&str, (), CustomError<&str>> {
     match nom::combinator::complete(tuple((alphanumeric1, opt(tag("=")))))(i) {
-        Ok((r, (k, a))) if k == "perm" => {
-            if a.is_some() {
+        Ok((r, (k, eq))) if k == "perm" => {
+            if eq.is_some() {
                 Ok((r, ()))
             } else {
                 Err(nom::Err::Error(ExpectedPermAssignment(k, i.len() - 4)))
@@ -166,44 +166,33 @@ pub fn both(i: &str) -> nom::IResult<&str, Both, ErrorAt<&str>> {
 
     match nom::combinator::complete(nom::sequence::tuple((
         terminated(decision, space1),
-        permission,
+        terminated(permission, space0),
         end_of_rule,
     )))(i)
     {
         Ok((remaining_input, (dec, perm, _))) => Ok((remaining_input, Both { dec, perm })),
         Err(Err::Error(ref e)) => match e {
-            ee @ ExpectedDecision(ii, pos) => Err(nom::Err::Error(ErrorAt(
-                ee.clone(),
-                fulllen - *pos,
-                ii.len(),
-            ))),
-            ee @ UnknownDecision(ii, pos) => Err(nom::Err::Error(ErrorAt(
-                ee.clone(),
-                fulllen - *pos,
-                ii.len(),
-            ))),
-            ee @ ExpectedPermTag(ii, pos) => Err(nom::Err::Error(ErrorAt(
-                ee.clone(),
-                fulllen - *pos,
-                ii.len(),
-            ))),
+            ee @ ExpectedDecision(ii, pos) => {
+                Err(nom::Err::Error(ErrorAt(*ee, fulllen - *pos, ii.len())))
+            }
+            ee @ UnknownDecision(ii, pos) => {
+                Err(nom::Err::Error(ErrorAt(*ee, fulllen - *pos, ii.len())))
+            }
+            ee @ ExpectedPermTag(ii, pos) => {
+                Err(nom::Err::Error(ErrorAt(*ee, fulllen - *pos, ii.len())))
+            }
             ee @ ExpectedPermType(ii, pos) => {
-                println!("{} {}", fulllen - pos, pos);
-                Err(nom::Err::Error(ErrorAt(ee.clone(), fulllen - *pos, *pos)))
+                Err(nom::Err::Error(ErrorAt(*ee, fulllen - *pos, *pos)))
             }
             ee @ ExpectedPermAssignment(ii, pos) => {
-                Err(nom::Err::Error(ErrorAt(ee.clone(), fulllen - *pos, 0)))
+                Err(nom::Err::Error(ErrorAt(*ee, fulllen - *pos, 0)))
             }
-            ee @ ExpectedEndOfInput(ii, pos) => Err(nom::Err::Error(ErrorAt(
-                ee.clone(),
-                fulllen - *pos,
-                ii.len(),
-            ))),
-            ee @ ExpectedWhitespace(ii, pos) => Err(nom::Err::Error(ErrorAt(
-                ee.clone(),
-                fulllen - *pos,
-                ii.len(),
-            ))),
+            ee @ ExpectedEndOfInput(ii, pos) => {
+                Err(nom::Err::Error(ErrorAt(*ee, fulllen - *pos, ii.len())))
+            }
+            ee @ ExpectedWhitespace(ii, pos) => {
+                Err(nom::Err::Error(ErrorAt(*ee, fulllen - *pos, ii.len())))
+            }
             ee @ Nom(ii, ErrorKind::Space) => {
                 let at = fulllen - ii.len();
                 Err(nom::Err::Error(ErrorAt(ExpectedWhitespace(ii, at), at, 0)))
