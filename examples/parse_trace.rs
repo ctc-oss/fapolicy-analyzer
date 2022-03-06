@@ -12,14 +12,30 @@ use std::ops::{RangeFrom, RangeTo};
 
 #[derive(Debug, Copy, Clone)]
 struct Trace<I> {
+    src: I,
     txt: I,
 }
 
-impl<I> Trace<I> {}
+impl<I> Trace<I>
+where
+    I: Clone,
+{
+    pub fn new(v: I) -> Self {
+        Trace {
+            src: v.clone(),
+            txt: v,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+struct Product {
+    txt: String,
+}
 
 type StrTrace<'a> = Trace<&'a str>;
 type StrTraceError<'a> = CustomError<StrTrace<'a>>;
-type StrTraceResult<'a> = IResult<StrTrace<'a>, StrTrace<'a>, StrTraceError<'a>>;
+type StrTraceResult<'a> = IResult<StrTrace<'a>, Product, StrTraceError<'a>>;
 
 #[derive(Debug, PartialEq)]
 pub enum CustomError<I> {
@@ -38,14 +54,21 @@ impl<I> ParseError<I> for CustomError<I> {
 }
 
 fn is_alpha(input: StrTrace) -> StrTraceResult {
-    alpha1(input)
+    alpha1(input).map(|(t, r)| {
+        (
+            t,
+            Product {
+                txt: r.txt.to_string(),
+            },
+        )
+    })
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let res = is_alpha(Trace { txt: "foo" })?;
+    let res = is_alpha(Trace::new("foo"))?;
     println!("{:?}", res);
 
-    let res = is_alpha(Trace { txt: "123" }).err();
+    let res = is_alpha(Trace::new("123")).err();
     println!("{:?}", res);
 
     Ok(())
@@ -110,10 +133,13 @@ impl<I> UnspecializedInput for Trace<I> {}
 
 impl<'a, I, R> Slice<R> for Trace<I>
 where
-    I: Slice<R> + Offset + AsBytes + Slice<RangeTo<usize>>,
+    I: Slice<R> + Offset + AsBytes + Slice<RangeTo<usize>> + Clone,
 {
     fn slice(&self, range: R) -> Self {
         let next = self.txt.slice(range);
-        Trace { txt: next }
+        Trace {
+            src: self.src.clone(),
+            txt: next,
+        }
     }
 }
