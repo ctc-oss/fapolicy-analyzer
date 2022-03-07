@@ -1,19 +1,31 @@
 extern crate nom;
 
-use nom::bits::streaming::tag;
-use nom::character::complete::alpha1;
+use nom::bytes::complete::tag;
+use nom::bytes::complete::take;
+use nom::character::complete::{alpha1, alphanumeric1, space1};
+use nom::combinator::verify;
 use nom::error::ErrorKind;
 use nom::error::ParseError;
-use nom::Err::Error;
 use nom::{
-    AsBytes, IResult, InputIter, InputLength, InputTake, Needed, Offset, Slice, UnspecializedInput,
+    AsBytes, AsChar, Compare, CompareResult, ExtendInto, FindSubstring, IResult, InputIter,
+    InputLength, InputTake, InputTakeAtPosition, Needed, Offset, Slice, UnspecializedInput,
 };
 use std::ops::{RangeFrom, RangeTo};
 
 #[derive(Debug, Copy, Clone)]
 struct Trace<I> {
-    src: I,
-    txt: I,
+    remaining: I,
+    // copy of orginal text
+    original: I,
+    // current position relative to original
+    position: usize,
+}
+
+impl<T> core::ops::Deref for Trace<T> {
+    type Target = T;
+    fn deref(&self) -> &Self::Target {
+        &self.remaining
+    }
 }
 
 impl<I> Trace<I>
@@ -22,8 +34,9 @@ where
 {
     pub fn new(v: I) -> Self {
         Trace {
-            src: v.clone(),
-            txt: v,
+            original: v.clone(),
+            remaining: v,
+            position: 0,
         }
     }
 }
@@ -33,13 +46,19 @@ struct Product {
     txt: String,
 }
 
+#[derive(Debug, Clone)]
+struct Assignment {
+    lhs: String,
+    rhs: String,
+}
+
 type StrTrace<'a> = Trace<&'a str>;
 type StrTraceError<'a> = CustomError<StrTrace<'a>>;
 type StrTraceResult<'a> = IResult<StrTrace<'a>, Product, StrTraceError<'a>>;
 
 #[derive(Debug, PartialEq)]
-pub enum CustomError<I> {
-    MyError,
+enum CustomError<I> {
+    ExpectedAlpha,
     Nom(I, ErrorKind),
 }
 
@@ -58,18 +77,56 @@ fn is_alpha(input: StrTrace) -> StrTraceResult {
         (
             t,
             Product {
-                txt: r.txt.to_string(),
+                txt: r.remaining.to_string(),
             },
         )
     })
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let res = is_alpha(Trace::new("foo"))?;
-    println!("{:?}", res);
+fn is_alpha_twice(i: StrTrace) -> StrTraceResult {
+    match nom::combinator::complete(nom::sequence::tuple((alpha1, space1, alpha1)))(i) {
+        Ok((trace, (a, _, b))) => Ok((
+            trace,
+            Product {
+                txt: b.remaining.to_string(),
+            },
+        )),
+        Err(e) => Err(e),
+    }
+}
 
-    let res = is_alpha(Trace::new("123")).err();
-    println!("{:?}", res);
+fn eq_tag(i: StrTrace) -> IResult<StrTrace, StrTrace, StrTraceError> {
+    verify(take(1usize), |t: &StrTrace| t.remaining.take(1) == "=")(i)
+}
+
+fn is_assignment(i: StrTrace) -> IResult<StrTrace, Assignment, StrTraceError> {
+    match nom::combinator::complete(nom::sequence::tuple((alpha1, eq_tag, alphanumeric1)))(i) {
+        Ok((trace, (a, _, b))) => Ok((
+            trace,
+            Assignment {
+                lhs: a.remaining.to_string(),
+                rhs: b.remaining.to_string(),
+            },
+        )),
+        Err(e) => Err(e),
+    }
+}
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // let res = is_alpha(Trace::new("foo"))?;
+    // println!("1 {:?}", res);
+    //
+    // let res = is_alpha(Trace::new("123")).err();
+    // println!("2 {:?}", res);
+    //
+    // let res = is_alpha_twice(Trace::new("foo bar"))?;
+    // println!("3 {:?}", res);
+    //
+    // let res = is_alpha_twice(Trace::new("foo 123")).err();
+    // println!("4 {:?}", res);
+
+    let res = is_assignment(Trace::new("foo=123"));
+    println!("5 {:?}", res);
 
     Ok(())
 }
@@ -78,7 +135,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 impl<I: InputLength> InputLength for Trace<I> {
     fn input_len(&self) -> usize {
-        self.txt.input_len()
+        self.remaining.input_len()
     }
 }
 
@@ -102,11 +159,11 @@ where
     where
         P: Fn(Self::Item) -> bool,
     {
-        self.txt.position(predicate)
+        self.remaining.position(predicate)
     }
 
     fn slice_index(&self, count: usize) -> Result<usize, Needed> {
-        todo!()
+        self.remaining.slice_index(count)
     }
 }
 
@@ -125,21 +182,39 @@ where
 
 impl<T: AsBytes> AsBytes for Trace<T> {
     fn as_bytes(&self) -> &[u8] {
-        self.txt.as_bytes()
+        self.remaining.as_bytes()
     }
 }
-
-impl<I> UnspecializedInput for Trace<I> {}
 
 impl<'a, I, R> Slice<R> for Trace<I>
 where
     I: Slice<R> + Offset + AsBytes + Slice<RangeTo<usize>> + Clone,
 {
     fn slice(&self, range: R) -> Self {
-        let next = self.txt.slice(range);
+        let remaining = self.remaining.slice(range);
+        let position = self.original.as_bytes().len() - remaining.as_bytes().len();
         Trace {
-            src: self.src.clone(),
-            txt: next,
+            original: self.original.clone(),
+            remaining,
+            position,
         }
     }
 }
+
+impl<T: AsBytes + Clone> From<T> for Trace<T> {
+    fn from(i: T) -> Self {
+        Self::new(i)
+    }
+}
+
+impl<T, U> FindSubstring<U> for Trace<T>
+where
+    T: FindSubstring<U>,
+{
+    #[inline]
+    fn find_substring(&self, substr: U) -> Option<usize> {
+        self.original.find_substring(substr)
+    }
+}
+
+impl<T> UnspecializedInput for Trace<T> {}
