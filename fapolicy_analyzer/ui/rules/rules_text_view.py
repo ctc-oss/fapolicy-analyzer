@@ -13,9 +13,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Sequence
+import logging
 
-from fapolicy_analyzer import Rule
+from fapolicy_analyzer.ui.actions import NotificationType, add_notification
+from fapolicy_analyzer.ui.store import dispatch
+from fapolicy_analyzer.ui.strings import RULES_FILE_READ_ERROR
 from fapolicy_analyzer.ui.ui_widget import UIBuilderWidget
 
 
@@ -25,6 +27,13 @@ class RulesTextView(UIBuilderWidget):
         self.__text_view = self.get_object("textView")
         self.__text_view.set_show_line_numbers(True)
 
-    def render_rules(self, rules: Sequence[Rule]):
-        text = "\n".join([r.text for r in rules])
+    def render_rules(self, rules_path: str):
+        text = ""
+        try:
+            with open(rules_path, "r") as f:
+                text = f.read()
+        except (IOError, FileNotFoundError) as e:
+            logging.error("%s: %s", RULES_FILE_READ_ERROR, e)
+            dispatch(add_notification(RULES_FILE_READ_ERROR, NotificationType.ERROR))
+
         self.__text_view.get_buffer().set_text(text)
