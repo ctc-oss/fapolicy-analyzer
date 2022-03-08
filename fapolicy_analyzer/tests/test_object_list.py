@@ -70,11 +70,11 @@ def test_loads_store(widget):
 
 def test_status_markup(widget):
     view = widget.get_object("treeView")
-    st_red = '<span color="red"><b>ST</b></span>'
-    at_red = '<span color="red"><b>AT</b></span>'
-    u_green = '<span color="green"><u><b>U</b></u></span>'
-    st_green = '<span color="green"><u><b>ST</b></u></span>'
-    at_green = '<span color="green"><u><b>AT</b></u></span>'
+    st_red = f'<span color="{Colors.RED}"><b>ST</b></span>'
+    at_red = f'<span color="{Colors.RED}"><b>AT</b></span>'
+    u_green = f'<span color="{Colors.GREEN}"><u><b>U</b></u></span>'
+    st_green = f'<span color="{Colors.GREEN}"><u><b>ST</b></u></span>'
+    at_green = f'<span color="{Colors.GREEN}"><u><b>AT</b></u></span>'
 
     # System trust
     widget.load_store([_mock_object(trust="ST", trust_status="U")])

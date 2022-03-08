@@ -108,14 +108,14 @@ class SubjectList(SearchableList):
     def _trust_markup(self, subject):
 
         status = subject.trust_status.lower()
-
+        trust = subject.trust.lower()
         if status == "u":
-            at_str = '<span color="red"><b>AT</b></span>' if subject.trust.lower() == "at" else "AT"
-            st_str = '<span color="red"><b>ST</b></span>' if subject.trust.lower() == "st" else "ST"
-            u_str = '<span color="green"><u><b>U</b></u></span>' if subject.trust.lower() == "u" else "U"
+            at_str = f'<span color="{Colors.RED}"><b>AT</b></span>' if trust == "at" else "AT"
+            st_str = f'<span color="{Colors.RED}"><b>ST</b></span>' if trust == "st" else "ST"
+            u_str = f'<span color="{Colors.GREEN}"><u><b>U</b></u></span>' if trust == "u" else "U"
         elif status == "t":
-            at_str = '<span color="green"><u><b>AT</b></u></span>' if subject.trust.lower() == "at" else "AT"
-            st_str = '<span color="green"><u><b>ST</b></u></span>' if subject.trust.lower() == "st" else "ST"
+            at_str = f'<span color="{Colors.GREEN}"><u><b>AT</b></u></span>' if trust == "at" else "AT"
+            st_str = f'<span color="{Colors.GREEN}"><u><b>ST</b></u></span>' if trust == "st" else "ST"
             u_str = "U"
         else:
             at_str = "AT"
