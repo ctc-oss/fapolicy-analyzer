@@ -109,17 +109,13 @@ class SubjectList(SearchableList):
 
         status = subject.trust_status.lower()
         trust = subject.trust.lower()
-        if status == "u":
+        if not status == "t":
             at_str = f'<span color="{Colors.RED}"><b>AT</b></span>' if trust == "at" else "AT"
             st_str = f'<span color="{Colors.RED}"><b>ST</b></span>' if trust == "st" else "ST"
             u_str = f'<span color="{Colors.GREEN}"><u><b>U</b></u></span>' if trust == "u" else "U"
-        elif status == "t":
+        else:
             at_str = f'<span color="{Colors.GREEN}"><u><b>AT</b></u></span>' if trust == "at" else "AT"
             st_str = f'<span color="{Colors.GREEN}"><u><b>ST</b></u></span>' if trust == "st" else "ST"
-            u_str = "U"
-        else:
-            at_str = "AT"
-            st_str = "ST"
             u_str = "U"
 
         return "/".join([st_str, at_str, u_str])
