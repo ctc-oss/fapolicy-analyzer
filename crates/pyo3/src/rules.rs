@@ -13,11 +13,25 @@ use pyo3::prelude::*;
 pub struct PyRule {
     pub id: usize,
     pub text: String,
+    pub info: Vec<PyRuleInfo>,
+    pub valid: bool,
 }
 
 impl PyRule {
-    pub fn new(id: usize, text: String) -> Self {
-        Self { id, text }
+    pub fn new(id: usize, text: String, info: Vec<(String, String)>, valid: bool) -> Self {
+        let info = info
+            .iter()
+            .map(|(c, m)| PyRuleInfo {
+                category: c.clone(),
+                message: m.clone(),
+            })
+            .collect();
+        Self {
+            id,
+            text,
+            info,
+            valid,
+        }
     }
 }
 
@@ -32,9 +46,40 @@ impl PyRule {
     fn get_text(&self) -> String {
         self.text.clone()
     }
+
+    #[getter]
+    fn get_info(&self) -> Vec<PyRuleInfo> {
+        self.info.clone()
+    }
+
+    #[getter]
+    fn is_valid(&self) -> bool {
+        self.valid
+    }
+}
+
+#[pyclass(module = "rules", name = "Info")]
+#[derive(Clone)]
+pub struct PyRuleInfo {
+    pub category: String,
+    pub message: String,
+}
+
+#[pymethods]
+impl PyRuleInfo {
+    #[getter]
+    fn get_category(&self) -> String {
+        self.category.clone()
+    }
+
+    #[getter]
+    fn get_message(&self) -> String {
+        self.message.clone()
+    }
 }
 
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyRule>()?;
+    m.add_class::<PyRuleInfo>()?;
     Ok(())
 }
