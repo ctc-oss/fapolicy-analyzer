@@ -13,12 +13,19 @@ use pyo3::prelude::*;
 pub struct PyRule {
     pub id: usize,
     pub text: String,
+    pub origin: String,
     pub info: Vec<PyRuleInfo>,
     pub valid: bool,
 }
 
 impl PyRule {
-    pub fn new(id: usize, text: String, info: Vec<(String, String)>, valid: bool) -> Self {
+    pub fn new(
+        id: usize,
+        text: String,
+        origin: String,
+        info: Vec<(String, String)>,
+        valid: bool,
+    ) -> Self {
         let info = info
             .iter()
             .map(|(c, m)| PyRuleInfo {
@@ -26,9 +33,11 @@ impl PyRule {
                 message: m.clone(),
             })
             .collect();
+
         Self {
             id,
             text,
+            origin,
             info,
             valid,
         }
@@ -45,6 +54,11 @@ impl PyRule {
     #[getter]
     fn get_text(&self) -> String {
         self.text.clone()
+    }
+
+    #[getter]
+    fn get_origin(&self) -> String {
+        self.origin.clone()
     }
 
     #[getter]

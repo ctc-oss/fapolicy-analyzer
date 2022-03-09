@@ -21,6 +21,7 @@ use crate::change::PyChangeset;
 
 use super::trust::PyTrust;
 use crate::rules::PyRule;
+use fapolicy_daemon::fapolicyd;
 
 #[pyclass(module = "app", name = "System")]
 #[derive(Clone)]
@@ -148,7 +149,15 @@ impl PySystem {
             .rs
             .rules_db
             .iter()
-            .map(|(id, r)| PyRule::new(*id, r.to_string(), vec![], true))
+            .map(|(id, r)| {
+                PyRule::new(
+                    *id,
+                    r.to_string(),
+                    fapolicyd::RULES_FILE_PATH.to_string(),
+                    vec![],
+                    true,
+                )
+            })
             .collect())
     }
 }
