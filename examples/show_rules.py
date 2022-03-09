@@ -21,7 +21,13 @@ yellow = '\033[93m'
 blue = '\033[96m'
 
 s1 = System()
+
+origin = None
 for r in s1.rules():
+    if r.origin != origin:
+        origin = r.origin
+        print(f"[{origin}]")
+
     print(red if r.is_valid else green, end='')
     print(f"{r.id} {r.text} \033[0m")
     for info in r.info:
