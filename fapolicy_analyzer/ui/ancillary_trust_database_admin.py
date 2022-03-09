@@ -33,6 +33,7 @@ from .actions import (
 from .ancillary_trust_file_list import AncillaryTrustFileList
 from .store import dispatch, get_system_feature
 from .trust_file_details import TrustFileDetails
+from .remove_deleted_dialog import RemoveDeletedDialog
 from .ui_widget import UIConnectedWidget
 
 
@@ -154,7 +155,15 @@ SHA256: {fs.sha(trust.path)}"""
 
     def on_trustBtn_clicked(self, *args):
         if self.selectedFiles:
-            self.add_trusted_files(*self.selectedFiles)
+            dne_list = [f for f in self.selectedFiles if not os.path.isfile(f) ]
+            if len(dne_list) > 0:
+                removeDialog = RemoveDeletedDialog().get_ref()
+                resp = removeDialog.run()
+                removeDialog.destroy()
+                if resp == 1:
+                    self.on_remove_file_activate()
+            else:
+                self.add_trusted_files(*self.selectedFiles)
 
     def on_untrustBtn_clicked(self, *args):
         if self.selectedFiles:
