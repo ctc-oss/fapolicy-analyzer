@@ -148,7 +148,7 @@ impl PySystem {
             .rs
             .rules_db
             .iter()
-            .map(|(id, r)| PyRule::new(*id, r.to_string()))
+            .map(|(id, r)| PyRule::new(*id, r.to_string(), vec![], true))
             .collect())
     }
 }
