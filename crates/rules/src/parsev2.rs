@@ -1,13 +1,14 @@
-use crate::parser::error::RuleParseError;
-use crate::parser::error::RuleParseError::*;
-use crate::parser::trace::Trace;
-use crate::{Decision, Permission};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::alphanumeric1;
 use nom::combinator::{map, opt};
-use nom::sequence::{separated_pair, tuple};
-use nom::{Err, IResult};
+use nom::sequence::tuple;
+use nom::IResult;
+
+use crate::parser::error::RuleParseError;
+use crate::parser::error::RuleParseError::*;
+use crate::parser::trace::Trace;
+use crate::{Decision, Permission};
 
 type StrTrace<'a> = Trace<&'a str>;
 type TraceError<'a> = RuleParseError<StrTrace<'a>>;
@@ -44,6 +45,7 @@ pub fn decision(i: StrTrace) -> IResult<StrTrace, Decision, TraceError> {
 }
 
 pub fn permission(i: StrTrace) -> IResult<StrTrace, Permission, TraceError> {
+    // checking the structure of the lhs without deriving any value
     let (ii, _) = match tuple((alphanumeric1, opt(tag("="))))(i) {
         Ok((r, (k, eq))) if k.fragment == "perm" => {
             if eq.is_some() {
@@ -58,13 +60,14 @@ pub fn permission(i: StrTrace) -> IResult<StrTrace, Permission, TraceError> {
         Err(e) => Err(e),
     }?;
 
-    let xx: IResult<StrTrace, Option<Permission>, TraceError> = opt(alt((
+    // continue the parsing with the remainder from the check above (ii)
+    let res: IResult<StrTrace, Option<Permission>, TraceError> = opt(alt((
         map(tag("any"), |_| Permission::Any),
         map(tag("open"), |_| Permission::Open),
         map(tag("execute"), |_| Permission::Execute),
     )))(ii);
 
-    match xx {
+    match res {
         Ok((r, Some(p))) => Ok((r, p)),
         Ok((r, None)) => Err(nom::Err::Error(ExpectedPermType /*(i, i.len())*/)),
         _ => Err(nom::Err::Error(ExpectedPermType /*(i, i.len())*/)),

@@ -25,31 +25,11 @@ use fapolicy_rules::parser::error::RuleParseError::*;
 use fapolicy_rules::parser::trace::Trace;
 use fapolicy_rules::{parsev2, Decision, Permission};
 
-#[derive(Debug, PartialEq, Copy, Clone)]
-pub struct ErrorAt<I>(RuleParseError<I>, usize, usize);
-
 type StrTrace<'a> = Trace<&'a str>;
 type StrErrorAt<'a> = ErrorAt<StrTrace<'a>>;
 
-pub fn parse_allow(i: StrTrace) -> nom::IResult<StrTrace, Decision> {
-    map(tag("allow"), |_| Decision::Allow)(i)
-}
-pub fn parse_deny(i: StrTrace) -> nom::IResult<StrTrace, Decision> {
-    map(tag("deny"), |_| Decision::Deny)(i)
-}
-
-pub fn parse_perm_open(i: StrTrace) -> nom::IResult<StrTrace, Permission> {
-    map(tag("open"), |_| Permission::Open)(i)
-}
-pub fn parse_perm_execute(i: StrTrace) -> nom::IResult<StrTrace, Permission> {
-    map(tag("execute"), |_| Permission::Execute)(i)
-}
-
-pub fn end_of_rule(i: StrTrace) -> nom::IResult<StrTrace, (), RuleParseError<StrTrace>> {
-    eof::<StrTrace, RuleParseError<StrTrace>>(i)
-        .map(|x| (x.0, ()))
-        .map_err(|_| nom::Err::Error(ExpectedEndOfInput /*(i, i.len())*/))
-}
+#[derive(Debug, PartialEq, Copy, Clone)]
+pub struct ErrorAt<I>(RuleParseError<I>, usize, usize);
 
 impl<T, I> Into<Result<T, nom::Err<ErrorAt<I>>>> for ErrorAt<I> {
     fn into(self) -> Result<T, nom::Err<ErrorAt<I>>> {
@@ -92,6 +72,12 @@ pub fn both(i: StrTrace) -> nom::IResult<StrTrace, Both, StrErrorAt> {
         },
         e => panic!("unhandled pattern {:?}", e),
     }
+}
+
+pub fn end_of_rule(i: StrTrace) -> nom::IResult<StrTrace, (), RuleParseError<StrTrace>> {
+    eof::<StrTrace, RuleParseError<StrTrace>>(i)
+        .map(|x| (x.0, ()))
+        .map_err(|_| nom::Err::Error(ExpectedEndOfInput /*(i, i.len())*/))
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
