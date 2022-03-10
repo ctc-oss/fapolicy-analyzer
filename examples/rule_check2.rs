@@ -23,17 +23,10 @@ use nom::{Err, IResult};
 use fapolicy_rules::parser::error::RuleParseError;
 use fapolicy_rules::parser::error::RuleParseError::*;
 use fapolicy_rules::parser::trace::Trace;
-use fapolicy_rules::{parsev2, Decision};
+use fapolicy_rules::{parsev2, Decision, Permission};
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub struct ErrorAt<I>(RuleParseError<I>, usize, usize);
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum Permission {
-    Any,
-    Open,
-    Execute,
-}
 
 type StrTrace<'a> = Trace<&'a str>;
 type StrErrorAt<'a> = ErrorAt<StrTrace<'a>>;
@@ -45,9 +38,6 @@ pub fn parse_deny(i: StrTrace) -> nom::IResult<StrTrace, Decision> {
     map(tag("deny"), |_| Decision::Deny)(i)
 }
 
-pub fn parse_perm_any(i: StrTrace) -> nom::IResult<StrTrace, Permission> {
-    map(tag("any"), |_| Permission::Any)(i)
-}
 pub fn parse_perm_open(i: StrTrace) -> nom::IResult<StrTrace, Permission> {
     map(tag("open"), |_| Permission::Open)(i)
 }
@@ -55,62 +45,10 @@ pub fn parse_perm_execute(i: StrTrace) -> nom::IResult<StrTrace, Permission> {
     map(tag("execute"), |_| Permission::Execute)(i)
 }
 
-pub fn decision(i: StrTrace) -> nom::IResult<StrTrace, Decision, RuleParseError<StrTrace>> {
-    match nom::combinator::complete(parsev2::decision)(i) {
-        Ok((r, dec)) => Ok((r, dec)),
-        Err(e) => {
-            let guessed = i
-                .fragment
-                .split_once(" ")
-                .map(|x| UnknownDecision /*(x.0, i.len())*/)
-                .unwrap_or_else(|| {
-                    ExpectedDecision /*(
-                                         i.clone().split_once(" ").map(|x| x.0).unwrap_or_else(|| i),
-                                         i.len(),
-                                     )*/
-                });
-            Err(nom::Err::Error(guessed))
-        }
-    }
-}
-
-pub fn parse_perm_tag(i: StrTrace) -> nom::IResult<StrTrace, (), RuleParseError<StrTrace>> {
-    match nom::combinator::complete(tuple((alphanumeric1, opt(tag("=")))))(i) {
-        Ok((r, (k, eq))) if k.fragment == "perm" => {
-            if eq.is_some() {
-                Ok((r, ()))
-            } else {
-                Err(nom::Err::Error(
-                    ExpectedPermAssignment, /*(k, i.len() - 4)*/
-                ))
-            }
-        }
-        Ok((r, (k, _))) => Err(nom::Err::Error(ExpectedPermTag /*(k, i.len())*/)),
-        Err(e) => Err(e),
-    }
-}
-
-pub fn parse_perm_opts(
-    i: StrTrace,
-) -> nom::IResult<StrTrace, Permission, RuleParseError<StrTrace>> {
-    match opt(alt((parse_perm_any, parse_perm_open, parse_perm_execute)))(i) {
-        Ok((r, Some(p))) => Ok((r, p)),
-        Ok((r, None)) => Err(nom::Err::Error(ExpectedPermType /*(i, i.len())*/)),
-        _ => Err(nom::Err::Error(ExpectedPermType /*(i, i.len())*/)),
-    }
-}
-
 pub fn end_of_rule(i: StrTrace) -> nom::IResult<StrTrace, (), RuleParseError<StrTrace>> {
     eof::<StrTrace, RuleParseError<StrTrace>>(i)
         .map(|x| (x.0, ()))
         .map_err(|_| nom::Err::Error(ExpectedEndOfInput /*(i, i.len())*/))
-}
-
-pub fn permission(i: StrTrace) -> nom::IResult<StrTrace, Permission, RuleParseError<StrTrace>> {
-    match nom::combinator::complete(nom::sequence::tuple((parse_perm_tag, parse_perm_opts)))(i) {
-        Ok((r, (_, p))) => Ok((r, p)),
-        Err(e) => Err(e),
-    }
 }
 
 impl<T, I> Into<Result<T, nom::Err<ErrorAt<I>>>> for ErrorAt<I> {
@@ -132,8 +70,8 @@ pub fn both(i: StrTrace) -> nom::IResult<StrTrace, Both, StrErrorAt> {
     let ii = "";
 
     match nom::combinator::complete(nom::sequence::tuple((
-        terminated(decision, space1),
-        terminated(permission, space0),
+        terminated(parsev2::decision, space1),
+        terminated(parsev2::permission, space0),
         end_of_rule,
     )))(i)
     {
