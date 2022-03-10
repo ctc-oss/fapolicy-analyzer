@@ -26,7 +26,6 @@ from .searchable_list import SearchableList
 from .store import dispatch
 from .strings import FILE_LABEL, FILES_LABEL
 from .trust_reconciliation_dialog import TrustReconciliationDialog
-
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gdk, Gtk  # isort: skip
 
@@ -106,10 +105,26 @@ class SubjectList(SearchableList):
         fileColumn.set_sort_column_id(2)
         return [trustColumn, accessColumn, fileColumn]
 
+    def _trust_markup(self, subject):
+
+        status = subject.trust_status.lower()
+        trust = subject.trust.lower()
+        if not status == "t":
+            at_str = f'<span color="{Colors.RED}"><b>AT</b></span>' if trust == "at" else "AT"
+            st_str = f'<span color="{Colors.RED}"><b>ST</b></span>' if trust == "st" else "ST"
+            u_str = f'<span color="{Colors.GREEN}"><u><b>U</b></u></span>' if trust == "u" else "U"
+        else:
+            at_str = f'<span color="{Colors.GREEN}"><u><b>AT</b></u></span>' if trust == "at" else "AT"
+            st_str = f'<span color="{Colors.GREEN}"><u><b>ST</b></u></span>' if trust == "st" else "ST"
+            u_str = "U"
+
+        return "/".join([st_str, at_str, u_str])
+
     def __markup(self, value, options):
+
         idx = options.index(value) if value in options else -1
         return "/".join(
-            [f"<b><u>{o}</u></b>" if i == idx else o for i, o in enumerate(options)]
+            [f"<u><b>{o}</b></u>" if i == idx else o for i, o in enumerate(options)]
         )
 
     def __color(self, access):
@@ -181,11 +196,10 @@ class SubjectList(SearchableList):
         self._ancillaryTrust = kwargs.get("ancillaryTrust", [])
         store = Gtk.ListStore(str, str, str, object, str)
         for s in subjects:
-            status = self.__markup(s.trust.upper(), ["ST", "AT", "U"])
+            status = self._trust_markup(s)
             access = self.__markup(s.access.upper(), ["A", "P", "D"])
             bgColor = self.__color(s.access)
             store.append([status, access, s.file, s, bgColor])
-
         super().load_store(store)
 
     def get_selected_row_by_file(self, file: str) -> Gtk.TreePath:
