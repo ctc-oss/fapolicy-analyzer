@@ -23,21 +23,10 @@ use nom::{Err, IResult};
 use fapolicy_rules::parser::error::RuleParseError;
 use fapolicy_rules::parser::error::RuleParseError::*;
 use fapolicy_rules::parser::trace::Trace;
+use fapolicy_rules::{parsev2, Decision};
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub struct ErrorAt<I>(RuleParseError<I>, usize, usize);
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum Decision {
-    AllowAudit,
-    AllowSyslog,
-    AllowLog,
-    Allow,
-    Deny,
-    DenyLog,
-    DenyAudit,
-    DenySyslog,
-}
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Permission {
@@ -67,7 +56,7 @@ pub fn parse_perm_execute(i: StrTrace) -> nom::IResult<StrTrace, Permission> {
 }
 
 pub fn decision(i: StrTrace) -> nom::IResult<StrTrace, Decision, RuleParseError<StrTrace>> {
-    match nom::combinator::complete(alt((parse_allow, parse_deny)))(i) {
+    match nom::combinator::complete(parsev2::decision)(i) {
         Ok((r, dec)) => Ok((r, dec)),
         Err(e) => {
             let guessed = i

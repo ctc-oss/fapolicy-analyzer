@@ -5,10 +5,13 @@ use nom::{
 };
 use std::ops::{RangeFrom, RangeTo};
 
+/// Trace is a nom custom input type that provides context to the parse
+/// The trace carries along a copy of the original rule input text
 #[derive(Debug, Copy, Clone)]
 pub struct Trace<I> {
+    // input applicable to the current context
     pub fragment: I,
-    // copy of orginal text
+    // full copy of the orginal input data
     original: I,
     // current position relative to original
     position: usize,

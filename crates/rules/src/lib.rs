@@ -17,6 +17,7 @@ pub use self::subject::Part as SubjPart;
 pub use self::subject::Subject;
 
 pub mod parser;
+pub mod parsev2;
 
 mod decision;
 mod file_type;
