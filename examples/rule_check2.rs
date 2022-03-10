@@ -22,6 +22,7 @@ use nom::{Err, IResult};
 
 use fapolicy_rules::parser::error::RuleParseError;
 use fapolicy_rules::parser::error::RuleParseError::*;
+use fapolicy_rules::parser::trace::Trace;
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub struct ErrorAt<I>(RuleParseError<I>, usize, usize);
@@ -45,28 +46,32 @@ pub enum Permission {
     Execute,
 }
 
-pub fn parse_allow(i: &str) -> nom::IResult<&str, Decision> {
+type StrTrace<'a> = Trace<&'a str>;
+type StrErrorAt<'a> = ErrorAt<StrTrace<'a>>;
+
+pub fn parse_allow(i: StrTrace) -> nom::IResult<StrTrace, Decision> {
     map(tag("allow"), |_| Decision::Allow)(i)
 }
-pub fn parse_deny(i: &str) -> nom::IResult<&str, Decision> {
+pub fn parse_deny(i: StrTrace) -> nom::IResult<StrTrace, Decision> {
     map(tag("deny"), |_| Decision::Deny)(i)
 }
 
-pub fn parse_perm_any(i: &str) -> nom::IResult<&str, Permission> {
+pub fn parse_perm_any(i: StrTrace) -> nom::IResult<StrTrace, Permission> {
     map(tag("any"), |_| Permission::Any)(i)
 }
-pub fn parse_perm_open(i: &str) -> nom::IResult<&str, Permission> {
+pub fn parse_perm_open(i: StrTrace) -> nom::IResult<StrTrace, Permission> {
     map(tag("open"), |_| Permission::Open)(i)
 }
-pub fn parse_perm_execute(i: &str) -> nom::IResult<&str, Permission> {
+pub fn parse_perm_execute(i: StrTrace) -> nom::IResult<StrTrace, Permission> {
     map(tag("execute"), |_| Permission::Execute)(i)
 }
 
-pub fn decision(i: &str) -> nom::IResult<&str, Decision, RuleParseError<&str>> {
+pub fn decision(i: StrTrace) -> nom::IResult<StrTrace, Decision, RuleParseError<StrTrace>> {
     match nom::combinator::complete(alt((parse_allow, parse_deny)))(i) {
         Ok((r, dec)) => Ok((r, dec)),
         Err(e) => {
             let guessed = i
+                .fragment
                 .split_once(" ")
                 .map(|x| UnknownDecision /*(x.0, i.len())*/)
                 .unwrap_or_else(|| {
@@ -80,9 +85,9 @@ pub fn decision(i: &str) -> nom::IResult<&str, Decision, RuleParseError<&str>> {
     }
 }
 
-pub fn parse_perm_tag(i: &str) -> nom::IResult<&str, (), RuleParseError<&str>> {
+pub fn parse_perm_tag(i: StrTrace) -> nom::IResult<StrTrace, (), RuleParseError<StrTrace>> {
     match nom::combinator::complete(tuple((alphanumeric1, opt(tag("=")))))(i) {
-        Ok((r, (k, eq))) if k == "perm" => {
+        Ok((r, (k, eq))) if k.fragment == "perm" => {
             if eq.is_some() {
                 Ok((r, ()))
             } else {
@@ -96,7 +101,9 @@ pub fn parse_perm_tag(i: &str) -> nom::IResult<&str, (), RuleParseError<&str>> {
     }
 }
 
-pub fn parse_perm_opts(i: &str) -> nom::IResult<&str, Permission, RuleParseError<&str>> {
+pub fn parse_perm_opts(
+    i: StrTrace,
+) -> nom::IResult<StrTrace, Permission, RuleParseError<StrTrace>> {
     match opt(alt((parse_perm_any, parse_perm_open, parse_perm_execute)))(i) {
         Ok((r, Some(p))) => Ok((r, p)),
         Ok((r, None)) => Err(nom::Err::Error(ExpectedPermType /*(i, i.len())*/)),
@@ -104,13 +111,13 @@ pub fn parse_perm_opts(i: &str) -> nom::IResult<&str, Permission, RuleParseError
     }
 }
 
-pub fn end_of_rule(i: &str) -> nom::IResult<&str, (), RuleParseError<&str>> {
-    eof::<&str, RuleParseError<&str>>(i)
+pub fn end_of_rule(i: StrTrace) -> nom::IResult<StrTrace, (), RuleParseError<StrTrace>> {
+    eof::<StrTrace, RuleParseError<StrTrace>>(i)
         .map(|x| (x.0, ()))
         .map_err(|_| nom::Err::Error(ExpectedEndOfInput /*(i, i.len())*/))
 }
 
-pub fn permission(i: &str) -> nom::IResult<&str, Permission, RuleParseError<&str>> {
+pub fn permission(i: StrTrace) -> nom::IResult<StrTrace, Permission, RuleParseError<StrTrace>> {
     match nom::combinator::complete(nom::sequence::tuple((parse_perm_tag, parse_perm_opts)))(i) {
         Ok((r, (_, p))) => Ok((r, p)),
         Err(e) => Err(e),
@@ -129,8 +136,8 @@ pub struct Both {
     perm: Permission,
 }
 
-pub fn both(i: &str) -> nom::IResult<&str, Both, ErrorAt<&str>> {
-    let fulllen = i.len();
+pub fn both(i: StrTrace) -> nom::IResult<StrTrace, Both, StrErrorAt> {
+    let fulllen = i.fragment.len();
 
     let pos = &0;
     let ii = "";
@@ -151,7 +158,7 @@ pub fn both(i: &str) -> nom::IResult<&str, Both, ErrorAt<&str>> {
             ee @ ExpectedEndOfInput/*(ii, pos)*/ => ErrorAt(*ee, fulllen - *pos, ii.len()).into(),
             ee @ ExpectedWhitespace/*(ii, pos)*/ => ErrorAt(*ee, fulllen - *pos, ii.len()).into(),
             ee @ Nom(ii, ErrorKind::Space) => {
-                let at = fulllen - ii.len();
+                let at = fulllen - ii.fragment.len();
                 Err(nom::Err::Error(ErrorAt(ExpectedWhitespace/*(ii, at)*/, at, 0)))
             }
             e => panic!("unhandled pattern {:?}", e),
@@ -194,9 +201,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 aa
             });
 
-        let results: Vec<IResult<&str, Both, ErrorAt<&str>>> = contents
+        let results: Vec<IResult<StrTrace, Both, StrErrorAt>> = contents
             .iter()
-            .map(|s| both(&s))
+            .map(|s| both(Trace::new(&s)))
             .enumerate()
             .map(|(i, r)| match r {
                 ok @ Ok(_) => ok,
@@ -224,7 +231,7 @@ fn emit_diagnostic(
 
 fn to_diagnostic(
     file_id: usize,
-    results: Vec<IResult<&str, Both, ErrorAt<&str>>>,
+    results: Vec<IResult<StrTrace, Both, StrErrorAt>>,
 ) -> Option<Diagnostic<usize>> {
     if results.iter().all(|r| r.as_ref().is_ok()) {
         println!("Valid!");
@@ -233,9 +240,9 @@ fn to_diagnostic(
         let labels: Vec<Label<usize>> = results
             .iter()
             .map(|e| match e {
-                Err(nom::Err::Error(e)) => {
-                    Some(Label::primary(file_id, e.1..(e.1 + e.2)).with_message(format!("{}", e.0)))
-                }
+                Err(nom::Err::Error(e)) => Some(
+                    Label::primary(file_id, e.1..(e.1 + e.2)).with_message(format!("{:?}", e.0)),
+                ),
                 Ok(_) => None,
                 _ => panic!("ugh"),
             })
