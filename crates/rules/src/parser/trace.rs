@@ -121,7 +121,10 @@ where
     where
         P: Fn(Self::Item) -> bool,
     {
-        todo!()
+        match self.fragment.position(predicate) {
+            Some(n) => Ok(self.take_split(n)),
+            None => Err(nom::Err::Incomplete(nom::Needed::new(1))),
+        }
     }
 
     fn split_at_position1<P, E: ParseError<Self>>(
@@ -142,7 +145,10 @@ where
     where
         P: Fn(Self::Item) -> bool,
     {
-        todo!()
+        match self.split_at_position(predicate) {
+            Err(nom::Err::Incomplete(_)) => Ok(self.take_split(self.input_len())),
+            res => res,
+        }
     }
 
     fn split_at_position1_complete<P, E: ParseError<Self>>(
