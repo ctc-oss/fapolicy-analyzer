@@ -1,6 +1,6 @@
 extern crate nom;
 
-use fapolicy_rules::parser::error::CustomError;
+use fapolicy_rules::parser::error::RuleParseError;
 use fapolicy_rules::parser::trace::Trace;
 use nom::bytes::complete::tag;
 use nom::bytes::complete::take;
@@ -26,7 +26,7 @@ struct Assignment {
 }
 
 type StrTrace<'a> = Trace<&'a str>;
-type StrTraceError<'a> = CustomError<StrTrace<'a>>;
+type StrTraceError<'a> = RuleParseError<StrTrace<'a>>;
 type StrTraceResult<'a> = IResult<StrTrace<'a>, Product, StrTraceError<'a>>;
 
 fn is_alpha(input: StrTrace) -> StrTraceResult {
