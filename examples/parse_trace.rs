@@ -14,7 +14,7 @@ use std::ops::{RangeFrom, RangeTo};
 
 #[derive(Debug, Copy, Clone)]
 struct Trace<I> {
-    remaining: I,
+    fragment: I,
     // copy of orginal text
     original: I,
     // current position relative to original
@@ -24,7 +24,7 @@ struct Trace<I> {
 impl<T> core::ops::Deref for Trace<T> {
     type Target = T;
     fn deref(&self) -> &Self::Target {
-        &self.remaining
+        &self.fragment
     }
 }
 
@@ -35,7 +35,7 @@ where
     pub fn new(v: I) -> Self {
         Trace {
             original: v.clone(),
-            remaining: v,
+            fragment: v,
             position: 0,
         }
     }
@@ -77,7 +77,7 @@ fn is_alpha(input: StrTrace) -> StrTraceResult {
         (
             t,
             Product {
-                txt: r.remaining.to_string(),
+                txt: r.fragment.to_string(),
             },
         )
     })
@@ -88,24 +88,24 @@ fn is_alpha_twice(i: StrTrace) -> StrTraceResult {
         Ok((trace, (a, _, b))) => Ok((
             trace,
             Product {
-                txt: b.remaining.to_string(),
+                txt: b.fragment.to_string(),
             },
         )),
         Err(e) => Err(e),
     }
 }
 
-fn eq_tag(i: StrTrace) -> IResult<StrTrace, StrTrace, StrTraceError> {
-    verify(take(1usize), |t: &StrTrace| t.remaining.take(1) == "=")(i)
-}
+// fn eq_tag(i: StrTrace) -> IResult<StrTrace, StrTrace, StrTraceError> {
+//     verify(take(1usize), |t: &StrTrace| t.remaining.take(1) == "=")(i)
+// }
 
 fn is_assignment(i: StrTrace) -> IResult<StrTrace, Assignment, StrTraceError> {
-    match nom::combinator::complete(nom::sequence::tuple((alpha1, eq_tag, alphanumeric1)))(i) {
+    match nom::combinator::complete(nom::sequence::tuple((alpha1, tag("="), alphanumeric1)))(i) {
         Ok((trace, (a, _, b))) => Ok((
             trace,
             Assignment {
-                lhs: a.remaining.to_string(),
-                rhs: b.remaining.to_string(),
+                lhs: a.fragment.to_string(),
+                rhs: b.fragment.to_string(),
             },
         )),
         Err(e) => Err(e),
@@ -128,6 +128,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let res = is_assignment(Trace::new("foo=123"));
     println!("5 {:?}", res);
 
+    let res = is_assignment(Trace::new("foo123"));
+    println!("5 {:?}", res);
+
     Ok(())
 }
 
@@ -135,7 +138,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 impl<I: InputLength> InputLength for Trace<I> {
     fn input_len(&self) -> usize {
-        self.remaining.input_len()
+        self.fragment.input_len()
     }
 }
 
@@ -159,11 +162,11 @@ where
     where
         P: Fn(Self::Item) -> bool,
     {
-        self.remaining.position(predicate)
+        self.fragment.position(predicate)
     }
 
     fn slice_index(&self, count: usize) -> Result<usize, Needed> {
-        self.remaining.slice_index(count)
+        self.fragment.slice_index(count)
     }
 }
 
@@ -182,7 +185,7 @@ where
 
 impl<T: AsBytes> AsBytes for Trace<T> {
     fn as_bytes(&self) -> &[u8] {
-        self.remaining.as_bytes()
+        self.fragment.as_bytes()
     }
 }
 
@@ -191,11 +194,11 @@ where
     I: Slice<R> + Offset + AsBytes + Slice<RangeTo<usize>> + Clone,
 {
     fn slice(&self, range: R) -> Self {
-        let remaining = self.remaining.slice(range);
-        let position = self.original.as_bytes().len() - remaining.as_bytes().len();
+        let fragment = self.fragment.slice(range);
+        let position = self.original.as_bytes().len() - fragment.as_bytes().len();
         Trace {
             original: self.original.clone(),
-            remaining,
+            fragment,
             position,
         }
     }
@@ -217,4 +220,73 @@ where
     }
 }
 
-impl<T> UnspecializedInput for Trace<T> {}
+//impl<T> UnspecializedInput for Trace<T> {}
+// ------- provides -----------
+// impl<T: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputTakeAtPosition for T
+
+impl<T: InputLength + InputIter + InputTake + Clone> InputTakeAtPosition for Trace<T>
+where
+    T: InputTakeAtPosition + InputLength + InputIter,
+    Self: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>> + Clone,
+{
+    type Item = <T as InputIter>::Item;
+
+    fn split_at_position<P, E: ParseError<Self>>(&self, predicate: P) -> IResult<Self, Self, E>
+    where
+        P: Fn(Self::Item) -> bool,
+    {
+        todo!()
+    }
+
+    fn split_at_position1<P, E: ParseError<Self>>(
+        &self,
+        predicate: P,
+        e: ErrorKind,
+    ) -> IResult<Self, Self, E>
+    where
+        P: Fn(Self::Item) -> bool,
+    {
+        todo!()
+    }
+
+    fn split_at_position_complete<P, E: ParseError<Self>>(
+        &self,
+        predicate: P,
+    ) -> IResult<Self, Self, E>
+    where
+        P: Fn(Self::Item) -> bool,
+    {
+        todo!()
+    }
+
+    fn split_at_position1_complete<P, E: ParseError<Self>>(
+        &self,
+        predicate: P,
+        e: ErrorKind,
+    ) -> IResult<Self, Self, E>
+    where
+        P: Fn(Self::Item) -> bool,
+    {
+        match self.fragment.position(predicate) {
+            Some(0) => Err(nom::Err::Error(E::from_error_kind(self.clone(), e))),
+            Some(n) => Ok(self.take_split(n)),
+            None => {
+                if self.fragment.input_len() == 0 {
+                    Err(nom::Err::Error(E::from_error_kind(self.clone(), e)))
+                } else {
+                    Ok(self.take_split(self.input_len()))
+                }
+            }
+        }
+    }
+}
+
+impl<T: Compare<B>, B: Into<Trace<B>>> Compare<B> for Trace<T> {
+    fn compare(&self, t: B) -> CompareResult {
+        self.fragment.compare(t.into().fragment)
+    }
+
+    fn compare_no_case(&self, t: B) -> CompareResult {
+        self.fragment.compare_no_case(t.into().fragment)
+    }
+}
