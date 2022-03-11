@@ -3,7 +3,7 @@
 
 extern crate nom;
 
-use std::fmt::{Debug, Display, Formatter};
+use std::fmt::Debug;
 use std::io;
 use std::io::BufRead;
 
@@ -11,13 +11,10 @@ use codespan_reporting::diagnostic::{Diagnostic, Label};
 use codespan_reporting::files::SimpleFiles;
 use codespan_reporting::term;
 use codespan_reporting::term::termcolor::{ColorChoice, StandardStream};
-use nom::branch::alt;
-use nom::bytes::complete::tag;
-use nom::character::complete::{alphanumeric1, space0, space1};
-use nom::combinator::{eof, map, opt};
+use nom::character::complete::{space0, space1};
+use nom::combinator::eof;
 use nom::error::ErrorKind;
-use nom::error::ParseError;
-use nom::sequence::{terminated, tuple};
+use nom::sequence::terminated;
 use nom::{Err, IResult, InputLength};
 
 use fapolicy_rules::parser::error::RuleParseError;
@@ -63,16 +60,20 @@ pub fn both(i: StrTrace) -> nom::IResult<StrTrace, Both, StrErrorAt> {
     {
         Ok((remaining_input, (dec, perm, _))) => Ok((remaining_input, Both { dec, perm })),
         Err(Err::Error(ref e)) => match e {
-            ee @ ExpectedDecision(t)/*(ii, pos)*/ => ErrorAt::new(*ee, t.clone()).into(),
-            ee @ UnknownDecision(t)/*(ii, pos)*/ => ErrorAt::new(*ee, t.clone()).into(),/*(*ee, fulllen - *pos, ii.len())*/
-            ee @ ExpectedPermTag(t)/*(ii, pos)*/ => ErrorAt::new(*ee, t.clone()).into(),/*(*ee, fulllen - *pos, ii.len())*/
-            ee @ ExpectedPermType(t)/*(ii, pos)*/ => ErrorAt::new(*ee, t.clone()).into(),/*(*ee, fulllen - *pos, *pos)*/
-            ee @ ExpectedPermAssignment(t)/*(ii, pos)*/ => ErrorAt::new(*ee, t.clone()).into(),/*(*ee, fulllen - *pos, 0)*/
-            ee @ ExpectedEndOfInput(t)/*(ii, pos)*/ => ErrorAt::new(*ee, t.clone()).into(),/*(*ee, fulllen - *pos, ii.len())*/
-            ee @ ExpectedWhitespace(t)/*(ii, pos)*/ => ErrorAt::new(*ee, t.clone()).into(),/*(*ee, fulllen - *pos, ii.len())*/
+            ee @ ExpectedDecision(t) => ErrorAt::new(*ee, t.clone()).into(),
+            ee @ UnknownDecision(t) => ErrorAt::new(*ee, t.clone()).into(), /*(*ee, fulllen - *pos, ii.len())*/
+            ee @ ExpectedPermTag(t) => ErrorAt::new(*ee, t.clone()).into(), /*(*ee, fulllen - *pos, ii.len())*/
+            ee @ ExpectedPermType(t) => ErrorAt::new(*ee, t.clone()).into(), /*(*ee, fulllen - *pos, *pos)*/
+            ee @ ExpectedPermAssignment(t) => ErrorAt::new(*ee, t.clone()).into(), /*(*ee, fulllen - *pos, 0)*/
+            ee @ ExpectedEndOfInput(t) => ErrorAt::new(*ee, t.clone()).into(), /*(*ee, fulllen - *pos, ii.len())*/
+            ee @ ExpectedWhitespace(t) => ErrorAt::new(*ee, t.clone()).into(), /*(*ee, fulllen - *pos, ii.len())*/
             ee @ Nom(ii, ErrorKind::Space) => {
                 let at = fulllen - ii.fragment.len();
-                Err(nom::Err::Error(ErrorAt(ExpectedWhitespace(ii.clone())/*(ii, at)*/, at, 0)))
+                Err(nom::Err::Error(ErrorAt(
+                    ExpectedWhitespace(ii.clone()), /*(ii, at)*/
+                    at,
+                    0,
+                )))
             }
             e => panic!("unhandled pattern {:?}", e),
         },
