@@ -32,13 +32,13 @@ pub fn decision(i: StrTrace) -> IResult<StrTrace, Decision, TraceError> {
             let guessed = i
                 .fragment
                 .split_once(" ")
-                .map(|x| UnknownDecision /*(x.0, i.len())*/)
-                .unwrap_or_else(|| {
-                    ExpectedDecision /*(
-                                         i.clone().split_once(" ").map(|x| x.0).unwrap_or_else(|| i),
-                                         i.len(),
-                                     )*/
-                });
+                .map(|x| UnknownDecision(i) /*(x.0, i.len())*/)
+                .unwrap_or_else(
+                    || ExpectedDecision(i), /*(
+                                                i.clone().split_once(" ").map(|x| x.0).unwrap_or_else(|| i),
+                                                i.len(),
+                                            )*/
+                );
             Err(nom::Err::Error(guessed))
         }
     }
@@ -52,11 +52,11 @@ pub fn permission(i: StrTrace) -> IResult<StrTrace, Permission, TraceError> {
                 Ok((r, ()))
             } else {
                 Err(nom::Err::Error(
-                    ExpectedPermAssignment, /*(k, i.len() - 4)*/
+                    ExpectedPermAssignment(r), /*(k, i.len() - 4)*/
                 ))
             }
         }
-        Ok((r, (k, _))) => Err(nom::Err::Error(ExpectedPermTag /*(k, i.len())*/)),
+        Ok((r, (k, _))) => Err(nom::Err::Error(ExpectedPermTag(r) /*(k, i.len())*/)),
         Err(e) => Err(e),
     }?;
 
@@ -69,7 +69,7 @@ pub fn permission(i: StrTrace) -> IResult<StrTrace, Permission, TraceError> {
 
     match res {
         Ok((r, Some(p))) => Ok((r, p)),
-        Ok((r, None)) => Err(nom::Err::Error(ExpectedPermType /*(i, i.len())*/)),
-        _ => Err(nom::Err::Error(ExpectedPermType /*(i, i.len())*/)),
+        Ok((r, None)) => Err(nom::Err::Error(ExpectedPermType(r) /*(i, i.len())*/)),
+        _ => Err(nom::Err::Error(ExpectedPermType(i) /*(i, i.len())*/)),
     }
 }

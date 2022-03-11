@@ -3,7 +3,7 @@
 
 extern crate nom;
 
-use std::fmt::{Display, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 use std::io;
 use std::io::BufRead;
 
@@ -18,11 +18,11 @@ use nom::combinator::{eof, map, opt};
 use nom::error::ErrorKind;
 use nom::error::ParseError;
 use nom::sequence::{terminated, tuple};
-use nom::{Err, IResult};
+use nom::{Err, IResult, InputLength};
 
 use fapolicy_rules::parser::error::RuleParseError;
 use fapolicy_rules::parser::error::RuleParseError::*;
-use fapolicy_rules::parser::trace::Trace;
+use fapolicy_rules::parser::trace::{Position, Trace};
 use fapolicy_rules::{parsev2, Decision, Permission};
 
 type StrTrace<'a> = Trace<&'a str>;
@@ -30,6 +30,12 @@ type StrErrorAt<'a> = ErrorAt<StrTrace<'a>>;
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub struct ErrorAt<I>(RuleParseError<I>, usize, usize);
+
+impl ErrorAt<Trace<&str>> {
+    pub fn new<'a>(e: RuleParseError<Trace<&'a str>>, t: Trace<&str>) -> ErrorAt<Trace<&'a str>> {
+        ErrorAt(e.clone(), t.position(), t.input_len())
+    }
+}
 
 impl<T, I> Into<Result<T, nom::Err<ErrorAt<I>>>> for ErrorAt<I> {
     fn into(self) -> Result<T, nom::Err<ErrorAt<I>>> {
@@ -57,16 +63,16 @@ pub fn both(i: StrTrace) -> nom::IResult<StrTrace, Both, StrErrorAt> {
     {
         Ok((remaining_input, (dec, perm, _))) => Ok((remaining_input, Both { dec, perm })),
         Err(Err::Error(ref e)) => match e {
-            ee @ ExpectedDecision/*(ii, pos)*/ => ErrorAt(*ee, fulllen - *pos, ii.len()).into(),
-            ee @ UnknownDecision/*(ii, pos)*/ => ErrorAt(*ee, fulllen - *pos, ii.len()).into(),
-            ee @ ExpectedPermTag/*(ii, pos)*/ => ErrorAt(*ee, fulllen - *pos, ii.len()).into(),
-            ee @ ExpectedPermType/*(ii, pos)*/ => ErrorAt(*ee, fulllen - *pos, *pos).into(),
-            ee @ ExpectedPermAssignment/*(ii, pos)*/ => ErrorAt(*ee, fulllen - *pos, 0).into(),
-            ee @ ExpectedEndOfInput/*(ii, pos)*/ => ErrorAt(*ee, fulllen - *pos, ii.len()).into(),
-            ee @ ExpectedWhitespace/*(ii, pos)*/ => ErrorAt(*ee, fulllen - *pos, ii.len()).into(),
+            ee @ ExpectedDecision(t)/*(ii, pos)*/ => ErrorAt::new(*ee, t.clone()).into(),
+            ee @ UnknownDecision(t)/*(ii, pos)*/ => ErrorAt::new(*ee, t.clone()).into(),/*(*ee, fulllen - *pos, ii.len())*/
+            ee @ ExpectedPermTag(t)/*(ii, pos)*/ => ErrorAt::new(*ee, t.clone()).into(),/*(*ee, fulllen - *pos, ii.len())*/
+            ee @ ExpectedPermType(t)/*(ii, pos)*/ => ErrorAt::new(*ee, t.clone()).into(),/*(*ee, fulllen - *pos, *pos)*/
+            ee @ ExpectedPermAssignment(t)/*(ii, pos)*/ => ErrorAt::new(*ee, t.clone()).into(),/*(*ee, fulllen - *pos, 0)*/
+            ee @ ExpectedEndOfInput(t)/*(ii, pos)*/ => ErrorAt::new(*ee, t.clone()).into(),/*(*ee, fulllen - *pos, ii.len())*/
+            ee @ ExpectedWhitespace(t)/*(ii, pos)*/ => ErrorAt::new(*ee, t.clone()).into(),/*(*ee, fulllen - *pos, ii.len())*/
             ee @ Nom(ii, ErrorKind::Space) => {
                 let at = fulllen - ii.fragment.len();
-                Err(nom::Err::Error(ErrorAt(ExpectedWhitespace/*(ii, at)*/, at, 0)))
+                Err(nom::Err::Error(ErrorAt(ExpectedWhitespace(ii.clone())/*(ii, at)*/, at, 0)))
             }
             e => panic!("unhandled pattern {:?}", e),
         },
@@ -77,7 +83,7 @@ pub fn both(i: StrTrace) -> nom::IResult<StrTrace, Both, StrErrorAt> {
 pub fn end_of_rule(i: StrTrace) -> nom::IResult<StrTrace, (), RuleParseError<StrTrace>> {
     eof::<StrTrace, RuleParseError<StrTrace>>(i)
         .map(|x| (x.0, ()))
-        .map_err(|_| nom::Err::Error(ExpectedEndOfInput /*(i, i.len())*/))
+        .map_err(|_| nom::Err::Error(ExpectedEndOfInput(i) /*(i, i.len())*/))
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -154,7 +160,8 @@ fn to_diagnostic(
             .iter()
             .map(|e| match e {
                 Err(nom::Err::Error(e)) => Some(
-                    Label::primary(file_id, e.1..(e.1 + e.2)).with_message(format!("{:?}", e.0)),
+                    Label::primary(file_id, e.1..(e.1 + e.2))
+                        .with_message(format!("{:?} {:?}", e.0, e)),
                 ),
                 Ok(_) => None,
                 _ => panic!("ugh"),

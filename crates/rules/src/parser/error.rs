@@ -4,13 +4,13 @@ use RuleParseError::*;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum RuleParseError<I> {
-    ExpectedDecision,
-    UnknownDecision,
-    ExpectedPermTag,
-    ExpectedPermType,
-    ExpectedPermAssignment,
-    ExpectedEndOfInput,
-    ExpectedWhitespace,
+    ExpectedDecision(I),
+    UnknownDecision(I),
+    ExpectedPermTag(I),
+    ExpectedPermType(I),
+    ExpectedPermAssignment(I),
+    ExpectedEndOfInput(I),
+    ExpectedWhitespace(I),
     Nom(I, ErrorKind),
 }
 
@@ -27,13 +27,13 @@ impl<I> ParseError<I> for RuleParseError<I> {
 impl Display for RuleParseError<&str> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            ExpectedDecision => f.write_str("Expected Decision"),
-            UnknownDecision => f.write_str("Unknown Decision"),
-            ExpectedPermTag => f.write_str("Expected tag 'perm'"),
-            ExpectedPermType => f.write_str("Expected one of 'any', 'open', 'execute'"),
-            ExpectedPermAssignment => f.write_str("Expected assignment (=)"),
-            ExpectedEndOfInput => f.write_str("Unexpected trailing chars"),
-            ExpectedWhitespace => f.write_str("Expected whitespace"),
+            ExpectedDecision(_) => f.write_str("Expected Decision"),
+            UnknownDecision(_) => f.write_str("Unknown Decision"),
+            ExpectedPermTag(_) => f.write_str("Expected tag 'perm'"),
+            ExpectedPermType(_) => f.write_str("Expected one of 'any', 'open', 'execute'"),
+            ExpectedPermAssignment(_) => f.write_str("Expected assignment (=)"),
+            ExpectedEndOfInput(_) => f.write_str("Unexpected trailing chars"),
+            ExpectedWhitespace(_) => f.write_str("Expected whitespace"),
             other => f.write_fmt(format_args!("{:?}", other)),
         }
     }

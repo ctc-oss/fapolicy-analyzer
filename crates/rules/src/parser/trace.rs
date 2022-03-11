@@ -5,6 +5,10 @@ use nom::{
 };
 use std::ops::{RangeFrom, RangeTo};
 
+pub trait Position {
+    fn position(&self) -> usize;
+}
+
 /// Trace is a nom custom input type that provides context to the parse
 /// The trace carries along a copy of the original rule input text
 #[derive(Debug, Copy, Clone)]
@@ -12,9 +16,9 @@ pub struct Trace<I> {
     // input applicable to the current context
     pub fragment: I,
     // full copy of the orginal input data
-    original: I,
+    pub original: I,
     // current position relative to original
-    position: usize,
+    pub position: usize,
 }
 
 impl<I: Clone> Trace<I> {
@@ -24,6 +28,14 @@ impl<I: Clone> Trace<I> {
             original: i,
             position: 0,
         }
+    }
+}
+
+///
+
+impl<I> Position for Trace<I> {
+    fn position(&self) -> usize {
+        self.position
     }
 }
 
