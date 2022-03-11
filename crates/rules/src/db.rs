@@ -11,11 +11,22 @@ use std::collections::BTreeMap;
 
 use crate::Rule;
 
+/// Rule Definition
+/// Can be valid or invalid
+/// When invalid it provides the text definition
+/// When valid the text definition can be rendered from the ADTs
+#[derive(Clone, Debug)]
+pub enum RuleDef {
+    // may include error here once the errors are moved to master
+    Invalid(String),
+    Valid(Rule),
+}
+
 /// Rules Database
 /// A container for rules and their metadata
 #[derive(Clone, Debug)]
 pub struct DB {
-    lookup: BTreeMap<usize, Rule>,
+    lookup: BTreeMap<usize, RuleDef>,
 }
 
 impl Default for DB {
@@ -24,9 +35,9 @@ impl Default for DB {
     }
 }
 
-impl From<Vec<Rule>> for DB {
-    fn from(src: Vec<Rule>) -> Self {
-        let lookup: BTreeMap<usize, Rule> = src
+impl From<Vec<RuleDef>> for DB {
+    fn from(src: Vec<RuleDef>) -> Self {
+        let lookup: BTreeMap<usize, RuleDef> = src
             .iter()
             .enumerate()
             // fapolicyd rules are 1-based index
@@ -45,12 +56,12 @@ impl DB {
     }
 
     /// Get a record iterator to the underlying lookup table
-    pub fn iter(&self) -> Iter<'_, usize, Rule> {
+    pub fn iter(&self) -> Iter<'_, usize, RuleDef> {
         self.lookup.iter()
     }
 
     /// Get a Vec of record references
-    pub fn values(&self) -> Vec<&Rule> {
+    pub fn values(&self) -> Vec<&RuleDef> {
         self.lookup.values().collect()
     }
 
@@ -65,7 +76,7 @@ impl DB {
     }
 
     /// Get a record from the lookup table using the path to the trusted file
-    pub fn get(&self, id: usize) -> Option<&Rule> {
+    pub fn get(&self, id: usize) -> Option<&RuleDef> {
         self.lookup.get(&id)
     }
 }
@@ -76,17 +87,33 @@ mod tests {
 
     use super::*;
 
+    impl From<Rule> for RuleDef {
+        fn from(r: Rule) -> Self {
+            RuleDef::Valid(r)
+        }
+    }
+
+    impl RuleDef {
+        pub fn unwrap(&self) -> Rule {
+            match self {
+                RuleDef::Valid(val) => val.clone(),
+                RuleDef::Invalid(_) => panic!("called `RuleDef::unwrap()` on an invalid rule"),
+            }
+        }
+    }
+
     #[test]
     fn db_create() {
         assert!(DB::default().is_empty());
         assert!(DB::new().is_empty());
 
-        let r1: Rule = Rule::new(
+        let r1: RuleDef = Rule::new(
             Subject::all(),
             Permission::Any,
             Object::all(),
             Decision::Allow,
-        );
+        )
+        .into();
         let db: DB = vec![r1].into();
         assert!(!db.is_empty());
         assert!(db.get(1).is_some());
@@ -98,7 +125,7 @@ mod tests {
         assert!(DB::new().is_empty());
 
         let subjs = vec!["fee", "fi", "fo", "fum", "this", "is", "such", "fun"];
-        let rules: Vec<Rule> = subjs
+        let rules: Vec<RuleDef> = subjs
             .iter()
             .map(|s| {
                 Rule::new(
@@ -107,6 +134,7 @@ mod tests {
                     Object::all(),
                     Decision::Allow,
                 )
+                .into()
             })
             .collect();
 
@@ -115,7 +143,7 @@ mod tests {
         assert_eq!(db.len(), 8);
 
         for s in subjs.iter().enumerate() {
-            assert_eq!(db.get(s.0 + 1).unwrap().subj.exe().unwrap(), *s.1);
+            assert_eq!(db.get(s.0 + 1).unwrap().unwrap().subj.exe().unwrap(), *s.1);
         }
     }
 }
