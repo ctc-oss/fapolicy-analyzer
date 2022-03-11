@@ -12,23 +12,41 @@ use std::io::{BufRead, BufReader};
 use nom::branch::alt;
 use nom::combinator::map;
 
-use crate::db::DB;
+use crate::db::{RuleDef, DB};
 use crate::error::Error;
-use crate::read::Line::{Comment, SetDef, WellFormed};
+use crate::read::Line::*;
 use crate::{parse, Rule, Set};
+use nom::error::{ErrorKind, ParseError};
 
 enum Line {
     Comment(String),
     SetDef(Set),
-    WellFormed(Rule),
+    WellFormedRule(Rule),
+    MalformedRule(String),
 }
 
-fn parser(i: &str) -> nom::IResult<&str, Line> {
+enum LineError<I> {
+    CannotParse(I),
+    Nom(I, ErrorKind),
+}
+
+impl<I> ParseError<I> for LineError<I> {
+    fn from_error_kind(input: I, kind: ErrorKind) -> Self {
+        LineError::Nom(input, kind)
+    }
+
+    fn append(_: I, _: ErrorKind, other: Self) -> Self {
+        other
+    }
+}
+
+fn parser(i: &str) -> nom::IResult<&str, Line, LineError<&str>> {
     alt((
         map(parse::comment, Comment),
         map(parse::set, SetDef),
-        map(parse::rule, WellFormed),
+        map(parse::rule, WellFormedRule),
     ))(i)
+    .map_err(|_| nom::Err::Error(LineError::CannotParse(i)))
 }
 
 pub fn load_rules_db(path: &str) -> Result<DB, Error> {
@@ -41,16 +59,18 @@ pub fn load_rules_db(path: &str) -> Result<DB, Error> {
         .filter(|s| !s.is_empty() && !s.starts_with('#'))
         .collect();
 
-    let lookup: Vec<Rule> = xs
+    let lookup: Vec<RuleDef> = xs
         .iter()
         .map(|l| (l, parser(l)))
         .flat_map(|(_, r)| match r {
             Ok(("", rule)) => Some(rule),
             Ok((_, _)) => None,
+            Err(nom::Err::Error(LineError::CannotParse(i))) => Some(MalformedRule(i.to_string())),
             Err(_) => None,
         })
         .filter_map(|line| match line {
-            WellFormed(r) => Some(r),
+            WellFormedRule(r) => Some(RuleDef::Valid(r)),
+            MalformedRule(txt) => Some(RuleDef::Invalid(txt)),
             _ => None,
         })
         .collect();
