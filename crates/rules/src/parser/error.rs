@@ -11,6 +11,9 @@ pub enum RuleParseError<I> {
     ExpectedPermAssignment(I),
     ExpectedEndOfInput(I),
     ExpectedWhitespace(I),
+    MissingSeparator(I),
+    MissingSubject(I),
+    MissingObject(I),
     Nom(I, ErrorKind),
 }
 

@@ -20,6 +20,7 @@ use nom::{Err, IResult, InputLength};
 use fapolicy_rules::parser::error::RuleParseError;
 use fapolicy_rules::parser::error::RuleParseError::*;
 use fapolicy_rules::parser::trace::{Position, Trace};
+use fapolicy_rules::parsev2::subject_object_parts;
 use fapolicy_rules::{parsev2, Decision, Permission};
 
 type StrTrace<'a> = Trace<&'a str>;
@@ -27,6 +28,25 @@ type StrErrorAt<'a> = ErrorAt<StrTrace<'a>>;
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub struct ErrorAt<I>(RuleParseError<I>, usize, usize);
+
+impl<'a> From<RuleParseError<StrTrace<'a>>> for ErrorAt<StrTrace<'a>> {
+    fn from(e: RuleParseError<StrTrace<'a>>) -> Self {
+        let t = match e {
+            ExpectedDecision(t) => t,
+            UnknownDecision(t) => t,
+            ExpectedPermTag(t) => t,
+            ExpectedPermType(t) => t,
+            ExpectedPermAssignment(t) => t,
+            ExpectedEndOfInput(t) => t,
+            ExpectedWhitespace(t) => t,
+            MissingSeparator(t) => t,
+            MissingSubject(t) => t,
+            MissingObject(t) => t,
+            Nom(t, _) => t,
+        };
+        ErrorAt::<StrTrace<'a>>::new(e, t)
+    }
+}
 
 impl ErrorAt<Trace<&str>> {
     pub fn new<'a>(e: RuleParseError<Trace<&'a str>>, t: Trace<&str>) -> ErrorAt<Trace<&'a str>> {
@@ -55,18 +75,23 @@ pub fn both(i: StrTrace) -> nom::IResult<StrTrace, Both, StrErrorAt> {
     match nom::combinator::complete(nom::sequence::tuple((
         terminated(parsev2::decision, space1),
         terminated(parsev2::permission, space0),
+        subject_object_parts,
         end_of_rule,
     )))(i)
     {
-        Ok((remaining_input, (dec, perm, _))) => Ok((remaining_input, Both { dec, perm })),
+        Ok((remaining_input, (dec, perm, so, _))) => Ok((remaining_input, Both { dec, perm })),
         Err(Err::Error(ref e)) => match e {
-            ee @ ExpectedDecision(t) => ErrorAt::new(*ee, t.clone()).into(),
-            ee @ UnknownDecision(t) => ErrorAt::new(*ee, t.clone()).into(), /*(*ee, fulllen - *pos, ii.len())*/
-            ee @ ExpectedPermTag(t) => ErrorAt::new(*ee, t.clone()).into(), /*(*ee, fulllen - *pos, ii.len())*/
-            ee @ ExpectedPermType(t) => ErrorAt::new(*ee, t.clone()).into(), /*(*ee, fulllen - *pos, *pos)*/
-            ee @ ExpectedPermAssignment(t) => ErrorAt::new(*ee, t.clone()).into(), /*(*ee, fulllen - *pos, 0)*/
-            ee @ ExpectedEndOfInput(t) => ErrorAt::new(*ee, t.clone()).into(), /*(*ee, fulllen - *pos, ii.len())*/
-            ee @ ExpectedWhitespace(t) => ErrorAt::new(*ee, t.clone()).into(), /*(*ee, fulllen - *pos, ii.len())*/
+            ee @ ExpectedDecision(t) => ErrorAt::from(*ee).into(),
+            ee @ UnknownDecision(t) => ErrorAt::from(*ee).into(),
+            ee @ ExpectedPermTag(t) => ErrorAt::from(*ee).into(),
+            ee @ ExpectedPermType(t) => ErrorAt::from(*ee).into(),
+            // todo;; need a hint on this one
+            ee @ ExpectedPermAssignment(t) => ErrorAt::from(*ee).into(), /*(*ee, fulllen - *pos, 0)*/
+            ee @ ExpectedEndOfInput(t) => ErrorAt::from(*ee).into(),
+            ee @ ExpectedWhitespace(t) => ErrorAt::from(*ee).into(),
+            ee @ MissingSeparator(t) => ErrorAt::from(*ee).into(),
+            ee @ MissingSubject(t) => ErrorAt::from(*ee).into(),
+            ee @ MissingObject(t) => ErrorAt::from(*ee).into(),
             ee @ Nom(ii, ErrorKind::Space) => {
                 let at = fulllen - ii.fragment.len();
                 Err(nom::Err::Error(ErrorAt(
@@ -75,7 +100,7 @@ pub fn both(i: StrTrace) -> nom::IResult<StrTrace, Both, StrErrorAt> {
                     0,
                 )))
             }
-            e => panic!("unhandled pattern {:?}", e),
+            ee @ Nom(ii, k) => ErrorAt::from(*ee).into(),
         },
         e => panic!("unhandled pattern {:?}", e),
     }
