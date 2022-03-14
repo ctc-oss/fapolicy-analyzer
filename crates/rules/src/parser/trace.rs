@@ -31,6 +31,12 @@ impl<I: Clone> Trace<I> {
     }
 }
 
+impl<I: PartialEq> PartialEq for Trace<I> {
+    fn eq(&self, other: &Self) -> bool {
+        self.fragment == other.fragment
+    }
+}
+
 ///
 
 impl<I> Position for Trace<I> {
