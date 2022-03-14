@@ -121,7 +121,7 @@ where
 {
     #[inline]
     fn find_substring(&self, substr: U) -> Option<usize> {
-        self.original.find_substring(substr)
+        self.fragment.find_substring(substr)
     }
 }
 
