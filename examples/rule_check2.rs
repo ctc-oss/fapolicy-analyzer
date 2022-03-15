@@ -15,7 +15,7 @@ use nom::character::complete::{space0, space1};
 use nom::combinator::eof;
 use nom::error::ErrorKind;
 use nom::sequence::terminated;
-use nom::{Err, IResult, InputLength};
+use nom::{Err, IResult};
 
 use fapolicy_rules::parser::error::RuleParseError;
 use fapolicy_rules::parser::error::RuleParseError::*;

@@ -1,6 +1,6 @@
 use nom::branch::alt;
 use nom::bytes::complete::{tag, take_until};
-use nom::combinator::{map, opt, rest};
+use nom::combinator::{map, opt};
 use nom::sequence::{separated_pair, tuple};
 use nom::{IResult, InputTakeAtPosition};
 
@@ -9,7 +9,7 @@ use crate::parser::error::RuleParseError::*;
 use crate::parser::trace::Trace;
 use crate::{Decision, ObjPart, Object, Permission, Rvalue, SubjPart, Subject};
 use nom::character::complete::{alphanumeric1, digit1, space0, space1};
-use nom::character::{is_alphanumeric, is_space};
+use nom::character::is_alphanumeric;
 use nom::error::ErrorKind;
 use nom::multi::separated_list1;
 
@@ -19,7 +19,9 @@ type NomTraceError<'a> = nom::error::Error<StrTrace<'a>>;
 type TraceResult<'a, O> = IResult<StrTrace<'a>, O, TraceError<'a>>;
 
 pub fn decision(i: StrTrace) -> IResult<StrTrace, Decision, TraceError> {
-    let x: IResult<StrTrace, Decision, NomTraceError> = alt((
+    let (_, r) = take_until(" ")(i)
+        .map_err(|e: nom::Err<TraceError>| nom::Err::Error(ExpectedDecision(i)))?;
+    let x: IResult<StrTrace, Option<Decision>, NomTraceError> = opt(alt((
         map(tag("allow_audit"), |_| Decision::AllowAudit),
         map(tag("allow_syslog"), |_| Decision::AllowSyslog),
         map(tag("allow_log"), |_| Decision::AllowLog),
@@ -28,27 +30,12 @@ pub fn decision(i: StrTrace) -> IResult<StrTrace, Decision, TraceError> {
         map(tag("deny_syslog"), |_| Decision::DenySyslog),
         map(tag("deny_log"), |_| Decision::DenyLog),
         map(tag("deny"), |_| Decision::Deny),
-    ))(i);
+    )))(r);
 
     match x {
-        Ok((r, dec)) => Ok((r, dec)),
-        Err(e) => {
-            let guessed = i.split_at_position(|c| c == ' ').map_or_else(
-                |x: nom::Err<TraceError>| ExpectedDecision(i),
-                |(_, v)| UnknownDecision(i, v),
-            );
-            // let guessed = i
-            //     .fragment
-            //     .find(" ")
-            //     .map(|x| UnknownDecision(i, i.split_at_position(" ")))
-            //     .unwrap_or_else(
-            //         || ExpectedDecision(i), /*(
-            //                                     i.clone().split_once(" ").map(|x| x.0).unwrap_or_else(|| i),
-            //                                     i.len(),
-            //                                 )*/
-            //     );
-            Err(nom::Err::Error(guessed))
-        }
+        Ok((r, Some(dec))) => Ok((r, dec)),
+        Ok((r, None)) => Err(nom::Err::Error(UnknownDecision(i, r))),
+        Err(e) => Err(nom::Err::Error(ExpectedDecision(i))),
     }
 }
 
@@ -59,9 +46,7 @@ pub fn permission(i: StrTrace) -> IResult<StrTrace, Permission, TraceError> {
             if eq.is_some() {
                 Ok((r, ()))
             } else {
-                Err(nom::Err::Error(
-                    ExpectedPermAssignment(r), /*(k, i.len() - 4)*/
-                ))
+                Err(nom::Err::Error(ExpectedPermAssignment(r)))
             }
         }
         Ok((r, (k, _))) => Err(nom::Err::Error(ExpectedPermTag(i, k))),
@@ -178,8 +163,6 @@ pub fn subject_object_parts(i: StrTrace) -> IResult<StrTrace, SubObj, TraceError
         return Err(nom::Err::Error(MissingSeparator(i)));
     }
 
-    let (x, y) = take_until(":")(i)?;
-
     match separated_pair(opt(subject), tuple((space0, tag(":"), space0)), opt(object))(i) {
         Ok((remaining, (Some(s), Some(o)))) => Ok((
             remaining,
@@ -192,10 +175,4 @@ pub fn subject_object_parts(i: StrTrace) -> IResult<StrTrace, SubObj, TraceError
         Err(e) => Err(e),
         _ => panic!("uh oh"),
     }
-
-    // let (ii, s) =
-    //     take_until(":")(i).map_err(|e: nom::Err<TraceError>| nom::Err::Error(MissingSubject(i)))?;
-    // let (ii, _) = tag(":")(ii)?;
-    // let (iii, o) =
-    //     rest(ii).map_err(|e: nom::Err<TraceError>| nom::Err::Error(MissingObject(ii)))?;
 }
