@@ -12,9 +12,15 @@
     <style id="included-file" _name="Included File" map-to="def:string"/>
     <style id="type" _name="Data Type" map-to="def:type"/>
     <style id="s" name="Subject" map-to="def:constant"/>
+    <style id="sep" name="Separator" map-to="def:type"/>
+    <style id="o" name="Object" map-to="def:constant"/>
   </styles>
 
   <definitions>
+    <context id="variables" style-ref="def:type">
+      <match>(%[a-zA-Z][a-zA-Z0-9_]*)</match>
+    </context>
+
     <context id="decisions" style-ref="decision">
       <keyword>allow</keyword>
       <keyword>allow_log</keyword>
@@ -32,7 +38,6 @@
     </context>
 
     <context id="values" style-ref="type">
-      <keyword>all</keyword>
       <keyword>any</keyword>
       <keyword>open</keyword>
       <keyword>execute</keyword>
@@ -46,24 +51,31 @@
       </include>
     </context>
 
-    <context id="subjects" style-ref="s">
-      <prefix>[ ]*</prefix>
-      <suffix>\s*:</suffix>
+    <context id="subjects" style-ref="permission">
       <keyword>all</keyword>
-      <keyword>uid=\d</keyword>
+      <keyword>exe</keyword>
+      <keyword>trust</keyword>
+      <keyword>uid</keyword>
     </context>
 
-    <context id="objects" style-ref="s">
-      <prefix>[ ]*</prefix>
-      <suffix>\s*:</suffix>
-      <keyword>all</keyword>
-      <keyword>uid=\d</keyword>
+    <context id="sep" style-ref="permission">
+      <keyword>:</keyword>
     </context>
 
+    <context id="objects" style-ref="permission">
+      <keyword>all</keyword>
+      <keyword>device</keyword>
+      <keyword>dir</keyword>
+      <keyword>ftype</keyword>
+      <keyword>trust</keyword>
+    </context>
 
     <context id="fapolicyd-rules">
       <include>
+        <context ref="variables" />
         <context ref="subjects"/>
+        <context ref="sep" />
+        <context ref="objects" />
         <context ref="decisions"/>
         <context ref="permission-assignment"/>
         <context ref="keywords"/>
