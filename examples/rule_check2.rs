@@ -14,7 +14,7 @@ use codespan_reporting::term::termcolor::{ColorChoice, StandardStream};
 use nom::character::complete::{space0, space1};
 use nom::combinator::rest;
 use nom::sequence::terminated;
-use nom::{Err, IResult};
+use nom::IResult;
 
 use fapolicy_rules::parser::error::RuleParseError;
 use fapolicy_rules::parser::error::RuleParseError::*;
@@ -92,11 +92,8 @@ pub fn both(i: StrTrace) -> nom::IResult<StrTrace, Rule, StrErrorAt> {
                 dec,
             },
         )),
-        Err(Err::Error(ref e)) => match e {
-            ee @ Nom(ii, k) => ErrorAt::from(*ee).into(),
-            ee => ErrorAt::from(*ee).into(),
-        },
-        e => panic!("unhandled pattern {:?}", e),
+        Err(nom::Err::Error(e)) => ErrorAt::from(e).into(),
+        _ => panic!("hmmm what to do with this one..."),
     }
 }
 
@@ -147,9 +144,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .map(|s| both(Trace::new(&s)))
             .enumerate()
             .map(|(i, r)| match r {
-                ok @ Ok(_) => ok,
                 Err(nom::Err::Error(e)) => ErrorAt(e.0, e.1 + offsets[i], e.2).into(),
-                _ => panic!("unhandled"),
+                res => res,
             })
             .collect();
 
@@ -184,11 +180,14 @@ fn to_diagnostic(
         let labels: Vec<Label<usize>> = results
             .iter()
             .map(|e| match e {
+                Ok(_) => None,
                 Err(nom::Err::Error(e)) => {
                     Some(Label::primary(file_id, e.1..(e.1 + e.2)).with_message(format!("{}", e.0)))
                 }
-                Ok(_) => None,
-                _ => panic!("ugh"),
+                res => {
+                    println!("unhandled err {:?}", res);
+                    None
+                }
             })
             .flatten()
             .collect();
