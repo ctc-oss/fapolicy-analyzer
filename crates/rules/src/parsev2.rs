@@ -18,7 +18,7 @@ type TraceError<'a> = RuleParseError<StrTrace<'a>>;
 type NomTraceError<'a> = nom::error::Error<StrTrace<'a>>;
 type TraceResult<'a, O> = IResult<StrTrace<'a>, O, TraceError<'a>>;
 
-pub fn decision(i: StrTrace) -> IResult<StrTrace, Decision, TraceError> {
+pub fn decision(i: StrTrace) -> TraceResult<Decision> {
     let (ii, r) = take_until(" ")(i)
         .map_err(|e: nom::Err<TraceError>| nom::Err::Error(ExpectedDecision(i)))?;
     let x: IResult<StrTrace, Option<Decision>, NomTraceError> = opt(alt((
@@ -39,7 +39,7 @@ pub fn decision(i: StrTrace) -> IResult<StrTrace, Decision, TraceError> {
     }
 }
 
-pub fn permission(i: StrTrace) -> IResult<StrTrace, Permission, TraceError> {
+pub fn permission(i: StrTrace) -> TraceResult<Permission> {
     // checking the structure of the lhs without deriving any value
     let (ii, _) = match tuple((alphanumeric1, opt(tag("="))))(i) {
         Ok((r, (k, eq))) if k.fragment == "perm" => {
@@ -73,7 +73,7 @@ pub struct SubObj {
     pub object: Object,
 }
 
-fn filepath(i: StrTrace) -> IResult<StrTrace, StrTrace, TraceError> {
+fn filepath(i: StrTrace) -> TraceResult<StrTrace> {
     nom::bytes::complete::is_not(" \t\n")(i)
 }
 
@@ -81,7 +81,7 @@ fn pattern(i: StrTrace) -> IResult<StrTrace, StrTrace, TraceError> {
     nom::bytes::complete::take_while1(|x| is_alphanumeric(x as u8) || x == '_')(i)
 }
 
-fn trust_flag(i: StrTrace) -> IResult<StrTrace, bool, TraceError> {
+fn trust_flag(i: StrTrace) -> TraceResult<bool> {
     match digit1(i) {
         Ok((r, v)) if v.fragment == "1" => Ok((r, true)),
         Ok((r, v)) if v.fragment == "0" => Ok((r, false)),
@@ -90,7 +90,7 @@ fn trust_flag(i: StrTrace) -> IResult<StrTrace, bool, TraceError> {
     }
 }
 
-fn subj_part(i: StrTrace) -> IResult<StrTrace, SubjPart, TraceError> {
+fn subj_part(i: StrTrace) -> TraceResult<SubjPart> {
     alt((
         map(tag("all"), |_| SubjPart::All),
         map(
@@ -120,13 +120,13 @@ fn subj_part(i: StrTrace) -> IResult<StrTrace, SubjPart, TraceError> {
     ))(i)
 }
 
-pub fn subject(i: StrTrace) -> IResult<StrTrace, Subject, TraceError> {
+pub fn subject(i: StrTrace) -> TraceResult<Subject> {
     map(separated_list1(space1, subj_part), |parts| {
         Subject::new(parts)
     })(i)
 }
 
-fn obj_part(i: StrTrace) -> IResult<StrTrace, ObjPart, TraceError> {
+fn obj_part(i: StrTrace) -> TraceResult<ObjPart> {
     alt((
         map(tag("all"), |_| ObjPart::All),
         map(
@@ -152,27 +152,28 @@ fn obj_part(i: StrTrace) -> IResult<StrTrace, ObjPart, TraceError> {
     ))(i)
 }
 
-pub fn object(i: StrTrace) -> IResult<StrTrace, Object, TraceError> {
+pub fn object(i: StrTrace) -> TraceResult<Object> {
     map(separated_list1(space1, obj_part), |parts| {
         Object::new(parts)
     })(i)
 }
 
-pub fn subject_object_parts(i: StrTrace) -> IResult<StrTrace, SubObj, TraceError> {
+pub fn subject_object_parts(i: StrTrace) -> TraceResult<SubObj> {
     if !i.fragment.contains(":") {
         return Err(nom::Err::Error(MissingSeparator(i)));
     }
 
     match separated_pair(opt(subject), tuple((space0, tag(":"), space0)), opt(object))(i) {
+        Ok((_, (None, None))) => Err(nom::Err::Error(MissingBothSubjObj(i))),
+        Ok((_, (Some(_), None))) => Err(nom::Err::Error(MissingObject(i))),
+        Ok((_, (None, Some(_)))) => Err(nom::Err::Error(MissingSubject(i))),
         Ok((remaining, (Some(s), Some(o)))) => Ok((
             remaining,
             SubObj {
                 subject: s,
                 object: o,
             },
-        ))
-        .map_err(|e: nom::Err<TraceError>| nom::Err::Error(MissingObject(i))),
+        )),
         Err(e) => Err(e),
-        _ => panic!("uh oh"),
     }
 }

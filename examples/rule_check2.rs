@@ -47,6 +47,7 @@ impl<'a> From<RuleParseError<StrTrace<'a>>> for ErrorAt<StrTrace<'a>> {
             MissingSeparator(t) => t,
             MissingSubject(t) => t,
             MissingObject(t) => t,
+            MissingBothSubjObj(t) => t,
             Nom(t, _) => t,
         };
         ErrorAt::<StrTrace<'a>>::new(e, t)

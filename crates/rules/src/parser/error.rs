@@ -15,6 +15,7 @@ pub enum RuleParseError<I> {
     MissingSeparator(I),
     MissingSubject(I),
     MissingObject(I),
+    MissingBothSubjObj(I),
     Nom(I, ErrorKind),
 }
 
@@ -38,7 +39,11 @@ impl Display for RuleParseError<Trace<&str>> {
             ExpectedPermAssignment(_) => f.write_str("Expected assignment (=)"),
             ExpectedEndOfInput(_) => f.write_str("Unexpected trailing chars"),
             ExpectedWhitespace(_) => f.write_str("Expected whitespace"),
-            other => f.write_fmt(format_args!("{:?}", other)),
+            MissingSeparator(_) => f.write_str("Missing colon separator"),
+            MissingSubject(_) => f.write_str("Missing Subject"),
+            MissingObject(_) => f.write_str("Expected Object"),
+            MissingBothSubjObj(_) => f.write_str("Missing Subject and Object"),
+            e @ Nom(_, _) => f.write_fmt(format_args!("{:?}", e)),
         }
     }
 }
