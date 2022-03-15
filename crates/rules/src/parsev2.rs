@@ -1,8 +1,8 @@
 use nom::branch::alt;
 use nom::bytes::complete::{tag, take_until};
 use nom::combinator::{map, opt};
-use nom::sequence::{separated_pair, tuple};
-use nom::IResult;
+use nom::sequence::{separated_pair, tuple, Tuple};
+use nom::{Err, IResult};
 
 use crate::parser::error::RuleParseError;
 use crate::parser::error::RuleParseError::*;
@@ -90,13 +90,17 @@ fn trust_flag(i: StrTrace) -> TraceResult<bool> {
     }
 }
 
+fn subj_part_uid(i: StrTrace) -> TraceResult<SubjPart> {
+    match separated_pair(tag("uid"), tag("="), digit1)(i) {
+        Ok((rem, (_, uid))) => Ok((rem, SubjPart::Uid(uid.fragment.parse().unwrap()))),
+        Err(e) => Err(nom::Err::Error(SubjectPartExpectedInt(i))),
+    }
+}
+
 fn subj_part(i: StrTrace) -> TraceResult<SubjPart> {
-    alt((
+    match alt((
         map(tag("all"), |_| SubjPart::All),
-        map(
-            separated_pair(tag("uid"), tag("="), digit1),
-            |x: (StrTrace, StrTrace)| SubjPart::Uid(x.1.fragment.parse().unwrap()),
-        ),
+        subj_part_uid,
         map(
             separated_pair(tag("gid"), tag("="), digit1),
             |x: (StrTrace, StrTrace)| SubjPart::Gid(x.1.fragment.parse().unwrap()),
@@ -118,12 +122,21 @@ fn subj_part(i: StrTrace) -> TraceResult<SubjPart> {
             |x: (StrTrace, bool)| SubjPart::Trust(x.1),
         ),
     ))(i)
+    {
+        res => {
+            println!("{:?}", res);
+            res
+        }
+    }
 }
 
 pub fn subject(i: StrTrace) -> TraceResult<Subject> {
+    let (ii, v) = take_until(":")(i)?;
+
     map(separated_list1(space1, subj_part), |parts| {
         Subject::new(parts)
-    })(i)
+    })(v)
+    .map(|(_, v)| (ii, v))
 }
 
 fn obj_part(i: StrTrace) -> TraceResult<ObjPart> {

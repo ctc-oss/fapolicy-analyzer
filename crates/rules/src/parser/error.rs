@@ -16,6 +16,7 @@ pub enum RuleParseError<I> {
     MissingSubject(I),
     MissingObject(I),
     MissingBothSubjObj(I),
+    SubjectPartExpectedInt(I),
     Nom(I, ErrorKind),
 }
 
@@ -43,6 +44,7 @@ impl Display for RuleParseError<Trace<&str>> {
             MissingSubject(_) => f.write_str("Missing Subject"),
             MissingObject(_) => f.write_str("Expected Object"),
             MissingBothSubjObj(_) => f.write_str("Missing Subject and Object"),
+            SubjectPartExpectedInt(_) => f.write_str("Expected integer value"),
             e @ Nom(_, _) => f.write_fmt(format_args!("{:?}", e)),
         }
     }
