@@ -61,7 +61,7 @@
     </context>
 
 
-    <context id="fapolicyd">
+    <context id="fapolicyd-rules">
       <include>
         <context ref="subjects"/>
         <context ref="decisions"/>
