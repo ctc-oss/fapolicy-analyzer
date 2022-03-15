@@ -2,20 +2,21 @@ use nom::branch::alt;
 use nom::bytes::complete::{tag, take_until};
 use nom::combinator::{map, opt, rest};
 use nom::sequence::{separated_pair, tuple};
-use nom::IResult;
+use nom::{IResult, InputTakeAtPosition};
 
 use crate::parser::error::RuleParseError;
 use crate::parser::error::RuleParseError::*;
 use crate::parser::trace::Trace;
 use crate::{Decision, ObjPart, Object, Permission, Rvalue, SubjPart, Subject};
 use nom::character::complete::{alphanumeric1, digit1, space0, space1};
-use nom::character::is_alphanumeric;
+use nom::character::{is_alphanumeric, is_space};
 use nom::error::ErrorKind;
 use nom::multi::separated_list1;
 
 type StrTrace<'a> = Trace<&'a str>;
 type TraceError<'a> = RuleParseError<StrTrace<'a>>;
 type NomTraceError<'a> = nom::error::Error<StrTrace<'a>>;
+type TraceResult<'a, O> = IResult<StrTrace<'a>, O, TraceError<'a>>;
 
 pub fn decision(i: StrTrace) -> IResult<StrTrace, Decision, TraceError> {
     let x: IResult<StrTrace, Decision, NomTraceError> = alt((
@@ -32,16 +33,20 @@ pub fn decision(i: StrTrace) -> IResult<StrTrace, Decision, TraceError> {
     match x {
         Ok((r, dec)) => Ok((r, dec)),
         Err(e) => {
-            let guessed = i
-                .fragment
-                .split_once(" ")
-                .map(|x| UnknownDecision(i) /*(x.0, i.len())*/)
-                .unwrap_or_else(
-                    || ExpectedDecision(i), /*(
-                                                i.clone().split_once(" ").map(|x| x.0).unwrap_or_else(|| i),
-                                                i.len(),
-                                            )*/
-                );
+            let guessed = i.split_at_position(|c| c == ' ').map_or_else(
+                |x: nom::Err<TraceError>| ExpectedDecision(i),
+                |(_, v)| UnknownDecision(i, v),
+            );
+            // let guessed = i
+            //     .fragment
+            //     .find(" ")
+            //     .map(|x| UnknownDecision(i, i.split_at_position(" ")))
+            //     .unwrap_or_else(
+            //         || ExpectedDecision(i), /*(
+            //                                     i.clone().split_once(" ").map(|x| x.0).unwrap_or_else(|| i),
+            //                                     i.len(),
+            //                                 )*/
+            //     );
             Err(nom::Err::Error(guessed))
         }
     }
@@ -63,17 +68,17 @@ pub fn permission(i: StrTrace) -> IResult<StrTrace, Permission, TraceError> {
         Err(e) => Err(e),
     }?;
 
-    // continue the parsing with the remainder from the check above (ii)
-    let res: IResult<StrTrace, Option<Permission>, TraceError> = opt(alt((
+    let (_, r) = take_until(" ")(ii)?;
+    let res: TraceResult<Option<Permission>> = opt(alt((
         map(tag("any"), |_| Permission::Any),
         map(tag("open"), |_| Permission::Open),
         map(tag("execute"), |_| Permission::Execute),
-    )))(ii);
+    )))(r);
 
     match res {
         Ok((r, Some(p))) => Ok((r, p)),
-        Ok((r, None)) => Err(nom::Err::Error(ExpectedPermType(r) /*(i, i.len())*/)),
-        _ => Err(nom::Err::Error(ExpectedPermType(i) /*(i, i.len())*/)),
+        Ok((r, None)) => Err(nom::Err::Error(ExpectedPermType(ii, r))),
+        _ => Err(nom::Err::Error(ExpectedPermType(ii, r))),
     }
 }
 

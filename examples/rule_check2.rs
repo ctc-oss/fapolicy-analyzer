@@ -33,11 +33,15 @@ impl<'a> From<RuleParseError<StrTrace<'a>>> for ErrorAt<StrTrace<'a>> {
     fn from(e: RuleParseError<StrTrace<'a>>) -> Self {
         let t = match e {
             ExpectedDecision(t) => t,
-            UnknownDecision(t) => t,
+            UnknownDecision(t, v) => {
+                return ErrorAt::<StrTrace<'a>>::new_with_len(e, t, v.fragment.len())
+            }
             ExpectedPermTag(t, v) => {
                 return ErrorAt::<StrTrace<'a>>::new_with_len(e, t, v.fragment.len())
             }
-            ExpectedPermType(t) => t,
+            ExpectedPermType(t, v) => {
+                return ErrorAt::<StrTrace<'a>>::new_with_len(e, t, v.fragment.len())
+            }
             ExpectedPermAssignment(t) => return ErrorAt::<StrTrace<'a>>::new_with_len(e, t, 0),
             ExpectedEndOfInput(t) => t,
             ExpectedWhitespace(t) => t,
@@ -182,10 +186,9 @@ fn to_diagnostic(
         let labels: Vec<Label<usize>> = results
             .iter()
             .map(|e| match e {
-                Err(nom::Err::Error(e)) => Some(
-                    Label::primary(file_id, e.1..(e.1 + e.2))
-                        .with_message(format!("{:?} {:?}", e.0, e)),
-                ),
+                Err(nom::Err::Error(e)) => {
+                    Some(Label::primary(file_id, e.1..(e.1 + e.2)).with_message(format!("{}", e.0)))
+                }
                 Ok(_) => None,
                 _ => panic!("ugh"),
             })

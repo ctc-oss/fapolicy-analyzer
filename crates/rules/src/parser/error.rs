@@ -1,3 +1,4 @@
+use crate::parser::trace::Trace;
 use nom::error::{ErrorKind, ParseError};
 use std::fmt::{Display, Formatter};
 use RuleParseError::*;
@@ -5,9 +6,9 @@ use RuleParseError::*;
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum RuleParseError<I> {
     ExpectedDecision(I),
-    UnknownDecision(I),
+    UnknownDecision(I, I),
     ExpectedPermTag(I, I),
-    ExpectedPermType(I),
+    ExpectedPermType(I, I),
     ExpectedPermAssignment(I),
     ExpectedEndOfInput(I),
     ExpectedWhitespace(I),
@@ -27,13 +28,13 @@ impl<I> ParseError<I> for RuleParseError<I> {
     }
 }
 
-impl Display for RuleParseError<&str> {
+impl Display for RuleParseError<Trace<&str>> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             ExpectedDecision(_) => f.write_str("Expected Decision"),
-            UnknownDecision(_) => f.write_str("Unknown Decision"),
+            UnknownDecision(_, _) => f.write_str("Unknown Decision"),
             ExpectedPermTag(_, _) => f.write_str("Expected tag 'perm'"),
-            ExpectedPermType(_) => f.write_str("Expected one of 'any', 'open', 'execute'"),
+            ExpectedPermType(_, _) => f.write_str("Expected one of 'any', 'open', 'execute'"),
             ExpectedPermAssignment(_) => f.write_str("Expected assignment (=)"),
             ExpectedEndOfInput(_) => f.write_str("Unexpected trailing chars"),
             ExpectedWhitespace(_) => f.write_str("Expected whitespace"),
