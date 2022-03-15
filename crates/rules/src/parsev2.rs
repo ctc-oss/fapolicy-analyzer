@@ -2,7 +2,7 @@ use nom::branch::alt;
 use nom::bytes::complete::{tag, take_until};
 use nom::combinator::{map, opt};
 use nom::sequence::{separated_pair, tuple};
-use nom::{IResult, InputTakeAtPosition};
+use nom::IResult;
 
 use crate::parser::error::RuleParseError;
 use crate::parser::error::RuleParseError::*;
@@ -19,7 +19,7 @@ type NomTraceError<'a> = nom::error::Error<StrTrace<'a>>;
 type TraceResult<'a, O> = IResult<StrTrace<'a>, O, TraceError<'a>>;
 
 pub fn decision(i: StrTrace) -> IResult<StrTrace, Decision, TraceError> {
-    let (_, r) = take_until(" ")(i)
+    let (ii, r) = take_until(" ")(i)
         .map_err(|e: nom::Err<TraceError>| nom::Err::Error(ExpectedDecision(i)))?;
     let x: IResult<StrTrace, Option<Decision>, NomTraceError> = opt(alt((
         map(tag("allow_audit"), |_| Decision::AllowAudit),
@@ -33,7 +33,7 @@ pub fn decision(i: StrTrace) -> IResult<StrTrace, Decision, TraceError> {
     )))(r);
 
     match x {
-        Ok((r, Some(dec))) => Ok((r, dec)),
+        Ok((r, Some(dec))) => Ok((ii, dec)),
         Ok((r, None)) => Err(nom::Err::Error(UnknownDecision(i, r))),
         Err(e) => Err(nom::Err::Error(ExpectedDecision(i))),
     }
@@ -53,7 +53,7 @@ pub fn permission(i: StrTrace) -> IResult<StrTrace, Permission, TraceError> {
         Err(e) => Err(e),
     }?;
 
-    let (_, r) = take_until(" ")(ii)?;
+    let (remaining, r) = take_until(" ")(ii)?;
     let res: TraceResult<Option<Permission>> = opt(alt((
         map(tag("any"), |_| Permission::Any),
         map(tag("open"), |_| Permission::Open),
@@ -61,7 +61,7 @@ pub fn permission(i: StrTrace) -> IResult<StrTrace, Permission, TraceError> {
     )))(r);
 
     match res {
-        Ok((r, Some(p))) => Ok((r, p)),
+        Ok((_, Some(p))) => Ok((remaining, p)),
         Ok((r, None)) => Err(nom::Err::Error(ExpectedPermType(ii, r))),
         _ => Err(nom::Err::Error(ExpectedPermType(ii, r))),
     }
@@ -69,8 +69,8 @@ pub fn permission(i: StrTrace) -> IResult<StrTrace, Permission, TraceError> {
 
 #[derive(Debug)]
 pub struct SubObj {
-    subject: Subject,
-    object: Object,
+    pub subject: Subject,
+    pub object: Object,
 }
 
 fn filepath(i: StrTrace) -> IResult<StrTrace, StrTrace, TraceError> {

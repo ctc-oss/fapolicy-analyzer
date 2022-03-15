@@ -12,8 +12,7 @@ use codespan_reporting::files::SimpleFiles;
 use codespan_reporting::term;
 use codespan_reporting::term::termcolor::{ColorChoice, StandardStream};
 use nom::character::complete::{space0, space1};
-use nom::combinator::eof;
-use nom::error::ErrorKind;
+use nom::combinator::rest;
 use nom::sequence::terminated;
 use nom::{Err, IResult};
 
@@ -21,7 +20,7 @@ use fapolicy_rules::parser::error::RuleParseError;
 use fapolicy_rules::parser::error::RuleParseError::*;
 use fapolicy_rules::parser::trace::{Position, Trace};
 use fapolicy_rules::parsev2::subject_object_parts;
-use fapolicy_rules::{parsev2, Decision, Permission};
+use fapolicy_rules::{parsev2, Rule};
 
 type StrTrace<'a> = Trace<&'a str>;
 type StrErrorAt<'a> = ErrorAt<StrTrace<'a>>;
@@ -74,13 +73,7 @@ impl<T, I> Into<Result<T, nom::Err<ErrorAt<I>>>> for ErrorAt<I> {
     }
 }
 
-#[derive(Debug)]
-pub struct Both {
-    dec: Decision,
-    perm: Permission,
-}
-
-pub fn both(i: StrTrace) -> nom::IResult<StrTrace, Both, StrErrorAt> {
+pub fn both(i: StrTrace) -> nom::IResult<StrTrace, Rule, StrErrorAt> {
     let fulllen = i.fragment.len();
 
     match nom::combinator::complete(nom::sequence::tuple((
@@ -90,16 +83,16 @@ pub fn both(i: StrTrace) -> nom::IResult<StrTrace, Both, StrErrorAt> {
         end_of_rule,
     )))(i)
     {
-        Ok((remaining_input, (dec, perm, so, _))) => Ok((remaining_input, Both { dec, perm })),
+        Ok((remaining_input, (dec, perm, so, _))) => Ok((
+            remaining_input,
+            Rule {
+                subj: so.subject,
+                perm,
+                obj: so.object,
+                dec,
+            },
+        )),
         Err(Err::Error(ref e)) => match e {
-            ee @ Nom(ii, ErrorKind::Space) => {
-                let at = fulllen - ii.fragment.len();
-                Err(nom::Err::Error(ErrorAt(
-                    ExpectedWhitespace(ii.clone()),
-                    at,
-                    0,
-                )))
-            }
             ee @ Nom(ii, k) => ErrorAt::from(*ee).into(),
             ee => ErrorAt::from(*ee).into(),
         },
@@ -108,9 +101,11 @@ pub fn both(i: StrTrace) -> nom::IResult<StrTrace, Both, StrErrorAt> {
 }
 
 pub fn end_of_rule(i: StrTrace) -> nom::IResult<StrTrace, (), RuleParseError<StrTrace>> {
-    eof::<StrTrace, RuleParseError<StrTrace>>(i)
-        .map(|x| (x.0, ()))
-        .map_err(|_| nom::Err::Error(ExpectedEndOfInput(i) /*(i, i.len())*/))
+    match rest(i) {
+        Ok((rem, v)) if v.fragment.is_empty() => Ok((rem, ())),
+        Ok((rem, v)) => Err(nom::Err::Error(ExpectedEndOfInput(v))),
+        res => res.map(|(rem, _)| (rem, ())),
+    }
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -147,7 +142,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 aa
             });
 
-        let results: Vec<IResult<StrTrace, Both, StrErrorAt>> = contents
+        let results: Vec<IResult<StrTrace, Rule, StrErrorAt>> = contents
             .iter()
             .map(|s| both(Trace::new(&s)))
             .enumerate()
@@ -177,10 +172,13 @@ fn emit_diagnostic(
 
 fn to_diagnostic(
     file_id: usize,
-    results: Vec<IResult<StrTrace, Both, StrErrorAt>>,
+    results: Vec<IResult<StrTrace, Rule, StrErrorAt>>,
 ) -> Option<Diagnostic<usize>> {
     if results.iter().all(|r| r.as_ref().is_ok()) {
         println!("Valid!");
+        for r in results {
+            println!("{:?}", r.ok().unwrap().1);
+        }
         None
     } else {
         let labels: Vec<Label<usize>> = results
