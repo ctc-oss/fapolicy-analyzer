@@ -34,9 +34,11 @@ impl<'a> From<RuleParseError<StrTrace<'a>>> for ErrorAt<StrTrace<'a>> {
         let t = match e {
             ExpectedDecision(t) => t,
             UnknownDecision(t) => t,
-            ExpectedPermTag(t) => t,
+            ExpectedPermTag(t, v) => {
+                return ErrorAt::<StrTrace<'a>>::new_with_len(e, t, v.fragment.len())
+            }
             ExpectedPermType(t) => t,
-            ExpectedPermAssignment(t) => t,
+            ExpectedPermAssignment(t) => return ErrorAt::<StrTrace<'a>>::new_with_len(e, t, 0),
             ExpectedEndOfInput(t) => t,
             ExpectedWhitespace(t) => t,
             MissingSeparator(t) => t,
@@ -50,7 +52,15 @@ impl<'a> From<RuleParseError<StrTrace<'a>>> for ErrorAt<StrTrace<'a>> {
 
 impl ErrorAt<Trace<&str>> {
     pub fn new<'a>(e: RuleParseError<Trace<&'a str>>, t: Trace<&str>) -> ErrorAt<Trace<&'a str>> {
-        ErrorAt(e.clone(), t.position(), t.input_len())
+        ErrorAt(e.clone(), t.position(), t.fragment.len())
+    }
+
+    pub fn new_with_len<'a>(
+        e: RuleParseError<Trace<&'a str>>,
+        t: Trace<&str>,
+        len: usize,
+    ) -> ErrorAt<Trace<&'a str>> {
+        ErrorAt(e.clone(), t.position(), len)
     }
 }
 
@@ -69,9 +79,6 @@ pub struct Both {
 pub fn both(i: StrTrace) -> nom::IResult<StrTrace, Both, StrErrorAt> {
     let fulllen = i.fragment.len();
 
-    let pos = &0;
-    let ii = "";
-
     match nom::combinator::complete(nom::sequence::tuple((
         terminated(parsev2::decision, space1),
         terminated(parsev2::permission, space0),
@@ -81,26 +88,16 @@ pub fn both(i: StrTrace) -> nom::IResult<StrTrace, Both, StrErrorAt> {
     {
         Ok((remaining_input, (dec, perm, so, _))) => Ok((remaining_input, Both { dec, perm })),
         Err(Err::Error(ref e)) => match e {
-            ee @ ExpectedDecision(t) => ErrorAt::from(*ee).into(),
-            ee @ UnknownDecision(t) => ErrorAt::from(*ee).into(),
-            ee @ ExpectedPermTag(t) => ErrorAt::from(*ee).into(),
-            ee @ ExpectedPermType(t) => ErrorAt::from(*ee).into(),
-            // todo;; need a hint on this one
-            ee @ ExpectedPermAssignment(t) => ErrorAt::from(*ee).into(), /*(*ee, fulllen - *pos, 0)*/
-            ee @ ExpectedEndOfInput(t) => ErrorAt::from(*ee).into(),
-            ee @ ExpectedWhitespace(t) => ErrorAt::from(*ee).into(),
-            ee @ MissingSeparator(t) => ErrorAt::from(*ee).into(),
-            ee @ MissingSubject(t) => ErrorAt::from(*ee).into(),
-            ee @ MissingObject(t) => ErrorAt::from(*ee).into(),
             ee @ Nom(ii, ErrorKind::Space) => {
                 let at = fulllen - ii.fragment.len();
                 Err(nom::Err::Error(ErrorAt(
-                    ExpectedWhitespace(ii.clone()), /*(ii, at)*/
+                    ExpectedWhitespace(ii.clone()),
                     at,
                     0,
                 )))
             }
             ee @ Nom(ii, k) => ErrorAt::from(*ee).into(),
+            ee => ErrorAt::from(*ee).into(),
         },
         e => panic!("unhandled pattern {:?}", e),
     }

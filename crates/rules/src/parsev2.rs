@@ -59,7 +59,7 @@ pub fn permission(i: StrTrace) -> IResult<StrTrace, Permission, TraceError> {
                 ))
             }
         }
-        Ok((r, (k, _))) => Err(nom::Err::Error(ExpectedPermTag(r) /*(k, i.len())*/)),
+        Ok((r, (k, _))) => Err(nom::Err::Error(ExpectedPermTag(i, k))),
         Err(e) => Err(e),
     }?;
 

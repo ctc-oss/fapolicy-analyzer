@@ -6,7 +6,7 @@ use RuleParseError::*;
 pub enum RuleParseError<I> {
     ExpectedDecision(I),
     UnknownDecision(I),
-    ExpectedPermTag(I),
+    ExpectedPermTag(I, I),
     ExpectedPermType(I),
     ExpectedPermAssignment(I),
     ExpectedEndOfInput(I),
@@ -32,7 +32,7 @@ impl Display for RuleParseError<&str> {
         match self {
             ExpectedDecision(_) => f.write_str("Expected Decision"),
             UnknownDecision(_) => f.write_str("Unknown Decision"),
-            ExpectedPermTag(_) => f.write_str("Expected tag 'perm'"),
+            ExpectedPermTag(_, _) => f.write_str("Expected tag 'perm'"),
             ExpectedPermType(_) => f.write_str("Expected one of 'any', 'open', 'execute'"),
             ExpectedPermAssignment(_) => f.write_str("Expected assignment (=)"),
             ExpectedEndOfInput(_) => f.write_str("Unexpected trailing chars"),
