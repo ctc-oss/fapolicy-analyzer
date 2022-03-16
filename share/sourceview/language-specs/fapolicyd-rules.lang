@@ -4,85 +4,85 @@ todo;; ctc header
 -->
 
 <language id="fapolicyd-rules" name="File Access Policy Daemon Rules" version="2.0" _section="Other">
-  <metadata>
-    <property name="globs">*.rules</property>
-    <property name="line-comment-start">#</property>
-  </metadata>
+    <metadata>
+        <property name="globs">*.rules</property>
+        <property name="line-comment-start">#</property>
+    </metadata>
 
-  <styles>
-    <style id="sep" name="Separator"/>
-    <style id="set" name="Set"/>
-    <style id="allow" name="Allow decisions"/>
-    <style id="deny" name="Deny decisions"/>
-    <style id="perm" name="Permission"/>
-    <style id="permission" name="Permission"/>
-    <style id="subject" name="Subject list"/>
-    <style id="object" name="Object list"/>
-    <style id="wildcard" name="Wildcard identifiers"/>
-  </styles>
+    <styles>
+        <style id="sep" name="Separator"/>
+        <style id="set" name="Set"/>
+        <style id="allow" name="Allow decisions"/>
+        <style id="deny" name="Deny decisions"/>
+        <style id="perm" name="Permission"/>
+        <style id="permission" name="Permission"/>
+        <style id="subject" name="Subject list"/>
+        <style id="object" name="Object list"/>
+        <style id="wildcard" name="Wildcard identifiers"/>
+    </styles>
 
-  <definitions>
-    <context id="seperator" style-ref="sep">
-      <keyword>:</keyword>
-    </context>
+    <definitions>
+        <context id="seperator" style-ref="sep">
+            <keyword>:</keyword>
+        </context>
 
-    <context id="sets" style-ref="set">
-      <match>(%[a-zA-Z][a-zA-Z0-9_]*)</match>
-    </context>
+        <context id="sets" style-ref="set">
+            <match>(%[a-zA-Z][a-zA-Z0-9_]*)</match>
+        </context>
 
-    <context id="allows" style-ref="allow">
-      <keyword>allow</keyword>
-      <keyword>allow_log</keyword>
-      <keyword>allow_audit</keyword>
-      <keyword>allow_syslog</keyword>
-    </context>
+        <context id="allows" style-ref="allow">
+            <keyword>allow</keyword>
+            <keyword>allow_log</keyword>
+            <keyword>allow_audit</keyword>
+            <keyword>allow_syslog</keyword>
+        </context>
 
-    <context id="denies" style-ref="deny">
-      <keyword>deny</keyword>
-      <keyword>deny_log</keyword>
-      <keyword>deny_audit</keyword>
-      <keyword>deny_syslog</keyword>
-    </context>
+        <context id="denies" style-ref="deny">
+            <keyword>deny</keyword>
+            <keyword>deny_log</keyword>
+            <keyword>deny_audit</keyword>
+            <keyword>deny_syslog</keyword>
+        </context>
 
-    <context id="permission">
-      <match>(perm)=(open|execute)</match>
-      <include>
-        <context sub-pattern="1" style-ref="perm"/>
-        <context sub-pattern="2" style-ref="permission"/>
-      </include>
-    </context>
+        <context id="permission">
+            <match>(perm)=(open|execute)</match>
+            <include>
+                <context sub-pattern="1" style-ref="perm"/>
+                <context sub-pattern="2" style-ref="permission"/>
+            </include>
+        </context>
 
-    <context id="wildcards" style-ref="wildcard">
-      <keyword>all</keyword>
-      <keyword>any</keyword>
-    </context>
+        <context id="wildcards" style-ref="wildcard">
+            <keyword>all</keyword>
+            <keyword>any</keyword>
+        </context>
 
-    <context id="subjects" style-ref="subject">
-      <keyword>exe</keyword>
-      <keyword>trust</keyword>
-      <keyword>uid</keyword>
-    </context>
+        <context id="subjects" style-ref="subject">
+            <keyword>exe</keyword>
+            <keyword>trust</keyword>
+            <keyword>uid</keyword>
+        </context>
 
-    <context id="objects" style-ref="object">
-      <keyword>device</keyword>
-      <keyword>dir</keyword>
-      <keyword>ftype</keyword>
-      <keyword>trust</keyword>
-    </context>
+        <context id="objects" style-ref="object">
+            <keyword>device</keyword>
+            <keyword>dir</keyword>
+            <keyword>ftype</keyword>
+            <keyword>trust</keyword>
+        </context>
 
-    <context id="fapolicyd-rules">
-      <include>
-        <context ref="seperator" />
-        <context ref="sets" />
-        <context ref="allows"/>
-        <context ref="denies"/>
-        <context ref="subjects"/>
-        <context ref="objects" />
-        <context ref="permission"/>
-        <context ref="wildcards"/>
+        <context id="fapolicyd-rules">
+            <include>
+                <context ref="seperator"/>
+                <context ref="sets"/>
+                <context ref="allows"/>
+                <context ref="denies"/>
+                <context ref="subjects"/>
+                <context ref="objects"/>
+                <context ref="permission"/>
+                <context ref="wildcards"/>
 
-        <context ref="def:shell-like-comment"/>
-      </include>
-    </context>
-  </definitions>
+                <context ref="def:shell-like-comment"/>
+            </include>
+        </context>
+    </definitions>
 </language>
