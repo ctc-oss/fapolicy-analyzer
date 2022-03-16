@@ -1,69 +1,69 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+todo;; ctc header
+-->
 
-<language id="fapolicyd-rules" name="File Access Policy Daemon Rules" version="2.0" _section="Markup">
+<language id="fapolicyd-rules" name="File Access Policy Daemon Rules" version="2.0" _section="Other">
   <metadata>
     <property name="globs">*.rules</property>
+    <property name="line-comment-start">#</property>
   </metadata>
 
   <styles>
-    <style id="variable" name="Variable" map-to="makefile:variable"/>
-    <style id="decision" name="Decision" map-to="def:constant"/>
-    <style id="permission" name="Permission" map-to="def:keyword"/>
-    <style id="included-file" _name="Included File" map-to="def:string"/>
-    <style id="type" _name="Data Type" map-to="def:type"/>
-    <style id="s" name="Subject" map-to="def:constant"/>
-    <style id="sep" name="Separator" map-to="def:type"/>
-    <style id="o" name="Object" map-to="def:constant"/>
+    <style id="sep" name="Separator"/>
+    <style id="set" name="Set"/>
+    <style id="allow" name="Allow decisions"/>
+    <style id="deny" name="Deny decisions"/>
+    <style id="perm" name="Permission"/>
+    <style id="permission" name="Permission"/>
+    <style id="subject" name="Subject list"/>
+    <style id="object" name="Object list"/>
+    <style id="wildcard" name="Wildcard identifiers"/>
   </styles>
 
   <definitions>
-    <context id="variables" style-ref="def:type">
+    <context id="seperator" style-ref="sep">
+      <keyword>:</keyword>
+    </context>
+
+    <context id="sets" style-ref="set">
       <match>(%[a-zA-Z][a-zA-Z0-9_]*)</match>
     </context>
 
-    <context id="decisions" style-ref="decision">
+    <context id="allows" style-ref="allow">
       <keyword>allow</keyword>
       <keyword>allow_log</keyword>
       <keyword>allow_audit</keyword>
       <keyword>allow_syslog</keyword>
+    </context>
+
+    <context id="denies" style-ref="deny">
       <keyword>deny</keyword>
       <keyword>deny_log</keyword>
       <keyword>deny_audit</keyword>
       <keyword>deny_syslog</keyword>
     </context>
 
-    <context id="keywords" style-ref="permission">
-      <prefix>\s</prefix>
-      <keyword>perm</keyword>
-    </context>
-
-    <context id="values" style-ref="type">
-      <keyword>any</keyword>
-      <keyword>open</keyword>
-      <keyword>execute</keyword>
-    </context>
-
-    <context id="permission-assignment">
-      <match>(perm)=(any|open|execute)</match>
+    <context id="permission">
+      <match>(perm)=(open|execute)</match>
       <include>
-        <context sub-pattern="1" style-ref="permission"/>
-        <context sub-pattern="2" style-ref="type"/>
+        <context sub-pattern="1" style-ref="perm"/>
+        <context sub-pattern="2" style-ref="permission"/>
       </include>
     </context>
 
-    <context id="subjects" style-ref="permission">
+    <context id="wildcards" style-ref="wildcard">
       <keyword>all</keyword>
+      <keyword>any</keyword>
+    </context>
+
+    <context id="subjects" style-ref="subject">
       <keyword>exe</keyword>
       <keyword>trust</keyword>
       <keyword>uid</keyword>
     </context>
 
-    <context id="sep" style-ref="permission">
-      <keyword>:</keyword>
-    </context>
-
-    <context id="objects" style-ref="permission">
-      <keyword>all</keyword>
+    <context id="objects" style-ref="object">
       <keyword>device</keyword>
       <keyword>dir</keyword>
       <keyword>ftype</keyword>
@@ -72,14 +72,15 @@
 
     <context id="fapolicyd-rules">
       <include>
-        <context ref="variables" />
+        <context ref="seperator" />
+        <context ref="sets" />
+        <context ref="allows"/>
+        <context ref="denies"/>
         <context ref="subjects"/>
-        <context ref="sep" />
         <context ref="objects" />
-        <context ref="decisions"/>
-        <context ref="permission-assignment"/>
-        <context ref="keywords"/>
-        <context ref="values"/>
+        <context ref="permission"/>
+        <context ref="wildcards"/>
+
         <context ref="def:shell-like-comment"/>
       </include>
     </context>
