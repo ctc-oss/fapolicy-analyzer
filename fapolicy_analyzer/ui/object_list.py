@@ -38,7 +38,7 @@ class ObjectList(SubjectList):
 
     def __markup(self, value, options, seperator="/", multiValue=False):
         def wrap(x):
-            return f"<b><u>{x}</u></b>"
+            return f"<u><b>{x}</b></u>"
 
         valueSet = set(value.upper()) if multiValue else {value.upper()}
         matches = set(options).intersection(valueSet)
@@ -62,7 +62,7 @@ class ObjectList(SubjectList):
         self._ancillaryTrust = kwargs.get("ancillaryTrust", [])
         store = Gtk.ListStore(str, str, str, object, str, str)
         for o in objects:
-            status = self.__markup(o.trust.upper(), ["ST", "AT", "U"])
+            status = self._trust_markup(o)
             mode = self.__markup(
                 o.mode.upper(),
                 ["R", "W", "X"],

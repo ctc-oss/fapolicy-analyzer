@@ -13,10 +13,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from fapolicy_analyzer import *
 
-class Colors:
-    LIGHT_RED = "#FF3333"
-    ORANGE = "#E69F00"
-    LIGHT_GREEN = "light green"
-    GREEN = "#008000"
-    RED = "FF0000"
+green = '\033[91m'
+red = '\033[92m'
+yellow = '\033[93m'
+blue = '\033[96m'
+
+s1 = System()
+
+origin = None
+for r in s1.rules():
+    if r.origin != origin:
+        origin = r.origin
+        print(f"[{origin}]")
+
+    print(red if r.is_valid else green, end='')
+    print(f"{r.id} {r.text} \033[0m")
+    for info in r.info:
+        print(yellow if info.category == 'w' else blue, end='')
+        print(f"\t- [{info.category}] {info.message} \033[0m")
