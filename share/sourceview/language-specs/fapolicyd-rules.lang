@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright Concurrent Technologies Corporation 2021
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<language id="fapolicyd-rules" name="File Access Policy Daemon Rules" version="2.0" _section="Other">
+    <metadata>
+        <property name="globs">*.rules</property>
+        <property name="line-comment-start">#</property>
+    </metadata>
+
+    <styles>
+        <style id="sep" name="Separator"/>
+        <style id="set" name="Set"/>
+        <style id="allow" name="Allow decisions"/>
+        <style id="deny" name="Deny decisions"/>
+        <style id="perm" name="Permission"/>
+        <style id="permission" name="Permission"/>
+        <style id="subject" name="Subject list"/>
+        <style id="object" name="Object list"/>
+        <style id="wildcard" name="Wildcard identifiers"/>
+    </styles>
+
+    <definitions>
+        <context id="seperator" style-ref="sep">
+            <keyword>:</keyword>
+        </context>
+
+        <context id="sets" style-ref="set">
+            <match>(%[a-zA-Z][a-zA-Z0-9_]*)</match>
+        </context>
+
+        <context id="allows" style-ref="allow">
+            <keyword>allow</keyword>
+            <keyword>allow_log</keyword>
+            <keyword>allow_audit</keyword>
+            <keyword>allow_syslog</keyword>
+        </context>
+
+        <context id="denies" style-ref="deny">
+            <keyword>deny</keyword>
+            <keyword>deny_log</keyword>
+            <keyword>deny_audit</keyword>
+            <keyword>deny_syslog</keyword>
+        </context>
+
+        <context id="permission">
+            <match>(perm)=(open|execute)</match>
+            <include>
+                <context sub-pattern="1" style-ref="perm"/>
+                <context sub-pattern="2" style-ref="permission"/>
+            </include>
+        </context>
+
+        <context id="wildcards" style-ref="wildcard">
+            <keyword>all</keyword>
+            <keyword>any</keyword>
+        </context>
+
+        <context id="subjects" style-ref="subject">
+            <keyword>comm</keyword>
+            <keyword>exe</keyword>
+            <keyword>trust</keyword>
+            <keyword>uid</keyword>
+        </context>
+
+        <context id="objects" style-ref="object">
+            <keyword>device</keyword>
+            <keyword>dir</keyword>
+            <keyword>ftype</keyword>
+            <keyword>path</keyword>
+            <keyword>trust</keyword>
+        </context>
+
+        <context id="fapolicyd-rules">
+            <include>
+                <context ref="seperator"/>
+                <context ref="sets"/>
+                <context ref="allows"/>
+                <context ref="denies"/>
+                <context ref="subjects"/>
+                <context ref="objects"/>
+                <context ref="permission"/>
+                <context ref="wildcards"/>
+
+                <context ref="def:shell-like-comment"/>
+            </include>
+        </context>
+    </definitions>
+</language>
