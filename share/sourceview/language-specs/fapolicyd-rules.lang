@@ -58,6 +58,7 @@ todo;; ctc header
         </context>
 
         <context id="subjects" style-ref="subject">
+            <keyword>comm</keyword>
             <keyword>exe</keyword>
             <keyword>trust</keyword>
             <keyword>uid</keyword>
@@ -67,6 +68,7 @@ todo;; ctc header
             <keyword>device</keyword>
             <keyword>dir</keyword>
             <keyword>ftype</keyword>
+            <keyword>path</keyword>
             <keyword>trust</keyword>
         </context>
 

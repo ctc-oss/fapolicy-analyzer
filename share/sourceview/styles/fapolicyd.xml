@@ -40,8 +40,8 @@ todo;; ctc header
 
     <!-- Misc -->
     <style name="fapolicyd-rules:sep" background="red" bold="true" italic="true"/>
-    <style name="fapolicyd-rules:set" foreground="magenta"/>
-    <style name="fapolicyd-rules:wildcard" background="gray" foreground="yellow" bold="true"/>
+    <style name="fapolicyd-rules:set" background="gray" foreground="yellow"/>
+    <style name="fapolicyd-rules:wildcard" foreground="magenta" bold="true"/>
 
     <!-- Decisions -->
     <style name="fapolicyd-rules:allow" foreground="green"/>
