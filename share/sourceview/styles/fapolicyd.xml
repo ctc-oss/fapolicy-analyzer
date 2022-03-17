@@ -47,7 +47,7 @@
     <style name="search-match" background="yellow"/>
 
     <!-- Comments -->
-    <style name="def:comment" foreground="grey" italic="true" bold="false"/>
+    <style name="def:comment" foreground="gray" italic="true" bold="false"/>
 
     <!-- fapolicyd settings -->
 
