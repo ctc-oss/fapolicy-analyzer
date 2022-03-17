@@ -75,8 +75,8 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
             f(
                 _(
                     """{invalid_count} invalid rule found
-{warning_count} warnings found
-{info_count} informational items found"""
+{warning_count} warning(s) found
+{info_count} informational message(s)"""
                 )
             )
         )
