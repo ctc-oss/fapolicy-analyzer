@@ -1,14 +1,16 @@
 use nom::branch::alt;
-use nom::bytes::complete::{tag, take_until};
-use nom::combinator::{map, opt};
-use nom::sequence::{separated_pair, tuple, Tuple};
-use nom::{Err, IResult};
+use nom::bytes::complete::{is_not, tag, take_till, take_until};
+use nom::combinator::{eof, map, opt, rest};
+use nom::sequence::{delimited, separated_pair, terminated, tuple, Tuple};
+use nom::{Err, IResult, Parser};
 
 use crate::parser::error::RuleParseError;
 use crate::parser::error::RuleParseError::*;
 use crate::parser::trace::Trace;
 use crate::{Decision, ObjPart, Object, Permission, Rvalue, SubjPart, Subject};
-use nom::character::complete::{alphanumeric1, digit1, space0, space1};
+use nom::character::complete::{
+    alpha1, alphanumeric1, digit1, multispace0, not_line_ending, one_of, space0, space1,
+};
 use nom::character::is_alphanumeric;
 use nom::error::ErrorKind;
 use nom::multi::separated_list1;
@@ -91,52 +93,107 @@ fn trust_flag(i: StrTrace) -> TraceResult<bool> {
 }
 
 fn subj_part_uid(i: StrTrace) -> TraceResult<SubjPart> {
-    match separated_pair(tag("uid"), tag("="), digit1)(i) {
-        Ok((rem, (_, uid))) => Ok((rem, SubjPart::Uid(uid.fragment.parse().unwrap()))),
-        Err(e) => Err(nom::Err::Error(SubjectPartExpectedInt(i))),
-    }
+    let (ii, _) = tag("uid")(i)?;
+    let (ii, _) = tag("=")(ii)?;
+    let (ii, uid) = digit1(ii)
+        .map_err(|e: nom::Err<TraceError>| nom::Err::Error(SubjectPartExpectedInt(ii)))?;
+
+    Ok((ii, SubjPart::Uid(uid.fragment.parse().unwrap())))
 }
 
 fn subj_part(i: StrTrace) -> TraceResult<SubjPart> {
-    match alt((
-        map(tag("all"), |_| SubjPart::All),
-        subj_part_uid,
-        map(
-            separated_pair(tag("gid"), tag("="), digit1),
-            |x: (StrTrace, StrTrace)| SubjPart::Gid(x.1.fragment.parse().unwrap()),
-        ),
-        map(
-            separated_pair(tag("exe"), tag("="), filepath),
-            |x: (StrTrace, StrTrace)| SubjPart::Exe(x.1.fragment.to_string()),
-        ),
-        map(
-            separated_pair(tag("pattern"), tag("="), pattern),
-            |x: (StrTrace, StrTrace)| SubjPart::Pattern(x.1.fragment.to_string()),
-        ),
-        map(
-            separated_pair(tag("comm"), tag("="), filepath),
-            |x: (StrTrace, StrTrace)| SubjPart::Comm(x.1.fragment.to_string()),
-        ),
-        map(
-            separated_pair(tag("trust"), tag("="), trust_flag),
-            |x: (StrTrace, bool)| SubjPart::Trust(x.1),
-        ),
-    ))(i)
-    {
-        res => {
-            println!("{:?}", res);
-            res
-        }
+    let (ii, x) = terminated(alpha1, tag("="))(i)
+        .map_err(|e: nom::Err<TraceError>| nom::Err::Error(SubjectPartExpected(i)))?;
+
+    match x.fragment {
+        "uid" => digit1(ii)
+            .map(|(ii, d)| (ii, SubjPart::Uid(d.fragment.parse().unwrap())))
+            .map_err(|e: nom::Err<TraceError>| nom::Err::Error(SubjectPartExpectedInt(i))),
+        "gid" => digit1(ii)
+            .map(|(ii, d)| (ii, SubjPart::Gid(d.fragment.parse().unwrap())))
+            .map_err(|e: nom::Err<TraceError>| nom::Err::Error(SubjectPartExpectedInt(i))),
+        _ => Err(nom::Err::Error(UnknownSubjectPart(i))),
     }
+
+    // match alt((
+    //     map(tag("all"), |_| SubjPart::All),
+    //     subj_part_uid,
+    //     map(
+    //         separated_pair(tag("gid"), tag("="), digit1),
+    //         |x: (StrTrace, StrTrace)| SubjPart::Gid(x.1.fragment.parse().unwrap()),
+    //     ),
+    //     map(
+    //         separated_pair(tag("exe"), tag("="), filepath),
+    //         |x: (StrTrace, StrTrace)| SubjPart::Exe(x.1.fragment.to_string()),
+    //     ),
+    //     map(
+    //         separated_pair(tag("pattern"), tag("="), pattern),
+    //         |x: (StrTrace, StrTrace)| SubjPart::Pattern(x.1.fragment.to_string()),
+    //     ),
+    //     map(
+    //         separated_pair(tag("comm"), tag("="), filepath),
+    //         |x: (StrTrace, StrTrace)| SubjPart::Comm(x.1.fragment.to_string()),
+    //     ),
+    //     map(
+    //         separated_pair(tag("trust"), tag("="), trust_flag),
+    //         |x: (StrTrace, bool)| SubjPart::Trust(x.1),
+    //     ),
+    // ))(i)
+    // {
+    //     res => {
+    //         println!("{:?}", res);
+    //         res
+    //     }
+    // }
 }
 
+// allow perm=any uid=1 : all
 pub fn subject(i: StrTrace) -> TraceResult<Subject> {
-    let (ii, v) = take_until(":")(i)?;
+    let (_, mut ii) = take_until(" :")(i)?;
+    let mut parts = vec![];
+    loop {
+        if ii.fragment.trim().is_empty() {
+            break;
+        }
 
-    map(separated_list1(space1, subj_part), |parts| {
-        Subject::new(parts)
-    })(v)
-    .map(|(_, v)| (ii, v))
+        let (i, part) = delimited(multispace0, subj_part, multispace0)(ii)?;
+        ii = i;
+        parts.push(part);
+    }
+
+    Ok((ii, Subject::new(parts)))
+
+    // match map(wrapped_parser, |parts| {
+    //     Subject::new(parts.into_iter().map(|(a, _)| a).collect())
+    // })(ii)
+    // .map_err(|e: nom::Err<TraceError>| nom::Err::Error(SubjectPartExpectedInt(i)))
+    // {
+    //     Ok((ii, r)) if ii.fragment.is_empty() => Ok((ii, r)),
+    //     Ok((ii, r)) => subj_part(ii)
+    //         .map(|_| (i, Subject::empty()))
+    //         .map_err(|e| nom::error::Error()),
+    //     res => res,
+    // }
+}
+
+pub fn object(i: StrTrace) -> TraceResult<Object> {
+    let (_, (_, _, _, mut ii)) = tuple((is_not(":"), tag(":"), space0, rest))(i)?;
+    let mut parts = vec![];
+    loop {
+        if ii.fragment.trim().is_empty() {
+            break;
+        }
+
+        let (i, part) = delimited(multispace0, obj_part, multispace0)(ii)?;
+        ii = i;
+        parts.push(part);
+    }
+
+    Ok((ii, Object::new(parts)))
+
+    // map(separated_list1(space1, obj_part), |parts| {
+    //     Object::new(parts)
+    // })(ii)
 }
 
 fn obj_part(i: StrTrace) -> TraceResult<ObjPart> {
@@ -165,28 +222,39 @@ fn obj_part(i: StrTrace) -> TraceResult<ObjPart> {
     ))(i)
 }
 
-pub fn object(i: StrTrace) -> TraceResult<Object> {
-    map(separated_list1(space1, obj_part), |parts| {
-        Object::new(parts)
-    })(i)
-}
-
 pub fn subject_object_parts(i: StrTrace) -> TraceResult<SubObj> {
     if !i.fragment.contains(":") {
         return Err(nom::Err::Error(MissingSeparator(i)));
     }
 
-    match separated_pair(opt(subject), tuple((space0, tag(":"), space0)), opt(object))(i) {
-        Ok((_, (None, None))) => Err(nom::Err::Error(MissingBothSubjObj(i))),
-        Ok((_, (Some(_), None))) => Err(nom::Err::Error(MissingObject(i))),
-        Ok((_, (None, Some(_)))) => Err(nom::Err::Error(MissingSubject(i))),
-        Ok((remaining, (Some(s), Some(o)))) => Ok((
-            remaining,
-            SubObj {
-                subject: s,
-                object: o,
-            },
-        )),
-        Err(e) => Err(e),
-    }
+    // pass the same input to both the subject and object parsers
+    // inside the subject parser take until the :
+    // inside the object parser take after the :
+    //
+    // doing this should allow each of them to locate errors without the other one interfering
+
+    let (_, s) = subject(i)?;
+    let (ii, o) = object(i)?;
+
+    Ok((
+        ii,
+        SubObj {
+            subject: s,
+            object: o,
+        },
+    ))
+
+    // match separated_pair(subject, tuple((space0, tag(":"), space0)), object)(i) {
+    //     // Ok((_, (None, None))) => Err(nom::Err::Error(MissingBothSubjObj(i))),
+    //     // Ok((_, (Some(_), None))) => Err(nom::Err::Error(MissingObject(i))),
+    //     // Ok((_, (None, Some(_)))) => Err(nom::Err::Error(MissingSubject(i))),
+    //     Ok((remaining, (s, o))) => Ok((
+    //         remaining,
+    //         SubObj {
+    //             subject: s,
+    //             object: o,
+    //         },
+    //     )),
+    //     Err(e) => Err(e),
+    // }
 }
