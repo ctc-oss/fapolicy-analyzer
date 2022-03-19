@@ -12,10 +12,10 @@ use nom::character::complete::space1;
 use nom::character::complete::{alpha1, multispace0, space0};
 use nom::character::complete::{alphanumeric1, digit1};
 use nom::character::is_alphanumeric;
-use nom::combinator::{map, opt, rest};
+use nom::combinator::{map, opt, recognize, rest};
 use nom::error::{Error, ErrorKind};
-use nom::multi::separated_list1;
-use nom::sequence::{delimited, preceded, separated_pair, terminated, tuple};
+use nom::multi::{many0_count, separated_list1};
+use nom::sequence::{delimited, pair, preceded, separated_pair, terminated, tuple};
 
 use crate::file_type::Rvalue::Literal;
 use crate::object::Part as ObjPart;
@@ -28,14 +28,21 @@ use crate::subject::Part as SubjPart;
 use crate::{Decision, Object, Permission, Rule, Rvalue, Subject};
 use nom::IResult;
 
-pub(crate) type StrTrace<'a> = Trace<&'a str>;
+pub type StrTrace<'a> = Trace<&'a str>;
 pub(crate) type TraceError<'a> = RuleParseError<StrTrace<'a>>;
 pub(crate) type NomTraceError<'a> = nom::error::Error<StrTrace<'a>>;
 pub(crate) type TraceResult<'a, O> = IResult<StrTrace<'a>, O, TraceError<'a>>;
 
 pub(crate) fn decision(i: StrTrace) -> TraceResult<Decision> {
-    let (ii, r) = take_until(" ")(i)
-        .map_err(|e: nom::Err<TraceError>| nom::Err::Error(ExpectedDecision(i)))?;
+    // let (ii, r) = take_until(" ")(i)
+    //     .map_err(|e: nom::Err<TraceError>| nom::Err::Error(ExpectedDecision(i)))?;
+
+    let (ii, r) = recognize(pair(
+        alt((alpha1, tag("_"))),
+        many0_count(alt((alphanumeric1, tag("_")))),
+    ))(i)
+    .map_err(|e: nom::Err<TraceError>| nom::Err::Error(ExpectedDecision(i)))?;
+
     let x: IResult<StrTrace, Option<Decision>, NomTraceError> = opt(alt((
         map(tag("allow_audit"), |_| Decision::AllowAudit),
         map(tag("allow_syslog"), |_| Decision::AllowSyslog),
@@ -68,7 +75,8 @@ pub(crate) fn permission(i: StrTrace) -> TraceResult<Permission> {
         Err(e) => Err(e),
     }?;
 
-    let (remaining, r) = take_until(" ")(ii)?;
+    // let (remaining, r) = take_until(" ")(ii)?;
+    let (remaining, r) = alpha1(ii)?;
     let res: TraceResult<Option<Permission>> = opt(alt((
         map(tag("any"), |_| Permission::Any),
         map(tag("open"), |_| Permission::Open),
@@ -124,8 +132,7 @@ fn subj_part(i: StrTrace) -> TraceResult<SubjPart> {
 }
 
 pub(crate) fn subject(i: StrTrace) -> TraceResult<Subject> {
-    let (_, mut ii) = take_until(" :")(i)?;
-
+    let mut ii = i;
     let mut parts = vec![];
     loop {
         if ii.fragment.trim().is_empty() {
@@ -174,8 +181,7 @@ fn obj_part(i: StrTrace) -> TraceResult<ObjPart> {
 }
 
 pub(crate) fn object(i: StrTrace) -> TraceResult<Object> {
-    let (_, (_, _, _, mut ii)) = tuple((is_not(":"), tag(":"), space0, rest))(i)?;
-
+    let mut ii = i;
     let mut parts = vec![];
     loop {
         if ii.fragment.trim().is_empty() {
@@ -221,8 +227,11 @@ fn subject_object_parts(i: StrTrace) -> TraceResult<SubObj> {
         return Err(nom::Err::Error(MissingSeparator(i)));
     }
 
-    let (_, s) = subject(i)?;
-    let (ii, o) = object(i)?;
+    let (_, ss) = take_until(" :")(i)?;
+    let (_, s) = subject(ss)?;
+
+    let (_, (_, _, _, oo)) = tuple((is_not(":"), tag(":"), space0, rest))(i)?;
+    let (ii, o) = object(oo)?;
 
     Ok((
         ii,
