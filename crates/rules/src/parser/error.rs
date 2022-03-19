@@ -16,9 +16,21 @@ pub enum RuleParseError<I> {
     MissingSubject(I),
     MissingObject(I),
     MissingBothSubjObj(I),
+
     UnknownSubjectPart(I),
+    UnknownObjectPart(I),
+
     SubjectPartExpected(I),
-    SubjectPartExpectedInt(I),
+    ObjectPartExpected(I),
+
+    ExpectedInt(I),
+
+    ExpectedDirPath(I),
+    ExpectedFilePath(I),
+    ExpectedPattern(I),
+    ExpectedBoolean(I),
+    ExpectedFileType(I),
+
     Nom(I, ErrorKind),
 }
 
@@ -46,9 +58,15 @@ impl Display for RuleParseError<Trace<&str>> {
             MissingSubject(_) => f.write_str("Missing Subject"),
             MissingObject(_) => f.write_str("Expected Object"),
             MissingBothSubjObj(_) => f.write_str("Missing Subject and Object"),
-            UnknownSubjectPart(_) => f.write_str("Expected one of ....."),
-            SubjectPartExpected(_) => f.write_str("Expected Subject part"),
-            SubjectPartExpectedInt(_) => f.write_str("Expected integer value"),
+            UnknownSubjectPart(_) | UnknownObjectPart(_) => f.write_str("Expected one of ....."),
+            SubjectPartExpected(_) => f.write_str("Expected a Subject part"),
+            ObjectPartExpected(_) => f.write_str("Expected an Object part"),
+            ExpectedInt(_) => f.write_str("Expected integer value"),
+            ExpectedDirPath(_) => f.write_str("Expected dir path"),
+            ExpectedFilePath(_) => f.write_str("Expected file path"),
+            ExpectedPattern(_) => f.write_str("Expected pattern"),
+            ExpectedBoolean(_) => f.write_str("Expected boolean (0, 1) value"),
+            ExpectedFileType(_) => f.write_str("Expected mime file type"),
             e @ Nom(_, _) => f.write_fmt(format_args!("{:?}", e)),
         }
     }

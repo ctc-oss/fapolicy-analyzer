@@ -50,7 +50,16 @@ impl<'a> From<RuleParseError<StrTrace<'a>>> for ErrorAt<StrTrace<'a>> {
             MissingBothSubjObj(t) => t,
             UnknownSubjectPart(t) => t,
             SubjectPartExpected(t) => t,
-            SubjectPartExpectedInt(t) => t,
+            ExpectedInt(t) => t,
+
+            UnknownObjectPart(t) => t,
+            ObjectPartExpected(t) => t,
+            ExpectedDirPath(t) => t,
+            ExpectedFilePath(t) => t,
+            ExpectedPattern(t) => t,
+            ExpectedBoolean(t) => t,
+            ExpectedFileType(t) => t,
+
             Nom(t, _) => t,
         };
         ErrorAt::<StrTrace<'a>>::new(e, t)

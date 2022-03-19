@@ -75,8 +75,15 @@ pub struct SubObj {
     pub object: Object,
 }
 
+// todo;; this should be absolute path
 fn filepath(i: StrTrace) -> TraceResult<StrTrace> {
     nom::bytes::complete::is_not(" \t\n")(i)
+}
+
+// todo;; this should be mimetype
+fn filetype(i: StrTrace) -> TraceResult<Rvalue> {
+    nom::bytes::complete::is_not(" \t\n")(i)
+        .map(|(r, v)| (r, Rvalue::Literal(v.fragment.to_string())))
 }
 
 fn pattern(i: StrTrace) -> IResult<StrTrace, StrTrace, TraceError> {
@@ -95,61 +102,51 @@ fn trust_flag(i: StrTrace) -> TraceResult<bool> {
 fn subj_part_uid(i: StrTrace) -> TraceResult<SubjPart> {
     let (ii, _) = tag("uid")(i)?;
     let (ii, _) = tag("=")(ii)?;
-    let (ii, uid) = digit1(ii)
-        .map_err(|e: nom::Err<TraceError>| nom::Err::Error(SubjectPartExpectedInt(ii)))?;
+    let (ii, uid) =
+        digit1(ii).map_err(|e: nom::Err<TraceError>| nom::Err::Error(ExpectedInt(ii)))?;
 
     Ok((ii, SubjPart::Uid(uid.fragment.parse().unwrap())))
 }
 
 fn subj_part(i: StrTrace) -> TraceResult<SubjPart> {
-    let (ii, x) = terminated(alpha1, tag("="))(i)
+    let (ii, x) = alt((tag("all"), terminated(alpha1, tag("="))))(i)
         .map_err(|e: nom::Err<TraceError>| nom::Err::Error(SubjectPartExpected(i)))?;
 
     match x.fragment {
+        "all" => Ok((ii, SubjPart::All)),
+
         "uid" => digit1(ii)
             .map(|(ii, d)| (ii, SubjPart::Uid(d.fragment.parse().unwrap())))
-            .map_err(|e: nom::Err<TraceError>| nom::Err::Error(SubjectPartExpectedInt(i))),
+            .map_err(|e: nom::Err<TraceError>| nom::Err::Error(ExpectedInt(i))),
+
         "gid" => digit1(ii)
             .map(|(ii, d)| (ii, SubjPart::Gid(d.fragment.parse().unwrap())))
-            .map_err(|e: nom::Err<TraceError>| nom::Err::Error(SubjectPartExpectedInt(i))),
+            .map_err(|e: nom::Err<TraceError>| nom::Err::Error(ExpectedInt(i))),
+
+        "exe" => filepath(ii)
+            .map(|(ii, d)| (ii, SubjPart::Exe(d.fragment.to_string())))
+            .map_err(|e: nom::Err<TraceError>| nom::Err::Error(ExpectedFilePath(i))),
+
+        "pattern" => pattern(ii)
+            .map(|(ii, d)| (ii, SubjPart::Pattern(d.fragment.to_string())))
+            .map_err(|e: nom::Err<TraceError>| nom::Err::Error(ExpectedPattern(i))),
+
+        "comm" => filepath(ii)
+            .map(|(ii, d)| (ii, SubjPart::Comm(d.fragment.to_string())))
+            .map_err(|e: nom::Err<TraceError>| nom::Err::Error(ExpectedFilePath(i))),
+
+        "trust" => trust_flag(ii)
+            .map(|(ii, d)| (ii, SubjPart::Trust(d)))
+            .map_err(|e: nom::Err<TraceError>| nom::Err::Error(ExpectedBoolean(i))),
+
         _ => Err(nom::Err::Error(UnknownSubjectPart(i))),
     }
-
-    // match alt((
-    //     map(tag("all"), |_| SubjPart::All),
-    //     subj_part_uid,
-    //     map(
-    //         separated_pair(tag("gid"), tag("="), digit1),
-    //         |x: (StrTrace, StrTrace)| SubjPart::Gid(x.1.fragment.parse().unwrap()),
-    //     ),
-    //     map(
-    //         separated_pair(tag("exe"), tag("="), filepath),
-    //         |x: (StrTrace, StrTrace)| SubjPart::Exe(x.1.fragment.to_string()),
-    //     ),
-    //     map(
-    //         separated_pair(tag("pattern"), tag("="), pattern),
-    //         |x: (StrTrace, StrTrace)| SubjPart::Pattern(x.1.fragment.to_string()),
-    //     ),
-    //     map(
-    //         separated_pair(tag("comm"), tag("="), filepath),
-    //         |x: (StrTrace, StrTrace)| SubjPart::Comm(x.1.fragment.to_string()),
-    //     ),
-    //     map(
-    //         separated_pair(tag("trust"), tag("="), trust_flag),
-    //         |x: (StrTrace, bool)| SubjPart::Trust(x.1),
-    //     ),
-    // ))(i)
-    // {
-    //     res => {
-    //         println!("{:?}", res);
-    //         res
-    //     }
-    // }
 }
 
 // allow perm=any uid=1 : all
 pub fn subject(i: StrTrace) -> TraceResult<Subject> {
     let (_, mut ii) = take_until(" :")(i)?;
+
     let mut parts = vec![];
     loop {
         if ii.fragment.trim().is_empty() {
@@ -160,6 +157,8 @@ pub fn subject(i: StrTrace) -> TraceResult<Subject> {
         ii = i;
         parts.push(part);
     }
+
+    // todo;; check for 'all' here, if there are additional entries other than 'trust', its an error
 
     Ok((ii, Subject::new(parts)))
 
@@ -178,6 +177,7 @@ pub fn subject(i: StrTrace) -> TraceResult<Subject> {
 
 pub fn object(i: StrTrace) -> TraceResult<Object> {
     let (_, (_, _, _, mut ii)) = tuple((is_not(":"), tag(":"), space0, rest))(i)?;
+
     let mut parts = vec![];
     loop {
         if ii.fragment.trim().is_empty() {
@@ -189,37 +189,64 @@ pub fn object(i: StrTrace) -> TraceResult<Object> {
         parts.push(part);
     }
 
-    Ok((ii, Object::new(parts)))
+    // todo;; check for 'all' here, if there are additional entries other than 'trust', its an error
 
-    // map(separated_list1(space1, obj_part), |parts| {
-    //     Object::new(parts)
-    // })(ii)
+    Ok((ii, Object::new(parts)))
 }
 
 fn obj_part(i: StrTrace) -> TraceResult<ObjPart> {
-    alt((
-        map(tag("all"), |_| ObjPart::All),
-        map(
-            separated_pair(tag("device"), tag("="), filepath),
-            |x: (StrTrace, StrTrace)| ObjPart::Device(x.1.fragment.to_string()),
-        ),
-        map(
-            separated_pair(tag("dir"), tag("="), filepath),
-            |x: (StrTrace, StrTrace)| ObjPart::Dir(x.1.fragment.to_string()),
-        ),
-        map(
-            separated_pair(tag("ftype"), tag("="), filepath),
-            |x: (StrTrace, StrTrace)| ObjPart::FileType(Rvalue::Literal(x.1.fragment.to_string())),
-        ),
-        map(
-            separated_pair(tag("path"), tag("="), filepath),
-            |x: (StrTrace, StrTrace)| ObjPart::Path(x.1.fragment.to_string()),
-        ),
-        map(
-            separated_pair(tag("trust"), tag("="), trust_flag),
-            |x: (StrTrace, bool)| ObjPart::Trust(x.1),
-        ),
-    ))(i)
+    let (ii, x) = alt((tag("all"), terminated(alpha1, tag("="))))(i)
+        .map_err(|e: nom::Err<TraceError>| nom::Err::Error(ObjectPartExpected(i)))?;
+
+    match x.fragment {
+        "all" => Ok((ii, ObjPart::All)),
+
+        "device" => filepath(ii)
+            .map(|(ii, d)| (ii, ObjPart::Device(d.fragment.to_string())))
+            .map_err(|e: nom::Err<TraceError>| nom::Err::Error(ExpectedFilePath(i))),
+
+        "dir" => filepath(ii)
+            .map(|(ii, d)| (ii, ObjPart::Dir(d.fragment.to_string())))
+            .map_err(|e: nom::Err<TraceError>| nom::Err::Error(ExpectedDirPath(i))),
+
+        "ftype" => filetype(ii)
+            .map(|(ii, d)| (ii, ObjPart::FileType(d)))
+            .map_err(|e: nom::Err<TraceError>| nom::Err::Error(ExpectedFileType(i))),
+
+        "path" => filepath(ii)
+            .map(|(ii, d)| (ii, ObjPart::Path(d.fragment.to_string())))
+            .map_err(|e: nom::Err<TraceError>| nom::Err::Error(ExpectedFilePath(i))),
+
+        "trust" => trust_flag(ii)
+            .map(|(ii, d)| (ii, ObjPart::Trust(d)))
+            .map_err(|e: nom::Err<TraceError>| nom::Err::Error(ExpectedBoolean(i))),
+
+        _ => Err(nom::Err::Error(UnknownObjectPart(i))),
+    }
+
+    //     alt((
+    //     map(tag("all"), |_| ObjPart::All),
+    //     map(
+    //         separated_pair(tag("device"), tag("="), filepath),
+    //         |x: (StrTrace, StrTrace)| ObjPart::Device(x.1.fragment.to_string()),
+    //     ),
+    //     map(
+    //         separated_pair(tag("dir"), tag("="), filepath),
+    //         |x: (StrTrace, StrTrace)| ObjPart::Dir(x.1.fragment.to_string()),
+    //     ),
+    //     map(
+    //         separated_pair(tag("ftype"), tag("="), filepath),
+    //         |x: (StrTrace, StrTrace)| ObjPart::FileType(Rvalue::Literal(x.1.fragment.to_string())),
+    //     ),
+    //     map(
+    //         separated_pair(tag("path"), tag("="), filepath),
+    //         |x: (StrTrace, StrTrace)| ObjPart::Path(x.1.fragment.to_string()),
+    //     ),
+    //     map(
+    //         separated_pair(tag("trust"), tag("="), trust_flag),
+    //         |x: (StrTrace, bool)| ObjPart::Trust(x.1),
+    //     ),
+    // ))(i)
 }
 
 pub fn subject_object_parts(i: StrTrace) -> TraceResult<SubObj> {
