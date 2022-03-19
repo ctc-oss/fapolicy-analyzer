@@ -86,6 +86,8 @@ pub enum Part {
     Uid(u32),
     /// This is the group id that the program is running under.
     Gid(u32),
+    /// This is the numeric process id that a program has.
+    Pid(u32),
     /// This is the full path to the executable. Globbing is not supported. You may also use the special keyword \fBuntrusted\fP to match on the subject not being listed in the rpm database.
     Exe(String),
     Pattern(String),
@@ -118,6 +120,7 @@ impl Display for Part {
             Part::Comm(cmd) => f.write_fmt(format_args!("comm={}", cmd)),
             Part::Uid(id) => f.write_fmt(format_args!("uid={}", id)),
             Part::Gid(id) => f.write_fmt(format_args!("gid={}", id)),
+            Part::Pid(id) => f.write_fmt(format_args!("pid={}", id)),
             Part::Exe(id) => f.write_fmt(format_args!("exe={}", id)),
             Part::Pattern(id) => f.write_fmt(format_args!("pattern={}", id)),
             Part::Trust(b) => f.write_fmt(format_args!("trust={}", bool_to_c(*b))),

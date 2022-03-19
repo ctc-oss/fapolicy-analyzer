@@ -111,6 +111,10 @@ fn subj_part(i: StrTrace) -> TraceResult<SubjPart> {
             .map(|(ii, d)| (ii, SubjPart::Gid(d.fragment.parse().unwrap())))
             .map_err(|e: nom::Err<TraceError>| nom::Err::Error(ExpectedInt(i))),
 
+        "pid" => digit1(ii)
+            .map(|(ii, d)| (ii, SubjPart::Pid(d.fragment.parse().unwrap())))
+            .map_err(|e: nom::Err<TraceError>| nom::Err::Error(ExpectedInt(i))),
+
         "exe" => filepath(ii)
             .map(|(ii, d)| (ii, SubjPart::Exe(d.fragment.to_string())))
             .map_err(|e: nom::Err<TraceError>| nom::Err::Error(ExpectedFilePath(i))),
