@@ -431,7 +431,9 @@ mod tests {
         assert_eq!(Permission::Any, r.perm);
         assert_eq!(Subject::from(SubjPart::All), r.subj);
         assert_eq!(
-            Object::from(ObjPart::FileType(Literal("application/x-bad-elf".into()))),
+            Object::from(ObjPart::FileType(Rvalue::Literal(
+                "application/x-bad-elf".into()
+            ))),
             r.obj
         );
         assert!(rem.is_empty());

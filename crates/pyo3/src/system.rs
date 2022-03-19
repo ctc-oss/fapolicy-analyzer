@@ -151,16 +151,18 @@ impl PySystem {
             .rules_db
             .iter()
             .map(|(id, r)| {
-                let (valid, text) = match r {
-                    RuleDef::Invalid(t) => (false, t.clone()),
-                    RuleDef::Valid(r) => (true, r.to_string()),
+                let (valid, text, info) = match r {
+                    RuleDef::Invalid(t, why) => {
+                        (false, t.clone(), vec![("e".to_string(), why.clone())])
+                    }
+                    RuleDef::Valid(r) => (true, r.to_string(), vec![]),
                 };
 
                 PyRule::new(
                     *id,
                     text,
                     fapolicyd::RULES_FILE_PATH.to_string(),
-                    vec![],
+                    info,
                     valid,
                 )
             })
