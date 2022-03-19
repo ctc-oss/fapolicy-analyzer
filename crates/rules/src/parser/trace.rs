@@ -21,13 +21,20 @@ pub struct Trace<I> {
     pub position: usize,
 }
 
-impl<I: Clone> Trace<I> {
+impl<I> Trace<I>
+where
+    I: AsBytes + Clone,
+{
     pub fn new(i: I) -> Self {
         Trace {
             fragment: i.clone(),
             original: i,
             position: 0,
         }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.as_bytes().is_empty()
     }
 }
 
@@ -46,6 +53,12 @@ impl<I> Position for Trace<I> {
 }
 
 ///
+
+impl<I: Offset> Offset for Trace<I> {
+    fn offset(&self, second: &Self) -> usize {
+        self.fragment.offset(&second.fragment)
+    }
+}
 
 impl<I: InputLength> InputLength for Trace<I> {
     fn input_len(&self) -> usize {
