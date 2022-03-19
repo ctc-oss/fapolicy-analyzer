@@ -1,19 +1,16 @@
 use nom::branch::alt;
-use nom::bytes::complete::{is_not, tag, take_till, take_until};
-use nom::combinator::{eof, map, opt, rest};
-use nom::sequence::{delimited, separated_pair, terminated, tuple, Tuple};
-use nom::{Err, IResult, Parser};
+use nom::bytes::complete::{is_not, tag, take_until};
+use nom::combinator::{map, opt, rest};
+use nom::sequence::{delimited, terminated, tuple};
+use nom::IResult;
 
 use crate::parser::error::RuleParseError;
 use crate::parser::error::RuleParseError::*;
 use crate::parser::trace::Trace;
 use crate::{Decision, ObjPart, Object, Permission, Rvalue, SubjPart, Subject};
-use nom::character::complete::{
-    alpha1, alphanumeric1, digit1, multispace0, not_line_ending, one_of, space0, space1,
-};
+use nom::character::complete::{alpha1, alphanumeric1, digit1, multispace0, space0};
 use nom::character::is_alphanumeric;
 use nom::error::ErrorKind;
-use nom::multi::separated_list1;
 
 type StrTrace<'a> = Trace<&'a str>;
 type TraceError<'a> = RuleParseError<StrTrace<'a>>;
@@ -161,18 +158,6 @@ pub fn subject(i: StrTrace) -> TraceResult<Subject> {
     // todo;; check for 'all' here, if there are additional entries other than 'trust', its an error
 
     Ok((ii, Subject::new(parts)))
-
-    // match map(wrapped_parser, |parts| {
-    //     Subject::new(parts.into_iter().map(|(a, _)| a).collect())
-    // })(ii)
-    // .map_err(|e: nom::Err<TraceError>| nom::Err::Error(SubjectPartExpectedInt(i)))
-    // {
-    //     Ok((ii, r)) if ii.fragment.is_empty() => Ok((ii, r)),
-    //     Ok((ii, r)) => subj_part(ii)
-    //         .map(|_| (i, Subject::empty()))
-    //         .map_err(|e| nom::error::Error()),
-    //     res => res,
-    // }
 }
 
 pub fn object(i: StrTrace) -> TraceResult<Object> {
@@ -223,42 +208,12 @@ fn obj_part(i: StrTrace) -> TraceResult<ObjPart> {
 
         _ => Err(nom::Err::Error(UnknownObjectPart(i))),
     }
-
-    //     alt((
-    //     map(tag("all"), |_| ObjPart::All),
-    //     map(
-    //         separated_pair(tag("device"), tag("="), filepath),
-    //         |x: (StrTrace, StrTrace)| ObjPart::Device(x.1.fragment.to_string()),
-    //     ),
-    //     map(
-    //         separated_pair(tag("dir"), tag("="), filepath),
-    //         |x: (StrTrace, StrTrace)| ObjPart::Dir(x.1.fragment.to_string()),
-    //     ),
-    //     map(
-    //         separated_pair(tag("ftype"), tag("="), filepath),
-    //         |x: (StrTrace, StrTrace)| ObjPart::FileType(Rvalue::Literal(x.1.fragment.to_string())),
-    //     ),
-    //     map(
-    //         separated_pair(tag("path"), tag("="), filepath),
-    //         |x: (StrTrace, StrTrace)| ObjPart::Path(x.1.fragment.to_string()),
-    //     ),
-    //     map(
-    //         separated_pair(tag("trust"), tag("="), trust_flag),
-    //         |x: (StrTrace, bool)| ObjPart::Trust(x.1),
-    //     ),
-    // ))(i)
 }
 
 pub fn subject_object_parts(i: StrTrace) -> TraceResult<SubObj> {
     if !i.fragment.contains(":") {
         return Err(nom::Err::Error(MissingSeparator(i)));
     }
-
-    // pass the same input to both the subject and object parsers
-    // inside the subject parser take until the :
-    // inside the object parser take after the :
-    //
-    // doing this should allow each of them to locate errors without the other one interfering
 
     let (_, s) = subject(i)?;
     let (ii, o) = object(i)?;
@@ -270,18 +225,4 @@ pub fn subject_object_parts(i: StrTrace) -> TraceResult<SubObj> {
             object: o,
         },
     ))
-
-    // match separated_pair(subject, tuple((space0, tag(":"), space0)), object)(i) {
-    //     // Ok((_, (None, None))) => Err(nom::Err::Error(MissingBothSubjObj(i))),
-    //     // Ok((_, (Some(_), None))) => Err(nom::Err::Error(MissingObject(i))),
-    //     // Ok((_, (None, Some(_)))) => Err(nom::Err::Error(MissingSubject(i))),
-    //     Ok((remaining, (s, o))) => Ok((
-    //         remaining,
-    //         SubObj {
-    //             subject: s,
-    //             object: o,
-    //         },
-    //     )),
-    //     Err(e) => Err(e),
-    // }
 }
