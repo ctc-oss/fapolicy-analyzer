@@ -32,12 +32,13 @@ pub fn parse_event(i: &str) -> nom::IResult<&str, Event> {
             space1,
         ),
         terminated(preceded(tag("pid="), digit1), space1),
-        terminated(parser::legacy::subject, space1),
-        terminated(tag(":"), space0),
+        parser::legacy::subject,
+        // note;; the separator is processed by the subject and object parsers internally since v2
+        // terminated(tag(":"), space0),
         parser::legacy::object,
     )))(i)
     {
-        Ok((remaining_input, (when, _, id, dec, perm, uid, gid, pid, subj, _, obj))) => Ok((
+        Ok((remaining_input, (when, _, id, dec, perm, uid, gid, pid, subj, obj))) => Ok((
             remaining_input,
             Event {
                 when,
