@@ -14,109 +14,15 @@ use codespan_reporting::term::termcolor::{ColorChoice, StandardStream};
 use nom::character::complete::{space0, space1};
 use nom::combinator::rest;
 use nom::sequence::terminated;
-use nom::IResult;
+use nom::{Err, IResult};
 
+use fapolicy_rules::parse::{rule, StrTrace};
+use fapolicy_rules::parser::errat::{ErrorAt, StrErrorAt};
 use fapolicy_rules::parser::error::RuleParseError;
 use fapolicy_rules::parser::error::RuleParseError::*;
+use fapolicy_rules::parser::legacy::{decision, permission};
 use fapolicy_rules::parser::trace::{Position, Trace};
-use fapolicy_rules::parsev2::subject_object_parts;
-use fapolicy_rules::{parsev2, Rule};
-
-type StrTrace<'a> = Trace<&'a str>;
-type StrErrorAt<'a> = ErrorAt<StrTrace<'a>>;
-
-#[derive(Debug, PartialEq, Copy, Clone)]
-pub struct ErrorAt<I>(RuleParseError<I>, usize, usize);
-
-impl<'a> From<RuleParseError<StrTrace<'a>>> for ErrorAt<StrTrace<'a>> {
-    fn from(e: RuleParseError<StrTrace<'a>>) -> Self {
-        let t = match e {
-            ExpectedDecision(t) => t,
-            UnknownDecision(t, v) => {
-                return ErrorAt::<StrTrace<'a>>::new_with_len(e, t, v.fragment.len())
-            }
-            ExpectedPermTag(t, v) => {
-                return ErrorAt::<StrTrace<'a>>::new_with_len(e, t, v.fragment.len())
-            }
-            ExpectedPermType(t, v) => {
-                return ErrorAt::<StrTrace<'a>>::new_with_len(e, t, v.fragment.len())
-            }
-            ExpectedPermAssignment(t) => return ErrorAt::<StrTrace<'a>>::new_with_len(e, t, 0),
-            ExpectedEndOfInput(t) => t,
-            ExpectedWhitespace(t) => t,
-            MissingSeparator(t) => t,
-            MissingSubject(t) => t,
-            MissingObject(t) => t,
-            MissingBothSubjObj(t) => t,
-            UnknownSubjectPart(t) => t,
-            SubjectPartExpected(t) => t,
-            ExpectedInt(t) => t,
-
-            UnknownObjectPart(t) => t,
-            ObjectPartExpected(t) => t,
-            ExpectedDirPath(t) => t,
-            ExpectedFilePath(t) => t,
-            ExpectedPattern(t) => t,
-            ExpectedBoolean(t) => t,
-            ExpectedFileType(t) => t,
-
-            Nom(t, _) => t,
-        };
-        ErrorAt::<StrTrace<'a>>::new(e, t)
-    }
-}
-
-impl ErrorAt<Trace<&str>> {
-    pub fn new<'a>(e: RuleParseError<Trace<&'a str>>, t: Trace<&str>) -> ErrorAt<Trace<&'a str>> {
-        ErrorAt(e.clone(), t.position(), t.fragment.len())
-    }
-
-    pub fn new_with_len<'a>(
-        e: RuleParseError<Trace<&'a str>>,
-        t: Trace<&str>,
-        len: usize,
-    ) -> ErrorAt<Trace<&'a str>> {
-        ErrorAt(e.clone(), t.position(), len)
-    }
-}
-
-impl<T, I> Into<Result<T, nom::Err<ErrorAt<I>>>> for ErrorAt<I> {
-    fn into(self) -> Result<T, nom::Err<ErrorAt<I>>> {
-        Err(nom::Err::Error(self))
-    }
-}
-
-pub fn both(i: StrTrace) -> nom::IResult<StrTrace, Rule, StrErrorAt> {
-    let fulllen = i.fragment.len();
-
-    match nom::combinator::complete(nom::sequence::tuple((
-        terminated(parsev2::decision, space1),
-        terminated(parsev2::permission, space0),
-        subject_object_parts,
-        end_of_rule,
-    )))(i)
-    {
-        Ok((remaining_input, (dec, perm, so, _))) => Ok((
-            remaining_input,
-            Rule {
-                subj: so.subject,
-                perm,
-                obj: so.object,
-                dec,
-            },
-        )),
-        Err(nom::Err::Error(e)) => ErrorAt::from(e).into(),
-        _ => panic!("hmmm what to do with this one..."),
-    }
-}
-
-pub fn end_of_rule(i: StrTrace) -> nom::IResult<StrTrace, (), RuleParseError<StrTrace>> {
-    match rest(i) {
-        Ok((rem, v)) if v.fragment.is_empty() => Ok((rem, ())),
-        Ok((rem, v)) => Err(nom::Err::Error(ExpectedEndOfInput(v))),
-        res => res.map(|(rem, _)| (rem, ())),
-    }
-}
+use fapolicy_rules::Rule;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Enter a rule, or Enter to exit...");
@@ -154,11 +60,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         let results: Vec<IResult<StrTrace, Rule, StrErrorAt>> = contents
             .iter()
-            .map(|s| both(Trace::new(&s)))
+            .map(|s| {
+                rule(Trace::new(&s)).map_err(|e| match e {
+                    Err::Error(e) => ErrorAt::from(e),
+                    e => panic!("hmmmmmmmmmmmmmmmmmmmmmmm"),
+                })
+            })
             .enumerate()
             .map(|(i, r)| match r {
-                Err(nom::Err::Error(e)) => ErrorAt(e.0, e.1 + offsets[i], e.2).into(),
-                res => res,
+                Err(e) => Err(nom::Err::Error(ErrorAt(e.0, e.1 + offsets[i], e.2))),
+                Ok(x) => Ok(x),
+                res => panic!("grrrrrrrrrrrrrrrrrrrrrrr"),
+                //res => res,
             })
             .collect();
 

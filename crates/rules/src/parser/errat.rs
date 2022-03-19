@@ -3,10 +3,10 @@ use crate::parser::error::RuleParseError;
 use crate::parser::error::RuleParseError::*;
 use crate::parser::trace::{Position, Trace};
 
-pub(crate) type StrErrorAt<'a> = ErrorAt<StrTrace<'a>>;
+pub type StrErrorAt<'a> = ErrorAt<StrTrace<'a>>;
 
 #[derive(Debug, PartialEq, Copy, Clone)]
-pub struct ErrorAt<I>(RuleParseError<I>, usize, usize);
+pub struct ErrorAt<I>(pub RuleParseError<I>, pub usize, pub usize);
 
 impl ErrorAt<Trace<&str>> {
     pub fn new<'a>(e: RuleParseError<Trace<&'a str>>, t: Trace<&str>) -> ErrorAt<Trace<&'a str>> {
