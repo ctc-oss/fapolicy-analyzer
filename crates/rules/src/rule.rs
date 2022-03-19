@@ -7,9 +7,8 @@
  */
 
 use std::fmt::{Display, Formatter};
-use std::str::FromStr;
 
-use crate::{parse, Decision, Object, Permission, Subject};
+use crate::{Decision, Object, Permission, Subject};
 
 /// # Rule
 /// A Rule is used by fapolicyd to make decisions about access rights. The rules follow a simple format of:

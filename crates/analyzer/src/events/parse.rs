@@ -9,7 +9,7 @@
 use chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, Utc};
 use nom::branch::alt;
 use nom::bytes::complete::{tag, take_until};
-use nom::character::complete::{anychar, space0};
+use nom::character::complete::anychar;
 use nom::character::complete::{digit1, space1};
 use nom::combinator::opt;
 use nom::multi::separated_list1;
