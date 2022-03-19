@@ -301,149 +301,162 @@ pub fn comment(i: StrTrace) -> TraceResult<String> {
     }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-//
-//     #[test]
-//     fn parse_subj_part() {
-//         assert_eq!(SubjPart::All, subj_part("all").ok().unwrap().1);
-//         assert_eq!(SubjPart::Uid(10001), subj_part("uid=10001").ok().unwrap().1);
-//         assert_eq!(SubjPart::Gid(0), subj_part("gid=0").ok().unwrap().1);
-//     }
-//
-//     #[test]
-//     fn parse_perm() {
-//         assert_eq!(Permission::Any, permission("perm=any").ok().unwrap().1);
-//     }
-//
-//     #[test]
-//     fn parse_obj_part() {
-//         assert_eq!(ObjPart::All, obj_part("all").ok().unwrap().1);
-//     }
-//
-//     #[test]
-//     fn parse_obj() {
-//         assert_eq!(
-//             Object::new(vec![ObjPart::All, ObjPart::Trust(true)]),
-//             object("all trust=1").ok().unwrap().1
-//         );
-//
-//         assert_eq!(
-//             Object::new(vec![ObjPart::Trust(true)]),
-//             object("trust=1").ok().unwrap().1
-//         );
-//
-//         // ordering matters
-//         assert_eq!(
-//             Object::new(vec![ObjPart::Trust(true), ObjPart::All]),
-//             object("trust=1 all").ok().unwrap().1
-//         );
-//     }
-//
-//     #[test]
-//     fn parse_dec() {
-//         assert_eq!(Decision::Allow, decision("allow").ok().unwrap().1);
-//         assert_eq!(Decision::Deny, decision("deny").ok().unwrap().1);
-//         assert_eq!(Decision::AllowLog, decision("allow_log").ok().unwrap().1);
-//         assert_eq!(Decision::DenyLog, decision("deny_log").ok().unwrap().1);
-//         assert_eq!(Decision::DenyAudit, decision("deny_audit").ok().unwrap().1);
-//         assert_eq!(
-//             Decision::AllowAudit,
-//             decision("allow_audit").ok().unwrap().1
-//         );
-//     }
-//
-//     // todo;; need better error propagation, and then better negative tests
-//     #[test]
-//     fn bad_rules() {
-//         rule("deny_audit perm=open all : foo").err().unwrap();
-//         rule("deny_audit perm=open all trust=foo : all")
-//             .err()
-//             .unwrap();
-//
-//         let (rem, _) = rule("deny_audit perm=open all : all trust=1 foo")
-//             .ok()
-//             .unwrap();
-//         assert!(!rem.is_empty());
-//
-//         let (rem, _) = rule("deny_audit perm=open all : all trust=foo")
-//             .ok()
-//             .unwrap();
-//         assert!(!rem.is_empty());
-//     }
-//
-//     #[test]
-//     fn parse_rule() {
-//         let (rem, r) = rule("deny_audit perm=any pattern=ld_so : all")
-//             .ok()
-//             .unwrap();
-//         assert_eq!(Decision::DenyAudit, r.dec);
-//         assert_eq!(Permission::Any, r.perm);
-//         assert_eq!(Subject::from(SubjPart::Pattern("ld_so".into())), r.subj);
-//         assert_eq!(Object::from(ObjPart::All), r.obj);
-//         assert!(rem.is_empty());
-//
-//         let (rem, r) = rule("deny_audit perm=any all : all").ok().unwrap();
-//         assert_eq!(Decision::DenyAudit, r.dec);
-//         assert_eq!(Permission::Any, r.perm);
-//         assert_eq!(Subject::from(SubjPart::All), r.subj);
-//         assert_eq!(Object::from(ObjPart::All), r.obj);
-//         assert!(rem.is_empty());
-//
-//         let (rem, r) = rule("deny_audit perm=open all : device=/dev/cdrom")
-//             .ok()
-//             .unwrap();
-//         assert_eq!(Decision::DenyAudit, r.dec);
-//         assert_eq!(Permission::Open, r.perm);
-//         assert_eq!(Subject::from(SubjPart::All), r.subj);
-//         assert_eq!(Object::from(ObjPart::Device("/dev/cdrom".into())), r.obj);
-//         assert!(rem.is_empty());
-//
-//         let (rem, r) = rule("deny_audit perm=open exe=/usr/bin/ssh : dir=/opt")
-//             .ok()
-//             .unwrap();
-//         assert_eq!(Decision::DenyAudit, r.dec);
-//         assert_eq!(Permission::Open, r.perm);
-//         assert_eq!(Subject::from(SubjPart::Exe("/usr/bin/ssh".into())), r.subj);
-//         assert_eq!(Object::from(ObjPart::Dir("/opt".into())), r.obj);
-//         assert!(rem.is_empty());
-//
-//         let (rem, r) = rule("deny_audit perm=any all : ftype=application/x-bad-elf")
-//             .ok()
-//             .unwrap();
-//         assert_eq!(Decision::DenyAudit, r.dec);
-//         assert_eq!(Permission::Any, r.perm);
-//         assert_eq!(Subject::from(SubjPart::All), r.subj);
-//         assert_eq!(
-//             Object::from(ObjPart::FileType(Literal("application/x-bad-elf".into()))),
-//             r.obj
-//         );
-//         assert!(rem.is_empty());
-//     }
-//
-//     #[test]
-//     fn parse_set() {
-//         let def = "%lang=application/x-bytecode.ocaml,application/x-bytecode.python,application/java-archive,text/x-java";
-//         let md = set(def).ok().unwrap().1;
-//
-//         assert_eq!("lang", md.name);
-//         assert_eq!(
-//             vec![
-//                 "application/x-bytecode.ocaml",
-//                 "application/x-bytecode.python",
-//                 "application/java-archive",
-//                 "text/x-java"
-//             ],
-//             md.values
-//         );
-//     }
-//
-//     #[test]
-//     fn parse_trust_flag() {
-//         assert!(trust_flag("1").ok().unwrap().1);
-//         assert!(!trust_flag("0").ok().unwrap().1);
-//         assert_eq!(None, trust_flag("2").ok());
-//         assert_eq!(None, trust_flag("foo").ok());
-//     }
-// }
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parse_subj_part() {
+        assert_eq!(SubjPart::All, subj_part("all".into()).ok().unwrap().1);
+        assert_eq!(
+            SubjPart::Uid(10001),
+            subj_part("uid=10001".into()).ok().unwrap().1
+        );
+        assert_eq!(SubjPart::Gid(0), subj_part("gid=0".into()).ok().unwrap().1);
+    }
+
+    #[test]
+    fn parse_perm() {
+        assert_eq!(
+            Permission::Any,
+            permission("perm=any".into()).ok().unwrap().1
+        );
+    }
+
+    #[test]
+    fn parse_obj_part() {
+        assert_eq!(ObjPart::All, obj_part("all".into()).ok().unwrap().1);
+    }
+
+    #[test]
+    fn parse_obj() {
+        assert_eq!(
+            Object::new(vec![ObjPart::All, ObjPart::Trust(true)]),
+            object("all trust=1".into()).ok().unwrap().1
+        );
+
+        assert_eq!(
+            Object::new(vec![ObjPart::Trust(true)]),
+            object("trust=1".into()).ok().unwrap().1
+        );
+
+        // ordering matters
+        assert_eq!(
+            Object::new(vec![ObjPart::Trust(true), ObjPart::All]),
+            object("trust=1 all".into()).ok().unwrap().1
+        );
+    }
+
+    #[test]
+    fn parse_dec() {
+        assert_eq!(Decision::Allow, decision("allow".into()).ok().unwrap().1);
+        assert_eq!(Decision::Deny, decision("deny".into()).ok().unwrap().1);
+        assert_eq!(
+            Decision::AllowLog,
+            decision("allow_log".into()).ok().unwrap().1
+        );
+        assert_eq!(
+            Decision::DenyLog,
+            decision("deny_log".into()).ok().unwrap().1
+        );
+        assert_eq!(
+            Decision::DenyAudit,
+            decision("deny_audit".into()).ok().unwrap().1
+        );
+        assert_eq!(
+            Decision::AllowAudit,
+            decision("allow_audit".into()).ok().unwrap().1
+        );
+    }
+
+    // todo;; need better error propagation, and then better negative tests
+    #[test]
+    fn bad_rules() {
+        rule("deny_audit perm=open all : foo".into()).err().unwrap();
+        rule("deny_audit perm=open all trust=foo : all".into())
+            .err()
+            .unwrap();
+
+        rule("deny_audit perm=open all : all trust=1 foo".into())
+            .err()
+            .unwrap();
+
+        rule("deny_audit perm=open all : all trust=foo".into())
+            .err()
+            .unwrap();
+    }
+
+    #[test]
+    fn parse_rule() {
+        let (rem, r) = rule("deny_audit perm=any pattern=ld_so : all".into())
+            .ok()
+            .unwrap();
+        assert_eq!(Decision::DenyAudit, r.dec);
+        assert_eq!(Permission::Any, r.perm);
+        assert_eq!(Subject::from(SubjPart::Pattern("ld_so".into())), r.subj);
+        assert_eq!(Object::from(ObjPart::All), r.obj);
+        assert!(rem.is_empty());
+
+        let (rem, r) = rule("deny_audit perm=any all : all".into()).ok().unwrap();
+        assert_eq!(Decision::DenyAudit, r.dec);
+        assert_eq!(Permission::Any, r.perm);
+        assert_eq!(Subject::from(SubjPart::All), r.subj);
+        assert_eq!(Object::from(ObjPart::All), r.obj);
+        assert!(rem.is_empty());
+
+        let (rem, r) = rule("deny_audit perm=open all : device=/dev/cdrom".into())
+            .ok()
+            .unwrap();
+        assert_eq!(Decision::DenyAudit, r.dec);
+        assert_eq!(Permission::Open, r.perm);
+        assert_eq!(Subject::from(SubjPart::All), r.subj);
+        assert_eq!(Object::from(ObjPart::Device("/dev/cdrom".into())), r.obj);
+        assert!(rem.is_empty());
+
+        let (rem, r) = rule("deny_audit perm=open exe=/usr/bin/ssh : dir=/opt".into())
+            .ok()
+            .unwrap();
+        assert_eq!(Decision::DenyAudit, r.dec);
+        assert_eq!(Permission::Open, r.perm);
+        assert_eq!(Subject::from(SubjPart::Exe("/usr/bin/ssh".into())), r.subj);
+        assert_eq!(Object::from(ObjPart::Dir("/opt".into())), r.obj);
+        assert!(rem.is_empty());
+
+        let (rem, r) = rule("deny_audit perm=any all : ftype=application/x-bad-elf".into())
+            .ok()
+            .unwrap();
+        assert_eq!(Decision::DenyAudit, r.dec);
+        assert_eq!(Permission::Any, r.perm);
+        assert_eq!(Subject::from(SubjPart::All), r.subj);
+        assert_eq!(
+            Object::from(ObjPart::FileType(Literal("application/x-bad-elf".into()))),
+            r.obj
+        );
+        assert!(rem.is_empty());
+    }
+
+    #[test]
+    fn parse_set() {
+        let def = "%lang=application/x-bytecode.ocaml,application/x-bytecode.python,application/java-archive,text/x-java";
+        let md = set(def.into()).ok().unwrap().1;
+
+        assert_eq!("lang", md.name);
+        assert_eq!(
+            vec![
+                "application/x-bytecode.ocaml",
+                "application/x-bytecode.python",
+                "application/java-archive",
+                "text/x-java"
+            ],
+            md.values
+        );
+    }
+
+    #[test]
+    fn parse_trust_flag() {
+        assert!(trust_flag("1".into()).ok().unwrap().1);
+        assert!(!trust_flag("0".into()).ok().unwrap().1);
+        assert_eq!(None, trust_flag("2".into()).ok());
+        assert_eq!(None, trust_flag("foo".into()).ok());
+    }
+}
