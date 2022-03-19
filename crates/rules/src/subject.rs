@@ -9,6 +9,7 @@
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
+use crate::parse::StrTrace;
 use crate::{bool_to_c, parse, SubjPart};
 
 /// # Subject
@@ -120,6 +121,17 @@ impl Display for Part {
             Part::Exe(id) => f.write_fmt(format_args!("exe={}", id)),
             Part::Pattern(id) => f.write_fmt(format_args!("pattern={}", id)),
             Part::Trust(b) => f.write_fmt(format_args!("trust={}", bool_to_c(*b))),
+        }
+    }
+}
+
+impl FromStr for Subject {
+    type Err = String;
+
+    fn from_str(i: &str) -> Result<Self, Self::Err> {
+        match parse::subject(StrTrace::new(i)) {
+            Ok((_, s)) => Ok(s),
+            Err(_) => Err("Failed to parse Subject from string".into()),
         }
     }
 }

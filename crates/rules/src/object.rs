@@ -9,6 +9,7 @@
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
+use crate::parse::StrTrace;
 use crate::{bool_to_c, parse, ObjPart, Rvalue};
 
 /// # Object
@@ -99,6 +100,17 @@ impl Display for Part {
             Part::FileType(t) => f.write_fmt(format_args!("ftype={}", t)),
             Part::Path(p) => f.write_fmt(format_args!("path={}", p)),
             Part::Trust(b) => f.write_fmt(format_args!("trust={}", bool_to_c(*b))),
+        }
+    }
+}
+
+impl FromStr for Object {
+    type Err = String;
+
+    fn from_str(i: &str) -> Result<Self, Self::Err> {
+        match parse::object(StrTrace::new(i)) {
+            Ok((_, s)) => Ok(s),
+            Err(_) => Err("Failed to parse Object from string".into()),
         }
     }
 }
