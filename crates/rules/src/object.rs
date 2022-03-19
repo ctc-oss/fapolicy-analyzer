@@ -103,17 +103,6 @@ impl Display for Part {
     }
 }
 
-impl FromStr for Object {
-    type Err = String;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match parse::object(s) {
-            Ok((_, s)) => Ok(s),
-            Err(_) => Err("Failed to parse Object from string".into()),
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use crate::file_type::Rvalue::Literal;

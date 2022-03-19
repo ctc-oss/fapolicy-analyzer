@@ -56,17 +56,6 @@ impl Display for Rule {
     }
 }
 
-impl FromStr for Rule {
-    type Err = String;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match parse::rule(s) {
-            Ok((_, r)) => Ok(r),
-            Err(_) => Err("Failed to parse Rule from string".into()),
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use crate::object::Part as ObjPart;

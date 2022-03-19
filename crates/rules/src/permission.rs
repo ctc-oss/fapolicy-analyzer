@@ -32,17 +32,6 @@ impl Display for Permission {
     }
 }
 
-impl FromStr for Permission {
-    type Err = String;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match parse::permission(s) {
-            Ok((_, s)) => Ok(s),
-            Err(_) => Err("Failed to parse Permission from string".into()),
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;

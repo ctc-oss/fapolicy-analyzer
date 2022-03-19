@@ -47,17 +47,6 @@ impl Display for Decision {
     }
 }
 
-impl FromStr for Decision {
-    type Err = String;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match parse::decision(s) {
-            Ok((_, s)) => Ok(s),
-            Err(_) => Err("Failed to parse Decision from string".into()),
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;

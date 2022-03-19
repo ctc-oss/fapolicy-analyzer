@@ -124,17 +124,6 @@ impl Display for Part {
     }
 }
 
-impl FromStr for Subject {
-    type Err = String;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match parse::subject(s) {
-            Ok((_, s)) => Ok(s),
-            Err(_) => Err("Failed to parse Subject from string".into()),
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
