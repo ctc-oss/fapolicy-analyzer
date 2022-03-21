@@ -14,15 +14,15 @@ use fapolicy_analyzer::events::db::DB as EventDB;
 use fapolicy_app::app::State;
 use fapolicy_app::cfg;
 use fapolicy_app::sys::deploy_app_state;
+use fapolicy_daemon::fapolicyd;
+use fapolicy_rules::db::RuleDef;
 
 use crate::acl::{PyGroup, PyUser};
 use crate::analysis::PyEventLog;
 use crate::change::PyChangeset;
+use crate::rules::PyRule;
 
 use super::trust::PyTrust;
-use crate::rules::PyRule;
-use fapolicy_daemon::fapolicyd;
-use fapolicy_rules::db::RuleDef;
 
 #[pyclass(module = "app", name = "System")]
 #[derive(Clone)]
@@ -69,8 +69,7 @@ impl PySystem {
             .values()
             .iter()
             .filter(|r| r.is_system())
-            .map(|r| r.status.clone())
-            .flatten()
+            .filter_map(|r| r.status.clone())
             .map(PyTrust::from)
             .collect()
     }
@@ -84,8 +83,7 @@ impl PySystem {
             .values()
             .iter()
             .filter(|r| r.is_ancillary())
-            .map(|r| r.status.clone())
-            .flatten()
+            .filter_map(|r| r.status.clone())
             .map(PyTrust::from)
             .collect()
     }
@@ -151,16 +149,18 @@ impl PySystem {
             .rules_db
             .iter()
             .map(|(id, r)| {
-                let (valid, text) = match r {
-                    RuleDef::Invalid(t) => (false, t.clone()),
-                    RuleDef::Valid(r) => (true, r.to_string()),
+                let (valid, text, info) = match r {
+                    RuleDef::Invalid(t, why) => {
+                        (false, t.clone(), vec![("e".to_string(), why.clone())])
+                    }
+                    RuleDef::Valid(r) => (true, r.to_string(), vec![]),
                 };
 
                 PyRule::new(
                     *id,
                     text,
                     fapolicyd::RULES_FILE_PATH.to_string(),
-                    vec![],
+                    info,
                     valid,
                 )
             })
