@@ -83,11 +83,11 @@ where
     type IterElem = I::IterElem;
 
     fn iter_indices(&self) -> Self::Iter {
-        todo!()
+        self.fragment.iter_indices()
     }
 
     fn iter_elements(&self) -> Self::IterElem {
-        todo!()
+        self.fragment.iter_elements()
     }
 
     fn position<P>(&self, predicate: P) -> Option<usize>

@@ -7,22 +7,20 @@
  */
 
 use std::error::Error;
-use std::fs::File;
-use std::io::{BufRead, BufReader};
 use std::ops::Range;
 use std::path::PathBuf;
 
 use ariadne::Source;
 use ariadne::{Report, ReportKind};
 use clap::Clap;
-use nom::IResult;
 
 use fapolicy_rules::parse::{rule, StrTrace};
 use fapolicy_rules::parser::errat::{ErrorAt, StrErrorAt};
 use fapolicy_rules::parser::trace::Trace;
-use fapolicy_rules::Rule;
+use fapolicy_rules::{load, Rule};
 
 use crate::Line::{Blank, Comment, RuleDef, SetDec};
+use nom::IResult;
 
 #[derive(Clap)]
 #[clap(name = "Rule Checker", version = "v0.0.0")]
@@ -45,13 +43,11 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let rules_path = &*all_opts.rules_path;
     let path = PathBuf::from(rules_path);
-    let reader = File::open(path).map(BufReader::new)?;
+    let contents: Vec<(PathBuf, String)> = load::rules_from(path)?;
 
-    let contents: Result<Vec<String>, std::io::Error> = reader.lines().collect();
-    let contents: Vec<String> = contents?
+    let contents: Vec<String> = contents
         .into_iter()
-        .map(|s| s.trim().to_string())
-        //.filter(|s| !s.is_empty() && !s.starts_with('#'))
+        .map(|(_, s)| s.trim().to_string())
         .collect();
 
     let offsets = contents
@@ -81,17 +77,14 @@ fn main() -> Result<(), Box<dyn Error>> {
             } else {
                 let x = rule(Trace::new(s)).map_err(|e| match e {
                     nom::Err::Error(e) => ErrorAt::from(e),
-                    _ => panic!("hmmmmmmmmmmmmmmmmmmmmmmm"),
+                    _ => panic!("unexpectd error state"),
                 });
                 RuleDef(x)
             }
         })
         .enumerate()
         .filter_map(|(i, r)| match r {
-            RuleDef(r) => Some((
-                i,
-                r.map_err(|e| nom::Err::Error(ErrorAt(e.0, e.1 + offsets[i].start, e.2))),
-            )),
+            RuleDef(r) => Some((i, r.map_err(|e| nom::Err::Error(e.shift(offsets[i].start))))),
             _ => None,
         })
         .collect();

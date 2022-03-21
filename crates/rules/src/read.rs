@@ -6,20 +6,23 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use std::fs::File;
-use std::io::{BufRead, BufReader};
+use std::path::PathBuf;
 
 use nom::branch::alt;
-use nom::combinator::map;
+use nom::character::complete::multispace0;
+use nom::combinator::{eof, map, recognize};
+use nom::error::{ErrorKind, ParseError};
+use nom::sequence::tuple;
 
 use crate::db::{RuleDef, DB};
 use crate::error::Error;
-use crate::parse::StrTrace;
+use crate::parse::{StrTrace, TraceResult};
 use crate::read::Line::*;
-use crate::{parse, Rule, Set};
-use nom::error::{ErrorKind, ParseError};
+use crate::{load, parse, Rule, Set};
 
+#[derive(Debug)]
 enum Line {
+    Blank,
     Comment(String),
     SetDef(Set),
     WellFormedRule(Rule),
@@ -43,6 +46,7 @@ impl<I> ParseError<I> for LineError<I> {
 
 fn parser(i: &str) -> nom::IResult<StrTrace, Line, LineError<&str>> {
     alt((
+        map(blank_line, |_| Blank),
         map(parse::comment, Comment),
         map(parse::set, SetDef),
         map(parse::rule, WellFormedRule),
@@ -53,33 +57,31 @@ fn parser(i: &str) -> nom::IResult<StrTrace, Line, LineError<&str>> {
     })
 }
 
+fn blank_line(i: StrTrace) -> TraceResult<StrTrace> {
+    recognize(tuple((multispace0, eof)))(i)
+}
+
 pub fn load_rules_db(path: &str) -> Result<DB, Error> {
-    let f = File::open(path)?;
-    let buff = BufReader::new(f);
+    let xs = load::rules_from(PathBuf::from(path))?;
 
-    let xs: Vec<String> = buff
-        .lines()
-        .map(|r| r.unwrap())
-        .filter(|s| !s.is_empty() && !s.starts_with('#'))
-        .collect();
-
-    let lookup: Vec<RuleDef> = xs
+    let lookup: Vec<(String, RuleDef)> = xs
         .iter()
-        .map(|l| (l, parser(l)))
-        .flat_map(|(_, r)| match r {
-            Ok((t, rule)) if t.fragment.is_empty() => Some(rule),
+        .map(|(source, l)| (source, parser(l)))
+        .flat_map(|(source, r)| match r {
+            Ok((t, rule)) if t.fragment.is_empty() => Some((source, rule)),
             Ok((_, _)) => None,
             Err(nom::Err::Error(LineError::CannotParse(i, why))) => {
-                Some(MalformedRule(i.to_string(), why))
+                Some((source, MalformedRule(i.to_string(), why)))
             }
             Err(_) => None,
         })
-        .filter_map(|line| match line {
-            WellFormedRule(r) => Some(RuleDef::Valid(r)),
-            MalformedRule(txt, why) => Some(RuleDef::Invalid(txt, why)),
+        .map(|(source, line)| (source.display().to_string(), line))
+        .filter_map(|(source, line)| match line {
+            WellFormedRule(r) => Some((source, RuleDef::Valid(r))),
+            MalformedRule(txt, why) => Some((source, RuleDef::Invalid(txt, why))),
             _ => None,
         })
         .collect();
 
-    Ok(lookup.into())
+    Ok(DB::from_sources(lookup))
 }
