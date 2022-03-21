@@ -171,8 +171,8 @@ where
 
     fn split_at_position1<P, E: ParseError<Self>>(
         &self,
-        predicate: P,
-        e: ErrorKind,
+        _predicate: P,
+        _e: ErrorKind,
     ) -> IResult<Self, Self, E>
     where
         P: Fn(Self::Item) -> bool,

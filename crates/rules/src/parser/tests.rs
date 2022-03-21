@@ -13,13 +13,13 @@ use nom::IResult;
 
 #[derive(Debug, Clone)]
 struct Product {
-    txt: String,
+    _txt: String,
 }
 
 #[derive(Debug, Clone)]
 struct Assignment {
-    lhs: String,
-    rhs: String,
+    _lhs: String,
+    _rhs: String,
 }
 
 type StrTrace<'a> = Trace<&'a str>;
@@ -32,7 +32,7 @@ fn trace_tag() {
         (
             r,
             Product {
-                txt: t.fragment.to_string(),
+                _txt: t.fragment.to_string(),
             },
         )
     });

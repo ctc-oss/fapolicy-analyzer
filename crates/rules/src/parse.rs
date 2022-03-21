@@ -39,7 +39,7 @@ pub(crate) fn decision(i: StrTrace) -> TraceResult<Decision> {
         alt((alpha1, tag("_"))),
         many0_count(alt((alphanumeric1, tag("_")))),
     ))(i)
-    .map_err(|e: nom::Err<TraceError>| nom::Err::Error(ExpectedDecision(i)))?;
+    .map_err(|_: nom::Err<TraceError>| nom::Err::Error(ExpectedDecision(i)))?;
 
     let x: IResult<StrTrace, Option<Decision>, NomTraceError> = opt(alt((
         map(tag("allow_audit"), |_| Decision::AllowAudit),
@@ -53,9 +53,9 @@ pub(crate) fn decision(i: StrTrace) -> TraceResult<Decision> {
     )))(r);
 
     match x {
-        Ok((r, Some(dec))) => Ok((ii, dec)),
+        Ok((_, Some(dec))) => Ok((ii, dec)),
         Ok((r, None)) => Err(nom::Err::Error(UnknownDecision(i, r))),
-        Err(e) => Err(nom::Err::Error(ExpectedDecision(i))),
+        Err(_) => Err(nom::Err::Error(ExpectedDecision(i))),
     }
 }
 
@@ -69,7 +69,7 @@ pub(crate) fn permission(i: StrTrace) -> TraceResult<Permission> {
                 Err(nom::Err::Error(ExpectedPermAssignment(r)))
             }
         }
-        Ok((r, (k, _))) => Err(nom::Err::Error(ExpectedPermTag(i, k))),
+        Ok((_, (k, _))) => Err(nom::Err::Error(ExpectedPermTag(i, k))),
         Err(e) => Err(e),
     }?;
 
@@ -96,38 +96,38 @@ struct SubObj {
 
 fn subj_part(i: StrTrace) -> TraceResult<SubjPart> {
     let (ii, x) = alt((tag("all"), terminated(alpha1, tag("="))))(i)
-        .map_err(|e: nom::Err<TraceError>| nom::Err::Error(SubjectPartExpected(i)))?;
+        .map_err(|_: nom::Err<TraceError>| nom::Err::Error(SubjectPartExpected(i)))?;
 
     match x.fragment {
         "all" => Ok((ii, SubjPart::All)),
 
         "uid" => digit1(ii)
             .map(|(ii, d)| (ii, SubjPart::Uid(d.fragment.parse().unwrap())))
-            .map_err(|e: nom::Err<TraceError>| nom::Err::Error(ExpectedInt(i))),
+            .map_err(|_: nom::Err<TraceError>| nom::Err::Error(ExpectedInt(i))),
 
         "gid" => digit1(ii)
             .map(|(ii, d)| (ii, SubjPart::Gid(d.fragment.parse().unwrap())))
-            .map_err(|e: nom::Err<TraceError>| nom::Err::Error(ExpectedInt(i))),
+            .map_err(|_: nom::Err<TraceError>| nom::Err::Error(ExpectedInt(i))),
 
         "pid" => digit1(ii)
             .map(|(ii, d)| (ii, SubjPart::Pid(d.fragment.parse().unwrap())))
-            .map_err(|e: nom::Err<TraceError>| nom::Err::Error(ExpectedInt(i))),
+            .map_err(|_: nom::Err<TraceError>| nom::Err::Error(ExpectedInt(i))),
 
         "exe" => filepath(ii)
             .map(|(ii, d)| (ii, SubjPart::Exe(d.fragment.to_string())))
-            .map_err(|e: nom::Err<TraceError>| nom::Err::Error(ExpectedFilePath(i))),
+            .map_err(|_: nom::Err<TraceError>| nom::Err::Error(ExpectedFilePath(i))),
 
         "pattern" => pattern(ii)
             .map(|(ii, d)| (ii, SubjPart::Pattern(d.fragment.to_string())))
-            .map_err(|e: nom::Err<TraceError>| nom::Err::Error(ExpectedPattern(i))),
+            .map_err(|_: nom::Err<TraceError>| nom::Err::Error(ExpectedPattern(i))),
 
         "comm" => filepath(ii)
             .map(|(ii, d)| (ii, SubjPart::Comm(d.fragment.to_string())))
-            .map_err(|e: nom::Err<TraceError>| nom::Err::Error(ExpectedFilePath(i))),
+            .map_err(|_: nom::Err<TraceError>| nom::Err::Error(ExpectedFilePath(i))),
 
         "trust" => trust_flag(ii)
             .map(|(ii, d)| (ii, SubjPart::Trust(d)))
-            .map_err(|e: nom::Err<TraceError>| nom::Err::Error(ExpectedBoolean(i))),
+            .map_err(|_: nom::Err<TraceError>| nom::Err::Error(ExpectedBoolean(i))),
 
         _ => Err(nom::Err::Error(UnknownSubjectPart(i))),
     }
@@ -153,30 +153,30 @@ pub(crate) fn subject(i: StrTrace) -> TraceResult<Subject> {
 
 fn obj_part(i: StrTrace) -> TraceResult<ObjPart> {
     let (ii, x) = alt((tag("all"), terminated(alpha1, tag("="))))(i)
-        .map_err(|e: nom::Err<TraceError>| nom::Err::Error(ObjectPartExpected(i)))?;
+        .map_err(|_: nom::Err<TraceError>| nom::Err::Error(ObjectPartExpected(i)))?;
 
     match x.fragment {
         "all" => Ok((ii, ObjPart::All)),
 
         "device" => filepath(ii)
             .map(|(ii, d)| (ii, ObjPart::Device(d.fragment.to_string())))
-            .map_err(|e: nom::Err<TraceError>| nom::Err::Error(ExpectedFilePath(i))),
+            .map_err(|_: nom::Err<TraceError>| nom::Err::Error(ExpectedFilePath(i))),
 
         "dir" => filepath(ii)
             .map(|(ii, d)| (ii, ObjPart::Dir(d.fragment.to_string())))
-            .map_err(|e: nom::Err<TraceError>| nom::Err::Error(ExpectedDirPath(i))),
+            .map_err(|_: nom::Err<TraceError>| nom::Err::Error(ExpectedDirPath(i))),
 
         "ftype" => filetype(ii)
             .map(|(ii, d)| (ii, ObjPart::FileType(d)))
-            .map_err(|e: nom::Err<TraceError>| nom::Err::Error(ExpectedFileType(i))),
+            .map_err(|_: nom::Err<TraceError>| nom::Err::Error(ExpectedFileType(i))),
 
         "path" => filepath(ii)
             .map(|(ii, d)| (ii, ObjPart::Path(d.fragment.to_string())))
-            .map_err(|e: nom::Err<TraceError>| nom::Err::Error(ExpectedFilePath(i))),
+            .map_err(|_: nom::Err<TraceError>| nom::Err::Error(ExpectedFilePath(i))),
 
         "trust" => trust_flag(ii)
             .map(|(ii, d)| (ii, ObjPart::Trust(d)))
-            .map_err(|e: nom::Err<TraceError>| nom::Err::Error(ExpectedBoolean(i))),
+            .map_err(|_: nom::Err<TraceError>| nom::Err::Error(ExpectedBoolean(i))),
 
         _ => Err(nom::Err::Error(UnknownObjectPart(i))),
     }
@@ -219,13 +219,13 @@ fn trust_flag(i: StrTrace) -> TraceResult<bool> {
     match digit1(i) {
         Ok((r, v)) if v.fragment == "1" => Ok((r, true)),
         Ok((r, v)) if v.fragment == "0" => Ok((r, false)),
-        Ok((_, v)) => Err(nom::Err::Failure(Nom(i, ErrorKind::Digit))),
+        Ok((_, _)) => Err(nom::Err::Failure(Nom(i, ErrorKind::Digit))),
         Err(e) => Err(e),
     }
 }
 
 fn subject_object_parts(i: StrTrace) -> TraceResult<SubObj> {
-    if !i.fragment.contains(":") {
+    if !i.fragment.contains(':') {
         return Err(nom::Err::Error(MissingSeparator(i)));
     }
 
@@ -247,7 +247,7 @@ fn subject_object_parts(i: StrTrace) -> TraceResult<SubObj> {
 fn end_of_rule(i: StrTrace) -> nom::IResult<StrTrace, (), RuleParseError<StrTrace>> {
     match rest(i) {
         Ok((rem, v)) if v.fragment.is_empty() => Ok((rem, ())),
-        Ok((rem, v)) => Err(nom::Err::Error(ExpectedEndOfInput(v))),
+        Ok((_, v)) => Err(nom::Err::Error(ExpectedEndOfInput(v))),
         res => res.map(|(rem, _)| (rem, ())),
     }
 }

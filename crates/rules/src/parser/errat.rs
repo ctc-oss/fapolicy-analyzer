@@ -18,7 +18,7 @@ pub struct ErrorAt<I>(pub RuleParseError<I>, pub usize, pub usize);
 
 impl ErrorAt<Trace<&str>> {
     pub fn new<'a>(e: RuleParseError<Trace<&'a str>>, t: Trace<&str>) -> ErrorAt<Trace<&'a str>> {
-        ErrorAt(e.clone(), t.position(), t.fragment.len())
+        ErrorAt(e, t.position(), t.fragment.len())
     }
 
     pub fn new_with_len<'a>(
@@ -26,13 +26,13 @@ impl ErrorAt<Trace<&str>> {
         t: Trace<&str>,
         len: usize,
     ) -> ErrorAt<Trace<&'a str>> {
-        ErrorAt(e.clone(), t.position(), len)
+        ErrorAt(e, t.position(), len)
     }
 }
 
-impl<T, I> Into<Result<T, nom::Err<ErrorAt<I>>>> for ErrorAt<I> {
-    fn into(self) -> Result<T, nom::Err<ErrorAt<I>>> {
-        Err(nom::Err::Error(self))
+impl<T, I> From<ErrorAt<I>> for Result<T, nom::Err<ErrorAt<I>>> {
+    fn from(e: ErrorAt<I>) -> Self {
+        Err(nom::Err::Error(e))
     }
 }
 

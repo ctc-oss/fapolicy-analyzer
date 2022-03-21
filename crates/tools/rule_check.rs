@@ -17,7 +17,6 @@ use ariadne::{Report, ReportKind};
 use clap::Clap;
 use nom::IResult;
 
-use fapolicy_app::cfg;
 use fapolicy_rules::parse::{rule, StrTrace};
 use fapolicy_rules::parser::errat::{ErrorAt, StrErrorAt};
 use fapolicy_rules::parser::trace::Trace;
@@ -42,7 +41,6 @@ enum Line<'a> {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let sys_conf = cfg::All::load()?;
     let all_opts: Opts = Opts::parse();
 
     let rules_path = &*all_opts.rules_path;
@@ -76,14 +74,14 @@ fn main() -> Result<(), Box<dyn Error>> {
         .map(|s| {
             if s.trim().is_empty() {
                 Blank
-            } else if s.starts_with("#") {
+            } else if s.starts_with('#') {
                 Comment(s.clone())
-            } else if s.starts_with("%") {
+            } else if s.starts_with('%') {
                 SetDec
             } else {
-                let x = rule(Trace::new(&s)).map_err(|e| match e {
+                let x = rule(Trace::new(s)).map_err(|e| match e {
                     nom::Err::Error(e) => ErrorAt::from(e),
-                    e => panic!("hmmmmmmmmmmmmmmmmmmmmmmm"),
+                    _ => panic!("hmmmmmmmmmmmmmmmmmmmmmmm"),
                 });
                 RuleDef(x)
             }
@@ -94,14 +92,14 @@ fn main() -> Result<(), Box<dyn Error>> {
                 i,
                 r.map_err(|e| nom::Err::Error(ErrorAt(e.0, e.1 + offsets[i].start, e.2))),
             )),
-            x => None,
+            _ => None,
         })
         .collect();
 
     if results.iter().all(|(_, r)| r.as_ref().is_ok()) {
         println!("Valid!");
     } else {
-        for (lineno, result) in results {
+        for (_lineno, result) in results {
             let r = to_ariadne_labels(rules_path, result)
                 .into_iter()
                 .rfold(Report::build(ReportKind::Error, rules_path, 0), |r, l| {

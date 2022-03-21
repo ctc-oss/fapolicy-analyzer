@@ -29,7 +29,7 @@ fn parser(i: &str) -> nom::IResult<&str, Line> {
     ))(ii)
     {
         Ok((r, l)) => Ok((r.fragment, l)),
-        Err(e) => Err(nom::Err::Error(nom::error::Error::new(i, ErrorKind::CrLf))),
+        Err(_) => Err(nom::Err::Error(nom::error::Error::new(i, ErrorKind::CrLf))),
     }
 }
 

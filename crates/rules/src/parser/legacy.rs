@@ -21,7 +21,7 @@ use nom::Err;
 pub fn decision(i: &str) -> nom::IResult<&str, Decision> {
     match parse::decision(StrTrace::new(i)) {
         Ok((r, d)) => Ok((r.fragment, d)),
-        Err(e) => Err(nom::Err::Error(nom::error::Error {
+        Err(_) => Err(nom::Err::Error(nom::error::Error {
             input: i,
             code: ErrorKind::CrLf,
         })),
@@ -30,14 +30,14 @@ pub fn decision(i: &str) -> nom::IResult<&str, Decision> {
 pub fn permission(i: &str) -> nom::IResult<&str, Permission> {
     match parse::permission(StrTrace::new(i)) {
         Ok((r, p)) => Ok((r.fragment, p)),
-        Err(e) => Err(nom::Err::Error(nom::error::Error {
+        Err(_) => Err(nom::Err::Error(nom::error::Error {
             input: i,
             code: ErrorKind::CrLf,
         })),
     }
 }
 pub fn subject(i: &str) -> nom::IResult<&str, Subject> {
-    let (r, ss) = take_until(" :")(StrTrace::new(i)).map_err(|e: Err<TraceError>| {
+    let (r, ss) = take_until(" :")(StrTrace::new(i)).map_err(|_: Err<TraceError>| {
         nom::Err::Error(nom::error::Error {
             input: i,
             code: ErrorKind::Alpha,
@@ -56,7 +56,7 @@ pub fn subject(i: &str) -> nom::IResult<&str, Subject> {
 }
 pub fn object(i: &str) -> nom::IResult<&str, Object> {
     let (_, (_, _, _, oo)) = tuple((is_not(":"), tag(":"), space0, rest))(StrTrace::new(i))
-        .map_err(|e: Err<TraceError>| {
+        .map_err(|_: Err<TraceError>| {
             nom::Err::Error(nom::error::Error {
                 input: i,
                 code: ErrorKind::Alpha,
@@ -65,7 +65,7 @@ pub fn object(i: &str) -> nom::IResult<&str, Object> {
 
     match parse::object(oo) {
         Ok((r, o)) => Ok((r.fragment, o)),
-        Err(e) => Err(nom::Err::Error(nom::error::Error {
+        Err(_) => Err(nom::Err::Error(nom::error::Error {
             input: i,
             code: ErrorKind::Alt,
         })),
