@@ -14,6 +14,7 @@ use nom::combinator::map;
 
 use crate::db::{RuleDef, DB};
 use crate::error::Error;
+use crate::parse::StrTrace;
 use crate::read::Line::*;
 use crate::{parse, Rule, Set};
 use nom::error::{ErrorKind, ParseError};
@@ -22,11 +23,11 @@ enum Line {
     Comment(String),
     SetDef(Set),
     WellFormedRule(Rule),
-    MalformedRule(String),
+    MalformedRule(String, String),
 }
 
 enum LineError<I> {
-    CannotParse(I),
+    CannotParse(I, String),
     Nom(I, ErrorKind),
 }
 
@@ -40,13 +41,16 @@ impl<I> ParseError<I> for LineError<I> {
     }
 }
 
-fn parser(i: &str) -> nom::IResult<&str, Line, LineError<&str>> {
+fn parser(i: &str) -> nom::IResult<StrTrace, Line, LineError<&str>> {
     alt((
         map(parse::comment, Comment),
         map(parse::set, SetDef),
         map(parse::rule, WellFormedRule),
-    ))(i)
-    .map_err(|_| nom::Err::Error(LineError::CannotParse(i)))
+    ))(StrTrace::new(i))
+    .map_err(|e| match e {
+        nom::Err::Error(e) => nom::Err::Error(LineError::CannotParse(i, format!("{}", e))),
+        e => nom::Err::Error(LineError::CannotParse(i, format!("{:?}", e))),
+    })
 }
 
 pub fn load_rules_db(path: &str) -> Result<DB, Error> {
@@ -63,14 +67,16 @@ pub fn load_rules_db(path: &str) -> Result<DB, Error> {
         .iter()
         .map(|l| (l, parser(l)))
         .flat_map(|(_, r)| match r {
-            Ok(("", rule)) => Some(rule),
+            Ok((t, rule)) if t.fragment.is_empty() => Some(rule),
             Ok((_, _)) => None,
-            Err(nom::Err::Error(LineError::CannotParse(i))) => Some(MalformedRule(i.to_string())),
+            Err(nom::Err::Error(LineError::CannotParse(i, why))) => {
+                Some(MalformedRule(i.to_string(), why))
+            }
             Err(_) => None,
         })
         .filter_map(|line| match line {
             WellFormedRule(r) => Some(RuleDef::Valid(r)),
-            MalformedRule(txt) => Some(RuleDef::Invalid(txt)),
+            MalformedRule(txt, why) => Some(RuleDef::Invalid(txt, why)),
             _ => None,
         })
         .collect();

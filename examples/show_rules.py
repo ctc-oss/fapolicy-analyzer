@@ -31,5 +31,6 @@ for r in s1.rules():
     print(red if r.is_valid else green, end='')
     print(f"{r.id} {r.text} \033[0m")
     for info in r.info:
+        marker = f'[{info.category}]' if info.category != 'e' else ''
         print(yellow if info.category == 'w' else blue, end='')
-        print(f"\t- [{info.category}] {info.message} \033[0m")
+        print(f"\t- {marker} {info.message} \033[0m")

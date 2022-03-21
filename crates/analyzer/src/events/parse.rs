@@ -9,7 +9,7 @@
 use chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, Utc};
 use nom::branch::alt;
 use nom::bytes::complete::{tag, take_until};
-use nom::character::complete::{anychar, space0};
+use nom::character::complete::anychar;
 use nom::character::complete::{digit1, space1};
 use nom::combinator::opt;
 use nom::multi::separated_list1;
@@ -24,20 +24,21 @@ pub fn parse_event(i: &str) -> nom::IResult<&str, Event> {
         opt(rfc3339_date),
         take_until("rule="),
         terminated(preceded(tag("rule="), digit1), space1),
-        terminated(preceded(tag("dec="), parse::decision), space1),
-        terminated(parse::permission, space1),
+        terminated(preceded(tag("dec="), parser::legacy::decision), space1),
+        terminated(parser::legacy::permission, space1),
         terminated(preceded(tag("uid="), digit1), space1),
         terminated(
             preceded(tag("gid="), separated_list1(tag(","), digit1)),
             space1,
         ),
         terminated(preceded(tag("pid="), digit1), space1),
-        terminated(parse::subject, space1),
-        terminated(tag(":"), space0),
-        parse::object,
+        parser::legacy::subject,
+        // note;; the separator is processed by the subject and object parsers internally since v2
+        // terminated(tag(":"), space0),
+        parser::legacy::object,
     )))(i)
     {
-        Ok((remaining_input, (when, _, id, dec, perm, uid, gid, pid, subj, _, obj))) => Ok((
+        Ok((remaining_input, (when, _, id, dec, perm, uid, gid, pid, subj, obj))) => Ok((
             remaining_input,
             Event {
                 when,
