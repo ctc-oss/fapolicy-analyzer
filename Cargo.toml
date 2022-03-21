@@ -9,6 +9,10 @@ edition = "2018"
 name = "tdb"
 path = "crates/tools/trust_db_util.rs"
 
+[[bin]]
+name = "rulec"
+path = "crates/tools/rule_check.rs"
+
 [[test]]
 name = "integration"
 path = "tests/tests.rs"
@@ -37,6 +41,7 @@ codespan-reporting = "0.11"
 unindent = "0.1"
 termcolor = "1.0"
 memchr = "2.4"
+ariadne = "0.1.5"
 
 fapolicy-api = { version = "*", path = "crates/api" }
 fapolicy-analyzer = { version = "*", path = "crates/analyzer" }

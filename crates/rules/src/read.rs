@@ -47,7 +47,10 @@ fn parser(i: &str) -> nom::IResult<StrTrace, Line, LineError<&str>> {
         map(parse::set, SetDef),
         map(parse::rule, WellFormedRule),
     ))(StrTrace::new(i))
-    .map_err(|e| nom::Err::Error(LineError::CannotParse(i, format!("{:?}", e))))
+    .map_err(|e| match e {
+        nom::Err::Error(e) => nom::Err::Error(LineError::CannotParse(i, format!("{}", e))),
+        e => nom::Err::Error(LineError::CannotParse(i, format!("{:?}", e))),
+    })
 }
 
 pub fn load_rules_db(path: &str) -> Result<DB, Error> {

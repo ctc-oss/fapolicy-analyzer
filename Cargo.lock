@@ -3,6 +3,15 @@
 version = 3
 
 [[package]]
+name = "ariadne"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f1cb2a2046bea8ce5e875551f5772024882de0b540c7f93dfc5d6cf1ca8b030c"
+dependencies = [
+ "yansi",
+]
+
+[[package]]
 name = "arrayvec"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -298,6 +307,7 @@ dependencies = [
 name = "fapolicy-tools"
 version = "0.5.0"
 dependencies = [
+ "ariadne",
  "clap",
  "codespan-reporting",
  "fapolicy-analyzer",
@@ -1062,3 +1072,9 @@ name = "wyz"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "85e60b0d1b5f99db2556934e21937020776a5d31520bf169e851ac44e6420214"
+
+[[package]]
+name = "yansi"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9fc79f4a1e39857fc00c3f662cbf2651c771f00e9c15fe2abc341806bd46bd71"
