@@ -180,6 +180,15 @@
                             <signal name="activate" handler="on_rulesAdminMenu_activate"  swapped="no"/>
                           </object>
                         </child>
+			<child>
+                          <object class="GtkMenuItem" id="profileExecMenu">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="label" translatable="yes">Profile Executable</property>
+                            <property name="use-underline">True</property>
+                            <signal name="activate" handler="on_profileExecMenu_activate" swapped="no"/>
+                          </object>
+                        </child>
                       </object>
                     </child>
                   </object>
@@ -211,6 +220,26 @@
                             <property name="use-underline">True</property>
                             <property name="use-stock">True</property>
                             <signal name="activate" handler="on_fapdStartMenu_activate" swapped="no"/>
+                          </object>
+                        </child>
+			<child>
+                          <object class="GtkImageMenuItem" id="fapdProfilerStartMenu">
+                            <property name="label">Start Profiling</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="use-underline">True</property>
+                            <property name="use-stock">True</property>
+                            <signal name="activate" handler="on_fapdStartMenu_activate" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkImageMenuItem" id="fapdProfilerStopMenu">
+                            <property name="label">Stop Profiling</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="use-underline">True</property>
+                            <property name="use-stock">True</property>
+                            <signal name="activate" handler="on_fapdStopMenu_activate" swapped="no"/>
                           </object>
                         </child>
                       </object>
