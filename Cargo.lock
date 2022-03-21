@@ -127,16 +127,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "codespan-reporting"
-version = "0.11.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3538270d33cc669650c4b093848450d380def10c331d38c768e34cac80576e6e"
-dependencies = [
- "termcolor",
- "unicode-width",
-]
-
-[[package]]
 name = "confy"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -309,7 +299,6 @@ version = "0.5.0"
 dependencies = [
  "ariadne",
  "clap",
- "codespan-reporting",
  "fapolicy-analyzer",
  "fapolicy-api",
  "fapolicy-app",
@@ -318,12 +307,9 @@ dependencies = [
  "fapolicy-trust",
  "fapolicy-util",
  "lmdb-rkv",
- "memchr",
  "nom",
  "rayon",
- "termcolor",
  "thiserror",
- "unindent",
 ]
 
 [[package]]
