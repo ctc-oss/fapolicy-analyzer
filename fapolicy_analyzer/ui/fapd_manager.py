@@ -15,34 +15,12 @@
 
 import logging
 from enum import Enum
-from locale import gettext as _
-from os import getenv, geteuid, path
-from threading import Lock, Thread
-from time import sleep
-from typing import Any
-
-import fapolicy_analyzer.ui.strings as strings
-import gi
 from fapolicy_analyzer import Handle
-from fapolicy_analyzer import __version__ as app_version
-from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
-from fapolicy_analyzer.util.format import f
-
-from .action_toolbar import ActionToolbar
-from .actions import NotificationType, add_notification
-from .analyzer_selection_dialog import ANALYZER_SELECTION
-from .database_admin_page import DatabaseAdminPage
-from .notification import Notification
-from .operations import DeployChangesetsOp
-from .policy_rules_admin_page import PolicyRulesAdminPage
-from .rules import RulesAdminPage
-from .session_manager import sessionManager
-from .store import dispatch, get_system_feature
-from .ui_widget import UIConnectedWidget
-from .unapplied_changes_dialog import UnappliedChangesDialog
-
+from threading import Thread
+from time import sleep
+import gi
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, GLib  # isort: skip
+from gi.repository import GLib
 
 
 class ServiceStatus(Enum):
@@ -50,16 +28,17 @@ class ServiceStatus(Enum):
     TRUE = True
     UNKNOWN = None
 
+
 class FapdMode(Enum):
     DISABLED = 0
     ONLINE = 1
     PROFILE = 2
 
+
 class FapdManager():
     def __init__(self):
         logging.debug("FapdManager::__init__(self)")
-        self.mode = FapdMode.DISABLED 
-    
+        self.mode = FapdMode.DISABLED
 
     def setMode(self, eMode):
         logging.debug("FapdManager::")

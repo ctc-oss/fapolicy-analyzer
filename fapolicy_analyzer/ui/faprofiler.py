@@ -17,17 +17,15 @@
 
 class FaProfSession:
     def __init__(self):
-        strName=None
-        strTimeStart=None
-        strStdoutPath=None
-        strStdErrPath=None
-        strStatus=None # Queued, InProgress, Complete (?)
-        
+        strName = None
+        strTimeStart = None
+        strStdoutPath = None
+        strStdErrPath = None
+        strStatus = None  # Queued, InProgress, Complete (?)
+
+
 class FaProfiler:
     def __init__(self):
-        self.strExecPath=None
-        self.strExecArgs=None
-        self.faprofSession=None
-
-
-    
+        self.strExecPath = None
+        self.strExecArgs = None
+        self.faprofSession = None

@@ -81,6 +81,7 @@ class MainWindow(UIConnectedWidget):
         self._fapd_monitoring = False
         self._fapd_ref = None
         self._fapd_profiler_ref = None
+        self._fapd_mgr = FapdManager()
         self._fapd_lock = Lock()
         self.__changesets = []
         self.__page = None
