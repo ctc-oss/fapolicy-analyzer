@@ -9,25 +9,19 @@ use ariadne::{Report, ReportKind};
 use clap::Clap;
 use nom::IResult;
 
-use crate::Line::{Blank, Comment, RuleDef, SetDec};
 use fapolicy_app::cfg;
 use fapolicy_rules::parse::{rule, StrTrace};
 use fapolicy_rules::parser::errat::{ErrorAt, StrErrorAt};
-use fapolicy_rules::parser::error::RuleParseError;
 use fapolicy_rules::parser::trace::Trace;
 use fapolicy_rules::Rule;
-use tap::Tap;
+
+use crate::Line::{Blank, Comment, RuleDef, SetDec};
 
 #[derive(Clap)]
 #[clap(name = "Rule Checker", version = "v0.0.0")]
 struct Opts {
     /// path to *.rules or rules.d
     rules_path: String,
-}
-
-enum RuleSource {
-    Dir(PathBuf),
-    File(PathBuf),
 }
 
 type RuleParse<'a> = Result<(StrTrace<'a>, Rule), ErrorAt<StrTrace<'a>>>;

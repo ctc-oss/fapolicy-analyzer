@@ -219,10 +219,6 @@ impl<T: Compare<B>, B: Into<Trace<B>>> Compare<B> for Trace<T> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use nom::bytes::complete::tag;
-    use nom::IResult;
-
     #[test]
     fn trace_tag() {
         //let r = tag("=")(Trace::new("=")).is_ok();

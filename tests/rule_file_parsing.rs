@@ -7,13 +7,10 @@
  */
 
 use fapolicy_rules::parse::StrTrace;
-use fapolicy_rules::parser::error::RuleParseError;
-use fapolicy_rules::parser::trace::Trace;
 use fapolicy_rules::{parse, Rule, Set};
 use nom::branch::alt;
 use nom::combinator::map;
 use nom::error::ErrorKind;
-use nom::Err;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
