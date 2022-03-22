@@ -32,7 +32,7 @@ from .action_toolbar import ActionToolbar
 from .actions import NotificationType, add_notification
 from .analyzer_selection_dialog import ANALYZER_SELECTION
 from .database_admin_page import DatabaseAdminPage
-from .fapd_manager import FapdManager
+from .fapd_manager import FapdManager, FapdMode
 from .notification import Notification
 from .operations import DeployChangesetsOp
 from .policy_rules_admin_page import PolicyRulesAdminPage
@@ -389,8 +389,15 @@ class MainWindow(UIConnectedWidget):
             self._fapd_ref.stop()
             self._fapd_lock.release()
 
-    def on_profileExecMenu_activate(self, data=None):
-        pass
+    def on_profileExecStartMenu_activate(self, data=None):
+        self._fapd_mgr.set_mode(FapdMode.PROFILING)
+        self._fapd_mgr.start()
+        self._fapd_mgr.set_mode(FapdMode.ONLINE)
+
+    def on_profileExecStopMenu_activate(self, data=None):
+        self._fapd_mgr.set_mode(FapdMode.PROFILING)
+        self._fapd_mgr.stop()
+        self._fapd_mgr.set_mode(FapdMode.ONLINE)
 
     def _enable_fapd_menu_items(self, status: ServiceStatus):
         if self._fapdControlPermitted and (status != ServiceStatus.UNKNOWN):

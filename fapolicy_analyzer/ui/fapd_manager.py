@@ -14,10 +14,15 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+import subprocess
+import time
+
+from datetime import datetime as DT
 from enum import Enum
 from fapolicy_analyzer import Handle
-from threading import Thread
-from time import sleep
+from threading import Lock, Thread
+
+
 import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import GLib
@@ -32,31 +37,67 @@ class ServiceStatus(Enum):
 class FapdMode(Enum):
     DISABLED = 0
     ONLINE = 1
-    PROFILE = 2
+    PROFILING = 2
 
 
 class FapdManager():
     def __init__(self):
         logging.debug("FapdManager::__init__(self)")
+        self._fapd_status = ServiceStatus.UNKNOWN
+        self._fapd_monitoring = False
+        self._fapd_ref = None
+        self._fapd_profiler_pid = None
+        self._fapd_lock = Lock()
         self.mode = FapdMode.DISABLED
 
-    def setMode(self, eMode):
-        logging.debug("FapdManager::")
+    def set_mode(self, eMode):
+        logging.debug(f"FapdManager::set_mode({eMode})")
         self.mode = eMode
 
-    def getMode(self):
-        logging.debug("FapdManager::")
+    def get_mode(self):
+        logging.debug("FapdManager::get_mode()")
         return self.mode
 
     def start(self):
-        logging.debug("FapdManager::")
-        pass
+        logging.debug("FapdManager::start()")
+        if self.mode == FapdMode.DISABLED:
+            logging.debug("fapd is currently DISABLED")
+            return False
+        elif self.mode == FapdMode.ONLINE:
+            logging.debug("fapd is initiating an ONLINE session")
+            subprocess.run(["echo", "Echoing starting an ONLINE session"])
+            self.on_fapdStart(None)
+        else:
+            # PROFILING
+            logging.debug("fapd is initiating a PROFILING session")
+
+            timeNow = DT.fromtimestamp(time.time()).strftime("%Y%m%d_%H%M%S_%f")
+            logDir = "/tmp/"
+            stdoutFilename = logDir + "fapd_profiling_" + timeNow + ".stdout"
+            stderrFilename = logDir + "fapd_profiling_" + timeNow + ".stderr"
+            self.fapd_profiling_stdout = stdoutFilename
+            self.fapd_profiling_stderr = stderrFilename
+
+            subprocess.run(["echo", "Echoing starting a PROFILING session",
+                            f"w/stdout = {self.fapd_profiling_stdout}",
+                            f"w/stderr = {self.fapd_profiling_stderr}"])
 
     def stop(self):
-        logging.debug("FapdManager::")
-        pass
+        logging.debug("FapdManager::stop")
+        if self.mode == FapdMode.DISABLED:
+            logging.debug("fapd is currently DISABLED")
+            return False
+        elif self.mode == FapdMode.ONLINE:
+            logging.debug("fapd is terminating an ONLINE session")
+            subprocess.run(["echo", "Echoing terminating an ONLINE session"])
+            self.on_fapdStop(None)
+        else:
+            logging.debug("fapd is terminating a PROFILING session")
+            subprocess.run(["echo", "Echoing terminating a PROFILING session"])
+            # kill SIGTERM fapd_pid
 
     # ###################### fapolicyd interfacing ##########################
+
     def on_fapdStart(self, menuitem, data=None):
         logging.debug("on_fapdStartMenu_activate() invoked.")
         if (self._fapd_status != ServiceStatus.UNKNOWN) and (self._fapd_lock.acquire()):
@@ -95,7 +136,7 @@ class FapdManager():
             self.fapdStatusLight.set_from_icon_name("edit-delete", size=4)
 
     def init_daemon(self):
-        logging.debug("FapdManager::")
+        logging.debug("FapdManager::init_daemon()")
         if self._fapd_lock.acquire():
             self._fapd_ref = Handle("fapolicyd")
             if self._fapd_ref.is_valid():
@@ -106,14 +147,12 @@ class FapdManager():
             self._fapd_lock.release()
 
     def on_update_daemon_status(self, status: ServiceStatus):
-        logging.debug("FapdManager::")
-        logging.debug(f"on_update_daemon_status({status})")
+        logging.debug(f"FapdManager::on_update_daemon_status({status})")
         self._fapd_status = status
         GLib.idle_add(self._update_fapd_status, status)
 
     def _monitor_daemon(self, timeout=5):
-        logging.debug("FapdManager::")
-        logging.debug("_monitor_daemon() executing")
+        logging.debug("FapdManager::_monitor_daemon() executing")
         while True:
             try:
                 if self._fapd_lock.acquire(blocking=False):
@@ -124,11 +163,10 @@ class FapdManager():
                     self._fapd_lock.release()
             except Exception:
                 print("Daemon monitor query/update dispatch failed.")
-            sleep(timeout)
+            time.sleep(timeout)
 
     def _start_daemon_monitor(self):
-        logging.debug("FapdManager::")
-        logging.debug(f"start_daemon_monitor(): {self._fapd_status}")
+        logging.debug(f"FapdManager::start_daemon_monitor():{self._fapd_status}")
         # Only start monitoring thread if fapolicy is installed
         if self._fapd_status is not ServiceStatus.UNKNOWN:
             logging.debug("Spawning monitor thread...")
