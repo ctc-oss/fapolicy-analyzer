@@ -25,6 +25,8 @@ pub mod parse;
 
 pub mod db;
 pub mod error;
+pub mod load;
+
 mod permission;
 pub mod read;
 mod rule;

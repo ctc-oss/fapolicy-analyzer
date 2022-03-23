@@ -30,6 +30,12 @@ impl ErrorAt<Trace<&str>> {
     }
 }
 
+impl<I> ErrorAt<I> {
+    pub fn shift(self, by: usize) -> Self {
+        ErrorAt(self.0, self.1 + by, self.2 + by)
+    }
+}
+
 impl<T, I> From<ErrorAt<I>> for Result<T, nom::Err<ErrorAt<I>>> {
     fn from(e: ErrorAt<I>) -> Self {
         Err(nom::Err::Error(e))
@@ -71,5 +77,27 @@ impl<'a> From<RuleParseError<StrTrace<'a>>> for ErrorAt<StrTrace<'a>> {
             Nom(t, _) => t,
         };
         ErrorAt::<StrTrace<'a>>::new(e, t)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::parse::StrTrace;
+    use crate::parser::errat::StrErrorAt;
+    use crate::parser::error::RuleParseError;
+
+    #[test]
+    fn shift_test() {
+        let t = StrTrace::new("foo");
+        let e = StrErrorAt::new(RuleParseError::ExpectedInt(t), t);
+        assert_eq!(t.position, e.1);
+        assert_eq!(t.fragment.len(), e.2);
+        assert_eq!(3, e.2);
+
+        let by = 1001;
+        let e = e.shift(by);
+        assert_eq!(t.position + by, e.1);
+        assert_eq!(t.fragment.len() + by, e.2);
+        assert_eq!(3 + by, e.2);
     }
 }

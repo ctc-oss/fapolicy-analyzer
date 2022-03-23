@@ -14,7 +14,6 @@ use fapolicy_analyzer::events::db::DB as EventDB;
 use fapolicy_app::app::State;
 use fapolicy_app::cfg;
 use fapolicy_app::sys::deploy_app_state;
-use fapolicy_daemon::fapolicyd;
 use fapolicy_rules::db::RuleDef;
 
 use crate::acl::{PyGroup, PyUser};
@@ -159,7 +158,7 @@ impl PySystem {
                 PyRule::new(
                     *id,
                     text,
-                    fapolicyd::RULES_FILE_PATH.to_string(),
+                    self.rs.rules_db.source(*id).unwrap(),
                     info,
                     valid,
                 )
