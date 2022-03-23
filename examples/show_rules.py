@@ -14,6 +14,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from fapolicy_analyzer import *
+import argparse
+import sys
 
 green = '\033[91m'
 red = '\033[92m'
@@ -21,19 +23,31 @@ yellow = '\033[93m'
 blue = '\033[96m'
 gray = '\033[33m'
 
-s1 = System()
 
-origin = None
-for r in s1.rules():
-    if r.origin != origin:
-        origin = r.origin
-        print()
-        print(gray, end='')
-        print(f"🗎 [{origin}]\033[0m")
+def main(*argv):
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--plain", action='store_true', help="Plain text rules")
+    args = parser.parse_args(argv)
 
-    print(red if r.is_valid else green, end='')
-    print(f"{r.id} {r.text} \033[0m")
-    for info in r.info:
-        marker = f'[{info.category}]' if info.category != 'e' else ''
-        print(yellow if info.category == 'w' else blue, end='')
-        print(f"\t- {marker} {info.message} \033[0m")
+    s1 = System()
+    if args.plain:
+        print(s1.rules_text())
+    else:
+        origin = None
+        for r in s1.rules():
+            if r.origin != origin:
+                origin = r.origin
+                print()
+                print(gray, end='')
+                print(f"🗎 [{origin}]\033[0m")
+
+            print(red if r.is_valid else green, end='')
+            print(f"{r.id} {r.text} \033[0m")
+            for info in r.info:
+                marker = f'[{info.category}]' if info.category != 'e' else ''
+                print(yellow if info.category == 'w' else blue, end='')
+                print(f"\t- {marker} {info.message} \033[0m")
+
+
+if __name__ == "__main__":
+    main(*sys.argv[1:])
