@@ -165,6 +165,29 @@ impl PySystem {
             })
             .collect())
     }
+
+    fn rules_text(&self) -> PyResult<String> {
+        self.rules()
+            .map(|x| {
+                x.into_iter().rfold((None, String::new()), |x, r| match x {
+                    // no origin established yet
+                    (None, _) => (
+                        Some(r.origin.clone()),
+                        format!("[{}]\n{}", r.origin, r.text),
+                    ),
+                    // same origin as previous
+                    (Some(last_origin), acc_text) if last_origin == r.origin => {
+                        (Some(last_origin), format!("{}\n{}", acc_text, r.text))
+                    }
+                    // origin has changed
+                    (Some(_), acc_text) => (
+                        Some(r.origin.clone()),
+                        format!("{}\n\n[{}]\n{}", acc_text, r.origin, r.text),
+                    ),
+                })
+            })
+            .map(|(_, s)| s)
+    }
 }
 
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
