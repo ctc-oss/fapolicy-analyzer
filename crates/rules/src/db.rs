@@ -7,7 +7,7 @@
  */
 
 use std::collections::btree_map::Iter;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 
 use crate::Rule;
 
@@ -24,15 +24,10 @@ pub enum RuleDef {
 
 /// Rules Database
 /// A container for rules and their metadata
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct DB {
     lookup: BTreeMap<usize, RuleDef>,
-}
-
-impl Default for DB {
-    fn default() -> Self {
-        DB::new()
-    }
+    source: HashMap<usize, String>,
 }
 
 impl From<Vec<RuleDef>> for DB {
@@ -43,41 +38,66 @@ impl From<Vec<RuleDef>> for DB {
             // fapolicyd rules are 1-based index
             .map(|(k, v)| (k + 1, v.clone()))
             .collect();
-        DB { lookup }
+        DB {
+            lookup,
+            ..DB::default()
+        }
     }
 }
 
 impl DB {
-    /// Create a new empty database
-    pub fn new() -> Self {
-        DB {
-            lookup: BTreeMap::default(),
+    /// Construct DB using the provided RuleDefs from the single source
+    pub fn from_source(source: String, defs: Vec<RuleDef>) -> Self {
+        DB::from_sources(defs.into_iter().map(|d| (source.clone(), d)).collect())
+    }
+
+    /// Construct DB using the provided RuleDefs and associated sources
+    pub fn from_sources(defs: Vec<(String, RuleDef)>) -> Self {
+        let default: Self = defs
+            .clone()
+            .into_iter()
+            .map(|(_, d)| d)
+            .collect::<Vec<RuleDef>>()
+            .into();
+        Self {
+            lookup: default.lookup,
+            source: defs
+                .iter()
+                .enumerate()
+                // fapolicyd rules are 1-based index
+                .map(|(k, (s, _))| (k + 1, s.clone()))
+                .collect(),
         }
     }
 
-    /// Get a record iterator to the underlying lookup table
+    /// Get an iterator to RuleDefs
     pub fn iter(&self) -> Iter<'_, usize, RuleDef> {
         self.lookup.iter()
     }
 
-    /// Get a Vec of record references
+    /// Get a Vec of RuleDefs
     pub fn values(&self) -> Vec<&RuleDef> {
         self.lookup.values().collect()
     }
 
-    /// Get the number of records in the lookup table
+    /// Get the number of RuleDefs
     pub fn len(&self) -> usize {
         self.lookup.len()
     }
 
-    /// Test if the lookup table is empty
+    /// Test if there are any RuleDefs in this DB
     pub fn is_empty(&self) -> bool {
         self.lookup.is_empty()
     }
 
-    /// Get a record from the lookup table using the path to the trusted file
+    /// Get a RuleDef by ID
     pub fn get(&self, id: usize) -> Option<&RuleDef> {
         self.lookup.get(&id)
+    }
+
+    /// Get the source of a RuleDef by ID
+    pub fn source(&self, id: usize) -> Option<String> {
+        self.source.get(&id).cloned()
     }
 }
 
@@ -93,6 +113,10 @@ mod tests {
         }
     }
 
+    fn any_all_all(decision: Decision) -> RuleDef {
+        Rule::new(Subject::all(), Permission::Any, Object::all(), decision).into()
+    }
+
     impl RuleDef {
         pub fn unwrap(&self) -> Rule {
             match self {
@@ -103,10 +127,12 @@ mod tests {
     }
 
     #[test]
-    fn db_create() {
+    fn default_db_is_empty() {
         assert!(DB::default().is_empty());
-        assert!(DB::new().is_empty());
+    }
 
+    #[test]
+    fn db_create() {
         let r1: RuleDef = Rule::new(
             Subject::all(),
             Permission::Any,
@@ -120,10 +146,30 @@ mod tests {
     }
 
     #[test]
-    fn maintain_order() {
-        assert!(DB::default().is_empty());
-        assert!(DB::new().is_empty());
+    fn db_create_single_source() {
+        let r1 = any_all_all(Decision::Allow);
+        let r2 = any_all_all(Decision::Deny);
 
+        let source = "/foo/bar.rules";
+        let db: DB = DB::from_source(source.to_string(), vec![r1, r2]);
+        assert_eq!(db.source.get(&1).unwrap(), source);
+        assert_eq!(db.source.get(&2).unwrap(), source);
+    }
+
+    #[test]
+    fn db_create_each_source() {
+        let r1 = any_all_all(Decision::Allow);
+        let r2 = any_all_all(Decision::Deny);
+
+        let source1 = "/foo.rules";
+        let source2 = "/bar.rules";
+        let db: DB = DB::from_sources(vec![(source1.to_string(), r1), (source2.to_string(), r2)]);
+        assert_eq!(db.source.get(&1).unwrap(), source1);
+        assert_eq!(db.source.get(&2).unwrap(), source2);
+    }
+
+    #[test]
+    fn maintain_order() {
         let subjs = vec!["fee", "fi", "fo", "fum", "this", "is", "such", "fun"];
         let rules: Vec<RuleDef> = subjs
             .iter()

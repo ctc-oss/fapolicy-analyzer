@@ -14,7 +14,6 @@ use fapolicy_analyzer::events::db::DB as EventDB;
 use fapolicy_app::app::State;
 use fapolicy_app::cfg;
 use fapolicy_app::sys::deploy_app_state;
-use fapolicy_daemon::fapolicyd;
 use fapolicy_rules::db::RuleDef;
 
 use crate::acl::{PyGroup, PyUser};
@@ -159,12 +158,35 @@ impl PySystem {
                 PyRule::new(
                     *id,
                     text,
-                    fapolicyd::RULES_FILE_PATH.to_string(),
+                    self.rs.rules_db.source(*id).unwrap(),
                     info,
                     valid,
                 )
             })
             .collect())
+    }
+
+    fn rules_text(&self) -> PyResult<String> {
+        self.rules()
+            .map(|x| {
+                x.into_iter().rfold((None, String::new()), |x, r| match x {
+                    // no origin established yet
+                    (None, _) => (
+                        Some(r.origin.clone()),
+                        format!("[{}]\n{}", r.origin, r.text),
+                    ),
+                    // same origin as previous
+                    (Some(last_origin), acc_text) if last_origin == r.origin => {
+                        (Some(last_origin), format!("{}\n{}", acc_text, r.text))
+                    }
+                    // origin has changed
+                    (Some(_), acc_text) => (
+                        Some(r.origin.clone()),
+                        format!("{}\n\n[{}]\n{}", acc_text, r.origin, r.text),
+                    ),
+                })
+            })
+            .map(|(_, s)| s)
     }
 }
 
