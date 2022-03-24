@@ -50,7 +50,7 @@ class FapdManager():
         self._fapd_lock = Lock()
         self.mode = FapdMode.DISABLED
         self.procProfile = None
-        
+
     def set_mode(self, eMode):
         logging.debug(f"FapdManager::set_mode({eMode})")
         self.mode = eMode
@@ -84,8 +84,8 @@ class FapdManager():
             # ToDo: Move the following into a session object
             self.procProfile = subprocess.Popen(["/usr/sbin/fapolicyd",
                                                  "--permissive", "--debug"],
-                                           stdout=fdStdoutPath,
-                                           stderr=fdStderrPath)
+                                                stdout=fdStdoutPath,
+                                                stderr=fdStderrPath)
             print(self.procProfile.pid)
 
     def stop(self):

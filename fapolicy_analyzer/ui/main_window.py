@@ -64,6 +64,7 @@ class ServiceStatus(Enum):
     TRUE = True
     UNKNOWN = None
 
+
 class dlgProfileExec(Gtk.Dialog):
     def __init__(self, parent):
         super().__init__(title="Profile Executable", transient_for=parent,
@@ -79,7 +80,8 @@ class dlgProfileExec(Gtk.Dialog):
         label = Gtk.Label(label="Enter the executable path:")
         box.add(label)
         self.show_all()
-        
+
+
 class MainWindow(UIConnectedWidget):
     def __init__(self):
         super().__init__(get_system_feature(), on_next=self.on_next_system)
@@ -396,10 +398,9 @@ class MainWindow(UIConnectedWidget):
         if response == Gtk.ResponseType.OK:
             print("The OK button was clicked")
             self._fapd_profiler.start_prof_session("/usr/bin/ls", ["/tmp"])
-            
+
         dlgProfTest.destroy()
 
-        
     def on_deployChanges_clicked(self, *args):
         with DeployChangesetsOp(self.window) as op:
             op.run(self.__changesets)
