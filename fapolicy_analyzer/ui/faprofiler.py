@@ -39,6 +39,7 @@ class FaProfSession:
 
 class FaProfiler:
     def __init__(self):
+        logging.debug("FaProfiler::__init__()")
         self.strExecPath = None
         self.strExecArgs = None
         self.listFaProfSession = dict()  # dict of current / completed sessions

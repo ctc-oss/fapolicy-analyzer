@@ -33,6 +33,7 @@ from .actions import NotificationType, add_notification
 from .analyzer_selection_dialog import ANALYZER_SELECTION
 from .database_admin_page import DatabaseAdminPage
 from .fapd_manager import FapdManager, FapdMode
+from .faprofiler import FaProfiler
 from .notification import Notification
 from .operations import DeployChangesetsOp
 from .policy_rules_admin_page import PolicyRulesAdminPage
@@ -63,7 +64,22 @@ class ServiceStatus(Enum):
     TRUE = True
     UNKNOWN = None
 
+class dlgProfileExec(Gtk.Dialog):
+    def __init__(self, parent):
+        super().__init__(title="Profile Executable", transient_for=parent,
+                         flags=0)
+        self.add_buttons(
+            Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+            Gtk.STOCK_OK, Gtk.ResponseType.OK
+        )
 
+        self.set_default_size(150, 100)
+        box = self.get_content_area()
+
+        label = Gtk.Label(label="Enter the executable path:")
+        box.add(label)
+        self.show_all()
+        
 class MainWindow(UIConnectedWidget):
     def __init__(self):
         super().__init__(get_system_feature(), on_next=self.on_next_system)
@@ -80,7 +96,7 @@ class MainWindow(UIConnectedWidget):
         self._fapd_status = ServiceStatus.UNKNOWN
         self._fapd_monitoring = False
         self._fapd_ref = None
-        self._fapd_profiler_ref = None
+        self._fapd_profiler = FaProfiler()
         self._fapd_mgr = FapdManager()
         self._fapd_lock = Lock()
         self.__changesets = []
@@ -372,6 +388,18 @@ class MainWindow(UIConnectedWidget):
         # TODO: figure out a good way to set sensitivity on the menu items based on what is selected
         self.__set_trustDbMenu_sensitive(True)
 
+    def on_profileExecMenu_activate(self, *args):
+        logging.debug("MainWindow::on_profileExecMenu_activate()")
+        dlgProfTest = dlgProfileExec(self.windowTopLevel)
+        response = dlgProfTest.run()
+
+        if response == Gtk.ResponseType.OK:
+            print("The OK button was clicked")
+            self._fapd_profiler.start_prof_session("/usr/bin/ls", ["/tmp"])
+            
+        dlgProfTest.destroy()
+
+        
     def on_deployChanges_clicked(self, *args):
         with DeployChangesetsOp(self.window) as op:
             op.run(self.__changesets)

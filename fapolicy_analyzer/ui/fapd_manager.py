@@ -49,7 +49,8 @@ class FapdManager():
         self._fapd_profiler_pid = None
         self._fapd_lock = Lock()
         self.mode = FapdMode.DISABLED
-
+        self.procProfile = None
+        
     def set_mode(self, eMode):
         logging.debug(f"FapdManager::set_mode({eMode})")
         self.mode = eMode
@@ -73,14 +74,19 @@ class FapdManager():
 
             timeNow = DT.fromtimestamp(time.time()).strftime("%Y%m%d_%H%M%S_%f")
             logDir = "/tmp/"
-            stdoutFilename = logDir + "fapd_profiling_" + timeNow + ".stdout"
-            stderrFilename = logDir + "fapd_profiling_" + timeNow + ".stderr"
-            self.fapd_profiling_stdout = stdoutFilename
-            self.fapd_profiling_stderr = stderrFilename
+            stdoutPath = logDir + "fapd_profiling_" + timeNow + ".stdout"
+            stderrPath = logDir + "fapd_profiling_" + timeNow + ".stderr"
+            self.fapd_profiling_stdout = stdoutPath
+            self.fapd_profiling_stderr = stderrPath
+            fdStdoutPath = open(stdoutPath, "w")
+            fdStderrPath = open(stderrPath, "w")
 
-            subprocess.run(["echo", "Echoing starting a PROFILING session",
-                            f"w/stdout = {self.fapd_profiling_stdout}",
-                            f"w/stderr = {self.fapd_profiling_stderr}"])
+            # ToDo: Move the following into a session object
+            self.procProfile = subprocess.Popen(["/usr/sbin/fapolicyd",
+                                                 "--permissive", "--debug"],
+                                           stdout=fdStdoutPath,
+                                           stderr=fdStderrPath)
+            print(self.procProfile.pid)
 
     def stop(self):
         logging.debug("FapdManager::stop")
@@ -89,12 +95,16 @@ class FapdManager():
             return False
         elif self.mode == FapdMode.ONLINE:
             logging.debug("fapd is terminating an ONLINE session")
-            subprocess.run(["echo", "Echoing terminating an ONLINE session"])
+            subprocess.Popen(["echo", "Echoing terminating an ONLINE session"])
             self.on_fapdStop(None)
         else:
             logging.debug("fapd is terminating a PROFILING session")
-            subprocess.run(["echo", "Echoing terminating a PROFILING session"])
-            # kill SIGTERM fapd_pid
+            self.procProfile.terminate()
+            while self.procProfile.poll():
+                time.sleep(1)
+                logging.debug("Waiting for fapd profiling to shut down...")
+            del self.procProfile
+            self.procProfile = None
 
     # ###################### fapolicyd interfacing ##########################
 
