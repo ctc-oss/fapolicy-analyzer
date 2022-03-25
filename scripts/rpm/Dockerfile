@@ -24,6 +24,7 @@ RUN grep -e "^Red Hat Enterprise Linux" /etc/redhat-release \
 
 # Install base toolchain; for tools not packaged in el8, just use pip always.
 RUN dnf install -y rpm-build rpmdevtools dnf-plugins-core python3-pip \
+ && pip3 install --no-input jinja2==3.0.3 \
  && pip3 install --no-input jinja2-cli \
  && dnf clean all
 
