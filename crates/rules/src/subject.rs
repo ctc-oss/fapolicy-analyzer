@@ -26,6 +26,10 @@ impl Subject {
         Subject { parts }
     }
 
+    pub fn is_all(&self) -> bool {
+        self.parts.contains(&Part::All)
+    }
+
     pub fn all() -> Self {
         Self::new(vec![SubjPart::All])
     }

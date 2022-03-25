@@ -149,19 +149,22 @@ impl PySystem {
             .iter()
             .map(|(id, r)| {
                 let (valid, text, info) = match r {
-                    RuleDef::Invalid(t, why) => {
-                        (false, t.clone(), vec![("e".to_string(), why.clone())])
+                    RuleDef::Invalid { text, error } => {
+                        (false, text.clone(), vec![("e".to_string(), error.clone())])
                     }
                     RuleDef::Valid(r) => (true, r.to_string(), vec![]),
+                    RuleDef::ValidWithWarning(r, w) => {
+                        (true, r.to_string(), vec![("w".to_string(), w.clone())])
+                    }
                 };
+                let origin = self
+                    .rs
+                    .rules_db
+                    .source(*id)
+                    // todo;; this should be converted to a python exception
+                    .unwrap_or_else(|| "<unknown>".to_string());
 
-                PyRule::new(
-                    *id,
-                    text,
-                    self.rs.rules_db.source(*id).unwrap(),
-                    info,
-                    valid,
-                )
+                PyRule::new(*id, text, origin, info, valid)
             })
             .collect())
     }

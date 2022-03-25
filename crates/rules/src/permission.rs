@@ -22,6 +22,12 @@ pub enum Permission {
     Execute,
 }
 
+impl Permission {
+    pub fn is_any(&self) -> bool {
+        matches!(self, Permission::Any)
+    }
+}
+
 impl Display for Permission {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_str("perm=")?;

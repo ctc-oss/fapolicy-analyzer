@@ -16,6 +16,7 @@ use nom::sequence::tuple;
 
 use crate::db::{RuleDef, DB};
 use crate::error::Error;
+use crate::linter::lint::lint_db;
 use crate::parse::{StrTrace, TraceResult};
 use crate::read::Line::*;
 use crate::{load, parse, Rule, Set};
@@ -78,10 +79,10 @@ pub fn load_rules_db(path: &str) -> Result<DB, Error> {
         .map(|(source, line)| (source.display().to_string(), line))
         .filter_map(|(source, line)| match line {
             WellFormedRule(r) => Some((source, RuleDef::Valid(r))),
-            MalformedRule(txt, why) => Some((source, RuleDef::Invalid(txt, why))),
+            MalformedRule(text, error) => Some((source, RuleDef::Invalid { text, error })),
             _ => None,
         })
         .collect();
 
-    Ok(DB::from_sources(lookup))
+    Ok(lint_db(DB::from_sources(lookup)))
 }
