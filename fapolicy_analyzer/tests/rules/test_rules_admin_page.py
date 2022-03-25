@@ -25,7 +25,7 @@ from rx.subject import Subject
 from ui.actions import ADD_NOTIFICATION
 from ui.rules import RulesAdminPage
 from ui.store import init_store
-from ui.strings import RULES_CONFIG_LOAD_ERROR, RULES_LOAD_ERROR
+from ui.strings import RULES_LOAD_ERROR, RULES_TEXT_LOAD_ERROR
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
@@ -67,7 +67,7 @@ def test_populates_guided_editor(widget, mock_system_feature, mocker):
     mock_system_feature.on_next(
         {
             "rules": MagicMock(error=None, rules=mock_rules, loading=False),
-            "rules_config": MagicMock(),
+            "rules_text": MagicMock(),
         }
     )
     mock_list_renderer.assert_called_once_with(mock_rules)
@@ -77,7 +77,7 @@ def test_populates_guided_editor(widget, mock_system_feature, mocker):
 def test_handles_rules_exception(mock_dispatch, mock_system_feature):
     mock_dispatch.reset_mock()
     mock_system_feature.on_next(
-        {"rules": MagicMock(error="foo", loading=False), "rules_config": MagicMock()}
+        {"rules": MagicMock(error="foo", loading=False), "rules_text": MagicMock()}
     )
     mock_dispatch.assert_called_with(
         InstanceOf(Action)
@@ -89,7 +89,6 @@ def test_handles_rules_exception(mock_dispatch, mock_system_feature):
 
 
 def test_populates_text_editor(widget, mock_system_feature, mocker):
-    mock_rules_file_path = "/foo/path"
     mock_text_renderer = MagicMock()
     mocker.patch(
         "fapolicy_analyzer.ui.rules.rules_text_view.RulesTextView.render_rules",
@@ -98,26 +97,26 @@ def test_populates_text_editor(widget, mock_system_feature, mocker):
     mock_system_feature.on_next(
         {
             "rules": MagicMock(),
-            "rules_config": MagicMock(
+            "rules_text": MagicMock(
                 error=None,
-                rules_config={"rules_path": mock_rules_file_path},
+                rules_text="foo",
                 loading=False,
             ),
         }
     )
-    mock_text_renderer.assert_called_once_with(mock_rules_file_path)
+    mock_text_renderer.assert_called_once_with("foo")
 
 
 @pytest.mark.usefixtures("widget")
 def test_handles_rules_config_exception(mock_dispatch, mock_system_feature):
     mock_dispatch.reset_mock()
     mock_system_feature.on_next(
-        {"rules": MagicMock(), "rules_config": MagicMock(error="foo", loading=False)}
+        {"rules": MagicMock(), "rules_text": MagicMock(error="foo", loading=False)}
     )
     mock_dispatch.assert_called_with(
         InstanceOf(Action)
         & Attrs(
             type=ADD_NOTIFICATION,
-            payload=Attrs(text=RULES_CONFIG_LOAD_ERROR),
+            payload=Attrs(text=RULES_TEXT_LOAD_ERROR),
         )
     )

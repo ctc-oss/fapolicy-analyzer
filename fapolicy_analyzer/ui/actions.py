@@ -15,7 +15,7 @@
 
 from enum import Enum
 from itertools import count
-from typing import Any, Iterator, Mapping, NamedTuple, Sequence
+from typing import Any, Iterator, NamedTuple, Sequence
 
 from fapolicy_analyzer import Changeset, Event, Group, Rule, Trust, User
 from redux import Action, create_action
@@ -62,9 +62,9 @@ REQUEST_RULES = "REQUEST_RULES"
 RECEIVED_RULES = "RECEIVED_RULES"
 ERROR_RULES = "ERROR_RULES"
 
-REQUEST_RULES_CONFIG = "REQUEST_RULES_CONFIG"
-RECEIVED_RULES_CONFIG = "RECEIVED_RULES_CONFIG"
-ERROR_RULES_CONFIG = "ERROR_RULES_CONFIG"
+REQUEST_RULES_TEXT = "REQUEST_RULES_TEXT"
+RECEIVED_RULES_TEXT = "RECEIVED_RULES_TEXT"
+ERROR_RULES_TEXT = "ERROR_RULES_TEXT"
 
 
 def _create_action(type: str, payload: Any = None) -> Action:
@@ -199,16 +199,16 @@ def error_rules(error: str) -> Action:
     return _create_action(ERROR_RULES, error)
 
 
-def request_rules_config() -> Action:
-    return _create_action(REQUEST_RULES_CONFIG)
+def request_rules_text() -> Action:
+    return _create_action(REQUEST_RULES_TEXT)
 
 
-def received_rules_config(rules_config: Mapping[str, str]) -> Action:
-    return _create_action(RECEIVED_RULES_CONFIG, rules_config)
+def received_rules_text(rules_text: str) -> Action:
+    return _create_action(RECEIVED_RULES_TEXT, rules_text)
 
 
-def error_rules_config(error: str) -> Action:
-    return _create_action(ERROR_RULES_CONFIG, error)
+def error_rules_text(error: str) -> Action:
+    return _create_action(ERROR_RULES_TEXT, error)
 
 
 def init_system() -> Action:

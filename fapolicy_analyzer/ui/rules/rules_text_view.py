@@ -13,27 +13,50 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import logging
 
-from fapolicy_analyzer.ui.actions import NotificationType, add_notification
-from fapolicy_analyzer.ui.store import dispatch
-from fapolicy_analyzer.ui.strings import RULES_FILE_READ_ERROR
+import os
+from importlib import resources
+
+import gi
 from fapolicy_analyzer.ui.ui_widget import UIBuilderWidget
+
+gi.require_version("GtkSource", "3.0")
+from gi.repository import GtkSource  # isort: skip
 
 
 class RulesTextView(UIBuilderWidget):
     def __init__(self):
         super().__init__()
         self.__text_view = self.get_object("textView")
-        self.__text_view.set_show_line_numbers(True)
 
-    def render_rules(self, rules_path: str):
-        text = ""
-        try:
-            with open(rules_path, "r") as f:
-                text = f.read()
-        except (IOError, FileNotFoundError) as e:
-            logging.error("%s: %s", RULES_FILE_READ_ERROR, e)
-            dispatch(add_notification(RULES_FILE_READ_ERROR, NotificationType.ERROR))
+        buffer = GtkSource.Buffer.new_with_language(self.__get_view_lang())
+        buffer.set_style_scheme(self.__get_view_style())
+        self.__text_view.set_buffer(buffer)
 
-        self.__text_view.get_buffer().set_text(text)
+    def __get_view_lang(self):
+        lang_manager = GtkSource.LanguageManager.get_default()
+        with resources.path(
+            "fapolicy_analyzer.resources.sourceview.language-specs",
+            "fapolicyd-rules.lang",
+        ) as path:
+            lang_manager.set_search_path(
+                [
+                    *lang_manager.get_search_path(),
+                    os.path.dirname(path.as_posix()),
+                ]
+            )
+        return lang_manager.get_language("fapolicyd-rules")
+
+    def __get_view_style(self):
+        style_manager = GtkSource.StyleSchemeManager.get_default()
+        with resources.path(
+            "fapolicy_analyzer.resources.sourceview.styles", "fapolicyd.xml"
+        ) as path:
+            style_manager.prepend_search_path(path.as_posix())
+        return style_manager.get_scheme("fapolicyd")
+
+    def render_rules(self, rules_text: str):
+        buffer = self.__text_view.get_buffer()
+        buffer.begin_not_undoable_action()
+        buffer.set_text(rules_text)
+        buffer.end_not_undoable_action()
