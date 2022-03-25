@@ -17,9 +17,9 @@ use crate::Rule;
 /// When valid the text definition can be rendered from the ADTs
 #[derive(Clone, Debug)]
 pub enum RuleDef {
-    // Rule Text, Error Msg
-    Invalid(String, String),
     Valid(Rule),
+    ValidWithWarning(Rule, String),
+    Invalid { text: String, error: String },
 }
 
 /// Rules Database
@@ -121,7 +121,10 @@ mod tests {
         pub fn unwrap(&self) -> Rule {
             match self {
                 RuleDef::Valid(val) => val.clone(),
-                RuleDef::Invalid(_, _) => panic!("called `RuleDef::unwrap()` on an invalid rule"),
+                RuleDef::ValidWithWarning(val, _) => val.clone(),
+                RuleDef::Invalid { text: _, error: _ } => {
+                    panic!("called `RuleDef::unwrap()` on an invalid rule")
+                }
             }
         }
     }
