@@ -5,5 +5,8 @@ license = "MPL-2.0"
 version = "0.4.0"
 edition = "2018"
 
+[package.metadata]
+msrv = "1.54.0"
+
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
