@@ -68,7 +68,7 @@
     <style name="fapolicyd-rules:subject" foreground="bordeaux"/>
     <style name="fapolicyd-rules:object" foreground="bordeaux"/>
 
-    <!-- Discriminator -->
-    <style name="fapolicyd-rules:discriminator" foreground="gray" bold="true" italic="true"/>
+    <!-- File markers -->
+    <style name="fapolicyd-rules:marker" foreground="gray" bold="true" italic="true"/>
 
 </style-scheme>
