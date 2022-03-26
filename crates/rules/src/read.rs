@@ -76,7 +76,12 @@ pub fn load_rules_db(path: &str) -> Result<DB, Error> {
             }
             Err(_) => None,
         })
-        .map(|(source, line)| (source.display().to_string(), line))
+        .map(|(source, line)| {
+            let source = source.display().to_string();
+            let (_, file_name) = source.rsplit_once('/').expect("absolute path");
+            (file_name.to_string(), line)
+        })
+        .map(|(source, line)| (source, line))
         .filter_map(|(source, line)| match line {
             WellFormedRule(r) => Some((source, RuleDef::Valid(r))),
             MalformedRule(text, error) => Some((source, RuleDef::Invalid { text, error })),
