@@ -32,6 +32,7 @@
         <style id="subject" name="Subject list"/>
         <style id="object" name="Object list"/>
         <style id="wildcard" name="Wildcard identifiers"/>
+        <style id="marker" name="File marker"/>
     </styles>
 
     <definitions>
@@ -85,6 +86,11 @@
             <keyword>trust</keyword>
         </context>
 
+        <context id="markers" style-ref="marker">
+            <start>\[</start>
+            <end>]</end>
+        </context>
+
         <context id="fapolicyd-rules">
             <include>
                 <context ref="seperator"/>
@@ -95,6 +101,7 @@
                 <context ref="objects"/>
                 <context ref="permission"/>
                 <context ref="wildcards"/>
+                <context ref="markers"/>
 
                 <context ref="def:shell-like-comment"/>
             </include>
