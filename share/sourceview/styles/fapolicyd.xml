@@ -52,7 +52,7 @@
     <!-- fapolicyd settings -->
 
     <!-- Misc -->
-    <style name="fapolicyd-rules:sep" background="red" bold="true" italic="true"/>
+    <style name="fapolicyd-rules:sep" background="red" bold="true"/>
     <style name="fapolicyd-rules:set" background="gray" foreground="yellow"/>
     <style name="fapolicyd-rules:wildcard" foreground="magenta" bold="true"/>
 
@@ -67,5 +67,8 @@
     <!-- Permissions -->
     <style name="fapolicyd-rules:subject" foreground="bordeaux"/>
     <style name="fapolicyd-rules:object" foreground="bordeaux"/>
+
+    <!-- File markers -->
+    <style name="fapolicyd-rules:marker" foreground="gray" bold="true" italic="true"/>
 
 </style-scheme>
