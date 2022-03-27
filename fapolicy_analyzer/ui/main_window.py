@@ -79,7 +79,16 @@ class dlgProfileExec(Gtk.Dialog):
 
         label = Gtk.Label(label="Enter the executable path:")
         box.add(label)
+
+        self.entry = Gtk.Entry()
+        self.entry.set_text("Hello World")
+        box.pack_start(self.entry, True, True, 0)
+
         self.show_all()
+
+    def get_text(self):
+        logging.debug("dlgProfileExec::get_text()")
+        return self.entry.get_text()
 
 
 class MainWindow(UIConnectedWidget):
@@ -396,8 +405,9 @@ class MainWindow(UIConnectedWidget):
         response = dlgProfTest.run()
 
         if response == Gtk.ResponseType.OK:
-            print("The OK button was clicked")
-            self._fapd_profiler.start_prof_session("/usr/bin/ls", ["/tmp"])
+            words = dlgProfTest.get_text()
+            logging.debug(f"Entry text = {words}")
+            self._fapd_profiler.start_prof_session(words)
 
         dlgProfTest.destroy()
 

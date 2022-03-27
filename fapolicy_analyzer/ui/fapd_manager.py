@@ -49,7 +49,17 @@ class FapdManager():
         self._fapd_profiler_pid = None
         self._fapd_lock = Lock()
         self.mode = FapdMode.DISABLED
+        self.fapd_profiling_stdout = None
+        self.fapd_profiling_stderr = None
         self.procProfile = None
+
+    def get_profiling_stdout(self):
+        logging.debug("FapdManager::get_profiling_stdout()")
+        return self.fapd_profiling_stdout
+
+    def get_profiling_stderr(self):
+        logging.debug("FapdManager::get_profiling_stderr()")
+        return self.fapd_profiling_stderr
 
     def set_mode(self, eMode):
         logging.debug(f"FapdManager::set_mode({eMode})")
@@ -105,6 +115,8 @@ class FapdManager():
                 logging.debug("Waiting for fapd profiling to shut down...")
             del self.procProfile
             self.procProfile = None
+            self.fapd_profiling_stderr = None
+            self.fapd_profiling_stdout = None
 
     # ###################### fapolicyd interfacing ##########################
 
