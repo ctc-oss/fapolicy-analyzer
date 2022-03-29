@@ -20,12 +20,7 @@ import time
 from datetime import datetime as DT
 from enum import Enum
 from fapolicy_analyzer import Handle
-from threading import Lock, Thread
-
-
-import gi
-gi.require_version("Gtk", "3.0")
-from gi.repository import GLib
+from threading import Lock
 
 
 class ServiceStatus(Enum):
@@ -117,5 +112,3 @@ class FapdManager():
             self.procProfile = None
             self.fapd_profiling_stderr = None
             self.fapd_profiling_stdout = None
-
-  

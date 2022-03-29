@@ -419,7 +419,6 @@ class MainWindow(UIConnectedWidget):
     def on_fapdStartMenu_activate(self, menuitem, data=None):
         logging.debug("on_fapdStartMenu_activate() invoked.")
         if (self._fapd_status != ServiceStatus.UNKNOWN) and (self._fapd_lock.acquire()):
-            #self._fapd_ref.start()
             self._fapd_mgr.set_mode(FapdMode.ONLINE)
             self._fapd_mgr.start()
             self._fapd_lock.release()
@@ -427,7 +426,6 @@ class MainWindow(UIConnectedWidget):
     def on_fapdStopMenu_activate(self, menuitem, data=None):
         logging.debug("on_fapdStopMenu_activate() invoked.")
         if (self._fapd_status != ServiceStatus.UNKNOWN) and (self._fapd_lock.acquire()):
-            #self._fapd_ref.stop()
             self._fapd_mgr.set_mode(FapdMode.ONLINE)
             self._fapd_mgr.stop()
             self._fapd_lock.release()
