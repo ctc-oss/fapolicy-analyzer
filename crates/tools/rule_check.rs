@@ -14,8 +14,8 @@ use ariadne::Source;
 use ariadne::{Report, ReportKind};
 use clap::Clap;
 
-use fapolicy_rules::parse::{rule, StrTrace};
 use fapolicy_rules::parser::errat::{ErrorAt, StrErrorAt};
+use fapolicy_rules::parser::parse::{rule, StrTrace};
 use fapolicy_rules::parser::trace::Trace;
 use fapolicy_rules::{load, Rule};
 

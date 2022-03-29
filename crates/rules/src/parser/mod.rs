@@ -8,7 +8,9 @@
 
 pub mod errat;
 pub mod error;
+pub mod from_str;
 pub mod legacy;
+pub mod parse;
 pub mod trace;
 
 #[cfg(test)]

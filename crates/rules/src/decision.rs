@@ -9,8 +9,8 @@
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
-use crate::parse;
-use crate::parse::StrTrace;
+use crate::parser::parse;
+use crate::parser::parse::StrTrace;
 
 /// # Decision
 /// If the rule triggers, this is the access decision that fapolicyd will tell the kernel.
@@ -44,17 +44,6 @@ impl Display for Decision {
             Decision::AllowLog => f.write_str("allow_log"),
             Decision::DenyLog => f.write_str("deny_log"),
             Decision::DenySyslog => f.write_str("deny_syslog"),
-        }
-    }
-}
-
-impl FromStr for Decision {
-    type Err = String;
-
-    fn from_str(i: &str) -> Result<Self, Self::Err> {
-        match parse::decision(StrTrace::new(i)) {
-            Ok((_, s)) => Ok(s),
-            Err(_) => Err("Failed to parse Decision from string".into()),
         }
     }
 }

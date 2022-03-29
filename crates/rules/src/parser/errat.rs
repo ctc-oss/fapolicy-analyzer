@@ -6,9 +6,9 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use crate::parse::StrTrace;
 use crate::parser::error::RuleParseError;
 use crate::parser::error::RuleParseError::*;
+use crate::parser::parse::StrTrace;
 use crate::parser::trace::{Position, Trace};
 
 pub type StrErrorAt<'a> = ErrorAt<StrTrace<'a>>;
@@ -82,9 +82,9 @@ impl<'a> From<RuleParseError<StrTrace<'a>>> for ErrorAt<StrTrace<'a>> {
 
 #[cfg(test)]
 mod tests {
-    use crate::parse::StrTrace;
     use crate::parser::errat::StrErrorAt;
     use crate::parser::error::RuleParseError;
+    use crate::parser::parse::StrTrace;
 
     #[test]
     fn shift_test() {

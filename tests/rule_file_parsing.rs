@@ -6,13 +6,16 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use fapolicy_rules::parse::StrTrace;
-use fapolicy_rules::{parse, Rule, Set};
+use std::fs::File;
+use std::io::{BufRead, BufReader};
+
 use nom::branch::alt;
 use nom::combinator::map;
 use nom::error::ErrorKind;
-use std::fs::File;
-use std::io::{BufRead, BufReader};
+
+use fapolicy_rules::parser::parse;
+use fapolicy_rules::parser::parse::StrTrace;
+use fapolicy_rules::{Rule, Set};
 
 enum Line {
     Acomment(String),

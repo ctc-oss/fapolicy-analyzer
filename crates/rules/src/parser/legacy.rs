@@ -6,8 +6,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use crate::parse::{StrTrace, TraceError};
-use crate::{parse, Decision, Object, Permission, Subject};
 use nom::bytes::complete::{is_not, take_until};
 use nom::bytes::streaming::tag;
 use nom::character::complete::space0;
@@ -15,6 +13,10 @@ use nom::combinator::rest;
 use nom::error::ErrorKind;
 use nom::sequence::tuple;
 use nom::Err;
+
+use crate::parser::parse;
+use crate::parser::parse::{StrTrace, TraceError};
+use crate::{Decision, Object, Permission, Subject};
 
 // provide legacy api to the new parsers
 
