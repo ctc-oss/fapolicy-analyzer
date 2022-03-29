@@ -63,8 +63,6 @@ fn main() -> Result<(), Box<dyn Error>> {
             a
         });
 
-    offsets.iter().for_each(|o| println!("offset: {:?}", o));
-
     let results: Vec<(usize, IResult<StrTrace, Rule, StrErrorAt>)> = contents
         .iter()
         .map(|s| {
