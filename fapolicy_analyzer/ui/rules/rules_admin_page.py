@@ -14,16 +14,19 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from typing import Any, Mapping, Optional, Sequence
+from typing import Any, Optional, Sequence
 
 from fapolicy_analyzer import Rule
-from fapolicy_analyzer.ui.actions import (NotificationType, add_notification,
-                                          request_rules, request_rules_config)
+from fapolicy_analyzer.ui.actions import (
+    NotificationType,
+    add_notification,
+    request_rules,
+    request_rules_text,
+)
 from fapolicy_analyzer.ui.rules.rules_list_view import RulesListView
 from fapolicy_analyzer.ui.rules.rules_text_view import RulesTextView
 from fapolicy_analyzer.ui.store import dispatch, get_system_feature
-from fapolicy_analyzer.ui.strings import (RULES_CONFIG_LOAD_ERROR,
-                                          RULES_LOAD_ERROR)
+from fapolicy_analyzer.ui.strings import RULES_LOAD_ERROR, RULES_TEXT_LOAD_ERROR
 from fapolicy_analyzer.ui.ui_page import UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 
@@ -46,23 +49,23 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         )
 
         self.__rules: Sequence[Rule] = []
-        self.__rules_config: Mapping[str, str] = {}
+        self.__rules_text: str = ""
         self.__error_rules: Optional[str] = None
-        self.__error_config: Optional[str] = None
+        self.__error_text: Optional[str] = None
         self.__loading_rules: bool = False
-        self.__loading_config: bool = False
+        self.__loading_text: bool = False
 
         self.__load_rules()
 
     def __load_rules(self):
         self.__loading_rules = True
         dispatch(request_rules())
-        self.__loading_config = True
-        dispatch(request_rules_config())
+        self.__loading_text = True
+        dispatch(request_rules_text())
 
     def on_next_system(self, system: Any):
         rules_state = system.get("rules")
-        config_state = system.get("rules_config")
+        text_state = system.get("rules_text")
 
         if not rules_state.loading and self.__error_rules != rules_state.error:
             self.__error_rules = rules_state.error
@@ -79,17 +82,17 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
             self.__rules = rules_state.rules
             self.__list_view.render_rules(self.__rules)
 
-        if not config_state.loading and self.__error_config != config_state.error:
-            self.__error_config = config_state.error
-            self.__loading_config = False
-            logging.error("%s: %s", RULES_CONFIG_LOAD_ERROR, self.__error_config)
-            dispatch(add_notification(RULES_CONFIG_LOAD_ERROR, NotificationType.ERROR))
+        if not text_state.loading and self.__error_text != text_state.error:
+            self.__error_text = text_state.error
+            self.__loading_text = False
+            logging.error("%s: %s", RULES_TEXT_LOAD_ERROR, self.__error_text)
+            dispatch(add_notification(RULES_TEXT_LOAD_ERROR, NotificationType.ERROR))
         elif (
-            self.__loading_config
-            and not config_state.loading
-            and self.__rules_config != config_state.rules_config
+            self.__loading_text
+            and not text_state.loading
+            and self.__rules_text != text_state.rules_text
         ):
-            self.__error_config = None
-            self.__loading_config = False
-            self.__rules_config = config_state.rules_config
-            self.__text_view.render_rules(self.__rules_config.get("rules_path"))
+            self.__error_text = None
+            self.__loading_text = False
+            self.__rules_text = text_state.rules_text
+            self.__text_view.render_rules(self.__rules_text)
