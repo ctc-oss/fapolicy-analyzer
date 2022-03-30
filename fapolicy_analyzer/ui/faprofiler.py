@@ -21,7 +21,7 @@ import time
 
 class FaProfSession:
     def __init__(self, strCmdLine):
-        self.listCmdLine = strCmdLine.split()
+        self.listCmdLine = strCmdLine["executeText"].split()
         logging.debug(f"faProfSession::__init__({self.listCmdLine})")
         self.strName = os.path.basename(self.listCmdLine[0])
         self.strTimeStart = None
@@ -72,7 +72,7 @@ class FaProfiler:
     def start_prof_session(self, strCommandLine):
         logging.debug(f"FaProfiler::start_prof_session('{strCommandLine}')")
         self.faprofSession = FaProfSession(strCommandLine)
-        self.listFaProfSession[strCommandLine] = self.faprofSession
+        self.listFaProfSession[strCommandLine["executeText"]] = self.faprofSession
         bResult = self.faprofSession.startTarget()
         return bResult
 

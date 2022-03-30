@@ -27,6 +27,7 @@ from fapolicy_analyzer import Handle
 from fapolicy_analyzer import __version__ as app_version
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.util.format import f
+from .profile_dialog import ProfileDialog
 
 from .action_toolbar import ActionToolbar
 from .actions import NotificationType, add_notification
@@ -63,32 +64,6 @@ class ServiceStatus(Enum):
     FALSE = False
     TRUE = True
     UNKNOWN = None
-
-
-class dlgProfileExec(Gtk.Dialog):
-    def __init__(self, parent):
-        super().__init__(title="Profile Executable", transient_for=parent,
-                         flags=0)
-        self.add_buttons(
-            Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-            Gtk.STOCK_OK, Gtk.ResponseType.OK
-        )
-
-        self.set_default_size(150, 100)
-        box = self.get_content_area()
-
-        label = Gtk.Label(label="Enter the executable path:")
-        box.add(label)
-
-        self.entry = Gtk.Entry()
-        self.entry.set_text("Hello World")
-        box.pack_start(self.entry, True, True, 0)
-
-        self.show_all()
-
-    def get_text(self):
-        logging.debug("dlgProfileExec::get_text()")
-        return self.entry.get_text()
 
 
 class MainWindow(UIConnectedWidget):
@@ -401,8 +376,8 @@ class MainWindow(UIConnectedWidget):
 
     def on_profileExecMenu_activate(self, *args):
         logging.debug("MainWindow::on_profileExecMenu_activate()")
-        dlgProfTest = dlgProfileExec(self.windowTopLevel)
-        response = dlgProfTest.run()
+        dlgProfTest = ProfileDialog()
+        response = dlgProfTest.get_ref().run()
 
         if response == Gtk.ResponseType.OK:
             words = dlgProfTest.get_text()
