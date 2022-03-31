@@ -12,34 +12,3 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-import context  # noqa: F401 # isort: skip
-
-import gi
-import pytest
-from ui.rules.rules_text_view import RulesTextView
-
-gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk  # isort: skip
-
-
-@pytest.fixture
-def widget():
-    return RulesTextView()
-
-
-def test_creates_widget(widget):
-    assert type(widget.get_ref()) is Gtk.ScrolledWindow
-
-
-def test_renders_rules(widget):
-    widget.render_rules("foo/")
-
-    textView = widget.get_object("textView")
-    textBuffer = textView.get_buffer()
-    assert (
-        textBuffer.get_text(
-            textBuffer.get_start_iter(), textBuffer.get_end_iter(), True
-        )
-        == "foo/"
-    )

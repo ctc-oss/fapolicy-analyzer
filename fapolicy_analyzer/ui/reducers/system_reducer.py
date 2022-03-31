@@ -21,7 +21,7 @@ from .changeset_reducer import changeset_reducer
 from .event_reducer import event_reducer
 from .group_reducer import group_reducer
 from .rule_reducer import rule_reducer
-from .rules_config_reducer import rules_config_reducer
+from .rules_text_reducer import rules_text_reducer
 from .system_trust_reducer import system_trust_reducer
 from .user_reducer import user_reducer
 
@@ -42,7 +42,7 @@ system_reducer: Reducer = combine_reducers(
         "events": event_reducer,
         "groups": group_reducer,
         "rules": rule_reducer,
-        "rules_config": rules_config_reducer,
+        "rules_text": rules_text_reducer,
         "system_trust": system_trust_reducer,
         "users": user_reducer,
     }

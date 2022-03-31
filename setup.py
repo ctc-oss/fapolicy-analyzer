@@ -14,8 +14,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os
-from setuptools import setup, find_namespace_packages
+
+from setuptools import find_namespace_packages, setup
 from setuptools_rust import RustExtension
+
 import version
 
 
@@ -36,16 +38,21 @@ setup(
     name="fapolicy-analyzer",
     version=get_version(),
     packages=find_namespace_packages(
-        include=["fapolicy_analyzer", "fapolicy_analyzer.*"], exclude=["*.tests"]
+        include=["fapolicy_analyzer", "fapolicy_analyzer.*"],
+        exclude=["*.tests"],
     ),
     setup_requires=["setuptools", "setuptools_rust"],
     zip_safe=False,
-    rust_extensions=[RustExtension("fapolicy_analyzer.rust", path="crates/pyo3/Cargo.toml")],
+    rust_extensions=[
+        RustExtension("fapolicy_analyzer.rust", path="crates/pyo3/Cargo.toml")
+    ],
     include_package_data=True,
     package_data={
         "fapolicy_analyzer": ["locale/*/LC_MESSAGES/*.mo"],
         "fapolicy_analyzer.css": ["*.css"],
         "fapolicy_analyzer.glade": ["*.glade"],
         "fapolicy_analyzer.resources": ["*"],
+        "fapolicy_analyzer.resources.sourceview.language-specs": ["*.lang"],
+        "fapolicy_analyzer.resources.sourceview.styles": ["*.xml"],
     },
 )

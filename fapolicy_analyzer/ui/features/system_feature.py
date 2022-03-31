@@ -26,7 +26,7 @@ from fapolicy_analyzer.ui.actions import (
     REQUEST_EVENTS,
     REQUEST_GROUPS,
     REQUEST_RULES,
-    REQUEST_RULES_CONFIG,
+    REQUEST_RULES_TEXT,
     REQUEST_SYSTEM_TRUST,
     REQUEST_USERS,
     RESTORE_SYSTEM_CHECKPOINT,
@@ -39,7 +39,7 @@ from fapolicy_analyzer.ui.actions import (
     error_events,
     error_groups,
     error_rules,
-    error_rules_config,
+    error_rules_text,
     error_system_trust,
     error_users,
     init_system,
@@ -47,7 +47,7 @@ from fapolicy_analyzer.ui.actions import (
     received_events,
     received_groups,
     received_rules,
-    received_rules_config,
+    received_rules_text,
     received_system_trust,
     received_users,
     system_initialization_error,
@@ -173,10 +173,9 @@ def create_system_feature(
         rules = _system.rules()
         return received_rules(rules)
 
-    def _get_rules_config(_: Action) -> Action:
-        # TODO: This will eventually come from the backend
-        rules_config = {"rules_path": "/etc/fapolicyd/fapolicyd.rules"}
-        return received_rules_config(rules_config)
+    def _get_rules_text(_: Action) -> Action:
+        text = _system.rules_text()
+        return received_rules_text(text)
 
     init_epic = pipe(
         of_init_feature(SYSTEM_FEATURE),
@@ -240,10 +239,10 @@ def create_system_feature(
         catch(lambda ex, source: of(error_rules(str(ex)))),
     )
 
-    request_rules_config_epic = pipe(
-        of_type(REQUEST_RULES_CONFIG),
-        map(_get_rules_config),
-        catch(lambda ex, source: of(error_rules_config(str(ex)))),
+    request_rules_text_epic = pipe(
+        of_type(REQUEST_RULES_TEXT),
+        map(_get_rules_text),
+        catch(lambda ex, source: of(error_rules_text(str(ex)))),
     )
 
     system_epic = combine_epics(
@@ -254,7 +253,7 @@ def create_system_feature(
         request_events_epic,
         request_groups_epic,
         request_rules_epic,
-        request_rules_config_epic,
+        request_rules_text_epic,
         request_system_trust_epic,
         request_users_epic,
         restore_system_checkpoint_epic,
