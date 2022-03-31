@@ -89,7 +89,7 @@ class FapdManager():
         else:
             # PROFILING
             logging.debug("fapd is initiating a PROFILING session")
-            if self.fapd_profiling_stdout == None:
+            if not self.fapd_profiling_stdout:
                 timeNow = DT.fromtimestamp(time.time())
                 strTNow = timeNow.strftime("%Y%m%d_%H%M%S_%f")
                 strDfltLogDir = "/tmp/"
@@ -97,7 +97,7 @@ class FapdManager():
                 stderrPath = strDfltLogDir + "fapd_profiling_" + strTNow + ".stderr"
                 self.fapd_profiling_stdout = stdoutPath
                 self.fapd_profiling_stderr = stderrPath
-            
+
             fdStdoutPath = open(self.fapd_profiling_stdout, "w")
             fdStderrPath = open(self.fapd_profiling_stderr, "w")
 

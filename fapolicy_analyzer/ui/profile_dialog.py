@@ -15,21 +15,20 @@
 
 from fapolicy_analyzer.ui.ui_widget import UIBuilderWidget
 
+
 class ProfileDialog(UIBuilderWidget):
     def __init__(self, parent=None):
         super().__init__()
 
         if parent:
             self.get_ref().set_transient_for(parent)
-      
 
     def get_text(self):
         entryDict = {
-            "executeText" : self.get_object("executeEntry").get_text(),
-            "argText" : self.get_object("argEntry").get_text(),
-            "userText" : self.get_object("userEntry").get_text(),
-            "dirText" : self.get_object("dirEntry").get_text(),
-            "envText" : self.get_object("envEntry").get_text(),
-            }
+            "executeText": self.get_object("executeEntry").get_text(),
+            "argText": self.get_object("argEntry").get_text(),
+            "userText": self.get_object("userEntry").get_text(),
+            "dirText": self.get_object("dirEntry").get_text(),
+            "envText": self.get_object("envEntry").get_text(),
+        }
         return entryDict
-
