@@ -20,21 +20,21 @@
   <requires lib="gtk+" version="3.22"/>
   <object class="GtkNotebook" id="rulesAdminPage">
     <property name="visible">True</property>
-    <property name="can_focus">True</property>
+    <property name="can-focus">True</property>
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
+        <property name="can-focus">False</property>
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkBox">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="orientation">vertical</property>
             <child>
               <object class="GtkBox" id="guidedEditorContent">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <placeholder/>
@@ -48,24 +48,24 @@
             </child>
             <child>
               <object class="GtkFrame">
-                <property name="height_request">100</property>
+                <property name="height-request">100</property>
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="margin_left">5</property>
-                <property name="margin_right">5</property>
-                <property name="margin_top">5</property>
-                <property name="margin_bottom">5</property>
-                <property name="label_xalign">0</property>
-                <property name="shadow_type">in</property>
+                <property name="can-focus">False</property>
+                <property name="margin-left">5</property>
+                <property name="margin-right">5</property>
+                <property name="margin-top">5</property>
+                <property name="margin-bottom">5</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">in</property>
                 <child>
                   <object class="GtkAlignment">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="left_padding">12</property>
+                    <property name="can-focus">False</property>
+                    <property name="left-padding">12</property>
                     <child>
                       <object class="GtkTextView" id="statusInfo">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
+                        <property name="can-focus">True</property>
                       </object>
                     </child>
                   </object>
@@ -73,7 +73,7 @@
                 <child type="label">
                   <object class="GtkLabel">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <property name="label" translatable="yes">Status Information</property>
                   </object>
                 </child>
@@ -96,17 +96,17 @@
     <child type="tab">
       <object class="GtkLabel" id="tableView">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
+        <property name="can-focus">False</property>
         <property name="label" translatable="yes">Guided Editor</property>
       </object>
       <packing>
-        <property name="tab_fill">False</property>
+        <property name="tab-fill">False</property>
       </packing>
     </child>
     <child>
       <object class="GtkBox" id="textEditorContent">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
+        <property name="can-focus">False</property>
         <property name="orientation">vertical</property>
         <child>
           <placeholder/>
@@ -119,12 +119,12 @@
     <child type="tab">
       <object class="GtkLabel" id="textView">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
+        <property name="can-focus">False</property>
         <property name="label" translatable="yes">Text Editor</property>
       </object>
       <packing>
         <property name="position">1</property>
-        <property name="tab_fill">False</property>
+        <property name="tab-fill">False</property>
       </packing>
     </child>
   </object>
