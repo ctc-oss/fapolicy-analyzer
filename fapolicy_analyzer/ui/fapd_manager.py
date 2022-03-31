@@ -14,8 +14,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+import os
 import subprocess
 import time
+
 
 from datetime import datetime as DT
 from enum import Enum
@@ -44,9 +46,20 @@ class FapdManager():
         self._fapd_profiler_pid = None
         self._fapd_lock = Lock()
         self.mode = FapdMode.DISABLED
-        self.fapd_profiling_stdout = None
-        self.fapd_profiling_stderr = None
+        if os.environ.get("FAPD_LOGPATH"):
+            self.fapd_profiling_stdout = os.environ.get("FAPD_LOGPATH") + ".stdout"
+            self.fapd_profiling_stderr = os.environ.get("FAPD_LOGPATH") + ".stderr"
         self.procProfile = None
+
+    def set_profiling_stdout(self, strStdoutPath):
+        logging.debug("FapdManager::set_profiling_stdout()")
+        self.fapd_profiling_stdout = strStdoutPath
+        return self.fapd_profiling_stdout
+
+    def set_profiling_stderr(self, strStderrPath):
+        logging.debug("FapdManager::set_profiling_stderr()")
+        self.fapd_profiling_stderr = strStderrPath
+        return self.fapd_profiling_stderr
 
     def get_profiling_stdout(self):
         logging.debug("FapdManager::get_profiling_stdout()")
@@ -76,15 +89,17 @@ class FapdManager():
         else:
             # PROFILING
             logging.debug("fapd is initiating a PROFILING session")
-
-            timeNow = DT.fromtimestamp(time.time()).strftime("%Y%m%d_%H%M%S_%f")
-            logDir = "/tmp/"
-            stdoutPath = logDir + "fapd_profiling_" + timeNow + ".stdout"
-            stderrPath = logDir + "fapd_profiling_" + timeNow + ".stderr"
-            self.fapd_profiling_stdout = stdoutPath
-            self.fapd_profiling_stderr = stderrPath
-            fdStdoutPath = open(stdoutPath, "w")
-            fdStderrPath = open(stderrPath, "w")
+            if self.fapd_profiling_stdout == None:
+                timeNow = DT.fromtimestamp(time.time())
+                strTNow = timeNow.strftime("%Y%m%d_%H%M%S_%f")
+                strDfltLogDir = "/tmp/"
+                stdoutPath = strDfltLogDir + "fapd_profiling_" + strTNow + ".stdout"
+                stderrPath = strDfltLogDir + "fapd_profiling_" + strTNow + ".stderr"
+                self.fapd_profiling_stdout = stdoutPath
+                self.fapd_profiling_stderr = stderrPath
+            
+            fdStdoutPath = open(self.fapd_profiling_stdout, "w")
+            fdStderrPath = open(self.fapd_profiling_stderr, "w")
 
             # ToDo: Move the following into a session object
             self.procProfile = subprocess.Popen(["/usr/sbin/fapolicyd",

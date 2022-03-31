@@ -20,17 +20,25 @@ import time
 
 
 class FaProfSession:
-    def __init__(self, strCmdLine):
-        self.listCmdLine = strCmdLine["executeText"].split()
-        logging.debug(f"faProfSession::__init__({self.listCmdLine})")
-        self.strName = os.path.basename(self.listCmdLine[0])
-        self.strTimeStart = None
+    def __init__(self, dictProfTgt):
+        logging.debug(f"faProfSession::__init__({dictProfTgt})")
+        self.strExecPath = dictProfTgt["executeText"]
+        self.strExecArgs = dictProfTgt["argText"]
+        self.listCmdLine = [self.strExecPath] + self.strExecArgs.split()
+        self.strUser = dictProfTgt["userText"]
+        self.strPwd = dictProfTgt["dirText"]
+        self.strEnv = dictProfTgt["envText"]
+        self.strName = os.path.basename(self.strExecPath)
+        self.strTimeStamp = None
         self.strStdoutPath = None
         self.strStdErrPath = None
-        self.strExecPath = self.listCmdLine[0]
-        self.strExecArgs = self.listCmdLine[1:]
         self.strStatus = None  # Queued, InProgress, Complete (?)
         self.procTarget = None
+
+        # Temp demo workaround for setting target log file paths
+        if dictProfTgt["envText"]:
+            self.strStderrPath = dictProfTgt["envText"] + ".stderr"
+            self.strStdoutPath = dictProfTgt["envText"] + ".stdout"
 
     def startTarget(self):
         logDir = "/tmp/"
