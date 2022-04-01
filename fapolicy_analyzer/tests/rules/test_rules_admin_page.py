@@ -73,6 +73,41 @@ def test_populates_guided_editor(widget, mock_system_feature, mocker):
     mock_list_renderer.assert_called_once_with(mock_rules)
 
 
+def test_populates_guided_editor_status_info(widget, mock_system_feature):
+    mock_rules = [
+        MagicMock(
+            id=1,
+            text="Mock Rule Number 1",
+            is_valid=True,
+            info=[MagicMock(category="i", message="info message")],
+        ),
+        MagicMock(
+            id=1,
+            text="Mock Rule Number 1",
+            is_valid=False,
+            info=[
+                MagicMock(category="w", message="warning message"),
+                MagicMock(category="i", message="other info"),
+            ],
+        ),
+    ]
+    mock_system_feature.on_next(
+        {
+            "rules": MagicMock(error=None, rules=mock_rules, loading=False),
+            "rules_text": MagicMock(),
+        }
+    )
+    text_buffer = widget.get_object("statusInfo").get_buffer()
+    assert (
+        text_buffer.get_text(
+            text_buffer.get_start_iter(), text_buffer.get_end_iter(), True
+        )
+        == """1 invalid rule found
+1 warning(s) found
+2 informational message(s)"""
+    )
+
+
 @pytest.mark.usefixtures("widget")
 def test_handles_rules_exception(mock_dispatch, mock_system_feature):
     mock_dispatch.reset_mock()
@@ -108,7 +143,7 @@ def test_populates_text_editor(widget, mock_system_feature, mocker):
 
 
 @pytest.mark.usefixtures("widget")
-def test_handles_rules_config_exception(mock_dispatch, mock_system_feature):
+def test_handles_rules_text_exception(mock_dispatch, mock_system_feature):
     mock_dispatch.reset_mock()
     mock_system_feature.on_next(
         {"rules": MagicMock(), "rules_text": MagicMock(error="foo", loading=False)}
