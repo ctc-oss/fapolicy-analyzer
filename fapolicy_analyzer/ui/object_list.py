@@ -24,11 +24,9 @@ from .subject_list import SubjectList
 
 
 class ObjectList(SubjectList):
-
     def _columns(self):
         columns = super()._columns()
-        modeCell = Gtk.CellRendererText()
-        modeCell.set_property("background", "light gray")
+        modeCell = Gtk.CellRendererText(background=Colors.LIGHT_GRAY, xalign=0.5)
         modeColumn = Gtk.TreeViewColumn(
             strings.FILE_LIST_MODE_HEADER, modeCell, markup=5
         )
@@ -36,7 +34,7 @@ class ObjectList(SubjectList):
         columns.insert(1, modeColumn)
         return columns
 
-    def __markup(self, value, options, seperator="/", multiValue=False):
+    def __markup(self, value, options, seperator=" / ", multiValue=False):
         def wrap(x):
             return f"<u><b>{x}</b></u>"
 

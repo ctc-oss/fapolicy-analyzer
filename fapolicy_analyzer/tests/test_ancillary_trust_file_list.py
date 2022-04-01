@@ -69,7 +69,7 @@ def test_uses_custom_markup_func():
     widget = AncillaryTrustFileList(trust_func=MagicMock())
     widget.load_trust(_trust)
     view = widget.get_object("treeView")
-    assert ["T/<b><u>D</u></b>", "<b><u>T</u></b>/D", "T/D"] == [
+    assert ["T / <b><u>D</u></b>", "<b><u>T</u></b> / D", "T / D"] == [
         x[0] for x in view.get_model()
     ]
     assert [Colors.LIGHT_RED, Colors.LIGHT_GREEN, Colors.ORANGE] == [

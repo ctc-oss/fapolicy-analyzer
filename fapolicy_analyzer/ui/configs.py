@@ -18,6 +18,7 @@ class Colors:
     BLACK = "black"
     GREEN = "#008000"
     LIGHT_RED = "#FF3333"
+    LIGHT_GRAY = "light gray"
     LIGHT_GREEN = "light green"
     ORANGE = "#E69F00"
     RED = "#FF0000"
