@@ -42,7 +42,6 @@ class FaProfSession:
             self.tgtStdout = None
             self.tgtStderr = None
 
-
     def startTarget(self):
         logging.debug("FaProfSession::startTarget()")
         if not self.tgtStdout:

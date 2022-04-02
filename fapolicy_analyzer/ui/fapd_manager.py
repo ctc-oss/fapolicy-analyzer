@@ -103,8 +103,8 @@ class FapdManager():
             if not self.fapd_profiling_stdout:
                 timeNow = DT.fromtimestamp(time.time())
                 strTNow = timeNow.strftime("%Y%m%d_%H%M%S_%f")
-                self._fapd_profiling_timestamp = strTNow                
-               
+                self._fapd_profiling_timestamp = strTNow
+
                 stdoutPath = "/tmp/fapd_profiling_" + strTNow + ".stdout"
                 stderrPath = "/tmp/fapd_profiling_" + strTNow + ".stderr"
                 self.fapd_profiling_stdout = stdoutPath
