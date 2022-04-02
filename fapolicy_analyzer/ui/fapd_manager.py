@@ -46,10 +46,14 @@ class FapdManager():
         self._fapd_profiler_pid = None
         self._fapd_lock = Lock()
         self.mode = FapdMode.DISABLED
+        self.procProfile = None
         if os.environ.get("FAPD_LOGPATH"):
             self.fapd_profiling_stdout = os.environ.get("FAPD_LOGPATH") + ".stdout"
             self.fapd_profiling_stderr = os.environ.get("FAPD_LOGPATH") + ".stderr"
-        self.procProfile = None
+        else:
+            self.fapd_profiling_stdout = None
+            self.fapd_profiling_stderr = None
+        self._fapd_profiling_timestamp = None
 
     def set_profiling_stdout(self, strStdoutPath):
         logging.debug("FapdManager::set_profiling_stdout()")
@@ -77,6 +81,10 @@ class FapdManager():
         logging.debug("FapdManager::get_mode()")
         return self.mode
 
+    def get_profiling_timestamp(self):
+        logging.debug("FapdManager::get_profiling_timestamp()")
+        return self._fapd_profiling_timestamp
+
     def start(self):
         logging.debug("FapdManager::start()")
         if self.mode == FapdMode.DISABLED:
@@ -89,12 +97,16 @@ class FapdManager():
         else:
             # PROFILING
             logging.debug("fapd is initiating a PROFILING session")
+            logging.debug(f"Stdout: {self.fapd_profiling_stdout}")
+
+            # If stdout path is not specified generate timestamped filename
             if not self.fapd_profiling_stdout:
                 timeNow = DT.fromtimestamp(time.time())
                 strTNow = timeNow.strftime("%Y%m%d_%H%M%S_%f")
-                strDfltLogDir = "/tmp/"
-                stdoutPath = strDfltLogDir + "fapd_profiling_" + strTNow + ".stdout"
-                stderrPath = strDfltLogDir + "fapd_profiling_" + strTNow + ".stderr"
+                self._fapd_profiling_timestamp = strTNow                
+               
+                stdoutPath = "/tmp/fapd_profiling_" + strTNow + ".stdout"
+                stderrPath = "/tmp/fapd_profiling_" + strTNow + ".stderr"
                 self.fapd_profiling_stdout = stdoutPath
                 self.fapd_profiling_stderr = stderrPath
 
@@ -106,7 +118,7 @@ class FapdManager():
                                                  "--permissive", "--debug"],
                                                 stdout=fdStdoutPath,
                                                 stderr=fdStderrPath)
-            print(self.procProfile.pid)
+            logging.debug(f"Fapd pid = {self.procProfile.pid}")
 
     def stop(self):
         logging.debug("FapdManager::stop")
@@ -127,3 +139,7 @@ class FapdManager():
             self.procProfile = None
             self.fapd_profiling_stderr = None
             self.fapd_profiling_stdout = None
+
+    def status(self):
+        logging.debug("FapdManager::status()")
+        return ServiceStatus.UNKNOWN, FapdMode.DISABLED

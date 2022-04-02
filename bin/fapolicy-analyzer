@@ -40,7 +40,7 @@ else
 fi
 
 # Execute the fapolicy-analyzer with heightened privileges
-pkexec  --disable-internal-agent env NO_AT_BRIDGE=1 DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY python3 -m fapolicy_analyzer.ui "$@"
+pkexec  --disable-internal-agent env NO_AT_BRIDGE=1 DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY FAPD_LOGPATH=$FAPD_LOGPATH python3 -m fapolicy_analyzer.ui "$@"
 
 # Terminate pkttyagent if started
 if [[ $pidAgent != 0 ]]; then

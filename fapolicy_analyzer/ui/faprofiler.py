@@ -20,37 +20,42 @@ import time
 
 
 class FaProfSession:
-    def __init__(self, dictProfTgt):
-        logging.debug(f"faProfSession::__init__({dictProfTgt})")
-        self.strExecPath = dictProfTgt["executeText"]
-        self.strExecArgs = dictProfTgt["argText"]
-        self.listCmdLine = [self.strExecPath] + self.strExecArgs.split()
-        self.strUser = dictProfTgt["userText"]
-        self.strPwd = dictProfTgt["dirText"]
-        self.strEnv = dictProfTgt["envText"]
-        self.strName = os.path.basename(self.strExecPath)
-        self.strTimeStamp = None
-        self.strStdoutPath = None
-        self.strStdErrPath = None
-        self.strStatus = None  # Queued, InProgress, Complete (?)
+    def __init__(self, dictProfTgt, fapd_mgr=None):
+        logging.debug(f"faProfSession::__init__({dictProfTgt}, {fapd_mgr})")
+        self.execPath = dictProfTgt["executeText"]
+        self.execArgs = dictProfTgt["argText"]
+        self.listCmdLine = [self.execPath] + self.execArgs.split()
+        self.user = dictProfTgt["userText"]
+        self.pwd = dictProfTgt["dirText"]
+        self.env = dictProfTgt["envText"]
+        self.fapd_mgr = fapd_mgr
+        self.name = os.path.basename(self.execPath)
+        self.timeStamp = None
+        self.status = None  # Queued, InProgress, Complete (?)
         self.procTarget = None
 
         # Temp demo workaround for setting target log file paths
-        if dictProfTgt["envText"]:
-            self.strStderrPath = dictProfTgt["envText"] + ".stderr"
-            self.strStdoutPath = dictProfTgt["envText"] + ".stdout"
+        if os.environ.get("FAPD_LOGPATH"):
+            self.tgtStdout = os.environ.get("FAPD_LOGPATH") + f"_{self.name}.stdout"
+            self.tgtStderr = os.environ.get("FAPD_LOGPATH") + f"_{self.name}.stderr"
+        else:
+            self.tgtStdout = None
+            self.tgtStderr = None
+
 
     def startTarget(self):
-        logDir = "/tmp/"
-        self.stdoutPath = logDir + "fapd_profiling_" + self.strName + ".stdout"
-        self.stderrPath = logDir + "fapd_profiling_" + self.strName + ".stderr"
-        fdStdoutPath = open(self.stdoutPath, "w")
-        fdStderrPath = open(self.stderrPath, "w")
+        logging.debug("FaProfSession::startTarget()")
+        if not self.tgtStdout:
+            self.timeStamp = self.fapd_mgr.get_profiling_timestamp()
+            self.tgtStdout = f"/tmp/tgt_profiling_{self.timeStamp}_{self.name}.stdout"
+            self.tgtStderr = f"/tmp/tgt_profiling_{self.timeStamp}_{self.name}.stderr"
+        fdTgtStdout = open(self.tgtStdout, "w")
+        fdTgtStderr = open(self.tgtStderr, "w")
 
         # Capture process object
         self.procTarget = subprocess.Popen(self.listCmdLine,
-                                           stdout=fdStdoutPath,
-                                           stderr=fdStderrPath)
+                                           stdout=fdTgtStdout,
+                                           stderr=fdTgtStderr)
         print(self.procTarget.pid)
 
         # Block until process terminates
@@ -71,15 +76,16 @@ class FaProfSession:
 
 
 class FaProfiler:
-    def __init__(self):
+    def __init__(self, fapd_mgr=None):
         logging.debug("FaProfiler::__init__()")
+        self.fapd_mgr = fapd_mgr
         self.strExecPath = None
         self.strExecArgs = None
         self.listFaProfSession = dict()  # dict of current / completed sessions
 
     def start_prof_session(self, strCommandLine):
         logging.debug(f"FaProfiler::start_prof_session('{strCommandLine}')")
-        self.faprofSession = FaProfSession(strCommandLine)
+        self.faprofSession = FaProfSession(strCommandLine, self.fapd_mgr)
         self.listFaProfSession[strCommandLine["executeText"]] = self.faprofSession
         bResult = self.faprofSession.startTarget()
         return bResult
