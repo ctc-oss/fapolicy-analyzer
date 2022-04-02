@@ -38,12 +38,13 @@ class FapdMode(Enum):
 
 
 class FapdManager():
-    def __init__(self):
+    def __init__(self, bSuFapdControl=True):
         logging.debug("FapdManager::__init__(self)")
         self._fapd_status = ServiceStatus.UNKNOWN
         self._fapd_monitoring = False
         self._fapd_ref = Handle("fapolicyd")
         self._fapd_profiler_pid = None
+        self._fapd_online_enabled = bSuFapdControl
         self._fapd_lock = Lock()
         self.mode = FapdMode.DISABLED
         self.procProfile = None
