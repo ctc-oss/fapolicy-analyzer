@@ -74,7 +74,7 @@ def mock_log():
 
 
 def mock_rule():
-    return MagicMock(id=1, text="Mock Rule Number 1")
+    return MagicMock(id=1, text="Mock Rule Number 1", is_valid=True, info=[])
 
 
 class mock_System:

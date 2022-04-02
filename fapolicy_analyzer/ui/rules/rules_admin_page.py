@@ -14,6 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+from locale import gettext as _
 from typing import Any, Optional, Sequence
 
 from fapolicy_analyzer import Rule
@@ -29,6 +30,7 @@ from fapolicy_analyzer.ui.store import dispatch, get_system_feature
 from fapolicy_analyzer.ui.strings import RULES_LOAD_ERROR, RULES_TEXT_LOAD_ERROR
 from fapolicy_analyzer.ui.ui_page import UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
+from fapolicy_analyzer.util.format import f
 
 
 class RulesAdminPage(UIConnectedWidget, UIPage):
@@ -63,6 +65,22 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         self.__loading_text = True
         dispatch(request_rules_text())
 
+    def __render_rule_status(self):
+        view = self.get_object("statusInfo")
+        categories = [i.category for r in self.__rules for i in r.info]
+        invalid_count = sum(not r.is_valid for r in self.__rules)  # noqa: F841
+        warning_count = sum(c == "w" for c in categories)  # noqa: F841
+        info_count = sum(c == "i" for c in categories)  # noqa: F841
+        view.get_buffer().set_text(
+            f(
+                _(
+                    """{invalid_count} invalid rule found
+{warning_count} warning(s) found
+{info_count} informational message(s)"""
+                )
+            )
+        )
+
     def on_next_system(self, system: Any):
         rules_state = system.get("rules")
         text_state = system.get("rules_text")
@@ -81,6 +99,7 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
             self.__loading_rules = False
             self.__rules = rules_state.rules
             self.__list_view.render_rules(self.__rules)
+            self.__render_rule_status()
 
         if not text_state.loading and self.__error_text != text_state.error:
             self.__error_text = text_state.error
