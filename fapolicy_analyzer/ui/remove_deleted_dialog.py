@@ -15,8 +15,19 @@
 
 from fapolicy_analyzer.ui.ui_widget import UIBuilderWidget
 
+
 class RemoveDeletedDialog(UIBuilderWidget):
-    def __init__(self, parent=None):
+    def __init__(self, deleted=[], parent=None):
+        def plural(count):
+            return ("s", "are") if count > 1 else ("", "is")
+
         super().__init__()
         if parent:
             self.get_ref().set_transient_for(parent)
+
+        textView = self.get_object("removeInfo")
+        textBuffer = textView.get_buffer()
+
+        n_deleted = len(deleted)
+        displayText = f"{n_deleted} file{plural(n_deleted)[0]} cannot be found on disc"
+        textBuffer.set_text(displayText)

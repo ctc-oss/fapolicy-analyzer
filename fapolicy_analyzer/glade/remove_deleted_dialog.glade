@@ -16,7 +16,7 @@
         <child internal-child="action_area">
           <object class="GtkButtonBox">
             <property name="can_focus">False</property>
-            <property name="layout_style">end</property>
+            <property name="layout_style">center</property>
             <child>
               <object class="GtkButton" id="removeBtn">
                 <property name="label" translatable="yes">Remove</property>
@@ -40,7 +40,7 @@
               <packing>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
-                <property name="position">1</property>
+                <property name="position">2</property>
               </packing>
             </child>
           </object>
@@ -55,6 +55,7 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="editable">False</property>
+            <property name="justification">center</property>
             <property name="accepts_tab">False</property>
           </object>
           <packing>
@@ -66,7 +67,7 @@
       </object>
     </child>
     <action-widgets>
-      <action-widget response="1">removeBtn</action-widget>
+      <action-widget response="-10">removeBtn</action-widget>
       <action-widget response="-6">cancelBtn</action-widget>
     </action-widgets>
   </object>

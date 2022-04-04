@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import gi
 import logging
 from locale import gettext as _
 
@@ -83,7 +82,7 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
             model, pathlist = treeView.get_selection().get_selected_rows()
             iter_ = model.get_iter(next(iter(pathlist)))  # single select use first path
             subject = model.get_value(iter_, 3)
-            
+
             self.removeMenu.popup_at_pointer() if not os.path.isfile(subject.path) else None
 
     def add_trusted_files(self, *files):
@@ -140,6 +139,7 @@ SHA256: {fs.sha(trust.path)}"""
                 if status == "d"
                 else strings.ANCILLARY_UNKNOWN_FILE_MESSAGE
             )
+            
         else:
             trustBtn.set_sensitive(False)
             untrustBtn.set_sensitive(False)
@@ -155,19 +155,29 @@ SHA256: {fs.sha(trust.path)}"""
 
     def on_trustBtn_clicked(self, *args):
         if self.selectedFiles:
-            dne_list = [f for f in self.selectedFiles if not os.path.isfile(f) ]
+            dne_list = [f for f in self.selectedFiles if not os.path.isfile(f)]
+            selectedFiles = [f for f in self.selectedFiles if f not in dne_list]
             if len(dne_list) > 0:
-                removeDialog = RemoveDeletedDialog().get_ref()
+                removeDialog = RemoveDeletedDialog(deleted=dne_list).get_ref()
                 resp = removeDialog.run()
                 removeDialog.destroy()
-                if resp == 1:
+                if resp == Gtk.ResponseType.APPLY:
                     self.on_remove_file_activate()
-            else:
-                self.add_trusted_files(*self.selectedFiles)
+            if selectedFiles:
+                self.add_trusted_files(*selectedFiles)
 
     def on_untrustBtn_clicked(self, *args):
         if self.selectedFiles:
-            self.delete_trusted_files(*self.selectedFiles)
+            dne_list = [f for f in self.selectedFiles if not os.path.isfile(f)]
+            selectedFiles = [f for f in self.selectedFiles if f not in dne_list]
+            if len(dne_list) > 0:
+                removeDialog = RemoveDeletedDialog(deleted=dne_list).get_ref()
+                resp = removeDialog.run()
+                removeDialog.destroy()
+                if resp == Gtk.ResponseType.APPLY:
+                    self.on_remove_file_activate()
+            if selectedFiles:
+                self.delete_trusted_files(*selectedFiles)
 
     def on_next_system(self, system):
         changesets = system.get("changesets")
@@ -200,9 +210,7 @@ SHA256: {fs.sha(trust.path)}"""
     def on_remove_file_activate(self, *args):
         treeView = self.trustFileList.get_object("treeView")
         model, pathlist = treeView.get_selection().get_selected_rows()
-        child_model = model.get_model().get_model()
-        iter_ = child_model.get_iter(next(iter(pathlist)))  # single select use first pat
-        subject = child_model.get_value(iter_, 3)
-        self.delete_trusted_files(subject.path)
-        child_model.remove(iter_)
-
+        if model: 
+            child_model = model.get_model().get_model()
+            iter_ = child_model.get_iter(next(iter(pathlist)))  # single select use first pat
+            child_model.remove(iter_)
