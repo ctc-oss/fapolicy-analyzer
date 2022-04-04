@@ -140,10 +140,10 @@ def test_on_trustBtn_clicked(widget, mock_dispatch, mocker):
     mockDialog = MagicMock(
         get_ref=MagicMock(return_value=MagicMock(run=MagicMock(return_value=Gtk.ResponseType.APPLY)))
     )
-    mocker.patch("ui.ancillary_trust_database_admin.RemoveDeletedDialog", return_value=mockDialog)  
+    mocker.patch("ui.ancillary_trust_database_admin.RemoveDeletedDialog", return_value=mockDialog)
 
-    temp=tempfile.NamedTemporaryFile()
-    
+    temp = tempfile.NamedTemporaryFile()
+
     trust = [MagicMock(status="T", path=temp.name, size=1, hash="abc", spec=Trust),
              MagicMock(status="T", path="/tmp/bar", size=1, hash="abc", spec=Trust)]
     widget.on_trust_selection_changed(trust)
@@ -181,8 +181,8 @@ def test_on_untrustBtn_clicked(widget, mock_dispatch, mocker):
         get_ref=MagicMock(return_value=MagicMock(run=MagicMock(return_value=Gtk.ResponseType.APPLY)))
     )
     mocker.patch("ui.ancillary_trust_database_admin.RemoveDeletedDialog", return_value=mockDialog)
-    temp=tempfile.NamedTemporaryFile()
-    
+    temp = tempfile.NamedTemporaryFile()
+
     trust = [MagicMock(status="T", path=temp.name, size=1, hash="abc", spec=Trust),
              MagicMock(status="T", path="/tmp/bar", size=1, hash="abc", spec=Trust)]
     widget.on_trust_selection_changed(trust)

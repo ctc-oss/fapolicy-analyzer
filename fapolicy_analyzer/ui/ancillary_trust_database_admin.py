@@ -139,7 +139,7 @@ SHA256: {fs.sha(trust.path)}"""
                 if status == "d"
                 else strings.ANCILLARY_UNKNOWN_FILE_MESSAGE
             )
-            
+
         else:
             trustBtn.set_sensitive(False)
             untrustBtn.set_sensitive(False)
@@ -210,7 +210,7 @@ SHA256: {fs.sha(trust.path)}"""
     def on_remove_file_activate(self, *args):
         treeView = self.trustFileList.get_object("treeView")
         model, pathlist = treeView.get_selection().get_selected_rows()
-        if model: 
+        if model:
             child_model = model.get_model().get_model()
             iter_ = child_model.get_iter(next(iter(pathlist)))  # single select use first pat
             child_model.remove(iter_)
