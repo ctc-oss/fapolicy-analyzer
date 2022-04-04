@@ -19,6 +19,7 @@ from time import localtime, mktime, strftime, strptime
 import fapolicy_analyzer.ui.strings as strings
 import gi
 
+from .configs import Colors
 from .searchable_list import SearchableList
 from .strings import FILE_LABEL, FILES_LABEL
 
@@ -79,7 +80,7 @@ class TrustFileList(SearchableList):
         # trust status column
         trustColumn = Gtk.TreeViewColumn(
             strings.FILE_LIST_TRUST_HEADER,
-            Gtk.CellRendererText(background="light gray"),
+            Gtk.CellRendererText(background=Colors.LIGHT_GRAY, xalign=0.5),
             markup=0,
         )
         trustColumn.set_sort_column_id(0)

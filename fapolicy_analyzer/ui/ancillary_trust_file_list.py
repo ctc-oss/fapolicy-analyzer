@@ -13,17 +13,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import gi
-import fapolicy_analyzer.ui.strings as strings
-
-gi.require_version("Gtk", "3.0")
 import os.path
 from functools import reduce
-from gi.repository import Gtk
 from types import SimpleNamespace
-from .configs import Colors
+
+import fapolicy_analyzer.ui.strings as strings
+import gi
+
 from .add_file_button import AddFileButton
+from .configs import Colors
 from .trust_file_list import TrustFileList, epoch_to_string
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk  # isort: skip
 
 
 class AncillaryTrustFileList(TrustFileList):
@@ -38,11 +40,11 @@ class AncillaryTrustFileList(TrustFileList):
     def __status_markup(self, status):
         s = status.lower()
         return (
-            ("<b><u>T</u></b>/D", Colors.LIGHT_GREEN)
+            ("<b><u>T</u></b> / D", Colors.LIGHT_GREEN)
             if s == "t"
-            else ("T/<b><u>D</u></b>", Colors.LIGHT_RED)
+            else ("T / <b><u>D</u></b>", Colors.LIGHT_RED)
             if s == "d"
-            else ("T/D", Colors.ORANGE)
+            else ("T / D", Colors.ORANGE)
         )
 
     def _changesets_to_map(self, changesets):
@@ -63,7 +65,7 @@ class AncillaryTrustFileList(TrustFileList):
     def _columns(self):
         self._changesColumn = Gtk.TreeViewColumn(
             strings.FILE_LIST_CHANGES_HEADER,
-            Gtk.CellRendererText(background="light gray"),
+            Gtk.CellRendererText(background=Colors.LIGHT_GRAY),
             text=5,
         )
         self._changesColumn.set_sort_column_id(5)

@@ -17,6 +17,8 @@ import gi
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
+
+from .configs import Colors
 from .strings import (
     CHANGESET_ACTION_ADD,
     CHANGESET_ACTION_DEL,
@@ -52,7 +54,7 @@ class ConfirmInfoDialog(Gtk.Dialog):
 
         columnAction = Gtk.TreeViewColumn(
             DEPLOY_ANCILLARY_CONFIRM_DLG_ACTION_COL_HDR,
-            Gtk.CellRendererText(background="light gray"),
+            Gtk.CellRendererText(background=Colors.LIGHT_GRAY),
             text=0,
         )
         columnAction.set_sort_column_id(0)
