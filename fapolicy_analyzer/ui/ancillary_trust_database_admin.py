@@ -162,7 +162,15 @@ SHA256: {fs.sha(trust.path)}"""
                 resp = removeDialog.run()
                 removeDialog.destroy()
                 if resp == Gtk.ResponseType.APPLY:
-                    self.on_remove_file_activate()
+                    self.delete_trusted_files(*dne_list)
+                    treeView = self.trustFileList.get_object("treeView")
+                    treeView.get_selection().select_path(Gtk.TreePath.new_first())
+                    model, pathlist = treeView.get_selection().get_selected_rows()
+                    if model:
+                        child_model = model.get_model().get_model()
+                        iter_ = child_model.get_iter(next(iter(pathlist)))  # single select use first pat
+                        child_model.remove(iter_)
+
             if selectedFiles:
                 self.add_trusted_files(*selectedFiles)
 
@@ -175,7 +183,15 @@ SHA256: {fs.sha(trust.path)}"""
                 resp = removeDialog.run()
                 removeDialog.destroy()
                 if resp == Gtk.ResponseType.APPLY:
-                    self.on_remove_file_activate()
+                    self.delete_trusted_files(*dne_list)
+                    treeView = self.trustFileList.get_object("treeView")
+                    treeView.get_selection().select_path(Gtk.TreePath.new_first())
+                    model, pathlist = treeView.get_selection().get_selected_rows()
+                    if model:
+                        child_model = model.get_model().get_model()
+                        iter_ = child_model.get_iter(next(iter(pathlist)))  # single select use first pat
+                        child_model.remove(iter_)
+
             if selectedFiles:
                 self.delete_trusted_files(*selectedFiles)
 
