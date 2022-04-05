@@ -32,6 +32,7 @@ from .action_toolbar import ActionToolbar
 from .actions import NotificationType, add_notification
 from .analyzer_selection_dialog import ANALYZER_SELECTION
 from .database_admin_page import DatabaseAdminPage
+from .fapd_manager import FapdManager, FapdMode
 from .notification import Notification
 from .operations import DeployChangesetsOp
 from .policy_rules_admin_page import PolicyRulesAdminPage
@@ -77,6 +78,7 @@ class MainWindow(UIConnectedWidget):
         self._fapd_status = ServiceStatus.UNKNOWN
         self._fapd_monitoring = False
         self._fapd_ref = None
+        self._fapd_mgr = FapdManager(self._fapdControlPermitted)
         self._fapd_lock = Lock()
         self.__changesets = []
         self.__page = None
@@ -375,13 +377,15 @@ class MainWindow(UIConnectedWidget):
     def on_fapdStartMenu_activate(self, menuitem, data=None):
         logging.debug("on_fapdStartMenu_activate() invoked.")
         if (self._fapd_status != ServiceStatus.UNKNOWN) and (self._fapd_lock.acquire()):
-            self._fapd_ref.start()
+            self._fapd_mgr.set_mode(FapdMode.ONLINE)
+            self._fapd_mgr.start()
             self._fapd_lock.release()
 
     def on_fapdStopMenu_activate(self, menuitem, data=None):
         logging.debug("on_fapdStopMenu_activate() invoked.")
         if (self._fapd_status != ServiceStatus.UNKNOWN) and (self._fapd_lock.acquire()):
-            self._fapd_ref.stop()
+            self._fapd_mgr.set_mode(FapdMode.ONLINE)
+            self._fapd_mgr.stop()
             self._fapd_lock.release()
 
     def _enable_fapd_menu_items(self, status: ServiceStatus):
