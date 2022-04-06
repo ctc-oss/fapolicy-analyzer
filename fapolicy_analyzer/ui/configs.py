@@ -15,6 +15,18 @@
 
 
 class Colors:
+    BLACK = "black"
+    GREEN = "#008000"
     LIGHT_RED = "#FF3333"
-    ORANGE = "#E69F00"
+    LIGHT_GRAY = "light gray"
     LIGHT_GREEN = "light green"
+    ORANGE = "#E69F00"
+    RED = "#FF0000"
+    SHADED = "gainsboro"
+    WHITE = "white"
+    BLUE = "blue"
+
+
+class FontWeights:
+    BOLD = 700
+    NORMAL = 400

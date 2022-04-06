@@ -25,7 +25,7 @@ from rx.subject import Subject
 from ui.actions import ADD_NOTIFICATION
 from ui.rules import RulesAdminPage
 from ui.store import init_store
-from ui.strings import RULES_LOAD_ERROR
+from ui.strings import RULES_LOAD_ERROR, RULES_TEXT_LOAD_ERROR
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
@@ -57,35 +57,101 @@ def test_creates_widget(widget):
     assert type(widget.get_ref()) is Gtk.Notebook
 
 
-def test_populates_rules(widget, mock_system_feature, mocker):
+def test_populates_guided_editor(widget, mock_system_feature, mocker):
     mock_rules = [mock_rule()]
     mock_list_renderer = MagicMock()
-    mock_text_renderer = MagicMock()
     mocker.patch(
         "fapolicy_analyzer.ui.rules.rules_list_view.RulesListView.render_rules",
         mock_list_renderer,
     )
+    mock_system_feature.on_next(
+        {
+            "rules": MagicMock(error=None, rules=mock_rules, loading=False),
+            "rules_text": MagicMock(),
+        }
+    )
+    mock_list_renderer.assert_called_once_with(mock_rules)
+
+
+def test_populates_guided_editor_status_info(widget, mock_system_feature):
+    mock_rules = [
+        MagicMock(
+            id=1,
+            text="Mock Rule Number 1",
+            is_valid=True,
+            info=[MagicMock(category="i", message="info message")],
+        ),
+        MagicMock(
+            id=1,
+            text="Mock Rule Number 1",
+            is_valid=False,
+            info=[
+                MagicMock(category="w", message="warning message"),
+                MagicMock(category="i", message="other info"),
+            ],
+        ),
+    ]
+    mock_system_feature.on_next(
+        {
+            "rules": MagicMock(error=None, rules=mock_rules, loading=False),
+            "rules_text": MagicMock(),
+        }
+    )
+    text_buffer = widget.get_object("statusInfo").get_buffer()
+    assert (
+        text_buffer.get_text(
+            text_buffer.get_start_iter(), text_buffer.get_end_iter(), True
+        )
+        == """1 invalid rule found
+1 warning(s) found
+2 informational message(s)"""
+    )
+
+
+@pytest.mark.usefixtures("widget")
+def test_handles_rules_exception(mock_dispatch, mock_system_feature):
+    mock_dispatch.reset_mock()
+    mock_system_feature.on_next(
+        {"rules": MagicMock(error="foo", loading=False), "rules_text": MagicMock()}
+    )
+    mock_dispatch.assert_called_with(
+        InstanceOf(Action)
+        & Attrs(
+            type=ADD_NOTIFICATION,
+            payload=Attrs(text=RULES_LOAD_ERROR),
+        )
+    )
+
+
+def test_populates_text_editor(widget, mock_system_feature, mocker):
+    mock_text_renderer = MagicMock()
     mocker.patch(
         "fapolicy_analyzer.ui.rules.rules_text_view.RulesTextView.render_rules",
         mock_text_renderer,
     )
     mock_system_feature.on_next(
         {
-            "rules": MagicMock(error=None, rules=mock_rules, loading=False),
+            "rules": MagicMock(),
+            "rules_text": MagicMock(
+                error=None,
+                rules_text="foo",
+                loading=False,
+            ),
         }
     )
-    mock_list_renderer.assert_called_once_with(mock_rules)
-    mock_text_renderer.assert_called_once_with(mock_rules)
+    mock_text_renderer.assert_called_once_with("foo")
 
 
 @pytest.mark.usefixtures("widget")
-def test_rules_w_exception(mock_dispatch, mock_system_feature):
+def test_handles_rules_text_exception(mock_dispatch, mock_system_feature):
     mock_dispatch.reset_mock()
-    mock_system_feature.on_next({"rules": MagicMock(error="foo", loading=False)})
+    mock_system_feature.on_next(
+        {"rules": MagicMock(), "rules_text": MagicMock(error="foo", loading=False)}
+    )
     mock_dispatch.assert_called_with(
         InstanceOf(Action)
         & Attrs(
             type=ADD_NOTIFICATION,
-            payload=Attrs(text=RULES_LOAD_ERROR),
+            payload=Attrs(text=RULES_TEXT_LOAD_ERROR),
         )
     )

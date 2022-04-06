@@ -57,9 +57,9 @@ class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
 
     def __status_markup(self, status):
         return (
-            ("<b><u>T</u></b>/D", Colors.LIGHT_GREEN)
+            ("<b><u>T</u></b> / D", Colors.LIGHT_GREEN)
             if status.lower() == "t"
-            else ("T/<b><u>D</u></b>", Colors.LIGHT_RED)
+            else ("T / <b><u>D</u></b>", Colors.LIGHT_RED)
         )
 
     def __load_trust(self):
@@ -127,4 +127,6 @@ SHA256: {fs.sha(trust.path)}"""
 
     def on_addBtn_clicked(self, *args):
         if self.selectedFiles:
-            self.file_added_to_ancillary_trust(*[sfile.path for sfile in self.selectedFiles])
+            self.file_added_to_ancillary_trust(
+                *[sfile.path for sfile in self.selectedFiles]
+            )

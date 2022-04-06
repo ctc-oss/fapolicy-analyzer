@@ -6,9 +6,11 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+use fapolicy_rules::parse::StrTrace;
 use fapolicy_rules::{parse, Rule, Set};
 use nom::branch::alt;
 use nom::combinator::map;
+use nom::error::ErrorKind;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
@@ -19,11 +21,16 @@ enum Line {
 }
 
 fn parser(i: &str) -> nom::IResult<&str, Line> {
-    alt((
+    let ii = StrTrace::new(i);
+    match alt((
         map(parse::comment, Line::Acomment),
         map(parse::rule, Line::Arule),
         map(parse::set, Line::Aset),
-    ))(i)
+    ))(ii)
+    {
+        Ok((r, l)) => Ok((r.fragment, l)),
+        Err(_) => Err(nom::Err::Error(nom::error::Error::new(i, ErrorKind::CrLf))),
+    }
 }
 
 fn parse_lines(xs: Vec<String>) {

@@ -14,7 +14,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import context  # noqa: F401 # isort: skip
-from unittest.mock import MagicMock
 
 import gi
 import pytest
@@ -34,17 +33,13 @@ def test_creates_widget(widget):
 
 
 def test_renders_rules(widget):
-    rules = [
-        MagicMock(id=1, text="Mock Rule Number 1"),
-        MagicMock(id=2, text="Mock Rule Number 2"),
-    ]
-    expected = "Mock Rule Number 1\nMock Rule Number 2"
-    widget.render_rules(rules)
+    widget.render_rules("foo/")
+
     textView = widget.get_object("textView")
     textBuffer = textView.get_buffer()
     assert (
         textBuffer.get_text(
             textBuffer.get_start_iter(), textBuffer.get_end_iter(), True
         )
-        == expected
+        == "foo/"
     )

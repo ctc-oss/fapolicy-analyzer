@@ -6,54 +6,88 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use std::fs::File;
-use std::io::{BufRead, BufReader};
+use std::path::PathBuf;
 
 use nom::branch::alt;
-use nom::combinator::map;
+use nom::character::complete::multispace0;
+use nom::combinator::{eof, map, recognize};
+use nom::error::{ErrorKind, ParseError};
+use nom::sequence::tuple;
 
-use crate::db::DB;
+use crate::db::{RuleDef, DB};
 use crate::error::Error;
-use crate::read::Line::{Comment, SetDef, WellFormed};
-use crate::{parse, Rule, Set};
+use crate::linter::lint::lint_db;
+use crate::parse::{StrTrace, TraceResult};
+use crate::read::Line::*;
+use crate::{load, parse, Rule, Set};
 
+#[derive(Debug)]
 enum Line {
+    Blank,
     Comment(String),
     SetDef(Set),
-    WellFormed(Rule),
+    WellFormedRule(Rule),
+    MalformedRule(String, String),
 }
 
-fn parser(i: &str) -> nom::IResult<&str, Line> {
+enum LineError<I> {
+    CannotParse(I, String),
+    Nom(I, ErrorKind),
+}
+
+impl<I> ParseError<I> for LineError<I> {
+    fn from_error_kind(input: I, kind: ErrorKind) -> Self {
+        LineError::Nom(input, kind)
+    }
+
+    fn append(_: I, _: ErrorKind, other: Self) -> Self {
+        other
+    }
+}
+
+fn parser(i: &str) -> nom::IResult<StrTrace, Line, LineError<&str>> {
     alt((
+        map(blank_line, |_| Blank),
         map(parse::comment, Comment),
         map(parse::set, SetDef),
-        map(parse::rule, WellFormed),
-    ))(i)
+        map(parse::rule, WellFormedRule),
+    ))(StrTrace::new(i))
+    .map_err(|e| match e {
+        nom::Err::Error(e) => nom::Err::Error(LineError::CannotParse(i, format!("{}", e))),
+        e => nom::Err::Error(LineError::CannotParse(i, format!("{:?}", e))),
+    })
+}
+
+fn blank_line(i: StrTrace) -> TraceResult<StrTrace> {
+    recognize(tuple((multispace0, eof)))(i)
 }
 
 pub fn load_rules_db(path: &str) -> Result<DB, Error> {
-    let f = File::open(path)?;
-    let buff = BufReader::new(f);
+    let xs = load::rules_from(PathBuf::from(path))?;
 
-    let xs: Vec<String> = buff
-        .lines()
-        .map(|r| r.unwrap())
-        .filter(|s| !s.is_empty() && !s.starts_with('#'))
-        .collect();
-
-    let lookup: Vec<Rule> = xs
+    let lookup: Vec<(String, RuleDef)> = xs
         .iter()
-        .map(|l| (l, parser(l)))
-        .flat_map(|(_, r)| match r {
-            Ok(("", rule)) => Some(rule),
+        .map(|(source, l)| (source, parser(l)))
+        .flat_map(|(source, r)| match r {
+            Ok((t, rule)) if t.fragment.is_empty() => Some((source, rule)),
             Ok((_, _)) => None,
+            Err(nom::Err::Error(LineError::CannotParse(i, why))) => {
+                Some((source, MalformedRule(i.to_string(), why)))
+            }
             Err(_) => None,
         })
-        .filter_map(|line| match line {
-            WellFormed(r) => Some(r),
+        .map(|(source, line)| {
+            let source = source.display().to_string();
+            let (_, file_name) = source.rsplit_once('/').expect("absolute path");
+            (file_name.to_string(), line)
+        })
+        .map(|(source, line)| (source, line))
+        .filter_map(|(source, line)| match line {
+            WellFormedRule(r) => Some((source, RuleDef::Valid(r))),
+            MalformedRule(text, error) => Some((source, RuleDef::Invalid { text, error })),
             _ => None,
         })
         .collect();
 
-    Ok(lookup.into())
+    Ok(lint_db(DB::from_sources(lookup)))
 }

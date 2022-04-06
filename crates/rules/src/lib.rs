@@ -16,13 +16,18 @@ pub use self::set::Set;
 pub use self::subject::Part as SubjPart;
 pub use self::subject::Subject;
 
+pub mod parser;
+
 mod decision;
 mod file_type;
+mod linter;
 mod object;
 pub mod parse;
 
 pub mod db;
 pub mod error;
+pub mod load;
+
 mod permission;
 pub mod read;
 mod rule;

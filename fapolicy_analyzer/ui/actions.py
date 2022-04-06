@@ -62,6 +62,10 @@ REQUEST_RULES = "REQUEST_RULES"
 RECEIVED_RULES = "RECEIVED_RULES"
 ERROR_RULES = "ERROR_RULES"
 
+REQUEST_RULES_TEXT = "REQUEST_RULES_TEXT"
+RECEIVED_RULES_TEXT = "RECEIVED_RULES_TEXT"
+ERROR_RULES_TEXT = "ERROR_RULES_TEXT"
+
 
 def _create_action(type: str, payload: Any = None) -> Action:
     return create_action(type)(payload)
@@ -193,6 +197,18 @@ def received_rules(rules: Sequence[Rule]) -> Action:
 
 def error_rules(error: str) -> Action:
     return _create_action(ERROR_RULES, error)
+
+
+def request_rules_text() -> Action:
+    return _create_action(REQUEST_RULES_TEXT)
+
+
+def received_rules_text(rules_text: str) -> Action:
+    return _create_action(RECEIVED_RULES_TEXT, rules_text)
+
+
+def error_rules_text(error: str) -> Action:
+    return _create_action(ERROR_RULES_TEXT, error)
 
 
 def init_system() -> Action:

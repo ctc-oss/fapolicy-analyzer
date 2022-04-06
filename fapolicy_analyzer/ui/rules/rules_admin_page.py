@@ -14,6 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+from locale import gettext as _
 from typing import Any, Optional, Sequence
 
 from fapolicy_analyzer import Rule
@@ -21,13 +22,15 @@ from fapolicy_analyzer.ui.actions import (
     NotificationType,
     add_notification,
     request_rules,
+    request_rules_text,
 )
 from fapolicy_analyzer.ui.rules.rules_list_view import RulesListView
 from fapolicy_analyzer.ui.rules.rules_text_view import RulesTextView
 from fapolicy_analyzer.ui.store import dispatch, get_system_feature
-from fapolicy_analyzer.ui.strings import RULES_LOAD_ERROR
+from fapolicy_analyzer.ui.strings import RULES_LOAD_ERROR, RULES_TEXT_LOAD_ERROR
 from fapolicy_analyzer.ui.ui_page import UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
+from fapolicy_analyzer.util.format import f
 
 
 class RulesAdminPage(UIConnectedWidget, UIPage):
@@ -48,33 +51,67 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         )
 
         self.__rules: Sequence[Rule] = []
-        self.__error: Optional[str] = None
-        self.__loading: bool = False
+        self.__rules_text: str = ""
+        self.__error_rules: Optional[str] = None
+        self.__error_text: Optional[str] = None
+        self.__loading_rules: bool = False
+        self.__loading_text: bool = False
 
         self.__load_rules()
 
     def __load_rules(self):
-        self.__loading = True
+        self.__loading_rules = True
         dispatch(request_rules())
+        self.__loading_text = True
+        dispatch(request_rules_text())
 
-    def __populate_rules(self):
-        self.__text_view.render_rules(self.__rules)
-        self.__list_view.render_rules(self.__rules)
+    def __render_rule_status(self):
+        view = self.get_object("statusInfo")
+        categories = [i.category for r in self.__rules for i in r.info]
+        invalid_count = sum(not r.is_valid for r in self.__rules)  # noqa: F841
+        warning_count = sum(c == "w" for c in categories)  # noqa: F841
+        info_count = sum(c == "i" for c in categories)  # noqa: F841
+        view.get_buffer().set_text(
+            f(
+                _(
+                    """{invalid_count} invalid rule found
+{warning_count} warning(s) found
+{info_count} informational message(s)"""
+                )
+            )
+        )
 
     def on_next_system(self, system: Any):
         rules_state = system.get("rules")
+        text_state = system.get("rules_text")
 
-        if not rules_state.loading and self.__error != rules_state.error:
-            self.__error = rules_state.error
-            self.__loading = False
-            logging.error("%s: %s", RULES_LOAD_ERROR, self.__error)
+        if not rules_state.loading and self.__error_rules != rules_state.error:
+            self.__error_rules = rules_state.error
+            self.__loading_rules = False
+            logging.error("%s: %s", RULES_LOAD_ERROR, self.__error_rules)
             dispatch(add_notification(RULES_LOAD_ERROR, NotificationType.ERROR))
         elif (
-            self.__loading
+            self.__loading_rules
             and not rules_state.loading
             and self.__rules != rules_state.rules
         ):
-            self.__error = None
-            self.__loading = False
+            self.__error_rules = None
+            self.__loading_rules = False
             self.__rules = rules_state.rules
-            self.__populate_rules()
+            self.__list_view.render_rules(self.__rules)
+            self.__render_rule_status()
+
+        if not text_state.loading and self.__error_text != text_state.error:
+            self.__error_text = text_state.error
+            self.__loading_text = False
+            logging.error("%s: %s", RULES_TEXT_LOAD_ERROR, self.__error_text)
+            dispatch(add_notification(RULES_TEXT_LOAD_ERROR, NotificationType.ERROR))
+        elif (
+            self.__loading_text
+            and not text_state.loading
+            and self.__rules_text != text_state.rules_text
+        ):
+            self.__error_text = None
+            self.__loading_text = False
+            self.__rules_text = text_state.rules_text
+            self.__text_view.render_rules(self.__rules_text)

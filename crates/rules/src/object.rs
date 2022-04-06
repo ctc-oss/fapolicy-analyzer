@@ -9,6 +9,7 @@
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
+use crate::parse::StrTrace;
 use crate::{bool_to_c, parse, ObjPart, Rvalue};
 
 /// # Object
@@ -23,6 +24,10 @@ pub struct Object {
 impl Object {
     pub fn new(parts: Vec<Part>) -> Self {
         Object { parts }
+    }
+
+    pub fn is_all(&self) -> bool {
+        self.parts.contains(&Part::All)
     }
 
     pub fn all() -> Self {
@@ -106,8 +111,8 @@ impl Display for Part {
 impl FromStr for Object {
     type Err = String;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match parse::object(s) {
+    fn from_str(i: &str) -> Result<Self, Self::Err> {
+        match parse::object(StrTrace::new(i)) {
             Ok((_, s)) => Ok(s),
             Err(_) => Err("Failed to parse Object from string".into()),
         }

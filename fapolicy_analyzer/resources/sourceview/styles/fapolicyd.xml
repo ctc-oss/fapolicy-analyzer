@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright Concurrent Technologies Corporation 2021
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<style-scheme id="fapolicyd" _name="fapolicyd" version="1.0" _section="Other">
+    <author>File Access Policy Analyzer team</author>
+    <_description>File Access Policy Daemon color scheme</_description>
+
+    <!-- Palette -->
+    <color name="black" value="#000000"/>
+    <color name="white" value="#FFFFFF"/>
+    <color name="blue" value="#0000FF"/>
+    <color name="magenta" value="#FF00FF"/>
+    <color name="violet" value="#6A5ACD"/>
+    <color name="cyan" value="#008A8C"/>
+    <color name="gray" value="#BEBEBE"/>
+    <color name="green" value="#2E8B57"/>
+    <color name="bordeaux" value="#A52A2A"/>
+    <color name="red" value="#FF0000"/>
+    <color name="yellow" value="#FFFF00"/>
+    <color name="purple" value="#A020F0"/>
+
+    <!-- Global Settings -->
+    <style name="current-line" background="#eeeeec"/>
+    <style name="current-line-number" background="#eeeeec"/>
+    <style name="draw-spaces" foreground="#babdb6"/>
+    <style name="background-pattern" background="#f3f3f3"/>
+
+    <!-- Right Margin -->
+    <style name="right-margin" foreground="#000000" background="#000000"/>
+
+    <!-- Search Matching -->
+    <style name="search-match" background="yellow"/>
+
+    <!-- Comments -->
+    <style name="def:comment" foreground="gray" italic="true" bold="false"/>
+
+    <!-- fapolicyd settings -->
+
+    <!-- Misc -->
+    <style name="fapolicyd-rules:sep" background="red" bold="true"/>
+    <style name="fapolicyd-rules:set" background="gray" foreground="yellow"/>
+    <style name="fapolicyd-rules:wildcard" foreground="magenta" bold="true"/>
+
+    <!-- Decisions -->
+    <style name="fapolicyd-rules:allow" foreground="green"/>
+    <style name="fapolicyd-rules:deny" foreground="red"/>
+
+    <!-- Permissions -->
+    <style name="fapolicyd-rules:perm" foreground="black"/>
+    <style name="fapolicyd-rules:permission" foreground="violet" bold="true"/>
+
+    <!-- Permissions -->
+    <style name="fapolicyd-rules:subject" foreground="bordeaux"/>
+    <style name="fapolicyd-rules:object" foreground="bordeaux"/>
+
+    <!-- File markers -->
+    <style name="fapolicyd-rules:marker" foreground="gray" bold="true" italic="true"/>
+
+</style-scheme>

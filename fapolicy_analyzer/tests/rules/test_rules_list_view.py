@@ -18,10 +18,44 @@ from unittest.mock import MagicMock
 
 import gi
 import pytest
+from ui.configs import Colors
 from ui.rules.rules_list_view import RulesListView
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
+
+mock_rules = [
+    MagicMock(
+        id=1,
+        text="Mock Rule Number 1",
+        is_valid=True,
+        info=[],
+    ),
+    MagicMock(
+        id=2,
+        text="Mock Rule Number 2",
+        is_valid=True,
+        info=[MagicMock(category="i", message="info message")],
+    ),
+    MagicMock(
+        id=3,
+        text="Mock Rule Number 3",
+        is_valid=True,
+        info=[
+            MagicMock(category="w", message="warning message"),
+            MagicMock(category="i", message="other info"),
+        ],
+    ),
+    MagicMock(
+        id=4,
+        text="Mock Rule Number 4",
+        is_valid=False,
+        info=[
+            MagicMock(category="w", message="warning message"),
+            MagicMock(category="i", message="other info"),
+        ],
+    ),
+]
 
 
 @pytest.fixture
@@ -34,12 +68,43 @@ def test_creates_widget(widget):
 
 
 def test_renders_rules(widget):
-    rules = [
-        MagicMock(id=1, text="Mock Rule Number 1"),
-        MagicMock(id=2, text="Mock Rule Number 2"),
-    ]
-    widget.render_rules(rules)
+    widget.render_rules(mock_rules)
     model = widget.get_object("treeView").get_model()
-    assert [r.text for r in rules] == [x[0] for x in model]
-    assert [r.id for r in rules] == [x[1] for x in model]
-    assert ["gainsboro", "white"] == [x[2] for x in model]
+    assert [r.text for r in mock_rules] == [x[0] for x in model]
+    assert [r.id for r in mock_rules] == [x[1] for x in model]
+    assert [Colors.SHADED, Colors.WHITE, Colors.SHADED, Colors.WHITE] == [
+        x[2] for x in model
+    ]
+    assert [Colors.BLACK, Colors.BLUE, Colors.ORANGE, Colors.RED] == [
+        x[3] for x in model
+    ]
+
+
+def test_renders_info_rows(widget):
+    mock_rule = MagicMock(
+        id=4,
+        text="Mock Rule Number 4",
+        is_valid=False,
+        info=[
+            MagicMock(category="w", message="warning message"),
+            MagicMock(category="i", message="other info"),
+        ],
+    )
+
+    expected_messages = ["[w] warning message", "[i] other info"]
+    expected_colors = [Colors.ORANGE, Colors.BLUE]
+
+    widget.render_rules([mock_rule])
+    model = widget.get_object("treeView").get_model()
+    info_messages = []
+    info_colors = []
+
+    def get_assertion_info(store, treepath, treeiter):
+        nonlocal info_messages, info_colors
+        if treepath.get_depth() > 1:
+            info_messages.append(store[treeiter][0])
+            info_colors.append(store[treeiter][3])
+
+    model.foreach(get_assertion_info)
+    assert info_messages == expected_messages
+    assert info_colors == expected_colors
