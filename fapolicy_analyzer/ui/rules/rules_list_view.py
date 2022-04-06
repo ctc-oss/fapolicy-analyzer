@@ -40,6 +40,14 @@ class RulesListView(SearchableList):
             Gtk.TreeViewColumn(
                 "",
                 Gtk.CellRendererText(),
+                text=1,
+                cell_background=2,
+                foreground=3,
+                weight=4,
+            ),
+            Gtk.TreeViewColumn(
+                "",
+                Gtk.CellRendererText(),
                 text=0,
                 cell_background=2,
                 foreground=3,
