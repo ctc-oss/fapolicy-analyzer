@@ -136,8 +136,6 @@ class FapdManager():
             while self.procProfile.poll():
                 time.sleep(1)
                 logging.debug("Waiting for fapd profiling to shut down...")
-            del self.procProfile
-            self.procProfile = None
             self.fapd_profiling_stderr = None
             self.fapd_profiling_stdout = None
 
