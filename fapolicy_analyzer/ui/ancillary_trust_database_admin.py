@@ -224,7 +224,9 @@ SHA256: {fs.sha(trust.path)}"""
             self.trustFileList.load_trust(self._trust)
 
     def on_remove_file_activate(self, *args):
+        self.delete_trusted_files(*self.selectedFiles)
         treeView = self.trustFileList.get_object("treeView")
+        treeView.get_selection().select_path(Gtk.TreePath.new_first())
         model, pathlist = treeView.get_selection().get_selected_rows()
         if model:
             child_model = model.get_model().get_model()
