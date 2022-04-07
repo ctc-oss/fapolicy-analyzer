@@ -69,6 +69,7 @@ def test_status_markup(widget):
     assert widget._SystemTrustDatabaseAdmin__status_markup("foo") == (
         "T / <b><u>D</u></b>",
         Colors.LIGHT_RED,
+        Colors.WHITE,
     )
 
 

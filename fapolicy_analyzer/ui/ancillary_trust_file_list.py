@@ -42,7 +42,7 @@ class AncillaryTrustFileList(TrustFileList):
         return (
             ("<b><u>T</u></b> / D", Colors.LIGHT_GREEN)
             if s == "t"
-            else ("T / <b><u>D</u></b>", Colors.LIGHT_RED)
+            else ("T / <b><u>D</u></b>", Colors.LIGHT_RED, Colors.WHITE)
             if s == "d"
             else ("T / D", Colors.ORANGE)
         )
@@ -66,9 +66,9 @@ class AncillaryTrustFileList(TrustFileList):
         self._changesColumn = Gtk.TreeViewColumn(
             strings.FILE_LIST_CHANGES_HEADER,
             Gtk.CellRendererText(background=Colors.LIGHT_GRAY),
-            text=5,
+            text=6,
         )
-        self._changesColumn.set_sort_column_id(5)
+        self._changesColumn.set_sort_column_id(6)
         return [self._changesColumn, *super()._columns()]
 
     def set_changesets(self, changesets):
@@ -80,19 +80,17 @@ class AncillaryTrustFileList(TrustFileList):
             self._changesetMap["Add"] or self._changesetMap["Del"]
         )
 
-        store = Gtk.ListStore(str, str, str, object, str, str)
-        for i, data in enumerate(trust):
-            status, *rest = self.markup_func(data.status)
-            bgColor = rest[0] if rest else "white"
+        store = Gtk.ListStore(str, str, str, object, str, str, str)
+        for _, data in enumerate(trust):
+            status, bg_color, txt_color, date_time = self._base_row_data(data)
             changes = (
                 strings.CHANGESET_ACTION_ADD
                 if data.path in self._changesetMap["Add"]
                 else ""
             )
-
-            secsEpoch = data.actual.last_modified if data.actual else None
-            strDateTime = epoch_to_string(secsEpoch)
-            store.append([status, strDateTime, data.path, data, bgColor, changes])
+            store.append(
+                [status, date_time, data.path, data, bg_color, txt_color, changes]
+            )
 
         for pth in self._changesetMap["Del"]:
             secsEpoch = int(os.path.getmtime(pth)) if os.path.isfile(pth) else None
@@ -103,7 +101,8 @@ class AncillaryTrustFileList(TrustFileList):
                     strDateTime,
                     pth,
                     SimpleNamespace(path=pth),
-                    "white",
+                    Colors.WHITE,
+                    Colors.BLACK,
                     strings.CHANGESET_ACTION_DEL,
                 ]
             )

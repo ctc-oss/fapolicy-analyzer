@@ -154,21 +154,27 @@ def test_path_color(widget):
     # Allowed
     widget.load_store([_mock_subject(access="A")])
     assert view.get_model()[0][4] == Colors.LIGHT_GREEN
+    assert view.get_model()[0][5] == Colors.BLACK
     # Partial
     widget.load_store([_mock_subject(access="P")])
     assert view.get_model()[0][4] == Colors.ORANGE
+    assert view.get_model()[0][5] == Colors.BLACK
     # Denied
     widget.load_store([_mock_subject(access="D")])
     assert view.get_model()[0][4] == Colors.LIGHT_RED
+    assert view.get_model()[0][5] == Colors.WHITE
     # Bad data
     widget.load_store([_mock_subject(access="foo")])
     assert view.get_model()[0][4] == Colors.LIGHT_RED
+    assert view.get_model()[0][5] == Colors.WHITE
     # Empty data
     widget.load_store([_mock_subject()])
     assert view.get_model()[0][4] == Colors.LIGHT_RED
+    assert view.get_model()[0][5] == Colors.WHITE
     # Lowercase
     widget.load_store([_mock_subject(access="a")])
     assert view.get_model()[0][4] == Colors.LIGHT_GREEN
+    assert view.get_model()[0][5] == Colors.BLACK
 
 
 def test_update_tree_count(widget):
