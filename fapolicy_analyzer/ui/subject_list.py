@@ -85,6 +85,10 @@ class SubjectList(SearchableList):
         return menu
 
     def _columns(self):
+        def txt_color_func(col, renderer, model, iter, *args):
+            color = model.get_value(iter, 5)
+            renderer.set_property("foreground", color)
+
         trustCell = Gtk.CellRendererText(background=Colors.LIGHT_GRAY, xalign=0.5)
         trustColumn = Gtk.TreeViewColumn(
             strings.FILE_LIST_TRUST_HEADER, trustCell, markup=0
@@ -95,12 +99,14 @@ class SubjectList(SearchableList):
             strings.FILE_LIST_ACCESS_HEADER, accessCell, markup=1
         )
         accessColumn.set_sort_column_id(1)
+        fileRenderer = Gtk.CellRendererText()
         fileColumn = Gtk.TreeViewColumn(
             strings.FILE_LIST_FILE_HEADER,
-            Gtk.CellRendererText(),
+            fileRenderer,
             text=2,
             cell_background=4,
         )
+        fileColumn.set_cell_data_func(fileRenderer, txt_color_func)
         fileColumn.set_sort_column_id(2)
         return [trustColumn, accessColumn, fileColumn]
 
@@ -146,14 +152,14 @@ class SubjectList(SearchableList):
             [f"<u><b>{o}</b></u>" if i == idx else o for i, o in enumerate(options)]
         )
 
-    def __color(self, access):
+    def __colors(self, access):
         a = access.upper()
         return (
-            Colors.LIGHT_GREEN
+            (Colors.LIGHT_GREEN, Colors.BLACK)
             if a == "A"
-            else Colors.ORANGE
+            else (Colors.ORANGE, Colors.BLACK)
             if a == "P"
-            else Colors.LIGHT_RED
+            else (Colors.LIGHT_RED, Colors.WHITE)
         )
 
     def __handle_selection_changed(self, data):
@@ -213,12 +219,12 @@ class SubjectList(SearchableList):
     def load_store(self, subjects, **kwargs):
         self._systemTrust = kwargs.get("systemTrust", [])
         self._ancillaryTrust = kwargs.get("ancillaryTrust", [])
-        store = Gtk.ListStore(str, str, str, object, str)
+        store = Gtk.ListStore(str, str, str, object, str, str)
         for s in subjects:
             status = self._trust_markup(s)
             access = self.__markup(s.access.upper(), ["A", "P", "D"])
-            bgColor = self.__color(s.access)
-            store.append([status, access, s.file, s, bgColor])
+            bg_color, txt_color = self.__colors(s.access)
+            store.append([status, access, s.file, s, bg_color, txt_color])
         super().load_store(store)
 
     def get_selected_row_by_file(self, file: str) -> Gtk.TreePath:

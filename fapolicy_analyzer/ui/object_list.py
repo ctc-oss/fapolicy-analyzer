@@ -28,9 +28,9 @@ class ObjectList(SubjectList):
         columns = super()._columns()
         modeCell = Gtk.CellRendererText(background=Colors.LIGHT_GRAY, xalign=0.5)
         modeColumn = Gtk.TreeViewColumn(
-            strings.FILE_LIST_MODE_HEADER, modeCell, markup=5
+            strings.FILE_LIST_MODE_HEADER, modeCell, markup=6
         )
-        modeColumn.set_sort_column_id(5)
+        modeColumn.set_sort_column_id(6)
         columns.insert(1, modeColumn)
         return columns
 
@@ -42,23 +42,20 @@ class ObjectList(SubjectList):
         matches = set(options).intersection(valueSet)
         return seperator.join([wrap(o) if o in matches else o for o in options])
 
-    def __color(self, access, mode):
+    def __colors(self, access, mode):
+        green = (Colors.LIGHT_GREEN, Colors.BLACK)
+        orange = (Colors.ORANGE, Colors.BLACK)
+        red = (Colors.LIGHT_RED, Colors.WHITE)
         if access.upper() != "A":
-            return Colors.LIGHT_RED
+            return red
 
         numModes = len(set(mode.upper()).intersection({"R", "W", "X"}))
-        return (
-            Colors.LIGHT_GREEN
-            if numModes == 3
-            else Colors.ORANGE
-            if numModes > 0
-            else Colors.LIGHT_RED
-        )
+        return green if numModes == 3 else orange if numModes > 0 else red
 
     def load_store(self, objects, **kwargs):
         self._systemTrust = kwargs.get("systemTrust", [])
         self._ancillaryTrust = kwargs.get("ancillaryTrust", [])
-        store = Gtk.ListStore(str, str, str, object, str, str)
+        store = Gtk.ListStore(str, str, str, object, str, str, str)
         for o in objects:
             status = self._trust_markup(o)
             mode = self.__markup(
@@ -68,8 +65,8 @@ class ObjectList(SubjectList):
                 multiValue=True,
             )
             access = self.__markup(o.access.upper(), ["A", "D"])
-            bgColor = self.__color(o.access, o.mode)
-            store.append([status, access, o.file, o, bgColor, mode])
+            bg_color, txt_color = self.__colors(o.access, o.mode)
+            store.append([status, access, o.file, o, bg_color, txt_color, mode])
 
         # call grandfather SearchableList's load_store method
         super(SubjectList, self).load_store(store)

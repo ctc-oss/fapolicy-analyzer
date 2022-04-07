@@ -77,6 +77,10 @@ class TrustFileList(SearchableList):
         self.trust_selection_changed(trust)
 
     def _columns(self):
+        def txt_color_func(col, renderer, model, iter, *args):
+            color = model.get_value(iter, 5)
+            renderer.set_property("foreground", color)
+
         # trust status column
         trustColumn = Gtk.TreeViewColumn(
             strings.FILE_LIST_TRUST_HEADER,
@@ -86,27 +90,41 @@ class TrustFileList(SearchableList):
         trustColumn.set_sort_column_id(0)
 
         # modification time column
+        mtimeRenderer = Gtk.CellRendererText()
         mtimeColumn = Gtk.TreeViewColumn(
             strings.FILE_LIST_MTIME_HEADER,
-            Gtk.CellRendererText(),
+            mtimeRenderer,
             text=1,
             cell_background=4,
         )
+        mtimeColumn.set_cell_data_func(mtimeRenderer, txt_color_func)
         mtimeColumn.set_sort_column_id(1)
 
         # fullpath column
+        fileRenderer = Gtk.CellRendererText()
         fileColumn = Gtk.TreeViewColumn(
             strings.FILE_LIST_FILE_HEADER,
-            Gtk.CellRendererText(),
+            fileRenderer,
             text=2,
             cell_background=4,
         )
+        fileColumn.set_cell_data_func(fileRenderer, txt_color_func)
         fileColumn.set_sort_column_id(2)
         return [trustColumn, mtimeColumn, fileColumn]
 
     def _update_tree_count(self, count):
         label = FILE_LABEL if count == 1 else FILES_LABEL
         self.treeCount.set_text(" ".join([str(count), label]))
+
+    def _base_row_data(self, data):
+        status, *rest = (
+            self.markup_func(data.status) if self.markup_func else (data.status,)
+        )
+        bg_color, *rest = rest if rest else (Colors.WHITE,)
+        txt_color, *rest = rest if rest else (Colors.BLACK,)
+        secs_epoch = data.actual.last_modified if data.actual else None
+        date_time = epoch_to_string(secs_epoch)
+        return status, bg_color, txt_color, date_time
 
     def on_destroy(self, *args):
         global _executorCanceled
@@ -120,18 +138,10 @@ class TrustFileList(SearchableList):
     def load_trust(self, trust):
         def process():
             global _executorCanceled
-            store = Gtk.ListStore(str, str, str, object, str)
+            store = Gtk.ListStore(str, str, str, object, str, str)
             for i, data in enumerate(trust):
-                status, *rest = (
-                    self.markup_func(data.status)
-                    if self.markup_func
-                    else (data.status,)
-                )
-                bgColor = rest[0] if rest else "white"
-                secsEpoch = data.actual.last_modified if data.actual else None
-                strDateTime = epoch_to_string(secsEpoch)
-
-                store.append([status, strDateTime, data.path, data, bgColor])
+                status, bg_color, txt_color, date_time = self._base_row_data(data)
+                store.append([status, date_time, data.path, data, bg_color, txt_color])
 
                 if _executorCanceled:
                     return
