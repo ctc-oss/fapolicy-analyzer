@@ -76,13 +76,13 @@ class RulesListView(SearchableList):
         self.treeCount.set_text(" ".join([str(count), label]))
 
     def render_rules(self, rules: Sequence[Rule]):
-        store = Gtk.TreeStore(str, int, str, str, int)
+        store = Gtk.TreeStore(str, str, str, str, int)
 
         for idx, rule in enumerate(rules):
             row_color = Colors.WHITE if idx % 2 else Colors.SHADED
             text_style = self.__rule_text_style(rule)
             parent = store.append(
-                None, [rule.text, rule.id, row_color, text_style[0], text_style[1]]
+                None, [rule.text, str(rule.id), row_color, text_style[0], text_style[1]]
             )
             if rule.info:
                 for info in rule.info:
@@ -90,7 +90,7 @@ class RulesListView(SearchableList):
                         parent,
                         [
                             f"[{info.category}] {info.message}",
-                            rule.id,
+                            "",
                             row_color,
                             self.__info_cat_text_color(info.category),
                             FontWeights.NORMAL,
