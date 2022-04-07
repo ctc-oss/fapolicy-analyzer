@@ -59,7 +59,7 @@ class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
         return (
             ("<b><u>T</u></b> / D", Colors.LIGHT_GREEN)
             if status.lower() == "t"
-            else ("T / <b><u>D</u></b>", Colors.LIGHT_RED)
+            else ("T / <b><u>D</u></b>", Colors.LIGHT_RED, Colors.WHITE)
         )
 
     def __load_trust(self):

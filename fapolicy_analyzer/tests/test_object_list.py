@@ -66,7 +66,7 @@ def test_loads_store(widget):
     ]
     assert [t.file for t in sortedObjects] == [x[2] for x in view.get_model()]
     assert [t.mode for t in sortedObjects] == [
-        strip_markup(x[5]) for x in view.get_model()
+        strip_markup(x[6]) for x in view.get_model()
     ]
 
 
@@ -120,34 +120,34 @@ def test_mode_markup(widget):
     view = widget.get_object("treeView")
     # Read
     widget.load_store([_mock_object(mode="R")])
-    assert view.get_model()[0][5] == "<u><b>R</b></u>WX"
+    assert view.get_model()[0][6] == "<u><b>R</b></u>WX"
     # Write
     widget.load_store([_mock_object(mode="W")])
-    assert view.get_model()[0][5] == "R<u><b>W</b></u>X"
+    assert view.get_model()[0][6] == "R<u><b>W</b></u>X"
     # Execute
     widget.load_store([_mock_object(mode="X")])
-    assert view.get_model()[0][5] == "RW<u><b>X</b></u>"
+    assert view.get_model()[0][6] == "RW<u><b>X</b></u>"
     # Read/Write
     widget.load_store([_mock_object(mode="RW")])
-    assert view.get_model()[0][5] == "<u><b>R</b></u><u><b>W</b></u>X"
+    assert view.get_model()[0][6] == "<u><b>R</b></u><u><b>W</b></u>X"
     # Read/Execute
     widget.load_store([_mock_object(mode="RX")])
-    assert view.get_model()[0][5] == "<u><b>R</b></u>W<u><b>X</b></u>"
+    assert view.get_model()[0][6] == "<u><b>R</b></u>W<u><b>X</b></u>"
     # Write/Execute
     widget.load_store([_mock_object(mode="WX")])
-    assert view.get_model()[0][5] == "R<u><b>W</b></u><u><b>X</b></u>"
+    assert view.get_model()[0][6] == "R<u><b>W</b></u><u><b>X</b></u>"
     # Full Access
     widget.load_store([_mock_object(mode="RWX")])
-    assert view.get_model()[0][5] == "<u><b>R</b></u><u><b>W</b></u><u><b>X</b></u>"
+    assert view.get_model()[0][6] == "<u><b>R</b></u><u><b>W</b></u><u><b>X</b></u>"
     # Bad data
     widget.load_store([_mock_object(mode="foo")])
-    assert view.get_model()[0][5] == "RWX"
+    assert view.get_model()[0][6] == "RWX"
     # Empty data
     widget.load_store([_mock_object()])
-    assert view.get_model()[0][5] == "RWX"
+    assert view.get_model()[0][6] == "RWX"
     # Lowercase
     widget.load_store([_mock_object(mode="r")])
-    assert view.get_model()[0][5] == "<u><b>R</b></u>WX"
+    assert view.get_model()[0][6] == "<u><b>R</b></u>WX"
 
 
 def test_access_markup(widget):
@@ -181,21 +181,27 @@ def test_path_color(widget):
     # Denied
     widget.load_store([_mock_object(access="D", mode="RWX")])
     assert view.get_model()[0][4] == Colors.LIGHT_RED
+    assert view.get_model()[0][5] == Colors.WHITE
     # Full Access
     widget.load_store([_mock_object(access="A", mode="RWX")])
     assert view.get_model()[0][4] == Colors.LIGHT_GREEN
+    assert view.get_model()[0][5] == Colors.BLACK
     # Partical Access
     widget.load_store([_mock_object(access="A", mode="R")])
     assert view.get_model()[0][4] == Colors.ORANGE
+    assert view.get_model()[0][5] == Colors.BLACK
     # Bad data
     widget.load_store([_mock_object(access="foo")])
     assert view.get_model()[0][4] == Colors.LIGHT_RED
+    assert view.get_model()[0][5] == Colors.WHITE
     # Empty data
     widget.load_store([_mock_object()])
     assert view.get_model()[0][4] == Colors.LIGHT_RED
+    assert view.get_model()[0][5] == Colors.WHITE
     # Lowercase
     widget.load_store([_mock_object(access="a", mode="rwx")])
     assert view.get_model()[0][4] == Colors.LIGHT_GREEN
+    assert view.get_model()[0][5] == Colors.BLACK
 
 
 def test_update_tree_count(widget):
