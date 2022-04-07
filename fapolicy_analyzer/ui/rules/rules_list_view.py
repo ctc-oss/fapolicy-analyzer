@@ -90,7 +90,7 @@ class RulesListView(SearchableList):
                         parent,
                         [
                             f"[{info.category}] {info.message}",
-                            -1,
+                            rule.id,
                             row_color,
                             self.__info_cat_text_color(info.category),
                             FontWeights.NORMAL,
