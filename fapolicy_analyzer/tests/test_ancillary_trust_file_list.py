@@ -75,6 +75,9 @@ def test_uses_custom_markup_func():
     assert [Colors.LIGHT_RED, Colors.LIGHT_GREEN, Colors.ORANGE] == [
         x[4] for x in view.get_model()
     ]
+    assert [Colors.WHITE, Colors.BLACK, Colors.BLACK] == [
+        x[5] for x in view.get_model()
+    ]
 
 
 def test_fires_files_added(widget, mocker):
@@ -108,7 +111,7 @@ def test_trust_add_actions_in_view(widget):
     widget.load_trust(_trust)
     model = widget.get_object("treeView").get_model()
     row = next(iter([x for x in model if x[2] == "/tmp/1"]))
-    assert CHANGESET_ACTION_ADD == row[5]
+    assert CHANGESET_ACTION_ADD == row[6]
 
 
 def test_trust_delete_actions_in_view(widget):
@@ -119,4 +122,4 @@ def test_trust_delete_actions_in_view(widget):
     widget.load_trust(_trust)
     model = widget.get_object("treeView").get_model()
     row = next(iter([x for x in model if x[2] == "/tmp/foz"]))
-    assert CHANGESET_ACTION_DEL == row[5]
+    assert CHANGESET_ACTION_DEL == row[6]
