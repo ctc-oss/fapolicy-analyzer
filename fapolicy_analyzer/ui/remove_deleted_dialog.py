@@ -14,6 +14,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from fapolicy_analyzer.ui.ui_widget import UIBuilderWidget
+from fapolicy_analyzer.util.format import f
+from locale import gettext as _
 
 
 class RemoveDeletedDialog(UIBuilderWidget):
@@ -28,6 +30,5 @@ class RemoveDeletedDialog(UIBuilderWidget):
         textView = self.get_object("removeInfo")
         textBuffer = textView.get_buffer()
 
-        n_deleted = len(deleted)
-        displayText = f"{n_deleted} file{plural(n_deleted)[0]} cannot be found on disc"
+        displayText = f(_("{len(deleted)} file{plural(len(deleted))[0]} cannot be found on disc"))
         textBuffer.set_text(displayText)

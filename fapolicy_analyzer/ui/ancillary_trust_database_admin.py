@@ -163,13 +163,7 @@ SHA256: {fs.sha(trust.path)}"""
                 removeDialog.destroy()
                 if resp == Gtk.ResponseType.APPLY:
                     self.delete_trusted_files(*dne_list)
-                    treeView = self.trustFileList.get_object("treeView")
-                    treeView.get_selection().select_path(Gtk.TreePath.new_first())
-                    model, pathlist = treeView.get_selection().get_selected_rows()
-                    if model:
-                        child_model = model.get_model().get_model()
-                        iter_ = child_model.get_iter(next(iter(pathlist)))  # single select use first pat
-                        child_model.remove(iter_)
+                    self.clear_selection()
 
             if selectedFiles:
                 self.add_trusted_files(*selectedFiles)
@@ -184,16 +178,19 @@ SHA256: {fs.sha(trust.path)}"""
                 removeDialog.destroy()
                 if resp == Gtk.ResponseType.APPLY:
                     self.delete_trusted_files(*dne_list)
-                    treeView = self.trustFileList.get_object("treeView")
-                    treeView.get_selection().select_path(Gtk.TreePath.new_first())
-                    model, pathlist = treeView.get_selection().get_selected_rows()
-                    if model:
-                        child_model = model.get_model().get_model()
-                        iter_ = child_model.get_iter(next(iter(pathlist)))  # single select use first pat
-                        child_model.remove(iter_)
+                    self.clear_selection()
 
             if selectedFiles:
                 self.delete_trusted_files(*selectedFiles)
+
+    def clear_selection(self):
+        treeView = self.trustFileList.get_object("treeView")
+        treeView.get_selection().select_path(Gtk.TreePath.new_first())
+        model, pathlist = treeView.get_selection().get_selected_rows()
+        if model:
+            child_model = model.get_model().get_model()
+            iter_ = child_model.get_iter(next(iter(pathlist)))  # single select use first pat
+            child_model.remove(iter_)
 
     def on_next_system(self, system):
         changesets = system.get("changesets")
@@ -225,10 +222,4 @@ SHA256: {fs.sha(trust.path)}"""
 
     def on_remove_file_activate(self, *args):
         self.delete_trusted_files(*self.selectedFiles)
-        treeView = self.trustFileList.get_object("treeView")
-        treeView.get_selection().select_path(Gtk.TreePath.new_first())
-        model, pathlist = treeView.get_selection().get_selected_rows()
-        if model:
-            child_model = model.get_model().get_model()
-            iter_ = child_model.get_iter(next(iter(pathlist)))  # single select use first pat
-            child_model.remove(iter_)
+        self.clear_selection()
