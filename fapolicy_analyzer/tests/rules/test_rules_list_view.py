@@ -70,7 +70,7 @@ def test_creates_widget(widget):
 def test_renders_rules(widget):
     widget.render_rules(mock_rules)
     model = widget.get_object("treeView").get_model()
-    assert [r.text for r in mock_rules] == [x[0] for x in model]
+    assert [str(r.id) + " " + r.text for r in mock_rules] == [x[0] for x in model]
     assert [r.id for r in mock_rules] == [x[1] for x in model]
     assert [Colors.SHADED, Colors.WHITE, Colors.SHADED, Colors.WHITE] == [
         x[2] for x in model
