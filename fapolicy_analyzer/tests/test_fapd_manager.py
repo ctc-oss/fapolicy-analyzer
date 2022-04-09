@@ -76,6 +76,7 @@ def test_start_disabled(fapdManager, mocker):
 def test_stop_online(fapdManager, mocker):
     mockFapdHandle = MagicMock()
     fapdManager._fapd_ref = mockFapdHandle
+    fapdManager._fapd_status = ServiceStatus.TRUE
     fapdManager.set_mode(FapdMode.ONLINE)
     fapdManager.stop()
     mockFapdHandle.stop.assert_called()
@@ -85,8 +86,10 @@ def test_stop_online(fapdManager, mocker):
 def test_start_online(fapdManager, mocker):
     mockFapdHandle = MagicMock()
     fapdManager._fapd_ref = mockFapdHandle
+    fapdManager._fapd_status = ServiceStatus.FALSE
     fapdManager.set_mode(FapdMode.ONLINE)
     fapdManager.start()
+    mockFapdHandle.start.assert_called()
     assert fapdManager.get_mode() == FapdMode.ONLINE
 
 
@@ -110,6 +113,13 @@ def test_start_profiling(fapdManager, mocker):
     assert fapdManager.get_mode() == FapdMode.PROFILING
 
 
-def test_status(fapdManager):
-    tupleStatus = fapdManager.status()
-    assert(tupleStatus == (ServiceStatus.UNKNOWN, FapdMode.DISABLED))
+def test_status(fapdManager, mocker):
+    mockFapdHandle = MagicMock()
+    fapdManager._fapd_ref = mockFapdHandle
+    fapdManager._fapd_ref.is_active.side_effect = [False, True, False]
+    bStatus = fapdManager.status_online()
+    assert bStatus == ServiceStatus.FALSE
+    bStatus = fapdManager.status_online()
+    assert bStatus == ServiceStatus.TRUE
+    bStatus = fapdManager.status_online()
+    assert bStatus == ServiceStatus.FALSE

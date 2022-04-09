@@ -16,13 +16,13 @@
 import logging
 import os
 import subprocess
-import time
 
 
 from datetime import datetime as DT
 from enum import Enum
 from fapolicy_analyzer import Handle
 from threading import Lock
+from time import time, sleep
 
 
 class ServiceStatus(Enum):
@@ -75,9 +75,9 @@ class FapdManager():
         return self.fapd_profiling_stderr
 
     def set_mode(self, eMode):
-        '''Allow su to modify the instance mode'''
+        """Allow only su to modify the instance mode"""
         logging.debug(f"FapdManager::set_mode({eMode})")
-        if self._fapd_control_enabled == True:
+        if self._fapd_control_enabled:
             self.mode = eMode
 
     def get_mode(self):
@@ -95,8 +95,9 @@ class FapdManager():
             return False
         elif self.mode == FapdMode.ONLINE:
             logging.debug("fapd is initiating an ONLINE session")
-            self._fapd_ref.start()
-            subprocess.run(["echo", "Echoing starting an ONLINE session"])
+            if (self._fapd_status != ServiceStatus.UNKNOWN) and (self._fapd_lock.acquire()):
+                self._fapd_ref.start()
+                self._fapd_lock.release()
         else:
             # PROFILING
             logging.debug("fapd is initiating a PROFILING session")
@@ -104,7 +105,7 @@ class FapdManager():
 
             # If stdout path is not specified generate timestamped filename
             if not self.fapd_profiling_stdout:
-                timeNow = DT.fromtimestamp(time.time())
+                timeNow = DT.fromtimestamp(time())
                 strTNow = timeNow.strftime("%Y%m%d_%H%M%S_%f")
                 self._fapd_profiling_timestamp = strTNow
 
@@ -130,59 +131,39 @@ class FapdManager():
             return False
         elif self.mode == FapdMode.ONLINE:
             logging.debug("fapd is terminating an ONLINE session")
-            self._fapd_ref.stop()
-            subprocess.Popen(["echo", "Echoing terminating an ONLINE session"])
+            if (self._fapd_status != ServiceStatus.UNKNOWN) and (self._fapd_lock.acquire()):
+                self._fapd_ref.stop()
+                self._fapd_lock.release()
+
         else:
             logging.debug("fapd is terminating a PROFILING session")
             self.procProfile.terminate()
             while self.procProfile.poll():
-                time.sleep(1)
+                sleep(1)
                 logging.debug("Waiting for fapd profiling to shut down...")
             self.fapd_profiling_stderr = None
             self.fapd_profiling_stdout = None
 
+    def status_online(self):
+        try:
+            if self._fapd_lock.acquire(blocking=False):
+                bStatus = ServiceStatus(self._fapd_ref.is_active())
+                logging.debug(f"status_online() -> {bStatus}")
+                if bStatus != self._fapd_status:
+                    logging.debug(f"status_online({bStatus} updated")
+                    self._fapd_status = bStatus
+                self._fapd_lock.release()
+        except Exception:
+            print("Daemon monitor query/update dispatch failed.")
+        logging.debug(f"FapdManager::status_online()::{self._fapd_status})")
+        return self._fapd_status
 
-    def status(self):
-        logging.debug("FapdManager::status()")
-        return self._fapd_status, self.mode
-
-    # ######################## Monitoring ############################
-    def init_daemon(self):
-        if self._fapd_lock.acquire():
-            self._fapd_ref = Handle("fapolicyd")
-            if self._fapd_ref.is_valid():
-                self._fapd_status = ServiceStatus(self._fapd_ref.is_active())
-            else:
-                self._fapd_status = ServiceStatus.UNKNOWN
-            self.on_update_daemon_status(self._fapd_status)
-            self._fapd_lock.release()
-
-    def on_update_daemon_status(self, status: ServiceStatus):
-        logging.debug(f"on_update_daemon_status({status})")
-        self._fapd_status = status
-        GLib.idle_add(self._update_fapd_status, status)
-
-    def _monitor_daemon(self, timeout=5):
-        logging.debug("_monitor_daemon() executing")
-        while True:
-            try:
-                if self._fapd_lock.acquire(blocking=False):
-                    bStatus = ServiceStatus(self._fapd_ref.is_active())
-                    if bStatus != self._fapd_status:
-                        logging.debug("monitor_daemon:Dispatch update request")
-                        self.on_update_daemon_status(bStatus)
-                    self._fapd_lock.release()
-            except Exception:
-                print("Daemon monitor query/update dispatch failed.")
-            sleep(timeout)
-
-    def _start_daemon_monitor(self):
-        logging.debug(f"start_daemon_monitor(): {self._fapd_status}")
-        # Only start monitoring thread if fapolicy is installed
-        if self._fapd_status is not ServiceStatus.UNKNOWN:
-            logging.debug("Spawning monitor thread...")
-            thread = Thread(target=self._monitor_daemon)
-            thread.daemon = True
-            thread.start()
-            self._fapd_monitoring = True
-            logging.debug(f"Thread={thread}, Running={self._fapd_monitoring}")
+#    def init_daemon(self):
+#        if self._fapd_lock.acquire():
+#            self._fapd_ref = Handle("fapolicyd")
+#            if self._fapd_ref.is_valid():
+#                self._fapd_status = ServiceStatus(self._fapd_ref.is_active())
+#            else:
+#                self._fapd_status = ServiceStatus.UNKNOWN
+#            self.on_update_daemon_status(self._fapd_status)
+#            self._fapd_lock.release()
