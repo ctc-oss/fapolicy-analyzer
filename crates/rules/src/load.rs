@@ -41,7 +41,6 @@ fn rules_dir(rules_source_path: PathBuf) -> Result<Vec<RuleSource>, io::Error> {
         .filter(|p| p.is_file() && p.display().to_string().ends_with(".rules"))
         .collect();
     d_files.sort_by_key(|p| p.display().to_string());
-    d_files.reverse();
 
     let d_files: Result<Vec<(PathBuf, File)>, io::Error> = d_files
         .into_iter()
