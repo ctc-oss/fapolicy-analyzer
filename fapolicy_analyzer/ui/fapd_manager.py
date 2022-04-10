@@ -48,6 +48,10 @@ class FapdManager():
         self._fapd_lock = Lock()
         self.mode = FapdMode.DISABLED
         self.procProfile = None
+
+        # Verify that fapolicyd is intalled, if so initialize fapd status
+        self.initial_daemon_status()
+
         if os.environ.get("FAPD_LOGPATH"):
             self.fapd_profiling_stdout = os.environ.get("FAPD_LOGPATH") + ".stdout"
             self.fapd_profiling_stderr = os.environ.get("FAPD_LOGPATH") + ".stderr"
@@ -158,12 +162,12 @@ class FapdManager():
         logging.debug(f"FapdManager::status_online()::{self._fapd_status})")
         return self._fapd_status
 
-#    def init_daemon(self):
-#        if self._fapd_lock.acquire():
-#            self._fapd_ref = Handle("fapolicyd")
-#            if self._fapd_ref.is_valid():
-#                self._fapd_status = ServiceStatus(self._fapd_ref.is_active())
-#            else:
-#                self._fapd_status = ServiceStatus.UNKNOWN
-#            self.on_update_daemon_status(self._fapd_status)
-#            self._fapd_lock.release()
+    def initial_daemon_status(self):
+        if self._fapd_lock.acquire():
+            self._fapd_ref = Handle("fapolicyd")
+            if self._fapd_ref.is_valid():
+                self._fapd_status = ServiceStatus(self._fapd_ref.is_active())
+            else:
+                self._fapd_status = ServiceStatus.UNKNOWN
+                self.on_update_daemon_status(self._fapd_status)
+            self._fapd_lock.release()

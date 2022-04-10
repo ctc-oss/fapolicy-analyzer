@@ -43,10 +43,6 @@ fi
 pkexec  --disable-internal-agent env NO_AT_BRIDGE=1 \
 	DISPLAY=$DISPLAY\
 	XAUTHORITY=$XAUTHORITY\
-	DISABLE_DAEMON_MONITORING=$DISABLE_DAEMON_MONITORING\
-	XDG_CONFIG_HOME=$XDG_CONFIG_HOME\
-	XDG_DATA_HOME=$XDG_DATA_HOME\
-	XDG_STATE_HOME=$XDG_STATE_HOME\
 	python3 -m fapolicy_analyzer.ui "$@"
 
 # Terminate pkttyagent if started

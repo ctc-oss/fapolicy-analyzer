@@ -175,6 +175,7 @@ class MainWindow(UIConnectedWidget):
         return len(self.__changesets) > 0
 
     def on_start(self, *args):
+        logging.debug(f"MainWindow::on_start({args})")
         self.__pack_main_content(router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN))
 
         # On startup check for the existing of a tmp session file
@@ -206,6 +207,7 @@ class MainWindow(UIConnectedWidget):
         # Initialize and start fapd status monitoring
         self.init_fapd_state()
         if getenv("DISABLE_DAEMON_MONITORING", "false").lower() == "false":
+            logging.debug("Starting the fapd monitoring thread")
             self._start_daemon_monitor()
 
     def on_destroy(self, obj, *args):
@@ -375,7 +377,6 @@ class MainWindow(UIConnectedWidget):
         if (self._fapd_status != ServiceStatus.UNKNOWN):
             self._fapd_mgr.set_mode(FapdMode.ONLINE)
             self._fapd_mgr.stop()
-            self._fapd_lock.release()
 
     def _enable_fapd_menu_items(self, status: ServiceStatus):
         if self._fapdControlPermitted and (status != ServiceStatus.UNKNOWN):
@@ -391,7 +392,7 @@ class MainWindow(UIConnectedWidget):
             self._fapdStopMenuItem.set_sensitive(False)
 
     def _update_fapd_status(self, status: ServiceStatus):
-        logging.debug(f"__update_fapd_status({status})")
+        logging.debug(f"_update_fapd_status({status})")
 
         # Enable/Disable fapd menu items
         self._enable_fapd_menu_items(status)
@@ -425,7 +426,7 @@ class MainWindow(UIConnectedWidget):
 
     def _start_daemon_monitor(self):
         logging.debug(f"start_daemon_monitor(): {self._fapd_status}")
-        # Only start monitoring thread if fapolicy is installed
+        # Only start monitoring thread if fapolicyd is installed
         if self._fapd_status is not ServiceStatus.UNKNOWN:
             logging.debug("Spawning monitor thread...")
             thread = Thread(target=self._monitor_daemon)
