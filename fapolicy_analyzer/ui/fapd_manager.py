@@ -169,5 +169,4 @@ class FapdManager():
                 self._fapd_status = ServiceStatus(self._fapd_ref.is_active())
             else:
                 self._fapd_status = ServiceStatus.UNKNOWN
-                self.on_update_daemon_status(self._fapd_status)
             self._fapd_lock.release()
