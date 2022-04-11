@@ -172,7 +172,7 @@ impl PySystem {
     fn rules_text(&self) -> PyResult<String> {
         self.rules()
             .map(|x| {
-                x.into_iter().rfold((None, String::new()), |x, r| match x {
+                x.into_iter().fold((None, String::new()), |x, r| match x {
                     // no origin established yet
                     (None, _) => (
                         Some(r.origin.clone()),
