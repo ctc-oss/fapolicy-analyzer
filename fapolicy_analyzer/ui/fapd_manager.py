@@ -48,27 +48,59 @@ class FapdManager():
         self._fapd_lock = Lock()
         self.mode = FapdMode.DISABLED
         self.procProfile = None
+        self._fapd_profiling_timestamp = None
 
         # Verify that fapolicyd is intalled, if so initialize fapd status
         self.initial_daemon_status()
 
+        # ToDo: Verify that FAPD_LOGPATH works in the pkexec environment
         if os.environ.get("FAPD_LOGPATH"):
             self.fapd_profiling_stdout = os.environ.get("FAPD_LOGPATH") + ".stdout"
             self.fapd_profiling_stderr = os.environ.get("FAPD_LOGPATH") + ".stderr"
         else:
             self.fapd_profiling_stdout = None
             self.fapd_profiling_stderr = None
-        self._fapd_profiling_timestamp = None
+
+    # ############### Public Interface ###############
+    def start_online_fapd(self):
+        # ToDo: Add logic to that online and profiling instances are mutex
+        self.set_mode(FapdMode.ONLINE)
+        self._start()
+
+    def stop_online_fapd(self):
+        # ToDo: Add logic to that online and profiling instances are mutex
+        self.set_mode(FapdMode.ONLINE)
+        self._stop()
+
+    def status_online_fapd(self):
+        # ToDo: Add logic to that online and profiling instances are mutex
+        # ToDo: Consider returning a tuple with status and instance info
+        self.set_mode(FapdMode.ONLINE)
+        return self._status()
+
+    def start_profiling_fapd(self):
+        # ToDo: Add logic to that online and profiling instances are mutex
+        self.set_mode(FapdMode.PROFILING)
+        self._start()
+
+    def stop_profiling_fapd(self):
+        # ToDo: Add logic to that online and profiling instances are mutex
+        self.set_mode(FapdMode.PROFILING)
+        self._stop()
+
+    def status_profiling_fapd(self):
+        # ToDo: Add logic to that online and profiling instances are mutex
+        # ToDo: Consider returning a tuple with status and instance info
+        self.set_mode(FapdMode.PROFILING)
+        return self._status()
 
     def set_profiling_stdout(self, strStdoutPath):
         logging.debug("FapdManager::set_profiling_stdout()")
         self.fapd_profiling_stdout = strStdoutPath
-        return self.fapd_profiling_stdout
 
     def set_profiling_stderr(self, strStderrPath):
         logging.debug("FapdManager::set_profiling_stderr()")
         self.fapd_profiling_stderr = strStderrPath
-        return self.fapd_profiling_stderr
 
     def get_profiling_stdout(self):
         logging.debug("FapdManager::get_profiling_stdout()")
@@ -79,12 +111,14 @@ class FapdManager():
         return self.fapd_profiling_stderr
 
     def set_mode(self, eMode):
-        """Allow only su to modify the instance mode"""
-        logging.debug(f"FapdManager::set_mode({eMode})")
-        if self._fapd_control_enabled:
-            self.mode = eMode
+        """Allow only su to modify the instance mode. This function will be
+        removed from the public API, when integration with the Profiling
+        Tool tab is completed."""
+        self.mode = eMode
 
     def get_mode(self):
+        """This function will be removed from the public API, when integration
+        with the Profiling Tool tab is completed."""
         logging.debug("FapdManager::get_mode()")
         return self.mode
 
@@ -92,7 +126,8 @@ class FapdManager():
         logging.debug("FapdManager::get_profiling_timestamp()")
         return self._fapd_profiling_timestamp
 
-    def start(self):
+    # ############# End Public Interface #############
+    def _start(self):
         logging.debug("FapdManager::start()")
         if self.mode == FapdMode.DISABLED:
             logging.debug("fapd is currently DISABLED")
@@ -128,7 +163,7 @@ class FapdManager():
                                                 stderr=fdStderrPath)
             logging.debug(f"Fapd pid = {self.procProfile.pid}")
 
-    def stop(self):
+    def _stop(self):
         logging.debug("FapdManager::stop")
         if self.mode == FapdMode.DISABLED:
             logging.debug("fapd is currently DISABLED")
@@ -148,19 +183,27 @@ class FapdManager():
             self.fapd_profiling_stderr = None
             self.fapd_profiling_stdout = None
 
-    def status_online(self):
-        try:
-            if self._fapd_lock.acquire(blocking=False):
-                bStatus = ServiceStatus(self._fapd_ref.is_active())
-                logging.debug(f"status_online() -> {bStatus}")
-                if bStatus != self._fapd_status:
-                    logging.debug(f"status_online({bStatus} updated")
-                    self._fapd_status = bStatus
-                self._fapd_lock.release()
-        except Exception:
-            print("Daemon monitor query/update dispatch failed.")
-        logging.debug(f"FapdManager::status_online()::{self._fapd_status})")
-        return self._fapd_status
+    def _status(self):
+        if self.mode == FapdMode.DISABLED:
+            logging.debug("fapd is currently DISABLED")
+            return ServiceStatus.UNKNOWN
+        elif self.mode == FapdMode.ONLINE:
+            try:
+                if self._fapd_lock.acquire(blocking=False):
+                    bStatus = ServiceStatus(self._fapd_ref.is_active())
+                    if bStatus != self._fapd_status:
+                        logging.debug(f"_status({bStatus} updated")
+                        self._fapd_status = bStatus
+                    self._fapd_lock.release()
+            except Exception:
+                print("Daemon monitor query/update dispatch failed.")
+            return self._fapd_status
+        else:
+            logging.debug("fapd is in a PROFILING session")
+            if self.procProfile:
+                return ServiceStatus.TRUE
+            else:
+                return ServiceStatus.FALSE
 
     def initial_daemon_status(self):
         if self._fapd_lock.acquire():

@@ -30,7 +30,7 @@ from .action_toolbar import ActionToolbar
 from .actions import NotificationType, add_notification
 from .analyzer_selection_dialog import ANALYZER_SELECTION
 from .database_admin_page import DatabaseAdminPage
-from .fapd_manager import FapdManager, FapdMode, ServiceStatus
+from .fapd_manager import FapdManager, ServiceStatus
 from .notification import Notification
 from .operations import DeployChangesetsOp
 from .policy_rules_admin_page import PolicyRulesAdminPage
@@ -369,14 +369,12 @@ class MainWindow(UIConnectedWidget):
     def on_fapdStartMenu_activate(self, menuitem, data=None):
         logging.debug("on_fapdStartMenu_activate() invoked.")
         if (self._fapd_status != ServiceStatus.UNKNOWN):
-            self._fapd_mgr.set_mode(FapdMode.ONLINE)
-            self._fapd_mgr.start()
+            self._fapd_mgr.start_online_fapd()
 
     def on_fapdStopMenu_activate(self, menuitem, data=None):
         logging.debug("on_fapdStopMenu_activate() invoked.")
         if (self._fapd_status != ServiceStatus.UNKNOWN):
-            self._fapd_mgr.set_mode(FapdMode.ONLINE)
-            self._fapd_mgr.stop()
+            self._fapd_mgr.stop_online_fapd()
 
     def _enable_fapd_menu_items(self, status: ServiceStatus):
         if self._fapdControlPermitted and (status != ServiceStatus.UNKNOWN):
@@ -404,7 +402,7 @@ class MainWindow(UIConnectedWidget):
             self.fapdStatusLight.set_from_icon_name("edit-delete", size=4)
 
     def init_fapd_state(self):
-        self._fapd_status = self._fapd_mgr.status_online()
+        self._fapd_status = self._fapd_mgr.status_online_fapd()
         self.on_update_daemon_status(self._fapd_status)
 
     def on_update_daemon_status(self, status: ServiceStatus):
@@ -416,7 +414,7 @@ class MainWindow(UIConnectedWidget):
         logging.debug("_monitor_daemon() executing")
         while True:
             try:
-                bStatus = self._fapd_mgr.status_online()
+                bStatus = self._fapd_mgr.status_online_fapd()
                 if bStatus != self._fapd_status:
                     logging.debug("monitor_daemon:Dispatch update request")
                     self.on_update_daemon_status(bStatus)
