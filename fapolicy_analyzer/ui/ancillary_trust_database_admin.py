@@ -83,9 +83,9 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
         if trusts:
             n_files = len(trusts)
             n_true = sum([True for trust in trusts if getattr(trust, "status", "").lower() == "t"])
-            n_false = sum([True for trust in trusts if not getattr(trust, "status", "").lower() == "t" and
-            os.path.isfile(trust.path)])
-            
+            n_false = sum([True for trust in trusts if not getattr(trust, "status", "").lower() == "t"
+                          and os.path.isfile(trust.path)])
+
             trustBtn.set_sensitive(n_files == n_false)
             untrustBtn.set_sensitive(n_files == n_true)
 
