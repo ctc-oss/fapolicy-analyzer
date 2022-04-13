@@ -7,10 +7,6 @@
  */
 
 use std::fmt::{Display, Formatter};
-use std::str::FromStr;
-
-use crate::parser::parse;
-use crate::parser::parse::StrTrace;
 
 /// # Permission
 /// Describes what kind permission is being asked for. The permission is either

@@ -7,10 +7,6 @@
  */
 
 use std::fmt::{Display, Formatter};
-use std::str::FromStr;
-
-use crate::parser::parse;
-use crate::parser::parse::StrTrace;
 
 /// # Decision
 /// If the rule triggers, this is the access decision that fapolicyd will tell the kernel.
