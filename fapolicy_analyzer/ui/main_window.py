@@ -27,11 +27,14 @@ from fapolicy_analyzer import Handle
 from fapolicy_analyzer import __version__ as app_version
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.util.format import f
+from .profile_dialog import ProfileDialog
 
 from .action_toolbar import ActionToolbar
 from .actions import NotificationType, add_notification
 from .analyzer_selection_dialog import ANALYZER_SELECTION
 from .database_admin_page import DatabaseAdminPage
+
+from .faprofiler import FaProfiler
 from .notification import Notification
 from .operations import DeployChangesetsOp
 from .policy_rules_admin_page import PolicyRulesAdminPage
@@ -77,6 +80,7 @@ class MainWindow(UIConnectedWidget):
         self._fapd_status = ServiceStatus.UNKNOWN
         self._fapd_monitoring = False
         self._fapd_ref = None
+        self._fapd_profiler = None
         self._fapd_lock = Lock()
         self.__changesets = []
         self.__page = None
@@ -366,6 +370,18 @@ class MainWindow(UIConnectedWidget):
         self.__pack_main_content(router(ANALYZER_SELECTION.RULES_ADMIN))
         # TODO: figure out a good way to set sensitivity on the menu items based on what is selected
         self.__set_trustDbMenu_sensitive(True)
+
+    def on_profileExecMenu_activate(self, *args):
+        logging.debug("MainWindow::on_profileExecMenu_activate()")
+        dlgProfTest = ProfileDialog()
+        response = dlgProfTest.get_ref().run()
+
+        if response == Gtk.ResponseType.OK:
+            words = dlgProfTest.get_text()
+            logging.debug(f"Entry text = {words}")
+            self._fapd_profiler.start_prof_session(words)
+
+        dlgProfTest.get_ref().destroy()
 
     def on_deployChanges_clicked(self, *args):
         with DeployChangesetsOp(self.window) as op:

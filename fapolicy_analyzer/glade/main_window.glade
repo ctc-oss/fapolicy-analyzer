@@ -180,6 +180,15 @@
                             <signal name="activate" handler="on_rulesAdminMenu_activate"  swapped="no"/>
                           </object>
                         </child>
+			<child>
+                          <object class="GtkMenuItem" id="profileExecMenu">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="label" translatable="yes">Profile Executable</property>
+                            <property name="use-underline">True</property>
+                            <signal name="activate" handler="on_profileExecMenu_activate" swapped="no"/>
+                          </object>
+                        </child>
                       </object>
                     </child>
                   </object>
