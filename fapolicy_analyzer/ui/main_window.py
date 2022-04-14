@@ -80,7 +80,7 @@ class MainWindow(UIConnectedWidget):
         self._fapd_status = ServiceStatus.UNKNOWN
         self._fapd_monitoring = False
         self._fapd_ref = None
-        self._fapd_profiler = None
+        self._fapd_profiler = FaProfiler()
         self._fapd_lock = Lock()
         self.__changesets = []
         self.__page = None

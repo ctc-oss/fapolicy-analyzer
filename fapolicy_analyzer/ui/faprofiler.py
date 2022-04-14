@@ -17,18 +17,19 @@ import logging
 import os.path
 import subprocess
 import time
+from datetime import datetime as DT
 
 
 class FaProfSession:
-    def __init__(self, dictProfTgt, fapd_mgr=None):
-        logging.debug(f"faProfSession::__init__({dictProfTgt}, {fapd_mgr})")
+    def __init__(self, dictProfTgt, faprofiler=None):
+        logging.debug(f"faProfSession::__init__({dictProfTgt}, {faprofiler})")
         self.execPath = dictProfTgt["executeText"]
         self.execArgs = dictProfTgt["argText"]
         self.listCmdLine = [self.execPath] + self.execArgs.split()
         self.user = dictProfTgt["userText"]
         self.pwd = dictProfTgt["dirText"]
         self.env = dictProfTgt["envText"]
-        self.fapd_mgr = fapd_mgr
+        self.faprofiler = faprofiler
         self.name = os.path.basename(self.execPath)
         self.timeStamp = None
         self.status = None  # Queued, InProgress, Complete (?)
@@ -45,7 +46,7 @@ class FaProfSession:
     def startTarget(self):
         logging.debug("FaProfSession::startTarget()")
         if not self.tgtStdout:
-            self.timeStamp = self.fapd_mgr.get_profiling_timestamp()
+            self.timeStamp = self.get_profiling_timestamp()
             self.tgtStdout = f"/tmp/tgt_profiling_{self.timeStamp}_{self.name}.stdout"
             self.tgtStderr = f"/tmp/tgt_profiling_{self.timeStamp}_{self.name}.stderr"
         fdTgtStdout = open(self.tgtStdout, "w")
@@ -64,6 +65,20 @@ class FaProfSession:
         del self.procTarget
         self.procTarget = None
 
+    def get_profiling_timestamp(self):
+        """
+        Timestamp used in session logfile names is associated with the
+        current fapd profiling instance
+        """
+        if self.faprofiler:
+            self.timeStamp = self.faprofiler.get_profiling_timestamp()
+
+        if not self.timeStamp:
+            timeNow = DT.fromtimestamp(time.time())
+            self.timeStamp = timeNow.strftime("%Y%m%d_%H%M%S_%f")
+
+        return self.timeStamp
+
     def get_status(self):
         logging.debug("FaProfSession::get_status()")
         return self.strStatus
@@ -78,13 +93,14 @@ class FaProfiler:
     def __init__(self, fapd_mgr=None):
         logging.debug("FaProfiler::__init__()")
         self.fapd_mgr = fapd_mgr
+        self.strTimestamp = None
         self.strExecPath = None
         self.strExecArgs = None
         self.listFaProfSession = dict()  # dict of current / completed sessions
 
     def start_prof_session(self, strCommandLine):
         logging.debug(f"FaProfiler::start_prof_session('{strCommandLine}')")
-        self.faprofSession = FaProfSession(strCommandLine, self.fapd_mgr)
+        self.faprofSession = FaProfSession(strCommandLine, self)
         self.listFaProfSession[strCommandLine["executeText"]] = self.faprofSession
         bResult = self.faprofSession.startTarget()
         return bResult
@@ -96,3 +112,8 @@ class FaProfiler:
     def terminate_prof_session(self, sessionName):
         logging.debug("FaProfiler::terminate_prof_session()")
         self.listFaProfSession[sessionName].clean_all()
+
+    def get_profiling_timestamp(self):
+        if self.fapd_mgr:
+            self.strTimestamp = self.fapd_mgr.get_fapd_timestamp()
+        return self.strTimestamp
