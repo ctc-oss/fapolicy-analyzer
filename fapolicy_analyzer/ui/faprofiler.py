@@ -56,7 +56,7 @@ class FaProfSession:
         self.procTarget = subprocess.Popen(self.listCmdLine,
                                            stdout=fdTgtStdout,
                                            stderr=fdTgtStderr)
-        print(self.procTarget.pid)
+        yield self.procTarget.pid
 
         # Block until process terminates
         while self.procTarget.poll():
@@ -98,10 +98,16 @@ class FaProfiler:
         self.strExecArgs = None
         self.listFaProfSession = dict()  # dict of current / completed sessions
 
-    def start_prof_session(self, strCommandLine):
-        logging.debug(f"FaProfiler::start_prof_session('{strCommandLine}')")
-        self.faprofSession = FaProfSession(strCommandLine, self)
-        self.listFaProfSession[strCommandLine["executeText"]] = self.faprofSession
+    def start_prof_session(self, dictArgs):
+        """
+        Invoke target executable.
+        This is still a work in progress. I want to keep a dict of current
+        tgt profiling session associated with a single fapd profiling
+        session.
+        """
+        logging.debug(f"FaProfiler::start_prof_session('{dictArgs}')")
+        self.faprofSession = FaProfSession(dictArgs, self)
+        self.listFaProfSession[dictArgs["executeText"]] = self.faprofSession
         bResult = self.faprofSession.startTarget()
         return bResult
 
