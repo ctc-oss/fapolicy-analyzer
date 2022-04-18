@@ -24,7 +24,7 @@ pub struct Trace<I> {
     // current context input data
     pub current: I,
     // original input data
-    pub original: I,
+    original: I,
     // current position, relative to original
     pub position: usize,
 }
