@@ -14,7 +14,7 @@ use nom::combinator::map;
 use nom::error::ErrorKind;
 
 use fapolicy_rules::parser::parse::StrTrace;
-use fapolicy_rules::parser::{comment, parse, rule, set};
+use fapolicy_rules::parser::{comment, rule, set};
 use fapolicy_rules::{Rule, Set};
 
 enum Line {

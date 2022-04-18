@@ -6,30 +6,13 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-
-
+use nom::character::complete::space0;
 use nom::character::complete::space1;
-use nom::character::complete::{space0};
+use nom::sequence::terminated;
 
-
-
-
-
-use nom::sequence::{terminated};
-
-
-
-
-
-
-
-use crate::{Rule};
-
-
-use crate::parser::parse::{
-    end_of_rule, subject_object_parts, StrTrace, TraceResult,
-};
+use crate::parser::parse::{end_of_rule, subject_object_parts, StrTrace, TraceResult};
 use crate::parser::{decision, permission};
+use crate::Rule;
 
 pub fn parse(i: StrTrace) -> TraceResult<Rule> {
     match nom::combinator::complete(nom::sequence::tuple((
@@ -56,6 +39,8 @@ pub fn parse(i: StrTrace) -> TraceResult<Rule> {
 
 #[cfg(test)]
 mod tests {
+    use crate::{Decision, ObjPart, Object, Permission, Rvalue, SubjPart, Subject};
+
     use super::*;
 
     // todo;; need better error propagation, and then better negative tests
