@@ -13,5 +13,13 @@ pub mod legacy;
 pub mod parse;
 pub mod trace;
 
+pub mod comment;
+pub mod decision;
+pub mod object;
+pub mod permission;
+pub mod rule;
+pub mod set;
+pub mod subject;
+
 #[cfg(test)]
 mod tests;

@@ -13,8 +13,8 @@ use nom::branch::alt;
 use nom::combinator::map;
 use nom::error::ErrorKind;
 
-use fapolicy_rules::parser::parse;
 use fapolicy_rules::parser::parse::StrTrace;
+use fapolicy_rules::parser::{comment, parse, rule, set};
 use fapolicy_rules::{Rule, Set};
 
 enum Line {
@@ -26,9 +26,9 @@ enum Line {
 fn parser(i: &str) -> nom::IResult<&str, Line> {
     let ii = StrTrace::new(i);
     match alt((
-        map(parse::comment, Line::Acomment),
-        map(parse::rule, Line::Arule),
-        map(parse::set, Line::Aset),
+        map(comment::parse, Line::Acomment),
+        map(rule::parse, Line::Arule),
+        map(set::parse, Line::Aset),
     ))(ii)
     {
         Ok((r, l)) => Ok((r.fragment, l)),

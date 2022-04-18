@@ -17,8 +17,8 @@ use nom::sequence::tuple;
 use crate::db::{RuleDef, DB};
 use crate::error::Error;
 use crate::linter::lint::lint_db;
-use crate::parser::parse;
 use crate::parser::parse::{StrTrace, TraceResult};
+use crate::parser::{comment, parse, rule, set};
 use crate::read::Line::*;
 use crate::{load, Rule, Set};
 
@@ -49,9 +49,9 @@ impl<I> ParseError<I> for LineError<I> {
 fn parser(i: &str) -> nom::IResult<StrTrace, Line, LineError<&str>> {
     alt((
         map(blank_line, |_| Blank),
-        map(parse::comment, Comment),
-        map(parse::set, SetDef),
-        map(parse::rule, WellFormedRule),
+        map(comment::parse, Comment),
+        map(set::parse, SetDef),
+        map(rule::parse, WellFormedRule),
     ))(StrTrace::new(i))
     .map_err(|e| match e {
         nom::Err::Error(e) => nom::Err::Error(LineError::CannotParse(i, format!("{}", e))),

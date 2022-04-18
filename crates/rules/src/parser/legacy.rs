@@ -14,14 +14,14 @@ use nom::error::ErrorKind;
 use nom::sequence::tuple;
 use nom::Err;
 
-use crate::parser::parse;
+use crate::parser;
 use crate::parser::parse::{StrTrace, TraceError};
 use crate::{Decision, Object, Permission, Subject};
 
 // provide legacy api to the new parsers
 
 pub fn decision(i: &str) -> nom::IResult<&str, Decision> {
-    match parse::decision(StrTrace::new(i)) {
+    match parser::decision::parse(StrTrace::new(i)) {
         Ok((r, d)) => Ok((r.fragment, d)),
         Err(_) => Err(nom::Err::Error(nom::error::Error {
             input: i,
@@ -30,7 +30,7 @@ pub fn decision(i: &str) -> nom::IResult<&str, Decision> {
     }
 }
 pub fn permission(i: &str) -> nom::IResult<&str, Permission> {
-    match parse::permission(StrTrace::new(i)) {
+    match parser::permission::parse(StrTrace::new(i)) {
         Ok((r, p)) => Ok((r.fragment, p)),
         Err(_) => Err(nom::Err::Error(nom::error::Error {
             input: i,
@@ -45,7 +45,7 @@ pub fn subject(i: &str) -> nom::IResult<&str, Subject> {
             code: ErrorKind::Alpha,
         })
     })?;
-    match parse::subject(ss) {
+    match parser::subject::parse(ss) {
         Ok((_, s)) => Ok((r.fragment, s)),
         Err(e) => {
             println!("{:?}", e);
@@ -65,7 +65,7 @@ pub fn object(i: &str) -> nom::IResult<&str, Object> {
             })
         })?;
 
-    match parse::object(oo) {
+    match parser::object::parse(oo) {
         Ok((r, o)) => Ok((r.fragment, o)),
         Err(_) => Err(nom::Err::Error(nom::error::Error {
             input: i,

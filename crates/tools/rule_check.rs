@@ -15,11 +15,12 @@ use ariadne::{Report, ReportKind};
 use clap::Clap;
 
 use fapolicy_rules::parser::errat::{ErrorAt, StrErrorAt};
-use fapolicy_rules::parser::parse::{rule, StrTrace};
+use fapolicy_rules::parser::parse::StrTrace;
 use fapolicy_rules::parser::trace::Trace;
 use fapolicy_rules::{load, Rule};
 
 use crate::Line::{Blank, Comment, RuleDef, SetDec};
+use fapolicy_rules::parser::rule;
 use nom::IResult;
 use std::collections::BTreeMap;
 use std::fs::File;
@@ -94,7 +95,7 @@ fn report_for_file(path: PathBuf) -> Result<(), Box<dyn Error>> {
             } else if s.starts_with('%') {
                 SetDec
             } else {
-                let x = rule(Trace::new(s)).map_err(|e| match e {
+                let x = rule::parse(Trace::new(s)).map_err(|e| match e {
                     nom::Err::Error(e) => ErrorAt::from(e),
                     _ => panic!("unexpectd error state"),
                 });

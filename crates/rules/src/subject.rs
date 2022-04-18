@@ -133,6 +133,7 @@ impl Display for Part {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::str::FromStr;
 
     #[test]
     fn display() {
