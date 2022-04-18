@@ -25,31 +25,31 @@ fn subj_part(i: StrTrace) -> TraceResult<SubjPart> {
     let (ii, x) = alt((tag("all"), terminated(alpha1, tag("="))))(i)
         .map_err(|_: nom::Err<TraceError>| nom::Err::Error(SubjectPartExpected(i)))?;
 
-    match x.fragment {
+    match x.current {
         "all" => Ok((ii, SubjPart::All)),
 
         "uid" => digit1(ii)
-            .map(|(ii, d)| (ii, SubjPart::Uid(d.fragment.parse().unwrap())))
+            .map(|(ii, d)| (ii, SubjPart::Uid(d.current.parse().unwrap())))
             .map_err(|_: nom::Err<TraceError>| nom::Err::Error(ExpectedInt(i))),
 
         "gid" => digit1(ii)
-            .map(|(ii, d)| (ii, SubjPart::Gid(d.fragment.parse().unwrap())))
+            .map(|(ii, d)| (ii, SubjPart::Gid(d.current.parse().unwrap())))
             .map_err(|_: nom::Err<TraceError>| nom::Err::Error(ExpectedInt(i))),
 
         "pid" => digit1(ii)
-            .map(|(ii, d)| (ii, SubjPart::Pid(d.fragment.parse().unwrap())))
+            .map(|(ii, d)| (ii, SubjPart::Pid(d.current.parse().unwrap())))
             .map_err(|_: nom::Err<TraceError>| nom::Err::Error(ExpectedInt(i))),
 
         "exe" => filepath(ii)
-            .map(|(ii, d)| (ii, SubjPart::Exe(d.fragment.to_string())))
+            .map(|(ii, d)| (ii, SubjPart::Exe(d.current.to_string())))
             .map_err(|_: nom::Err<TraceError>| nom::Err::Error(ExpectedFilePath(i))),
 
         "pattern" => pattern(ii)
-            .map(|(ii, d)| (ii, SubjPart::Pattern(d.fragment.to_string())))
+            .map(|(ii, d)| (ii, SubjPart::Pattern(d.current.to_string())))
             .map_err(|_: nom::Err<TraceError>| nom::Err::Error(ExpectedPattern(i))),
 
         "comm" => filepath(ii)
-            .map(|(ii, d)| (ii, SubjPart::Comm(d.fragment.to_string())))
+            .map(|(ii, d)| (ii, SubjPart::Comm(d.current.to_string())))
             .map_err(|_: nom::Err<TraceError>| nom::Err::Error(ExpectedFilePath(i))),
 
         "trust" => trust_flag(ii)
@@ -64,7 +64,7 @@ pub(crate) fn parse(i: StrTrace) -> TraceResult<Subject> {
     let mut ii = i;
     let mut parts = vec![];
     loop {
-        if ii.fragment.trim().is_empty() {
+        if ii.current.trim().is_empty() {
             break;
         }
 

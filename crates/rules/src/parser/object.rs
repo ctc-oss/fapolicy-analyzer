@@ -25,15 +25,15 @@ fn obj_part(i: StrTrace) -> TraceResult<ObjPart> {
     let (ii, x) = alt((tag("all"), terminated(alpha1, tag("="))))(i)
         .map_err(|_: nom::Err<TraceError>| nom::Err::Error(ObjectPartExpected(i)))?;
 
-    match x.fragment {
+    match x.current {
         "all" => Ok((ii, ObjPart::All)),
 
         "device" => filepath(ii)
-            .map(|(ii, d)| (ii, ObjPart::Device(d.fragment.to_string())))
+            .map(|(ii, d)| (ii, ObjPart::Device(d.current.to_string())))
             .map_err(|_: nom::Err<TraceError>| nom::Err::Error(ExpectedFilePath(i))),
 
         "dir" => filepath(ii)
-            .map(|(ii, d)| (ii, ObjPart::Dir(d.fragment.to_string())))
+            .map(|(ii, d)| (ii, ObjPart::Dir(d.current.to_string())))
             .map_err(|_: nom::Err<TraceError>| nom::Err::Error(ExpectedDirPath(i))),
 
         "ftype" => filetype(ii)
@@ -41,7 +41,7 @@ fn obj_part(i: StrTrace) -> TraceResult<ObjPart> {
             .map_err(|_: nom::Err<TraceError>| nom::Err::Error(ExpectedFileType(i))),
 
         "path" => filepath(ii)
-            .map(|(ii, d)| (ii, ObjPart::Path(d.fragment.to_string())))
+            .map(|(ii, d)| (ii, ObjPart::Path(d.current.to_string())))
             .map_err(|_: nom::Err<TraceError>| nom::Err::Error(ExpectedFilePath(i))),
 
         "trust" => trust_flag(ii)
@@ -56,7 +56,7 @@ pub(crate) fn parse(i: StrTrace) -> TraceResult<Object> {
     let mut ii = i;
     let mut parts = vec![];
     loop {
-        if ii.fragment.trim().is_empty() {
+        if ii.current.trim().is_empty() {
             break;
         }
 

@@ -46,7 +46,7 @@ pub(crate) fn filepath(i: StrTrace) -> TraceResult<StrTrace> {
 // todo;; this should be mimetype
 pub(crate) fn filetype(i: StrTrace) -> TraceResult<Rvalue> {
     nom::bytes::complete::is_not(" \t\n")(i)
-        .map(|(r, v)| (r, Rvalue::Literal(v.fragment.to_string())))
+        .map(|(r, v)| (r, Rvalue::Literal(v.current.to_string())))
 }
 
 pub(crate) fn pattern(i: StrTrace) -> IResult<StrTrace, StrTrace, TraceError> {
@@ -55,15 +55,15 @@ pub(crate) fn pattern(i: StrTrace) -> IResult<StrTrace, StrTrace, TraceError> {
 
 pub(crate) fn trust_flag(i: StrTrace) -> TraceResult<bool> {
     match digit1(i) {
-        Ok((r, v)) if v.fragment == "1" => Ok((r, true)),
-        Ok((r, v)) if v.fragment == "0" => Ok((r, false)),
+        Ok((r, v)) if v.current == "1" => Ok((r, true)),
+        Ok((r, v)) if v.current == "0" => Ok((r, false)),
         Ok((_, _)) => Err(nom::Err::Failure(Nom(i, ErrorKind::Digit))),
         Err(e) => Err(e),
     }
 }
 
 pub(crate) fn subject_object_parts(i: StrTrace) -> TraceResult<SubObj> {
-    if !i.fragment.contains(':') {
+    if !i.current.contains(':') {
         return Err(nom::Err::Error(MissingSeparator(i)));
     }
 
@@ -84,7 +84,7 @@ pub(crate) fn subject_object_parts(i: StrTrace) -> TraceResult<SubObj> {
 
 pub(crate) fn end_of_rule(i: StrTrace) -> nom::IResult<StrTrace, (), RuleParseError<StrTrace>> {
     match rest(i) {
-        Ok((rem, v)) if v.fragment.is_empty() => Ok((rem, ())),
+        Ok((rem, v)) if v.current.is_empty() => Ok((rem, ())),
         Ok((_, v)) => Err(nom::Err::Error(ExpectedEndOfInput(v))),
         res => res.map(|(rem, _)| (rem, ())),
     }

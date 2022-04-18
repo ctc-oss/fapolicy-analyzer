@@ -22,7 +22,7 @@ use crate::{Decision, Object, Permission, Subject};
 
 pub fn decision(i: &str) -> nom::IResult<&str, Decision> {
     match parser::decision::parse(StrTrace::new(i)) {
-        Ok((r, d)) => Ok((r.fragment, d)),
+        Ok((r, d)) => Ok((r.current, d)),
         Err(_) => Err(nom::Err::Error(nom::error::Error {
             input: i,
             code: ErrorKind::CrLf,
@@ -31,7 +31,7 @@ pub fn decision(i: &str) -> nom::IResult<&str, Decision> {
 }
 pub fn permission(i: &str) -> nom::IResult<&str, Permission> {
     match parser::permission::parse(StrTrace::new(i)) {
-        Ok((r, p)) => Ok((r.fragment, p)),
+        Ok((r, p)) => Ok((r.current, p)),
         Err(_) => Err(nom::Err::Error(nom::error::Error {
             input: i,
             code: ErrorKind::CrLf,
@@ -46,7 +46,7 @@ pub fn subject(i: &str) -> nom::IResult<&str, Subject> {
         })
     })?;
     match parser::subject::parse(ss) {
-        Ok((_, s)) => Ok((r.fragment, s)),
+        Ok((_, s)) => Ok((r.current, s)),
         Err(e) => {
             println!("{:?}", e);
             Err(nom::Err::Error(nom::error::Error {
@@ -66,7 +66,7 @@ pub fn object(i: &str) -> nom::IResult<&str, Object> {
         })?;
 
     match parser::object::parse(oo) {
-        Ok((r, o)) => Ok((r.fragment, o)),
+        Ok((r, o)) => Ok((r.current, o)),
         Err(_) => Err(nom::Err::Error(nom::error::Error {
             input: i,
             code: ErrorKind::Alt,

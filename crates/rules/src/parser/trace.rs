@@ -21,11 +21,11 @@ pub trait Position {
 /// The trace carries along a copy of the original rule input text
 #[derive(Debug, Copy, Clone)]
 pub struct Trace<I> {
-    // input applicable to the current context
-    pub fragment: I,
-    // full copy of the orginal input data
+    // current context input data
+    pub current: I,
+    // original input data
     pub original: I,
-    // current position relative to original
+    // current position, relative to original
     pub position: usize,
 }
 
@@ -35,7 +35,7 @@ where
 {
     pub fn new(i: I) -> Self {
         Trace {
-            fragment: i.clone(),
+            current: i.clone(),
             original: i,
             position: 0,
         }
@@ -48,7 +48,7 @@ where
 
 impl<I: PartialEq> PartialEq for Trace<I> {
     fn eq(&self, other: &Self) -> bool {
-        self.fragment == other.fragment
+        self.current == other.current
     }
 }
 
@@ -64,13 +64,13 @@ impl<I> Position for Trace<I> {
 
 impl<I: Offset> Offset for Trace<I> {
     fn offset(&self, second: &Self) -> usize {
-        self.fragment.offset(&second.fragment)
+        self.current.offset(&second.current)
     }
 }
 
 impl<I: InputLength> InputLength for Trace<I> {
     fn input_len(&self) -> usize {
-        self.fragment.input_len()
+        self.current.input_len()
     }
 }
 
@@ -83,22 +83,22 @@ where
     type IterElem = I::IterElem;
 
     fn iter_indices(&self) -> Self::Iter {
-        self.fragment.iter_indices()
+        self.current.iter_indices()
     }
 
     fn iter_elements(&self) -> Self::IterElem {
-        self.fragment.iter_elements()
+        self.current.iter_elements()
     }
 
     fn position<P>(&self, predicate: P) -> Option<usize>
     where
         P: Fn(Self::Item) -> bool,
     {
-        self.fragment.position(predicate)
+        self.current.position(predicate)
     }
 
     fn slice_index(&self, count: usize) -> Result<usize, Needed> {
-        self.fragment.slice_index(count)
+        self.current.slice_index(count)
     }
 }
 
@@ -117,7 +117,7 @@ where
 
 impl<T: AsBytes> AsBytes for Trace<T> {
     fn as_bytes(&self) -> &[u8] {
-        self.fragment.as_bytes()
+        self.current.as_bytes()
     }
 }
 
@@ -126,11 +126,11 @@ where
     I: Slice<R> + Offset + AsBytes + Slice<RangeTo<usize>> + Clone,
 {
     fn slice(&self, range: R) -> Self {
-        let fragment = self.fragment.slice(range);
-        let position = self.original.as_bytes().len() - fragment.as_bytes().len();
+        let current = self.current.slice(range);
+        let position = self.original.as_bytes().len() - current.as_bytes().len();
         Trace {
             original: self.original.clone(),
-            fragment,
+            current,
             position,
         }
     }
@@ -148,7 +148,7 @@ where
 {
     #[inline]
     fn find_substring(&self, substr: U) -> Option<usize> {
-        self.fragment.find_substring(substr)
+        self.current.find_substring(substr)
     }
 }
 
@@ -163,7 +163,7 @@ where
     where
         P: Fn(Self::Item) -> bool,
     {
-        match self.fragment.position(predicate) {
+        match self.current.position(predicate) {
             Some(n) => Ok(self.take_split(n)),
             None => Err(nom::Err::Incomplete(nom::Needed::new(1))),
         }
@@ -201,11 +201,11 @@ where
     where
         P: Fn(Self::Item) -> bool,
     {
-        match self.fragment.position(predicate) {
+        match self.current.position(predicate) {
             Some(0) => Err(nom::Err::Error(E::from_error_kind(self.clone(), e))),
             Some(n) => Ok(self.take_split(n)),
             None => {
-                if self.fragment.input_len() == 0 {
+                if self.current.input_len() == 0 {
                     Err(nom::Err::Error(E::from_error_kind(self.clone(), e)))
                 } else {
                     Ok(self.take_split(self.input_len()))
@@ -217,11 +217,11 @@ where
 
 impl<T: Compare<B>, B: Into<Trace<B>>> Compare<B> for Trace<T> {
     fn compare(&self, t: B) -> CompareResult {
-        self.fragment.compare(t.into().fragment)
+        self.current.compare(t.into().current)
     }
 
     fn compare_no_case(&self, t: B) -> CompareResult {
-        self.fragment.compare_no_case(t.into().fragment)
+        self.current.compare_no_case(t.into().current)
     }
 }
 

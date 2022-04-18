@@ -25,7 +25,7 @@ use crate::parser::parse::{StrTrace, TraceResult};
 pub(crate) fn parse(i: StrTrace) -> TraceResult<Permission> {
     // checking the structure of the lhs without deriving any value
     let (ii, _) = match tuple((alphanumeric1, opt(tag("="))))(i) {
-        Ok((r, (k, eq))) if k.fragment == "perm" => {
+        Ok((r, (k, eq))) if k.current == "perm" => {
             if eq.is_some() {
                 Ok((r, ()))
             } else {

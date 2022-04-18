@@ -31,7 +31,7 @@ fn parser(i: &str) -> nom::IResult<&str, Line> {
         map(set::parse, Line::Aset),
     ))(ii)
     {
-        Ok((r, l)) => Ok((r.fragment, l)),
+        Ok((r, l)) => Ok((r.current, l)),
         Err(_) => Err(nom::Err::Error(nom::error::Error::new(i, ErrorKind::CrLf))),
     }
 }

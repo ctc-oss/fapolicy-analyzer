@@ -70,7 +70,7 @@ pub fn load_rules_db(path: &str) -> Result<DB, Error> {
         .iter()
         .map(|(source, l)| (source, parser(l)))
         .flat_map(|(source, r)| match r {
-            Ok((t, rule)) if t.fragment.is_empty() => Some((source, rule)),
+            Ok((t, rule)) if t.current.is_empty() => Some((source, rule)),
             Ok((_, _)) => None,
             Err(nom::Err::Error(LineError::CannotParse(i, why))) => {
                 Some((source, MalformedRule(i.to_string(), why)))

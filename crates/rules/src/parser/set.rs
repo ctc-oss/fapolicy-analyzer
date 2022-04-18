@@ -30,8 +30,8 @@ pub fn parse(i: StrTrace) -> TraceResult<Set> {
         Ok((remaining_input, (_, (var, def)))) => Ok((
             remaining_input,
             Set::new(
-                var.fragment,
-                def.iter().map(|s| s.fragment.to_string()).collect(),
+                var.current,
+                def.iter().map(|s| s.current.to_string()).collect(),
             ),
         )),
         Err(e) => Err(e),

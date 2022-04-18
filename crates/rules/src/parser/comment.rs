@@ -14,7 +14,7 @@ use crate::parser::parse::{StrTrace, TraceResult};
 
 pub fn parse(i: StrTrace) -> TraceResult<String> {
     match nom::combinator::complete(preceded(tag("#"), is_not("\n")))(i) {
-        Ok((remaining, c)) => Ok((remaining, c.fragment.to_string())),
+        Ok((remaining, c)) => Ok((remaining, c.current.to_string())),
         Err(e) => Err(e),
     }
 }
