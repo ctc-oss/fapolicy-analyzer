@@ -18,7 +18,7 @@ use crate::db::{RuleDef, DB};
 use crate::error::Error;
 use crate::linter::lint::lint_db;
 use crate::parser::parse::{StrTrace, TraceResult};
-use crate::parser::{comment, parse, rule, set};
+use crate::parser::{comment, rule, set};
 use crate::read::Line::*;
 use crate::{load, Rule, Set};
 

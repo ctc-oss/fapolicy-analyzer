@@ -7,23 +7,23 @@
  */
 
 use nom::branch::alt;
-use nom::bytes::complete::{is_not, tag, take_until};
-use nom::character::complete::space1;
-use nom::character::complete::{alpha1, multispace0, space0};
-use nom::character::complete::{alphanumeric1, digit1};
-use nom::character::is_alphanumeric;
-use nom::combinator::{map, opt, recognize, rest};
-use nom::error::ErrorKind;
-use nom::multi::{many0_count, separated_list1};
-use nom::sequence::{delimited, pair, preceded, separated_pair, terminated, tuple};
+use nom::bytes::complete::{tag};
 
-use crate::object::Part as ObjPart;
-use crate::parser::error::RuleParseError;
+use nom::character::complete::{alpha1};
+use nom::character::complete::{alphanumeric1};
+
+use nom::combinator::{map, opt, recognize};
+
+use nom::multi::{many0_count};
+use nom::sequence::{pair};
+
+
+
 use crate::parser::error::RuleParseError::*;
-use crate::parser::trace::Trace;
-use crate::set::Set;
-use crate::subject::Part as SubjPart;
-use crate::{Decision, Object, Permission, Rule, Rvalue, Subject};
+
+
+
+use crate::{Decision};
 use nom::IResult;
 
 use crate::parser::parse::{NomTraceError, StrTrace, TraceError, TraceResult};
