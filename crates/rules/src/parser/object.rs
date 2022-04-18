@@ -7,13 +7,9 @@
  */
 
 use nom::branch::alt;
-use nom::bytes::complete::{tag};
+use nom::bytes::complete::tag;
 
 use nom::character::complete::{alpha1, multispace0};
-
-
-
-
 
 use nom::sequence::{delimited, terminated};
 
@@ -21,14 +17,9 @@ use crate::object::Part as ObjPart;
 
 use crate::parser::error::RuleParseError::*;
 
+use crate::Object;
 
-
-use crate::{Object};
-
-
-use crate::parser::parse::{
-    filepath, filetype, trust_flag, StrTrace, TraceError, TraceResult,
-};
+use crate::parser::parse::{filepath, filetype, trust_flag, StrTrace, TraceError, TraceResult};
 
 fn obj_part(i: StrTrace) -> TraceResult<ObjPart> {
     let (ii, x) = alt((tag("all"), terminated(alpha1, tag("="))))(i)

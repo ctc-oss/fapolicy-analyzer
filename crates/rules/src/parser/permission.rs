@@ -7,24 +7,18 @@
  */
 
 use nom::branch::alt;
-use nom::bytes::complete::{tag};
+use nom::bytes::complete::tag;
 
-use nom::character::complete::{alpha1};
-use nom::character::complete::{alphanumeric1};
+use nom::character::complete::alpha1;
+use nom::character::complete::alphanumeric1;
 
 use nom::combinator::{map, opt};
 
-
-use nom::sequence::{tuple};
-
-
+use nom::sequence::tuple;
 
 use crate::parser::error::RuleParseError::*;
 
-
-
-use crate::{Permission};
-
+use crate::Permission;
 
 use crate::parser::parse::{StrTrace, TraceResult};
 

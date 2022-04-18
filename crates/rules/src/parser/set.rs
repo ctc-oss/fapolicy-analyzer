@@ -6,25 +6,14 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-
 use nom::bytes::complete::{is_not, tag};
 
+use nom::character::complete::alphanumeric1;
 
-use nom::character::complete::{alphanumeric1};
-
-
-
-use nom::multi::{separated_list1};
-use nom::sequence::{separated_pair};
-
-
-
-
+use nom::multi::separated_list1;
+use nom::sequence::separated_pair;
 
 use crate::set::Set;
-
-
-
 
 use crate::parser::parse::{StrTrace, TraceResult};
 

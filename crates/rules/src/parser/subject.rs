@@ -7,28 +7,19 @@
  */
 
 use nom::branch::alt;
-use nom::bytes::complete::{tag};
+use nom::bytes::complete::tag;
 
+use nom::character::complete::digit1;
 use nom::character::complete::{alpha1, multispace0};
-use nom::character::complete::{digit1};
-
-
-
 
 use nom::sequence::{delimited, terminated};
 
-
-
 use crate::parser::error::RuleParseError::*;
 
-
 use crate::subject::Part as SubjPart;
-use crate::{Subject};
+use crate::Subject;
 
-
-use crate::parser::parse::{
-    filepath, pattern, trust_flag, StrTrace, TraceError, TraceResult,
-};
+use crate::parser::parse::{filepath, pattern, trust_flag, StrTrace, TraceError, TraceResult};
 
 fn subj_part(i: StrTrace) -> TraceResult<SubjPart> {
     let (ii, x) = alt((tag("all"), terminated(alpha1, tag("="))))(i)

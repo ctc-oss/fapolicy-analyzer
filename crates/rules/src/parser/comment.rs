@@ -6,25 +6,9 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-
 use nom::bytes::complete::{is_not, tag};
 
-
-
-
-
-
-
-use nom::sequence::{preceded};
-
-
-
-
-
-
-
-
-
+use nom::sequence::preceded;
 
 use crate::parser::parse::{StrTrace, TraceResult};
 

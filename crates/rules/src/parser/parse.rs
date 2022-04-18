@@ -6,24 +6,21 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-
 use nom::bytes::complete::{is_not, tag, take_until};
 
-use nom::character::complete::{space0};
-use nom::character::complete::{digit1};
+use nom::character::complete::digit1;
+use nom::character::complete::space0;
 use nom::character::is_alphanumeric;
-use nom::combinator::{rest};
+use nom::combinator::rest;
 use nom::error::ErrorKind;
 
-use nom::sequence::{tuple};
-
+use nom::sequence::tuple;
 
 use crate::parser::error::RuleParseError;
 use crate::parser::error::RuleParseError::*;
 use crate::parser::object;
 use crate::parser::subject;
 use crate::parser::trace::Trace;
-
 
 use crate::{Object, Rvalue, Subject};
 use nom::IResult;
