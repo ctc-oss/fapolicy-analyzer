@@ -22,7 +22,6 @@ mod decision;
 mod file_type;
 mod linter;
 mod object;
-pub mod parse;
 
 pub mod db;
 pub mod error;

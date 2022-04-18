@@ -14,13 +14,18 @@ use ariadne::Source;
 use ariadne::{Report, ReportKind};
 use clap::Clap;
 
-use fapolicy_rules::parse::{rule, StrTrace};
 use fapolicy_rules::parser::errat::{ErrorAt, StrErrorAt};
+use fapolicy_rules::parser::parse::StrTrace;
 use fapolicy_rules::parser::trace::Trace;
 use fapolicy_rules::{load, Rule};
 
 use crate::Line::{Blank, Comment, RuleDef, SetDec};
+use fapolicy_rules::parser::rule;
 use nom::IResult;
+use std::collections::BTreeMap;
+use std::fs::File;
+use std::io;
+use std::io::{BufRead, BufReader};
 
 #[derive(Clap)]
 #[clap(name = "Rule Checker", version = "v0.0.0")]
@@ -43,12 +48,29 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let rules_path = &*all_opts.rules_path;
     let path = PathBuf::from(rules_path);
-    let contents: Vec<(PathBuf, String)> = load::rules_from(path)?;
+    let contents: BTreeMap<PathBuf, Vec<String>> =
+        load::rules_from(path)?
+            .into_iter()
+            .fold(BTreeMap::new(), |mut x, (p, t)| {
+                if !x.contains_key(&p) {
+                    x.insert(p.clone(), vec![]);
+                }
+                x.get_mut(&p).unwrap().push(t);
+                x
+            });
 
-    let contents: Vec<String> = contents
-        .into_iter()
-        .map(|(_, s)| s.trim().to_string())
-        .collect();
+    for (file, _) in contents {
+        report_for_file(file)?;
+    }
+    Ok(())
+}
+
+fn report_for_file(path: PathBuf) -> Result<(), Box<dyn Error>> {
+    let filename = path.display().to_string();
+    let buff = BufReader::new(File::open(path)?);
+    let lines: Result<Vec<String>, io::Error> = buff.lines().collect();
+
+    let contents: Vec<String> = lines?.into_iter().collect();
 
     let offsets = contents
         .iter()
@@ -63,8 +85,6 @@ fn main() -> Result<(), Box<dyn Error>> {
             a
         });
 
-    offsets.iter().for_each(|o| println!("offset: {:?}", o));
-
     let results: Vec<(usize, IResult<StrTrace, Rule, StrErrorAt>)> = contents
         .iter()
         .map(|s| {
@@ -75,7 +95,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             } else if s.starts_with('%') {
                 SetDec
             } else {
-                let x = rule(Trace::new(s)).map_err(|e| match e {
+                let x = rule::parse(Trace::new(s)).map_err(|e| match e {
                     nom::Err::Error(e) => ErrorAt::from(e),
                     _ => panic!("unexpectd error state"),
                 });
@@ -89,23 +109,19 @@ fn main() -> Result<(), Box<dyn Error>> {
         })
         .collect();
 
-    if results.iter().all(|(_, r)| r.as_ref().is_ok()) {
-        println!("Valid!");
-    } else {
-        for (_lineno, result) in results {
-            let r = to_ariadne_labels(rules_path, result)
-                .into_iter()
-                .rfold(Report::build(ReportKind::Error, rules_path, 0), |r, l| {
-                    r.with_label(l)
-                });
+    for (lineno, result) in results {
+        if result.is_err() {
+            let r = to_ariadne_labels(&filename, result).into_iter().rfold(
+                Report::build(ReportKind::Error, filename.as_str(), offsets[lineno].start),
+                |r, l| r.with_label(l),
+            );
 
             r.finish()
-                .print((rules_path, Source::from(contents.join("\n"))))
+                .print((filename.as_str(), Source::from(contents.join("\n"))))
                 .unwrap();
         }
     }
 
-    // todo;; error code on invalid rules
     Ok(())
 }
 
@@ -117,8 +133,8 @@ fn to_ariadne_labels<'a>(
         Ok(_) => None,
         Err(nom::Err::Error(e)) => {
             // eprintln!("- [!] {:?}", e);
-            // eprintln!("e: {:?}", e.1..(e.1 + e.2));
-            Some(ariadne::Label::new((id, e.1..(e.1 + e.2))).with_message(format!("{}", e.0)))
+            // eprintln!("e: {:?}", e.1..e.2);
+            Some(ariadne::Label::new((id, e.1..e.2)).with_message(format!("{}", e.0)))
         }
         res => {
             eprintln!("unhandled err {:?}", res);
