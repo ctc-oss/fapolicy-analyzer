@@ -36,7 +36,6 @@ pub(crate) fn parse(i: StrTrace) -> TraceResult<Permission> {
         Err(e) => Err(e),
     }?;
 
-    // let (remaining, r) = take_until(" ")(ii)?;
     let (remaining, r) = alpha1(ii)?;
     let res: TraceResult<Option<Permission>> = opt(alt((
         map(tag("any"), |_| Permission::Any),

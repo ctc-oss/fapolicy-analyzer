@@ -32,8 +32,6 @@ pub fn parse(i: StrTrace) -> TraceResult<Rule> {
             },
         )),
         Err(e) => Err(e),
-        // Err(nom::Err::Error(e)) => ErrorAt::from(e).into(),
-        // _ => panic!("hmmm what to do with this one..."),
     }
 }
 

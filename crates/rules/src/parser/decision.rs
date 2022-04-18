@@ -25,9 +25,6 @@ use nom::IResult;
 use crate::parser::parse::{NomTraceError, StrTrace, TraceError, TraceResult};
 
 pub(crate) fn parse(i: StrTrace) -> TraceResult<Decision> {
-    // let (ii, r) = take_until(" ")(i)
-    //     .map_err(|e: nom::Err<TraceError>| nom::Err::Error(ExpectedDecision(i)))?;
-
     let (ii, r) = recognize(pair(
         alt((alpha1, tag("_"))),
         many0_count(alt((alphanumeric1, tag("_")))),
