@@ -18,3 +18,20 @@ pub fn parse(i: StrTrace) -> TraceResult<String> {
         Err(e) => Err(e),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn simple() {
+        let expected = "im a comment".to_string();
+        assert_eq!(
+            expected,
+            parse(format!("#{}", expected).as_str().into())
+                .ok()
+                .unwrap()
+                .1
+        );
+    }
+}
