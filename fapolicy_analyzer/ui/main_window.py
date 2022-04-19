@@ -369,12 +369,12 @@ class MainWindow(UIConnectedWidget):
     def on_fapdStartMenu_activate(self, menuitem, data=None):
         logging.debug("on_fapdStartMenu_activate() invoked.")
         if (self._fapd_status != ServiceStatus.UNKNOWN):
-            self._fapd_mgr.start_online_fapd()
+            self._fapd_mgr.start_online()
 
     def on_fapdStopMenu_activate(self, menuitem, data=None):
         logging.debug("on_fapdStopMenu_activate() invoked.")
         if (self._fapd_status != ServiceStatus.UNKNOWN):
-            self._fapd_mgr.stop_online_fapd()
+            self._fapd_mgr.stop_online()
 
     def _enable_fapd_menu_items(self, status: ServiceStatus):
         if self._fapdControlPermitted and (status != ServiceStatus.UNKNOWN):
@@ -402,7 +402,7 @@ class MainWindow(UIConnectedWidget):
             self.fapdStatusLight.set_from_icon_name("edit-delete", size=4)
 
     def init_fapd_state(self):
-        self._fapd_status = self._fapd_mgr.status_online_fapd()
+        self._fapd_status = self._fapd_mgr.status_online()
         self.on_update_daemon_status(self._fapd_status)
 
     def on_update_daemon_status(self, status: ServiceStatus):
@@ -414,7 +414,7 @@ class MainWindow(UIConnectedWidget):
         logging.debug("_monitor_daemon() executing")
         while True:
             try:
-                bStatus = self._fapd_mgr.status_online_fapd()
+                bStatus = self._fapd_mgr.status_online()
                 if bStatus != self._fapd_status:
                     logging.debug("monitor_daemon:Dispatch update request")
                     self.on_update_daemon_status(bStatus)

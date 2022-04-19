@@ -38,13 +38,17 @@ class FapdMode(Enum):
 
 
 class FapdManager():
-    def __init__(self, bSuFapdControl=True):
+    def __init__(self, su_permission=True):
         logging.debug("FapdManager::__init__(self)")
         self._fapd_status = ServiceStatus.UNKNOWN
         self._fapd_monitoring = False
         self._fapd_ref = Handle("fapolicyd")
         self._fapd_profiler_pid = None
-        self._fapd_control_enabled = bSuFapdControl
+        
+        # SU_OVERRIDE allows mode changes in development environment
+        self._fapd_control_enabled = su_permission
+        self._fapd_control_override = os.environ.get("SU_OVERRIDE", False)
+
         self._fapd_lock = Lock()
         self.mode = FapdMode.DISABLED
         self.procProfile = None
@@ -54,41 +58,43 @@ class FapdManager():
         self.initial_daemon_status()
 
         # ToDo: Verify that FAPD_LOGPATH works in the pkexec environment
-        if os.environ.get("FAPD_LOGPATH"):
-            self.fapd_profiling_stdout = os.environ.get("FAPD_LOGPATH") + ".stdout"
-            self.fapd_profiling_stderr = os.environ.get("FAPD_LOGPATH") + ".stderr"
+        fapd_logpath_tmp = None
+        fapd_logpath_tmp = os.environ.get("FAPD_LOGPATH")
+        if fapd_logpath_tmp and len(fapd_logpath_tmp):
+            self.fapd_profiling_stdout = fapd_logpath_tmp + ".stdout"
+            self.fapd_profiling_stderr = fapd_logpath_tmp + ".stderr"
         else:
             self.fapd_profiling_stdout = None
             self.fapd_profiling_stderr = None
 
     # ############### Public Interface ###############
-    def start_online_fapd(self):
+    def start_online(self):
         # ToDo: Add logic to that online and profiling instances are mutex
         self.set_mode(FapdMode.ONLINE)
         self._start()
 
-    def stop_online_fapd(self):
+    def stop_online(self):
         # ToDo: Add logic to that online and profiling instances are mutex
         self.set_mode(FapdMode.ONLINE)
         self._stop()
 
-    def status_online_fapd(self):
+    def status_online(self):
         # ToDo: Add logic to that online and profiling instances are mutex
         # ToDo: Consider returning a tuple with status and instance info
         self.set_mode(FapdMode.ONLINE)
         return self._status()
 
-    def start_profiling_fapd(self):
+    def start_profiling(self):
         # ToDo: Add logic to that online and profiling instances are mutex
         self.set_mode(FapdMode.PROFILING)
         self._start()
 
-    def stop_profiling_fapd(self):
+    def stop_profiling(self):
         # ToDo: Add logic to that online and profiling instances are mutex
         self.set_mode(FapdMode.PROFILING)
         self._stop()
 
-    def status_profiling_fapd(self):
+    def status_profiling(self):
         # ToDo: Add logic to that online and profiling instances are mutex
         # ToDo: Consider returning a tuple with status and instance info
         self.set_mode(FapdMode.PROFILING)
