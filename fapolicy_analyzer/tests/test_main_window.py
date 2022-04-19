@@ -499,7 +499,7 @@ def test_on_update_daemon_status(mainWindow, mocker):
     assert mainWindow._fapd_status
 
     mainWindow.on_update_daemon_status(ServiceStatus.FALSE)
-    assert  mainWindow._fapd_status == ServiceStatus.FALSE
+    assert mainWindow._fapd_status == ServiceStatus.FALSE
 
 
 def test_start_daemon_monitor(mainWindow, mocker):
