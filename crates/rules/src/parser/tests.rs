@@ -32,7 +32,7 @@ fn trace_tag() {
         (
             r,
             Product {
-                _txt: t.fragment.to_string(),
+                _txt: t.current.to_string(),
             },
         )
     });

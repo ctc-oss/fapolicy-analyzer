@@ -7,10 +7,8 @@
  */
 
 use std::fmt::{Display, Formatter};
-use std::str::FromStr;
 
-use crate::parse::StrTrace;
-use crate::{bool_to_c, parse, SubjPart};
+use crate::{bool_to_c, SubjPart};
 
 /// # Subject
 /// The subject is the process that is performing actions on system resources.
@@ -132,20 +130,10 @@ impl Display for Part {
     }
 }
 
-impl FromStr for Subject {
-    type Err = String;
-
-    fn from_str(i: &str) -> Result<Self, Self::Err> {
-        match parse::subject(StrTrace::new(i)) {
-            Ok((_, s)) => Ok(s),
-            Err(_) => Err("Failed to parse Subject from string".into()),
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::str::FromStr;
 
     #[test]
     fn display() {
