@@ -73,7 +73,7 @@ def test_stop_online(fapdManager, mocker):
     mockFapdHandle = MagicMock()
     fapdManager._fapd_ref = mockFapdHandle
     fapdManager._fapd_status = ServiceStatus.TRUE
-    fapdManager.stop_online_fapd()
+    fapdManager.stop_online()
     mockFapdHandle.stop.assert_called()
     assert fapdManager.get_mode() == FapdMode.ONLINE
 
@@ -82,7 +82,7 @@ def test_start_online(fapdManager, mocker):
     mockFapdHandle = MagicMock()
     fapdManager._fapd_ref = mockFapdHandle
     fapdManager._fapd_status = ServiceStatus.FALSE
-    fapdManager.start_online_fapd()
+    fapdManager.start_online()
     mockFapdHandle.start.assert_called()
     assert fapdManager.get_mode() == FapdMode.ONLINE
 
@@ -90,7 +90,7 @@ def test_start_online(fapdManager, mocker):
 def test_stop_profiling(fapdManager, mocker):
     fapdManager.procProfile = MagicMock()
     fapdManager.procProfile.poll.side_effect = [True, False]
-    fapdManager.stop_profiling_fapd()
+    fapdManager.stop_profiling()
     fapdManager.procProfile.terminate.assert_called()
     fapdManager.procProfile.poll.assert_called()
     assert fapdManager.get_mode() == FapdMode.PROFILING
@@ -100,18 +100,18 @@ def test_start_profiling(fapdManager, mocker):
     mockProcess = MagicMock()
     mockSubproc = mocker.patch("fapolicy_analyzer.ui.fapd_manager.subprocess.Popen",
                                return_value=mockProcess)
-    fapdManager.start_profiling_fapd()
+    fapdManager.start_profiling()
     mockSubproc.assert_called()
     assert fapdManager.get_mode() == FapdMode.PROFILING
 
 
-def test_status_disabled_fapd(fapdManager, mocker):
+def test_status_disabled(fapdManager, mocker):
     fapdManager.set_mode(FapdMode.DISABLED)
     bStatus = fapdManager._status()
     assert bStatus == ServiceStatus.UNKNOWN
 
 
-def test_status_online_fapd(fapdManager, mocker):
+def test_status_online(fapdManager, mocker):
     mockFapdHandle = MagicMock()
     fapdManager._fapd_ref = mockFapdHandle
     fapdManager._fapd_ref.is_active.side_effect = [False, True, False]

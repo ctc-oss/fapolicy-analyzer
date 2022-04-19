@@ -44,7 +44,7 @@ class FapdManager():
         self._fapd_monitoring = False
         self._fapd_ref = Handle("fapolicyd")
         self._fapd_profiler_pid = None
-        
+
         # SU_OVERRIDE allows mode changes in development environment
         self._fapd_control_enabled = su_permission
         self._fapd_control_override = os.environ.get("SU_OVERRIDE", False)

@@ -30,7 +30,8 @@ from redux import Action
 from rx import create
 from rx.subject import Subject
 from ui.actions import ADD_NOTIFICATION
-from ui.main_window import MainWindow, ServiceStatus, router
+from ui.fapd_manager import ServiceStatus
+from ui.main_window import MainWindow, router
 from ui.session_manager import NotificationType, sessionManager
 from ui.store import init_store
 from ui.strings import AUTOSAVE_RESTORE_ERROR_MSG
@@ -476,7 +477,7 @@ def test_on_fapdStartMenu_activate(mainWindow, mocker):
     mainWindow._fapd_mgr = mockFapdMgr
     mainWindow._fapd_status = False
     mainWindow.get_object("fapdStartMenu").activate()
-    mockFapdMgr.start_online_fapd.assert_called()
+    mockFapdMgr.start_online.assert_called()
 
 
 def test_on_fapdStopMenu_activate(mainWindow, mocker):
@@ -484,7 +485,7 @@ def test_on_fapdStopMenu_activate(mainWindow, mocker):
     mainWindow._fapd_mgr = mockFapdMgr
     mainWindow._fapd_status = True
     mainWindow.get_object("fapdStopMenu").activate()
-    mockFapdMgr.stop_online_fapd.assert_called()
+    mockFapdMgr.stop_online.assert_called()
 
 
 def test_enable_fapd_menu_items(mainWindow, mocker):
@@ -494,11 +495,11 @@ def test_enable_fapd_menu_items(mainWindow, mocker):
 
 
 def test_on_update_daemon_status(mainWindow, mocker):
-    mainWindow.on_update_daemon_status(True)
+    mainWindow.on_update_daemon_status(ServiceStatus.TRUE)
     assert mainWindow._fapd_status
 
-    mainWindow.on_update_daemon_status(False)
-    assert not mainWindow._fapd_status
+    mainWindow.on_update_daemon_status(ServiceStatus.FALSE)
+    assert  mainWindow._fapd_status == ServiceStatus.FALSE
 
 
 def test_start_daemon_monitor(mainWindow, mocker):
