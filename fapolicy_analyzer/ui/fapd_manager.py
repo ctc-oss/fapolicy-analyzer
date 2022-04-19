@@ -38,7 +38,7 @@ class FapdMode(Enum):
 
 
 class FapdManager():
-    def __init__(self, su_permission=True):
+    def __init__(self, fapd_control_enabled=True):
         logging.debug("FapdManager::__init__(self)")
         self._fapd_status = ServiceStatus.UNKNOWN
         self._fapd_monitoring = False
@@ -46,7 +46,7 @@ class FapdManager():
         self._fapd_profiler_pid = None
 
         # SU_OVERRIDE allows mode changes in development environment
-        self._fapd_control_enabled = su_permission
+        self._fapd_control_enabled = fapd_control_enabled
         self._fapd_control_override = os.environ.get("SU_OVERRIDE", False)
 
         self._fapd_lock = Lock()
