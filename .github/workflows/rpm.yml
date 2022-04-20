@@ -33,13 +33,6 @@ jobs:
           pip3 install --no-input jinja2==3.0.3
           pip3 install --no-input jinja2-cli
 
-      - name: Install Rust 1.54.0
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: 1.54.0
-          override: true
-
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
