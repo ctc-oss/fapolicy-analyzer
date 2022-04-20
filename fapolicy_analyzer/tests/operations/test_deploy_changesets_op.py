@@ -50,7 +50,8 @@ def mock_dispatch(mocker):
 @pytest.fixture
 def operation(mock_dispatch):
     init_store(mock_System())
-    yield (op := DeployChangesetsOp(Gtk.Window()))
+    op = DeployChangesetsOp(Gtk.Window())
+    yield op
     op.dispose()
 
 

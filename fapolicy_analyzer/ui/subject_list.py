@@ -248,11 +248,8 @@ class SubjectList(SearchableList):
                 subjects = [model.get_value(model.get_iter(p), 3) for p in pathlist]
                 changeset = Changeset()
                 for subject in subjects:
-                    status = (
-                        dbtrust.status.lower()
-                        if (dbtrust := self.__find_db_trust(subject))
-                        else None
-                    )
+                    db_trust = self.__find_db_trust(subject)
+                    status = db_trust.status.lower() if db_trust else None
                     if not status or status == "d":
                         changeset.add_trust(subject.file)
                         trustable += 1
