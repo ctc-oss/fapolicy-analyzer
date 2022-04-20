@@ -169,10 +169,10 @@ class DeployChangesetsOp(UIOperation):
 
         if confirm_resp == Gtk.ResponseType.YES:
             # Invoke a file chooser dlg and generate the fapd state tarball
-            if dlgDeployList.get_save_state() and (
-                strArchiveName := self.__get_fapd_archive_file_name()
-            ):
-                fapd_dbase_snapshot(strArchiveName)
+            if dlgDeployList.get_save_state():
+                strArchiveName = self.__get_fapd_archive_file_name()
+                if strArchiveName:
+                    fapd_dbase_snapshot(strArchiveName)
 
             logging.debug("Deploying...")
             self.__deploying = True
