@@ -6,9 +6,9 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use crate::parse::StrTrace;
 use crate::parser::error::RuleParseError;
 use crate::parser::error::RuleParseError::*;
+use crate::parser::parse::StrTrace;
 use crate::parser::trace::{Position, Trace};
 
 pub type StrErrorAt<'a> = ErrorAt<StrTrace<'a>>;
@@ -18,7 +18,7 @@ pub struct ErrorAt<I>(pub RuleParseError<I>, pub usize, pub usize);
 
 impl ErrorAt<Trace<&str>> {
     pub fn new<'a>(e: RuleParseError<Trace<&'a str>>, t: Trace<&str>) -> ErrorAt<Trace<&'a str>> {
-        ErrorAt(e, t.position(), t.fragment.len())
+        ErrorAt(e, t.position(), t.current.len())
     }
 
     pub fn new_with_len<'a>(
@@ -47,13 +47,13 @@ impl<'a> From<RuleParseError<StrTrace<'a>>> for ErrorAt<StrTrace<'a>> {
         let t = match e {
             ExpectedDecision(t) => t,
             UnknownDecision(t, v) => {
-                return ErrorAt::<StrTrace<'a>>::new_with_len(e, t, v.fragment.len())
+                return ErrorAt::<StrTrace<'a>>::new_with_len(e, t, v.current.len())
             }
             ExpectedPermTag(t, v) => {
-                return ErrorAt::<StrTrace<'a>>::new_with_len(e, t, v.fragment.len())
+                return ErrorAt::<StrTrace<'a>>::new_with_len(e, t, v.current.len())
             }
             ExpectedPermType(t, v) => {
-                return ErrorAt::<StrTrace<'a>>::new_with_len(e, t, v.fragment.len())
+                return ErrorAt::<StrTrace<'a>>::new_with_len(e, t, v.current.len())
             }
             ExpectedPermAssignment(t) => return ErrorAt::<StrTrace<'a>>::new_with_len(e, t, 0),
             ExpectedEndOfInput(t) => t,
@@ -82,22 +82,22 @@ impl<'a> From<RuleParseError<StrTrace<'a>>> for ErrorAt<StrTrace<'a>> {
 
 #[cfg(test)]
 mod tests {
-    use crate::parse::StrTrace;
     use crate::parser::errat::StrErrorAt;
     use crate::parser::error::RuleParseError;
+    use crate::parser::parse::StrTrace;
 
     #[test]
     fn shift_test() {
         let t = StrTrace::new("foo");
         let e = StrErrorAt::new(RuleParseError::ExpectedInt(t), t);
         assert_eq!(t.position, e.1);
-        assert_eq!(t.fragment.len(), e.2);
+        assert_eq!(t.current.len(), e.2);
         assert_eq!(3, e.2);
 
         let by = 1001;
         let e = e.shift(by);
         assert_eq!(t.position + by, e.1);
-        assert_eq!(t.fragment.len() + by, e.2);
+        assert_eq!(t.current.len() + by, e.2);
         assert_eq!(3 + by, e.2);
     }
 }

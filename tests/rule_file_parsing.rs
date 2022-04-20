@@ -6,13 +6,16 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use fapolicy_rules::parse::StrTrace;
-use fapolicy_rules::{parse, Rule, Set};
+use std::fs::File;
+use std::io::{BufRead, BufReader};
+
 use nom::branch::alt;
 use nom::combinator::map;
 use nom::error::ErrorKind;
-use std::fs::File;
-use std::io::{BufRead, BufReader};
+
+use fapolicy_rules::parser::parse::StrTrace;
+use fapolicy_rules::parser::{comment, rule, set};
+use fapolicy_rules::{Rule, Set};
 
 enum Line {
     Acomment(String),
@@ -23,12 +26,12 @@ enum Line {
 fn parser(i: &str) -> nom::IResult<&str, Line> {
     let ii = StrTrace::new(i);
     match alt((
-        map(parse::comment, Line::Acomment),
-        map(parse::rule, Line::Arule),
-        map(parse::set, Line::Aset),
+        map(comment::parse, Line::Acomment),
+        map(rule::parse, Line::Arule),
+        map(set::parse, Line::Aset),
     ))(ii)
     {
-        Ok((r, l)) => Ok((r.fragment, l)),
+        Ok((r, l)) => Ok((r.current, l)),
         Err(_) => Err(nom::Err::Error(nom::error::Error::new(i, ErrorKind::CrLf))),
     }
 }

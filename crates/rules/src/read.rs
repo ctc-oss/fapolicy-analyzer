@@ -17,9 +17,10 @@ use nom::sequence::tuple;
 use crate::db::{RuleDef, DB};
 use crate::error::Error;
 use crate::linter::lint::lint_db;
-use crate::parse::{StrTrace, TraceResult};
+use crate::parser::parse::{StrTrace, TraceResult};
+use crate::parser::{comment, rule, set};
 use crate::read::Line::*;
-use crate::{load, parse, Rule, Set};
+use crate::{load, Rule, Set};
 
 #[derive(Debug)]
 enum Line {
@@ -48,9 +49,9 @@ impl<I> ParseError<I> for LineError<I> {
 fn parser(i: &str) -> nom::IResult<StrTrace, Line, LineError<&str>> {
     alt((
         map(blank_line, |_| Blank),
-        map(parse::comment, Comment),
-        map(parse::set, SetDef),
-        map(parse::rule, WellFormedRule),
+        map(comment::parse, Comment),
+        map(set::parse, SetDef),
+        map(rule::parse, WellFormedRule),
     ))(StrTrace::new(i))
     .map_err(|e| match e {
         nom::Err::Error(e) => nom::Err::Error(LineError::CannotParse(i, format!("{}", e))),
@@ -69,7 +70,7 @@ pub fn load_rules_db(path: &str) -> Result<DB, Error> {
         .iter()
         .map(|(source, l)| (source, parser(l)))
         .flat_map(|(source, r)| match r {
-            Ok((t, rule)) if t.fragment.is_empty() => Some((source, rule)),
+            Ok((t, rule)) if t.current.is_empty() => Some((source, rule)),
             Ok((_, _)) => None,
             Err(nom::Err::Error(LineError::CannotParse(i, why))) => {
                 Some((source, MalformedRule(i.to_string(), why)))
