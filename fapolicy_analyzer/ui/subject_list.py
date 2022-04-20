@@ -241,7 +241,7 @@ class SubjectList(SearchableList):
         model, pathlist = treeView.get_selection().get_selected_rows()
         n_paths = len(pathlist)
         if event.type == Gdk.EventType.BUTTON_PRESS and event.button == 3:
-            path,*_ = treeView.get_path_at_pos(int(event.x), int(event.y))
+            path, *_ = treeView.get_path_at_pos(int(event.x), int(event.y))
             if len(pathlist) == 0 or path not in pathlist:
                 treeView.get_selection().unselect_all()
                 treeView.get_selection().select_path(path)
