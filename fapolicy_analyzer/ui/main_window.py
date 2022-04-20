@@ -402,7 +402,7 @@ class MainWindow(UIConnectedWidget):
             self.fapdStatusLight.set_from_icon_name("edit-delete", size=4)
 
     def init_fapd_state(self):
-        self._fapd_status = self._fapd_mgr.status_online()
+        self._fapd_status = self._fapd_mgr.status()
         self.on_update_daemon_status(self._fapd_status)
 
     def on_update_daemon_status(self, status: ServiceStatus):
@@ -414,7 +414,7 @@ class MainWindow(UIConnectedWidget):
         logging.debug("_monitor_daemon() executing")
         while True:
             try:
-                bStatus = self._fapd_mgr.status_online()
+                bStatus = self._fapd_mgr.status()
                 if bStatus != self._fapd_status:
                     logging.debug("monitor_daemon:Dispatch update request")
                     self.on_update_daemon_status(bStatus)

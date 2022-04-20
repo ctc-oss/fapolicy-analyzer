@@ -14,8 +14,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import pytest
-import time
-from datetime import datetime as DT
 from unittest.mock import MagicMock
 from ui.fapd_manager import FapdManager, FapdMode, ServiceStatus
 
@@ -25,88 +23,65 @@ def fapdManager():
     return FapdManager()
 
 
-def test_get_profiling_timestamp(fapdManager):
-    timeNow = DT.fromtimestamp(time.time())
-    strTNow = timeNow.strftime("%Y%m%d_%H%M%S_%f")
-    fapdManager._fapd_profiling_timestamp = strTNow
-    assert fapdManager.get_profiling_timestamp() == strTNow
-
-
-def test_profiling_stdout_access(fapdManager, mocker):
-    strStdout = "/A/totally/contrived/path.stdout"
-    fapdManager.set_profiling_stdout(strStdout)
-    assert(fapdManager.fapd_profiling_stdout == strStdout)
-    assert(fapdManager.get_profiling_stdout() == strStdout)
-
-
 def test_profiling_stdout_stderr_env_var(monkeypatch):
     strLogName = "/tmp/profiling_log"
     monkeypatch.setenv("FAPD_LOGPATH", strLogName)
     fapd_mgr = FapdManager()
     assert fapd_mgr.fapd_profiling_stdout == f"{strLogName}.stdout"
-    assert fapd_mgr.get_profiling_stdout() == f"{strLogName}.stdout"
     assert fapd_mgr.fapd_profiling_stderr == f"{strLogName}.stderr"
-    assert fapd_mgr.get_profiling_stderr() == f"{strLogName}.stderr"
-
-
-def test_profiling_stderr_access(fapdManager, mocker):
-    strStderr = "/Another/totally/contrived/path.stderr"
-    fapdManager.set_profiling_stderr(strStderr)
-    assert(fapdManager.fapd_profiling_stderr == strStderr)
-    assert(fapdManager.get_profiling_stderr() == strStderr)
 
 
 def test_stop_disabled(fapdManager, mocker):
-    fapdManager.set_mode(FapdMode.DISABLED)
+    fapdManager.mode = FapdMode.DISABLED
     fapdManager._stop()
-    assert fapdManager.get_mode() == FapdMode.DISABLED
+    assert fapdManager.mode == FapdMode.DISABLED
     assert not fapdManager._stop()
 
 
 def test_start_disabled(fapdManager, mocker):
-    fapdManager.set_mode(FapdMode.DISABLED)
+    fapdManager.mode = FapdMode.DISABLED
     assert not fapdManager._start()
-    assert fapdManager.get_mode() == FapdMode.DISABLED
+    assert fapdManager.mode == FapdMode.DISABLED
 
 
 def test_stop_online(fapdManager, mocker):
     mockFapdHandle = MagicMock()
     fapdManager._fapd_ref = mockFapdHandle
     fapdManager._fapd_status = ServiceStatus.TRUE
-    fapdManager.stop_online()
+    fapdManager.stop()
     mockFapdHandle.stop.assert_called()
-    assert fapdManager.get_mode() == FapdMode.ONLINE
+    assert fapdManager.mode == FapdMode.ONLINE
 
 
 def test_start_online(fapdManager, mocker):
     mockFapdHandle = MagicMock()
     fapdManager._fapd_ref = mockFapdHandle
     fapdManager._fapd_status = ServiceStatus.FALSE
-    fapdManager.start_online()
+    fapdManager.start()
     mockFapdHandle.start.assert_called()
-    assert fapdManager.get_mode() == FapdMode.ONLINE
+    assert fapdManager.mode == FapdMode.ONLINE
 
 
 def test_stop_profiling(fapdManager, mocker):
     fapdManager.procProfile = MagicMock()
     fapdManager.procProfile.poll.side_effect = [True, False]
-    fapdManager.stop_profiling()
+    fapdManager.stop(FapdMode.PROFILING)
     fapdManager.procProfile.terminate.assert_called()
     fapdManager.procProfile.poll.assert_called()
-    assert fapdManager.get_mode() == FapdMode.PROFILING
+    assert fapdManager.mode == FapdMode.PROFILING
 
 
 def test_start_profiling(fapdManager, mocker):
     mockProcess = MagicMock()
     mockSubproc = mocker.patch("fapolicy_analyzer.ui.fapd_manager.subprocess.Popen",
                                return_value=mockProcess)
-    fapdManager.start_profiling()
+    fapdManager.start(FapdMode.PROFILING)
     mockSubproc.assert_called()
-    assert fapdManager.get_mode() == FapdMode.PROFILING
+    assert fapdManager.mode == FapdMode.PROFILING
 
 
 def test_status_disabled(fapdManager, mocker):
-    fapdManager.set_mode(FapdMode.DISABLED)
+    fapdManager.mode = FapdMode.DISABLED
     bStatus = fapdManager._status()
     assert bStatus == ServiceStatus.UNKNOWN
 
@@ -115,7 +90,7 @@ def test_status_online(fapdManager, mocker):
     mockFapdHandle = MagicMock()
     fapdManager._fapd_ref = mockFapdHandle
     fapdManager._fapd_ref.is_active.side_effect = [False, True, False]
-    fapdManager.set_mode(FapdMode.ONLINE)
+    fapdManager.mode = FapdMode.ONLINE
     bStatus = fapdManager._status()
     assert bStatus == ServiceStatus.FALSE
     bStatus = fapdManager._status()
@@ -127,7 +102,7 @@ def test_status_online(fapdManager, mocker):
 
 
 def test_status_profiling_fapd(fapdManager, mocker):
-    fapdManager.set_mode(FapdMode.PROFILING)
+    fapdManager.mode = FapdMode.PROFILING
     fapdManager.procProfile = None
     bStatus = fapdManager._status()
     assert bStatus == ServiceStatus.FALSE
