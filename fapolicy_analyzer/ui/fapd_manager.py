@@ -39,7 +39,7 @@ class FapdMode(Enum):
 
 class FapdManager():
     def __init__(self, fapd_control_enabled=True):
-        logging.debug("FapdManager::__init__(self)")
+        logging.debug(f"FapdManager::__init__({fapd_control_enabled})")
         self._current_instance = FapdMode.DISABLED
         self._previous_instance = FapdMode.DISABLED
         self._fapd_status = ServiceStatus.UNKNOWN
@@ -60,9 +60,9 @@ class FapdManager():
         self.initial_daemon_status()
 
         # ToDo: Verify that FAPD_LOGPATH works in the pkexec environment
-        fapd_logpath_tmp = None
         fapd_logpath_tmp = os.environ.get("FAPD_LOGPATH")
-        if fapd_logpath_tmp and len(fapd_logpath_tmp):
+        if fapd_logpath_tmp:
+            logging.debug(f"FapdManager.__init__() logpath:{fapd_logpath_tmp}")
             self.fapd_profiling_stdout = fapd_logpath_tmp + ".stdout"
             self.fapd_profiling_stderr = fapd_logpath_tmp + ".stderr"
         else:
