@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Sequence
+from typing import Sequence, Tuple
 
 import gi
 from fapolicy_analyzer import Rule
@@ -52,10 +52,10 @@ class RulesListView(SearchableList):
                 cell_background=2,
                 foreground=3,
                 weight=4,
-            )
+            ),
         ]
 
-    def __rule_text_style(self, rule: Rule) -> tuple[str, int]:
+    def __rule_text_style(self, rule: Rule) -> Tuple[str, int]:
         info_cats = [i.category for i in rule.info]
         return (
             (Colors.RED, FontWeights.BOLD)
@@ -82,7 +82,15 @@ class RulesListView(SearchableList):
             row_color = Colors.WHITE if idx % 2 else Colors.SHADED
             text_style = self.__rule_text_style(rule)
             parent = store.append(
-                None, [rule.text, rule.id, row_color, text_style[0], text_style[1], str(rule.id)]
+                None,
+                [
+                    rule.text,
+                    rule.id,
+                    row_color,
+                    text_style[0],
+                    text_style[1],
+                    str(rule.id),
+                ],
             )
             if rule.info:
                 for info in rule.info:
@@ -94,7 +102,7 @@ class RulesListView(SearchableList):
                             row_color,
                             self.__info_cat_text_color(info.category),
                             FontWeights.NORMAL,
-                            ""
+                            "",
                         ],
                     )
 

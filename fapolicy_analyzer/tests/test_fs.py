@@ -13,9 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import subprocess
 import os
-from util.fs import sha
+import subprocess
+
+from fapolicy_analyzer.util.fs import sha
 
 
 def test_sha():
@@ -32,7 +33,10 @@ def test_sha():
 
         # Independently generate the sha256 hash from a utility for the same path
         strSha256CmdStdout = subprocess.run(
-            ["sha256sum", strTmpFilepath], capture_output=True, text=True
+            ["sha256sum", strTmpFilepath],
+            universal_newlines=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
         ).stdout.split()[0]
     finally:
         fp.close()
