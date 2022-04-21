@@ -16,7 +16,7 @@
 import logging
 from locale import gettext as _
 from os import getenv, geteuid, path
-from threading import Thread
+from threading import Thread, Lock
 from time import sleep
 from typing import Any
 
