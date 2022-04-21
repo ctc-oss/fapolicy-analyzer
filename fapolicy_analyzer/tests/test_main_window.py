@@ -477,7 +477,7 @@ def test_on_fapdStartMenu_activate(mainWindow, mocker):
     mainWindow._fapd_mgr = mockFapdMgr
     mainWindow._fapd_status = False
     mainWindow.get_object("fapdStartMenu").activate()
-    mockFapdMgr.start_online.assert_called()
+    mockFapdMgr.start.assert_called()
 
 
 def test_on_fapdStopMenu_activate(mainWindow, mocker):
@@ -485,7 +485,7 @@ def test_on_fapdStopMenu_activate(mainWindow, mocker):
     mainWindow._fapd_mgr = mockFapdMgr
     mainWindow._fapd_status = True
     mainWindow.get_object("fapdStopMenu").activate()
-    mockFapdMgr.stop_online.assert_called()
+    mockFapdMgr.stop.assert_called()
 
 
 def test_enable_fapd_menu_items(mainWindow, mocker):
