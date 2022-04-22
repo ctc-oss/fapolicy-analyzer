@@ -83,7 +83,7 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
         if trusts:
             n_files = len(trusts)
             n_true = sum([True for trust in trusts if getattr(trust, "status", "").lower() == "t"
-                         or (not getattr(trust, "status", " ").lower == "t" and not os.path.isfile(trust.path))])
+                         or (not getattr(trust, "status", " ").lower() == "t" and os.path.isfile(trust.path))])
             n_false = sum([True for trust in trusts if not getattr(trust, "status", "").lower() == "t"
                           and os.path.isfile(trust.path)])
 
