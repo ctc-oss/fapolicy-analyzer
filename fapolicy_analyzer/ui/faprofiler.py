@@ -56,7 +56,7 @@ class FaProfSession:
         self.procTarget = subprocess.Popen(self.listCmdLine,
                                            stdout=fdTgtStdout,
                                            stderr=fdTgtStderr)
-        yield self.procTarget.pid
+        logging.debug(self.procTarget.pid)
 
         # Block until process terminates
         while self.procTarget.poll():
@@ -64,6 +64,18 @@ class FaProfSession:
             logging.debug("Waiting for profiling target to terminate...")
         del self.procTarget
         self.procTarget = None
+
+    def stopTarget(self):
+        """
+        Terminate the profiling target and the associated profiling session
+        """
+        if self.procTarget:
+            # tbd how we'll terminate the target - self.procTarget.terminate()
+            while self.procTarget.poll():
+                time.sleep(1)
+                logging.debug("Waiting for profiling target to terminate...")
+                del self.procTarget
+                self.procTarget = None
 
     def get_profiling_timestamp(self):
         """

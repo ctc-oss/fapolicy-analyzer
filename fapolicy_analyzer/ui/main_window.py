@@ -377,7 +377,8 @@ class MainWindow(UIConnectedWidget):
             logging.debug(f"Entry text = {words}")
             self._fapd_profiler.start_prof_session(words)
 
-        dlgProfTest.get_ref().destroy()
+        # Add termination and/or close button
+        # dlgProfTest.get_ref().destroy()
 
     def on_deployChanges_clicked(self, *args):
         with DeployChangesetsOp(self.window) as op:
