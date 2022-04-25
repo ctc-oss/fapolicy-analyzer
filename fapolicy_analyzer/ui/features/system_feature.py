@@ -103,7 +103,7 @@ def create_system_feature(
             _checkpoint = _system
 
             if executor:
-                executor.shutdown(cancel_futures=True)
+                executor.shutdown()
 
             if system:
                 dispatch(system_initialized())

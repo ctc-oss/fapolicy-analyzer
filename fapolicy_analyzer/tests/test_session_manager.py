@@ -13,23 +13,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import glob
+import json
+import os
+import time
+from datetime import datetime as DT
+from unittest.mock import call, mock_open
+
+import pytest
+from callee import Attr, EndsWith, InstanceOf, StartsWith
+from fapolicy_analyzer import Changeset
 from fapolicy_analyzer.ui.actions import (
     ADD_NOTIFICATION,
     APPLY_CHANGESETS,
     RESTORE_SYSTEM_CHECKPOINT,
 )
-import context  # noqa: F401
-import os
-import pytest
-import json
-import glob
-import time
-from callee import Attr, InstanceOf, StartsWith, EndsWith
-from datetime import datetime as DT
-from unittest.mock import call, mock_open
-from fapolicy_analyzer import Changeset
 from redux import Action
 from ui.session_manager import SessionManager
+
+import context  # noqa: F401
 
 test_changes = [
     {"/data_space/man_from_mars.txt": "Add"},
@@ -108,9 +110,10 @@ def test_open_edit_session(uut, mock_dispatch, mocker):
     # verify changesets
     expected = test_changes
     # parse changesets to json string to compare
+    args, _ = mock_dispatch.call_args_list[1]
     actual = [
         {path: action for path, action in c.get_path_action_map().items()}
-        for c in mock_dispatch.call_args_list[1].args[0].payload
+        for c in args[0].payload
     ]
 
     assert actual == expected
@@ -271,9 +274,10 @@ def test_restore_previous_session(uut_autosave_enabled, autosaved_files, mock_di
     # verify changesets
     expected = test_changes
     # parse changesets to json string to compare
+    args, _ = mock_dispatch.call_args_list[1]
     actual = [
         {path: action for path, action in c.get_path_action_map().items()}
-        for c in mock_dispatch.call_args_list[1].args[0].payload
+        for c in args[0].payload
     ]
 
     assert actual == expected

@@ -129,7 +129,7 @@ class TrustFileList(SearchableList):
     def on_destroy(self, *args):
         global _executorCanceled
         _executorCanceled = True
-        self.__executor.shutdown(cancel_futures=True)
+        self.__executor.shutdown()
         return False
 
     def refresh(self):
