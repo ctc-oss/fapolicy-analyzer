@@ -137,17 +137,7 @@ SHA256: {fs.sha(trust.path)}"""
 
     def on_trustBtn_clicked(self, *args):
         if self.selectedFiles:
-            dne_list = [f for f in self.selectedFiles if not os.path.isfile(f)]
-            selectedFiles = [f for f in self.selectedFiles if f not in dne_list]
-            if len(dne_list) > 0:
-                removeDialog = RemoveDeletedDialog(deleted=dne_list).get_ref()
-                resp = removeDialog.run()
-                removeDialog.destroy()
-                if resp == Gtk.ResponseType.APPLY:
-                    self.delete_trusted_files(*dne_list)
-
-            if selectedFiles:
-                self.add_trusted_files(*selectedFiles)
+            self.add_trusted_files(*self.selectedFiles)
 
     def on_untrustBtn_clicked(self, *args):
         if self.selectedFiles:

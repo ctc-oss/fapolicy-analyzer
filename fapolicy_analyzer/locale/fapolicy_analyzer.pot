@@ -7,9 +7,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: fapolicy-analyzer 0.3.1+58.g16cef9f.dirty\n"
+"Project-Id-Version: fapolicy-analyzer 0.3.1+74.g7154389.dirty\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-03-31 12:33-0400\n"
+"POT-Creation-Date: 2022-04-25 11:52-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.9.1\n"
 
-#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:94
+#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:100
 #: fapolicy_analyzer/ui/system_trust_database_admin.py:103
 msgid ""
 "File: {trust.path}\n"
@@ -26,7 +26,7 @@ msgid ""
 "SHA256: {trust.hash}"
 msgstr ""
 
-#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:104
+#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:110
 #: fapolicy_analyzer/ui/system_trust_database_admin.py:112
 msgid ""
 "{fs.stat(trust.path)}\n"
@@ -59,6 +59,10 @@ msgstr ""
 msgid ""
 "An error occurred trying to open the session file, "
 "{self.strSessionFilename}"
+msgstr ""
+
+#: fapolicy_analyzer/ui/remove_deleted_dialog.py:33
+msgid "{len(deleted)} file{plural(len(deleted))[0]} cannot be found on disk"
 msgstr ""
 
 #: fapolicy_analyzer/ui/session_manager.py:146
@@ -376,6 +380,7 @@ msgid "No"
 msgstr ""
 
 #: fapolicy_analyzer/glade/confirm_change_dialog.glade:63
+#: fapolicy_analyzer/glade/remove_deleted_dialog.glade:52
 #: fapolicy_analyzer/glade/trust_reconciliation_dialog.glade:67
 msgid "Cancel"
 msgstr ""
@@ -440,6 +445,14 @@ msgstr ""
 
 #: fapolicy_analyzer/glade/notification.glade:46
 msgid "x"
+msgstr ""
+
+#: fapolicy_analyzer/glade/remove_deleted_dialog.glade:23
+msgid "Remove Deleted Files"
+msgstr ""
+
+#: fapolicy_analyzer/glade/remove_deleted_dialog.glade:39
+msgid "Remove"
 msgstr ""
 
 #: fapolicy_analyzer/glade/rules_admin_page.glade:77

@@ -30,5 +30,5 @@ class RemoveDeletedDialog(UIBuilderWidget):
         textView = self.get_object("removeInfo")
         textBuffer = textView.get_buffer()
 
-        displayText = f(_("{len(deleted)} file{plural(len(deleted))[0]} cannot be found on disc"))
+        displayText = f(_("{len(deleted)} file{plural(len(deleted))[0]} cannot be found on disk"))
         textBuffer.set_text(displayText)
