@@ -15,11 +15,16 @@
 
 import gi
 
-gi.require_version("Gtk", "3.0")
-from gi.repository import GdkPixbuf
-from importlib import resources
+try:
+    from importlib import resources
+except ImportError:
+    import importlib_resources as resources
+
 from .strings import LOADER_MESSAGE
 from .ui_widget import UIBuilderWidget
+
+gi.require_version("GtkSource", "3.0")
+from gi.repository import GdkPixbuf  # isort: skip
 
 
 class Loader(UIBuilderWidget):

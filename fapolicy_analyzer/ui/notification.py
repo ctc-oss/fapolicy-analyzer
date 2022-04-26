@@ -13,15 +13,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from threading import Timer
+
 import gi
 
-gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, Gio
-from importlib import resources
-from threading import Timer
+try:
+    from importlib import resources
+except ImportError:
+    import importlib_resources as resources
+
 from .actions import NotificationType, remove_notification
-from .ui_widget import UIConnectedWidget
 from .store import dispatch, get_notifications_feature
+from .ui_widget import UIConnectedWidget
+
+gi.require_version("GtkSource", "3.0")
+from gi.repository import Gio, Gtk  # isort: skip
 
 
 class Notification(UIConnectedWidget):

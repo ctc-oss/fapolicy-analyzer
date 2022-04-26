@@ -15,9 +15,14 @@
 
 
 import os
-from importlib import resources
 
 import gi
+
+try:
+    from importlib import resources
+except ImportError:
+    import importlib_resources as resources
+
 from fapolicy_analyzer.ui.ui_widget import UIBuilderWidget
 
 gi.require_version("GtkSource", "3.0")
