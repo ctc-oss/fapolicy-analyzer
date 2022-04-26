@@ -13,7 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from importlib.metadata import version
+try:
+    from importlib.metadata import version
+except ImportError:
+    from importlib_metadata import version
 
 from .rust import *  # noqa: F401,F403
 
