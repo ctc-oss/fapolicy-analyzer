@@ -47,7 +47,7 @@ jobs:
           mkdir -p $HOME/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
           curl -so /usr/local/bin/git-rpm-version https://raw.githubusercontent.com/peterlundgren/git-rpm-version/master/git-rpm-version
           chmod +x /usr/local/bin/git-rpm-version
-          PYRPM="python3$(fgrep -q Fedora /etc/redhat-release || printf "9")"
+          PYRPM="python3"
           GIT_COMMIT="$(git describe --match "v*" --abbrev=0 --candidates=0 || git rev-parse --verify HEAD)"
           RPM_VERSION="$(git-rpm-version -v HEAD)"
           RPM_RELEASE="$(git-rpm-version -r HEAD)"

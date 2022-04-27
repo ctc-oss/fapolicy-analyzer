@@ -6,8 +6,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use crate::parse::{StrTrace, TraceError};
-use crate::{parse, Decision, Object, Permission, Subject};
 use nom::bytes::complete::{is_not, take_until};
 use nom::bytes::streaming::tag;
 use nom::character::complete::space0;
@@ -16,11 +14,15 @@ use nom::error::ErrorKind;
 use nom::sequence::tuple;
 use nom::Err;
 
+use crate::parser;
+use crate::parser::parse::{StrTrace, TraceError};
+use crate::{Decision, Object, Permission, Subject};
+
 // provide legacy api to the new parsers
 
 pub fn decision(i: &str) -> nom::IResult<&str, Decision> {
-    match parse::decision(StrTrace::new(i)) {
-        Ok((r, d)) => Ok((r.fragment, d)),
+    match parser::decision::parse(StrTrace::new(i)) {
+        Ok((r, d)) => Ok((r.current, d)),
         Err(_) => Err(nom::Err::Error(nom::error::Error {
             input: i,
             code: ErrorKind::CrLf,
@@ -28,8 +30,8 @@ pub fn decision(i: &str) -> nom::IResult<&str, Decision> {
     }
 }
 pub fn permission(i: &str) -> nom::IResult<&str, Permission> {
-    match parse::permission(StrTrace::new(i)) {
-        Ok((r, p)) => Ok((r.fragment, p)),
+    match parser::permission::parse(StrTrace::new(i)) {
+        Ok((r, p)) => Ok((r.current, p)),
         Err(_) => Err(nom::Err::Error(nom::error::Error {
             input: i,
             code: ErrorKind::CrLf,
@@ -43,8 +45,8 @@ pub fn subject(i: &str) -> nom::IResult<&str, Subject> {
             code: ErrorKind::Alpha,
         })
     })?;
-    match parse::subject(ss) {
-        Ok((_, s)) => Ok((r.fragment, s)),
+    match parser::subject::parse(ss) {
+        Ok((_, s)) => Ok((r.current, s)),
         Err(e) => {
             println!("{:?}", e);
             Err(nom::Err::Error(nom::error::Error {
@@ -63,8 +65,8 @@ pub fn object(i: &str) -> nom::IResult<&str, Object> {
             })
         })?;
 
-    match parse::object(oo) {
-        Ok((r, o)) => Ok((r.fragment, o)),
+    match parser::object::parse(oo) {
+        Ok((r, o)) => Ok((r.current, o)),
         Err(_) => Err(nom::Err::Error(nom::error::Error {
             input: i,
             code: ErrorKind::Alt,

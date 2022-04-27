@@ -15,19 +15,24 @@
 
 import locale
 import logging
+from abc import ABC, ABCMeta
+from dataclasses import dataclass
+from typing import Callable
 
 import gi
 import pkg_resources
 
-gi.require_version("Gtk", "3.0")
-from abc import ABC, ABCMeta
-from dataclasses import dataclass
-from importlib import resources
-from typing import Callable
+try:
+    from importlib import resources
+except ImportError:
+    import importlib_resources as resources
 
 from fapolicy_analyzer.util.format import snake_to_camelcase
-from gi.repository import Gtk
 from rx.core.typing import Observable
+
+gi.require_version("GtkSource", "3.0")
+from gi.repository import Gtk  # isort: skip
+
 
 DOMAIN = "fapolicy_analyzer"
 locale.setlocale(locale.LC_ALL, locale.getlocale())
