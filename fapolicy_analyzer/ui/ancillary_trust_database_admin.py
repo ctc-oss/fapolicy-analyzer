@@ -77,13 +77,14 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
         self.__apply_changeset(changeset)
 
     def on_trust_selection_changed(self, trusts):
+        treeView = self.trustFileList.get_object("treeView")
+        model, pathlist = treeView.get_selection().get_selected_rows()
         self.selectedFiles = [t.path for t in trusts] if trusts else None
         trustBtn = self.get_object("trustBtn")
         untrustBtn = self.get_object("untrustBtn")
         if trusts:
             n_files = len(trusts)
-            n_true = sum([True for trust in trusts if getattr(trust, "status", "").lower() == "t"
-                         or (not getattr(trust, "status", " ").lower() == "t" and os.path.isfile(trust.path))])
+            n_true = sum([True for trust in trusts if getattr(trust, "status", "").lower() == "t"])
             n_false = sum([True for trust in trusts if not getattr(trust, "status", "").lower() == "t"
                           and os.path.isfile(trust.path)])
 
@@ -93,8 +94,8 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
             trust = trusts[-1]
             status = getattr(trust, "status", "").lower()
             trusted = status == "t"
-
             if isinstance(trust, Trust):
+
                 self.trustFileDetails.set_in_database_view(
                     f(
                         _(
@@ -121,7 +122,6 @@ SHA256: {fs.sha(trust.path)}"""
                 if status == "d"
                 else strings.ANCILLARY_UNKNOWN_FILE_MESSAGE
             )
-
         else:
             trustBtn.set_sensitive(False)
             untrustBtn.set_sensitive(False)
