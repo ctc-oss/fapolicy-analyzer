@@ -73,9 +73,9 @@ class MainWindow(UIConnectedWidget):
         self._fapd_status = ServiceStatus.UNKNOWN
         self._fapd_monitoring = False
         self._fapd_ref = None
-        self._fapd_profiler = FaProfiler()
         self._fapd_lock = Lock()
         self._fapd_mgr = FapdManager(self._fapdControlPermitted)
+        self._fapd_profiler = FaProfiler(self._fapd_mgr)
         self.__changesets = []
         self.__page = None
 
@@ -377,8 +377,14 @@ class MainWindow(UIConnectedWidget):
             logging.debug(f"Entry text = {words}")
             self._fapd_profiler.start_prof_session(words)
 
+            # Catch termination event here somehow. Monitor pid? Pass in
+            # object returned from start_prof_session() above, or maintain only
+            # in the faprofiler instance.
+            sleep(4)
+            self._fapd_profiler.stop_prof_session()
+
         # Add termination and/or close button
-        # dlgProfTest.get_ref().destroy()
+        dlgProfTest.get_ref().destroy()
 
     def on_deployChanges_clicked(self, *args):
         with DeployChangesetsOp(self.window) as op:

@@ -58,6 +58,7 @@ def test_faprofiler_init(faProfiler):
 
 
 def test_start_prof_session(faProfiler, mocker):
+    faProfiler.fapd_mgr = MagicMock()
     dictArgs = {"executeText": "/usr/bin/ls",
                 "argText": "-ltr /tmp",
                 "userText": "toma",
@@ -80,5 +81,5 @@ def test_get_profiling_timestamp(faProfiler, mocker):
     faProfiler.fapd_mgr = None
     assert not faProfiler.get_profiling_timestamp()
     faProfiler.fapd_mgr = MagicMock()
-    faProfiler.get_profiling_timestamp()
-    faProfiler.fapd_mgr.get_fapd_timestamp.assert_called()
+    faProfiler.fapd_mgr._fapd_profiling_timestamp = "20220501_231624_890930"
+    assert faProfiler.get_profiling_timestamp() == "20220501_231624_890930"

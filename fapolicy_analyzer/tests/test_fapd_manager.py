@@ -20,7 +20,7 @@ from ui.fapd_manager import FapdManager, FapdMode, ServiceStatus
 
 @pytest.fixture
 def fapdManager():
-    return FapdManager()
+    return FapdManager(True)
 
 
 def test_profiling_stdout_stderr_env_var(monkeypatch):
@@ -48,6 +48,7 @@ def test_stop_online(fapdManager, mocker):
     mockFapdHandle = MagicMock()
     fapdManager._fapd_ref = mockFapdHandle
     fapdManager._fapd_status = ServiceStatus.TRUE
+    fapdManager.mode = FapdMode.ONLINE
     fapdManager.stop()
     mockFapdHandle.stop.assert_called()
     assert fapdManager.mode == FapdMode.ONLINE
@@ -57,6 +58,7 @@ def test_start_online(fapdManager, mocker):
     mockFapdHandle = MagicMock()
     fapdManager._fapd_ref = mockFapdHandle
     fapdManager._fapd_status = ServiceStatus.FALSE
+    fapdManager.mode = FapdMode.ONLINE
     fapdManager.start()
     mockFapdHandle.start.assert_called()
     assert fapdManager.mode == FapdMode.ONLINE
@@ -64,6 +66,7 @@ def test_start_online(fapdManager, mocker):
 
 def test_stop_profiling(fapdManager, mocker):
     fapdManager.procProfile = MagicMock()
+    fapdManager.mode = FapdMode.PROFILING
     fapdManager.procProfile.poll.side_effect = [True, False]
     fapdManager.stop(FapdMode.PROFILING)
     fapdManager.procProfile.terminate.assert_called()
@@ -72,9 +75,11 @@ def test_stop_profiling(fapdManager, mocker):
 
 
 def test_start_profiling(fapdManager, mocker):
+    mockFapdHandle = MagicMock()
+    fapdManager._fapd_ref = mockFapdHandle
     mockProcess = MagicMock()
-    mockSubproc = mocker.patch("fapolicy_analyzer.ui.fapd_manager.subprocess.Popen",
-                               return_value=mockProcess)
+    mockSubproc = mocker.patch("fapolicy_analyzer.ui.fapd_manager.subprocess.Popen", return_value=mockProcess)
+    fapdManager.mode = FapdMode.ONLINE
     fapdManager.start(FapdMode.PROFILING)
     mockSubproc.assert_called()
     assert fapdManager.mode == FapdMode.PROFILING

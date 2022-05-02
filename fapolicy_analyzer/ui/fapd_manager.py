@@ -32,7 +32,7 @@ class ServiceStatus(Enum):
 
 
 class FapdMode(Enum):
-    DISABLED = 0
+    DISABLED = 0  # Neither fapd instance is executing
     ONLINE = 1
     PROFILING = 2
 
@@ -40,9 +40,22 @@ class FapdMode(Enum):
 class FapdManager():
     def __init__(self, fapd_control_enabled=True):
         logging.debug(f"FapdManager::__init__({fapd_control_enabled})")
+
+        # What fapd instances are available (if any)
         self._current_instance = FapdMode.DISABLED
         self._previous_instance = FapdMode.DISABLED
+
+        # What fapd instances are active currently
         self._fapd_status = ServiceStatus.UNKNOWN
+        self._fapd_profiling_status = ServiceStatus.UNKNOWN
+
+        # fapd manager state is used to return to prior state after profiling
+        self._fapd_mgr_cur_state = {FapdMode.ONLINE: ServiceStatus.UNKNOWN,
+                                    FapdMode.PROFILING: ServiceStatus.UNKNOWN}
+        self._fapd_mgr_prior_state = {FapdMode.ONLINE: ServiceStatus.UNKNOWN,
+                                      FapdMode.PROFILING: ServiceStatus.UNKNOWN}
+
+        # Run thread to peroidically poll online fapd status
         self._fapd_monitoring = False
         self._fapd_ref = Handle("fapolicyd")
         self._fapd_profiler_pid = None
@@ -71,13 +84,24 @@ class FapdManager():
 
     def start(self, instance=FapdMode.ONLINE):
         # ToDo: Add logic to that online and profiling instances are mutex
-        self.mode = instance
-        self._start()
+        if instance == FapdMode.PROFILING:
+            self.capture_current_state()
+            self._stop()
+        else:
+            # Check status of fapd profiling instance and bring it down
+            if self._fapd_profiling_status:
+                logging.debug("FapdManager::_start() - Shutting down prof fapd")
+                self._stop(FapdMode.PROFILING)
+
+        self._start(instance)
 
     def stop(self, instance=FapdMode.ONLINE):
         # ToDo: Add logic to that online and profiling instances are mutex
-        self.mode = instance
-        self._stop()
+        if instance == FapdMode.PROFILING:
+            self._stop(instance)
+            self.rollback_previous_state()
+        else:
+            self._stop(instance)
 
     def status(self, instance=FapdMode.ONLINE):
         # ToDo: Add logic to that online and profiling instances are mutex
@@ -85,27 +109,37 @@ class FapdManager():
         self.mode = instance
         return self._status()
 
-    def _start(self):
-        logging.debug("FapdManager::start()")
+    def _start(self, instance=FapdMode.ONLINE):
+        logging.debug("FapdManager::_start()")
+
+        # Generate timestamp for any new fapd session whether it's used or not
+        timeNow = DT.fromtimestamp(time())
+        strTNow = timeNow.strftime("%Y%m%d_%H%M%S_%f")
+        self._fapd_profiling_timestamp = strTNow
+
         if self.mode == FapdMode.DISABLED:
             logging.debug("fapd is currently DISABLED")
             return False
-        elif self.mode == FapdMode.ONLINE:
+
+        # Verify user permission to start/stop an fapd instance
+        if not self._fapd_control_enabled and not self._fapd_control_override:
+            logging.debug("FapdManager::_start()::User permission failure")
+            return False
+
+        if instance == FapdMode.ONLINE:
             logging.debug("fapd is initiating an ONLINE session")
             if (self._fapd_status != ServiceStatus.UNKNOWN) and (self._fapd_lock.acquire()):
                 self._fapd_ref.start()
+                self.mode = FapdMode.ONLINE
                 self._fapd_lock.release()
         else:
             # PROFILING
+            self.capture_current_state()
             logging.debug("fapd is initiating a PROFILING session")
             logging.debug(f"Stdout: {self.fapd_profiling_stdout}")
 
             # If stdout path is not specified generate timestamped filename
             if not self.fapd_profiling_stdout:
-                timeNow = DT.fromtimestamp(time())
-                strTNow = timeNow.strftime("%Y%m%d_%H%M%S_%f")
-                self._fapd_profiling_timestamp = strTNow
-
                 stdoutPath = "/tmp/fapd_profiling_" + strTNow + ".stdout"
                 stderrPath = "/tmp/fapd_profiling_" + strTNow + ".stderr"
                 self.fapd_profiling_stdout = stdoutPath
@@ -114,20 +148,32 @@ class FapdManager():
             fdStdoutPath = open(self.fapd_profiling_stdout, "w")
             fdStderrPath = open(self.fapd_profiling_stderr, "w")
 
+            if self._fapd_status:
+                logging.debug("FapdManager::_start() - Shut down online fapd")
+                self._previous_instance = self._fapd_status
+                self._stop(FapdMode.ONLINE)
+
             # ToDo: Move the following into a session object
             self.procProfile = subprocess.Popen(["/usr/sbin/fapolicyd",
                                                  "--permissive", "--debug"],
                                                 stdout=fdStdoutPath,
                                                 stderr=fdStderrPath)
             self._active_instance = FapdMode.PROFILING
+            self.mode = FapdMode.PROFILING
             logging.debug(f"Fapd pid = {self.procProfile.pid}")
 
-    def _stop(self):
-        logging.debug("FapdManager::stop")
+    def _stop(self, instance=FapdMode.ONLINE):
+        logging.debug("FapdManager::_stop")
         if self.mode == FapdMode.DISABLED:
             logging.debug("fapd is currently DISABLED")
             return False
-        elif self.mode == FapdMode.ONLINE:
+
+        # Verify user permissions to start/stop an fapd instance
+        if not self._fapd_control_enabled and not self._fapd_control_override:
+            logging.debug("FapdManager::_stop()::User permission failure")
+            return False
+
+        if self.mode == FapdMode.ONLINE:
             logging.debug("fapd is terminating an ONLINE session")
             if (self._fapd_status != ServiceStatus.UNKNOWN) and (self._fapd_lock.acquire()):
                 self._fapd_ref.stop()
@@ -141,6 +187,7 @@ class FapdManager():
                 logging.debug("Waiting for fapd profiling to shut down...")
             self.fapd_profiling_stderr = None
             self.fapd_profiling_stdout = None
+            self.rollback_previous_state()
 
     def _status(self):
         if self.mode == FapdMode.DISABLED:
@@ -163,6 +210,12 @@ class FapdManager():
                 return ServiceStatus.TRUE
             else:
                 return ServiceStatus.FALSE
+
+    def capture_current_state(self):
+        logging.debug("capture_current_state()")
+
+    def rollback_previous_state(self):
+        logging.debug("rollback_previous_state()")
 
     def initial_daemon_status(self):
         if self._fapd_lock.acquire():

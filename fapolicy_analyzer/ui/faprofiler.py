@@ -17,6 +17,7 @@ import logging
 import os.path
 import subprocess
 import time
+from .fapd_manager import FapdMode
 from datetime import datetime as DT
 
 
@@ -43,7 +44,7 @@ class FaProfSession:
             self.tgtStdout = None
             self.tgtStderr = None
 
-    def startTarget(self):
+    def startTarget(self, block_until_termination=True):
         logging.debug("FaProfSession::startTarget()")
         if not self.tgtStdout:
             self.timeStamp = self.get_profiling_timestamp()
@@ -53,17 +54,19 @@ class FaProfSession:
         fdTgtStderr = open(self.tgtStderr, "w")
 
         # Capture process object
+        # Does this block? Are there options to select blocking/nonblocking?
         self.procTarget = subprocess.Popen(self.listCmdLine,
                                            stdout=fdTgtStdout,
                                            stderr=fdTgtStderr)
         logging.debug(self.procTarget.pid)
 
         # Block until process terminates
-        while self.procTarget.poll():
-            time.sleep(1)
-            logging.debug("Waiting for profiling target to terminate...")
-        del self.procTarget
-        self.procTarget = None
+        if block_until_termination:
+            while self.procTarget.poll():
+                time.sleep(1)
+                logging.debug("Waiting for profiling target to terminate...")
+            del self.procTarget
+            self.procTarget = None
 
     def stopTarget(self):
         """
@@ -74,8 +77,8 @@ class FaProfSession:
             while self.procTarget.poll():
                 time.sleep(1)
                 logging.debug("Waiting for profiling target to terminate...")
-                del self.procTarget
-                self.procTarget = None
+            del self.procTarget
+            self.procTarget = None
 
     def get_profiling_timestamp(self):
         """
@@ -118,20 +121,23 @@ class FaProfiler:
         session.
         """
         logging.debug(f"FaProfiler::start_prof_session('{dictArgs}')")
+        self.fapd_mgr.start(FapdMode.PROFILING)
         self.faprofSession = FaProfSession(dictArgs, self)
         self.listFaProfSession[dictArgs["executeText"]] = self.faprofSession
         bResult = self.faprofSession.startTarget()
         return bResult
 
-    def status_prof_session(self, sessionName):
+    def status_prof_session(self, sessionName=None):
         logging.debug("FaProfiler::status_prof_session()")
         return self.listFaProfSession[sessionName].get_status()
 
-    def terminate_prof_session(self, sessionName):
-        logging.debug("FaProfiler::terminate_prof_session()")
-        self.listFaProfSession[sessionName].clean_all()
+    def stop_prof_session(self, sessionName=None):
+        logging.debug("FaProfiler::stop_prof_session()")
+        self.fapd_mgr.stop(FapdMode.PROFILING)
+        if sessionName:
+            self.listFaProfSession[sessionName].clean_all()
 
     def get_profiling_timestamp(self):
         if self.fapd_mgr:
-            self.strTimestamp = self.fapd_mgr.get_fapd_timestamp()
+            self.strTimestamp = self.fapd_mgr._fapd_profiling_timestamp
         return self.strTimestamp
