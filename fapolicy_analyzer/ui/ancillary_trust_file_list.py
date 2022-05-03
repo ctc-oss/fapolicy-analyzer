@@ -93,14 +93,17 @@ class AncillaryTrustFileList(TrustFileList):
             )
 
         for pth in self._changesetMap["Del"]:
-            secsEpoch = int(os.path.getmtime(pth)) if os.path.isfile(pth) else None
-            strDateTime = epoch_to_string(secsEpoch)
+            file_exists = os.path.isfile(pth)
+            status = "d" if file_exists else "u"
+            data = SimpleNamespace(path=pth, status=status)
+            secs_epoch = int(os.path.getmtime(pth)) if file_exists else None
+            date_time = epoch_to_string(secs_epoch)
             store.append(
                 [
                     "T/D",
-                    strDateTime,
+                    date_time,
                     pth,
-                    SimpleNamespace(path=pth),
+                    data,
                     Colors.WHITE,
                     Colors.BLACK,
                     strings.CHANGESET_ACTION_DEL,

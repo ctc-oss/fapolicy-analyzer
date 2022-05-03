@@ -14,6 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+import os.path
 from locale import gettext as _
 
 import fapolicy_analyzer.ui.strings as strings
@@ -21,7 +22,6 @@ from fapolicy_analyzer import Changeset, Trust
 from fapolicy_analyzer.util import fs  # noqa: F401
 from fapolicy_analyzer.util.format import f
 from gi.repository import Gtk
-import os.path
 
 from .actions import (
     NotificationType,
@@ -30,9 +30,9 @@ from .actions import (
     request_ancillary_trust,
 )
 from .ancillary_trust_file_list import AncillaryTrustFileList
+from .remove_deleted_dialog import RemoveDeletedDialog
 from .store import dispatch, get_system_feature
 from .trust_file_details import TrustFileDetails
-from .remove_deleted_dialog import RemoveDeletedDialog
 from .ui_widget import UIConnectedWidget
 
 
@@ -77,55 +77,61 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
         self.__apply_changeset(changeset)
 
     def on_trust_selection_changed(self, trusts):
-        treeView = self.trustFileList.get_object("treeView")
-        model, pathlist = treeView.get_selection().get_selected_rows()
+        def is_trustable(trust):
+            return getattr(trust, "status", "").lower() == "d"
+
+        def is_untrustable(trust):
+            status = getattr(trust, "status", "").lower()
+            # unknowns (u) will no longer be an instance of Trust if already deleted
+            return status == "t" or (status == "u" and isinstance(trust, Trust))
+
         self.selectedFiles = [t.path for t in trusts] if trusts else None
         trustBtn = self.get_object("trustBtn")
         untrustBtn = self.get_object("untrustBtn")
-        if trusts:
-            n_files = len(trusts)
-            n_true = sum([True for trust in trusts if getattr(trust, "status", "").lower() == "t"])
-            n_false = sum([True for trust in trusts if not getattr(trust, "status", "").lower() == "t"
-                          and os.path.isfile(trust.path)])
 
-            trustBtn.set_sensitive(n_files == n_false)
-            untrustBtn.set_sensitive(n_files == n_true)
-
-            trust = trusts[-1]
-            status = getattr(trust, "status", "").lower()
-            trusted = status == "t"
-            if isinstance(trust, Trust):
-
-                self.trustFileDetails.set_in_database_view(
-                    f(
-                        _(
-                            """File: {trust.path}
-Size: {trust.size}
-SHA256: {trust.hash}"""
-                        )
-                    )
-                )
-
-            self.trustFileDetails.set_on_file_system_view(
-                f(
-                    _(
-                        """{fs.stat(trust.path)}
-SHA256: {fs.sha(trust.path)}"""
-                    )
-                )
-            )
-
-            self.trustFileDetails.set_trust_status(
-                strings.ANCILLARY_TRUSTED_FILE_MESSAGE
-                if trusted
-                else strings.ANCILLARY_DISCREPANCY_FILE_MESSAGE
-                if status == "d"
-                else strings.ANCILLARY_UNKNOWN_FILE_MESSAGE
-            )
-        else:
+        if not trusts:
             trustBtn.set_sensitive(False)
             untrustBtn.set_sensitive(False)
             self.trustFileDetails.clear()
+            return
+
+        n_files = len(trusts)
+        n_untrustable = sum(is_untrustable(t) for t in trusts)
+        n_trustable = sum(is_trustable(t) for t in trusts)
+
+        trustBtn.set_sensitive(n_files == n_trustable)
+        untrustBtn.set_sensitive(n_files == n_untrustable)
+
+        trust = trusts[-1]
+        if isinstance(trust, Trust):
+
+            self.trustFileDetails.set_in_database_view(
+                f(
+                    _(
+                        """File: {trust.path}
+Size: {trust.size}
+SHA256: {trust.hash}"""
+                    )
+                )
+            )
+
+        self.trustFileDetails.set_on_file_system_view(
+            f(
+                _(
+                    """{fs.stat(trust.path)}
+SHA256: {fs.sha(trust.path)}"""
+                )
+            )
+        )
+
+        status = getattr(trust, "status", "").lower()
+        self.trustFileDetails.set_trust_status(
+            strings.ANCILLARY_TRUSTED_FILE_MESSAGE
+            if status == "t"
+            else strings.ANCILLARY_DISCREPANCY_FILE_MESSAGE
+            if status == "d"
+            else strings.ANCILLARY_UNKNOWN_FILE_MESSAGE
+        )
 
     def on_files_deleted(self, files):
         if files:
@@ -142,16 +148,14 @@ SHA256: {fs.sha(trust.path)}"""
     def on_untrustBtn_clicked(self, *args):
         if self.selectedFiles:
             dne_list = [f for f in self.selectedFiles if not os.path.isfile(f)]
-            selectedFiles = [f for f in self.selectedFiles if f not in dne_list]
             if len(dne_list) > 0:
                 removeDialog = RemoveDeletedDialog(deleted=dne_list).get_ref()
                 resp = removeDialog.run()
                 removeDialog.destroy()
-                if resp == Gtk.ResponseType.APPLY:
-                    self.delete_trusted_files(*dne_list)
+                if resp != Gtk.ResponseType.YES:
+                    return
 
-            if selectedFiles:
-                self.delete_trusted_files(*selectedFiles)
+            self.delete_trusted_files(*self.selectedFiles)
 
     def on_next_system(self, system):
         changesets = system.get("changesets")

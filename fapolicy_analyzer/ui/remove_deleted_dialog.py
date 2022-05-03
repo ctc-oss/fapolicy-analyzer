@@ -13,9 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from locale import gettext as _
+
 from fapolicy_analyzer.ui.ui_widget import UIBuilderWidget
 from fapolicy_analyzer.util.format import f
-from locale import gettext as _
 
 
 class RemoveDeletedDialog(UIBuilderWidget):
@@ -24,11 +25,9 @@ class RemoveDeletedDialog(UIBuilderWidget):
             return ("s", "are") if count > 1 else ("", "is")
 
         super().__init__()
-        if parent:
-            self.get_ref().set_transient_for(parent)
+        self.get_ref().set_transient_for(parent or self.get_ref().get_parent_window())
 
-        textView = self.get_object("removeInfo")
-        textBuffer = textView.get_buffer()
-
-        displayText = f(_("{len(deleted)} file{plural(len(deleted))[0]} cannot be found on disk"))
-        textBuffer.set_text(displayText)
+        display_text = f(
+            _("{len(deleted)} file{plural(len(deleted))[0]} cannot be found on disk")
+        )
+        self.get_ref().set_property("text", display_text)
