@@ -14,6 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import context  # noqa: F401 # isort: skip
+import tempfile
 from unittest.mock import MagicMock
 
 import gi
@@ -136,9 +137,16 @@ def test_on_trustBtn_clicked(widget, mock_dispatch, mocker):
     mocker.patch(
         "ui.ancillary_trust_database_admin.fs.stat", return_value="stat for foo file"
     )
-    trust = [MagicMock(path="/tmp/foo")]
+
+    temp = tempfile.NamedTemporaryFile()
+
+    trust = [
+        MagicMock(status="T", path=temp.name, size=1, hash="abc", spec=Trust),
+        MagicMock(status="T", path="/tmp/bar", size=1, hash="abc", spec=Trust),
+    ]
     widget.on_trust_selection_changed(trust)
     widget.get_object("trustBtn").clicked()
+
     mock_dispatch.assert_called_with(
         InstanceOf(Action)
         & Attrs(
@@ -166,7 +174,21 @@ def test_on_untrustBtn_clicked(widget, mock_dispatch, mocker):
     mocker.patch(
         "ui.ancillary_trust_database_admin.fs.stat", return_value="stat for foo file"
     )
-    trust = [MagicMock(path="/tmp/foo")]
+
+    mockDialog = MagicMock(
+        get_ref=MagicMock(
+            return_value=MagicMock(run=MagicMock(return_value=Gtk.ResponseType.YES))
+        )
+    )
+    mocker.patch(
+        "ui.ancillary_trust_database_admin.RemoveDeletedDialog", return_value=mockDialog
+    )
+    temp = tempfile.NamedTemporaryFile()
+
+    trust = [
+        MagicMock(status="T", path=temp.name, size=1, hash="abc", spec=Trust),
+        MagicMock(status="T", path="/tmp/bar", size=1, hash="abc", spec=Trust),
+    ]
     widget.on_trust_selection_changed(trust)
     widget.get_object("untrustBtn").clicked()
     mock_dispatch.assert_called_with(
