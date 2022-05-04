@@ -75,11 +75,12 @@ class SearchableList(UIBuilderWidget, Events):
 
     def load_store(self, store, **kwargs):
         def apply_prev_sort(model):
-            if currentModel := self.treeView.get_model():
-                currentSort = currentModel.get_sort_column_id()
-            else:
-                currentSort = (self.defaultSortIndex, 0)
-
+            currentModel = self.treeView.get_model()
+            currentSort = (
+                currentModel.get_sort_column_id()
+                if currentModel
+                else (self.defaultSortIndex, 0)
+            )
             model.set_sort_column_id(*currentSort)
             return model
 
