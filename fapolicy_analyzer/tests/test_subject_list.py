@@ -339,6 +339,8 @@ def test_right_click_menu_and_select(subjects, widget):
     event = Gdk.EventButton
     event.type = Gdk.EventType.BUTTON_PRESS
     event.button = 3
+    event.x = 210
+    event.y = 7
     widget.on_view_button_press_event(widget, event)
 
 
