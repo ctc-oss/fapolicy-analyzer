@@ -105,9 +105,10 @@ class FaProfSession:
 
 
 class FaProfiler:
-    def __init__(self, fapd_mgr=None):
+    def __init__(self, fapd_mgr=None, fapd_persistance=True):
         logging.debug("FaProfiler::__init__()")
         self.fapd_mgr = fapd_mgr
+        self.fapd_persistance = fapd_persistance
         self.strTimestamp = None
         self.strExecPath = None
         self.strExecArgs = None
@@ -125,6 +126,8 @@ class FaProfiler:
         self.faprofSession = FaProfSession(dictArgs, self)
         self.listFaProfSession[dictArgs["executeText"]] = self.faprofSession
         bResult = self.faprofSession.startTarget()
+        if not self.fapd_persistance:
+            self.fapd_mgr.stop(FapdMode.PROFILING)
         return bResult
 
     def status_prof_session(self, sessionName=None):
