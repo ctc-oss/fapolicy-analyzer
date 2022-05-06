@@ -79,11 +79,12 @@ def test_stop_profiling(fapdManager, mocker):
 def test_start_profiling(fapdManager, mocker):
     mockFapdHandle = MagicMock()
     fapdManager._fapd_ref = mockFapdHandle
-    mockProcess = MagicMock()
-    mockSubproc = mocker.patch("fapolicy_analyzer.ui.fapd_manager.subprocess.Popen", return_value=mockProcess)
+    fapdManager._fapd_ref.is_active.side_effect = [True]
+    # mockProcess = MagicMock()
+    #  mockSubproc = mocker.patch("fapolicy_analyzer.ui.fapd_manager.subprocess.Popen", return_value=mockProcess)
     fapdManager.mode = FapdMode.ONLINE
     fapdManager.start(FapdMode.PROFILING)
-    mockSubproc.assert_called()
+    mockFapdHandle.stop.assert_called()
     assert fapdManager.mode == FapdMode.PROFILING
 
 

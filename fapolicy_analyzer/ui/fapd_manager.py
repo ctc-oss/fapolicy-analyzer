@@ -94,12 +94,10 @@ class FapdManager():
         self._start(instance)
 
     def stop(self, instance=FapdMode.ONLINE):
-        # ToDo: Add logic to that online and profiling instances are mutex
+        self._stop(instance)
+        # Revert on-line fapd state
         if instance == FapdMode.PROFILING:
-            self._stop(instance)
             self.revert_online_state()
-        else:
-            self._stop(instance)
 
     def status(self, instance=FapdMode.ONLINE):
         # ToDo: Add logic to that online and profiling instances are mutex
@@ -220,7 +218,6 @@ class FapdManager():
         logging.debug(f"Reverting to {self._fapd_prior_online_state}")
         if self._fapd_prior_online_state == ServiceStatus.TRUE:
             self._start(FapdMode.ONLINE)
-
 
     def initial_daemon_status(self):
         if self._fapd_lock.acquire():
