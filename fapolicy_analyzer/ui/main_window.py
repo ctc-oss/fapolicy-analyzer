@@ -76,7 +76,6 @@ class MainWindow(UIConnectedWidget):
         toaster = Notification()
         self.get_object("overlay").add_overlay(toaster.get_ref())
         self.mainContent = self.get_object("mainContent")
-
         # Set menu items in default initial state
         self.get_object("restoreMenu").set_sensitive(False)
         self.__set_trustDbMenu_sensitive(False)
@@ -89,7 +88,6 @@ class MainWindow(UIConnectedWidget):
         self._fapdStopMenuItem.set_sensitive(False)
 
         self.__add_toolbar()
-
         self.window.show_all()
 
     def __add_toolbar(self):
@@ -327,7 +325,9 @@ class MainWindow(UIConnectedWidget):
         aboutDialog.hide()
 
     def on_syslogMenu_activate(self, *args):
-        self.__pack_main_content(router(ANALYZER_SELECTION.ANALYZE_SYSLOG))
+        page = router(ANALYZER_SELECTION.ANALYZE_SYSLOG)
+        page.height = self.get_object("mainWindow").get_size()[1]
+        self.__pack_main_content(page)
         self.__set_trustDbMenu_sensitive(True)
 
     def on_analyzeMenu_activate(self, *args):
@@ -346,9 +346,11 @@ class MainWindow(UIConnectedWidget):
         fcd.hide()
         if response == Gtk.ResponseType.OK and path.isfile((fcd.get_filename())):
             file = fcd.get_filename()
-            self.__pack_main_content(
-                router(ANALYZER_SELECTION.ANALYZE_FROM_AUDIT, file)
-            )
+            page = router(ANALYZER_SELECTION.ANALYZE_FROM_AUDIT, file)
+            page.height = self.get_object("mainWindow").get_size()[1]
+            self.__pack_main_content(page)
+
+            
             self.__set_trustDbMenu_sensitive(True)
         fcd.destroy()
 
