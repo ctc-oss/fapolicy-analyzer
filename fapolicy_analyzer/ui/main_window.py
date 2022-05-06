@@ -385,6 +385,7 @@ class MainWindow(UIConnectedWidget):
 
         # Add termination and/or close button
         dlgProfTest.get_ref().destroy()
+        self.on_analyzeMenu_activate(None)
 
     def on_deployChanges_clicked(self, *args):
         with DeployChangesetsOp(self.window) as op:
