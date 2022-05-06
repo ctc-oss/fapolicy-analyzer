@@ -79,7 +79,8 @@ def test_stop_profiling(fapdManager, mocker):
 def test_start_profiling(fapdManager, mocker):
     mockFapdHandle = MagicMock()
     fapdManager._fapd_ref = mockFapdHandle
-    fapdManager._fapd_ref.is_active.side_effect = [True]
+    fapdManager._fapd_status = ServiceStatus.TRUE
+    fapdManager._fapd_ref.is_active.return_value = True
     mockProcess = MagicMock()
     mocker.patch("fapolicy_analyzer.ui.fapd_manager.subprocess.Popen", return_value=mockProcess)
     fapdManager.mode = FapdMode.ONLINE
