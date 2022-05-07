@@ -14,6 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import pytest
+import os
 from unittest.mock import MagicMock
 from ui.faprofiler import FaProfiler, FaProfSession
 
@@ -22,8 +23,8 @@ from ui.faprofiler import FaProfiler, FaProfSession
 def faProfSession():
     dictArgs = {"executeText": "/usr/bin/ls",
                 "argText": "-ltr /tmp",
-                "userText": "toma",
-                "dirText": "/home/toma",
+                "userText": os.getenv("USER"),
+                "dirText": os.getenv("HOME"),
                 "envText": "FAPD_LOGPATH=/tmp/tgt_profiler",
                 }
     return FaProfSession(dictArgs)
@@ -61,8 +62,8 @@ def test_start_prof_session(faProfiler, mocker):
     faProfiler.fapd_mgr = MagicMock()
     dictArgs = {"executeText": "/usr/bin/ls",
                 "argText": "-ltr /tmp",
-                "userText": "toma",
-                "dirText": "/home/toma",
+                "userText": os.getenv("USER"),
+                "dirText": os.getenv("HOME"),
                 "envText": "FAPD_LOGPATH=/tmp/tgt_profiler",
                 }
 
