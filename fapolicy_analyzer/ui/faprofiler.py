@@ -14,11 +14,19 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-import os.path
+import os
+import pwd
 import subprocess
 import time
 from .fapd_manager import FapdMode
 from datetime import datetime as DT
+
+
+def demote(user_uid, user_gid):
+    def result():
+        os.setgid(user_gid)
+        os.setuid(user_uid)
+    return result
 
 
 class FaProfSession:
@@ -29,7 +37,7 @@ class FaProfSession:
         self.listCmdLine = [self.execPath] + self.execArgs.split()
         self.user = dictProfTgt["userText"]
         self.pwd = dictProfTgt["dirText"]
-        self.env = dictProfTgt["envText"]
+        self.env = None  # dictProfTgt["envText"]
         self.faprofiler = faprofiler
         self.name = os.path.basename(self.execPath)
         self.timeStamp = None
@@ -53,11 +61,21 @@ class FaProfSession:
         fdTgtStdout = open(self.tgtStdout, "w")
         fdTgtStderr = open(self.tgtStderr, "w")
 
+        # Convert username to uid/gid
+        pw_record = pwd.getpwnam(self.user)
+        # homedir = pw_record.pw_dir
+        uid = pw_record.pw_uid
+        gid = pw_record.pw_gid
+
         # Capture process object
         # Does this block? Are there options to select blocking/nonblocking?
         self.procTarget = subprocess.Popen(self.listCmdLine,
                                            stdout=fdTgtStdout,
-                                           stderr=fdTgtStderr)
+                                           stderr=fdTgtStderr,
+                                           cwd=self.pwd,
+                                           env=self.env,
+                                           preexec_fn=demote(uid, gid)
+                                           )
         logging.debug(self.procTarget.pid)
 
         # Block until process terminates
