@@ -13,7 +13,7 @@ make run
 
 ## Requirements
 
-- Python 3.9
+- Python 3.6
 - Rust 1.54
 - fapolicyd 1.1.0
 
