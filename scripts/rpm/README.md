@@ -5,7 +5,7 @@ fapolicy analyzer rpm
 
 Args:
 
-	pyrpm   	Python base RPM: python3, python39, etc.
+	pyrpm   	Python base RPM: python3, etc.
 
 	git_commit	Git tag or commit to package
 			Used to contruct the URL for the package archive.

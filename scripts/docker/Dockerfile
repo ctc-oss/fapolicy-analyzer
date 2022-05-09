@@ -23,7 +23,7 @@ RUN curl -o rust.sh https://sh.rustup.rs -sSf \
 
 RUN ln -s /root/.cargo/bin/* /usr/local/bin
 
-RUN dnf install -y python39 python3-devel python3-pip dbus-devel cairo-devel pkg-config which \
+RUN dnf install -y python3 python3-devel python3-pip dbus-devel cairo-devel pkg-config which \
                    gobject-introspection-devel cairo-gobject-devel \
  && dnf groupinstall -y "Development Tools" \
  && dnf clean all
@@ -43,12 +43,12 @@ RUN python3 setup.py install
 
 FROM ctcoss/fapolicyd as main
 
-RUN dnf install -y python39 python3-pip dbus-libs pkg-config which \
+RUN dnf install -y python3 python3-pip dbus-libs pkg-config which \
                    gtk3 xorg-x11-server-Xvfb nano \
  && dnf clean all
 
-COPY --from=build /usr/local/lib/python3.9/site-packages/ /usr/local/lib/python3.9/site-packages/
-COPY --from=build /usr/local/lib64/python3.9/site-packages/ /usr/local/lib64/python3.9/site-packages/
+COPY --from=build /usr/local/lib/python3.6/site-packages/ /usr/local/lib/python3.6/site-packages/
+COPY --from=build /usr/local/lib64/python3.6/site-packages/ /usr/local/lib64/python3.6/site-packages/
 COPY --from=build /opt/app-src/python /opt/app/
 COPY --from=build /opt/app-src/target/debug/examples /usr/local/bin
 
