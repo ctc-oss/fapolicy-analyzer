@@ -29,6 +29,7 @@ from fapolicy_analyzer.util.format import f
 from .action_toolbar import ActionToolbar
 from .actions import NotificationType, add_notification
 from .analyzer_selection_dialog import ANALYZER_SELECTION
+from .configs import Sizing
 from .database_admin_page import DatabaseAdminPage
 from .fapd_manager import FapdManager, ServiceStatus
 from .notification import Notification
@@ -326,7 +327,8 @@ class MainWindow(UIConnectedWidget):
 
     def on_syslogMenu_activate(self, *args):
         page = router(ANALYZER_SELECTION.ANALYZE_SYSLOG)
-        page.height = self.get_object("mainWindow").get_size()[1]
+        height = self.get_object("mainWindow").get_size()[1]
+        page.get_object("botBox").set_property("height_request",  int(height * Sizing.POLICY_BOTTOM_BOX))
         self.__pack_main_content(page)
         self.__set_trustDbMenu_sensitive(True)
 
@@ -347,7 +349,8 @@ class MainWindow(UIConnectedWidget):
         if response == Gtk.ResponseType.OK and path.isfile((fcd.get_filename())):
             file = fcd.get_filename()
             page = router(ANALYZER_SELECTION.ANALYZE_FROM_AUDIT, file)
-            page.height = self.get_object("mainWindow").get_size()[1]
+            height = self.get_object("mainWindow").get_size()[1]
+            page.get_object("botBox").set_property("height_request",  int(height * Sizing.POLICY_BOTTOM_BOX))
             self.__pack_main_content(page)
 
             
