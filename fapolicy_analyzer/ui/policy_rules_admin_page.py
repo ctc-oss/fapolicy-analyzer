@@ -85,8 +85,6 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             "objects": None,
         }
 
-        self.height = 0
-
         user_tabs = self.get_object("userTabs")
         self.user_list = ACLList(label=USER_LABEL, label_plural=USERS_LABEL)
         self.group_list = ACLList(label=GROUP_LABEL, label_plural=GROUPS_LABEL)

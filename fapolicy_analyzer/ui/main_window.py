@@ -328,7 +328,7 @@ class MainWindow(UIConnectedWidget):
     def on_syslogMenu_activate(self, *args):
         page = router(ANALYZER_SELECTION.ANALYZE_SYSLOG)
         height = self.get_object("mainWindow").get_size()[1]
-        page.get_object("botBox").set_property("height_request",  int(height * Sizing.POLICY_BOTTOM_BOX))
+        page.get_object("botBox").set_property("height_request", int(height * Sizing.POLICY_BOTTOM_BOX))
         self.__pack_main_content(page)
         self.__set_trustDbMenu_sensitive(True)
 
@@ -350,10 +350,8 @@ class MainWindow(UIConnectedWidget):
             file = fcd.get_filename()
             page = router(ANALYZER_SELECTION.ANALYZE_FROM_AUDIT, file)
             height = self.get_object("mainWindow").get_size()[1]
-            page.get_object("botBox").set_property("height_request",  int(height * Sizing.POLICY_BOTTOM_BOX))
+            page.get_object("botBox").set_property("height_request", int(height * Sizing.POLICY_BOTTOM_BOX))
             self.__pack_main_content(page)
-
-            
             self.__set_trustDbMenu_sensitive(True)
         fcd.destroy()
 
