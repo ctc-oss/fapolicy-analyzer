@@ -69,6 +69,8 @@ class FaProfSession:
 
         # Capture process object
         # Does this block? Are there options to select blocking/nonblocking?
+        logging.debug(f"Starting {self.listCmdLine} as {uid}/{gid}")
+        logging.debug(f"in {self.pwd} with env: {self.env}")
         self.procTarget = subprocess.Popen(self.listCmdLine,
                                            stdout=fdTgtStdout,
                                            stderr=fdTgtStderr,
@@ -80,11 +82,10 @@ class FaProfSession:
 
         # Block until process terminates
         if block_until_termination:
-            while self.procTarget.poll():
-                time.sleep(1)
-                logging.debug("Waiting for profiling target to terminate...")
-            del self.procTarget
-            self.procTarget = None
+            logging.debug("Waiting for profiling target to terminate...")
+            self.procTarget.wait()
+            # del self.procTarget
+            # self.procTarget = None
 
     def stopTarget(self):
         """
@@ -141,10 +142,12 @@ class FaProfiler:
         """
         logging.debug(f"FaProfiler::start_prof_session('{dictArgs}')")
         self.fapd_mgr.start(FapdMode.PROFILING)
+        time.sleep(10)
         self.faprofSession = FaProfSession(dictArgs, self)
         self.listFaProfSession[dictArgs["executeText"]] = self.faprofSession
         bResult = self.faprofSession.startTarget()
         if not self.fapd_persistance:
+            time.sleep(10)
             self.fapd_mgr.stop(FapdMode.PROFILING)
         return bResult
 

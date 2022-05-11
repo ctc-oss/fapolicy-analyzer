@@ -37,6 +37,13 @@ class FapdMode(Enum):
     PROFILING = 2
 
 
+def promote():
+    def result():
+        os.setgid(0)
+        os.setuid(0)
+    return result
+
+
 class FapdManager():
     def __init__(self, fapd_control_enabled=True):
         logging.debug(f"FapdManager::__init__({fapd_control_enabled})")
@@ -56,6 +63,7 @@ class FapdManager():
         # Run thread to peroidically poll online fapd status
         self._fapd_monitoring = False
         self._fapd_ref = Handle("fapolicyd")
+        self._fapd_profiling_ref = Handle("fapd_profiler")
         self._fapd_profiler_pid = None
 
         # SU_OVERRIDE allows mode changes in development environment
@@ -149,10 +157,17 @@ class FapdManager():
                 self._stop(FapdMode.ONLINE)
 
             # ToDo: Move the following into a session object
+            # if (self._fapd_status != ServiceStatus.UNKNOWN) and (self._fapd_lock.acquire()):
+            #    self._fapd_profiling_ref.start()
+            #    self.mode = FapdMode.PROFILING
+            #    self._fapd_lock.release()
+
             self.procProfile = subprocess.Popen(["/usr/sbin/fapolicyd",
-                                                 "--permissive", "--debug"],
+                                                 "--permissive", "--debug", "--no-details"],
                                                 stdout=fdStdoutPath,
-                                                stderr=fdStderrPath)
+                                                stderr=fdStderrPath,
+                                                preexec_fn=promote()
+                                                )
             self._active_instance = FapdMode.PROFILING
             self._fapd_profiler_pid = self.procProfile.pid
             self.mode = FapdMode.PROFILING
@@ -178,6 +193,9 @@ class FapdManager():
         else:
             logging.debug("fapd is terminating a PROFILING session")
             logging.debug(f"self.procProfile = {self.procProfile}")
+#            if (self._fapd_status != ServiceStatus.UNKNOWN) and (self._fapd_lock.acquire()):
+#                self._fapd_profiling_ref.stop()
+#                self._fapd_lock.release()
             if self.procProfile:
                 logging.debug(f"Pid: {self.procProfile.pid}")
                 self.procProfile.terminate()
