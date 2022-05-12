@@ -27,7 +27,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install requirements
-        run: sudo apt-get install libdbus-1-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get install libdbus-1-dev
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -43,7 +45,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install requirements
-        run: sudo apt-get install libdbus-1-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get install libdbus-1-dev
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -183,7 +187,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install requirements
-        run: sudo apt-get install libdbus-1-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get install libdbus-1-dev
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
