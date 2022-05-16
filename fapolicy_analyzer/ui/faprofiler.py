@@ -16,6 +16,7 @@
 import logging
 import os
 import pwd
+import re
 import subprocess
 import time
 from .fapd_manager import FapdMode
@@ -37,7 +38,10 @@ class FaProfSession:
         self.listCmdLine = [self.execPath] + self.execArgs.split()
         self.user = dictProfTgt["userText"]
         self.pwd = dictProfTgt["dirText"]
-        self.env = dictProfTgt["envText"]
+        self.env = {p[0]: re.sub(r'^"|"$', "", p[1])
+                    for p in [s.split("=")
+                              for s in [c.strip()
+                                        for c in dictProfTgt["envText"].split(",")]]}
         self.faprofiler = faprofiler
         self.name = os.path.basename(self.execPath)
         self.timeStamp = None

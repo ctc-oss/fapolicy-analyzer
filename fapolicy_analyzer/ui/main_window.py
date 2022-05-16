@@ -373,9 +373,9 @@ class MainWindow(UIConnectedWidget):
         response = dlgProfTest.get_ref().run()
 
         if response == Gtk.ResponseType.OK:
-            words = dlgProfTest.get_text()
-            logging.debug(f"Entry text = {words}")
-            self._fapd_profiler.start_prof_session(words)
+            profiling_args = dlgProfTest.get_text()
+            logging.debug(f"Entry text = {profiling_args}")
+            self._fapd_profiler.start_prof_session(profiling_args)
 
             # Catch termination event here somehow. Monitor pid? Pass in
             # object returned from start_prof_session() above, or maintain only
