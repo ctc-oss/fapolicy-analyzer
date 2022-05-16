@@ -37,7 +37,7 @@ class FaProfSession:
         self.listCmdLine = [self.execPath] + self.execArgs.split()
         self.user = dictProfTgt["userText"]
         self.pwd = dictProfTgt["dirText"]
-        self.env = None  # dictProfTgt["envText"]
+        self.env = dictProfTgt["envText"]
         self.faprofiler = faprofiler
         self.name = os.path.basename(self.execPath)
         self.timeStamp = None
