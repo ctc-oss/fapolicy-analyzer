@@ -96,7 +96,7 @@ class FapdManager():
         else:
             # Check status of fapd profiling instance and bring it down
             if self._fapd_profiling_status:
-                logging.debug("FapdManager::_start(): Shutting down prof fapd")
+                logging.debug("FapdManager::start(): Shutting down prof fapd")
                 self._stop(FapdMode.PROFILING)
 
         pid = self._start(instance)
@@ -124,12 +124,12 @@ class FapdManager():
 
         if self.mode == FapdMode.DISABLED:
             logging.debug("fapd is currently DISABLED")
-            return False
+            return None
 
         # Verify user permission to start/stop an fapd instance
         if not self._fapd_control_enabled and not self._fapd_control_override:
             logging.debug("FapdManager::_start()::User permission failure")
-            return False
+            return None
 
         if instance == FapdMode.ONLINE:
             logging.debug("fapd is initiating an ONLINE session")
@@ -172,6 +172,7 @@ class FapdManager():
             self._fapd_profiler_pid = self.procProfile.pid
             self.mode = FapdMode.PROFILING
             logging.debug(f"Fapd pid = {self._fapd_profiler_pid}")
+            return self.procProfile
 
     def _stop(self, instance=FapdMode.ONLINE):
         logging.debug(f"FapdManager::_stop({instance})")

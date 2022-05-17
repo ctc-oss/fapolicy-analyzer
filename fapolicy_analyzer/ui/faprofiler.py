@@ -91,7 +91,6 @@ class FaProfSession:
         if block_until_termination:
             logging.debug("Waiting for profiling target to terminate...")
             self.procTarget.wait()
-            # del self.procTarget
             self.procTarget = None
         return self.procTarget
 
@@ -134,6 +133,8 @@ class FaProfiler:
         self.fapd_mgr = fapd_mgr
         self.fapd_persistance = fapd_persistance
         self.fapd_pid = None
+        self.fapd_prof_stdout = None
+        self.fapd_prof_stderr = None
         self.strTimestamp = None
         self.strExecPath = None
         self.strExecArgs = None
@@ -150,10 +151,12 @@ class FaProfiler:
         self.fapd_mgr.start(FapdMode.PROFILING)
         if self.fapd_mgr.procProfile:
             self.fapd_pid = self.fapd_mgr.procProfile.pid
+            self.fapd_prof_stdout = self.fapd_mgr.fapd_profiling_stdout
+            self.fapd_prof_stderr = self.fapd_mgr.fapd_profiling_stderr
 
         time.sleep(10)
         self.faprofSession = FaProfSession(dictArgs, self)
-        key = str(self.instance) + "-" + dictArgs["executeText"]
+        key = dictArgs["executeText"] + "-" + str(self.instance)
         self.dictFaProfSession[key] = self.faprofSession
         self.faprofSession.startTarget(self.instance, block_until_term)
         if not self.fapd_persistance:
@@ -174,7 +177,7 @@ class FaProfiler:
             self.dictFaProfSession[sessionName].stopTarget()
             del self.dictFaProfSession[sessionName]
         else:
-            for k in self.dictFaProfSession.keys():
+            for k in list(self.dictFaProfSession):
                 logging.debug(f"Stopping profiling session: {k}")
                 self.dictFaProfSession[k].stopTarget()
                 del self.dictFaProfSession[k]

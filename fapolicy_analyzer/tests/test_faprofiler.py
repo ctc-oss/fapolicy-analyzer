@@ -25,7 +25,7 @@ def faProfSession():
                 "argText": "-ltr /tmp",
                 "userText": os.getenv("USER"),
                 "dirText": os.getenv("HOME"),
-                "envText": "FAPD_LOGPATH=/tmp/tgt_profiler",
+                "envText": 'FAPD_LOGPATH=/tmp/tgt_profiler, XX="xx"',
                 }
     return FaProfSession(dictArgs)
 
@@ -42,7 +42,24 @@ def test_faprofsession_init(faProfSession, mocker):
 
 
 def test_startTarget(faProfSession, mocker):
+    mockPopen = MagicMock()
+    mocker.patch("ui.faprofiler.subprocess.Popen",
+                 return_value=mockPopen)
+    assert not faProfSession.procTarget
     faProfSession.startTarget(0)
+    mockPopen.wait.assert_called()
+    assert not faProfSession.procTarget
+    faProfSession.startTarget(0, block_until_termination=False)
+    assert faProfSession.procTarget
+
+
+def test_stopTarget(faProfSession, mocker):
+    mockPopen = MagicMock()
+    faProfSession.procTarget = mockPopen
+    faProfSession.stopTarget()
+    mockPopen.terminate.assert_called()
+    mockPopen.wait.assert_called()
+    assert faProfSession.procTarget is None
 
 
 def test_get_profsession_timestamp(faProfSession):
@@ -56,10 +73,6 @@ def test_get_status(faProfSession):
 
 
 # Testing FaProfiler
-def test_faprofiler_init(faProfiler):
-    pass
-
-
 def test_start_prof_session(faProfiler, mocker):
     faProfiler.fapd_mgr = MagicMock()
     dictArgs = {"executeText": "/usr/bin/ls",
@@ -69,7 +82,9 @@ def test_start_prof_session(faProfiler, mocker):
                 "envText": "FAPD_LOGPATH=/tmp/tgt_profiler,XYZ=123",
                 }
 
-    faProfiler.start_prof_session(dictArgs)
+    key = faProfiler.start_prof_session(dictArgs)
+    assert faProfiler.instance != 0
+    assert key in faProfiler.dictFaProfSession
 
 
 def test_stop_prof_session(faProfiler, mocker):
@@ -82,7 +97,13 @@ def test_stop_prof_session(faProfiler, mocker):
                 }
 
     session_name = faProfiler.start_prof_session(dictArgs)
+    assert faProfiler.instance != 0
     faProfiler.stop_prof_session(session_name)
+    assert faProfiler.instance == 0
+    session_name = faProfiler.start_prof_session(dictArgs)
+    faProfiler.stop_prof_session()
+    assert faProfiler.instance == 0
+    assert not faProfiler.dictFaProfSession
 
 
 def test_status_prof_session(faProfiler, mocker):
