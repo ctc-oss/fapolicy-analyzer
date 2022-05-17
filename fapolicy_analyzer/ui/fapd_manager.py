@@ -89,17 +89,18 @@ class FapdManager():
             self.fapd_profiling_stderr = None
 
     def start(self, instance=FapdMode.ONLINE):
-        # ToDo: Add logic to that online and profiling instances are mutex
+        # If profiling, get current fapd state, and stop it if running
         if instance == FapdMode.PROFILING:
             self.capture_online_state()
             self._stop()
         else:
             # Check status of fapd profiling instance and bring it down
             if self._fapd_profiling_status:
-                logging.debug("FapdManager::_start() - Shutting down prof fapd")
+                logging.debug("FapdManager::_start(): Shutting down prof fapd")
                 self._stop(FapdMode.PROFILING)
 
-        self._start(instance)
+        pid = self._start(instance)
+        return pid
 
     def stop(self, instance=FapdMode.ONLINE):
         self._stop(instance)
@@ -156,7 +157,6 @@ class FapdManager():
                 self._previous_instance = self._fapd_status
                 self._stop(FapdMode.ONLINE)
 
-            # ToDo: Move the following into a session object
             # if (self._fapd_status != ServiceStatus.UNKNOWN) and (self._fapd_lock.acquire()):
             #    self._fapd_profiling_ref.start()
             #    self.mode = FapdMode.PROFILING

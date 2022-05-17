@@ -42,11 +42,13 @@ def test_faprofsession_init(faProfSession, mocker):
 
 
 def test_startTarget(faProfSession, mocker):
-    pass
+    faProfSession.startTarget(0)
 
 
 def test_get_profsession_timestamp(faProfSession):
-    pass
+    faProfSession.faprofiler = MagicMock()
+    faProfSession.get_profiling_timestamp()
+    faProfSession.faprofiler.get_profiling_timestamp.assert_called()
 
 
 def test_get_status(faProfSession):
@@ -64,14 +66,23 @@ def test_start_prof_session(faProfiler, mocker):
                 "argText": "-ltr /tmp",
                 "userText": os.getenv("USER"),
                 "dirText": os.getenv("HOME"),
-                "envText": "FAPD_LOGPATH=/tmp/tgt_profiler",
+                "envText": "FAPD_LOGPATH=/tmp/tgt_profiler,XYZ=123",
                 }
 
     faProfiler.start_prof_session(dictArgs)
 
 
-def test_terminate_prof_session(faProfiler, mocker):
-    pass
+def test_stop_prof_session(faProfiler, mocker):
+    faProfiler.fapd_mgr = MagicMock()
+    dictArgs = {"executeText": "/usr/bin/ls",
+                "argText": "-ltr /tmp",
+                "userText": os.getenv("USER"),
+                "dirText": os.getenv("HOME"),
+                "envText": "FAPD_LOGPATH=/tmp/tgt_profiler,XYZ=123",
+                }
+
+    session_name = faProfiler.start_prof_session(dictArgs)
+    faProfiler.stop_prof_session(session_name)
 
 
 def test_status_prof_session(faProfiler, mocker):

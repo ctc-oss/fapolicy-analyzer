@@ -38,6 +38,8 @@ class FaProfSession:
         self.listCmdLine = [self.execPath] + self.execArgs.split()
         self.user = dictProfTgt["userText"]
         self.pwd = dictProfTgt["dirText"]
+
+        # Convert comma delimited string of "EnvVar=Value" substrings to dict
         self.env = {p[0]: re.sub(r'^"|"$', "", p[1])
                     for p in [s.split("=")
                               for s in [c.strip()
@@ -56,12 +58,13 @@ class FaProfSession:
             self.tgtStdout = None
             self.tgtStderr = None
 
-    def startTarget(self, block_until_termination=True):
+    def startTarget(self, instance_count, block_until_termination=True):
         logging.debug("FaProfSession::startTarget()")
         if not self.tgtStdout:
             self.timeStamp = self.get_profiling_timestamp()
-            self.tgtStdout = f"/tmp/tgt_profiling_{self.timeStamp}_{self.name}.stdout"
-            self.tgtStderr = f"/tmp/tgt_profiling_{self.timeStamp}_{self.name}.stderr"
+            full_basename = f"/tmp/tgt_profiling_{self.timeStamp}_{self.name}"
+            self.tgtStdout = f"{full_basename}_{instance_count}.stdout"
+            self.tgtStderr = f"{full_basename}_{instance_count}.stderr"
         fdTgtStdout = open(self.tgtStdout, "w")
         fdTgtStderr = open(self.tgtStderr, "w")
 
@@ -89,18 +92,16 @@ class FaProfSession:
             logging.debug("Waiting for profiling target to terminate...")
             self.procTarget.wait()
             # del self.procTarget
-            # self.procTarget = None
+            self.procTarget = None
+        return self.procTarget
 
     def stopTarget(self):
         """
         Terminate the profiling target and the associated profiling session
         """
         if self.procTarget:
-            # tbd how we'll terminate the target - self.procTarget.terminate()
-            while self.procTarget.poll():
-                time.sleep(1)
-                logging.debug("Waiting for profiling target to terminate...")
-            del self.procTarget
+            self.procTarget.terminate()
+            self.procTarget.wait()
             self.procTarget = None
 
     def get_profiling_timestamp(self):
@@ -132,38 +133,52 @@ class FaProfiler:
         logging.debug("FaProfiler::__init__()")
         self.fapd_mgr = fapd_mgr
         self.fapd_persistance = fapd_persistance
+        self.fapd_pid = None
         self.strTimestamp = None
         self.strExecPath = None
         self.strExecArgs = None
-        self.listFaProfSession = dict()  # dict of current / completed sessions
+        self.dictFaProfSession = dict()  # dict of current / completed sessions
+        self.instance = 0
 
-    def start_prof_session(self, dictArgs):
+    def start_prof_session(self, dictArgs, block_until_term=True):
         """
         Invoke target executable.
-        This is still a work in progress. I want to keep a dict of current
-        tgt profiling session associated with a single fapd profiling
-        session.
+        self.dictFaProfSession is a dict of current tgt profiling sessions
+        associated with a single fapd profiling instance
         """
         logging.debug(f"FaProfiler::start_prof_session('{dictArgs}')")
         self.fapd_mgr.start(FapdMode.PROFILING)
+        if self.fapd_mgr.procProfile:
+            self.fapd_pid = self.fapd_mgr.procProfile.pid
+
         time.sleep(10)
         self.faprofSession = FaProfSession(dictArgs, self)
-        self.listFaProfSession[dictArgs["executeText"]] = self.faprofSession
-        bResult = self.faprofSession.startTarget()
+        key = str(self.instance) + "-" + dictArgs["executeText"]
+        self.dictFaProfSession[key] = self.faprofSession
+        self.faprofSession.startTarget(self.instance, block_until_term)
         if not self.fapd_persistance:
-            time.sleep(10)
             self.fapd_mgr.stop(FapdMode.PROFILING)
-        return bResult
+            self.fapd_pid = None
+        else:
+            self.instance += 1
+        return key
 
     def status_prof_session(self, sessionName=None):
         logging.debug("FaProfiler::status_prof_session()")
-        return self.listFaProfSession[sessionName].get_status()
+        return self.dictFaProfSession[sessionName].get_status()
 
     def stop_prof_session(self, sessionName=None):
         logging.debug("FaProfiler::stop_prof_session()")
         self.fapd_mgr.stop(FapdMode.PROFILING)
         if sessionName:
-            self.listFaProfSession[sessionName].clean_all()
+            self.dictFaProfSession[sessionName].stopTarget()
+            del self.dictFaProfSession[sessionName]
+        else:
+            for k in self.dictFaProfSession.keys():
+                logging.debug(f"Stopping profiling session: {k}")
+                self.dictFaProfSession[k].stopTarget()
+                del self.dictFaProfSession[k]
+        self.instance = 0
 
     def get_profiling_timestamp(self):
         if self.fapd_mgr:
