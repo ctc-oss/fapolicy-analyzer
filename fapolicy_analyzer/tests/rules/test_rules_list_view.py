@@ -29,17 +29,20 @@ mock_rules = [
         id=1,
         text="Mock Rule Number 1",
         is_valid=True,
+        origin="Rule File 1",
         info=[],
     ),
     MagicMock(
         id=2,
         text="Mock Rule Number 2",
+        origin="Rule File 1",
         is_valid=True,
         info=[MagicMock(category="i", message="info message")],
     ),
     MagicMock(
         id=3,
         text="Mock Rule Number 3",
+        origin="Rule File 2",
         is_valid=True,
         info=[
             MagicMock(category="w", message="warning message"),
@@ -49,6 +52,7 @@ mock_rules = [
     MagicMock(
         id=4,
         text="Mock Rule Number 4",
+        origin="Rule File 2",
         is_valid=False,
         info=[
             MagicMock(category="w", message="warning message"),
@@ -67,41 +71,56 @@ def test_creates_widget(widget):
     assert type(widget.get_ref()) is Gtk.Box
 
 
-def test_renders_rules(widget):
+def test_renders_origin_files(widget):
+    def get_origin_rows(store, treepath, treeiter):
+        nonlocal origins
+        if treepath.get_depth() == 1:
+            origins += [store[treeiter]]
+
     widget.render_rules(mock_rules)
     model = widget.get_object("treeView").get_model()
-    assert [r.text for r in mock_rules] == [x[0] for x in model]
-    assert [r.id for r in mock_rules] == [x[1] for x in model]
-    assert [Colors.SHADED, Colors.WHITE, Colors.SHADED, Colors.WHITE] == [
-        x[2] for x in model
+    origins = []
+
+    model.foreach(get_origin_rows)
+    assert sorted(set([f"[{r.origin}]" for r in mock_rules])) == [x[0] for x in origins]
+    assert set([-1]) == set([x[1] for x in origins])
+    assert set([Colors.DARK_GRAY]) == set([x[2] for x in origins])
+    assert set([Colors.WHITE]) == set([x[3] for x in origins])
+
+
+def test_renders_rules(widget):
+    def get_rule_rows(store, treepath, treeiter):
+        nonlocal rules
+        if treepath.get_depth() == 2:
+            rules += [store[treeiter]]
+
+    widget.render_rules(mock_rules)
+    model = widget.get_object("treeView").get_model()
+    rules = []
+
+    model.foreach(get_rule_rows)
+    assert [r.text for r in mock_rules] == [x[0] for x in rules]
+    assert [r.id for r in mock_rules] == [x[1] for x in rules]
+    assert [Colors.WHITE, Colors.SHADED, Colors.WHITE, Colors.SHADED] == [
+        x[2] for x in rules
     ]
     assert [Colors.BLACK, Colors.BLUE, Colors.ORANGE, Colors.RED] == [
-        x[3] for x in model
+        x[3] for x in rules
     ]
 
 
 def test_renders_info_rows(widget):
-    mock_rule = MagicMock(
-        id=4,
-        text="Mock Rule Number 4",
-        is_valid=False,
-        info=[
-            MagicMock(category="w", message="warning message"),
-            MagicMock(category="i", message="other info"),
-        ],
-    )
-
     expected_messages = ["[w] warning message", "[i] other info"]
     expected_colors = [Colors.ORANGE, Colors.BLUE]
 
-    widget.render_rules([mock_rule])
+    widget.render_rules([mock_rules[3]])
     model = widget.get_object("treeView").get_model()
     info_messages = []
     info_colors = []
 
     def get_assertion_info(store, treepath, treeiter):
         nonlocal info_messages, info_colors
-        if treepath.get_depth() > 1:
+        if treepath.get_depth() > 2:
             info_messages.append(store[treeiter][0])
             info_colors.append(store[treeiter][3])
 
