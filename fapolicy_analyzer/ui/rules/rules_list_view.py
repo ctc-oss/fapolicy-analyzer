@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from itertools import groupby
 from typing import Sequence, Tuple
 
 import gi
@@ -71,39 +72,66 @@ class RulesListView(SearchableList):
         color_map = {"e": Colors.RED, "w": Colors.ORANGE, "i": Colors.BLUE}
         return color_map.get(cat, Colors.BLACK)
 
+    def __append_origin(self, store, origin):
+        return store.append(
+            None,
+            [
+                f"[{origin}]",
+                -1,
+                Colors.DARK_GRAY,
+                Colors.WHITE,
+                FontWeights.NORMAL,
+                "",
+            ],
+        )
+
+    def __append_rule(self, store, rule, parent):
+        row_color = Colors.SHADED if store.iter_n_children(parent) % 2 else Colors.WHITE
+        return store.append(
+            parent,
+            [
+                rule.text,
+                rule.id,
+                row_color,
+                *self.__rule_text_style(rule),
+                str(rule.id),
+            ],
+        )
+
+    def __append_info(self, store, rule, info, parent_row):
+        return store.append(
+            parent_row,
+            [
+                f"[{info.category}] {info.message}",
+                rule.id,
+                store.get_value(parent_row, 2),  # parent row color
+                self.__info_cat_text_color(info.category),
+                FontWeights.NORMAL,
+                "",
+            ],
+        )
+
+    def __expand_rows_at_root(self, store):
+        iter = store.get_iter_first()
+        while iter:
+            self.treeView.expand_row(store.get_path(iter), False)
+            iter = store.iter_next(iter)
+
     def _update_tree_count(self, count):
         label = RULE_LABEL if count == 1 else RULES_LABEL
         self.treeCount.set_text(" ".join([str(count), label]))
 
     def render_rules(self, rules: Sequence[Rule]):
         store = Gtk.TreeStore(str, int, str, str, int, str)
+        rule_map = {o: list(r) for o, r in groupby(rules or [], lambda r: r.origin)}
 
-        for idx, rule in enumerate(rules):
-            row_color = Colors.WHITE if idx % 2 else Colors.SHADED
-            text_style = self.__rule_text_style(rule)
-            parent = store.append(
-                None,
-                [
-                    rule.text,
-                    rule.id,
-                    row_color,
-                    text_style[0],
-                    text_style[1],
-                    str(rule.id),
-                ],
-            )
-            if rule.info:
-                for info in rule.info:
-                    store.append(
-                        parent,
-                        [
-                            f"[{info.category}] {info.message}",
-                            rule.id,
-                            row_color,
-                            self.__info_cat_text_color(info.category),
-                            FontWeights.NORMAL,
-                            "",
-                        ],
-                    )
+        for origin in rule_map.keys():
+            origin_row = self.__append_origin(store, origin)
+            for rule in rule_map[origin]:
+                rule_row = self.__append_rule(store, rule, origin_row)
+                if rule.info:
+                    for info in rule.info:
+                        self.__append_info(store, rule, info, rule_row)
 
         self.load_store(store)
+        self.__expand_rows_at_root(store)

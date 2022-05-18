@@ -16,6 +16,7 @@
 
 class Colors:
     BLACK = "black"
+    DARK_GRAY = "dark gray"
     GREEN = "#008000"
     LIGHT_RED = "#FF3333"
     LIGHT_GRAY = "light gray"
