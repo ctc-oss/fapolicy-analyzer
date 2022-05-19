@@ -241,15 +241,6 @@ class SubjectList(SearchableList):
         model, pathlist = treeView.get_selection().get_selected_rows()
         n_paths = len(pathlist)
         if event.type == Gdk.EventType.BUTTON_PRESS and event.button == 3:
-            path_at_pos = treeView.get_path_at_pos(int(event.x), int(event.y))
-            path = path_at_pos[0] if path_at_pos else None
-
-            if len(pathlist) == 0 or (path not in pathlist and path is not None):
-                treeView.get_selection().unselect_all()
-                treeView.get_selection().select_path(path)
-                model, pathlist = treeView.get_selection().get_selected_rows()
-                n_paths = len(pathlist)
-
             if n_paths == 1:
                 self.reconcileContextMenu.popup_at_pointer()
             elif n_paths > 1:
