@@ -14,16 +14,14 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from enum import Enum
 from locale import gettext as _
 from os import getenv, geteuid, path
-from threading import Lock, Thread
+from threading import Thread
 from time import sleep
 from typing import Any
 
 import fapolicy_analyzer.ui.strings as strings
 import gi
-from fapolicy_analyzer import Handle
 from fapolicy_analyzer import __version__ as app_version
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.util.format import f
@@ -32,6 +30,7 @@ from .action_toolbar import ActionToolbar
 from .actions import NotificationType, add_notification
 from .analyzer_selection_dialog import ANALYZER_SELECTION
 from .database_admin_page import DatabaseAdminPage
+from .fapd_manager import FapdManager, ServiceStatus
 from .notification import Notification
 from .operations import DeployChangesetsOp
 from .policy_rules_admin_page import PolicyRulesAdminPage
@@ -57,12 +56,6 @@ def router(selection: ANALYZER_SELECTION, data: Any = None) -> UIPage:
     raise Exception("Bad Selection")
 
 
-class ServiceStatus(Enum):
-    FALSE = False
-    TRUE = True
-    UNKNOWN = None
-
-
 class MainWindow(UIConnectedWidget):
     def __init__(self):
         super().__init__(get_system_feature(), on_next=self.on_next_system)
@@ -76,8 +69,7 @@ class MainWindow(UIConnectedWidget):
         self._fapdStopMenuItem = self.get_object("fapdStopMenu")
         self._fapd_status = ServiceStatus.UNKNOWN
         self._fapd_monitoring = False
-        self._fapd_ref = None
-        self._fapd_lock = Lock()
+        self._fapd_mgr = FapdManager(self._fapdControlPermitted)
         self.__changesets = []
         self.__page = None
 
@@ -183,6 +175,7 @@ class MainWindow(UIConnectedWidget):
         return len(self.__changesets) > 0
 
     def on_start(self, *args):
+        logging.debug(f"MainWindow::on_start({args})")
         self.__pack_main_content(router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN))
 
         # On startup check for the existing of a tmp session file
@@ -212,8 +205,9 @@ class MainWindow(UIConnectedWidget):
             self.get_object("restoreMenu").set_sensitive(False)
 
         # Initialize and start fapd status monitoring
-        self.init_daemon()
+        self.init_fapd_state()
         if getenv("DISABLE_DAEMON_MONITORING", "false").lower() == "false":
+            logging.debug("Starting the fapd monitoring thread")
             self._start_daemon_monitor()
 
     def on_destroy(self, obj, *args):
@@ -374,15 +368,13 @@ class MainWindow(UIConnectedWidget):
     # ###################### fapolicyd interfacing ##########################
     def on_fapdStartMenu_activate(self, menuitem, data=None):
         logging.debug("on_fapdStartMenu_activate() invoked.")
-        if (self._fapd_status != ServiceStatus.UNKNOWN) and (self._fapd_lock.acquire()):
-            self._fapd_ref.start()
-            self._fapd_lock.release()
+        if (self._fapd_status != ServiceStatus.UNKNOWN):
+            self._fapd_mgr.start()
 
     def on_fapdStopMenu_activate(self, menuitem, data=None):
         logging.debug("on_fapdStopMenu_activate() invoked.")
-        if (self._fapd_status != ServiceStatus.UNKNOWN) and (self._fapd_lock.acquire()):
-            self._fapd_ref.stop()
-            self._fapd_lock.release()
+        if (self._fapd_status != ServiceStatus.UNKNOWN):
+            self._fapd_mgr.stop()
 
     def _enable_fapd_menu_items(self, status: ServiceStatus):
         if self._fapdControlPermitted and (status != ServiceStatus.UNKNOWN):
@@ -398,7 +390,7 @@ class MainWindow(UIConnectedWidget):
             self._fapdStopMenuItem.set_sensitive(False)
 
     def _update_fapd_status(self, status: ServiceStatus):
-        logging.debug(f"__update_fapd_status({status})")
+        logging.debug(f"_update_fapd_status({status})")
 
         # Enable/Disable fapd menu items
         self._enable_fapd_menu_items(status)
@@ -409,15 +401,9 @@ class MainWindow(UIConnectedWidget):
         else:
             self.fapdStatusLight.set_from_icon_name("edit-delete", size=4)
 
-    def init_daemon(self):
-        if self._fapd_lock.acquire():
-            self._fapd_ref = Handle("fapolicyd")
-            if self._fapd_ref.is_valid():
-                self._fapd_status = ServiceStatus(self._fapd_ref.is_active())
-            else:
-                self._fapd_status = ServiceStatus.UNKNOWN
-            self.on_update_daemon_status(self._fapd_status)
-            self._fapd_lock.release()
+    def init_fapd_state(self):
+        self._fapd_status = self._fapd_mgr.status()
+        self.on_update_daemon_status(self._fapd_status)
 
     def on_update_daemon_status(self, status: ServiceStatus):
         logging.debug(f"on_update_daemon_status({status})")
@@ -428,19 +414,17 @@ class MainWindow(UIConnectedWidget):
         logging.debug("_monitor_daemon() executing")
         while True:
             try:
-                if self._fapd_lock.acquire(blocking=False):
-                    bStatus = ServiceStatus(self._fapd_ref.is_active())
-                    if bStatus != self._fapd_status:
-                        logging.debug("monitor_daemon:Dispatch update request")
-                        self.on_update_daemon_status(bStatus)
-                    self._fapd_lock.release()
+                bStatus = self._fapd_mgr.status()
+                if bStatus != self._fapd_status:
+                    logging.debug("monitor_daemon:Dispatch update request")
+                    self.on_update_daemon_status(bStatus)
             except Exception:
                 print("Daemon monitor query/update dispatch failed.")
             sleep(timeout)
 
     def _start_daemon_monitor(self):
         logging.debug(f"start_daemon_monitor(): {self._fapd_status}")
-        # Only start monitoring thread if fapolicy is installed
+        # Only start monitoring thread if fapolicyd is installed
         if self._fapd_status is not ServiceStatus.UNKNOWN:
             logging.debug("Spawning monitor thread...")
             thread = Thread(target=self._monitor_daemon)
