@@ -30,7 +30,3 @@ class Colors:
 class FontWeights:
     BOLD = 700
     NORMAL = 400
-
-
-class Sizing:
-    POLICY_BOTTOM_BOX = 0.2
