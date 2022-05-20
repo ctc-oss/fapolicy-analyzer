@@ -105,6 +105,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             details_widget_name="objectDetails",
         )
         object_tabs.append_page(self.object_list.get_ref(), Gtk.Label(label="Object"))
+
         self.__switchers = [
             self.Switcher(
                 self.get_object("userPanel"),
@@ -208,10 +209,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
                 selections = (
                     selections if isinstance(selections, Sequence) else [selections]
                 )
-                for s in selections:
-                    row = select_func(s)
-                    if row:
-                        rows += [row]
+                rows = [r for s in selections if (r := select_func(s))]
                 self.__selection_state[type] = None
 
             if not rows:
@@ -476,6 +474,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         last_selection = next(iter(files[-1:]), None)
         details = self.get_object(details_widget_name)
         details.get_buffer().set_text(fs.stat(last_selection) if last_selection else "")
+
         if secondary_action:
             secondary_action()
 
