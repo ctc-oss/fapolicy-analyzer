@@ -209,10 +209,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
                 selections = (
                     selections if isinstance(selections, Sequence) else [selections]
                 )
-                for s in selections:
-                    row = select_func(s)
-                    if row:
-                        rows += [row]
+                rows = [r for s in selections if (r := select_func(s))]
                 self.__selection_state[type] = None
 
             if not rows:
