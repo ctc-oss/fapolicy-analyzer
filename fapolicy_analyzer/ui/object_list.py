@@ -24,6 +24,10 @@ from .subject_list import SubjectList
 
 
 class ObjectList(SubjectList):
+    def __init__(self):
+        super().__init__()
+        self.reconcileContextMenu = self.__build_reconcile_context_menu()
+
     def _columns(self):
         columns = super()._columns()
         modeCell = Gtk.CellRendererText(background=Colors.LIGHT_GRAY, xalign=0.5)
@@ -37,7 +41,6 @@ class ObjectList(SubjectList):
     def __markup(self, value, options, seperator=" / ", multiValue=False):
         def wrap(x):
             return f"<u><b>{x}</b></u>"
-
         valueSet = set(value.upper()) if multiValue else {value.upper()}
         matches = set(options).intersection(valueSet)
         return seperator.join([wrap(o) if o in matches else o for o in options])
@@ -51,6 +54,20 @@ class ObjectList(SubjectList):
 
         numModes = len(set(mode.upper()).intersection({"R", "W", "X"}))
         return green if numModes == 3 else orange if numModes > 0 else red
+
+    def __build_reconcile_context_menu(self):
+        menu = Gtk.Menu()
+        reconcileItem = Gtk.MenuItem.new_with_label("Reconcile File")
+        reconcileItem.connect("activate", self.on_reconcile_file_activate)
+        rulesItem = Gtk.MenuItem.new_with_label("Go To Rule")
+        rulesItem.connect("activate", self.on_rule_view_activate)
+        menu.append(reconcileItem)
+        menu.append(rulesItem)
+        menu.show_all()
+        return menu
+
+    def on_rule_view_activate(self, subject):
+        print(subject)
 
     def load_store(self, objects, **kwargs):
         self._systemTrust = kwargs.get("systemTrust", [])
