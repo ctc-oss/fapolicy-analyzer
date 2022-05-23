@@ -48,9 +48,6 @@
           <object class="GtkBox" id="actionButtons">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <child>
-              <placeholder/>
-            </child>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -110,7 +107,6 @@
                   </object>
                 </child>
                 <child type="label_item">
-                  <placeholder/>
                 </child>
               </object>
               <packing>
