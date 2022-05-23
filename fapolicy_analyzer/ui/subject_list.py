@@ -243,7 +243,7 @@ class SubjectList(SearchableList):
         treeView = self.get_object("treeView")
         model, pathlist = treeView.get_selection().get_selected_rows()
         path_at_pos = treeView.get_path_at_pos(int(event.x), int(event.y))
-        path = next(iter(path_at_pos), None)
+        path = next(iter(path_at_pos), None) if path_at_pos else None
 
         if path and path not in pathlist:
             treeView.get_selection().unselect_all()
