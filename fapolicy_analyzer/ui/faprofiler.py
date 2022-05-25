@@ -23,11 +23,14 @@ from .fapd_manager import FapdMode
 from datetime import datetime as DT
 
 
-def demote(user_uid, user_gid):
+def demote(enable, user_uid, user_gid):
     def result():
         os.setgid(user_gid)
         os.setuid(user_uid)
-    return result
+    if enable:
+        return result
+    else:
+        return None
 
 
 class FaProfSession:
@@ -58,6 +61,10 @@ class FaProfSession:
             self.tgtStdout = None
             self.tgtStderr = None
 
+        # File descriptors are state variables; closed in stopTarget()
+        self.fdTgtStdout = None
+        self.fdTgtStderr = None
+
     def startTarget(self, instance_count, block_until_termination=True):
         logging.debug("FaProfSession::startTarget()")
         if not self.tgtStdout:
@@ -65,33 +72,48 @@ class FaProfSession:
             full_basename = f"/tmp/tgt_profiling_{self.timeStamp}_{self.name}"
             self.tgtStdout = f"{full_basename}_{instance_count}.stdout"
             self.tgtStderr = f"{full_basename}_{instance_count}.stderr"
-        fdTgtStdout = open(self.tgtStdout, "w")
-        fdTgtStderr = open(self.tgtStderr, "w")
+
+        try:
+            self.fdTgtStdout = open(self.tgtStdout, "w")
+            self.fdTgtStderr = open(self.tgtStderr, "w")
+        except Exception as e:
+            print(f"Profiling target redirection failure: {e}")
+            self.fdTgtStdout = None
+            self.fdTgtStderr = None
 
         # Convert username to uid/gid
-        pw_record = pwd.getpwnam(self.user)
-        # homedir = pw_record.pw_dir
-        uid = pw_record.pw_uid
-        gid = pw_record.pw_gid
+        try:
+            pw_record = pwd.getpwnam(self.user)
+            # homedir = pw_record.pw_dir
+            uid = pw_record.pw_uid
+            gid = pw_record.pw_gid
+            u_valid = True
+        except Exception as e:
+            print(f"Profiling target effective user change failure: {e}")
+            u_valid = False
 
         # Capture process object
-        # Does this block? Are there options to select blocking/nonblocking?
-        logging.debug(f"Starting {self.listCmdLine} as {uid}/{gid}")
-        logging.debug(f"in {self.pwd} with env: {self.env}")
-        self.procTarget = subprocess.Popen(self.listCmdLine,
-                                           stdout=fdTgtStdout,
-                                           stderr=fdTgtStderr,
-                                           cwd=self.pwd,
-                                           env=self.env,
-                                           preexec_fn=demote(uid, gid)
-                                           )
-        logging.debug(self.procTarget.pid)
+        try:
+            logging.debug(f"Starting {self.listCmdLine} as {uid}/{gid}")
+            logging.debug(f"in {self.pwd} with env: {self.env}")
+            self.procTarget = subprocess.Popen(self.listCmdLine,
+                                               stdout=self.fdTgtStdout,
+                                               stderr=self.fdTgtStderr,
+                                               cwd=self.pwd,
+                                               env=self.env,
+                                               preexec_fn=demote(u_valid,
+                                                                 uid,
+                                                                 gid)
+                                               )
+            logging.debug(self.procTarget.pid)
 
-        # Block until process terminates
-        if block_until_termination:
-            logging.debug("Waiting for profiling target to terminate...")
-            self.procTarget.wait()
-            self.procTarget = None
+            # Block until process terminates
+            if block_until_termination:
+                logging.debug("Waiting for profiling target to terminate...")
+                self.procTarget.wait()
+                self.procTarget = None
+        except Exception as e:
+            print(f"Profiling target Popen failure: {e}")
         return self.procTarget
 
     def stopTarget(self):
@@ -102,6 +124,10 @@ class FaProfSession:
             self.procTarget.terminate()
             self.procTarget.wait()
             self.procTarget = None
+        if self.fdTgtStdout:
+            self.fdTgtStdout.close()
+        if self.fdTgtStderr:
+            self.fdTgtStderr.close()
 
     def get_profiling_timestamp(self):
         """
