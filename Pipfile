@@ -34,7 +34,7 @@ more-itertools = "~=7.2"
 redux-py = {path = "./vendor/ReduxPY"}
 importlib-resources = "~=1.0.2"
 importlib-metadata = "~=0.23"
-dataclasses = "*"
+dataclasses = "==0.6"
 
 [pipenv]
 allow_prereleases = true
