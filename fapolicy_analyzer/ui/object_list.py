@@ -21,6 +21,7 @@ from gi.repository import Gtk
 
 from .configs import Colors
 from .subject_list import SubjectList
+from .main_window import *
 
 
 class ObjectList(SubjectList):
@@ -67,7 +68,13 @@ class ObjectList(SubjectList):
         return menu
 
     def on_rule_view_activate(self, subject):
-        print(subject)
+        main_window = self.get_ref().get_toplevel()       
+        app_area_children = main_window.get_child().get_child().get_children()
+        menubar = next(child for child in app_area_children if child.get_name() == "mainMenu")
+        tool_menu = next(child for child in menubar if child.get_name() == "toolMenu")
+        submenu_children = tool_menu.get_submenu().get_children()
+        rule_menu = next(m for m in submenu_children if m.get_name() == "ruleMenu")
+        rule_menu.activate()
 
     def load_store(self, objects, **kwargs):
         self._systemTrust = kwargs.get("systemTrust", [])
