@@ -16,7 +16,7 @@
 import pytest
 import os
 from unittest.mock import MagicMock
-from ui.faprofiler import FaProfiler, FaProfSession
+from ui.faprofiler import FaProfiler, FaProfSession, ProfSessionStatus
 
 
 @pytest.fixture
@@ -45,21 +45,37 @@ def test_startTarget(faProfSession, mocker):
     mockPopen = MagicMock()
     mocker.patch("ui.faprofiler.subprocess.Popen",
                  return_value=mockPopen)
+    mockPopen.returncode = 0
     assert not faProfSession.procTarget
     faProfSession.startTarget(0)
     mockPopen.wait.assert_called()
-    assert not faProfSession.procTarget
+    assert faProfSession.procTarget.returncode == 0
     faProfSession.startTarget(0, block_until_termination=False)
-    assert faProfSession.procTarget
+
+    # Although we aren't waiting on the process, it is short-lived and finished
+    assert faProfSession.procTarget.returncode == 0
+
+    # Emulate a file open() exception
+    mocker.patch("ui.faprofiler.open", side_effect=Exception())
+    faProfSession.startTarget(1)
+    assert faProfSession.fdTgtStdout is None
+    assert faProfSession.fdTgtStderr is None
+
+    # Emulate a getpwnam() exception
+    mocker.patch("ui.faprofiler.pwd.getpwnam", side_effect=Exception())
+    faProfSession.startTarget(1)
+    assert faProfSession.fdTgtStdout is None
+    assert faProfSession.fdTgtStderr is None
 
 
 def test_stopTarget(faProfSession, mocker):
     mockPopen = MagicMock()
+    mockPopen.returncode = 0
     faProfSession.procTarget = mockPopen
     faProfSession.stopTarget()
     mockPopen.terminate.assert_called()
     mockPopen.wait.assert_called()
-    assert faProfSession.procTarget is None
+    assert faProfSession.procTarget.returncode == 0
 
 
 def test_get_profsession_timestamp(faProfSession):
@@ -68,8 +84,13 @@ def test_get_profsession_timestamp(faProfSession):
     faProfSession.faprofiler.get_profiling_timestamp.assert_called()
 
 
-def test_get_status(faProfSession):
-    pass
+def test_get_status(faProfSession, mocker):
+    faProfSession.procTarget = None
+    assert faProfSession.get_status() == ProfSessionStatus.QUEUED
+    faProfSession.procTarget = MagicMock()
+    faProfSession.procTarget.poll = MagicMock(side_effect=[None, 0])
+    assert faProfSession.get_status() == ProfSessionStatus.INPROGRESS
+    assert faProfSession.get_status() == ProfSessionStatus.COMPLETED
 
 
 # Testing FaProfiler

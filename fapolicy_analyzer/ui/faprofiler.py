@@ -21,6 +21,13 @@ import subprocess
 import time
 from .fapd_manager import FapdMode
 from datetime import datetime as DT
+from enum import Enum
+
+
+class ProfSessionStatus(Enum):
+    QUEUED = 0
+    INPROGRESS = 1
+    COMPLETED = 2
 
 
 def demote(enable, user_uid, user_gid):
@@ -50,7 +57,7 @@ class FaProfSession:
         self.faprofiler = faprofiler
         self.name = os.path.basename(self.execPath)
         self.timeStamp = None
-        self.status = None  # Queued, InProgress, Complete (?)
+        self.status = ProfSessionStatus.QUEUED
         self.procTarget = None
 
         # Temp demo workaround for setting target log file paths
@@ -67,6 +74,7 @@ class FaProfSession:
 
     def startTarget(self, instance_count, block_until_termination=True):
         logging.debug("FaProfSession::startTarget()")
+
         if not self.tgtStdout:
             self.timeStamp = self.get_profiling_timestamp()
             full_basename = f"/tmp/tgt_profiling_{self.timeStamp}_{self.name}"
@@ -89,7 +97,11 @@ class FaProfSession:
             gid = pw_record.pw_gid
             u_valid = True
         except Exception as e:
+            # Use current uid/gid if getpwnam() throws an exception by
+            # setting prexec_fn = None
             print(f"Profiling target effective user change failure: {e}")
+            uid = os.getuid()
+            gid = os.getgid()
             u_valid = False
 
         # Capture process object
@@ -106,12 +118,14 @@ class FaProfSession:
                                                                  gid)
                                                )
             logging.debug(self.procTarget.pid)
+            self.status = ProfSessionStatus.INPROGRESS
 
             # Block until process terminates
             if block_until_termination:
                 logging.debug("Waiting for profiling target to terminate...")
                 self.procTarget.wait()
-                self.procTarget = None
+                self.status = ProfSessionStatus.COMPLETED
+
         except Exception as e:
             print(f"Profiling target Popen failure: {e}")
         return self.procTarget
@@ -123,9 +137,11 @@ class FaProfSession:
         if self.procTarget:
             self.procTarget.terminate()
             self.procTarget.wait()
-            self.procTarget = None
+            self.status = ProfSessionStatus.COMPLETED
+
         if self.fdTgtStdout:
             self.fdTgtStdout.close()
+
         if self.fdTgtStderr:
             self.fdTgtStderr.close()
 
@@ -145,7 +161,16 @@ class FaProfSession:
 
     def get_status(self):
         logging.debug("FaProfSession::get_status()")
-        return self.strStatus
+
+        # Poll the Popen object if it exists, poll() returns None if running
+        if self.procTarget:
+            if self.procTarget.poll() is None:
+                self.status = ProfSessionStatus.INPROGRESS
+            else:
+                self.status = ProfSessionStatus.COMPLETED
+        else:
+            self.status = ProfSessionStatus.QUEUED
+        return self.status
 
     def clean_all(self):
         logging.debug("FaProfSession::clean_all()")
@@ -198,7 +223,8 @@ class FaProfiler:
 
     def stop_prof_session(self, sessionName=None):
         logging.debug("FaProfiler::stop_prof_session()")
-        self.fapd_mgr.stop(FapdMode.PROFILING)
+
+        # Stop profiling targets first then stop fapd profiling instance
         if sessionName:
             self.dictFaProfSession[sessionName].stopTarget()
             del self.dictFaProfSession[sessionName]
@@ -208,8 +234,10 @@ class FaProfiler:
                 self.dictFaProfSession[k].stopTarget()
                 del self.dictFaProfSession[k]
         self.instance = 0
+        self.fapd_mgr.stop(FapdMode.PROFILING)
 
     def get_profiling_timestamp(self):
+        # Use FapdManager's start timestamp if available
         if self.fapd_mgr:
             self.strTimestamp = self.fapd_mgr._fapd_profiling_timestamp
         return self.strTimestamp
