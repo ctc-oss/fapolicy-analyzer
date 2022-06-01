@@ -366,7 +366,13 @@ class MainWindow(UIConnectedWidget):
         self.__set_trustDbMenu_sensitive(False)
 
     def on_rulesAdminMenu_activate_item(self, *args):
-        print(self.get_ref().get_children()[0].get_children()[0].get_children()[2].get_children()[0].get_children()[2].get_children())
+
+        treeview = self.get_ref().get_children()[0].get_children()[0].get_children()[2].get_children()[0].get_children()[0].get_children()[2].get_children()[0].get_children()[0].get_children()[1].get_children()[0].get_children()[0].get_children()[0]
+        model, pathlist = treeview.get_selection().get_selected_rows()
+        iter_ = model.get_iter(pathlist)
+        subject = model.get_value(iter_, 3)
+        print(subject.trust.lower())
+            
         self.__pack_main_content(router(ANALYZER_SELECTION.RULES_ADMIN))
         # TODO: figure out a good way to set sensitivity on the menu items based on what is selected
         self.__set_trustDbMenu_sensitive(True)
