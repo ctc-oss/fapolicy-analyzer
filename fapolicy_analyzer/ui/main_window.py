@@ -72,6 +72,8 @@ class MainWindow(UIConnectedWidget):
         self._fapd_mgr = FapdManager(self._fapdControlPermitted)
         self.__changesets = []
         self.__page = None
+        self.selection = None
+        self.get_object("rulesAdminMenu").connect("activate",self.on_rulesAdminMenu_activate_item, self.selection)
 
         toaster = Notification()
         self.get_object("overlay").add_overlay(toaster.get_ref())
@@ -356,10 +358,13 @@ class MainWindow(UIConnectedWidget):
         self.__pack_main_content(router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN))
         self.__set_trustDbMenu_sensitive(False)
 
-    def on_rulesAdminMenu_activate(self, *args):
+    def on_rulesAdminMenu_activate_item(self, *args):
+        print(self.get_ref().get_children()[0].get_children()[0].get_children()[2].get_children()[0].get_children()[2].get_children())
         self.__pack_main_content(router(ANALYZER_SELECTION.RULES_ADMIN))
         # TODO: figure out a good way to set sensitivity on the menu items based on what is selected
         self.__set_trustDbMenu_sensitive(True)
+        
+
 
     def on_deployChanges_clicked(self, *args):
         with DeployChangesetsOp(self.window) as op:

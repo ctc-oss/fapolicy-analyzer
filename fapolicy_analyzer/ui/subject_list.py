@@ -33,6 +33,7 @@ from gi.repository import Gdk, Gtk  # isort: skip
 _UNTRUST_RESP = 0
 _TRUST_RESP = 1
 
+
 class SubjectList(SearchableList):
     def __init__(self):
         self.__events__ = [
@@ -145,6 +146,7 @@ class SubjectList(SearchableList):
         return " / ".join([st_str, at_str, u_str])
 
     def __markup(self, value, options):
+
         idx = options.index(value) if value in options else -1
         return " / ".join(
             [f"<u><b>{o}</b></u>" if i == idx else o for i, o in enumerate(options)]
