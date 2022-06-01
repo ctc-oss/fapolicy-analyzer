@@ -364,13 +364,6 @@ class MainWindow(UIConnectedWidget):
         self.__pack_main_content(router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN))
         self.__set_trustDbMenu_sensitive(False)
 
-    def on_policyMenu_to_rulesMenu(self, *args, **kwargs):
-        rid = kwargs["rule_id"] if "rule_id" in kwargs.keys() else None
-        rulesPage = router(ANALYZER_SELECTION.RULES_ADMIN)
-        rulesPage.highlight_row_from_data(rid)
-        self.__pack_main_content(rulesPage)
-        self.__set_trustDbMenu_sensitive(True)
-
     def on_rulesAdminMenu_activate(self, *args):
         self.__pack_main_content(router(ANALYZER_SELECTION.RULES_ADMIN))
         # TODO: figure out a good way to set sensitivity on the menu items based on what is selected
