@@ -157,13 +157,10 @@ class FapdManager():
                 self._previous_instance = self._fapd_status
                 self._stop(FapdMode.ONLINE)
 
-            # if (self._fapd_status != ServiceStatus.UNKNOWN) and (self._fapd_lock.acquire()):
-            #    self._fapd_profiling_ref.start()
-            #    self.mode = FapdMode.PROFILING
-            #    self._fapd_lock.release()
-
             self.procProfile = subprocess.Popen(["/usr/sbin/fapolicyd",
-                                                 "--permissive", "--debug", "--no-details"],
+                                                 "--permissive",
+                                                 "--debug",
+                                                 "--no-details"],
                                                 stdout=fdStdoutPath,
                                                 stderr=fdStderrPath,
                                                 preexec_fn=promote()
@@ -194,9 +191,6 @@ class FapdManager():
         else:
             logging.debug("fapd is terminating a PROFILING session")
             logging.debug(f"self.procProfile = {self.procProfile}")
-#            if (self._fapd_status != ServiceStatus.UNKNOWN) and (self._fapd_lock.acquire()):
-#                self._fapd_profiling_ref.stop()
-#                self._fapd_lock.release()
             if self.procProfile:
                 logging.debug(f"Pid: {self.procProfile.pid}")
                 self.procProfile.terminate()
@@ -229,7 +223,9 @@ class FapdManager():
 
     def capture_online_state(self):
         logging.debug("capture_online_state()")
-        self._fapd_prior_online_state = ServiceStatus(self._fapd_ref.is_active())
+        updated_online_state = ServiceStatus(self._fapd_ref.is_active())
+        self._fapd_prior_online_state = updated_online_state
+        self._fapd_cur_online_state = updated_online_state
         logging.debug(f"prior_online_state = {self._fapd_prior_online_state}")
 
     def revert_online_state(self):
