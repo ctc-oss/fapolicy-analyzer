@@ -91,16 +91,39 @@ class FaProfSession:
 
         # Convert username to uid/gid
         try:
-            pw_record = pwd.getpwnam(self.user)
-            # homedir = pw_record.pw_dir
-            uid = pw_record.pw_uid
-            gid = pw_record.pw_gid
-            u_valid = True
+            if self.user:
+                # Get uid/gid of new user and the associated default group
+                pw_record = pwd.getpwnam(self.user)
+                uid = pw_record.pw_uid
+                gid = pw_record.pw_gid
+                logging.debug(f"The uid/gid of the profiling tgt: {uid}/{gid}")
+
+                # Use new user's home dir for pwd if not supplied by user
+                if self.pwd:
+                    working_dir = self.pwd
+                else:
+                    working_dir = pw_record.pw_dir
+                logging.debug(f"Profiling tgt pwd: {working_dir}")
+
+                # Change the ownership of profiling tgt's stdout and stderr
+                logging.debug(f"Changing ownership of fds: {self.fdTgtStdout},{self.fdTgtStderr}")
+                os.fchown(self.fdTgtStdout.fileno(), uid, gid)
+                os.fchown(self.fdTgtStderr.fileno(), uid, gid)
+                logging.debug(f"Changed the profiling tgt stdout/err ownership {uid},{gid}")
+
+                u_valid = True
+            else:
+                # In production, the following will be the superuser defaults
+                uid = os.getuid()
+                gid = os.getgid()
+
         except Exception as e:
-            # Use current uid/gid if getpwnam() throws an exception by
+            # Use current uid/gid if getpwnam() or chown throws an exception by
             # setting prexec_fn = None
+            # Typically will only occur in debug/development runs
+
             print(f"Profiling target effective user change failure: {e}")
-            uid = os.getuid()
+            uid = os.getuid()  # Place holder args to demote()
             gid = os.getgid()
             u_valid = False
 
@@ -111,7 +134,7 @@ class FaProfSession:
             self.procTarget = subprocess.Popen(self.listCmdLine,
                                                stdout=self.fdTgtStdout,
                                                stderr=self.fdTgtStderr,
-                                               cwd=self.pwd,
+                                               cwd=working_dir,
                                                env=self.env,
                                                preexec_fn=demote(u_valid,
                                                                  uid,
