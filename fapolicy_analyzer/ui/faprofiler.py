@@ -40,6 +40,17 @@ def demote(enable, user_uid, user_gid):
         return None
 
 
+def comma_delimited_kv_string_to_dict(string_in):
+    """Generates dictionary from comma separated string of k=v pairs"""
+    d = None
+    if string_in:
+        d = {p[0]: re.sub(r'^"|"$', "", p[1])
+             for p in [s.split("=")
+                       for s in [c.strip()
+                                 for c in string_in.split(",")]]}
+    return d
+
+
 class FaProfSession:
     def __init__(self, dictProfTgt, faprofiler=None):
         logging.debug(f"faProfSession::__init__({dictProfTgt}, {faprofiler})")
@@ -50,10 +61,8 @@ class FaProfSession:
         self.pwd = dictProfTgt["dirText"]
 
         # Convert comma delimited string of "EnvVar=Value" substrings to dict
-        self.env = {p[0]: re.sub(r'^"|"$', "", p[1])
-                    for p in [s.split("=")
-                              for s in [c.strip()
-                                        for c in dictProfTgt["envText"].split(",")]]}
+        self.env = comma_delimited_kv_string_to_dict(dictProfTgt["envText"])
+
         self.faprofiler = faprofiler
         self.name = os.path.basename(self.execPath)
         self.timeStamp = None
@@ -89,7 +98,15 @@ class FaProfSession:
             self.fdTgtStdout = None
             self.fdTgtStderr = None
 
+        # Set pwd - Use current dir for pwd if not supplied by user
+        if self.pwd:
+            working_dir = self.pwd
+        else:
+            working_dir = os.getcwd()
+        logging.debug(f"Profiling tgt pwd: {working_dir}")
+
         # Convert username to uid/gid
+        u_valid = False
         try:
             if self.user:
                 # Get uid/gid of new user and the associated default group
@@ -98,19 +115,11 @@ class FaProfSession:
                 gid = pw_record.pw_gid
                 logging.debug(f"The uid/gid of the profiling tgt: {uid}/{gid}")
 
-                # Use new user's home dir for pwd if not supplied by user
-                if self.pwd:
-                    working_dir = self.pwd
-                else:
-                    working_dir = pw_record.pw_dir
-                logging.debug(f"Profiling tgt pwd: {working_dir}")
-
                 # Change the ownership of profiling tgt's stdout and stderr
                 logging.debug(f"Changing ownership of fds: {self.fdTgtStdout},{self.fdTgtStderr}")
                 os.fchown(self.fdTgtStdout.fileno(), uid, gid)
                 os.fchown(self.fdTgtStderr.fileno(), uid, gid)
                 logging.debug(f"Changed the profiling tgt stdout/err ownership {uid},{gid}")
-
                 u_valid = True
             else:
                 # In production, the following will be the superuser defaults
@@ -125,7 +134,6 @@ class FaProfSession:
             print(f"Profiling target effective user change failure: {e}")
             uid = os.getuid()  # Place holder args to demote()
             gid = os.getgid()
-            u_valid = False
 
         # Capture process object
         try:
@@ -228,7 +236,6 @@ class FaProfiler:
             self.fapd_prof_stdout = self.fapd_mgr.fapd_profiling_stdout
             self.fapd_prof_stderr = self.fapd_mgr.fapd_profiling_stderr
 
-        time.sleep(10)
         self.faprofSession = FaProfSession(dictArgs, self)
         key = dictArgs["executeText"] + "-" + str(self.instance)
         self.dictFaProfSession[key] = self.faprofSession

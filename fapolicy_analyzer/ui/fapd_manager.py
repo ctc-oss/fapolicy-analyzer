@@ -22,7 +22,7 @@ from datetime import datetime as DT
 from enum import Enum
 from fapolicy_analyzer import Handle
 from threading import Lock
-from time import time
+from time import time, sleep
 
 
 class ServiceStatus(Enum):
@@ -169,6 +169,11 @@ class FapdManager():
             self._fapd_profiler_pid = self.procProfile.pid
             self.mode = FapdMode.PROFILING
             logging.debug(f"Fapd pid = {self._fapd_profiler_pid}")
+
+            # Magic delay value for profiling instance to complete init
+            # Consider active polling/monitoring here. fapd must be fully up
+            # prior to invoking profiling executable target.
+            sleep(10)
             return self.procProfile
 
     def _stop(self, instance=FapdMode.ONLINE):
