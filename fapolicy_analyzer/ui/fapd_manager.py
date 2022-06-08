@@ -128,7 +128,7 @@ class FapdManager():
 
         # Verify user permission to start/stop an fapd instance
         if not self._fapd_control_enabled and not self._fapd_control_override:
-            logging.debug("FapdManager::_start()::User permission failure")
+            logging.warning("FapdManager::_start()::User permission failure")
             return None
 
         if instance == FapdMode.ONLINE:
