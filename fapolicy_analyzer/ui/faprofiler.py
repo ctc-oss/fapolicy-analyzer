@@ -16,12 +16,15 @@
 import logging
 import os
 import pwd
-import re
 import subprocess
 import time
+from .actions import NotificationType, add_notification
 from .fapd_manager import FapdMode
+from .store import dispatch
 from datetime import datetime as DT
 from enum import Enum
+
+import fapolicy_analyzer.ui.strings as strings
 
 
 class ProfSessionStatus(Enum):
@@ -30,28 +33,26 @@ class ProfSessionStatus(Enum):
     COMPLETED = 2
 
 
-def demote(enable, user_uid, user_gid):
-    def result():
-        os.setgid(user_gid)
-        os.setuid(user_uid)
-    if enable:
-        return result
-    else:
-        return None
-
-
-def comma_delimited_kv_string_to_dict(string_in):
-    """Generates dictionary from comma separated string of k=v pairs"""
-    d = None
-    if string_in:
-        d = {p[0]: re.sub(r'^"|"$', "", p[1])
-             for p in [s.split("=")
-                       for s in [c.strip()
-                                 for c in string_in.split(",")]]}
-    return d
-
-
 class FaProfSession:
+    def _demote(enable, user_uid, user_gid):
+        def result():
+            os.setgid(user_gid)
+            os.setuid(user_uid)
+        if enable:
+            return result
+        else:
+            return None
+
+    def _comma_delimited_kv_string_to_dict(string_in):
+        """Generates dictionary from comma separated string of k=v pairs"""
+        if not string_in:
+            return None
+        return {
+            k: v.strip('"')
+            for k, v in dict(x.strip().split("=")
+                             for x in string_in.split(",")).items()
+        }
+
     def __init__(self, dictProfTgt, faprofiler=None):
         logging.debug(f"faProfSession::__init__({dictProfTgt}, {faprofiler})")
         self.execPath = dictProfTgt["executeText"]
@@ -61,7 +62,7 @@ class FaProfSession:
         self.pwd = dictProfTgt["dirText"]
 
         # Convert comma delimited string of "EnvVar=Value" substrings to dict
-        self.env = comma_delimited_kv_string_to_dict(dictProfTgt["envText"])
+        self.env = FaProfSession._comma_delimited_kv_string_to_dict(dictProfTgt["envText"])
 
         self.faprofiler = faprofiler
         self.name = os.path.basename(self.execPath)
@@ -94,16 +95,19 @@ class FaProfSession:
             self.fdTgtStdout = open(self.tgtStdout, "w")
             self.fdTgtStderr = open(self.tgtStderr, "w")
         except Exception as e:
-            print(f"Profiling target redirection failure: {e}")
+            logging.warning(f"{strings.FAPROFILER_TGT_REDIRECTION_ERROR_MSG}: {e}")
+            dispatch(
+                add_notification(
+                    strings.FAPROFILER_TGT_REDIRECTION_ERROR_MSG + f": {e}",
+                    NotificationType.ERROR,
+                )
+            )
+
             self.fdTgtStdout = None
             self.fdTgtStderr = None
 
         # Set pwd - Use current dir for pwd if not supplied by user
-        if self.pwd:
-            working_dir = self.pwd
-        else:
-            working_dir = os.getcwd()
-        logging.debug(f"Profiling tgt pwd: {working_dir}")
+        working_dir = self.pwd if self.pwd else os.getcwd()
 
         # Convert username to uid/gid
         u_valid = False
@@ -131,8 +135,15 @@ class FaProfSession:
             # setting prexec_fn = None
             # Typically will only occur in debug/development runs
 
-            print(f"Profiling target effective user change failure: {e}")
-            uid = os.getuid()  # Place holder args to demote()
+            logging.error(f"{strings.FAPROFILER_TGT_EUID_CHOWN_ERROR_MSG}: {e}")
+            dispatch(
+                add_notification(
+                    strings.FAPROFILER_TGT_EUID_CHOWN_ERROR_MSG + f": {e}",
+                    NotificationType.ERROR,
+                )
+            )
+
+            uid = os.getuid()  # Place holder args to _demote()
             gid = os.getgid()
 
         # Capture process object
@@ -144,9 +155,10 @@ class FaProfSession:
                                                stderr=self.fdTgtStderr,
                                                cwd=working_dir,
                                                env=self.env,
-                                               preexec_fn=demote(u_valid,
-                                                                 uid,
-                                                                 gid)
+                                               preexec_fn=FaProfSession._demote(
+                                                   u_valid,
+                                                   uid,
+                                                   gid)
                                                )
             logging.debug(self.procTarget.pid)
             self.status = ProfSessionStatus.INPROGRESS
@@ -158,7 +170,13 @@ class FaProfSession:
                 self.status = ProfSessionStatus.COMPLETED
 
         except Exception as e:
-            print(f"Profiling target Popen failure: {e}")
+            logging.error(f"Profiling target Popen failure: {e}")
+            dispatch(
+                add_notification(
+                    strings.FAPROFILER_TGT_POPEN_ERROR_MSG + f": {e}",
+                    NotificationType.ERROR,
+                )
+            )
         return self.procTarget
 
     def stopTarget(self):

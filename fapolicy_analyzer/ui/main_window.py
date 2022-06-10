@@ -16,7 +16,7 @@
 import logging
 from locale import gettext as _
 from os import getenv, geteuid, path
-from threading import Thread, Lock
+from threading import Thread
 from time import sleep
 from typing import Any
 
@@ -73,8 +73,6 @@ class MainWindow(UIConnectedWidget):
         self._fapdStopMenuItem = self.get_object("fapdStopMenu")
         self._fapd_status = ServiceStatus.UNKNOWN
         self._fapd_monitoring = False
-        self._fapd_ref = None
-        self._fapd_lock = Lock()
         self._fapd_mgr = FapdManager(self._fapdControlPermitted)
         self._fapd_profiler = FaProfiler(self._fapd_mgr)
         self.__changesets = []

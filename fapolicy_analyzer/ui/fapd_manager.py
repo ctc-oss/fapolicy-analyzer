@@ -123,12 +123,12 @@ class FapdManager():
         self._fapd_profiling_timestamp = strTNow
 
         if self.mode == FapdMode.DISABLED:
-            logging.debug("fapd is currently DISABLED")
+            logging.warning("fapd is currently DISABLED")
             return None
 
         # Verify user permission to start/stop an fapd instance
         if not self._fapd_control_enabled and not self._fapd_control_override:
-            logging.warning("FapdManager::_start()::User permission failure")
+            logging.warning("FapdManager::_start()::root permissions required")
             return None
 
         if instance == FapdMode.ONLINE:
@@ -179,12 +179,12 @@ class FapdManager():
     def _stop(self, instance=FapdMode.ONLINE):
         logging.debug(f"FapdManager::_stop({instance})")
         if self.mode == FapdMode.DISABLED:
-            logging.debug("fapd is currently DISABLED")
+            logging.warning("fapd is currently DISABLED")
             return False
 
         # Verify user permissions to start/stop an fapd instance
         if not self._fapd_control_enabled and not self._fapd_control_override:
-            logging.debug("FapdManager::_stop()::User permission failure")
+            logging.warning("FapdManager::_stop()::root permissions required")
             return False
 
         if instance == FapdMode.ONLINE:
@@ -217,7 +217,7 @@ class FapdManager():
                         self._fapd_status = bStatus
                     self._fapd_lock.release()
             except Exception:
-                print("Daemon monitor query/update dispatch failed.")
+                logging.warning("Daemon monitor query/update dispatch failed.")
             return self._fapd_status
         else:
             logging.debug("fapd is in a PROFILING session")
