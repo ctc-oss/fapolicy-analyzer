@@ -18,8 +18,8 @@ use fapolicy_rules::db::RuleDef;
 
 use crate::acl::{PyGroup, PyUser};
 use crate::analysis::PyEventLog;
-use crate::change::PyChangeset;
 use crate::rules::PyRule;
+use crate::trust::PyChangeset;
 
 use super::trust::PyTrust;
 

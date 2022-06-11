@@ -12,7 +12,7 @@
     dest: "/etc/fapolicyd/{{ item.dest }}"
   loop:
     - { src: fapolicyd.conf.md, dest: fapolicyd.conf }
-    - { src: trust.rules.md, dest: fapolicyd.rules }
+#    - { src: trust.rules.md, dest: fapolicyd.rules }
     - { src: demo.trust, dest: fapolicyd.trust }
 
 - name: enable fapolicyd service
