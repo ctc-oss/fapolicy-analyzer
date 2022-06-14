@@ -84,8 +84,8 @@ def test_renders_origin_files(widget):
     model.foreach(get_origin_rows)
     assert sorted(set([f"[{r.origin}]" for r in mock_rules])) == [x[0] for x in origins]
     assert set([-1]) == set([x[1] for x in origins])
-    assert set([Colors.DARK_GRAY]) == set([x[2] for x in origins])
-    assert set([Colors.WHITE]) == set([x[3] for x in origins])
+    assert set([Colors.WHITE]) == set([x[2] for x in origins])
+    assert set([Colors.DARK_GRAY]) == set([x[3] for x in origins])
 
 
 def test_renders_rules(widget):
@@ -101,9 +101,7 @@ def test_renders_rules(widget):
     model.foreach(get_rule_rows)
     assert [r.text for r in mock_rules] == [x[0] for x in rules]
     assert [r.id for r in mock_rules] == [x[1] for x in rules]
-    assert [Colors.WHITE, Colors.SHADED, Colors.WHITE, Colors.SHADED] == [
-        x[2] for x in rules
-    ]
+    assert set([Colors.WHITE]) == set([x[2] for x in rules])
     assert [Colors.BLACK, Colors.BLUE, Colors.ORANGE, Colors.RED] == [
         x[3] for x in rules
     ]

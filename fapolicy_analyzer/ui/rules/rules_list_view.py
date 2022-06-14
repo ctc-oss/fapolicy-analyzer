@@ -23,7 +23,7 @@ from fapolicy_analyzer.ui.searchable_list import SearchableList
 from fapolicy_analyzer.ui.strings import RULE_LABEL, RULES_LABEL
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk  # isort: skip
+from gi.repository import Gtk, Pango  # isort: skip
 
 
 class RulesListView(SearchableList):
@@ -37,24 +37,25 @@ class RulesListView(SearchableList):
         self.treeView.get_selection().set_select_function(lambda *_: False)
 
     def __columns(self):
-        return [
-            Gtk.TreeViewColumn(
-                "",
-                Gtk.CellRendererText(),
-                text=5,
-                cell_background=2,
-                foreground=3,
-                weight=4,
-            ),
-            Gtk.TreeViewColumn(
-                "",
-                Gtk.CellRendererText(),
-                text=0,
-                cell_background=2,
-                foreground=3,
-                weight=4,
-            ),
-        ]
+        merged_col = Gtk.TreeViewColumn("")
+        left_renderer = Gtk.CellRendererText()
+        right_renderer = Gtk.CellRendererText()
+
+        merged_col.pack_start(left_renderer, False)
+        merged_col.pack_start(right_renderer, True)
+
+        merged_col.add_attribute(left_renderer, "text", 5)
+        merged_col.add_attribute(left_renderer, "cell_background", 2)
+        merged_col.add_attribute(left_renderer, "foreground", 3)
+        merged_col.add_attribute(left_renderer, "weight", 4)
+
+        merged_col.add_attribute(right_renderer, "text", 0)
+        merged_col.add_attribute(right_renderer, "cell_background", 2)
+        merged_col.add_attribute(right_renderer, "foreground", 3)
+        merged_col.add_attribute(right_renderer, "weight", 4)
+        merged_col.add_attribute(right_renderer, "style", 6)
+
+        return [merged_col]
 
     def __rule_text_style(self, rule: Rule) -> Tuple[str, int]:
         info_cats = [i.category for i in rule.info]
@@ -78,15 +79,18 @@ class RulesListView(SearchableList):
             [
                 f"[{origin}]",
                 -1,
-                Colors.DARK_GRAY,
                 Colors.WHITE,
-                FontWeights.NORMAL,
+                Colors.DARK_GRAY,
+                FontWeights.BOLD,
                 "",
+                Pango.Style.ITALIC,
             ],
         )
 
     def __append_rule(self, store, rule, parent):
-        row_color = Colors.SHADED if store.iter_n_children(parent) % 2 else Colors.WHITE
+        row_color = (
+            Colors.WHITE
+        )  # Colors.SHADED if store.iter_n_children(parent) % 2 else Colors.WHITE
         return store.append(
             parent,
             [
@@ -95,6 +99,7 @@ class RulesListView(SearchableList):
                 row_color,
                 *self.__rule_text_style(rule),
                 str(rule.id),
+                Pango.Style.NORMAL,
             ],
         )
 
@@ -108,6 +113,7 @@ class RulesListView(SearchableList):
                 self.__info_cat_text_color(info.category),
                 FontWeights.NORMAL,
                 "",
+                Pango.Style.NORMAL,
             ],
         )
 
@@ -122,7 +128,7 @@ class RulesListView(SearchableList):
         self.treeCount.set_text(" ".join([str(count), label]))
 
     def render_rules(self, rules: Sequence[Rule]):
-        store = Gtk.TreeStore(str, int, str, str, int, str)
+        store = Gtk.TreeStore(str, int, str, str, int, str, Pango.Style)
         rule_map = {o: list(r) for o, r in groupby(rules or [], lambda r: r.origin)}
 
         for origin in rule_map.keys():
