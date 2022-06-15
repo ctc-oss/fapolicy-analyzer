@@ -17,6 +17,8 @@ use nom::sequence::tuple;
 use crate::db::{RuleDef, DB};
 use crate::error::Error;
 use crate::linter::lint::lint_db;
+use crate::load::RuleFrom::{Disk, Mem};
+use crate::load::RuleSource;
 use crate::parser::parse::{StrTrace, TraceResult};
 use crate::parser::{comment, rule, set};
 use crate::read::Line::*;
@@ -63,9 +65,15 @@ fn blank_line(i: StrTrace) -> TraceResult<StrTrace> {
     recognize(tuple((multispace0, eof)))(i)
 }
 
-pub fn load_rules_db(path: &str) -> Result<DB, Error> {
-    let xs = load::rules_from(PathBuf::from(path))?;
+pub fn deserialize_rules_db(text: &str) -> Result<DB, Error> {
+    read_rules_db(load::rules_from(Mem(text.to_string()))?)
+}
 
+pub fn load_rules_db(path: &str) -> Result<DB, Error> {
+    read_rules_db(load::rules_from(Disk(PathBuf::from(path)))?)
+}
+
+fn read_rules_db(xs: Vec<RuleSource>) -> Result<DB, Error> {
     let lookup: Vec<(String, RuleDef)> = xs
         .iter()
         .map(|(source, l)| (source, parser(l)))

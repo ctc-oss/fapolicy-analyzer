@@ -6,6 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+use crate::load::RuleFrom::{Disk, Mem};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
@@ -13,11 +14,20 @@ use std::{fs, io};
 
 pub(crate) type RuleSource = (PathBuf, String);
 
-pub fn rules_from(path: PathBuf) -> Result<Vec<RuleSource>, io::Error> {
-    if path.is_dir() {
-        rules_dir(path)
-    } else {
-        rules_file(path)
+pub(crate) enum RuleFrom {
+    Disk(PathBuf),
+    Mem(String),
+}
+
+pub fn rules_from_disk(path: &str) -> Result<Vec<RuleSource>, io::Error> {
+    rules_from(Disk(PathBuf::from(path)))
+}
+
+pub(crate) fn rules_from(src: RuleFrom) -> Result<Vec<RuleSource>, io::Error> {
+    match src {
+        Disk(path) if path.is_dir() => rules_dir(path),
+        Disk(path) => rules_file(path),
+        Mem(txt) => rules_text(txt),
     }
 }
 
@@ -74,4 +84,8 @@ fn rules_dir(rules_source_path: PathBuf) -> Result<Vec<RuleSource>, io::Error> {
 
     // todo;; revisit result flattening
     Ok(d_files)
+}
+
+fn rules_text(rules_text: String) -> Result<Vec<RuleSource>, io::Error> {
+    Ok(vec![])
 }
