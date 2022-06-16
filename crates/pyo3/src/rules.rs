@@ -6,6 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+use fapolicy_rules::ops::Changeset;
 use pyo3::prelude::*;
 
 #[pyclass(module = "rules", name = "Rule")]
@@ -92,8 +93,43 @@ impl PyRuleInfo {
     }
 }
 
+/// A mutable collection of rule changes
+#[pyclass(module = "rules", name = "RuleChangeset")]
+#[derive(Default, Clone)]
+pub struct PyChangeset {
+    rs: Changeset,
+}
+
+impl From<Changeset> for PyChangeset {
+    fn from(rs: Changeset) -> Self {
+        Self { rs }
+    }
+}
+
+impl From<PyChangeset> for Changeset {
+    fn from(py: PyChangeset) -> Self {
+        py.rs
+    }
+}
+
+#[pymethods]
+impl PyChangeset {
+    #[new]
+    pub fn new() -> Self {
+        PyChangeset::default()
+    }
+
+    pub fn set(&mut self, text: String) -> bool {
+        match self.rs.set(&text) {
+            Ok(_) => true,
+            Err(_) => false,
+        }
+    }
+}
+
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyRule>()?;
     m.add_class::<PyRuleInfo>()?;
+    m.add_class::<PyChangeset>()?;
     Ok(())
 }

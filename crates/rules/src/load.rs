@@ -6,7 +6,11 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+use crate::error::Error;
+use crate::error::Error::DeserializeRulesError;
 use crate::load::RuleFrom::{Disk, Mem};
+use crate::parser::marker;
+use crate::parser::parse::{StrTrace, TraceResult};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
@@ -19,16 +23,17 @@ pub(crate) enum RuleFrom {
     Mem(String),
 }
 
-pub fn rules_from_disk(path: &str) -> Result<Vec<RuleSource>, io::Error> {
+pub fn rules_from_disk(path: &str) -> Result<Vec<RuleSource>, Error> {
     rules_from(Disk(PathBuf::from(path)))
 }
 
-pub(crate) fn rules_from(src: RuleFrom) -> Result<Vec<RuleSource>, io::Error> {
-    match src {
-        Disk(path) if path.is_dir() => rules_dir(path),
-        Disk(path) => rules_file(path),
-        Mem(txt) => rules_text(txt),
-    }
+pub(crate) fn rules_from(src: RuleFrom) -> Result<Vec<RuleSource>, Error> {
+    let r = match src {
+        Disk(path) if path.is_dir() => rules_dir(path)?,
+        Disk(path) => rules_file(path)?,
+        Mem(txt) => rules_text(txt)?,
+    };
+    Ok(r)
 }
 
 fn rules_file(path: PathBuf) -> Result<Vec<RuleSource>, io::Error> {
@@ -86,6 +91,82 @@ fn rules_dir(rules_source_path: PathBuf) -> Result<Vec<RuleSource>, io::Error> {
     Ok(d_files)
 }
 
-fn rules_text(rules_text: String) -> Result<Vec<RuleSource>, io::Error> {
-    Ok(vec![])
+fn rules_text(rules_text: String) -> Result<Vec<RuleSource>, Error> {
+    let mut origin: Option<PathBuf> = None;
+    let mut lines = vec![];
+    for line in rules_text.split("\n").map(|s| s.trim()) {
+        match marker::parse(StrTrace::new(line)) {
+            Ok((r, v)) => {
+                // println!("setting origin: {}", v.display().to_string());
+                origin = Some(v)
+            }
+            Err(e) if origin.as_ref().is_some() => {
+                let r = origin
+                    .as_ref()
+                    .map(|p| (p.clone(), line.to_string()))
+                    .map(RuleSource::from)
+                    .unwrap();
+                lines.push(r);
+            }
+            Err(e) if !line.is_empty() => return Err(DeserializeRulesError),
+            _ => {}
+        };
+    }
+
+    // todo;; split the
+    Ok(lines)
+}
+
+#[cfg(test)]
+mod test {
+    use crate::error;
+    use crate::load::rules_text;
+    use std::collections::HashMap;
+    use std::path::PathBuf;
+
+    fn to_map(txt: &str) -> Result<HashMap<PathBuf, Vec<String>>, error::Error> {
+        let mut mapped: HashMap<PathBuf, Vec<String>> = HashMap::new();
+        for (p, r) in rules_text(txt.to_string())? {
+            if !mapped.contains_key(&p) {
+                mapped.insert(p.clone(), vec![]);
+            }
+            mapped.get_mut(&p).unwrap().push(r.clone());
+        }
+        Ok(mapped)
+    }
+
+    #[test]
+    fn text_single() -> Result<(), error::Error> {
+        let txt = r#"
+        [foo.rules]
+        allow perm=any all : all"#;
+        let r = to_map(txt)?;
+        assert!(r.contains_key(&PathBuf::from("foo.rules")));
+        Ok(())
+    }
+
+    #[test]
+    fn text_multi_file() -> Result<(), error::Error> {
+        let txt = r#"
+        [foo.rules]
+        allow perm=any all : all
+        [bar.rules]
+        allow perm=any all : all"#;
+        let r = to_map(txt)?;
+        assert!(r.contains_key(&PathBuf::from("foo.rules")));
+        assert!(r.contains_key(&PathBuf::from("bar.rules")));
+        Ok(())
+    }
+
+    #[test]
+    fn text_empty_file() -> Result<(), error::Error> {
+        let txt = r#"
+        [foo.rules]
+        [bar.rules]
+        allow perm=any all : all"#;
+        let r = to_map(txt)?;
+        assert!(!r.contains_key(&PathBuf::from("foo.rules")));
+        assert!(r.contains_key(&PathBuf::from("bar.rules")));
+        Ok(())
+    }
 }
