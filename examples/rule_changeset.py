@@ -16,6 +16,7 @@
 import pathlib
 import itertools as it
 from fapolicy_analyzer import *
+from fapolicy_analyzer import RuleChangeset as Changeset
 
 # config is loaded from $HOME/.config/fapolicy-analyzer/fapolicy-analyzer.toml
 
@@ -23,28 +24,81 @@ from fapolicy_analyzer import *
 s1 = System()
 #print(f"system1 has {len(s1.ancillary_trust())} trust entries")
 
-# changeset deserializes rule text into applicable rules
-xs1 = RuleChangeset()
 
-r = """
+# Important points
+# ================
+# 1. This is not intended to be a validation API entrypoint
+# 2. Validation here is done to prevent invalid deployment,
+#    not to provde feedback to the client of the API
+# 3. The rules changeset is exported as RuleChangeset for now,
+#    but may be later relocated to rules.Changeset
+# 4. Relative paths in markers will be supported
+
+# Questions
+# ===========
+# 1. Should we support finer control of rule ops
+#    eg. Add, Rem of individual rules, like trust ops
+# 2.
+
+
+# changeset deserializes rule text into applicable rules
+xs1 = Changeset()
+
+# an invalid rule
+txt = """
 foo bar baz
 """
-print(xs1.set("foo bar"))
+print(xs1.set(txt))
+# False
 
-r = """
+# a valid rule without marker
+txt = """
 allow perm=any all : all
 """
-print(xs1.set(r))
+print(xs1.set(txt))
+# False
 
-
-r = """
+# a valid rule with marker
+txt = """
 [/etc/fapolicyd/rules.d/foo.rules]
 allow perm=any all : all
 """
-print(xs1.set(r))
+print(xs1.set(txt))
+# True
 
-# todo;; support parsing abbreviated markers
-r = """
+# multiple valid rules with markers
+txt = """
+[/etc/fapolicyd/rules.d/foo.rules]
+allow perm=exec all : all
+
+[/etc/fapolicyd/rules.d/bar.rules]
+deny perm=any all : all
+"""
+print(xs1.set(txt))
+# True
+
+# valid rules under single marker
+txt = """
+[/etc/fapolicyd/rules.d/foo.rules]
+allow perm=exec all : all
+deny perm=any all : all
+"""
+print(xs1.set(txt))
+# True
+
+# empty marker
+txt = """
+[/etc/fapolicyd/rules.d/foo.rules]
+allow perm=exec all : all
+
+[/etc/fapolicyd/rules.d/bar.rules]
+"""
+print(xs1.set(txt))
+# True
+
+
+# todo;; support parsing relative markers
+txt = """
 [foo.rules]
 allow perm=any all : all
 """
