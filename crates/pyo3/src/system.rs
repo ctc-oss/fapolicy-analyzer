@@ -16,12 +16,12 @@ use fapolicy_app::cfg;
 use fapolicy_app::sys::deploy_app_state;
 use fapolicy_rules::db::RuleDef;
 
+use super::trust::PyTrust;
 use crate::acl::{PyGroup, PyUser};
 use crate::analysis::PyEventLog;
+use crate::rules;
 use crate::rules::PyRule;
-use crate::trust::PyChangeset;
-
-use super::trust::PyTrust;
+use crate::trust;
 
 #[pyclass(module = "app", name = "System")]
 #[derive(Clone)]
@@ -87,9 +87,14 @@ impl PySystem {
             .collect()
     }
 
-    /// Apply the changeset to the state of this System generating a new System
-    fn apply_changeset(&self, change: PyChangeset) -> PySystem {
+    /// Apply the changeset to the state of this System, produces a new System
+    fn apply_changeset(&self, change: trust::PyChangeset) -> PySystem {
         self.rs.apply_trust_changes(change.into()).into()
+    }
+
+    /// Apply the changeset to the state of this System, produces a new System
+    fn apply_rule_changes(&self, change: rules::PyChangeset) -> PySystem {
+        self.rs.apply_rule_changes(change.into()).into()
     }
 
     /// Update the host system with this state of this System and signal fapolicyd to reload trust

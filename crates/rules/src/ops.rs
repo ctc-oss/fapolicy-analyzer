@@ -30,8 +30,8 @@ impl Changeset {
             .map_err(|_| "".to_string())
     }
 
-    pub fn apply() -> Result<DB, Error> {
-        todo!()
+    pub fn apply(&self) -> DB {
+        DB::default()
     }
 }
 
