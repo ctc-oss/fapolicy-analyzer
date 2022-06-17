@@ -54,4 +54,4 @@ RPMs for Fedora 34/35 and el8 will end up in `/tmp/rpms` on the host machine.
 
 fapolicyd is not available in ubi, so use rocky for the test run:
 
-`./test.sh /tmp/rpms fedora:34 fedora:35 rockylinux/rockylinux:8.4`
+`./test.sh /tmp/rpms fedora:34 fedora:35 rockylinux/rockylinux:8.6`
