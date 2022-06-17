@@ -40,6 +40,12 @@ s1 = System()
 #    eg. Add, Rem of individual rules, like trust ops
 # 2.
 
+# TODO
+# =====
+# 1. Finish changeset api
+# 2. Single rule text validation
+# 3. On-demand full text validation
+# 4. Writing compiled.rules
 
 # changeset deserializes rule text into applicable rules
 xs1 = Changeset()
