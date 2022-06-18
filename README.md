@@ -19,11 +19,10 @@ make run
 
 ### fapolicyd configuration
 
-To generate rules that can be analyzed we require the following 
+To generate rules that can be analyzed we require the following `syslog_format` configuration in fapolicyd.conf
 ```
 syslog_format = rule,dec,perm,uid,gid,pid,exe,:,path,ftype,trust
 ```
-configuration in `/etc/fapolicyd/fapolicyd.conf`
 
 ## Getting Help
 
