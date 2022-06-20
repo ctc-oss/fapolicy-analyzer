@@ -14,7 +14,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from locale import gettext as _
 from typing import Any, Optional, Sequence
 
 from fapolicy_analyzer import Rule
@@ -24,8 +23,8 @@ from fapolicy_analyzer.ui.actions import (
     request_rules,
     request_rules_text,
 )
-from fapolicy_analyzer.ui.configs import Colors
 from fapolicy_analyzer.ui.rules.rules_list_view import RulesListView
+from fapolicy_analyzer.ui.rules.rules_status_info import RulesStatusInfo
 from fapolicy_analyzer.ui.rules.rules_text_view import RulesTextView
 from fapolicy_analyzer.ui.store import dispatch, get_system_feature
 from fapolicy_analyzer.ui.strings import RULES_LOAD_ERROR, RULES_TEXT_LOAD_ERROR
@@ -50,6 +49,12 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
             self.__list_view.get_ref(), True, True, 0
         )
 
+        self.__status_info = RulesStatusInfo()
+        self.get_object("statusInfoContainer").add(self.__status_info.get_ref())
+        # self.get_object("rulesAdminPage").pack2(
+        #     self.__status_info.get_ref(), True, True
+        # )
+
         self.__rules: Sequence[Rule] = []
         self.__rules_text: str = ""
         self.__error_rules: Optional[str] = None
@@ -65,24 +70,25 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         self.__loading_text = True
         dispatch(request_rules_text())
 
-    def __render_rule_status(self):
-        def append_status(count, message, color):
-            color = color if count else Colors.BLACK
-            buffer.insert_markup(
-                buffer.get_end_iter(),
-                f"<span color='{color}'>{count} {message}</span>\n",
-                -1,
-            )
+    # def __render_rule_status(self):
+    #     def append_status(count, message, color):
+    #         color = color if count else Colors.BLACK
+    #         buffer.insert_markup(
+    #             buffer.get_end_iter(),
+    #             f"<span color='{color}'>{count} {message}</span>\n",
+    #             -1,
+    #         )
 
-        buffer = self.get_object("statusInfo").get_buffer()
-        categories = [i.category for r in self.__rules for i in r.info]
-        invalid_count = sum(not r.is_valid for r in self.__rules)  # noqa: F841
-        warning_count = sum(c == "w" for c in categories)  # noqa: F841
-        info_count = sum(c == "i" for c in categories)  # noqa: F841
+    #     buffer = self.get_object("statusInfo").get_buffer()
+    #     categories = [i.category for r in self.__rules for i in r.info]
+    #     invalid_count = sum(not r.is_valid for r in self.__rules)  # noqa: F841
+    #     warning_count = sum(c == "w" for c in categories)  # noqa: F841
+    #     info_count = sum(c == "i" for c in categories)  # noqa: F841
 
-        append_status(invalid_count, _("invalid rule found"), Colors.RED)
-        append_status(warning_count, _("warning(s) found"), Colors.ORANGE)
-        append_status(info_count, _("informational message(s)"), Colors.BLUE)
+    #     buffer.delete(buffer.get_start_iter(), buffer.get_end_iter())
+    #     append_status(invalid_count, _("invalid rule found"), Colors.RED)
+    #     append_status(warning_count, _("warning(s) found"), Colors.ORANGE)
+    #     append_status(info_count, _("informational message(s)"), Colors.BLUE)
 
     def on_next_system(self, system: Any):
         rules_state = system.get("rules")
@@ -102,7 +108,7 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
             self.__loading_rules = False
             self.__rules = rules_state.rules
             self.__list_view.render_rules(self.__rules)
-            self.__render_rule_status()
+            self.__status_info.render_rule_status(self.__rules)
 
         if not text_state.loading and self.__error_text != text_state.error:
             self.__error_text = text_state.error
