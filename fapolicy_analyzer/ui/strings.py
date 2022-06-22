@@ -80,6 +80,10 @@ FA_SESSION_FILES_FILTER_LABEL = _("FA Session files")
 FA_ARCHIVE_FILES_FILTER_LABEL = _("fapolicyd archive files")
 ANY_FILES_FILTER_LABEL = _("Any files")
 
+FAPROFILER_TGT_EUID_CHOWN_ERROR_MSG = _("Profiling target file chown failure")
+FAPROFILER_TGT_POPEN_ERROR_MSG = _("Profiling target Popen failure")
+FAPROFILER_TGT_REDIRECTION_ERROR_MSG = _("Profiling target redirection failure")
+
 WHITESPACE_WARNING_DIALOG_TITLE = _("File path(s) contains embedded whitespace.")
 WHITESPACE_WARNING_DIALOG_TEXT = _(
     "fapolicyd currently does not support paths containing spaces. The following paths will not be added to the "

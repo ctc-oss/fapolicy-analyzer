@@ -25,12 +25,15 @@ import gi
 from fapolicy_analyzer import __version__ as app_version
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.util.format import f
+from .profile_dialog import ProfileDialog
 
 from .action_toolbar import ActionToolbar
 from .actions import NotificationType, add_notification
 from .analyzer_selection_dialog import ANALYZER_SELECTION
 from .configs import Sizing
 from .database_admin_page import DatabaseAdminPage
+
+from .faprofiler import FaProfiler
 from .fapd_manager import FapdManager, ServiceStatus
 from .notification import Notification
 from .operations import DeployChangesetsOp
@@ -71,6 +74,7 @@ class MainWindow(UIConnectedWidget):
         self._fapd_status = ServiceStatus.UNKNOWN
         self._fapd_monitoring = False
         self._fapd_mgr = FapdManager(self._fapdControlPermitted)
+        self._fapd_profiler = FaProfiler(self._fapd_mgr)
         self.__changesets = []
         self.__page = None
 
@@ -362,6 +366,32 @@ class MainWindow(UIConnectedWidget):
     def on_rulesAdminMenu_activate(self, *args):
         self.__pack_main_content(router(ANALYZER_SELECTION.RULES_ADMIN))
         # TODO: figure out a good way to set sensitivity on the menu items based on what is selected
+        self.__set_trustDbMenu_sensitive(True)
+
+    def on_profileExecMenu_activate(self, *args):
+        logging.debug("MainWindow::on_profileExecMenu_activate()")
+        dlgProfTest = ProfileDialog()
+        response = dlgProfTest.get_ref().run()
+
+        if response == Gtk.ResponseType.OK:
+            profiling_args = dlgProfTest.get_text()
+            logging.debug(f"Entry text = {profiling_args}")
+            self._fapd_profiler.start_prof_session(profiling_args)
+            fapd_prof_stderr = self._fapd_profiler.fapd_prof_stderr
+            logging.debug(f"Started prof session, stderr={fapd_prof_stderr}")
+
+            # Catch termination event here somehow. Monitor pid? Pass in
+            # object returned from start_prof_session() above, or maintain only
+            # in the faprofiler instance.
+            sleep(4)
+            self._fapd_profiler.stop_prof_session()
+
+        # Add termination and/or close button
+        dlgProfTest.get_ref().destroy()
+
+        self.__pack_main_content(
+            router(ANALYZER_SELECTION.ANALYZE_FROM_AUDIT, fapd_prof_stderr)
+        )
         self.__set_trustDbMenu_sensitive(True)
 
     def on_deployChanges_clicked(self, *args):
