@@ -38,10 +38,8 @@ class FaProfSession:
         def result():
             os.setgid(user_gid)
             os.setuid(user_uid)
-        if enable:
-            return result
-        else:
-            return None
+
+        return result if enable else None
 
     def _comma_delimited_kv_string_to_dict(string_in):
         """Generates dictionary from comma separated string of k=v pairs"""

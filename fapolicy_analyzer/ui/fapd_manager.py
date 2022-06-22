@@ -37,7 +37,7 @@ class FapdMode(Enum):
     PROFILING = 2
 
 
-def promote():
+def _promote():
     def result():
         os.setgid(0)
         os.setuid(0)
@@ -93,11 +93,11 @@ class FapdManager():
         if instance == FapdMode.PROFILING:
             self.capture_online_state()
             self._stop()
-        else:
-            # Check status of fapd profiling instance and bring it down
-            if self._fapd_profiling_status:
-                logging.debug("FapdManager::start(): Shutting down prof fapd")
-                self._stop(FapdMode.PROFILING)
+
+        # On-line, so check status of fapd profiling instance and bring it down
+        elif self._fapd_profiling_status:
+            logging.debug("FapdManager::start(): Shutting down prof fapd")
+            self._stop(FapdMode.PROFILING)
 
         pid = self._start(instance)
         return pid
@@ -163,7 +163,7 @@ class FapdManager():
                                                  "--no-details"],
                                                 stdout=fdStdoutPath,
                                                 stderr=fdStderrPath,
-                                                preexec_fn=promote()
+                                                preexec_fn=_promote()
                                                 )
             self._active_instance = FapdMode.PROFILING
             self._fapd_profiler_pid = self.procProfile.pid
