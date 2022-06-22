@@ -87,6 +87,7 @@ fn read_rules_db(xs: Vec<RuleSource>) -> Result<DB, Error> {
         })
         .map(|(source, line)| {
             let source = source.display().to_string();
+            // todo;; support relative path parsing here
             let (_, file_name) = source.rsplit_once('/').expect("absolute path");
             (file_name.to_string(), line)
         })

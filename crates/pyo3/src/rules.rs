@@ -7,6 +7,9 @@
  */
 
 use fapolicy_rules::ops::Changeset;
+use fapolicy_rules::parser::parse::StrTrace;
+use fapolicy_rules::parser::rule::{parse, parse_with_error_message};
+use fapolicy_rules::Rule;
 use pyo3::prelude::*;
 
 #[pyclass(module = "rules", name = "Rule")]
@@ -127,9 +130,18 @@ impl PyChangeset {
     }
 }
 
+#[pyfunction]
+fn rule_text_error_check(txt: &str) -> Option<String> {
+    match parse_with_error_message(StrTrace::new(txt)) {
+        Ok(_) => None,
+        Err(s) => Some(s),
+    }
+}
+
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyRule>()?;
     m.add_class::<PyRuleInfo>()?;
     m.add_class::<PyChangeset>()?;
+    m.add_function(wrap_pyfunction!(rule_text_error_check, m)?)?;
     Ok(())
 }
