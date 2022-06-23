@@ -40,8 +40,6 @@ class UIPage(ABC):
     """
     actions: Mapping[str, Sequence[UIAction]] = field(default_factory=dict)
 
-    __events__ = ["rule_view_activate"]
-
     @staticmethod
     def merge_actions(
         actions1: Mapping[str, Sequence[UIAction]],

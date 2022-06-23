@@ -507,7 +507,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         self.__refresh()
 
     def on_rule_view_activate(self, *args):
-        print("Policy View Rule View Event")
+        print("Policy View to Rule View Event")
 
     class Switcher(Events):
         __events__ = ["buttonClicked"]
