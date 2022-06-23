@@ -61,7 +61,7 @@ def router(selection: ANALYZER_SELECTION, data: Any = None) -> UIPage:
 class MainWindow(UIConnectedWidget):
     def __init__(self):
         super().__init__(get_system_feature(), on_next=self.on_next_system)
-        self.__events__ = ["rule_view_activate"]
+        self.__events__ = ["rule_view_activate",]
         Events.__init__(self)
         self.strSessionFilename = None
         self.window = self.get_ref()
