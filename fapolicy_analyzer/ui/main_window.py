@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from events import Events
 import logging
 from locale import gettext as _
 from os import getenv, geteuid, path
@@ -63,6 +64,8 @@ def router(selection: ANALYZER_SELECTION, data: Any = None) -> UIPage:
 class MainWindow(UIConnectedWidget):
     def __init__(self):
         super().__init__(get_system_feature(), on_next=self.on_next_system)
+        self.__events__ = ["rule_view_activate"]
+        Events.__init__(self)
         self.strSessionFilename = None
         self.window = self.get_ref()
         self.windowTopLevel = self.window.get_toplevel()

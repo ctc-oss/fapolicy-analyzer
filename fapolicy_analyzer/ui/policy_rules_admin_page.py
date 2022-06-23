@@ -102,6 +102,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             type="objects",
             details_widget_name="objectDetails",
         )
+        self.object_list.rule_view_activate += self.on_rule_view_activate
         object_tabs.append_page(self.object_list.get_ref(), Gtk.Label(label="Object"))
 
         self.__switchers = [
@@ -366,7 +367,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
 
             self.__populate_list(
                 self.object_list,
-                objects,
+                (objects, ids),
                 "objects",
                 True,
                 self.object_list.get_selected_row_by_file,
@@ -507,7 +508,11 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         self.__refresh()
 
     def on_rule_view_activate(self, *args):
+<<<<<<< HEAD
         print("Policy View to Rule View Event")
+=======
+        print("Policy View Rule View Event")
+>>>>>>> swap to events
 
     class Switcher(Events):
         __events__ = ["buttonClicked"]

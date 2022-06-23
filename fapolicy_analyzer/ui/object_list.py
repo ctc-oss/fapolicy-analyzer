@@ -72,6 +72,7 @@ class ObjectList(SubjectList, Events):
         menu.show_all()
         return menu
 
+<<<<<<< HEAD
     def on_rule_menu_activate(self, *args):
         model, path = self.get_object("treeView").get_selection().get_selected_rows()
         rule_id = model[0][7]
@@ -79,6 +80,18 @@ class ObjectList(SubjectList, Events):
 
     def load_store(self, objects, **kwargs):
         ids = kwargs.get("ids", [])
+=======
+    def on_rule_menu_activate(self, subject):
+        self.rule_view_activate(subject)
+
+    def load_store(self, obj, **kwargs):
+        if len(obj) > 0:
+            objects, ids = obj
+
+        else:
+            objects = obj
+            ids = []
+>>>>>>> swap to events
         self._systemTrust = kwargs.get("systemTrust", [])
         self._ancillaryTrust = kwargs.get("ancillaryTrust", [])
         store = Gtk.ListStore(str, str, str, object, str, str, str, int)
