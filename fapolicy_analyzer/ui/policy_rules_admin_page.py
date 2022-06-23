@@ -55,7 +55,6 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         UIConnectedWidget.__init__(
             self, get_system_feature(), on_next=self.on_next_system
         )
-
         actions = {
             "analyze": [
                 UIAction(
@@ -67,7 +66,6 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             ]
         }
         UIPage.__init__(self, actions)
-
         self.__n_changesets = 0
         self.__audit_file: Optional[str] = audit_file
         self.__log: Optional[Sequence[EventLog]] = None
@@ -104,6 +102,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             type="objects",
             details_widget_name="objectDetails",
         )
+        self.object_list.rule_view_activate += self.on_rule_view_activate
         object_tabs.append_page(self.object_list.get_ref(), Gtk.Label(label="Object"))
 
         self.__switchers = [
@@ -357,9 +356,18 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
                     or e.gid == self.__selection_state["group"]
                 }.values()
             )
+            ids = list(
+                {
+                    e.object.file: e.rule_id
+                    for e in self.__log.by_subject(last_subject)
+                    if e.uid == self.__selection_state["user"]
+                    or e.gid == self.__selection_state["group"]
+                }.values()
+            )
+
             self.__populate_list(
                 self.object_list,
-                objects,
+                (objects, ids),
                 "objects",
                 True,
                 self.object_list.get_selected_row_by_file,
@@ -497,6 +505,9 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
 
     def on_refresh_clicked(self, *args):
         self.__refresh()
+
+    def on_rule_view_activate(self, *args):
+        print("Policy View Rule View Event")
 
     class Switcher(Events):
         __events__ = ["buttonClicked"]

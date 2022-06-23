@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from events import Events
 import logging
 from locale import gettext as _
 from os import getenv, geteuid, path
@@ -63,6 +64,8 @@ def router(selection: ANALYZER_SELECTION, data: Any = None) -> UIPage:
 class MainWindow(UIConnectedWidget):
     def __init__(self):
         super().__init__(get_system_feature(), on_next=self.on_next_system)
+        self.__events__ = ["rule_view_activate"]
+        Events.__init__(self)
         self.strSessionFilename = None
         self.window = self.get_ref()
         self.windowTopLevel = self.window.get_toplevel()
@@ -77,8 +80,6 @@ class MainWindow(UIConnectedWidget):
         self._fapd_profiler = FaProfiler(self._fapd_mgr)
         self.__changesets = []
         self.__page = None
-        self.selection = None
-        self.get_object("rulesAdminMenu").connect("activate",self.on_rulesAdminMenu_activate_item, self.selection)
 
         toaster = Notification()
         self.get_object("overlay").add_overlay(toaster.get_ref())
@@ -365,19 +366,10 @@ class MainWindow(UIConnectedWidget):
         self.__pack_main_content(router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN))
         self.__set_trustDbMenu_sensitive(False)
 
-    def on_rulesAdminMenu_activate_item(self, *args):
-
-        treeview = self.get_ref().get_children()[0].get_children()[0].get_children()[2].get_children()[0].get_children()[0].get_children()[2].get_children()[0].get_children()[0].get_children()[1].get_children()[0].get_children()[0].get_children()[0]
-        model, pathlist = treeview.get_selection().get_selected_rows()
-        iter_ = model.get_iter(pathlist)
-        subject = model.get_value(iter_, 3)
-        print(subject.trust.lower())
-            
+    def on_rulesAdminMenu_activate(self, *args):
         self.__pack_main_content(router(ANALYZER_SELECTION.RULES_ADMIN))
         # TODO: figure out a good way to set sensitivity on the menu items based on what is selected
         self.__set_trustDbMenu_sensitive(True)
-        
-
 
     def on_profileExecMenu_activate(self, *args):
         logging.debug("MainWindow::on_profileExecMenu_activate()")
