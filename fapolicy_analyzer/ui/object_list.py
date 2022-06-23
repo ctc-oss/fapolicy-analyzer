@@ -15,18 +15,22 @@
 
 import fapolicy_analyzer.ui.strings as strings
 import gi
-
+from events import Events
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
 from .configs import Colors
 from .subject_list import SubjectList
-from .main_window import *
 
 
 class ObjectList(SubjectList):
     def __init__(self):
         super().__init__()
+        self.__events__ = [
+            "file_selection_changed",
+            "rule_view_activate",
+        ]
+        Events.__init__(self)
         self.reconcileContextMenu = self.__build_reconcile_context_menu()
         self.get_ref().set_name("objectList")
 
@@ -62,26 +66,26 @@ class ObjectList(SubjectList):
         reconcileItem = Gtk.MenuItem.new_with_label("Reconcile File")
         reconcileItem.connect("activate", self.on_reconcile_file_activate)
         rulesItem = Gtk.MenuItem.new_with_label("Go To Rule")
-        rulesItem.connect("activate", self.on_rule_view_activate)
+        rulesItem.connect("activate", self.on_rule_menu_activate)
         menu.append(reconcileItem)
         menu.append(rulesItem)
         menu.show_all()
         return menu
 
-    def on_rule_view_activate(self, subject):
-        main_window = self.get_ref().get_toplevel()       
-        app_area_children = main_window.get_child().get_child().get_children()
-        menubar = next(child for child in app_area_children if child.get_name() == "mainMenu")
-        tool_menu = next(child for child in menubar if child.get_name() == "toolMenu")
-        submenu_children = tool_menu.get_submenu().get_children()
-        rule_menu = next(m for m in submenu_children if m.get_name() == "ruleMenu")
-        rule_menu.activate()
+    def on_rule_menu_activate(self, subject):
+        self.rule_view_activate(subject)
 
-    def load_store(self, objects, **kwargs):
+    def load_store(self, obj, **kwargs):
+        if len(obj) > 0:
+            objects, ids = obj
+
+        else:
+            objects = obj
+            ids = []
         self._systemTrust = kwargs.get("systemTrust", [])
         self._ancillaryTrust = kwargs.get("ancillaryTrust", [])
-        store = Gtk.ListStore(str, str, str, object, str, str, str)
-        for o in objects:
+        store = Gtk.ListStore(str, str, str, object, str, str, str, int)
+        for o, i in zip(objects, ids):
             status = self._trust_markup(o)
             mode = self.__markup(
                 o.mode.upper(),
@@ -91,7 +95,7 @@ class ObjectList(SubjectList):
             )
             access = self.__markup(o.access.upper(), ["A", "D"])
             bg_color, txt_color = self.__colors(o.access, o.mode)
-            store.append([status, access, o.file, o, bg_color, txt_color, mode])
+            store.append([status, access, o.file, o, bg_color, txt_color, mode, i])
 
         # call grandfather SearchableList's load_store method
         super(SubjectList, self).load_store(store)

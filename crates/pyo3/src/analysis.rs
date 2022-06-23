@@ -58,6 +58,12 @@ impl PyEvent {
     fn object(&self) -> PyObject {
         self.rs.object.clone().into()
     }
+
+    /// The fapolicyd rule_id parsed from the log event
+    #[getter]
+    fn rule_id(&self) -> i32 {
+        self.rs.event.rule_id
+    }
 }
 
 /// Subject metadata
