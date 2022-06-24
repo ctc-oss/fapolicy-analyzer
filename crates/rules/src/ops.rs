@@ -6,28 +6,35 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use crate::db::DB;
+use crate::db::{RuleDef, DB};
 use crate::error::Error;
 use crate::load::RuleSource;
-use crate::parser;
 use crate::read::deserialize_rules_db;
+use crate::{parser, Rule};
 use std::collections::HashMap;
 use std::io;
 
 // Mutable
-// Text backed container that deserializes on the fly
 #[derive(Default, Clone, Debug)]
 pub struct Changeset {
-    text: String,
+    db: DB,
 }
 
 impl Changeset {
     // todo;; how to properly convey lints and errors in the parse fail?
     //        perhaps just roll it up to a _simple_ Error/Warn/Ok result enum
-    pub fn set(&mut self, text: &str) -> Result<(), String> {
-        deserialize_rules_db(text)
-            .map(|_| ())
-            .map_err(|_| "".to_string())
+    pub fn set(&mut self, text: &str) -> Result<&DB, String> {
+        match deserialize_rules_db(text) {
+            Ok(r) => {
+                self.db = r;
+                Ok(&self.db)
+            }
+            Err(_) => Err("failed to deserialize db".to_string()),
+        }
+    }
+
+    pub fn rule(&self, id: usize) -> Option<&RuleDef> {
+        self.db.get(id)
     }
 
     pub fn apply(&self) -> DB {

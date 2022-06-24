@@ -6,11 +6,18 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+use fapolicy_rules::db::{RuleDef, DB};
+use pyo3::basic::PyObjectStrProtocol;
+use pyo3::class::impl_::PyClassImpl;
+use pyo3::exceptions::PyException;
+use pyo3::prelude::*;
+use pyo3::types::PyDict;
+use pyo3::{create_exception, exceptions, PyClass, PyObjectProtocol, PyTypeInfo};
+
 use fapolicy_rules::ops::Changeset;
 use fapolicy_rules::parser::parse::StrTrace;
 use fapolicy_rules::parser::rule::{parse, parse_with_error_message};
 use fapolicy_rules::Rule;
-use pyo3::prelude::*;
 
 #[pyclass(module = "rules", name = "Rule")]
 #[derive(Clone)]
@@ -23,7 +30,7 @@ pub struct PyRule {
 }
 
 impl PyRule {
-    pub fn new(
+    pub(crate) fn new(
         id: usize,
         text: String,
         origin: String,
@@ -48,8 +55,35 @@ impl PyRule {
     }
 }
 
+#[pyproto]
+impl PyObjectProtocol for PyRule {
+    fn __str__(&self) -> PyResult<String> {
+        Ok(format!("{}: {}", self.id, self.text))
+    }
+
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(format!("{}: {}", self.id, self.text))
+    }
+}
+
+create_exception!(rust, InvalidRuleSyntax, PyException);
+
 #[pymethods]
 impl PyRule {
+    #[new]
+    fn py_new(id: usize, txt: &str) -> PyResult<PyRule> {
+        match parse_with_error_message(StrTrace::new(txt)) {
+            Ok(r) => PyResult::Ok(PyRule {
+                id,
+                text: txt.to_string(),
+                origin: "".to_string(),
+                info: vec![],
+                valid: true,
+            }),
+            Err(e) => Err(InvalidRuleSyntax::new_err(format!("{:?}", e))),
+        }
+    }
+
     #[getter]
     fn get_id(&self) -> usize {
         self.id
@@ -122,6 +156,16 @@ impl PyChangeset {
         PyChangeset::default()
     }
 
+    pub fn rule(&self, id: usize) -> Option<PyRule> {
+        self.rs.rule(id).map(|d| PyRule {
+            id,
+            text: d.to_string(),
+            origin: "".to_string(),
+            info: vec![],
+            valid: false,
+        })
+    }
+
     pub fn set(&mut self, text: String) -> bool {
         match self.rs.set(&text) {
             Ok(_) => true,
@@ -137,6 +181,32 @@ fn rule_text_error_check(txt: &str) -> Option<String> {
         Err(s) => Some(s),
     }
 }
+
+pub(crate) fn db_to_vec(db: &DB) -> PyResult<Vec<PyRule>> {
+    Ok(db
+        .iter()
+        .map(|(id, r)| {
+            let (valid, text, info) = match r {
+                RuleDef::Invalid { text, error } => {
+                    (false, text.clone(), vec![("e".to_string(), error.clone())])
+                }
+                RuleDef::Valid(r) => (true, r.to_string(), vec![]),
+                RuleDef::ValidWithWarning(r, w) => {
+                    (true, r.to_string(), vec![("w".to_string(), w.clone())])
+                }
+            };
+            let origin = db
+                .source(*id)
+                // todo;; this should be converted to a python exception
+                .unwrap_or_else(|| "<unknown>".to_string());
+
+            PyRule::new(*id, text, origin, info, valid)
+        })
+        .collect())
+}
+
+// #[pyfunction]
+// fn text_to_rule_db(txt: &str) -> PyResult<PyDict> {}
 
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyRule>()?;

@@ -23,3 +23,13 @@ print(rule_text_error_check("allow perm=foo all : all"))
 
 # None (aka, valid)
 print(rule_text_error_check("allow perm=any all : all"))
+
+r = Rule(0, "allow perm=any all : all")
+print(r)
+
+try:
+    r = Rule(0, "foo perm=any all : all")
+    print(r)
+# todo;; the custom exception type is not reachable from here
+except Exception as e:
+    print(e)

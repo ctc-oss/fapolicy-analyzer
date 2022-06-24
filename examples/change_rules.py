@@ -52,23 +52,20 @@ xs1 = Changeset()
 txt = """
 foo bar baz
 """
-print(xs1.set(txt))
-# False
+assert not xs1.set(txt)
 
 # a valid rule without marker
 txt = """
 allow perm=any all : all
 """
-print(xs1.set(txt))
-# False
+assert not xs1.set(txt)
 
 # a valid rule with marker
 txt = """
 [/etc/fapolicyd/rules.d/foo.rules]
 allow perm=any all : all
 """
-print(xs1.set(txt))
-# True
+assert xs1.set(txt)
 
 # multiple valid rules with markers
 txt = """
@@ -78,8 +75,7 @@ allow perm=exec all : all
 [/etc/fapolicyd/rules.d/bar.rules]
 deny perm=any all : all
 """
-print(xs1.set(txt))
-# True
+assert xs1.set(txt)
 
 # valid rules under single marker
 txt = """
@@ -87,8 +83,7 @@ txt = """
 allow perm=exec all : all
 deny perm=any all : all
 """
-print(xs1.set(txt))
-# True
+assert xs1.set(txt)
 
 # empty marker
 txt = """
@@ -97,8 +92,7 @@ allow perm=exec all : all
 
 [/etc/fapolicyd/rules.d/bar.rules]
 """
-print(xs1.set(txt))
-# True
+assert xs1.set(txt)
 
 
 # todo;; support parsing relative markers
