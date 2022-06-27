@@ -69,6 +69,7 @@ class FapdManager():
         # SU_OVERRIDE allows mode changes in development environment
         self._fapd_control_enabled = fapd_control_enabled
         self._fapd_control_override = os.environ.get("SU_OVERRIDE", False)
+        self._fapd_prof_systemd_control = os.path.exists("/tmp/fapd_systemd_on")
 
         self._fapd_lock = Lock()
         self.mode = FapdMode.DISABLED
@@ -89,6 +90,7 @@ class FapdManager():
             self.fapd_profiling_stderr = None
 
     def start(self, instance=FapdMode.ONLINE):
+        self._fapd_prof_systemd_control = os.path.exists("/tmp/fapd_systemd_on")
         # If profiling, get current fapd state, and stop it if running
         if instance == FapdMode.PROFILING:
             self.capture_online_state()
@@ -103,6 +105,7 @@ class FapdManager():
         return pid
 
     def stop(self, instance=FapdMode.ONLINE):
+        self._fapd_prof_systemd_control = os.path.exists("/tmp/fapd_systemd_on")
         self._stop(instance)
         # Revert on-line fapd state
         if instance == FapdMode.PROFILING:
@@ -157,18 +160,26 @@ class FapdManager():
                 self._previous_instance = self._fapd_status
                 self._stop(FapdMode.ONLINE)
 
-            self.procProfile = subprocess.Popen(["/usr/sbin/fapolicyd",
-                                                 "--permissive",
-                                                 "--debug",
-                                                 "--no-details"],
-                                                stdout=fdStdoutPath,
-                                                stderr=fdStderrPath,
-                                                preexec_fn=_promote()
-                                                )
+            if self._fapd_prof_systemd_control:
+                logging.debug("fapd profiling control via dbus/systemd")
+                if (self._fapd_status != ServiceStatus.UNKNOWN) and (self._fapd_lock.acquire()):
+                    self._fapd_profiling_ref.start()
+                    self._fapd_lock.release()
+
+            else:
+                logging.debug("fapd profiling control via subprocess.Popen")
+                self.procProfile = subprocess.Popen(["/usr/sbin/fapolicyd",
+                                                     "--permissive",
+                                                     "--debug",
+                                                     "--no-details"],
+                                                    stdout=fdStdoutPath,
+                                                    stderr=fdStderrPath,
+                                                    preexec_fn=_promote()
+                                                    )
+                self._fapd_profiler_pid = self.procProfile.pid
+                logging.debug(f"Fapd pid = {self._fapd_profiler_pid}")
             self._active_instance = FapdMode.PROFILING
-            self._fapd_profiler_pid = self.procProfile.pid
             self.mode = FapdMode.PROFILING
-            logging.debug(f"Fapd pid = {self._fapd_profiler_pid}")
 
             # Magic delay value for profiling instance to complete init
             # Consider active polling/monitoring here. fapd must be fully up
@@ -196,10 +207,17 @@ class FapdManager():
         else:
             logging.debug("fapd is terminating a PROFILING session")
             logging.debug(f"self.procProfile = {self.procProfile}")
-            if self.procProfile:
-                logging.debug(f"Pid: {self.procProfile.pid}")
-                self.procProfile.terminate()
-                self.procProfile.wait(5)
+            if self._fapd_prof_systemd_control:
+                logging.debug("fapd profiling termination via dbus/systemd")
+                if (self._fapd_status != ServiceStatus.UNKNOWN) and (self._fapd_lock.acquire()):
+                    self._fapd_profiling_ref.stop()
+                    self._fapd_lock.release()
+
+            else:
+                if self.procProfile:
+                    logging.debug(f"Pid: {self.procProfile.pid}")
+                    self.procProfile.terminate()
+                    self.procProfile.wait(5)
             self.fapd_profiling_stderr = None
             self.fapd_profiling_stdout = None
             self._fapd_profiler_pid = None
