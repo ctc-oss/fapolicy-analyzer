@@ -16,6 +16,7 @@ pub use self::set::Set;
 pub use self::subject::Part as SubjPart;
 pub use self::subject::Subject;
 
+pub mod ops;
 pub mod parser;
 
 mod decision;

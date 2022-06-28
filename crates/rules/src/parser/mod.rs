@@ -15,6 +15,7 @@ pub mod trace;
 
 pub mod comment;
 pub mod decision;
+pub mod marker;
 pub mod object;
 pub mod permission;
 pub mod rule;
