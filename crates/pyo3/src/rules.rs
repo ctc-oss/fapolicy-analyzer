@@ -154,16 +154,6 @@ impl PyChangeset {
         PyChangeset::default()
     }
 
-    pub fn rule(&self, id: usize) -> Option<PyRule> {
-        self.rs.rule(id).map(|d| PyRule {
-            id,
-            text: d.to_string(),
-            origin: "".to_string(),
-            info: vec![],
-            valid: false,
-        })
-    }
-
     pub fn get(&self) -> PyResult<Vec<PyRule>> {
         db_to_vec(self.rs.get())
     }
