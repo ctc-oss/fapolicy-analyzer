@@ -10,7 +10,7 @@ use crate::error::Error;
 use crate::error::Error::DeserializeRulesError;
 use crate::load::RuleFrom::{Disk, Mem};
 use crate::parser::marker;
-use crate::parser::parse::{StrTrace, TraceResult};
+use crate::parser::parse::{StrTrace};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
@@ -96,11 +96,11 @@ fn rules_text(rules_text: String) -> Result<Vec<RuleSource>, Error> {
     let mut lines = vec![];
     for line in rules_text.split("\n").map(|s| s.trim()) {
         match marker::parse(StrTrace::new(line)) {
-            Ok((r, v)) => {
+            Ok((_r, v)) => {
                 // println!("setting origin: {}", v.display().to_string());
                 origin = Some(v)
             }
-            Err(e) if origin.as_ref().is_some() => {
+            Err(_e) if origin.as_ref().is_some() => {
                 let r = origin
                     .as_ref()
                     .map(|p| (p.clone(), line.to_string()))
@@ -108,7 +108,7 @@ fn rules_text(rules_text: String) -> Result<Vec<RuleSource>, Error> {
                     .unwrap();
                 lines.push(r);
             }
-            Err(e) if !line.is_empty() => return Err(DeserializeRulesError),
+            Err(_e) if !line.is_empty() => return Err(DeserializeRulesError),
             _ => {}
         };
     }

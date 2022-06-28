@@ -8,7 +8,7 @@
 
 use std::collections::btree_map::Iter;
 use std::collections::{BTreeMap, HashMap};
-use std::fmt::{Display, Formatter, Pointer};
+use std::fmt::{Display, Formatter};
 
 use crate::Rule;
 

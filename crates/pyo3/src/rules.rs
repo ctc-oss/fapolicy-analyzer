@@ -7,17 +7,17 @@
  */
 
 use fapolicy_rules::db::{RuleDef, DB};
-use pyo3::basic::PyObjectStrProtocol;
-use pyo3::class::impl_::PyClassImpl;
+
+
 use pyo3::exceptions::PyException;
 use pyo3::prelude::*;
-use pyo3::types::PyDict;
-use pyo3::{create_exception, exceptions, PyClass, PyObjectProtocol, PyTypeInfo};
+
+use pyo3::{create_exception, PyObjectProtocol, PyTypeInfo};
 
 use fapolicy_rules::ops::Changeset;
 use fapolicy_rules::parser::parse::StrTrace;
-use fapolicy_rules::parser::rule::{parse, parse_with_error_message};
-use fapolicy_rules::Rule;
+use fapolicy_rules::parser::rule::{parse_with_error_message};
+
 
 #[pyclass(module = "rules", name = "Rule")]
 #[derive(Clone)]
@@ -73,7 +73,7 @@ impl PyRule {
     #[new]
     fn py_new(id: usize, txt: &str) -> PyResult<PyRule> {
         match parse_with_error_message(StrTrace::new(txt)) {
-            Ok(r) => PyResult::Ok(PyRule {
+            Ok(_r) => PyResult::Ok(PyRule {
                 id,
                 text: txt.to_string(),
                 origin: "".to_string(),

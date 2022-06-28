@@ -11,7 +11,7 @@ use std::path::PathBuf;
 use nom::bytes::complete::{is_not, tag};
 use nom::sequence::delimited;
 
-use crate::parser::parse::{filepath, StrTrace, TraceResult};
+use crate::parser::parse::{StrTrace, TraceResult};
 
 pub(crate) fn parse(i: StrTrace) -> TraceResult<PathBuf> {
     delimited(tag("["), is_not("]"), tag("]"))(i).map(|(r, path)| (r, PathBuf::from(path.current)))

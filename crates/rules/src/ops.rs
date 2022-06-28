@@ -7,12 +7,12 @@
  */
 
 use crate::db::{RuleDef, DB};
-use crate::error::Error;
-use crate::load::RuleSource;
+
+
 use crate::read::deserialize_rules_db;
-use crate::{parser, Rule};
-use std::collections::HashMap;
-use std::io;
+
+
+
 
 // Mutable
 #[derive(Default, Clone, Debug)]
@@ -50,10 +50,10 @@ mod tests {
     fn deserialize() {
         let mut cs = Changeset::default();
         let txt = "[foo.rules]\ndeny_audit perm=open all : all";
-        let x1 = cs.set(txt);
+        let _x1 = cs.set(txt);
 
         let txt = "[foo.rules]\nfffdeny_audit perm=open all : all";
-        let x2 = cs.set(txt);
+        let _x2 = cs.set(txt);
 
         println!("...");
     }
