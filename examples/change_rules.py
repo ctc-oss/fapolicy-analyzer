@@ -20,30 +20,6 @@ from fapolicy_analyzer import RuleChangeset as Changeset
 
 # a system represents the state of the host sytems
 s1 = System()
-#print(f"system1 has {len(s1.ancillary_trust())} trust entries")
-
-
-# Important points
-# ================
-# 1. This is not intended to be a validation API entrypoint
-# 2. Validation here is done to prevent invalid deployment,
-#    not to provde feedback to the client of the API
-# 3. The rules changeset is exported as RuleChangeset for now,
-#    but may be later relocated to rules.Changeset
-# 4. Relative paths in markers will be supported
-
-# Questions
-# ===========
-# 1. Should we support finer control of rule ops
-#    eg. Add, Rem of individual rules, like trust ops
-# 2.
-
-# TODO
-# =====
-# 1. Finish changeset api
-# 2. Single rule text validation
-# 3. On-demand full text validation
-# 4. Writing compiled.rules
 
 # changeset deserializes rule text into applicable rules
 xs1 = Changeset()
@@ -66,7 +42,10 @@ txt = """
 allow perm=any all : all
 """
 assert xs1.set(txt)
+for r in xs1.get():
+    print(r)
 
+print("---")
 # multiple valid rules with markers
 txt = """
 [/etc/fapolicyd/rules.d/foo.rules]
@@ -76,7 +55,10 @@ allow perm=exec all : all
 deny perm=any all : all
 """
 assert xs1.set(txt)
+for r in xs1.get():
+    print(r)
 
+print("---")
 # valid rules under single marker
 txt = """
 [/etc/fapolicyd/rules.d/foo.rules]
@@ -84,7 +66,10 @@ allow perm=exec all : all
 deny perm=any all : all
 """
 assert xs1.set(txt)
+for r in xs1.get():
+    print(r)
 
+print("---")
 # empty marker
 txt = """
 [/etc/fapolicyd/rules.d/foo.rules]
@@ -93,8 +78,10 @@ allow perm=exec all : all
 [/etc/fapolicyd/rules.d/bar.rules]
 """
 assert xs1.set(txt)
+for r in xs1.get():
+    print(r)
 
-
+print("---")
 # todo;; support parsing relative markers
 txt = """
 [foo.rules]

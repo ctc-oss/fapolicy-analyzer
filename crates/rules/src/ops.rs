@@ -8,11 +8,7 @@
 
 use crate::db::{RuleDef, DB};
 
-
 use crate::read::deserialize_rules_db;
-
-
-
 
 // Mutable
 #[derive(Default, Clone, Debug)]
@@ -21,6 +17,10 @@ pub struct Changeset {
 }
 
 impl Changeset {
+    pub fn get(&self) -> &DB {
+        &self.db
+    }
+
     // todo;; how to properly convey lints and errors in the parse fail?
     //        perhaps just roll it up to a _simple_ Error/Warn/Ok result enum
     pub fn set(&mut self, text: &str) -> Result<&DB, String> {
@@ -45,16 +45,17 @@ impl Changeset {
 #[cfg(test)]
 mod tests {
     use crate::ops::Changeset;
+    use std::error::Error;
 
     #[test]
-    fn deserialize() {
+    fn deserialize_absolute() -> Result<(), Box<dyn Error>> {
         let mut cs = Changeset::default();
-        let txt = "[foo.rules]\ndeny_audit perm=open all : all";
+        let txt = "[/foo.rules]\ndeny_audit perm=open all : all";
         let _x1 = cs.set(txt);
 
-        let txt = "[foo.rules]\nfffdeny_audit perm=open all : all";
-        let _x2 = cs.set(txt);
+        let txt = "[/foo.rules]\nfffdeny_audit perm=open all : all";
+        let _x2 = cs.set(txt)?;
 
-        println!("...");
+        Ok(())
     }
 }

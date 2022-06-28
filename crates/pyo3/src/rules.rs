@@ -8,16 +8,14 @@
 
 use fapolicy_rules::db::{RuleDef, DB};
 
-
 use pyo3::exceptions::PyException;
 use pyo3::prelude::*;
 
-use pyo3::{create_exception, PyObjectProtocol, PyTypeInfo};
+use pyo3::{create_exception, PyObjectProtocol};
 
 use fapolicy_rules::ops::Changeset;
 use fapolicy_rules::parser::parse::StrTrace;
-use fapolicy_rules::parser::rule::{parse_with_error_message};
-
+use fapolicy_rules::parser::rule::parse_with_error_message;
 
 #[pyclass(module = "rules", name = "Rule")]
 #[derive(Clone)]
@@ -164,6 +162,10 @@ impl PyChangeset {
             info: vec![],
             valid: false,
         })
+    }
+
+    pub fn get(&self) -> PyResult<Vec<PyRule>> {
+        db_to_vec(self.rs.get())
     }
 
     pub fn set(&mut self, text: String) -> bool {

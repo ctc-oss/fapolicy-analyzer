@@ -10,7 +10,7 @@ use crate::error::Error;
 use crate::error::Error::DeserializeRulesError;
 use crate::load::RuleFrom::{Disk, Mem};
 use crate::parser::marker;
-use crate::parser::parse::{StrTrace};
+use crate::parser::parse::StrTrace;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
