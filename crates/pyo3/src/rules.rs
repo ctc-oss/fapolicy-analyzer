@@ -6,13 +6,10 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use fapolicy_rules::db::{RuleDef, DB};
-
-use pyo3::exceptions::PyException;
 use pyo3::prelude::*;
+use pyo3::PyObjectProtocol;
 
-use pyo3::{create_exception, PyObjectProtocol};
-
+use fapolicy_rules::db::{RuleDef, DB};
 use fapolicy_rules::ops::Changeset;
 use fapolicy_rules::parser::parse::StrTrace;
 use fapolicy_rules::parser::rule::parse_with_error_message;
@@ -64,24 +61,8 @@ impl PyObjectProtocol for PyRule {
     }
 }
 
-create_exception!(rust, InvalidRuleSyntax, PyException);
-
 #[pymethods]
 impl PyRule {
-    #[new]
-    fn py_new(id: usize, txt: &str) -> PyResult<PyRule> {
-        match parse_with_error_message(StrTrace::new(txt)) {
-            Ok(_r) => PyResult::Ok(PyRule {
-                id,
-                text: txt.to_string(),
-                origin: "".to_string(),
-                info: vec![],
-                valid: true,
-            }),
-            Err(e) => Err(InvalidRuleSyntax::new_err(format!("{:?}", e))),
-        }
-    }
-
     #[getter]
     fn get_id(&self) -> usize {
         self.id
