@@ -169,10 +169,7 @@ impl PyChangeset {
     }
 
     pub fn set(&mut self, text: String) -> bool {
-        match self.rs.set(&text) {
-            Ok(_) => true,
-            Err(_) => false,
-        }
+        self.rs.set(&text).is_ok()
     }
 }
 

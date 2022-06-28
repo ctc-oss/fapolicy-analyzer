@@ -94,7 +94,7 @@ fn rules_dir(rules_source_path: PathBuf) -> Result<Vec<RuleSource>, io::Error> {
 fn rules_text(rules_text: String) -> Result<Vec<RuleSource>, Error> {
     let mut origin: Option<PathBuf> = None;
     let mut lines = vec![];
-    for line in rules_text.split("\n").map(|s| s.trim()) {
+    for line in rules_text.split('\n').map(|s| s.trim()) {
         match marker::parse(StrTrace::new(line)) {
             Ok((_r, v)) => {
                 // println!("setting origin: {}", v.display().to_string());
