@@ -102,7 +102,6 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             type="objects",
             details_widget_name="objectDetails",
         )
-        self.object_list.rule_view_activate += self.on_rule_view_activate
         object_tabs.append_page(self.object_list.get_ref(), Gtk.Label(label="Object"))
 
         self.__switchers = [
