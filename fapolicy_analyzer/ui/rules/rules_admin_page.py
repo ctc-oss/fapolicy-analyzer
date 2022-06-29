@@ -14,7 +14,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from locale import gettext as _
 from typing import Any, Optional, Sequence
 
 from fapolicy_analyzer import Rule
@@ -25,12 +24,12 @@ from fapolicy_analyzer.ui.actions import (
     request_rules_text,
 )
 from fapolicy_analyzer.ui.rules.rules_list_view import RulesListView
+from fapolicy_analyzer.ui.rules.rules_status_info import RulesStatusInfo
 from fapolicy_analyzer.ui.rules.rules_text_view import RulesTextView
 from fapolicy_analyzer.ui.store import dispatch, get_system_feature
 from fapolicy_analyzer.ui.strings import RULES_LOAD_ERROR, RULES_TEXT_LOAD_ERROR
 from fapolicy_analyzer.ui.ui_page import UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
-from fapolicy_analyzer.util.format import f
 
 
 class RulesAdminPage(UIConnectedWidget, UIPage):
@@ -50,6 +49,9 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
             self.__list_view.get_ref(), True, True, 0
         )
 
+        self.__status_info = RulesStatusInfo()
+        self.get_object("statusInfoContainer").add(self.__status_info.get_ref())
+
         self.__rules: Sequence[Rule] = []
         self.__rules_text: str = ""
         self.__error_rules: Optional[str] = None
@@ -64,22 +66,6 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         dispatch(request_rules())
         self.__loading_text = True
         dispatch(request_rules_text())
-
-    def __render_rule_status(self):
-        view = self.get_object("statusInfo")
-        categories = [i.category for r in self.__rules for i in r.info]
-        invalid_count = sum(not r.is_valid for r in self.__rules)  # noqa: F841
-        warning_count = sum(c == "w" for c in categories)  # noqa: F841
-        info_count = sum(c == "i" for c in categories)  # noqa: F841
-        view.get_buffer().set_text(
-            f(
-                _(
-                    """{invalid_count} invalid rule found
-{warning_count} warning(s) found
-{info_count} informational message(s)"""
-                )
-            )
-        )
 
     def on_next_system(self, system: Any):
         rules_state = system.get("rules")
@@ -99,7 +85,7 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
             self.__loading_rules = False
             self.__rules = rules_state.rules
             self.__list_view.render_rules(self.__rules)
-            self.__render_rule_status()
+            self.__status_info.render_rule_status(self.__rules)
 
         if not text_state.loading and self.__error_text != text_state.error:
             self.__error_text = text_state.error
