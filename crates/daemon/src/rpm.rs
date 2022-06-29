@@ -107,9 +107,8 @@ fn parse_rpm_q(s: &str) -> Result<(String, String), Error> {
     // fapolicyd-1.1-6.el8.x86_64
     if let Some((s, _)) = s.rsplit_once('-') {
         // fapolicyd-1.1
-        match s.split_once('-') {
-            Some((lhs, rhs)) => return Ok((lhs.to_string(), rhs.to_string())),
-            _ => {}
+        if let Some((lhs, rhs)) = s.split_once('-') {
+            return Ok((lhs.to_string(), rhs.to_string()));
         }
     }
     Err(RpmEntryVersionParseFailed(s.trim().to_string()))
