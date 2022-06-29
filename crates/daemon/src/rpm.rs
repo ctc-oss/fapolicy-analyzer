@@ -14,9 +14,9 @@ use nom::character::complete::alphanumeric1;
 use nom::character::complete::digit1;
 use nom::character::complete::line_ending;
 use nom::character::complete::space1;
-use nom::combinator::iterator;
-use nom::sequence::{delimited, terminated};
-use nom::{InputIter, Parser};
+use nom::combinator::{iterator, opt};
+use nom::sequence::{delimited, preceded, terminated};
+use nom::{IResult, InputIter, Parser};
 use thiserror::Error;
 
 use crate::fapolicyd;
@@ -71,18 +71,15 @@ pub fn fapolicyd_version() -> fapolicyd::Version {
 }
 
 fn rpm_q_fapolicyd() -> Result<fapolicyd::Version, Error> {
-    // (fapolicyd, 1.1)
     let (_, v) = rpm_q("fapolicyd")?;
-    if let Some((major, minor)) = v.split_once('.') {
-        let major: u8 = major
-            .parse()
-            .map_err(|_| MalformedVersionString(v.clone()))?;
-        let minor: u8 = minor
-            .parse()
-            .map_err(|_| MalformedVersionString(v.clone()))?;
-        return Ok(fapolicyd::Version::Release { major, minor });
+    match parse_semver(&v) {
+        Ok((_, (major, minor, patch))) => Ok(fapolicyd::Version::Release {
+            major,
+            minor,
+            patch,
+        }),
+        Err(_) => Err(MalformedVersionString(v)),
     }
-    Err(MalformedVersionString(v))
 }
 
 fn rpm_q(app_name: &str) -> Result<(String, String), Error> {
@@ -96,7 +93,7 @@ fn rpm_q(app_name: &str) -> Result<(String, String), Error> {
 
     match String::from_utf8(res.stdout) {
         Ok(data) => {
-            let (lhs, rhs) = parse_rpm_q(&data)?;
+            let (lhs, rhs) = parse_rpm_q(data.trim())?;
             Ok((lhs, rhs))
         }
         Err(_) => Err(ReadRpmDumpFailed),
@@ -104,7 +101,6 @@ fn rpm_q(app_name: &str) -> Result<(String, String), Error> {
 }
 
 fn parse_rpm_q(s: &str) -> Result<(String, String), Error> {
-    // fapolicyd-1.1-6.el8.x86_64
     if let Some((s, _)) = s.rsplit_once('-') {
         // fapolicyd-1.1
         if let Some((lhs, rhs)) = s.split_once('-') {
@@ -112,6 +108,24 @@ fn parse_rpm_q(s: &str) -> Result<(String, String), Error> {
         }
     }
     Err(RpmEntryVersionParseFailed(s.trim().to_string()))
+}
+
+fn parse_semver(i: &str) -> IResult<&str, (u8, u8, u8)> {
+    nom::combinator::complete(nom::sequence::tuple((
+        terminated(digit1, tag(".")),
+        digit1,
+        opt(preceded(tag("."), digit1)),
+    )))(i)
+    .map(|(r, (major, minor, patch))| {
+        (
+            r,
+            (
+                major.parse::<u8>().unwrap(),
+                minor.parse::<u8>().unwrap(),
+                patch.unwrap_or("0").parse::<u8>().unwrap(),
+            ),
+        )
+    })
 }
 
 /// directly load the rpm database
@@ -289,5 +303,19 @@ mod tests {
         let abc = format!("{}\n{}\n{}\n{}\n", A, B, C, D);
         let files: Vec<Trust> = parse(&abc);
         assert_eq!(files.len(), 2);
+    }
+
+    #[test]
+    fn parse_full_semver() -> Result<(), Box<dyn std::error::Error>> {
+        let v = "1.1";
+        assert_eq!((1, 1, 0), parse_semver(v)?.1);
+        Ok(())
+    }
+
+    #[test]
+    fn parse_short_semver() -> Result<(), Box<dyn std::error::Error>> {
+        let v = "1.0.3";
+        assert_eq!((1, 0, 3), parse_semver(v)?.1);
+        Ok(())
     }
 }

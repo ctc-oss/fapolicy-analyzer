@@ -28,7 +28,7 @@ const USR_SHARE_ALLOWED_EXTS: [&str; 15] = [
 #[derive(Clone, Debug)]
 pub enum Version {
     Unknown,
-    Release { major: u8, minor: u8 },
+    Release { major: u8, minor: u8, patch: u8 },
 }
 
 /// send signal to fapolicyd FIFO pipe to reload the trust database
