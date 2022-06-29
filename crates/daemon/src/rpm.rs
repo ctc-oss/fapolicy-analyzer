@@ -306,16 +306,30 @@ mod tests {
     }
 
     #[test]
-    fn parse_full_semver() -> Result<(), Box<dyn std::error::Error>> {
+    fn parse_short_semver() -> Result<(), Box<dyn std::error::Error>> {
         let v = "1.1";
         assert_eq!((1, 1, 0), parse_semver(v)?.1);
+
+        let v = "0.0";
+        assert_eq!((0, 0, 0), parse_semver(v)?.1);
+
+        let v = "0.99";
+        assert_eq!((0, 99, 0), parse_semver(v)?.1);
+
         Ok(())
     }
 
     #[test]
-    fn parse_short_semver() -> Result<(), Box<dyn std::error::Error>> {
+    fn parse_full_semver() -> Result<(), Box<dyn std::error::Error>> {
         let v = "1.0.3";
         assert_eq!((1, 0, 3), parse_semver(v)?.1);
+
+        let v = "11.0.3";
+        assert_eq!((11, 0, 3), parse_semver(v)?.1);
+
+        let v = "0.9.3";
+        assert_eq!((0, 9, 3), parse_semver(v)?.1);
+
         Ok(())
     }
 }
