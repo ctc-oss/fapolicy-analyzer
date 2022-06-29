@@ -23,7 +23,7 @@ from .configs import Colors
 from .subject_list import SubjectList
 
 
-class ObjectList(SubjectList):
+class ObjectList(SubjectList, Events):
     def __init__(self):
         super().__init__()
         self.__events__ = [
@@ -72,8 +72,10 @@ class ObjectList(SubjectList):
         menu.show_all()
         return menu
 
-    def on_rule_menu_activate(self, subject):
-        self.rule_view_activate(subject)
+    def on_rule_menu_activate(self, *args):
+        model, path = self.get_object("treeView").get_selection().get_selected_rows()
+        rule_id = model[0][7]
+        self.rule_view_activate(rule_id = rule_id)
 
     def load_store(self, obj, **kwargs):
         if len(obj) > 0:
