@@ -60,8 +60,8 @@ pub fn ensure_rpm_exists() -> Result<(), Error> {
         .map_err(|_| RpmCommandNotFound)
 }
 
-pub fn get_fapolicyd_version() -> fapolicyd::Version {
-    match parse_fapolicyd_version() {
+pub fn fapolicyd_version() -> fapolicyd::Version {
+    match rpm_q_fapolicyd() {
         Ok(v) => v,
         Err(e) => {
             eprintln!("Unable to detect fapolicyd version: {:?}", e);
@@ -70,9 +70,9 @@ pub fn get_fapolicyd_version() -> fapolicyd::Version {
     }
 }
 
-fn parse_fapolicyd_version() -> Result<fapolicyd::Version, Error> {
+fn rpm_q_fapolicyd() -> Result<fapolicyd::Version, Error> {
     // fapolicyd-1.1
-    let s = get_application_version("fapolicyd")?;
+    let s = rpm_q("fapolicyd")?;
     if let Some((major, minor)) = s.split_once('.') {
         let major: u8 = major
             .parse()
@@ -85,7 +85,7 @@ fn parse_fapolicyd_version() -> Result<fapolicyd::Version, Error> {
     Err(MalformedVersionString(s))
 }
 
-pub fn get_application_version(app_name: &str) -> Result<String, Error> {
+fn rpm_q(app_name: &str) -> Result<String, Error> {
     ensure_rpm_exists()?;
 
     let args = vec!["-q", app_name];
