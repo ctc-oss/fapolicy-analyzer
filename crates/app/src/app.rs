@@ -12,9 +12,10 @@ use serde::Serialize;
 
 use fapolicy_analyzer::users::{read_groups, read_users, Group, User};
 use fapolicy_rules::db::DB as RulesDB;
+use fapolicy_rules::ops::Changeset as RuleChanges;
 use fapolicy_rules::read::load_rules_db;
 use fapolicy_trust::db::DB as TrustDB;
-use fapolicy_trust::ops::Changeset;
+use fapolicy_trust::ops::Changeset as TrustChanges;
 use fapolicy_trust::read::{check_trust_db, load_trust_db};
 
 use crate::cfg::All;
@@ -61,14 +62,25 @@ impl State {
         Ok(State { trust_db, ..state })
     }
 
-    /// Apply a Changeset to this state, results in a new immutable state
-    pub fn apply_trust_changes(&self, changes: Changeset) -> Self {
-        println!("applying changeset to current state...");
+    /// Apply a trust changeset to this state, results in a new immutable state
+    pub fn apply_trust_changes(&self, changes: TrustChanges) -> Self {
         let modified = changes.apply(self.trust_db.clone());
         Self {
             config: self.config.clone(),
             trust_db: modified,
             rules_db: self.rules_db.clone(),
+            users: self.users.clone(),
+            groups: self.groups.clone(),
+        }
+    }
+
+    /// Apply a rule changeset to this state, results in a new immutable state
+    pub fn apply_rule_changes(&self, changes: RuleChanges) -> Self {
+        let modified = changes.apply();
+        Self {
+            config: self.config.clone(),
+            trust_db: self.trust_db.clone(),
+            rules_db: modified,
             users: self.users.clone(),
             groups: self.groups.clone(),
         }

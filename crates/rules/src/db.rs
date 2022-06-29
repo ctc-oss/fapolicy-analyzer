@@ -8,6 +8,7 @@
 
 use std::collections::btree_map::Iter;
 use std::collections::{BTreeMap, HashMap};
+use std::fmt::{Display, Formatter};
 
 use crate::Rule;
 
@@ -20,6 +21,16 @@ pub enum RuleDef {
     Valid(Rule),
     ValidWithWarning(Rule, String),
     Invalid { text: String, error: String },
+}
+
+impl Display for RuleDef {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let txt = match self {
+            RuleDef::Valid(r) | RuleDef::ValidWithWarning(r, _) => r.to_string(),
+            RuleDef::Invalid { text, .. } => text.clone(),
+        };
+        f.write_fmt(format_args!("{}", txt))
+    }
 }
 
 /// Rules Database

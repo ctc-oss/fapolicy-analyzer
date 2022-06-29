@@ -14,8 +14,8 @@ make run
 ## Requirements
 
 - Python 3.6
-- Rust 1.54
-- fapolicyd 1.0
+- Rust 1.58.1
+- fapolicyd 1.x
 
 ### fapolicyd configuration
 
