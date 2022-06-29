@@ -19,10 +19,14 @@ use nom::sequence::{delimited, terminated};
 use nom::{InputIter, Parser};
 use thiserror::Error;
 
+use crate::fapolicyd;
 use fapolicy_api::trust::Trust;
 
 use crate::fapolicyd::keep_entry;
-use crate::rpm::Error::{ReadRpmDumpFailed, RpmCommandNotFound, RpmDumpFailed};
+use crate::rpm::Error::{
+    MalformedVersionString, ReadRpmDumpFailed, RpmCommandNotFound, RpmDumpFailed, RpmEntryNotFound,
+    RpmEntryVersionParseFailed,
+};
 
 #[derive(Error, Debug)]
 pub enum Error {
@@ -32,6 +36,12 @@ pub enum Error {
     RpmDumpFailed(io::Error),
     #[error("read rpm dump failed")]
     ReadRpmDumpFailed,
+    #[error("application not found")]
+    RpmEntryNotFound,
+    #[error("could not parse {0}")]
+    RpmEntryVersionParseFailed(String),
+    #[error("could not parse version string {0}")]
+    MalformedVersionString(String),
 }
 
 #[derive(Debug)]
@@ -41,14 +51,74 @@ struct RpmDbEntry {
     pub hash: Option<String>,
 }
 
+pub fn ensure_rpm_exists() -> Result<(), Error> {
+    // we just check the version to ensure rpm is there
+    Command::new("rpm")
+        .arg("version")
+        .output()
+        .map(|_| ())
+        .map_err(|_| RpmCommandNotFound)
+}
+
+pub fn get_fapolicyd_version() -> fapolicyd::Version {
+    match parse_fapolicyd_version() {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("Unable to detect fapolicyd version: {:?}", e);
+            fapolicyd::Version::Unknown
+        }
+    }
+}
+
+fn parse_fapolicyd_version() -> Result<fapolicyd::Version, Error> {
+    // fapolicyd-1.1
+    let s = get_application_version("fapolicyd")?;
+    if let Some((major, minor)) = s.split_once('.') {
+        let major: u8 = major
+            .parse()
+            .map_err(|_| MalformedVersionString(s.clone()))?;
+        let minor: u8 = minor
+            .parse()
+            .map_err(|_| MalformedVersionString(s.clone()))?;
+        return Ok(fapolicyd::Version::Release { major, minor });
+    }
+    Err(MalformedVersionString(s))
+}
+
+pub fn get_application_version(app_name: &str) -> Result<String, Error> {
+    ensure_rpm_exists()?;
+
+    let args = vec!["-q", app_name];
+    let res = Command::new("rpm")
+        .args(args)
+        .output()
+        .map_err(|_| RpmEntryNotFound)?;
+
+    match String::from_utf8(res.stdout) {
+        Ok(data) => {
+            let (_, rhs) = parse_rpm_q(&data)?;
+            Ok(rhs)
+        }
+        Err(_) => Err(ReadRpmDumpFailed),
+    }
+}
+
+fn parse_rpm_q(s: &str) -> Result<(String, String), Error> {
+    // fapolicyd-1.1-6.el8.x86_64
+    if let Some((s, _)) = s.rsplit_once('-') {
+        // fapolicyd-1.1
+        match s.split_once('-') {
+            Some((lhs, rhs)) => return Ok((lhs.to_string(), rhs.to_string())),
+            _ => {}
+        }
+    }
+    Err(RpmEntryVersionParseFailed(s.trim().to_string()))
+}
+
 /// directly load the rpm database
 /// used to analyze the fapolicyd trust db for out of sync issues
 pub fn load_system_trust(rpmdb: &str) -> Result<Vec<Trust>, Error> {
-    // we just check the version to ensure rpm is there
-    let _rpm_version = Command::new("rpm")
-        .arg("version")
-        .output()
-        .map_err(|_| RpmCommandNotFound)?;
+    ensure_rpm_exists()?;
 
     let args = vec!["-qa", "--dump", "--dbpath", rpmdb];
     let res = Command::new("rpm")
