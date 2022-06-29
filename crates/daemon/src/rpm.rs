@@ -71,21 +71,21 @@ pub fn fapolicyd_version() -> fapolicyd::Version {
 }
 
 fn rpm_q_fapolicyd() -> Result<fapolicyd::Version, Error> {
-    // fapolicyd-1.1
-    let s = rpm_q("fapolicyd")?;
-    if let Some((major, minor)) = s.split_once('.') {
+    // (fapolicyd, 1.1)
+    let (_, v) = rpm_q("fapolicyd")?;
+    if let Some((major, minor)) = v.split_once('.') {
         let major: u8 = major
             .parse()
-            .map_err(|_| MalformedVersionString(s.clone()))?;
+            .map_err(|_| MalformedVersionString(v.clone()))?;
         let minor: u8 = minor
             .parse()
-            .map_err(|_| MalformedVersionString(s.clone()))?;
+            .map_err(|_| MalformedVersionString(v.clone()))?;
         return Ok(fapolicyd::Version::Release { major, minor });
     }
-    Err(MalformedVersionString(s))
+    Err(MalformedVersionString(v))
 }
 
-fn rpm_q(app_name: &str) -> Result<String, Error> {
+fn rpm_q(app_name: &str) -> Result<(String, String), Error> {
     ensure_rpm_exists()?;
 
     let args = vec!["-q", app_name];
@@ -96,8 +96,8 @@ fn rpm_q(app_name: &str) -> Result<String, Error> {
 
     match String::from_utf8(res.stdout) {
         Ok(data) => {
-            let (_, rhs) = parse_rpm_q(&data)?;
-            Ok(rhs)
+            let (lhs, rhs) = parse_rpm_q(&data)?;
+            Ok((lhs, rhs))
         }
         Err(_) => Err(ReadRpmDumpFailed),
     }
