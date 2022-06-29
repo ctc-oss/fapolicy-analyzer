@@ -64,8 +64,6 @@ def router(selection: ANALYZER_SELECTION, data: Any = None) -> UIPage:
 class MainWindow(UIConnectedWidget):
     def __init__(self):
         super().__init__(get_system_feature(), on_next=self.on_next_system)
-        self.__events__ = ["rule_view_activate",]
-        Events.__init__(self)
         self.strSessionFilename = None
         self.window = self.get_ref()
         self.windowTopLevel = self.window.get_toplevel()
@@ -356,6 +354,7 @@ class MainWindow(UIConnectedWidget):
         if response == Gtk.ResponseType.OK and path.isfile((fcd.get_filename())):
             file = fcd.get_filename()
             page = router(ANALYZER_SELECTION.ANALYZE_FROM_AUDIT, file)
+            page.object_list.rule_view_activate += self.on_policyMenu_to_rulesMenu
             height = self.get_object("mainWindow").get_size()[1]
             page.get_object("botBox").set_property("height_request", int(height * Sizing.POLICY_BOTTOM_BOX))
             self.__pack_main_content(page)
@@ -365,6 +364,14 @@ class MainWindow(UIConnectedWidget):
     def on_trustDbMenu_activate(self, menuitem, *args):
         self.__pack_main_content(router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN))
         self.__set_trustDbMenu_sensitive(False)
+
+    def on_policyMenu_to_rulesMenu(self, *args, **kwargs):
+        rid = kwargs["rule_id"] if "rule_id" in kwargs.keys() else None
+        rulesPage = router(ANALYZER_SELECTION.RULES_ADMIN)
+        self.__pack_main_content(rulesPage)
+        self.__set_trustDbMenu_sensitive(True)
+        
+        self.on_rulesAdminMenu_activate()
 
     def on_rulesAdminMenu_activate(self, *args):
         self.__pack_main_content(router(ANALYZER_SELECTION.RULES_ADMIN))
