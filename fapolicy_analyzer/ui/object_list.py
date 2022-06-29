@@ -75,7 +75,7 @@ class ObjectList(SubjectList, Events):
     def on_rule_menu_activate(self, *args):
         model, path = self.get_object("treeView").get_selection().get_selected_rows()
         rule_id = model[0][7]
-        self.rule_view_activate(rule_id = rule_id)
+        self.rule_view_activate(rule_id=rule_id)
 
     def load_store(self, obj, **kwargs):
         if len(obj) > 0:
