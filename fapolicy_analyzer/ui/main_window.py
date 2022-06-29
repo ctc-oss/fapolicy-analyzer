@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from events import Events
 import logging
 from locale import gettext as _
 from os import getenv, geteuid, path
@@ -364,10 +363,9 @@ class MainWindow(UIConnectedWidget):
     def on_policyMenu_to_rulesMenu(self, *args, **kwargs):
         rid = kwargs["rule_id"] if "rule_id" in kwargs.keys() else None
         rulesPage = router(ANALYZER_SELECTION.RULES_ADMIN)
+        rulesPage.highlight_row_from_data(rid)
         self.__pack_main_content(rulesPage)
         self.__set_trustDbMenu_sensitive(True)
-        
-        self.on_rulesAdminMenu_activate()
 
     def on_rulesAdminMenu_activate(self, *args):
         self.__pack_main_content(router(ANALYZER_SELECTION.RULES_ADMIN))
