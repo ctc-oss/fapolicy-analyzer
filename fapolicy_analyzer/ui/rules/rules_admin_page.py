@@ -83,6 +83,7 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
 
     def highlight_row_from_data(self, data: Any):
         row = self.__list_view.find_selected_row_by_data(data, 1)
+        self.__list_view.treeView.get_selection().set_select_function(lambda *_: True if _[2] == row else False, row)
         self.__list_view.treeView.get_selection().select_path(row)
 
     def on_next_system(self, system: Any):
