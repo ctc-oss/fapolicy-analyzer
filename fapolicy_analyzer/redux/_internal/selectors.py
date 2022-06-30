@@ -27,8 +27,8 @@ import rx.operators as op
 from rx import Observable, pipe
 from rx.subject import ReplaySubject
 
-T1 = TypeVar('T1')
-T2 = TypeVar('T2')
+T1 = TypeVar("T1")
+T2 = TypeVar("T2")
 Mapper = Callable[[T1], T2]
 
 

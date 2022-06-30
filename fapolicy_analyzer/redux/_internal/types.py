@@ -66,7 +66,7 @@ class ReduxFeatureModule(NamedTuple):
     epic: Optional[Epic]
     """Epic that handles module specific asynchronous operations."""
 
-    dependencies: Iterable['ReduxFeatureModule']
+    dependencies: Iterable["ReduxFeatureModule"]
     """Dependencies on other feature modules"""
 
 

@@ -84,7 +84,7 @@ def _combine_reducers(items: Iterable[Tuple[str, Reducer]],
     for key, value in items:
         current = result.get(key)
         updated = value(current, action)
-        if not current is updated:
+        if current is not updated:
             if not mutable:
                 mutable = dict(result)
                 result = mutable

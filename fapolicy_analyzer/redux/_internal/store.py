@@ -219,7 +219,7 @@ def create_store(initial_state: Optional[ReduxRootState] = None) -> ReduxRootSto
 
         """
         module_id = select_id(module)
-        if not module_id in modules:
+        if module_id not in modules:
             modules[module_id] = module
             for dep in select_dependencies(module):
                 _add_feature_module(dep)
