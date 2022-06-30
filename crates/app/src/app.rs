@@ -43,7 +43,7 @@ impl State {
             rules_db: RulesDB::default(),
             users: vec![],
             groups: vec![],
-            daemon_version: Version::Unknown,
+            daemon_version: fapolicy_daemon::version(),
         }
     }
 
