@@ -15,8 +15,11 @@
 
 from fapolicy_analyzer import *
 
-
+# fapolicyd_version() returns:
+# - None when version cannot be detected
+# - String containing version otherwise
 v = fapolicyd_version()
+
 if v:
     print(f"v{v}")
 else:
