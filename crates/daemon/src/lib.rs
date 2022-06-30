@@ -11,6 +11,7 @@ pub mod fapolicyd;
 pub use fapolicyd::reload_databases;
 
 pub mod rpm;
+pub use rpm::fapolicyd_version as version;
 
 #[cfg(feature = "systemd")]
 pub mod svc;

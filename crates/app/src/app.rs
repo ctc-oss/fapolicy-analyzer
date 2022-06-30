@@ -11,6 +11,7 @@ use serde::Deserialize;
 use serde::Serialize;
 
 use fapolicy_analyzer::users::{read_groups, read_users, Group, User};
+use fapolicy_daemon::fapolicyd::Version;
 use fapolicy_rules::db::DB as RulesDB;
 use fapolicy_rules::ops::Changeset as RuleChanges;
 use fapolicy_rules::read::load_rules_db;
@@ -31,6 +32,7 @@ pub struct State {
     pub rules_db: RulesDB,
     pub users: Vec<User>,
     pub groups: Vec<Group>,
+    pub daemon_version: Version,
 }
 
 impl State {
@@ -41,6 +43,7 @@ impl State {
             rules_db: RulesDB::default(),
             users: vec![],
             groups: vec![],
+            daemon_version: fapolicy_daemon::version(),
         }
     }
 
@@ -53,6 +56,7 @@ impl State {
             rules_db,
             users: read_users()?,
             groups: read_groups()?,
+            daemon_version: fapolicy_daemon::version(),
         })
     }
 
@@ -71,6 +75,7 @@ impl State {
             rules_db: self.rules_db.clone(),
             users: self.users.clone(),
             groups: self.groups.clone(),
+            daemon_version: self.daemon_version.clone(),
         }
     }
 
@@ -83,6 +88,7 @@ impl State {
             rules_db: modified,
             users: self.users.clone(),
             groups: self.groups.clone(),
+            daemon_version: self.daemon_version.clone(),
         }
     }
 }

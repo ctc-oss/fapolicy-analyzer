@@ -14,15 +14,19 @@ use nom::character::complete::alphanumeric1;
 use nom::character::complete::digit1;
 use nom::character::complete::line_ending;
 use nom::character::complete::space1;
-use nom::combinator::iterator;
-use nom::sequence::{delimited, terminated};
-use nom::{InputIter, Parser};
+use nom::combinator::{iterator, opt};
+use nom::sequence::{delimited, preceded, terminated};
+use nom::{IResult, InputIter, Parser};
 use thiserror::Error;
 
+use crate::fapolicyd;
 use fapolicy_api::trust::Trust;
 
 use crate::fapolicyd::keep_entry;
-use crate::rpm::Error::{ReadRpmDumpFailed, RpmCommandNotFound, RpmDumpFailed};
+use crate::rpm::Error::{
+    MalformedVersionString, ReadRpmDumpFailed, RpmCommandNotFound, RpmDumpFailed, RpmEntryNotFound,
+    RpmEntryVersionParseFailed,
+};
 
 #[derive(Error, Debug)]
 pub enum Error {
@@ -32,6 +36,12 @@ pub enum Error {
     RpmDumpFailed(io::Error),
     #[error("read rpm dump failed")]
     ReadRpmDumpFailed,
+    #[error("application not found")]
+    RpmEntryNotFound,
+    #[error("could not parse {0}")]
+    RpmEntryVersionParseFailed(String),
+    #[error("could not parse version string {0}")]
+    MalformedVersionString(String),
 }
 
 #[derive(Debug)]
@@ -41,14 +51,88 @@ struct RpmDbEntry {
     pub hash: Option<String>,
 }
 
+pub fn ensure_rpm_exists() -> Result<(), Error> {
+    // we just check the version to ensure rpm is there
+    Command::new("rpm")
+        .arg("version")
+        .output()
+        .map(|_| ())
+        .map_err(|_| RpmCommandNotFound)
+}
+
+pub fn fapolicyd_version() -> fapolicyd::Version {
+    match rpm_q_fapolicyd() {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("Unable to detect fapolicyd version: {:?}", e);
+            fapolicyd::Version::Unknown
+        }
+    }
+}
+
+fn rpm_q_fapolicyd() -> Result<fapolicyd::Version, Error> {
+    let (_, v) = rpm_q("fapolicyd")?;
+    match parse_semver(&v) {
+        Ok((_, (major, minor, patch))) => Ok(fapolicyd::Version::Release {
+            major,
+            minor,
+            patch,
+        }),
+        Err(_) => Err(MalformedVersionString(v)),
+    }
+}
+
+fn rpm_q(app_name: &str) -> Result<(String, String), Error> {
+    ensure_rpm_exists()?;
+
+    let args = vec!["-q", app_name];
+    let res = Command::new("rpm")
+        .args(args)
+        .output()
+        .map_err(|_| RpmEntryNotFound)?;
+
+    match String::from_utf8(res.stdout) {
+        Ok(data) => {
+            let (lhs, rhs) = parse_rpm_q(data.trim())?;
+            Ok((lhs, rhs))
+        }
+        Err(_) => Err(ReadRpmDumpFailed),
+    }
+}
+
+fn parse_rpm_q(s: &str) -> Result<(String, String), Error> {
+    if let Some((s, _)) = s.rsplit_once('-') {
+        if let Some((lhs, rhs)) = s.split_once('-') {
+            return Ok((lhs.to_string(), rhs.to_string()));
+        }
+    }
+    Err(RpmEntryVersionParseFailed(s.trim().to_string()))
+}
+
+// fapolicyd has been observed to have two and three part version numbers
+// the parser is constructed to allow the third part to be optional, defaulting to 0
+fn parse_semver(i: &str) -> IResult<&str, (u8, u8, u8)> {
+    nom::combinator::complete(nom::sequence::tuple((
+        terminated(digit1, tag(".")),
+        digit1,
+        opt(preceded(tag("."), digit1)),
+    )))(i)
+    .map(|(r, (major, minor, patch))| {
+        (
+            r,
+            (
+                major.parse::<u8>().unwrap(),
+                minor.parse::<u8>().unwrap(),
+                patch.unwrap_or("0").parse::<u8>().unwrap(),
+            ),
+        )
+    })
+}
+
 /// directly load the rpm database
 /// used to analyze the fapolicyd trust db for out of sync issues
 pub fn load_system_trust(rpmdb: &str) -> Result<Vec<Trust>, Error> {
-    // we just check the version to ensure rpm is there
-    let _rpm_version = Command::new("rpm")
-        .arg("version")
-        .output()
-        .map_err(|_| RpmCommandNotFound)?;
+    ensure_rpm_exists()?;
 
     let args = vec!["-qa", "--dump", "--dbpath", rpmdb];
     let res = Command::new("rpm")
@@ -220,5 +304,54 @@ mod tests {
         let abc = format!("{}\n{}\n{}\n{}\n", A, B, C, D);
         let files: Vec<Trust> = parse(&abc);
         assert_eq!(files.len(), 2);
+    }
+
+    #[test]
+    fn test_parse_semver() -> Result<(), Box<dyn std::error::Error>> {
+        // 2
+        let v = "1.1";
+        assert_eq!((1, 1, 0), parse_semver(v)?.1);
+
+        let v = "0.0";
+        assert_eq!((0, 0, 0), parse_semver(v)?.1);
+
+        let v = "0.99";
+        assert_eq!((0, 99, 0), parse_semver(v)?.1);
+
+        // 3
+        let v = "1.0.3";
+        assert_eq!((1, 0, 3), parse_semver(v)?.1);
+
+        let v = "11.0.3";
+        assert_eq!((11, 0, 3), parse_semver(v)?.1);
+
+        let v = "0.9.3";
+        assert_eq!((0, 9, 3), parse_semver(v)?.1);
+
+        Ok(())
+    }
+
+    #[test]
+    // test parse of 2 and 3 part version strings for both fc and el
+    fn test_parse_rpm_q() -> Result<(), Box<dyn std::error::Error>> {
+        assert_eq!(
+            ("fapolicyd".to_string(), "1.1".to_string()),
+            parse_rpm_q("fapolicyd-1.1-6.el8.x86_64")?
+        );
+        assert_eq!(
+            ("fapolicyd".to_string(), "1.1.1".to_string()),
+            parse_rpm_q("fapolicyd-1.1.1-6.el8.x86_64")?
+        );
+
+        assert_eq!(
+            ("fapolicyd".to_string(), "1.0.3".to_string()),
+            parse_rpm_q("fapolicyd-1.0.3-2.fc34.x86_64")?
+        );
+        assert_eq!(
+            ("fapolicyd".to_string(), "1.0".to_string()),
+            parse_rpm_q("fapolicyd-1.0-2.fc34.x86_64")?
+        );
+
+        Ok(())
     }
 }

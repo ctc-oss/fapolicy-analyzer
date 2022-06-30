@@ -25,6 +25,12 @@ const USR_SHARE_ALLOWED_EXTS: [&str; 15] = [
     "elc",
 ];
 
+#[derive(Clone, Debug)]
+pub enum Version {
+    Unknown,
+    Release { major: u8, minor: u8, patch: u8 },
+}
+
 /// send signal to fapolicyd FIFO pipe to reload the trust database
 pub fn reload_databases() -> Result<(), Error> {
     let mut fifo = std::fs::OpenOptions::new()
