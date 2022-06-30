@@ -33,7 +33,7 @@ from fapolicy_analyzer.ui.strings import (
     GET_USERS_ERROR_MSG,
     PARSE_EVENT_LOG_ERROR_MSG,
 )
-from redux import Action
+from fapolicy_analyzer.redux import Action
 from rx.subject import Subject
 
 from mocks import mock_events, mock_groups, mock_log, mock_System, mock_users

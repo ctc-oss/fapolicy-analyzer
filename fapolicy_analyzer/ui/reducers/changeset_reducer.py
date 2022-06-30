@@ -21,7 +21,7 @@ from fapolicy_analyzer.ui.actions import (
     ERROR_APPLY_CHANGESETS,
 )
 from fapolicy_analyzer.ui.changeset_wrapper import Changeset
-from redux import Action, Reducer, handle_actions
+from fapolicy_analyzer.redux import Action, Reducer, handle_actions
 
 
 class ChangesetState(NamedTuple):

@@ -25,7 +25,7 @@ from fapolicy_analyzer.ui.actions import (
     RECEIVED_ANCILLARY_TRUST,
     REQUEST_ANCILLARY_TRUST,
 )
-from redux import Action, Reducer, handle_actions
+from fapolicy_analyzer.redux import Action, Reducer, handle_actions
 
 
 class TrustState(NamedTuple):

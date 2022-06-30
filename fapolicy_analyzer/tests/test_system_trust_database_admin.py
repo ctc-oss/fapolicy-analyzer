@@ -24,7 +24,7 @@ from unittest.mock import MagicMock
 from callee import Attrs, InstanceOf
 from callee.strings import Regex
 from gi.repository import Gtk
-from redux import Action
+from fapolicy_analyzer.redux import Action
 from rx.subject import Subject
 from fapolicy_analyzer.ui.actions import ADD_NOTIFICATION, NotificationType
 from fapolicy_analyzer.ui.configs import Colors

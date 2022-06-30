@@ -17,7 +17,7 @@ from typing import Any, NamedTuple, Optional, Sequence, cast
 
 from fapolicy_analyzer import EventLog
 from fapolicy_analyzer.ui.actions import ERROR_EVENTS, RECEIVED_EVENTS, REQUEST_EVENTS
-from redux import Action, Reducer, handle_actions
+from fapolicy_analyzer.redux import Action, Reducer, handle_actions
 
 
 class EventState(NamedTuple):

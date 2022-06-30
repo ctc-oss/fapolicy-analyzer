@@ -34,7 +34,7 @@ from fapolicy_analyzer.ui.strings import (
     RULES_TEXT_LOAD_ERROR,
 )
 from mocks import mock_rule, mock_System
-from redux import Action
+from fapolicy_analyzer.redux import Action
 from rx.subject import Subject
 
 gi.require_version("Gtk", "3.0")
