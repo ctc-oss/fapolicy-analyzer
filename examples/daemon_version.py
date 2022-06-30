@@ -19,8 +19,4 @@ from fapolicy_analyzer import *
 # - None when version cannot be detected
 # - String containing version otherwise
 v = fapolicyd_version()
-
-if v:
-    print(f"v{v}")
-else:
-    print(f"unknown fapolicyd version")
+print(f"fapolicyd version: {v if v else 'Unknown'}")
