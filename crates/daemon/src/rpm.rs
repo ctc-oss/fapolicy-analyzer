@@ -102,7 +102,6 @@ fn rpm_q(app_name: &str) -> Result<(String, String), Error> {
 
 fn parse_rpm_q(s: &str) -> Result<(String, String), Error> {
     if let Some((s, _)) = s.rsplit_once('-') {
-        // fapolicyd-1.1
         if let Some((lhs, rhs)) = s.split_once('-') {
             return Ok((lhs.to_string(), rhs.to_string()));
         }
@@ -110,6 +109,8 @@ fn parse_rpm_q(s: &str) -> Result<(String, String), Error> {
     Err(RpmEntryVersionParseFailed(s.trim().to_string()))
 }
 
+// fapolicyd has been observed to have two and three part version numbers
+// the parser is constructed to allow the third part to be optional, defaulting to 0
 fn parse_semver(i: &str) -> IResult<&str, (u8, u8, u8)> {
     nom::combinator::complete(nom::sequence::tuple((
         terminated(digit1, tag(".")),
@@ -306,7 +307,8 @@ mod tests {
     }
 
     #[test]
-    fn parse_short_semver() -> Result<(), Box<dyn std::error::Error>> {
+    fn test_parse_semver() -> Result<(), Box<dyn std::error::Error>> {
+        // 2
         let v = "1.1";
         assert_eq!((1, 1, 0), parse_semver(v)?.1);
 
@@ -316,11 +318,7 @@ mod tests {
         let v = "0.99";
         assert_eq!((0, 99, 0), parse_semver(v)?.1);
 
-        Ok(())
-    }
-
-    #[test]
-    fn parse_full_semver() -> Result<(), Box<dyn std::error::Error>> {
+        // 3
         let v = "1.0.3";
         assert_eq!((1, 0, 3), parse_semver(v)?.1);
 
@@ -329,6 +327,30 @@ mod tests {
 
         let v = "0.9.3";
         assert_eq!((0, 9, 3), parse_semver(v)?.1);
+
+        Ok(())
+    }
+
+    #[test]
+    // test parse of 2 and 3 part version strings for both fc and el
+    fn test_parse_rpm_q() -> Result<(), Box<dyn std::error::Error>> {
+        assert_eq!(
+            ("fapolicyd".to_string(), "1.1".to_string()),
+            parse_rpm_q("fapolicyd-1.1-6.el8.x86_64")?
+        );
+        assert_eq!(
+            ("fapolicyd".to_string(), "1.1.1".to_string()),
+            parse_rpm_q("fapolicyd-1.1.1-6.el8.x86_64")?
+        );
+
+        assert_eq!(
+            ("fapolicyd".to_string(), "1.0.3".to_string()),
+            parse_rpm_q("fapolicyd-1.0.3-2.fc34.x86_64")?
+        );
+        assert_eq!(
+            ("fapolicyd".to_string(), "1.0".to_string()),
+            parse_rpm_q("fapolicyd-1.0-2.fc34.x86_64")?
+        );
 
         Ok(())
     }
