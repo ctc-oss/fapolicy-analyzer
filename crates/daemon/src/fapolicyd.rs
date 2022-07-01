@@ -16,7 +16,7 @@ use crate::error::Error::FapolicydReloadFail;
 pub const TRUST_DB_PATH: &str = "/var/lib/fapolicyd";
 pub const TRUST_DB_NAME: &str = "trust.db";
 pub const TRUST_FILE_PATH: &str = "/etc/fapolicyd/fapolicyd.trust";
-pub const RULES_FILE_PATH: &str = "/etc/fapolicyd/fapolicyd.rules";
+pub const RULES_FILE_PATH: &str = "/etc/fapolicyd/rules.d";
 pub const RPM_DB_PATH: &str = "/var/lib/rpm";
 pub const FIFO_PIPE: &str = "/run/fapolicyd/fapolicyd.fifo";
 
@@ -24,6 +24,12 @@ const USR_SHARE_ALLOWED_EXTS: [&str; 15] = [
     "pyc", "pyo", "py", "rb", "pl", "stp", "js", "jar", "m4", "php", "el", "pm", "lua", "class",
     "elc",
 ];
+
+#[derive(Clone, Debug)]
+pub enum Version {
+    Unknown,
+    Release { major: u8, minor: u8, patch: u8 },
+}
 
 /// send signal to fapolicyd FIFO pipe to reload the trust database
 pub fn reload_databases() -> Result<(), Error> {

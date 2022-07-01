@@ -7,6 +7,7 @@
  */
 
 use crate::system::PySystem;
+use fapolicy_daemon::fapolicyd::Version;
 use fapolicy_daemon::svc::Handle;
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
@@ -99,6 +100,18 @@ fn stop_fapolicyd() -> PyResult<()> {
 }
 
 #[pyfunction]
+fn fapolicyd_version() -> Option<String> {
+    match fapolicy_daemon::version() {
+        Version::Unknown => None,
+        Version::Release {
+            major,
+            minor,
+            patch,
+        } => Some(format!("{}.{}.{}", major, minor, patch)),
+    }
+}
+
+#[pyfunction]
 fn rollback_fapolicyd(to: PySystem) -> PyResult<()> {
     stop_fapolicyd()
         .and_then(|_| to.deploy_only())
@@ -128,6 +141,7 @@ fn wait_for_daemon_stop() -> PyResult<()> {
 
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyHandle>()?;
+    m.add_function(wrap_pyfunction!(fapolicyd_version, m)?)?;
     m.add_function(wrap_pyfunction!(start_fapolicyd, m)?)?;
     m.add_function(wrap_pyfunction!(stop_fapolicyd, m)?)?;
     m.add_function(wrap_pyfunction!(rollback_fapolicyd, m)?)?;

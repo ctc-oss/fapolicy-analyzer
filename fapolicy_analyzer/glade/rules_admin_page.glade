@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.22.1 -->
+<!-- Generated with glade 3.22.2 -->
 <!--
   Copyright Concurrent Technologies Corporation 2022
 
@@ -18,113 +18,94 @@
 -->
 <interface>
   <requires lib="gtk+" version="3.22"/>
-  <object class="GtkNotebook" id="rulesAdminPage">
+  <object class="GtkPaned" id="rulesAdminPage">
     <property name="visible">True</property>
-    <property name="can-focus">True</property>
+    <property name="can_focus">True</property>
+    <property name="orientation">vertical</property>
     <child>
-      <object class="GtkBox">
+      <object class="GtkFrame">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="orientation">vertical</property>
+        <property name="can_focus">False</property>
+        <property name="label_xalign">0</property>
+        <property name="label_yalign">0</property>
+        <property name="shadow_type">in</property>
         <child>
-          <object class="GtkBox">
+          <object class="GtkNotebook">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="orientation">vertical</property>
+            <property name="can_focus">True</property>
             <child>
               <object class="GtkBox" id="guidedEditorContent">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
+                <property name="can_focus">False</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <placeholder/>
+                </child>
+              </object>
+            </child>
+            <child type="tab">
+              <object class="GtkLabel" id="tableView">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Guided Editor</property>
+              </object>
+              <packing>
+                <property name="tab_fill">False</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkBox" id="textEditorContent">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <placeholder/>
                 </child>
               </object>
               <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkFrame">
-                <property name="height-request">100</property>
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="margin-left">5</property>
-                <property name="margin-right">5</property>
-                <property name="margin-top">5</property>
-                <property name="margin-bottom">5</property>
-                <property name="label-xalign">0</property>
-                <property name="shadow-type">in</property>
-                <child>
-                  <object class="GtkAlignment">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="left-padding">12</property>
-                    <child>
-                      <object class="GtkTextView" id="statusInfo">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child type="label">
-                  <object class="GtkLabel">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Status Information</property>
-                  </object>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
                 <property name="position">1</property>
               </packing>
             </child>
+            <child type="tab">
+              <object class="GtkLabel" id="textView">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Text Editor</property>
+              </object>
+              <packing>
+                <property name="position">1</property>
+                <property name="tab_fill">False</property>
+              </packing>
+            </child>
           </object>
-          <packing>
-            <property name="expand">True</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
         </child>
-      </object>
-    </child>
-    <child type="tab">
-      <object class="GtkLabel" id="tableView">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="label" translatable="yes">Guided Editor</property>
-      </object>
-      <packing>
-        <property name="tab-fill">False</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkBox" id="textEditorContent">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="orientation">vertical</property>
-        <child>
+        <child type="label_item">
           <placeholder/>
         </child>
       </object>
       <packing>
-        <property name="position">1</property>
+        <property name="resize">True</property>
+        <property name="shrink">False</property>
       </packing>
     </child>
-    <child type="tab">
-      <object class="GtkLabel" id="textView">
+    <child>
+      <object class="GtkFrame" id="statusInfoContainer">
+        <property name="height_request">125</property>
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="label" translatable="yes">Text Editor</property>
+        <property name="can_focus">False</property>
+        <property name="label_xalign">0</property>
+        <property name="label_yalign">0</property>
+        <property name="shadow_type">in</property>
+        <child>
+          <placeholder/>
+        </child>
+        <child type="label_item">
+          <placeholder/>
+        </child>
       </object>
       <packing>
-        <property name="position">1</property>
-        <property name="tab-fill">False</property>
+        <property name="resize">False</property>
+        <property name="shrink">True</property>
       </packing>
     </child>
   </object>

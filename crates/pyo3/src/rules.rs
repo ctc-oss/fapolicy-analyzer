@@ -7,6 +7,12 @@
  */
 
 use pyo3::prelude::*;
+use pyo3::PyObjectProtocol;
+
+use fapolicy_rules::db::{RuleDef, DB};
+use fapolicy_rules::ops::Changeset;
+use fapolicy_rules::parser::parse::StrTrace;
+use fapolicy_rules::parser::rule::parse_with_error_message;
 
 #[pyclass(module = "rules", name = "Rule")]
 #[derive(Clone)]
@@ -19,7 +25,7 @@ pub struct PyRule {
 }
 
 impl PyRule {
-    pub fn new(
+    pub(crate) fn new(
         id: usize,
         text: String,
         origin: String,
@@ -41,6 +47,17 @@ impl PyRule {
             info,
             valid,
         }
+    }
+}
+
+#[pyproto]
+impl PyObjectProtocol for PyRule {
+    fn __str__(&self) -> PyResult<String> {
+        Ok(format!("{}: {}", self.id, self.text))
+    }
+
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(format!("{}: {}", self.id, self.text))
     }
 }
 
@@ -92,8 +109,79 @@ impl PyRuleInfo {
     }
 }
 
+/// A mutable collection of rule changes
+#[pyclass(module = "rules", name = "RuleChangeset")]
+#[derive(Default, Clone)]
+pub struct PyChangeset {
+    rs: Changeset,
+}
+
+impl From<Changeset> for PyChangeset {
+    fn from(rs: Changeset) -> Self {
+        Self { rs }
+    }
+}
+
+impl From<PyChangeset> for Changeset {
+    fn from(py: PyChangeset) -> Self {
+        py.rs
+    }
+}
+
+#[pymethods]
+impl PyChangeset {
+    #[new]
+    pub fn new() -> Self {
+        PyChangeset::default()
+    }
+
+    pub fn get(&self) -> PyResult<Vec<PyRule>> {
+        db_to_vec(self.rs.get())
+    }
+
+    pub fn set(&mut self, text: String) -> bool {
+        self.rs.set(&text).is_ok()
+    }
+}
+
+#[pyfunction]
+fn rule_text_error_check(txt: &str) -> Option<String> {
+    match parse_with_error_message(StrTrace::new(txt)) {
+        Ok(_) => None,
+        Err(s) => Some(s),
+    }
+}
+
+pub(crate) fn db_to_vec(db: &DB) -> PyResult<Vec<PyRule>> {
+    Ok(db
+        .iter()
+        .map(|(id, r)| {
+            let (valid, text, info) = match r {
+                RuleDef::Invalid { text, error } => {
+                    (false, text.clone(), vec![("e".to_string(), error.clone())])
+                }
+                RuleDef::Valid(r) => (true, r.to_string(), vec![]),
+                RuleDef::ValidWithWarning(r, w) => {
+                    (true, r.to_string(), vec![("w".to_string(), w.clone())])
+                }
+            };
+            let origin = db
+                .source(*id)
+                // todo;; this should be converted to a python exception
+                .unwrap_or_else(|| "<unknown>".to_string());
+
+            PyRule::new(*id, text, origin, info, valid)
+        })
+        .collect())
+}
+
+// #[pyfunction]
+// fn text_to_rule_db(txt: &str) -> PyResult<PyDict> {}
+
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyRule>()?;
     m.add_class::<PyRuleInfo>()?;
+    m.add_class::<PyChangeset>()?;
+    m.add_function(wrap_pyfunction!(rule_text_error_check, m)?)?;
     Ok(())
 }

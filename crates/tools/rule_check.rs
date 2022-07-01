@@ -47,17 +47,15 @@ fn main() -> Result<(), Box<dyn Error>> {
     let all_opts: Opts = Opts::parse();
 
     let rules_path = &*all_opts.rules_path;
-    let path = PathBuf::from(rules_path);
-    let contents: BTreeMap<PathBuf, Vec<String>> =
-        load::rules_from(path)?
-            .into_iter()
-            .fold(BTreeMap::new(), |mut x, (p, t)| {
-                if !x.contains_key(&p) {
-                    x.insert(p.clone(), vec![]);
-                }
-                x.get_mut(&p).unwrap().push(t);
-                x
-            });
+    let contents: BTreeMap<PathBuf, Vec<String>> = load::rules_from_disk(rules_path)?
+        .into_iter()
+        .fold(BTreeMap::new(), |mut x, (p, t)| {
+            if !x.contains_key(&p) {
+                x.insert(p.clone(), vec![]);
+            }
+            x.get_mut(&p).unwrap().push(t);
+            x
+        });
 
     for (file, _) in contents {
         report_for_file(file)?;

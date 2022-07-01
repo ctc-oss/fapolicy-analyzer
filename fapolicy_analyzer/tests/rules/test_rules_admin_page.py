@@ -54,7 +54,7 @@ def widget(mock_dispatch, mock_system_feature):
 
 
 def test_creates_widget(widget):
-    assert type(widget.get_ref()) is Gtk.Notebook
+    assert type(widget.get_ref()) is Gtk.Paned
 
 
 def test_populates_guided_editor(widget, mock_system_feature, mocker):
@@ -73,7 +73,7 @@ def test_populates_guided_editor(widget, mock_system_feature, mocker):
     mock_list_renderer.assert_called_once_with(mock_rules)
 
 
-def test_populates_guided_editor_status_info(widget, mock_system_feature):
+def test_populates_status_info(widget, mock_system_feature, mocker):
     mock_rules = [
         MagicMock(
             id=1,
@@ -91,21 +91,18 @@ def test_populates_guided_editor_status_info(widget, mock_system_feature):
             ],
         ),
     ]
+    mock_info_renderer = MagicMock()
+    mocker.patch(
+        "fapolicy_analyzer.ui.rules.rules_status_info.RulesStatusInfo.render_rule_status",
+        mock_info_renderer,
+    )
     mock_system_feature.on_next(
         {
             "rules": MagicMock(error=None, rules=mock_rules, loading=False),
             "rules_text": MagicMock(),
         }
     )
-    text_buffer = widget.get_object("statusInfo").get_buffer()
-    assert (
-        text_buffer.get_text(
-            text_buffer.get_start_iter(), text_buffer.get_end_iter(), True
-        )
-        == """1 invalid rule found
-1 warning(s) found
-2 informational message(s)"""
-    )
+    mock_info_renderer.assert_called_once_with(mock_rules)
 
 
 @pytest.mark.usefixtures("widget")
