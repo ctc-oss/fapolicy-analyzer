@@ -76,6 +76,15 @@ def test_stop_profiling(fapdManager, mocker):
     assert fapdManager.mode == FapdMode.PROFILING
 
 
+def test_stop_profiling_via_systemd(fapdManager, mocker):
+    mockFapdProfHandle = MagicMock()
+    fapdManager._fapd_profiling_ref = mockFapdProfHandle
+    mocker.patch("fapolicy_analyzer.ui.fapd_manager.os.path.exists", return_value=True)
+    fapdManager.mode = FapdMode.PROFILING
+    fapdManager.stop(FapdMode.PROFILING)
+    mockFapdProfHandle.stop.assert_called()
+
+
 def test_start_profiling(fapdManager, mocker):
     mockFapdHandle = MagicMock()
     fapdManager._fapd_ref = mockFapdHandle
@@ -86,6 +95,21 @@ def test_start_profiling(fapdManager, mocker):
     fapdManager.mode = FapdMode.ONLINE
     fapdManager.start(FapdMode.PROFILING)
     mockFapdHandle.stop.assert_called()
+    assert fapdManager.mode == FapdMode.PROFILING
+
+
+def test_start_profiling_via_systemd(fapdManager, mocker):
+    mockFapdProfHandle = MagicMock()
+    fapdManager._fapd_profiling_ref = mockFapdProfHandle
+    mockFapdHandle = MagicMock()
+    fapdManager._fapd_ref = mockFapdHandle
+    fapdManager._fapd_status = ServiceStatus.TRUE
+    fapdManager._fapd_ref.is_active.return_value = True
+    mocker.patch("fapolicy_analyzer.ui.fapd_manager.os.path.exists", return_value=True)
+    fapdManager.mode = FapdMode.ONLINE
+    fapdManager.start(FapdMode.PROFILING)
+    mockFapdHandle.stop.assert_called()
+    mockFapdProfHandle.start.assert_called()
     assert fapdManager.mode == FapdMode.PROFILING
 
 
