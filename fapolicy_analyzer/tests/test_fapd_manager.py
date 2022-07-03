@@ -80,6 +80,7 @@ def test_stop_profiling_via_systemd(fapdManager, mocker):
     mockFapdProfHandle = MagicMock()
     fapdManager._fapd_profiling_ref = mockFapdProfHandle
     mocker.patch("fapolicy_analyzer.ui.fapd_manager.os.path.exists", return_value=True)
+    fapdManager._fapd_status = ServiceStatus.TRUE
     fapdManager.mode = FapdMode.PROFILING
     fapdManager.stop(FapdMode.PROFILING)
     mockFapdProfHandle.stop.assert_called()
