@@ -41,6 +41,8 @@ _objects = [
     _mock_object(trust="U", mode="X", access="D", file="/tmp/bar", trust_status="U"),
 ]
 
+_ids = [1, 2, 3]
+
 
 @pytest.fixture
 def widget():
@@ -55,7 +57,7 @@ def test_loads_store(widget):
     def strip_markup(markup):
         return re.search(r"<b>([A-Z]*)</b>", markup).group(1)
 
-    widget.load_store(_objects)
+    widget.load_store(_objects, ids=_ids)
     view = widget.get_object("treeView")
     sortedObjects = sorted(_objects, key=lambda o: o.file)
     assert [t.trust for t in sortedObjects] == [
@@ -82,71 +84,71 @@ def test_status_markup(widget):
     at_green = f'<span color="{Colors.GREEN}"><u><b>AT</b></u></span>'
 
     # System trust
-    widget.load_store([_mock_object(trust="ST", trust_status="U")])
+    widget.load_store([_mock_object(trust="ST", trust_status="U")], ids=[0])
     assert eq_status(st_red, "AT", "U")
     # System trust
-    widget.load_store([_mock_object(trust="ST", trust_status="T")])
+    widget.load_store([_mock_object(trust="ST", trust_status="T")], ids=[0])
     assert eq_status(st_green, "AT", "U")
     # Ancillary trust, untrusted
-    widget.load_store([_mock_object(trust="AT", trust_status="U")])
+    widget.load_store([_mock_object(trust="AT", trust_status="U")], ids=[0])
     assert eq_status("ST", at_red, "U")
     # Ancillary trust, trusted
-    widget.load_store([_mock_object(trust="AT", trust_status="T")])
+    widget.load_store([_mock_object(trust="AT", trust_status="T")], ids=[0])
     assert eq_status("ST", at_green, "U")
     # Untrusted
-    widget.load_store([_mock_object(trust="U", trust_status="U")])
+    widget.load_store([_mock_object(trust="U", trust_status="U")], ids=[0])
     assert eq_status("ST", "AT", u_green)
     # Bad data
-    widget.load_store([_mock_object(trust="foo")])
+    widget.load_store([_mock_object(trust="foo")], ids=[0])
     assert eq_status("ST", "AT", "U")
     # Empty data
-    widget.load_store([_mock_object()])
+    widget.load_store([_mock_object()], ids=[0])
     assert eq_status("ST", "AT", "U")
     # Lowercase
-    widget.load_store([_mock_object(trust="st", trust_status="u")])
+    widget.load_store([_mock_object(trust="st", trust_status="u")], ids=[0])
     assert eq_status(st_red, "AT", "U")
     # Lowercase
-    widget.load_store([_mock_object(trust="st", trust_status="t")])
+    widget.load_store([_mock_object(trust="st", trust_status="t")], ids=[0])
     assert eq_status(st_green, "AT", "U")
     # Lowercase
-    widget.load_store([_mock_object(trust="at", trust_status="u")])
+    widget.load_store([_mock_object(trust="at", trust_status="u")], ids=[0])
     assert eq_status("ST", at_red, "U")
     # Lowercase
-    widget.load_store([_mock_object(trust="at", trust_status="t")])
+    widget.load_store([_mock_object(trust="at", trust_status="t")], ids=[0])
     assert eq_status("ST", at_green, "U")
 
 
 def test_mode_markup(widget):
     view = widget.get_object("treeView")
     # Read
-    widget.load_store([_mock_object(mode="R")])
+    widget.load_store([_mock_object(mode="R")], ids=[0])
     assert view.get_model()[0][6] == "<u><b>R</b></u>WX"
     # Write
-    widget.load_store([_mock_object(mode="W")])
+    widget.load_store([_mock_object(mode="W")], ids=[0])
     assert view.get_model()[0][6] == "R<u><b>W</b></u>X"
     # Execute
-    widget.load_store([_mock_object(mode="X")])
+    widget.load_store([_mock_object(mode="X")], ids=[0])
     assert view.get_model()[0][6] == "RW<u><b>X</b></u>"
     # Read/Write
-    widget.load_store([_mock_object(mode="RW")])
+    widget.load_store([_mock_object(mode="RW")], ids=[0])
     assert view.get_model()[0][6] == "<u><b>R</b></u><u><b>W</b></u>X"
     # Read/Execute
-    widget.load_store([_mock_object(mode="RX")])
+    widget.load_store([_mock_object(mode="RX")], ids=[0])
     assert view.get_model()[0][6] == "<u><b>R</b></u>W<u><b>X</b></u>"
     # Write/Execute
-    widget.load_store([_mock_object(mode="WX")])
+    widget.load_store([_mock_object(mode="WX")], ids=[0])
     assert view.get_model()[0][6] == "R<u><b>W</b></u><u><b>X</b></u>"
     # Full Access
-    widget.load_store([_mock_object(mode="RWX")])
+    widget.load_store([_mock_object(mode="RWX")], ids=[0])
     assert view.get_model()[0][6] == "<u><b>R</b></u><u><b>W</b></u><u><b>X</b></u>"
     # Bad data
-    widget.load_store([_mock_object(mode="foo")])
+    widget.load_store([_mock_object(mode="foo")], ids=[0])
     assert view.get_model()[0][6] == "RWX"
     # Empty data
-    widget.load_store([_mock_object()])
+    widget.load_store([_mock_object()], ids=[0])
     assert view.get_model()[0][6] == "RWX"
     # Lowercase
-    widget.load_store([_mock_object(mode="r")])
+    widget.load_store([_mock_object(mode="r")], ids=[0])
     assert view.get_model()[0][6] == "<u><b>R</b></u>WX"
 
 
@@ -159,19 +161,19 @@ def test_access_markup(widget):
     view = widget.get_object("treeView")
 
     # Allowed
-    widget.load_store([_mock_object(access="A")])
+    widget.load_store([_mock_object(access="A")], ids=[0])
     assert eq_access(a_access, "D")
     # Denied
-    widget.load_store([_mock_object(access="D")])
+    widget.load_store([_mock_object(access="D")], ids=[0])
     assert eq_access("A", d_access)
     # Bad data
-    widget.load_store([_mock_object(access="foo")])
+    widget.load_store([_mock_object(access="foo")], ids=[0])
     assert eq_access("A", "D")
     # Empty data
-    widget.load_store([_mock_object()])
+    widget.load_store([_mock_object()], ids=[0])
     assert eq_access("A", "D")
     # Lowercase
-    widget.load_store([_mock_object(access="a")])
+    widget.load_store([_mock_object(access="a")], ids=[0])
     assert eq_access(a_access, "D")
 
 
@@ -179,37 +181,37 @@ def test_path_color(widget):
     view = widget.get_object("treeView")
 
     # Denied
-    widget.load_store([_mock_object(access="D", mode="RWX")])
+    widget.load_store([_mock_object(access="D", mode="RWX")], ids=[0])
     assert view.get_model()[0][4] == Colors.LIGHT_RED
     assert view.get_model()[0][5] == Colors.WHITE
     # Full Access
-    widget.load_store([_mock_object(access="A", mode="RWX")])
+    widget.load_store([_mock_object(access="A", mode="RWX")], ids=[0])
     assert view.get_model()[0][4] == Colors.LIGHT_GREEN
     assert view.get_model()[0][5] == Colors.BLACK
     # Partical Access
-    widget.load_store([_mock_object(access="A", mode="R")])
+    widget.load_store([_mock_object(access="A", mode="R")], ids=[0])
     assert view.get_model()[0][4] == Colors.ORANGE
     assert view.get_model()[0][5] == Colors.BLACK
     # Bad data
-    widget.load_store([_mock_object(access="foo")])
+    widget.load_store([_mock_object(access="foo")], ids=[0])
     assert view.get_model()[0][4] == Colors.LIGHT_RED
     assert view.get_model()[0][5] == Colors.WHITE
     # Empty data
-    widget.load_store([_mock_object()])
+    widget.load_store([_mock_object()], ids=[0])
     assert view.get_model()[0][4] == Colors.LIGHT_RED
     assert view.get_model()[0][5] == Colors.WHITE
     # Lowercase
-    widget.load_store([_mock_object(access="a", mode="rwx")])
+    widget.load_store([_mock_object(access="a", mode="rwx")], ids=[0])
     assert view.get_model()[0][4] == Colors.LIGHT_GREEN
     assert view.get_model()[0][5] == Colors.BLACK
 
 
 def test_update_tree_count(widget):
-    widget.load_store([_mock_object()])
+    widget.load_store([_mock_object()], ids=[0])
     label = widget.get_object("treeCount")
     assert label.get_text() == f"1 {FILE_LABEL}"
 
-    widget.load_store([_mock_object(), _mock_object()])
+    widget.load_store([_mock_object(), _mock_object()], ids=[0, 1])
     label = widget.get_object("treeCount")
     assert label.get_text() == f"2 {FILES_LABEL}"
 
@@ -218,7 +220,7 @@ def test_fires_file_selection_changed_event(widget):
     mockHandler = MagicMock()
     widget.file_selection_changed += mockHandler
     mockData = _mock_object(file="foo")
-    widget.load_store([mockData])
+    widget.load_store([mockData], ids=[0])
     view = widget.get_object("treeView")
     view.get_selection().select_path(Gtk.TreePath.new_first())
     mockHandler.assert_called_with([mockData])
