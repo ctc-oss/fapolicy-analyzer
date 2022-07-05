@@ -77,13 +77,8 @@ class ObjectList(SubjectList, Events):
         rule_id = model[0][7]
         self.rule_view_activate(rule_id=rule_id)
 
-    def load_store(self, obj, **kwargs):
-        if len(obj) > 0:
-            objects, ids = obj
-
-        else:
-            objects = obj
-            ids = []
+    def load_store(self, objects, **kwargs):
+        ids = kwargs.get("ids", [])
         self._systemTrust = kwargs.get("systemTrust", [])
         self._ancillaryTrust = kwargs.get("ancillaryTrust", [])
         store = Gtk.ListStore(str, str, str, object, str, str, str, int)

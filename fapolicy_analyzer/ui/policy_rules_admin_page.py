@@ -366,12 +366,13 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
 
             self.__populate_list(
                 self.object_list,
-                (objects, ids),
+                objects,
                 "objects",
                 True,
                 self.object_list.get_selected_row_by_file,
                 systemTrust=self.__system_trust,
                 ancillaryTrust=self.__ancillary_trust,
+                ids=ids,
             )
         else:
             self.__populate_list(self.object_list, [], "objects")
