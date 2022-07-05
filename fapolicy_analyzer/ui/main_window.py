@@ -353,7 +353,7 @@ class MainWindow(UIConnectedWidget):
         if response == Gtk.ResponseType.OK and path.isfile((fcd.get_filename())):
             file = fcd.get_filename()
             page = router(ANALYZER_SELECTION.ANALYZE_FROM_AUDIT, file)
-            page.object_list.rule_view_activate += self.on_policyMenu_to_rulesMenu
+            page.object_list.rule_view_activate += self.on_rulesAdminMenu_activate
             height = self.get_object("mainWindow").get_size()[1]
             page.get_object("botBox").set_property("height_request", int(height * Sizing.POLICY_BOTTOM_BOX))
             self.__pack_main_content(page)
@@ -364,15 +364,11 @@ class MainWindow(UIConnectedWidget):
         self.__pack_main_content(router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN))
         self.__set_trustDbMenu_sensitive(False)
 
-    def on_policyMenu_to_rulesMenu(self, *args, **kwargs):
-        rid = kwargs["rule_id"] if "rule_id" in kwargs.keys() else None
+    def on_rulesAdminMenu_activate(self, *args, **kwargs):
         rulesPage = router(ANALYZER_SELECTION.RULES_ADMIN)
-        rulesPage.highlight_row_from_data(rid)
+        if kwargs.get("rule_id", None):
+            rulesPage.highlight_row_from_data(kwargs["rule_id"])
         self.__pack_main_content(rulesPage)
-        self.__set_trustDbMenu_sensitive(True)
-
-    def on_rulesAdminMenu_activate(self, *args):
-        self.__pack_main_content(router(ANALYZER_SELECTION.RULES_ADMIN))
         # TODO: figure out a good way to set sensitivity on the menu items based on what is selected
         self.__set_trustDbMenu_sensitive(True)
 
