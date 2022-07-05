@@ -224,3 +224,15 @@ def test_fires_file_selection_changed_event(widget):
     view = widget.get_object("treeView")
     view.get_selection().select_path(Gtk.TreePath.new_first())
     mockHandler.assert_called_with([mockData])
+
+
+def test_shows_rule_view_from_context_menu(widget, mocker):
+    mockHandler = MagicMock()
+    widget.rule_view_activate += mockHandler
+    widget.load_store(_objects, ids=_ids)
+    view = widget.get_object("treeView")
+    # select first item is list
+    view.get_selection().select_path(Gtk.TreePath.new_first())
+    # mock the reconile conext menu item click
+    widget.reconcileContextMenu.get_children()[-1].activate()
+    mockHandler.assert_called_with(rule_id=_ids[-1])
