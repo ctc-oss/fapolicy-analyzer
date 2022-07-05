@@ -13,25 +13,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
-class Colors:
-    BLACK = "black"
-    DARK_GRAY = "dark gray"
-    GREEN = "#008000"
-    LIGHT_RED = "#FF3333"
-    LIGHT_GRAY = "light gray"
-    LIGHT_GREEN = "light green"
-    ORANGE = "#E69F00"
-    RED = "#FF0000"
-    SHADED = "gainsboro"
-    WHITE = "white"
-    BLUE = "blue"
+from fapolicy_analyzer.ui.ui_widget import UIBuilderWidget
 
 
-class FontWeights:
-    BOLD = 700
-    NORMAL = 400
+class ProfileDialog(UIBuilderWidget):
+    def __init__(self, parent=None):
+        super().__init__()
 
+        if parent:
+            self.get_ref().set_transient_for(parent)
 
-class Sizing:
-    POLICY_BOTTOM_BOX = 0.2
+    def get_text(self):
+        entryDict = {
+            "executeText": self.get_object("executeEntry").get_text(),
+            "argText": self.get_object("argEntry").get_text(),
+            "userText": self.get_object("userEntry").get_text(),
+            "dirText": self.get_object("dirEntry").get_text(),
+            "envText": self.get_object("envEntry").get_text(),
+        }
+        return entryDict

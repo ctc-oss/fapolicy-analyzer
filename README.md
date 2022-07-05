@@ -14,14 +14,15 @@ make run
 ## Requirements
 
 - Python 3.6
-- Rust 1.54
-- fapolicyd 1.0
+- Rust 1.58.1
+- fapolicyd 1.x
 
 ### fapolicyd configuration
 
-To generate rules that can be analyzed we require the following `syslog_format` configuration
-
-`syslog_format = rule,dec,perm,uid,gid,pid,exe,:,path,ftype,trust`
+To generate rules that can be analyzed we require the following `syslog_format` configuration in fapolicyd.conf
+```
+syslog_format = rule,dec,perm,uid,gid,pid,exe,:,path,ftype,trust
+```
 
 ## Getting Help
 

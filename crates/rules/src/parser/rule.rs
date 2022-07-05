@@ -35,6 +35,14 @@ pub fn parse(i: StrTrace) -> TraceResult<Rule> {
     }
 }
 
+pub fn parse_with_error_message(i: StrTrace) -> Result<Rule, String> {
+    match parse(i) {
+        Ok((_, r)) => Ok(r),
+        Err(nom::Err::Error(e)) => Err(e.to_string()),
+        _ => Err("Unrecognized error".to_string()),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::{Decision, ObjPart, Object, Permission, Rvalue, SubjPart, Subject};

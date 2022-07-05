@@ -15,7 +15,7 @@ jobs:
   build:
     strategy:
       matrix:
-        platform: [ 'fedora:33', 'fedora:34', 'registry.access.redhat.com/ubi8/ubi:8.5' ]
+        platform: [ 'fedora:34', 'fedora:35', 'registry.access.redhat.com/ubi8/ubi:8.6' ]
     runs-on: ubuntu-latest
     container: ${{ matrix.platform }}
     name: Create RPM Release

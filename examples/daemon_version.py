@@ -13,25 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from fapolicy_analyzer import *
 
-class Colors:
-    BLACK = "black"
-    DARK_GRAY = "dark gray"
-    GREEN = "#008000"
-    LIGHT_RED = "#FF3333"
-    LIGHT_GRAY = "light gray"
-    LIGHT_GREEN = "light green"
-    ORANGE = "#E69F00"
-    RED = "#FF0000"
-    SHADED = "gainsboro"
-    WHITE = "white"
-    BLUE = "blue"
-
-
-class FontWeights:
-    BOLD = 700
-    NORMAL = 400
-
-
-class Sizing:
-    POLICY_BOTTOM_BOX = 0.2
+# fapolicyd_version() returns:
+# - None when version cannot be detected
+# - String containing version otherwise
+v = fapolicyd_version()
+print(f"fapolicyd version: {v if v else 'Unknown'}")

@@ -25,11 +25,15 @@ import gi
 from fapolicy_analyzer import __version__ as app_version
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.util.format import f
+from .profile_dialog import ProfileDialog
 
 from .action_toolbar import ActionToolbar
 from .actions import NotificationType, add_notification
 from .analyzer_selection_dialog import ANALYZER_SELECTION
+from .configs import Sizing
 from .database_admin_page import DatabaseAdminPage
+
+from .faprofiler import FaProfiler
 from .fapd_manager import FapdManager, ServiceStatus
 from .notification import Notification
 from .operations import DeployChangesetsOp
@@ -70,6 +74,7 @@ class MainWindow(UIConnectedWidget):
         self._fapd_status = ServiceStatus.UNKNOWN
         self._fapd_monitoring = False
         self._fapd_mgr = FapdManager(self._fapdControlPermitted)
+        self._fapd_profiler = FaProfiler(self._fapd_mgr)
         self.__changesets = []
         self.__page = None
         self.selection = None
@@ -78,7 +83,6 @@ class MainWindow(UIConnectedWidget):
         toaster = Notification()
         self.get_object("overlay").add_overlay(toaster.get_ref())
         self.mainContent = self.get_object("mainContent")
-
         # Set menu items in default initial state
         self.get_object("restoreMenu").set_sensitive(False)
         self.__set_trustDbMenu_sensitive(False)
@@ -91,7 +95,6 @@ class MainWindow(UIConnectedWidget):
         self._fapdStopMenuItem.set_sensitive(False)
 
         self.__add_toolbar()
-
         self.window.show_all()
 
     def __add_toolbar(self):
@@ -329,7 +332,10 @@ class MainWindow(UIConnectedWidget):
         aboutDialog.hide()
 
     def on_syslogMenu_activate(self, *args):
-        self.__pack_main_content(router(ANALYZER_SELECTION.ANALYZE_SYSLOG))
+        page = router(ANALYZER_SELECTION.ANALYZE_SYSLOG)
+        height = self.get_object("mainWindow").get_size()[1]
+        page.get_object("botBox").set_property("height_request", int(height * Sizing.POLICY_BOTTOM_BOX))
+        self.__pack_main_content(page)
         self.__set_trustDbMenu_sensitive(True)
 
     def on_analyzeMenu_activate(self, *args):
@@ -348,9 +354,10 @@ class MainWindow(UIConnectedWidget):
         fcd.hide()
         if response == Gtk.ResponseType.OK and path.isfile((fcd.get_filename())):
             file = fcd.get_filename()
-            self.__pack_main_content(
-                router(ANALYZER_SELECTION.ANALYZE_FROM_AUDIT, file)
-            )
+            page = router(ANALYZER_SELECTION.ANALYZE_FROM_AUDIT, file)
+            height = self.get_object("mainWindow").get_size()[1]
+            page.get_object("botBox").set_property("height_request", int(height * Sizing.POLICY_BOTTOM_BOX))
+            self.__pack_main_content(page)
             self.__set_trustDbMenu_sensitive(True)
         fcd.destroy()
 
@@ -365,6 +372,32 @@ class MainWindow(UIConnectedWidget):
         self.__set_trustDbMenu_sensitive(True)
         
 
+
+    def on_profileExecMenu_activate(self, *args):
+        logging.debug("MainWindow::on_profileExecMenu_activate()")
+        dlgProfTest = ProfileDialog()
+        response = dlgProfTest.get_ref().run()
+
+        if response == Gtk.ResponseType.OK:
+            profiling_args = dlgProfTest.get_text()
+            logging.debug(f"Entry text = {profiling_args}")
+            self._fapd_profiler.start_prof_session(profiling_args)
+            fapd_prof_stderr = self._fapd_profiler.fapd_prof_stderr
+            logging.debug(f"Started prof session, stderr={fapd_prof_stderr}")
+
+            # Catch termination event here somehow. Monitor pid? Pass in
+            # object returned from start_prof_session() above, or maintain only
+            # in the faprofiler instance.
+            sleep(4)
+            self._fapd_profiler.stop_prof_session()
+
+        # Add termination and/or close button
+        dlgProfTest.get_ref().destroy()
+
+        self.__pack_main_content(
+            router(ANALYZER_SELECTION.ANALYZE_FROM_AUDIT, fapd_prof_stderr)
+        )
+        self.__set_trustDbMenu_sensitive(True)
 
     def on_deployChanges_clicked(self, *args):
         with DeployChangesetsOp(self.window) as op:

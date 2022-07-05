@@ -13,25 +13,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from fapolicy_analyzer import *
 
-class Colors:
-    BLACK = "black"
-    DARK_GRAY = "dark gray"
-    GREEN = "#008000"
-    LIGHT_RED = "#FF3333"
-    LIGHT_GRAY = "light gray"
-    LIGHT_GREEN = "light green"
-    ORANGE = "#E69F00"
-    RED = "#FF0000"
-    SHADED = "gainsboro"
-    WHITE = "white"
-    BLUE = "blue"
+# Unknown Decision
+print(rule_text_error_check("foo perm=any all : all"))
 
+# Expected one of 'any', 'open', 'execute'
+print(rule_text_error_check("allow perm=foo all : all"))
 
-class FontWeights:
-    BOLD = 700
-    NORMAL = 400
-
-
-class Sizing:
-    POLICY_BOTTOM_BOX = 0.2
+# None (aka, valid)
+print(rule_text_error_check("allow perm=any all : all"))
