@@ -366,7 +366,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
 
             self.__populate_list(
                 self.object_list,
-                (objects, ids),
+                objects,
                 "objects",
                 True,
                 self.object_list.get_selected_row_by_file,
