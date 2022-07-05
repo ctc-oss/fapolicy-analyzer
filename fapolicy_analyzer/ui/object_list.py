@@ -32,7 +32,6 @@ class ObjectList(SubjectList, Events):
         ]
         Events.__init__(self)
         self.reconcileContextMenu = self.__build_reconcile_context_menu()
-        self.get_ref().set_name("objectList")
 
     def _columns(self):
         columns = super()._columns()
