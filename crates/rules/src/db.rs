@@ -36,7 +36,7 @@ pub struct SetEntry {
 /// When invalid it provides the text definition
 /// When valid the text definition can be rendered from the ADTs
 #[derive(Clone, Debug)]
-pub enum RuleDef {
+pub enum Entry {
     ValidRule(Rule),
     ValidSet(Set),
     RuleWithWarning(Rule, String),
@@ -44,36 +44,36 @@ pub enum RuleDef {
     Invalid { text: String, _error: String },
 }
 
-impl Display for RuleDef {
+impl Display for Entry {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let txt = match self {
-            RuleDef::ValidRule(r) | RuleDef::RuleWithWarning(r, _) => r.to_string(),
-            RuleDef::ValidSet(r) | RuleDef::SetWithWarning(r, _) => r.to_string(),
-            RuleDef::Invalid { text, .. } => text.clone(),
+            Entry::ValidRule(r) | Entry::RuleWithWarning(r, _) => r.to_string(),
+            Entry::ValidSet(r) | Entry::SetWithWarning(r, _) => r.to_string(),
+            Entry::Invalid { text, .. } => text.clone(),
         };
         f.write_fmt(format_args!("{}", txt))
     }
 }
 
-impl RuleDef {
+impl Entry {
     fn warnings(&self) -> Option<String> {
         match self {
-            RuleDef::RuleWithWarning(_, w) | RuleDef::SetWithWarning(_, w) => Some(w.clone()),
+            Entry::RuleWithWarning(_, w) | Entry::SetWithWarning(_, w) => Some(w.clone()),
             _ => None,
         }
     }
 }
 
-fn is_valid(def: &RuleDef) -> bool {
-    !matches!(def, RuleDef::Invalid { .. })
+fn is_valid(def: &Entry) -> bool {
+    !matches!(def, Entry::Invalid { .. })
 }
 
-fn is_rule(def: &RuleDef) -> bool {
-    !matches!(def, RuleDef::ValidSet(_) | RuleDef::SetWithWarning(_, _))
+fn is_rule(def: &Entry) -> bool {
+    !matches!(def, Entry::ValidSet(_) | Entry::SetWithWarning(_, _))
 }
 
 type Origin = String;
-type DbEntry = (Origin, RuleDef);
+type DbEntry = (Origin, Entry);
 
 /// Rules Database
 /// A container for rules and their metadata
@@ -84,15 +84,15 @@ pub struct DB {
     sets: BTreeMap<usize, SetEntry>,
 }
 
-impl From<Vec<(Origin, RuleDef)>> for DB {
-    fn from(s: Vec<(String, RuleDef)>) -> Self {
+impl From<Vec<(Origin, Entry)>> for DB {
+    fn from(s: Vec<(String, Entry)>) -> Self {
         DB::from_sources(s)
     }
 }
 
 impl DB {
     /// Construct DB using the provided RuleDefs and associated sources
-    pub(crate) fn from_sources(defs: Vec<(Origin, RuleDef)>) -> Self {
+    pub(crate) fn from_sources(defs: Vec<(Origin, Entry)>) -> Self {
         let model: BTreeMap<usize, DbEntry> = defs
             .into_iter()
             .enumerate()
@@ -171,19 +171,19 @@ mod tests {
 
     use super::*;
 
-    impl From<Rule> for RuleDef {
+    impl From<Rule> for Entry {
         fn from(r: Rule) -> Self {
-            RuleDef::ValidRule(r)
+            Entry::ValidRule(r)
         }
     }
 
     impl DB {
-        fn from_source(origin: Origin, defs: Vec<RuleDef>) -> Self {
+        fn from_source(origin: Origin, defs: Vec<Entry>) -> Self {
             DB::from_sources(defs.into_iter().map(|d| (origin.clone(), d)).collect())
         }
     }
 
-    fn any_all_all(decision: Decision) -> RuleDef {
+    fn any_all_all(decision: Decision) -> Entry {
         Rule::new(Subject::all(), Permission::Any, Object::all(), decision).into()
     }
 
@@ -194,7 +194,7 @@ mod tests {
 
     #[test]
     fn db_create() {
-        let r1: RuleDef = Rule::new(
+        let r1: Entry = Rule::new(
             Subject::all(),
             Permission::Any,
             Object::all(),
@@ -234,7 +234,7 @@ mod tests {
     fn maintain_order() {
         let source = "foo.rules".to_string();
         let subjs = vec!["fee", "fi", "fo", "fum", "this", "is", "such", "fun"];
-        let rules: Vec<(String, RuleDef)> = subjs
+        let rules: Vec<(String, Entry)> = subjs
             .iter()
             .map(|s| {
                 (

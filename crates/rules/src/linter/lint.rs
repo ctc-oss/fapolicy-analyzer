@@ -6,7 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use crate::db::{RuleDef, DB};
+use crate::db::{Entry, DB};
 use crate::linter::findings::*;
 use crate::Rule;
 
@@ -18,20 +18,20 @@ pub fn lint_db(db: DB) -> DB {
     db.model
         .iter()
         .map(|(pos, (source, def))| match def {
-            RuleDef::ValidRule(r) => {
+            Entry::ValidRule(r) => {
                 let x: Vec<String> = lints.iter().filter_map(|f| f(*pos, r, &db)).collect();
                 if x.is_empty() {
-                    (source.clone(), RuleDef::ValidRule(r.clone()))
+                    (source.clone(), Entry::ValidRule(r.clone()))
                 } else {
                     (
                         source.clone(),
-                        RuleDef::RuleWithWarning(r.clone(), x.first().unwrap().clone()),
+                        Entry::RuleWithWarning(r.clone(), x.first().unwrap().clone()),
                     )
                 }
             }
-            d => (source.clone(), d.clone()),
+            other => (source.clone(), other.clone()),
         })
-        .collect::<Vec<(String, RuleDef)>>()
+        .collect::<Vec<(String, Entry)>>()
         .into()
 }
 

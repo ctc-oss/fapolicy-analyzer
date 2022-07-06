@@ -14,7 +14,7 @@ use nom::combinator::{eof, map, recognize};
 use nom::error::{ErrorKind, ParseError};
 use nom::sequence::tuple;
 
-use crate::db::{RuleDef, DB};
+use crate::db::{Entry, DB};
 use crate::error::Error;
 use crate::linter::lint::lint_db;
 use crate::load::RuleFrom::{Disk, Mem};
@@ -74,7 +74,7 @@ pub fn load_rules_db(path: &str) -> Result<DB, Error> {
 }
 
 fn read_rules_db(xs: Vec<RuleSource>) -> Result<DB, Error> {
-    let lookup: Vec<(String, RuleDef)> = xs
+    let lookup: Vec<(String, Entry)> = xs
         .iter()
         .map(|(source, l)| (source, parser(l)))
         .flat_map(|(source, r)| match r {
@@ -93,9 +93,9 @@ fn read_rules_db(xs: Vec<RuleSource>) -> Result<DB, Error> {
         })
         .map(|(source, line)| (source, line))
         .filter_map(|(source, line)| match line {
-            WellFormedRule(r) => Some((source, RuleDef::ValidRule(r))),
-            MalformedRule(text, e) => Some((source, RuleDef::Invalid { text, _error: e })),
-            SetDef(s) => Some((source, RuleDef::ValidSet(s))),
+            WellFormedRule(r) => Some((source, Entry::ValidRule(r))),
+            MalformedRule(text, e) => Some((source, Entry::Invalid { text, _error: e })),
+            SetDef(s) => Some((source, Entry::ValidSet(s))),
             _ => None,
         })
         .collect();
