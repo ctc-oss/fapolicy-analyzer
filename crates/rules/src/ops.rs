@@ -6,7 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use crate::db::{RuleDef, DB};
+use crate::db::{RuleEntry, DB};
 
 use crate::read::deserialize_rules_db;
 
@@ -33,8 +33,8 @@ impl Changeset {
         }
     }
 
-    pub fn rule(&self, id: usize) -> Option<&RuleDef> {
-        self.db.get(id)
+    pub fn rule(&self, id: usize) -> Option<RuleEntry> {
+        self.db.rule(id)
     }
 
     pub fn apply(&self) -> DB {

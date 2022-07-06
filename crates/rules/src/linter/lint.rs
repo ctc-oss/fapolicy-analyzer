@@ -14,25 +14,22 @@ type LintFn = fn(usize, &Rule, &DB) -> Option<String>;
 
 pub fn lint_db(db: DB) -> DB {
     let lints: Vec<LintFn> = vec![l001, l002, l003];
-    DB::from_sources(
-        db.iter()
-            .map(|(&id, def)| {
-                let source = db.source(id).unwrap();
-                match def {
-                    RuleDef::Valid(r) => {
-                        let x: Vec<String> = lints.iter().filter_map(|f| f(id, r, &db)).collect();
-                        if x.is_empty() {
-                            (source, RuleDef::Valid(r.clone()))
-                        } else {
-                            (
-                                source,
-                                RuleDef::ValidWithWarning(r.clone(), x.first().unwrap().clone()),
-                            )
-                        }
-                    }
-                    d => (source, d.clone()),
+    db.defs()
+        .iter()
+        .map(|(def, source, id)| match def {
+            RuleDef::Valid(r) => {
+                let x: Vec<String> = lints.iter().filter_map(|f| f(*id, r, &db)).collect();
+                if x.is_empty() {
+                    (source.clone(), RuleDef::Valid(r.clone()))
+                } else {
+                    (
+                        source.clone(),
+                        RuleDef::ValidWithWarning(r.clone(), x.first().unwrap().clone()),
+                    )
                 }
-            })
-            .collect(),
-    )
+            }
+            d => (source.clone(), d.clone()),
+        })
+        .collect::<Vec<(String, RuleDef)>>()
+        .into()
 }

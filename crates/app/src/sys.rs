@@ -23,6 +23,10 @@ pub enum Error {
     #[error("{0}")]
     WriteAncillaryFail(String),
     #[error("{0}")]
+    WriteRulesDirFail(String),
+    #[error("{0}")]
+    WriteRulesFileFail(String),
+    #[error("{0}")]
     DaemonError(#[from] fapolicy_daemon::error::Error),
 }
 
