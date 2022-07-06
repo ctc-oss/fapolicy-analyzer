@@ -42,6 +42,7 @@ pub enum Entry {
     RuleWithWarning(Rule, String),
     SetWithWarning(Set, String),
     Invalid { text: String, _error: String },
+    InvalidSet { text: String, _error: String },
 }
 
 impl Display for Entry {
@@ -50,6 +51,7 @@ impl Display for Entry {
             Entry::ValidRule(r) | Entry::RuleWithWarning(r, _) => r.to_string(),
             Entry::ValidSet(r) | Entry::SetWithWarning(r, _) => r.to_string(),
             Entry::Invalid { text, .. } => text.clone(),
+            Entry::InvalidSet { text, .. } => text.clone(),
         };
         f.write_fmt(format_args!("{}", txt))
     }
@@ -69,7 +71,10 @@ fn is_valid(def: &Entry) -> bool {
 }
 
 fn is_rule(def: &Entry) -> bool {
-    !matches!(def, Entry::ValidSet(_) | Entry::SetWithWarning(_, _))
+    !matches!(
+        def,
+        Entry::ValidSet(_) | Entry::SetWithWarning(..) | Entry::InvalidSet { .. }
+    )
 }
 
 type Origin = String;

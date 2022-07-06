@@ -31,9 +31,11 @@ enum Line {
     SetDef(Set),
     RuleDef(Rule),
     Malformed(String, String),
+    MalformedSet(String, String),
 }
 
 enum LineError<I> {
+    CannotParseSet(I, String),
     CannotParse(I, String),
     Nom(I, ErrorKind),
 }
@@ -55,9 +57,19 @@ fn parser(i: &str) -> nom::IResult<StrTrace, Line, LineError<&str>> {
         map(set::parse, SetDef),
         map(rule::parse, RuleDef),
     ))(StrTrace::new(i))
-    .map_err(|e| match e {
-        nom::Err::Error(e) => nom::Err::Error(LineError::CannotParse(i, format!("{}", e))),
-        e => nom::Err::Error(LineError::CannotParse(i, format!("{:?}", e))),
+    .map_err(|e| {
+        let details = match e {
+            nom::Err::Error(e) => e.to_string(),
+            e => format!("{:?}", e),
+        };
+        // todo;; guess set or rule here based on the line start char?
+        let f = if i.starts_with('%') {
+            LineError::CannotParseSet
+        } else {
+            LineError::CannotParse
+        };
+
+        nom::Err::Error(f(i, details))
     })
 }
 
@@ -83,6 +95,9 @@ fn read_rules_db(xs: Vec<RuleSource>) -> Result<DB, Error> {
             Err(nom::Err::Error(LineError::CannotParse(i, why))) => {
                 Some((source, Malformed(i.to_string(), why)))
             }
+            Err(nom::Err::Error(LineError::CannotParseSet(i, why))) => {
+                Some((source, MalformedSet(i.to_string(), why)))
+            }
             Err(_) => None,
         })
         .map(|(source, line)| {
@@ -96,6 +111,7 @@ fn read_rules_db(xs: Vec<RuleSource>) -> Result<DB, Error> {
             RuleDef(r) => Some((source, Entry::ValidRule(r))),
             SetDef(s) => Some((source, Entry::ValidSet(s))),
             Malformed(text, e) => Some((source, Entry::Invalid { text, _error: e })),
+            MalformedSet(text, e) => Some((source, Entry::InvalidSet { text, _error: e })),
             _ => None,
         })
         .collect();

@@ -148,8 +148,6 @@ fn multi_int_set() -> Result<(), Box<dyn Error>> {
 }
 
 #[test]
-#[ignore]
-// todo;; current failure of this test describes some of the current set parsing gaps
 fn invalid_set() -> Result<(), Box<dyn Error>> {
     let db = deserialize_rules_db(
         r#"
