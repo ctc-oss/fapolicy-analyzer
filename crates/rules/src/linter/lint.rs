@@ -15,8 +15,7 @@ type LintFn = fn(usize, &Rule, &DB) -> Option<String>;
 pub fn lint_db(db: DB) -> DB {
     let lints: Vec<LintFn> = vec![l001, l002, l003];
 
-    db.model
-        .iter()
+    db.iter()
         .map(|(pos, (source, def))| match def {
             Entry::ValidRule(r) => {
                 let x: Vec<String> = lints.iter().filter_map(|f| f(*pos, r, &db)).collect();

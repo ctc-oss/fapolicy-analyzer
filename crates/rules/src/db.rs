@@ -6,6 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+use std::collections::btree_map::Iter;
 use std::collections::BTreeMap;
 use std::fmt::{Display, Formatter};
 
@@ -41,8 +42,8 @@ pub enum Entry {
     ValidSet(Set),
     RuleWithWarning(Rule, String),
     SetWithWarning(Set, String),
-    Invalid { text: String, _error: String },
-    InvalidSet { text: String, _error: String },
+    Invalid { text: String, error: String },
+    InvalidSet { text: String, error: String },
 }
 
 impl Display for Entry {
@@ -84,7 +85,7 @@ type DbEntry = (Origin, Entry);
 /// A container for rules and their metadata
 #[derive(Clone, Debug, Default)]
 pub struct DB {
-    pub(crate) model: BTreeMap<usize, DbEntry>,
+    model: BTreeMap<usize, DbEntry>,
     rules: BTreeMap<usize, RuleEntry>,
     sets: BTreeMap<usize, SetEntry>,
 }
@@ -167,6 +168,11 @@ impl DB {
     /// Get a vec of all SetEntry refs
     pub fn sets(&self) -> Vec<&SetEntry> {
         self.sets.values().collect()
+    }
+
+    /// Get a model iterator
+    pub fn iter(&self) -> Iter<'_, usize, DbEntry> {
+        self.model.iter()
     }
 }
 
