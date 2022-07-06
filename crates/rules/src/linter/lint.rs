@@ -14,11 +14,14 @@ type LintFn = fn(usize, &Rule, &DB) -> Option<String>;
 
 pub fn lint_db(db: DB) -> DB {
     let lints: Vec<LintFn> = vec![l001, l002, l003];
-    db.defs()
+    db.triples()
         .iter()
         .map(|(def, source, id)| match def {
             RuleDef::Valid(r) => {
-                let x: Vec<String> = lints.iter().filter_map(|f| f(*id, r, &db)).collect();
+                let x: Vec<String> = lints
+                    .iter()
+                    .filter_map(|f| f(id.unwrap(), r, &db))
+                    .collect();
                 if x.is_empty() {
                     (source.clone(), RuleDef::Valid(r.clone()))
                 } else {

@@ -95,9 +95,46 @@ fn read_rules_db(xs: Vec<RuleSource>) -> Result<DB, Error> {
         .filter_map(|(source, line)| match line {
             WellFormedRule(r) => Some((source, RuleDef::Valid(r))),
             MalformedRule(text, error) => Some((source, RuleDef::Invalid { text, error })),
+            SetDef(s) => Some((source, RuleDef::ValidSet(s))),
             _ => None,
         })
         .collect();
 
     Ok(lint_db(DB::from_sources(lookup)))
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::read::deserialize_rules_db;
+    use std::error::Error;
+
+    #[test]
+    fn deser_simple() -> Result<(), Box<dyn Error>> {
+        let db = deserialize_rules_db(
+            r#"
+        [/foo.bar]
+        allow perm=any all : all
+        "#,
+        )?;
+        assert_eq!(db.len(), 1);
+        assert_eq!(db.rules().len(), 1);
+        assert!(db.rules().first().unwrap().valid);
+        Ok(())
+    }
+
+    #[test]
+    fn deser_set() -> Result<(), Box<dyn Error>> {
+        let db = deserialize_rules_db(
+            r#"
+        [/foo.bar]
+        %foo=bar
+        allow perm=any all : all
+        "#,
+        )?;
+        assert_eq!(db.len(), 2);
+        assert_eq!(db.rules().len(), 1);
+        println!("{:?}", db);
+        assert!(db.rules().first().unwrap().valid);
+        Ok(())
+    }
 }

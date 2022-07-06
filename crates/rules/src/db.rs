@@ -75,14 +75,13 @@ impl RuleDef {
 }
 
 type DbEntry = (String, RuleDef);
-type DbTriple = (RuleDef, String, usize);
+type DbTriple = (RuleDef, String, Option<usize>);
 
 /// Rules Database
 /// A container for rules and their metadata
 #[derive(Clone, Debug, Default)]
 pub struct DB {
     model: Vec<DbEntry>,
-    raw: Option<String>,
 }
 
 impl From<Vec<(String, RuleDef)>> for DB {
@@ -151,20 +150,16 @@ impl DB {
             })
     }
 
-    pub(crate) fn defs(&self) -> Vec<DbTriple> {
+    pub(crate) fn triples(&self) -> Vec<DbTriple> {
+        let mut r = vec![];
         self.model
             .iter()
-            .enumerate()
-            .filter(|(_, (_, m))| m.is_rule())
-            .map(|(id, (o, r))| (r.clone(), o.clone(), id + 1))
-            .collect()
-    }
-
-    fn origin(&self, num: usize) -> Option<String> {
-        self.defs()
-            .iter()
-            .find(|(_, _, id)| *id == num)
-            .map(|(_, o, _)| o.clone())
+            .rfold((0usize, &mut r), |(i, acc), (s, r)| {
+                let ii = if r.is_rule() { Some(i + 1) } else { None };
+                acc.push((r.clone(), s.clone(), ii));
+                (ii.unwrap_or(i), acc)
+            });
+        r
     }
 }
 
@@ -223,9 +218,8 @@ mod tests {
 
         let source = "/foo/bar.rules";
         let db: DB = DB::from_source(source.to_string(), vec![r1, r2]);
-        println!("{db:?}");
-        assert_eq!(db.origin(1).unwrap(), source);
-        assert_eq!(db.origin(2).unwrap(), source);
+        assert_eq!(db.rule(1).unwrap().origin, source);
+        assert_eq!(db.rule(2).unwrap().origin, source);
     }
 
     #[test]
@@ -236,8 +230,8 @@ mod tests {
         let source1 = "/foo.rules";
         let source2 = "/bar.rules";
         let db: DB = DB::from_sources(vec![(source1.to_string(), r1), (source2.to_string(), r2)]);
-        assert_eq!(db.origin(1).unwrap(), source1);
-        assert_eq!(db.origin(2).unwrap(), source2);
+        assert_eq!(db.rule(1).unwrap().origin, source1);
+        assert_eq!(db.rule(2).unwrap().origin, source2);
     }
 
     #[test]
