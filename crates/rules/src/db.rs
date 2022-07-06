@@ -80,13 +80,12 @@ impl RuleDef {
 
 type Origin = String;
 type DbEntry = (Origin, RuleDef);
-type DbTriple = (Origin, RuleDef, Option<usize>);
 
 /// Rules Database
 /// A container for rules and their metadata
 #[derive(Clone, Debug, Default)]
 pub struct DB {
-    model: BTreeMap<usize, DbEntry>,
+    pub(crate) model: BTreeMap<usize, DbEntry>,
     rules: BTreeMap<usize, RuleEntry>,
     sets: BTreeMap<usize, SetEntry>,
 }
@@ -136,6 +135,7 @@ impl DB {
                 (
                     *id,
                     SetEntry {
+                        // todo;; extract the set name
                         name: "_".to_string(),
                         text: r.to_string(),
                         origin: o.clone(),
@@ -160,29 +160,19 @@ impl DB {
         self.model.is_empty()
     }
 
-    /// Get a RuleDef by ID
+    /// Get a RuleEntry ref by ID
     pub fn rule(&self, num: usize) -> Option<&RuleEntry> {
         self.rules.get(&num)
     }
 
+    /// Get a vec of all RuleEntry refs
     pub fn rules(&self) -> Vec<&RuleEntry> {
         self.rules.values().collect()
     }
 
+    /// Get a vec of all SetEntry refs
     pub fn sets(&self) -> Vec<&SetEntry> {
         self.sets.values().collect()
-    }
-
-    pub(crate) fn triples(&self) -> Vec<DbTriple> {
-        let mut r = vec![];
-        self.model
-            .iter()
-            .rfold((0usize, &mut r), |(i, acc), (_, (s, r))| {
-                let ii = if r.is_rule() { Some(i + 1) } else { None };
-                acc.push((s.clone(), r.clone(), ii));
-                (ii.unwrap_or(i), acc)
-            });
-        r
     }
 }
 

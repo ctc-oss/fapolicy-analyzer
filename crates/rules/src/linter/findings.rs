@@ -10,13 +10,14 @@ use crate::db::DB;
 use crate::Rule;
 use std::path::PathBuf;
 
+pub(crate) const L001_MESSAGE: &str = "Using any+all+all here will short-circuit all other rules.";
 pub fn l001(id: usize, r: &Rule, db: &DB) -> Option<String> {
     if id < db.len() // rules are indexed from 1
         && r.perm.is_any()
         && r.subj.is_all()
         && r.obj.is_all()
     {
-        Some("Using any+all+all here will short-circuit all other rules.".to_string())
+        Some(L001_MESSAGE.to_string())
     } else {
         None
     }

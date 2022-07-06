@@ -14,14 +14,12 @@ type LintFn = fn(usize, &Rule, &DB) -> Option<String>;
 
 pub fn lint_db(db: DB) -> DB {
     let lints: Vec<LintFn> = vec![l001, l002, l003];
-    db.triples()
+
+    db.model
         .iter()
-        .map(|(source, def, id)| match def {
+        .map(|(pos, (source, def))| match def {
             RuleDef::ValidRule(r) => {
-                let x: Vec<String> = lints
-                    .iter()
-                    .filter_map(|f| f(id.unwrap(), r, &db))
-                    .collect();
+                let x: Vec<String> = lints.iter().filter_map(|f| f(*pos, r, &db)).collect();
                 if x.is_empty() {
                     (source.clone(), RuleDef::ValidRule(r.clone()))
                 } else {
@@ -35,4 +33,25 @@ pub fn lint_db(db: DB) -> DB {
         })
         .collect::<Vec<(String, RuleDef)>>()
         .into()
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::linter::findings::L001_MESSAGE;
+    use crate::read::deserialize_rules_db;
+    use std::error::Error;
+
+    #[test]
+    fn lint_simple() -> Result<(), Box<dyn Error>> {
+        let db = deserialize_rules_db(
+            r#"
+        [/foo.bar]
+        allow perm=any all : all
+        "#,
+        )?;
+        let r = db.rule(1).unwrap();
+        assert!(r.msg.is_some());
+        assert_eq!(r.msg.as_ref().unwrap(), L001_MESSAGE);
+        Ok(())
+    }
 }
