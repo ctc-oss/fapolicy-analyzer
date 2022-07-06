@@ -17,17 +17,17 @@ pub fn lint_db(db: DB) -> DB {
     db.triples()
         .iter()
         .map(|(def, source, id)| match def {
-            RuleDef::Valid(r) => {
+            RuleDef::ValidRule(r) => {
                 let x: Vec<String> = lints
                     .iter()
                     .filter_map(|f| f(id.unwrap(), r, &db))
                     .collect();
                 if x.is_empty() {
-                    (source.clone(), RuleDef::Valid(r.clone()))
+                    (source.clone(), RuleDef::ValidRule(r.clone()))
                 } else {
                     (
                         source.clone(),
-                        RuleDef::ValidWithWarning(r.clone(), x.first().unwrap().clone()),
+                        RuleDef::RuleWithWarning(r.clone(), x.first().unwrap().clone()),
                     )
                 }
             }

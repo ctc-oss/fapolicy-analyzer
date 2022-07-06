@@ -33,18 +33,18 @@ pub struct SetEntry {
 /// When valid the text definition can be rendered from the ADTs
 #[derive(Clone, Debug)]
 pub(crate) enum RuleDef {
-    Valid(Rule),
-    ValidWithWarning(Rule, String),
+    ValidRule(Rule),
     ValidSet(Set),
-    ValidSetWithWarning(Set, String),
+    RuleWithWarning(Rule, String),
+    SetWithWarning(Set, String),
     Invalid { text: String, error: String },
 }
 
 impl Display for RuleDef {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let txt = match self {
-            RuleDef::Valid(r) | RuleDef::ValidWithWarning(r, _) => r.to_string(),
-            RuleDef::ValidSet(r) | RuleDef::ValidSetWithWarning(r, _) => r.to_string(),
+            RuleDef::ValidRule(r) | RuleDef::RuleWithWarning(r, _) => r.to_string(),
+            RuleDef::ValidSet(r) | RuleDef::SetWithWarning(r, _) => r.to_string(),
             RuleDef::Invalid { text, .. } => text.clone(),
         };
         f.write_fmt(format_args!("{}", txt))
@@ -61,21 +61,22 @@ impl RuleDef {
 
     fn is_rule(&self) -> bool {
         match self {
-            RuleDef::ValidSet(_) | RuleDef::ValidSetWithWarning(_, _) => false,
+            RuleDef::ValidSet(_) | RuleDef::SetWithWarning(_, _) => false,
             _ => true,
         }
     }
 
     fn warnings(&self) -> Option<String> {
         match self {
-            RuleDef::ValidWithWarning(_, w) | RuleDef::ValidSetWithWarning(_, w) => Some(w.clone()),
+            RuleDef::RuleWithWarning(_, w) | RuleDef::SetWithWarning(_, w) => Some(w.clone()),
             _ => None,
         }
     }
 }
 
-type DbEntry = (String, RuleDef);
-type DbTriple = (RuleDef, String, Option<usize>);
+type Origin = String;
+type DbEntry = (Origin, RuleDef);
+type DbTriple = (RuleDef, Origin, Option<usize>);
 
 /// Rules Database
 /// A container for rules and their metadata
@@ -171,24 +172,12 @@ mod tests {
 
     impl From<Rule> for RuleDef {
         fn from(r: Rule) -> Self {
-            RuleDef::Valid(r)
+            RuleDef::ValidRule(r)
         }
     }
 
     fn any_all_all(decision: Decision) -> RuleDef {
         Rule::new(Subject::all(), Permission::Any, Object::all(), decision).into()
-    }
-
-    impl RuleDef {
-        pub fn unwrap(&self) -> Rule {
-            match self {
-                RuleDef::Valid(val) => val.clone(),
-                RuleDef::ValidWithWarning(val, _) => val.clone(),
-                _ => {
-                    panic!("called `RuleDef::unwrap()` on an invalid rule or set def")
-                }
-            }
-        }
     }
 
     #[test]
