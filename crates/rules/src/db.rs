@@ -15,7 +15,7 @@ use crate::{Rule, Set};
 pub struct RuleEntry {
     pub id: usize,
     pub text: String,
-    pub origin: String,
+    pub origin: Origin,
     pub valid: bool,
     pub msg: Option<String>,
     pub fk: usize,
@@ -25,7 +25,7 @@ pub struct RuleEntry {
 pub struct SetEntry {
     pub name: String,
     pub text: String,
-    pub origin: String,
+    pub origin: Origin,
     pub valid: bool,
     pub msg: Option<String>,
     pub fk: usize,
@@ -56,25 +56,25 @@ impl Display for RuleDef {
 }
 
 impl RuleDef {
-    fn is_valid(&self) -> bool {
-        match self {
-            RuleDef::Invalid { .. } => false,
-            _ => true,
-        }
-    }
-
-    fn is_rule(&self) -> bool {
-        match self {
-            RuleDef::ValidSet(_) | RuleDef::SetWithWarning(_, _) => false,
-            _ => true,
-        }
-    }
-
     fn warnings(&self) -> Option<String> {
         match self {
             RuleDef::RuleWithWarning(_, w) | RuleDef::SetWithWarning(_, w) => Some(w.clone()),
             _ => None,
         }
+    }
+}
+
+fn is_valid(def: &RuleDef) -> bool {
+    match def {
+        RuleDef::Invalid { .. } => false,
+        _ => true,
+    }
+}
+
+fn is_rule(def: &RuleDef) -> bool {
+    match def {
+        RuleDef::ValidSet(_) | RuleDef::SetWithWarning(_, _) => false,
+        _ => true,
     }
 }
 
@@ -90,7 +90,7 @@ pub struct DB {
     sets: BTreeMap<usize, SetEntry>,
 }
 
-impl From<Vec<(String, RuleDef)>> for DB {
+impl From<Vec<(Origin, RuleDef)>> for DB {
     fn from(s: Vec<(String, RuleDef)>) -> Self {
         DB::from_sources(s)
     }
@@ -98,12 +98,12 @@ impl From<Vec<(String, RuleDef)>> for DB {
 
 impl DB {
     /// Construct DB using the provided RuleDefs from the single source
-    fn from_source(source: String, defs: Vec<RuleDef>) -> Self {
-        DB::from_sources(defs.into_iter().map(|d| (source.clone(), d)).collect())
+    fn from_source(origin: Origin, defs: Vec<RuleDef>) -> Self {
+        DB::from_sources(defs.into_iter().map(|d| (origin.clone(), d)).collect())
     }
 
     /// Construct DB using the provided RuleDefs and associated sources
-    pub(crate) fn from_sources(defs: Vec<(String, RuleDef)>) -> Self {
+    pub(crate) fn from_sources(defs: Vec<(Origin, RuleDef)>) -> Self {
         let model: BTreeMap<usize, DbEntry> = defs
             .into_iter()
             .enumerate()
@@ -114,12 +114,12 @@ impl DB {
             .iter()
             .enumerate()
             .map(|(fk, v)| (v, fk))
-            .filter(|((_, (_, m)), _)| m.is_rule())
+            .filter(|((_, (_, m)), _)| is_rule(m))
             .map(|((id, (o, r)), fk)| RuleEntry {
                 id: *id + 1,
                 text: r.to_string(),
                 origin: o.clone(),
-                valid: r.is_valid(),
+                valid: is_valid(r),
                 msg: r.warnings(),
                 fk,
             })
@@ -130,7 +130,7 @@ impl DB {
             .iter()
             .enumerate()
             .map(|(fk, v)| (v, fk))
-            .filter(|((_, (_, m)), _)| !m.is_rule())
+            .filter(|((_, (_, m)), _)| !is_rule(m))
             .map(|((id, (o, r)), fk)| {
                 (
                     *id,
@@ -139,7 +139,7 @@ impl DB {
                         name: "_".to_string(),
                         text: r.to_string(),
                         origin: o.clone(),
-                        valid: r.is_valid(),
+                        valid: is_valid(r),
                         msg: r.warnings(),
                         fk,
                     },
