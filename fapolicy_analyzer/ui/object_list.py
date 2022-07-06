@@ -77,11 +77,11 @@ class ObjectList(SubjectList, Events):
         self.rule_view_activate(rule_id=rule_id)
 
     def load_store(self, objects, **kwargs):
-        ids = kwargs.get("ids", [])
         self._systemTrust = kwargs.get("systemTrust", [])
         self._ancillaryTrust = kwargs.get("ancillaryTrust", [])
         store = Gtk.ListStore(str, str, str, object, str, str, str, int)
-        for o, i in zip(objects, ids):
+        for ob in objects:
+            i, o = next(iter(ob.items()))
             status = self._trust_markup(o)
             mode = self.__markup(
                 o.mode.upper(),

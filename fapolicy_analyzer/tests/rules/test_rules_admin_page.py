@@ -152,3 +152,20 @@ def test_handles_rules_text_exception(mock_dispatch, mock_system_feature):
             payload=Attrs(text=RULES_TEXT_LOAD_ERROR),
         )
     )
+
+
+def test_highlight_row_from_data(widget, mock_system_feature, mocker):
+    mock_rules = [mock_rule()]
+    mock_list_renderer = MagicMock()
+    mocker.patch(
+        "fapolicy_analyzer.ui.rules.rules_list_view.RulesListView.render_rules",
+        mock_list_renderer,
+    )
+    mock_system_feature.on_next(
+        {
+            "rules": MagicMock(error=None, rules=mock_rules, loading=False),
+            "rules_text": MagicMock(),
+        }
+    )
+
+    widget.highlight_row_from_data(0)
