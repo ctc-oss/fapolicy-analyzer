@@ -84,7 +84,7 @@ fn trailing_empty_file() -> Result<(), Box<dyn Error>> {
 }
 
 #[test]
-fn with_set() -> Result<(), Box<dyn Error>> {
+fn single_string_set() -> Result<(), Box<dyn Error>> {
     let db = deserialize_rules_db(
         r#"
         [/foo.bar]
@@ -95,5 +95,72 @@ fn with_set() -> Result<(), Box<dyn Error>> {
     assert_eq!(db.len(), 2);
     assert_eq!(db.rules().len(), 1);
     assert_eq!(db.sets().len(), 1);
+    assert!(db.sets().first().unwrap().valid);
+    Ok(())
+}
+
+#[test]
+fn multi_string_set() -> Result<(), Box<dyn Error>> {
+    let db = deserialize_rules_db(
+        r#"
+        [/foo.bar]
+        %foo=bar,baz
+        allow perm=any all : all
+        "#,
+    )?;
+    assert_eq!(db.len(), 2);
+    assert_eq!(db.rules().len(), 1);
+    assert_eq!(db.sets().len(), 1);
+    assert!(db.sets().first().unwrap().valid);
+    Ok(())
+}
+
+#[test]
+fn single_int_set() -> Result<(), Box<dyn Error>> {
+    let db = deserialize_rules_db(
+        r#"
+        [/foo.bar]
+        %foo=1
+        allow perm=any all : all
+        "#,
+    )?;
+    assert_eq!(db.len(), 2);
+    assert_eq!(db.rules().len(), 1);
+    assert_eq!(db.sets().len(), 1);
+    assert!(db.sets().first().unwrap().valid);
+    Ok(())
+}
+
+#[test]
+fn multi_int_set() -> Result<(), Box<dyn Error>> {
+    let db = deserialize_rules_db(
+        r#"
+        [/foo.bar]
+        %foo=1,2
+        allow perm=any all : all
+        "#,
+    )?;
+    assert_eq!(db.len(), 2);
+    assert_eq!(db.rules().len(), 1);
+    assert_eq!(db.sets().len(), 1);
+    assert!(db.sets().first().unwrap().valid);
+    Ok(())
+}
+
+#[test]
+#[ignore]
+// todo;; current failure of this test describes some of the current set parsing gaps
+fn invalid_set() -> Result<(), Box<dyn Error>> {
+    let db = deserialize_rules_db(
+        r#"
+        [/foo.bar]
+        %foo:1,2
+        allow perm=any all : all
+        "#,
+    )?;
+    assert_eq!(db.len(), 2);
+    assert_eq!(db.rules().len(), 1);
+    assert_eq!(db.sets().len(), 1);
+    assert!(db.sets().first().unwrap().valid);
     Ok(())
 }

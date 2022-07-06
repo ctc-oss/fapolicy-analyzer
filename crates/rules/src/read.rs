@@ -29,8 +29,8 @@ enum Line {
     Blank,
     Comment(String),
     SetDef(Set),
-    WellFormedRule(Rule),
-    MalformedRule(String, String),
+    RuleDef(Rule),
+    Malformed(String, String),
 }
 
 enum LineError<I> {
@@ -53,7 +53,7 @@ fn parser(i: &str) -> nom::IResult<StrTrace, Line, LineError<&str>> {
         map(blank_line, |_| Blank),
         map(comment::parse, Comment),
         map(set::parse, SetDef),
-        map(rule::parse, WellFormedRule),
+        map(rule::parse, RuleDef),
     ))(StrTrace::new(i))
     .map_err(|e| match e {
         nom::Err::Error(e) => nom::Err::Error(LineError::CannotParse(i, format!("{}", e))),
@@ -81,7 +81,7 @@ fn read_rules_db(xs: Vec<RuleSource>) -> Result<DB, Error> {
             Ok((t, rule)) if t.current.is_empty() => Some((source, rule)),
             Ok((_, _)) => None,
             Err(nom::Err::Error(LineError::CannotParse(i, why))) => {
-                Some((source, MalformedRule(i.to_string(), why)))
+                Some((source, Malformed(i.to_string(), why)))
             }
             Err(_) => None,
         })
@@ -93,9 +93,9 @@ fn read_rules_db(xs: Vec<RuleSource>) -> Result<DB, Error> {
         })
         .map(|(source, line)| (source, line))
         .filter_map(|(source, line)| match line {
-            WellFormedRule(r) => Some((source, Entry::ValidRule(r))),
-            MalformedRule(text, e) => Some((source, Entry::Invalid { text, _error: e })),
+            RuleDef(r) => Some((source, Entry::ValidRule(r))),
             SetDef(s) => Some((source, Entry::ValidSet(s))),
+            Malformed(text, e) => Some((source, Entry::Invalid { text, _error: e })),
             _ => None,
         })
         .collect();
