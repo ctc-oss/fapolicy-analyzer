@@ -16,7 +16,7 @@ pub fn lint_db(db: DB) -> DB {
     let lints: Vec<LintFn> = vec![l001, l002, l003];
     db.triples()
         .iter()
-        .map(|(def, source, id)| match def {
+        .map(|(source, def, id)| match def {
             RuleDef::ValidRule(r) => {
                 let x: Vec<String> = lints
                     .iter()

@@ -133,8 +133,22 @@ mod tests {
         )?;
         assert_eq!(db.len(), 2);
         assert_eq!(db.rules().len(), 1);
-        println!("{:?}", db);
-        assert!(db.rules().first().unwrap().valid);
+        assert_eq!(db.sets().len(), 1);
+        Ok(())
+    }
+
+    #[test]
+    fn deser_two_files() -> Result<(), Box<dyn Error>> {
+        let db = deserialize_rules_db(
+            r#"
+        [/foo.rules]
+        allow perm=execute all : all
+        [/bar.rules]
+        allow perm=any all : all
+        "#,
+        )?;
+        assert_eq!(db.len(), 2);
+        assert_eq!(db.rules().len(), 2);
         Ok(())
     }
 }

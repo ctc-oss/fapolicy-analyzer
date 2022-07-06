@@ -33,7 +33,7 @@ impl Changeset {
         }
     }
 
-    pub fn rule(&self, id: usize) -> Option<RuleEntry> {
+    pub fn rule(&self, id: usize) -> Option<&RuleEntry> {
         self.db.rule(id)
     }
 

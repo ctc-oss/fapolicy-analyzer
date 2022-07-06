@@ -6,6 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+use std::collections::BTreeMap;
 use std::fmt::{Display, Formatter};
 
 use crate::{Rule, Set};
@@ -17,14 +18,17 @@ pub struct RuleEntry {
     pub origin: String,
     pub valid: bool,
     pub msg: Option<String>,
+    pub fk: usize,
 }
 
 #[derive(Clone, Debug)]
 pub struct SetEntry {
+    pub name: String,
     pub text: String,
     pub origin: String,
     pub valid: bool,
-    pub msg: String,
+    pub msg: Option<String>,
+    pub fk: usize,
 }
 
 /// Rule Definition
@@ -76,22 +80,20 @@ impl RuleDef {
 
 type Origin = String;
 type DbEntry = (Origin, RuleDef);
-type DbTriple = (RuleDef, Origin, Option<usize>);
+type DbTriple = (Origin, RuleDef, Option<usize>);
 
 /// Rules Database
 /// A container for rules and their metadata
 #[derive(Clone, Debug, Default)]
 pub struct DB {
-    model: Vec<DbEntry>,
+    model: BTreeMap<usize, DbEntry>,
+    rules: BTreeMap<usize, RuleEntry>,
+    sets: BTreeMap<usize, SetEntry>,
 }
 
 impl From<Vec<(String, RuleDef)>> for DB {
-    // from vec of Origin, Def
-    fn from(src: Vec<(String, RuleDef)>) -> Self {
-        DB {
-            model: src,
-            ..DB::default()
-        }
+    fn from(s: Vec<(String, RuleDef)>) -> Self {
+        DB::from_sources(s)
     }
 }
 
@@ -103,26 +105,49 @@ impl DB {
 
     /// Construct DB using the provided RuleDefs and associated sources
     pub(crate) fn from_sources(defs: Vec<(String, RuleDef)>) -> Self {
-        Self {
-            model: defs,
-            ..Default::default()
-        }
-    }
+        let model: BTreeMap<usize, DbEntry> = defs
+            .into_iter()
+            .enumerate()
+            .map(|(i, (source, d))| (i, (source.clone(), d)))
+            .collect();
 
-    // id, rule, origin
-    pub fn rules(&self) -> Vec<RuleEntry> {
-        self.model
+        let rules: BTreeMap<usize, RuleEntry> = model
             .iter()
             .enumerate()
-            .filter(|(_, (_, m))| m.is_rule())
-            .map(|(id, (o, r))| RuleEntry {
-                id,
+            .map(|(fk, v)| (v, fk))
+            .filter(|((_, (_, m)), _)| m.is_rule())
+            .map(|((id, (o, r)), fk)| RuleEntry {
+                id: *id + 1,
                 text: r.to_string(),
                 origin: o.clone(),
                 valid: r.is_valid(),
                 msg: r.warnings(),
+                fk,
             })
-            .collect()
+            .map(|e| (e.id, e))
+            .collect();
+
+        let sets: BTreeMap<usize, SetEntry> = model
+            .iter()
+            .enumerate()
+            .map(|(fk, v)| (v, fk))
+            .filter(|((_, (_, m)), _)| !m.is_rule())
+            .map(|((id, (o, r)), fk)| {
+                (
+                    *id,
+                    SetEntry {
+                        name: "_".to_string(),
+                        text: r.to_string(),
+                        origin: o.clone(),
+                        valid: r.is_valid(),
+                        msg: r.warnings(),
+                        fk,
+                    },
+                )
+            })
+            .collect();
+
+        Self { model, rules, sets }
     }
 
     /// Get the number of RuleDefs
@@ -136,28 +161,25 @@ impl DB {
     }
 
     /// Get a RuleDef by ID
-    pub fn rule(&self, num: usize) -> Option<RuleEntry> {
-        self.model
-            .iter()
-            .filter(|(_, e)| e.is_rule())
-            .enumerate()
-            .find(|(id, _)| *id + 1 == num)
-            .map(|(id, (o, r))| RuleEntry {
-                id,
-                text: r.to_string(),
-                origin: o.clone(),
-                valid: r.is_valid(),
-                msg: r.warnings(),
-            })
+    pub fn rule(&self, num: usize) -> Option<&RuleEntry> {
+        self.rules.get(&num)
+    }
+
+    pub fn rules(&self) -> Vec<&RuleEntry> {
+        self.rules.values().collect()
+    }
+
+    pub fn sets(&self) -> Vec<&SetEntry> {
+        self.sets.values().collect()
     }
 
     pub(crate) fn triples(&self) -> Vec<DbTriple> {
         let mut r = vec![];
         self.model
             .iter()
-            .rfold((0usize, &mut r), |(i, acc), (s, r)| {
+            .rfold((0usize, &mut r), |(i, acc), (_, (s, r))| {
                 let ii = if r.is_rule() { Some(i + 1) } else { None };
-                acc.push((r.clone(), s.clone(), ii));
+                acc.push((s.clone(), r.clone(), ii));
                 (ii.unwrap_or(i), acc)
             });
         r
