@@ -18,7 +18,7 @@ pub struct RuleEntry {
     pub origin: Origin,
     pub valid: bool,
     pub msg: Option<String>,
-    pub fk: usize,
+    _fk: usize,
 }
 
 #[derive(Clone, Debug)]
@@ -28,7 +28,7 @@ pub struct SetEntry {
     pub origin: Origin,
     pub valid: bool,
     pub msg: Option<String>,
-    pub fk: usize,
+    _fk: usize,
 }
 
 /// Rule Definition
@@ -121,7 +121,7 @@ impl DB {
                 origin: o.clone(),
                 valid: is_valid(r),
                 msg: r.warnings(),
-                fk,
+                _fk: fk,
             })
             .map(|e| (e.id, e))
             .collect();
@@ -141,7 +141,7 @@ impl DB {
                         origin: o.clone(),
                         valid: is_valid(r),
                         msg: r.warnings(),
-                        fk,
+                        _fk: fk,
                     },
                 )
             })
