@@ -7,9 +7,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: fapolicy-analyzer 0.5.0+66.gf50422d.dirty\n"
+"Project-Id-Version: fapolicy-analyzer 0.3.1+87.gd110d7a\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-06-10 16:05-0400\n"
+"POT-Creation-Date: 2022-07-06 09:20-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -330,7 +330,8 @@ msgstr ""
 msgid ""
 "\n"
 "The fapolicyd trusted resources database\n"
-"could not be opened and/or read.\n"
+"could not be opened and/or read or the rule file(s)\n"
+"location is incorrectly specified.\n"
 "\n"
 "Typical reasons for this failure:\n"
 "\n"
@@ -344,6 +345,9 @@ msgid ""
 "installed or if installed, has not been executed. The first\n"
 "execution of the fapolicyd daemon will create and\n"
 "populate the trust database.\n"
+"\n"
+"3. The rule file(s) location is incorrectly specified in\n"
+"$(HOME)/.config/fapolicy-analyzer/fapolicy-analyzer.toml\n"
 "    "
 msgstr ""
 
@@ -351,11 +355,16 @@ msgstr ""
 msgid "Deploy Changes"
 msgstr ""
 
-#: fapolicy_analyzer/ui/rules/rules_admin_page.py:76
-msgid ""
-"{invalid_count} invalid rule found\n"
-"{warning_count} warning(s) found\n"
-"{info_count} informational message(s)"
+#: fapolicy_analyzer/ui/rules/rules_status_info.py:27
+msgid "invalid rule(s) found"
+msgstr ""
+
+#: fapolicy_analyzer/ui/rules/rules_status_info.py:28
+msgid "warning(s) found"
+msgstr ""
+
+#: fapolicy_analyzer/ui/rules/rules_status_info.py:29
+msgid "informational message(s)"
 msgstr ""
 
 #: fapolicy_analyzer/glade/analyzer_selection_dialog.glade:41
@@ -496,16 +505,16 @@ msgstr ""
 msgid "Remove Deleted Files"
 msgstr ""
 
-#: fapolicy_analyzer/glade/rules_admin_page.glade:77
-msgid "Status Information"
-msgstr ""
-
-#: fapolicy_analyzer/glade/rules_admin_page.glade:100
+#: fapolicy_analyzer/glade/rules_admin_page.glade:50
 msgid "Guided Editor"
 msgstr ""
 
-#: fapolicy_analyzer/glade/rules_admin_page.glade:123
+#: fapolicy_analyzer/glade/rules_admin_page.glade:73
 msgid "Text Editor"
+msgstr ""
+
+#: fapolicy_analyzer/glade/rules_status_info.glade:55
+msgid "Status Information"
 msgstr ""
 
 #: fapolicy_analyzer/glade/searchable_list.glade:126
