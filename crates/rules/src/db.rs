@@ -36,12 +36,12 @@ pub struct SetEntry {
 /// When invalid it provides the text definition
 /// When valid the text definition can be rendered from the ADTs
 #[derive(Clone, Debug)]
-pub(crate) enum RuleDef {
+pub enum RuleDef {
     ValidRule(Rule),
     ValidSet(Set),
     RuleWithWarning(Rule, String),
     SetWithWarning(Set, String),
-    Invalid { text: String, error: String },
+    Invalid { text: String, _error: String },
 }
 
 impl Display for RuleDef {
@@ -65,17 +65,11 @@ impl RuleDef {
 }
 
 fn is_valid(def: &RuleDef) -> bool {
-    match def {
-        RuleDef::Invalid { .. } => false,
-        _ => true,
-    }
+    !matches!(def, RuleDef::Invalid { .. })
 }
 
 fn is_rule(def: &RuleDef) -> bool {
-    match def {
-        RuleDef::ValidSet(_) | RuleDef::SetWithWarning(_, _) => false,
-        _ => true,
-    }
+    !matches!(def, RuleDef::ValidSet(_) | RuleDef::SetWithWarning(_, _))
 }
 
 type Origin = String;
@@ -97,17 +91,12 @@ impl From<Vec<(Origin, RuleDef)>> for DB {
 }
 
 impl DB {
-    /// Construct DB using the provided RuleDefs from the single source
-    fn from_source(origin: Origin, defs: Vec<RuleDef>) -> Self {
-        DB::from_sources(defs.into_iter().map(|d| (origin.clone(), d)).collect())
-    }
-
     /// Construct DB using the provided RuleDefs and associated sources
     pub(crate) fn from_sources(defs: Vec<(Origin, RuleDef)>) -> Self {
         let model: BTreeMap<usize, DbEntry> = defs
             .into_iter()
             .enumerate()
-            .map(|(i, (source, d))| (i, (source.clone(), d)))
+            .map(|(i, (source, d))| (i, (source, d)))
             .collect();
 
         let rules: BTreeMap<usize, RuleEntry> = model
@@ -185,6 +174,12 @@ mod tests {
     impl From<Rule> for RuleDef {
         fn from(r: Rule) -> Self {
             RuleDef::ValidRule(r)
+        }
+    }
+
+    impl DB {
+        fn from_source(origin: Origin, defs: Vec<RuleDef>) -> Self {
+            DB::from_sources(defs.into_iter().map(|d| (origin.clone(), d)).collect())
         }
     }
 

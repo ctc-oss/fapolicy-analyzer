@@ -165,12 +165,12 @@ pub(crate) fn db_to_vec(db: &DB) -> PyResult<Vec<PyRule>> {
                     (true, e.text.clone(), vec![])
                 }
             } else {
-                let err = e
-                    .msg
-                    .as_ref()
-                    .map(|r| r.clone())
-                    .unwrap_or("???".to_string());
-                (false, e.text.clone(), vec![("e".to_string(), err.clone())])
+                let err = e.msg.as_deref().unwrap_or("???");
+                (
+                    false,
+                    e.text.clone(),
+                    vec![("e".to_string(), err.to_string())],
+                )
             };
             PyRule::new(e.id, text, e.origin.clone(), info, valid)
         })

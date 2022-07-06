@@ -94,7 +94,7 @@ fn read_rules_db(xs: Vec<RuleSource>) -> Result<DB, Error> {
         .map(|(source, line)| (source, line))
         .filter_map(|(source, line)| match line {
             WellFormedRule(r) => Some((source, RuleDef::ValidRule(r))),
-            MalformedRule(text, error) => Some((source, RuleDef::Invalid { text, error })),
+            MalformedRule(text, e) => Some((source, RuleDef::Invalid { text, _error: e })),
             SetDef(s) => Some((source, RuleDef::ValidSet(s))),
             _ => None,
         })
