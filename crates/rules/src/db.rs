@@ -107,16 +107,15 @@ impl DB {
 
         let rules: BTreeMap<usize, RuleEntry> = model
             .iter()
+            .filter(|(fk, (_, e))| is_rule(e))
             .enumerate()
-            .map(|(fk, v)| (v, fk))
-            .filter(|((_, (_, m)), _)| is_rule(m))
-            .map(|((id, (o, r)), fk)| RuleEntry {
-                id: *id + 1,
-                text: r.to_string(),
+            .map(|(id, (fk, (o, e)))| RuleEntry {
+                id: id + 1,
+                text: e.to_string(),
                 origin: o.clone(),
-                valid: is_valid(r),
-                msg: r.warnings(),
-                _fk: fk,
+                valid: is_valid(e),
+                msg: e.warnings(),
+                _fk: *fk,
             })
             .map(|e| (e.id, e))
             .collect();
