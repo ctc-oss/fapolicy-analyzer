@@ -347,17 +347,9 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             self.__selection_state["user"] or self.__selection_state["group"]
         ):
             last_subject = self.__selection_state["subjects"][-1]
-            objects = list(
+            data = list(
                 {
-                    e.object.file: e.object
-                    for e in self.__log.by_subject(last_subject)
-                    if e.uid == self.__selection_state["user"]
-                    or e.gid == self.__selection_state["group"]
-                }.values()
-            )
-            ids = list(
-                {
-                    e.object.file: e.rule_id
+                    e.object.file: {e.rule_id: e.object}
                     for e in self.__log.by_subject(last_subject)
                     if e.uid == self.__selection_state["user"]
                     or e.gid == self.__selection_state["group"]
@@ -366,13 +358,12 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
 
             self.__populate_list(
                 self.object_list,
-                objects,
+                data,
                 "objects",
                 True,
                 self.object_list.get_selected_row_by_file,
                 systemTrust=self.__system_trust,
                 ancillaryTrust=self.__ancillary_trust,
-                ids=ids,
             )
         else:
             self.__populate_list(self.object_list, [], "objects")

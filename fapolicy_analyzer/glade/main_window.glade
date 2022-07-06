@@ -70,7 +70,6 @@
             <property name="orientation">vertical</property>
             <child>
               <object class="GtkMenuBar" id="mainMenu">
-              <property name="name">mainMenu</property>
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <child>
@@ -140,7 +139,6 @@
                   <object class="GtkMenuItem">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="name">toolMenu</property>
                     <property name="label" translatable="yes">_Tool</property>
                     <property name="use-underline">True</property>
                     <child type="submenu">
@@ -176,7 +174,6 @@
                         <child>
                           <object class="GtkMenuItem" id="rulesAdminMenu">
                             <property name="visible">True</property>
-                            <property name="name">ruleMenu</property>
                             <property name="can-focus">False</property>
                             <property name="label" translatable="yes">Administer Rules</property>
                             <property name="use-underline">True</property>
