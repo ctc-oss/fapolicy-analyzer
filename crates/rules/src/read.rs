@@ -96,7 +96,7 @@ fn read_rules_db(xs: Vec<RuleSource>) -> Result<DB, Error> {
                     .rsplit_once('/')
                     .map(|(_, rhs)| rhs.to_string())
                     // if there was no / separator then use the full path
-                    .unwrap_or(p.display().to_string()),
+                    .unwrap_or_else(|| p.display().to_string()),
                 s,
             )
         })
