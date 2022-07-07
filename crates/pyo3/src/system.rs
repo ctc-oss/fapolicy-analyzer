@@ -147,11 +147,11 @@ impl PySystem {
     }
 
     fn rules(&self) -> PyResult<Vec<PyRule>> {
-        rules::db_to_vec(&self.rs.rules_db)
+        rules::rules_to_vec(&self.rs.rules_db)
     }
 
     fn rules_text(&self) -> PyResult<String> {
-        rules::db_to_vec2(&self.rs.rules_db)
+        rules::entries_to_vec(&self.rs.rules_db)
             .map(|x| {
                 x.into_iter().fold((None, String::new()), |x, r| match x {
                     // no origin established yet

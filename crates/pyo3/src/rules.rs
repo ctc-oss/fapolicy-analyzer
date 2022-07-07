@@ -137,7 +137,7 @@ impl PyChangeset {
     }
 
     pub fn get(&self) -> PyResult<Vec<PyRule>> {
-        db_to_vec(self.rs.get())
+        rules_to_vec(self.rs.get())
     }
 
     pub fn set(&mut self, text: String) -> bool {
@@ -153,7 +153,7 @@ fn rule_text_error_check(txt: &str) -> Option<String> {
     }
 }
 
-pub(crate) fn db_to_vec(db: &DB) -> PyResult<Vec<PyRule>> {
+pub(crate) fn rules_to_vec(db: &DB) -> PyResult<Vec<PyRule>> {
     Ok(db
         .rules()
         .iter()
@@ -178,7 +178,7 @@ pub(crate) fn db_to_vec(db: &DB) -> PyResult<Vec<PyRule>> {
         .collect())
 }
 
-pub(crate) fn db_to_vec2(db: &DB) -> PyResult<Vec<PyRule>> {
+pub(crate) fn entries_to_vec(db: &DB) -> PyResult<Vec<PyRule>> {
     Ok(db
         .iter()
         .map(|(id, (origin, e))| {
