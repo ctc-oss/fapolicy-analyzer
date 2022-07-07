@@ -59,8 +59,7 @@ impl Display for Entry {
 }
 
 impl Entry {
-    // todo;; rename to diagnostics
-    fn warnings(&self) -> Option<String> {
+    fn diagnostic_messages(&self) -> Option<String> {
         match self {
             Entry::RuleWithWarning(_, w) | Entry::SetWithWarning(_, w) => Some(w.clone()),
             Entry::Invalid { error, .. } | Entry::InvalidSet { error, .. } => Some(error.clone()),
@@ -116,7 +115,7 @@ impl DB {
                 text: e.to_string(),
                 origin: o.clone(),
                 valid: is_valid(e),
-                msg: e.warnings(),
+                msg: e.diagnostic_messages(),
                 _fk: *fk,
             })
             .map(|e| (e.id, e))
@@ -136,7 +135,7 @@ impl DB {
                         text: r.to_string(),
                         origin: o.clone(),
                         valid: is_valid(r),
-                        msg: r.warnings(),
+                        msg: r.diagnostic_messages(),
                         _fk: fk,
                     },
                 )
