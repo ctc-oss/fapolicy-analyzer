@@ -27,11 +27,14 @@ print(f"system1 has {len(s1.rules())} rules defined")
 print("# building changeset")
 xs = Changeset()
 
-# valid rules under single marker
+# demonstrates: rules / sets / multiple markers
 assert xs.set("""
 [foo.rules]
 %foo=bar,baz
 allow perm=exec all : all
+
+[bar.rules]
+%bing=bam,boom
 deny perm=any all : all
 """)
 
