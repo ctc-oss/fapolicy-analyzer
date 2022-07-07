@@ -9,7 +9,8 @@
 use pyo3::prelude::*;
 use pyo3::PyObjectProtocol;
 
-use fapolicy_rules::db::{Entry, DB};
+use fapolicy_rules::db::Entry::*;
+use fapolicy_rules::db::DB;
 use fapolicy_rules::ops::Changeset;
 use fapolicy_rules::parser::parse::StrTrace;
 use fapolicy_rules::parser::rule::parse_with_error_message;
@@ -182,20 +183,16 @@ pub(crate) fn db_to_vec2(db: &DB) -> PyResult<Vec<PyRule>> {
         .iter()
         .map(|(id, (origin, e))| {
             let (valid, text, info) = match e {
-                Entry::Invalid { text, error } => {
+                Invalid { text, error } => {
                     (false, text.clone(), vec![("e".to_string(), error.clone())])
                 }
-                Entry::InvalidSet { text, error } => {
+                InvalidSet { text, error } => {
                     (false, text.clone(), vec![("e".to_string(), error.clone())])
                 }
-                Entry::ValidRule(r) => (true, r.to_string(), vec![]),
-                Entry::ValidSet(s) => (true, s.to_string(), vec![]),
-                Entry::RuleWithWarning(r, w) => {
-                    (true, r.to_string(), vec![("w".to_string(), w.clone())])
-                }
-                Entry::SetWithWarning(r, w) => {
-                    (true, r.to_string(), vec![("w".to_string(), w.clone())])
-                }
+                ValidRule(r) => (true, r.to_string(), vec![]),
+                ValidSet(s) => (true, s.to_string(), vec![]),
+                RuleWithWarning(r, w) => (true, r.to_string(), vec![("w".to_string(), w.clone())]),
+                SetWithWarning(r, w) => (true, r.to_string(), vec![("w".to_string(), w.clone())]),
             };
             PyRule::new(*id, text, origin.to_string(), info, valid)
         })

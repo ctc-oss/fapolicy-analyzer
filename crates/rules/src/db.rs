@@ -10,6 +10,8 @@ use std::collections::btree_map::Iter;
 use std::collections::BTreeMap;
 use std::fmt::{Display, Formatter};
 
+use Entry::*;
+
 use crate::{Rule, Set};
 
 #[derive(Clone, Debug)]
@@ -49,10 +51,10 @@ pub enum Entry {
 impl Display for Entry {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let txt = match self {
-            Entry::ValidRule(r) | Entry::RuleWithWarning(r, _) => r.to_string(),
-            Entry::ValidSet(r) | Entry::SetWithWarning(r, _) => r.to_string(),
-            Entry::Invalid { text, .. } => text.clone(),
-            Entry::InvalidSet { text, .. } => text.clone(),
+            ValidRule(r) | RuleWithWarning(r, _) => r.to_string(),
+            ValidSet(r) | SetWithWarning(r, _) => r.to_string(),
+            Invalid { text, .. } => text.clone(),
+            InvalidSet { text, .. } => text.clone(),
         };
         f.write_fmt(format_args!("{}", txt))
     }
@@ -61,22 +63,19 @@ impl Display for Entry {
 impl Entry {
     fn diagnostic_messages(&self) -> Option<String> {
         match self {
-            Entry::RuleWithWarning(_, w) | Entry::SetWithWarning(_, w) => Some(w.clone()),
-            Entry::Invalid { error, .. } | Entry::InvalidSet { error, .. } => Some(error.clone()),
+            RuleWithWarning(_, w) | SetWithWarning(_, w) => Some(w.clone()),
+            Invalid { error, .. } | InvalidSet { error, .. } => Some(error.clone()),
             _ => None,
         }
     }
 }
 
 fn is_valid(def: &Entry) -> bool {
-    !matches!(def, Entry::Invalid { .. } | Entry::InvalidSet { .. })
+    !matches!(def, Invalid { .. } | InvalidSet { .. })
 }
 
 fn is_rule(def: &Entry) -> bool {
-    !matches!(
-        def,
-        Entry::ValidSet(_) | Entry::SetWithWarning(..) | Entry::InvalidSet { .. }
-    )
+    !matches!(def, ValidSet(_) | SetWithWarning(..) | InvalidSet { .. })
 }
 
 type Origin = String;
@@ -188,7 +187,7 @@ mod tests {
 
     impl From<Rule> for Entry {
         fn from(r: Rule) -> Self {
-            Entry::ValidRule(r)
+            ValidRule(r)
         }
     }
 
@@ -201,8 +200,8 @@ mod tests {
     impl Entry {
         pub fn unwrap(&self) -> Rule {
             match self {
-                Entry::ValidRule(val) => val.clone(),
-                Entry::RuleWithWarning(val, _) => val.clone(),
+                ValidRule(val) => val.clone(),
+                RuleWithWarning(val, _) => val.clone(),
                 _ => {
                     panic!("called unwrap on an invalid rule or set def")
                 }
