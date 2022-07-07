@@ -59,16 +59,18 @@ impl Display for Entry {
 }
 
 impl Entry {
+    // todo;; rename to diagnostics
     fn warnings(&self) -> Option<String> {
         match self {
             Entry::RuleWithWarning(_, w) | Entry::SetWithWarning(_, w) => Some(w.clone()),
+            Entry::Invalid { error, .. } | Entry::InvalidSet { error, .. } => Some(error.clone()),
             _ => None,
         }
     }
 }
 
 fn is_valid(def: &Entry) -> bool {
-    !matches!(def, Entry::Invalid { .. })
+    !matches!(def, Entry::Invalid { .. } | Entry::InvalidSet { .. })
 }
 
 fn is_rule(def: &Entry) -> bool {
@@ -107,7 +109,7 @@ impl DB {
 
         let rules: BTreeMap<usize, RuleEntry> = model
             .iter()
-            .filter(|(fk, (_, e))| is_rule(e))
+            .filter(|(_fk, (_, e))| is_rule(e))
             .enumerate()
             .map(|(id, (fk, (o, e)))| RuleEntry {
                 id: id + 1,
