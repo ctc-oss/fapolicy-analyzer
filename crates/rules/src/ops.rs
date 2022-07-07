@@ -24,6 +24,12 @@ impl Changeset {
     // todo;; how to properly convey lints and errors in the parse fail?
     //        perhaps just roll it up to a _simple_ Error/Warn/Ok result enum
     pub fn set(&mut self, text: &str) -> Result<&DB, String> {
+        // todo;; what to do with the source text here?
+        //        writing it out verbatim to the disk at deploy would be ideal
+        //        but it has to be stashed somewhere until writing at deploy time
+        //        Q: use compression?  stash in temp file?  stash in XDG dir?
+        //        there is also the question of preserving the rule editing session
+        //        as was done for trust
         match deserialize_rules_db(text) {
             Ok(r) => {
                 self.db = r;
@@ -37,8 +43,8 @@ impl Changeset {
         self.db.rule(id)
     }
 
-    pub fn apply(&self) -> DB {
-        DB::default()
+    pub fn apply(&self) -> &DB {
+        &self.db
     }
 }
 

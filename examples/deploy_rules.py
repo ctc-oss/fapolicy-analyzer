@@ -16,70 +16,29 @@
 from fapolicy_analyzer import *
 from fapolicy_analyzer import RuleChangeset as Changeset
 
+import pathlib
+
+print("# loading system")
 # config is loaded from $HOME/.config/fapolicy-analyzer/fapolicy-analyzer.toml
 
-# a system represents the state of the host sytems
 s1 = System()
+print(f"system1 has {len(s1.rules())} rules defined")
 
-# changeset deserializes rule text into applicable rules
-xs1 = Changeset()
+print("# building changeset")
+xs = Changeset()
 
-# an invalid rule
-txt = """
-foo bar baz
-"""
-assert not xs1.set(txt)
-
-# a valid rule without marker
-txt = """
-allow perm=any all : all
-"""
-assert not xs1.set(txt)
-
-# markers are relative to the rules.d dir
-# if using fapolicyd.rules markers are not supported
-
-# a valid rule with marker
-txt = """
-[foo.rules]
-allow perm=any all : all
-"""
-assert xs1.set(txt)
-for r in xs1.get():
-    print(r)
-
-print("---")
-# multiple valid rules with markers
-txt = """
-[foo.rules]
-allow perm=exec all : all
-
-[bar.rules]
-deny perm=any all : all
-"""
-assert xs1.set(txt)
-for r in xs1.get():
-    print(r)
-
-print("---")
 # valid rules under single marker
-txt = """
+assert xs.set("""
 [foo.rules]
+%foo=bar,baz
 allow perm=exec all : all
 deny perm=any all : all
-"""
-assert xs1.set(txt)
-for r in xs1.get():
-    print(r)
+""")
 
-print("---")
-# empty marker
-txt = """
-[foo.rules]
-allow perm=exec all : all
+print("# applying changes")
+s2 = s1.apply_rule_changes(xs)
 
-[bar.rules]
-"""
-assert xs1.set(txt)
-for r in xs1.get():
-    print(r)
+print(f"system2 has {len(s2.rules())} rules defined")
+
+print("# deploying system")
+s2.deploy_only()
