@@ -170,6 +170,10 @@ impl DB {
         self.sets.values().collect()
     }
 
+    pub fn entry(&self, num: usize) -> Option<&Entry> {
+        self.model.get(&num).map(|(_, e)| e)
+    }
+
     /// Get a model iterator
     pub fn iter(&self) -> Iter<'_, usize, DbEntry> {
         self.model.iter()
@@ -191,6 +195,18 @@ mod tests {
     impl DB {
         fn from_source(origin: Origin, defs: Vec<Entry>) -> Self {
             DB::from_sources(defs.into_iter().map(|d| (origin.clone(), d)).collect())
+        }
+    }
+
+    impl Entry {
+        pub fn unwrap(&self) -> Rule {
+            match self {
+                Entry::ValidRule(val) => val.clone(),
+                Entry::RuleWithWarning(val, _) => val.clone(),
+                _ => {
+                    panic!("called unwrap on an invalid rule or set def")
+                }
+            }
         }
     }
 
@@ -265,9 +281,8 @@ mod tests {
         assert!(!db.is_empty());
         assert_eq!(db.len(), 8);
 
-        // todo;; the accessor of the parsed rules was lost....
-        // for s in subjs.iter().enumerate() {
-        //     assert_eq!(db.rule(s.0 + 1).unwrap().unwrap().subj.exe().unwrap(), *s.1);
-        // }
+        for s in subjs.iter().enumerate() {
+            assert_eq!(db.entry(s.0).unwrap().unwrap().subj.exe().unwrap(), *s.1);
+        }
     }
 }

@@ -157,8 +157,7 @@ fn invalid_set() -> Result<(), Box<dyn Error>> {
         "#,
     )?;
     assert_eq!(db.len(), 2);
-    assert_eq!(db.rules().len(), 1);
     assert_eq!(db.sets().len(), 1);
-    assert!(db.sets().first().unwrap().valid);
+    assert!(!db.sets().first().unwrap().valid);
     Ok(())
 }
