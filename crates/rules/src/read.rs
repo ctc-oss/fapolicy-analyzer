@@ -14,7 +14,7 @@ use nom::combinator::{eof, map, recognize};
 use nom::error::{ErrorKind, ParseError};
 use nom::sequence::tuple;
 
-use crate::db::{RuleDef, DB};
+use crate::db::{Entry, DB};
 use crate::error::Error;
 use crate::linter::lint::lint_db;
 use crate::load::RuleFrom::{Disk, Mem};
@@ -29,11 +29,13 @@ enum Line {
     Blank,
     Comment(String),
     SetDef(Set),
-    WellFormedRule(Rule),
-    MalformedRule(String, String),
+    RuleDef(Rule),
+    Malformed(String, String),
+    MalformedSet(String, String),
 }
 
 enum LineError<I> {
+    CannotParseSet(I, String),
     CannotParse(I, String),
     Nom(I, ErrorKind),
 }
@@ -53,11 +55,21 @@ fn parser(i: &str) -> nom::IResult<StrTrace, Line, LineError<&str>> {
         map(blank_line, |_| Blank),
         map(comment::parse, Comment),
         map(set::parse, SetDef),
-        map(rule::parse, WellFormedRule),
+        map(rule::parse, RuleDef),
     ))(StrTrace::new(i))
-    .map_err(|e| match e {
-        nom::Err::Error(e) => nom::Err::Error(LineError::CannotParse(i, format!("{}", e))),
-        e => nom::Err::Error(LineError::CannotParse(i, format!("{:?}", e))),
+    .map_err(|e| {
+        let details = match e {
+            nom::Err::Error(e) => e.to_string(),
+            e => format!("{:?}", e),
+        };
+        // todo;; guess set or rule here based on the line start char?
+        let f = if i.starts_with('%') {
+            LineError::CannotParseSet
+        } else {
+            LineError::CannotParse
+        };
+
+        nom::Err::Error(f(i, details))
     })
 }
 
@@ -74,14 +86,17 @@ pub fn load_rules_db(path: &str) -> Result<DB, Error> {
 }
 
 fn read_rules_db(xs: Vec<RuleSource>) -> Result<DB, Error> {
-    let lookup: Vec<(String, RuleDef)> = xs
+    let lookup: Vec<(String, Entry)> = xs
         .iter()
         .map(|(source, l)| (source, parser(l)))
         .flat_map(|(source, r)| match r {
             Ok((t, rule)) if t.current.is_empty() => Some((source, rule)),
             Ok((_, _)) => None,
             Err(nom::Err::Error(LineError::CannotParse(i, why))) => {
-                Some((source, MalformedRule(i.to_string(), why)))
+                Some((source, Malformed(i.to_string(), why)))
+            }
+            Err(nom::Err::Error(LineError::CannotParseSet(i, why))) => {
+                Some((source, MalformedSet(i.to_string(), why)))
             }
             Err(_) => None,
         })
@@ -93,8 +108,10 @@ fn read_rules_db(xs: Vec<RuleSource>) -> Result<DB, Error> {
         })
         .map(|(source, line)| (source, line))
         .filter_map(|(source, line)| match line {
-            WellFormedRule(r) => Some((source, RuleDef::Valid(r))),
-            MalformedRule(text, error) => Some((source, RuleDef::Invalid { text, error })),
+            RuleDef(r) => Some((source, Entry::ValidRule(r))),
+            SetDef(s) => Some((source, Entry::ValidSet(s))),
+            Malformed(text, error) => Some((source, Entry::Invalid { text, error })),
+            MalformedSet(text, error) => Some((source, Entry::InvalidSet { text, error })),
             _ => None,
         })
         .collect();

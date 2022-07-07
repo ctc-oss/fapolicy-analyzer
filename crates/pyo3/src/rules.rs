@@ -9,7 +9,8 @@
 use pyo3::prelude::*;
 use pyo3::PyObjectProtocol;
 
-use fapolicy_rules::db::{RuleDef, DB};
+use fapolicy_rules::db::Entry::*;
+use fapolicy_rules::db::DB;
 use fapolicy_rules::ops::Changeset;
 use fapolicy_rules::parser::parse::StrTrace;
 use fapolicy_rules::parser::rule::parse_with_error_message;
@@ -136,7 +137,7 @@ impl PyChangeset {
     }
 
     pub fn get(&self) -> PyResult<Vec<PyRule>> {
-        db_to_vec(self.rs.get())
+        rules_to_vec(self.rs.get())
     }
 
     pub fn set(&mut self, text: String) -> bool {
@@ -152,25 +153,48 @@ fn rule_text_error_check(txt: &str) -> Option<String> {
     }
 }
 
-pub(crate) fn db_to_vec(db: &DB) -> PyResult<Vec<PyRule>> {
+pub(crate) fn rules_to_vec(db: &DB) -> PyResult<Vec<PyRule>> {
+    Ok(db
+        .rules()
+        .iter()
+        .map(|e| {
+            let (valid, text, info) = if e.valid {
+                if e.msg.is_some() {
+                    let w = e.msg.as_ref().unwrap();
+                    (true, e.text.clone(), vec![("w".to_string(), w.clone())])
+                } else {
+                    (true, e.text.clone(), vec![])
+                }
+            } else {
+                let err = e.msg.as_deref().unwrap_or("???");
+                (
+                    false,
+                    e.text.clone(),
+                    vec![("e".to_string(), err.to_string())],
+                )
+            };
+            PyRule::new(e.id, text, e.origin.clone(), info, valid)
+        })
+        .collect())
+}
+
+pub(crate) fn entries_to_vec(db: &DB) -> PyResult<Vec<PyRule>> {
     Ok(db
         .iter()
-        .map(|(id, r)| {
-            let (valid, text, info) = match r {
-                RuleDef::Invalid { text, error } => {
+        .map(|(id, (origin, e))| {
+            let (valid, text, info) = match e {
+                Invalid { text, error } => {
                     (false, text.clone(), vec![("e".to_string(), error.clone())])
                 }
-                RuleDef::Valid(r) => (true, r.to_string(), vec![]),
-                RuleDef::ValidWithWarning(r, w) => {
-                    (true, r.to_string(), vec![("w".to_string(), w.clone())])
+                InvalidSet { text, error } => {
+                    (false, text.clone(), vec![("e".to_string(), error.clone())])
                 }
+                ValidRule(r) => (true, r.to_string(), vec![]),
+                ValidSet(s) => (true, s.to_string(), vec![]),
+                RuleWithWarning(r, w) => (true, r.to_string(), vec![("w".to_string(), w.clone())]),
+                SetWithWarning(r, w) => (true, r.to_string(), vec![("w".to_string(), w.clone())]),
             };
-            let origin = db
-                .source(*id)
-                // todo;; this should be converted to a python exception
-                .unwrap_or_else(|| "<unknown>".to_string());
-
-            PyRule::new(*id, text, origin, info, valid)
+            PyRule::new(*id, text, origin.to_string(), info, valid)
         })
         .collect())
 }
