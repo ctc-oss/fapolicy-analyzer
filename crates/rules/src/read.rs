@@ -88,6 +88,7 @@ pub fn load_rules_db(path: &str) -> Result<DB, Error> {
 fn read_rules_db(xs: Vec<RuleSource>) -> Result<DB, Error> {
     let lookup: Vec<(String, Entry)> = xs
         .iter()
+        .map(relativized_path)
         .map(|(source, l)| (source, parser(l)))
         .flat_map(|(source, r)| match r {
             Ok((t, rule)) if t.current.is_empty() => Some((source, rule)),
@@ -100,13 +101,6 @@ fn read_rules_db(xs: Vec<RuleSource>) -> Result<DB, Error> {
             }
             Err(_) => None,
         })
-        .map(|(source, line)| {
-            let source = source.display().to_string();
-            // todo;; support relative path parsing here
-            let (_, file_name) = source.rsplit_once('/').expect("absolute path");
-            (file_name.to_string(), line)
-        })
-        .map(|(source, line)| (source, line))
         .filter_map(|(source, line)| match line {
             RuleDef(r) => Some((source, Entry::ValidRule(r))),
             SetDef(s) => Some((source, Entry::ValidSet(s))),
@@ -117,4 +111,38 @@ fn read_rules_db(xs: Vec<RuleSource>) -> Result<DB, Error> {
         .collect();
 
     Ok(lint_db(DB::from_sources(lookup)))
+}
+
+fn relativized_path(i: &(PathBuf, String)) -> (String, &String) {
+    (
+        // render and split off the filename from full path
+        i.0.display()
+            .to_string()
+            .rsplit_once('/')
+            .map(|(_, rhs)| rhs.to_string())
+            // if there was no / separator then use the full path
+            .unwrap_or_else(|| i.0.display().to_string()),
+        &i.1,
+    )
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::read::relativized_path;
+    use std::path::PathBuf;
+
+    #[test]
+    fn test_relativize_path() {
+        // absolute path
+        let i = (PathBuf::from("/foo/bar.baz"), "boom".to_string());
+        let r = relativized_path(&i);
+        assert_eq!(r.0, "bar.baz");
+        assert_eq!(r.1, "boom");
+
+        // relative path
+        let i = (PathBuf::from("bar.baz"), "boom2".to_string());
+        let r = relativized_path(&i);
+        assert_eq!(r.0, "bar.baz");
+        assert_eq!(r.1, "boom2");
+    }
 }

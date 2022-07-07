@@ -44,7 +44,7 @@ mod tests {
     fn lint_simple() -> Result<(), Box<dyn Error>> {
         let db = deserialize_rules_db(
             r#"
-        [/foo.bar]
+        [foo.bar]
         allow perm=any all : all
         "#,
         )?;

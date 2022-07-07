@@ -36,9 +36,12 @@ allow perm=any all : all
 """
 assert not xs1.set(txt)
 
+# markers are relative to the rules.d dir
+# if using fapolicyd.rules markers are not supported
+
 # a valid rule with marker
 txt = """
-[/etc/fapolicyd/rules.d/foo.rules]
+[foo.rules]
 allow perm=any all : all
 """
 assert xs1.set(txt)
@@ -48,10 +51,10 @@ for r in xs1.get():
 print("---")
 # multiple valid rules with markers
 txt = """
-[/etc/fapolicyd/rules.d/foo.rules]
+[foo.rules]
 allow perm=exec all : all
 
-[/etc/fapolicyd/rules.d/bar.rules]
+[bar.rules]
 deny perm=any all : all
 """
 assert xs1.set(txt)
@@ -61,7 +64,7 @@ for r in xs1.get():
 print("---")
 # valid rules under single marker
 txt = """
-[/etc/fapolicyd/rules.d/foo.rules]
+[foo.rules]
 allow perm=exec all : all
 deny perm=any all : all
 """
@@ -72,10 +75,10 @@ for r in xs1.get():
 print("---")
 # empty marker
 txt = """
-[/etc/fapolicyd/rules.d/foo.rules]
+[foo.rules]
 allow perm=exec all : all
 
-[/etc/fapolicyd/rules.d/bar.rules]
+[bar.rules]
 """
 assert xs1.set(txt)
 for r in xs1.get():
