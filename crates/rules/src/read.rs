@@ -88,18 +88,7 @@ pub fn load_rules_db(path: &str) -> Result<DB, Error> {
 fn read_rules_db(xs: Vec<RuleSource>) -> Result<DB, Error> {
     let lookup: Vec<(String, Entry)> = xs
         .iter()
-        .map(|(p, s)| {
-            (
-                // render and split off the filename from full path
-                p.display()
-                    .to_string()
-                    .rsplit_once('/')
-                    .map(|(_, rhs)| rhs.to_string())
-                    // if there was no / separator then use the full path
-                    .unwrap_or_else(|| p.display().to_string()),
-                s,
-            )
-        })
+        .map(relativized_path)
         .map(|(source, l)| (source, parser(l)))
         .flat_map(|(source, r)| match r {
             Ok((t, rule)) if t.current.is_empty() => Some((source, rule)),
@@ -122,4 +111,38 @@ fn read_rules_db(xs: Vec<RuleSource>) -> Result<DB, Error> {
         .collect();
 
     Ok(lint_db(DB::from_sources(lookup)))
+}
+
+fn relativized_path(i: &(PathBuf, String)) -> (String, &String) {
+    (
+        // render and split off the filename from full path
+        i.0.display()
+            .to_string()
+            .rsplit_once('/')
+            .map(|(_, rhs)| rhs.to_string())
+            // if there was no / separator then use the full path
+            .unwrap_or_else(|| i.0.display().to_string()),
+        &i.1,
+    )
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::read::relativized_path;
+    use std::path::PathBuf;
+
+    #[test]
+    fn test_relativize_path() {
+        // absolute path
+        let i = (PathBuf::from("/foo/bar.baz"), "boom".to_string());
+        let r = relativized_path(&i);
+        assert_eq!(r.0, "bar.baz");
+        assert_eq!(r.1, "boom");
+
+        // relative path
+        let i = (PathBuf::from("bar.baz"), "boom2".to_string());
+        let r = relativized_path(&i);
+        assert_eq!(r.0, "bar.baz");
+        assert_eq!(r.1, "boom2");
+    }
 }
