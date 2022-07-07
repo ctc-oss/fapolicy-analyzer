@@ -16,15 +16,13 @@
 from fapolicy_analyzer import *
 from fapolicy_analyzer import RuleChangeset as Changeset
 
-import pathlib
-
-print("# loading system")
+print("loading system")
 # config is loaded from $HOME/.config/fapolicy-analyzer/fapolicy-analyzer.toml
 
 s1 = System()
 print(f"system1 has {len(s1.rules())} rules defined")
 
-print("# building changeset")
+print("building changeset")
 xs = Changeset()
 
 # demonstrates: rules / sets / multiple markers
@@ -38,10 +36,10 @@ allow perm=exec all : all
 deny perm=any all : all
 """)
 
-print("# applying changes")
+print("applying changes")
 s2 = s1.apply_rule_changes(xs)
 
 print(f"system2 has {len(s2.rules())} rules defined")
 
-print("# deploying system")
+print("deploying system")
 s2.deploy_only()

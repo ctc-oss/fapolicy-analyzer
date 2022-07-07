@@ -28,11 +28,7 @@ def get_version():
         meta = version.get_versions()
         if "version" not in meta:
             raise RuntimeError("Could not parse version from Git")
-        v = str(meta["version"])
-        if v.startswith('0.0.0'):
-            return v.split('+')[1]
-        else:
-            return v
+        return meta["version"]
 
 
 #
