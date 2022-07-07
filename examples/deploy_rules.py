@@ -16,9 +16,8 @@
 from fapolicy_analyzer import *
 from fapolicy_analyzer import RuleChangeset as Changeset
 
-print("loading system")
 # config is loaded from $HOME/.config/fapolicy-analyzer/fapolicy-analyzer.toml
-
+print("loading system")
 s1 = System()
 print(f"system1 has {len(s1.rules())} rules defined")
 
