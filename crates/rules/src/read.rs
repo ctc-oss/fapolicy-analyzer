@@ -88,6 +88,18 @@ pub fn load_rules_db(path: &str) -> Result<DB, Error> {
 fn read_rules_db(xs: Vec<RuleSource>) -> Result<DB, Error> {
     let lookup: Vec<(String, Entry)> = xs
         .iter()
+        .map(|(p, s)| {
+            (
+                // render and split off the filename from full path
+                p.display()
+                    .to_string()
+                    .rsplit_once('/')
+                    .map(|(_, rhs)| rhs.to_string())
+                    // if there was no / separator then use the full path
+                    .unwrap_or(p.display().to_string()),
+                s,
+            )
+        })
         .map(|(source, l)| (source, parser(l)))
         .flat_map(|(source, r)| match r {
             Ok((t, rule)) if t.current.is_empty() => Some((source, rule)),
@@ -100,13 +112,6 @@ fn read_rules_db(xs: Vec<RuleSource>) -> Result<DB, Error> {
             }
             Err(_) => None,
         })
-        .map(|(source, line)| {
-            let source = source.display().to_string();
-            // todo;; support relative path parsing here
-            let (_, file_name) = source.rsplit_once('/').expect("absolute path");
-            (file_name.to_string(), line)
-        })
-        .map(|(source, line)| (source, line))
         .filter_map(|(source, line)| match line {
             RuleDef(r) => Some((source, Entry::ValidRule(r))),
             SetDef(s) => Some((source, Entry::ValidSet(s))),

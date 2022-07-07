@@ -48,12 +48,12 @@ mod tests {
     use std::error::Error;
 
     #[test]
-    fn deserialize_absolute() -> Result<(), Box<dyn Error>> {
+    fn deserialize() -> Result<(), Box<dyn Error>> {
         let mut cs = Changeset::default();
-        let txt = "[/foo.rules]\ndeny_audit perm=open all : all";
+        let txt = "[foo.rules]\ndeny_audit perm=open all : all";
         let _x1 = cs.set(txt);
 
-        let txt = "[/foo.rules]\nfffdeny_audit perm=open all : all";
+        let txt = "[foo.rules]\nfffdeny_audit perm=open all : all";
         let _x2 = cs.set(txt)?;
 
         Ok(())

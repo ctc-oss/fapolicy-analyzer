@@ -13,7 +13,7 @@ use std::error::Error;
 fn one_file_one_rule() -> Result<(), Box<dyn Error>> {
     let db = deserialize_rules_db(
         r#"
-        [/foo.bar]
+        [foo.bar]
         allow perm=any all : all
         "#,
     )?;
@@ -27,7 +27,7 @@ fn one_file_one_rule() -> Result<(), Box<dyn Error>> {
 fn one_file_two_rules() -> Result<(), Box<dyn Error>> {
     let db = deserialize_rules_db(
         r#"
-        [/foo.bar]
+        [foo.bar]
         deny perm=execute all : all
         allow perm=any all : all
         "#,
@@ -41,9 +41,9 @@ fn one_file_two_rules() -> Result<(), Box<dyn Error>> {
 fn two_files() -> Result<(), Box<dyn Error>> {
     let db = deserialize_rules_db(
         r#"
-        [/foo.rules]
+        [foo.rules]
         allow perm=execute all : all
-        [/bar.rules]
+        [bar.rules]
         allow perm=any all : all
         "#,
     )?;
@@ -56,7 +56,7 @@ fn two_files() -> Result<(), Box<dyn Error>> {
 fn only_empty_file() -> Result<(), Box<dyn Error>> {
     let db = deserialize_rules_db(
         r#"
-        [/foo.rules]
+        [foo.rules]
         "#,
     )?;
     assert!(db.is_empty());
@@ -67,8 +67,8 @@ fn only_empty_file() -> Result<(), Box<dyn Error>> {
 fn leading_empty_file() -> Result<(), Box<dyn Error>> {
     let db = deserialize_rules_db(
         r#"
-        [/foo.rules]
-        [/bar.rules]
+        [foo.rules]
+        [bar.rules]
         allow perm=execute all : all
         "#,
     )?;
@@ -81,9 +81,9 @@ fn leading_empty_file() -> Result<(), Box<dyn Error>> {
 fn trailing_empty_file() -> Result<(), Box<dyn Error>> {
     let db = deserialize_rules_db(
         r#"
-        [/foo.rules]
+        [foo.rules]
         allow perm=execute all : all
-        [/bar.rules]
+        [bar.rules]
         "#,
     )?;
     assert_eq!(db.len(), 1);
@@ -95,7 +95,7 @@ fn trailing_empty_file() -> Result<(), Box<dyn Error>> {
 fn single_string_set() -> Result<(), Box<dyn Error>> {
     let db = deserialize_rules_db(
         r#"
-        [/foo.bar]
+        [foo.bar]
         %foo=bar
         allow perm=any all : all
         "#,
@@ -111,7 +111,7 @@ fn single_string_set() -> Result<(), Box<dyn Error>> {
 fn multi_string_set() -> Result<(), Box<dyn Error>> {
     let db = deserialize_rules_db(
         r#"
-        [/foo.bar]
+        [foo.bar]
         %foo=bar,baz
         allow perm=any all : all
         "#,
@@ -127,7 +127,7 @@ fn multi_string_set() -> Result<(), Box<dyn Error>> {
 fn single_int_set() -> Result<(), Box<dyn Error>> {
     let db = deserialize_rules_db(
         r#"
-        [/foo.bar]
+        [foo.bar]
         %foo=1
         allow perm=any all : all
         "#,
@@ -143,7 +143,7 @@ fn single_int_set() -> Result<(), Box<dyn Error>> {
 fn multi_int_set() -> Result<(), Box<dyn Error>> {
     let db = deserialize_rules_db(
         r#"
-        [/foo.bar]
+        [foo.bar]
         %foo=1,2
         allow perm=any all : all
         "#,
@@ -159,7 +159,7 @@ fn multi_int_set() -> Result<(), Box<dyn Error>> {
 fn invalid_set() -> Result<(), Box<dyn Error>> {
     let db = deserialize_rules_db(
         r#"
-        [/foo.bar]
+        [foo.bar]
         %foo:1,2
         allow perm=any all : all
         "#,
