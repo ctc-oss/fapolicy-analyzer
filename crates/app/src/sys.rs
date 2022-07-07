@@ -8,25 +8,47 @@
 
 use std::fs::File;
 use std::io::Write;
+use std::path::PathBuf;
 
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
 
-use fapolicy_daemon::fapolicyd::{RPM_DB_PATH, RULES_FILE_PATH, TRUST_DB_PATH, TRUST_FILE_PATH};
+use fapolicy_daemon::fapolicyd::{
+    COMPILED_RULES_PATH, RPM_DB_PATH, RULES_FILE_PATH, TRUST_DB_PATH, TRUST_FILE_PATH,
+};
 
 use crate::app::State;
-use crate::sys::Error::WriteAncillaryFail;
+use crate::sys::Error::{WriteAncillaryFail, WriteCompiledRulesFail};
 
 #[derive(Error, Debug)]
 pub enum Error {
     #[error("{0}")]
     WriteAncillaryFail(String),
     #[error("{0}")]
+    WriteCompiledRulesFail(String),
+    #[error("{0}")]
     DaemonError(#[from] fapolicy_daemon::error::Error),
 }
 
 pub fn deploy_app_state(state: &State) -> Result<(), Error> {
+    // determine appropriate output rule path from configuration
+    let rules_file = if PathBuf::from(&state.config.system.rules_file_path).is_dir() {
+        COMPILED_RULES_PATH
+    } else {
+        &state.config.system.rules_file_path
+    };
+
+    // write compiled rules db
+    // todo;; write rules.d files
+    let mut rf = File::create(rules_file)
+        .map_err(|_| WriteCompiledRulesFail("unable to write compiled rules".to_string()))?;
+    for (_, (_, e)) in state.rules_db.iter() {
+        rf.write_all(format!("{}\n", e).as_bytes())
+            .map_err(|_| WriteCompiledRulesFail("unable to write rule entry".to_string()))?;
+    }
+
+    // write file trust db
     let mut tf = File::create(&state.config.system.ancillary_trust_path)
         .map_err(|_| WriteAncillaryFail("unable to create ancillary trust".to_string()))?;
     for (path, meta) in state.trust_db.iter() {

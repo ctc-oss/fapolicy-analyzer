@@ -83,11 +83,3 @@ allow perm=exec all : all
 assert xs1.set(txt)
 for r in xs1.get():
     print(r)
-
-print("---")
-# todo;; support parsing relative markers
-txt = """
-[foo.rules]
-allow perm=any all : all
-"""
-# print(xs1.set(r))
