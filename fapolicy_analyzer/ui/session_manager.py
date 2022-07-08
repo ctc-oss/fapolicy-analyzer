@@ -20,17 +20,18 @@ import logging
 import os
 import time
 from datetime import datetime as DT
-from fapolicy_analyzer import Changeset
-from fapolicy_analyzer.util.format import f
 from locale import gettext as _
 from sys import stderr
+
+from fapolicy_analyzer import Changeset
 from fapolicy_analyzer.ui.actions import (
     NotificationType,
-    apply_changesets,
     add_notification,
+    apply_changesets,
     restore_system_checkpoint,
 )
 from fapolicy_analyzer.ui.store import dispatch, get_system_feature
+from fapolicy_analyzer.util.format import f
 
 
 class SessionManager:
@@ -84,7 +85,10 @@ class SessionManager:
         self.__force_cleanup_autosave_sessions()
 
     def on_next_system(self, system):
-        changesets = (system and system.get("changesets")) or []
+        if not system:
+            return
+
+        changesets = system.get("changesets").changesets
 
         # if changesets have changes request an auto save
         if self.__changesets != changesets:

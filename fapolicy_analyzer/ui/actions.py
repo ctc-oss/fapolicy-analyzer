@@ -15,7 +15,7 @@
 
 from enum import Enum
 from itertools import count
-from typing import Any, Iterator, NamedTuple, Sequence
+from typing import Any, Iterator, NamedTuple, Optional, Sequence
 
 from fapolicy_analyzer import Changeset, Event, Group, Rule, Trust, User
 from redux import Action, create_action
@@ -32,6 +32,7 @@ RESTORE_SYSTEM_CHECKPOINT = "RESTORE_SYSTEM_CHECKPOINT"
 
 ADD_CHANGESETS = "ADD_CHANGESETS"
 APPLY_CHANGESETS = "APPLY_CHANGESETS"
+ERROR_APPLY_CHANGESETS = "ERROR_APPLY_CHANGESETS"
 CLEAR_CHANGESETS = "CLEAR_CHANGESET"
 
 REQUEST_ANCILLARY_TRUST = "REQUEST_ANCILLARY_TRUST"
@@ -64,6 +65,7 @@ ERROR_RULES = "ERROR_RULES"
 
 REQUEST_RULES_TEXT = "REQUEST_RULES_TEXT"
 RECEIVED_RULES_TEXT = "RECEIVED_RULES_TEXT"
+MODIFY_RULES_TEXT = "MODIFY_RULES_TEXT"
 ERROR_RULES_TEXT = "ERROR_RULES_TEXT"
 
 
@@ -84,7 +86,7 @@ class NotificationType(Enum):
 class Notification(NamedTuple):
     id: int
     text: str
-    type: NotificationType
+    type: Optional[NotificationType]
 
 
 def add_notification(text: str, type: NotificationType) -> Action:
@@ -101,6 +103,10 @@ def add_changesets(*changesets: Changeset) -> Action:
 
 def apply_changesets(*changesets: Changeset) -> Action:
     return _create_action(APPLY_CHANGESETS, changesets)
+
+
+def error_apply_changesets(error: str) -> Action:
+    return _create_action(ERROR_APPLY_CHANGESETS, error)
 
 
 def clear_changesets() -> Action:
@@ -205,6 +211,10 @@ def request_rules_text() -> Action:
 
 def received_rules_text(rules_text: str) -> Action:
     return _create_action(RECEIVED_RULES_TEXT, rules_text)
+
+
+def modify_rules_text(rules_text: str) -> Action:
+    return _create_action(MODIFY_RULES_TEXT, rules_text)
 
 
 def error_rules_text(error: str) -> Action:

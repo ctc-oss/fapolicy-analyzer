@@ -13,15 +13,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import gi
 import re
+from os import path
+
 import fapolicy_analyzer.ui.strings as strings
+import gi
+from events import Events
+from fapolicy_analyzer.ui.ui_widget import UIBuilderWidget
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
-from events import Events
-from os import path
-from fapolicy_analyzer.ui.ui_widget import UIBuilderWidget
+from gi.repository import Gtk  # isort: skip
 
 
 class AddFileButton(UIBuilderWidget, Events):

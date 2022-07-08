@@ -221,7 +221,7 @@ class MainWindow(UIConnectedWidget):
         return self.__unapplied_changes()
 
     def on_next_system(self, system):
-        self.__changesets = system["changesets"]
+        self.__changesets = system["changesets"].changesets
         dirty = self.__dirty_changesets()
         title = f"*{self.strTopLevelTitle}" if dirty else self.strTopLevelTitle
         self.windowTopLevel.set_title(title)
