@@ -152,3 +152,5 @@ populate the trust database.
 $(HOME)/.config/fapolicy-analyzer/fapolicy-analyzer.toml
     """
 )
+
+APPLY_CHANGESETS_ERROR_MESSAGE = _("Error applying changes")

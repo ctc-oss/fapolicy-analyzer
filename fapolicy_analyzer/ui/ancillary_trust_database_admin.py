@@ -158,13 +158,13 @@ SHA256: {fs.sha(trust.path)}"""
             self.delete_trusted_files(*self.selectedFiles)
 
     def on_next_system(self, system):
-        changesets = system.get("changesets")
+        changesetState = system.get("changesets")
         trustState = system.get("ancillary_trust")
 
         # if changesets have changes request a new ancillary trust
-        if self._changesets != changesets:
-            self._changesets = changesets
-            self.trustFileList.set_changesets(changesets)
+        if self._changesets != changesetState.changesets:
+            self._changesets = changesetState.changesets
+            self.trustFileList.set_changesets(self._changesets)
             self.__load_trust()
 
         # if there was an error loading show appropriate notification

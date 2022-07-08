@@ -25,19 +25,18 @@ import gi
 from fapolicy_analyzer import __version__ as app_version
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.util.format import f
-from .profile_dialog import ProfileDialog
 
 from .action_toolbar import ActionToolbar
 from .actions import NotificationType, add_notification
 from .analyzer_selection_dialog import ANALYZER_SELECTION
 from .configs import Sizing
 from .database_admin_page import DatabaseAdminPage
-
-from .faprofiler import FaProfiler
 from .fapd_manager import FapdManager, ServiceStatus
+from .faprofiler import FaProfiler
 from .notification import Notification
 from .operations import DeployChangesetsOp
 from .policy_rules_admin_page import PolicyRulesAdminPage
+from .profile_dialog import ProfileDialog
 from .rules import RulesAdminPage
 from .session_manager import sessionManager
 from .store import dispatch, get_system_feature
@@ -223,7 +222,7 @@ class MainWindow(UIConnectedWidget):
         return self.__unapplied_changes()
 
     def on_next_system(self, system):
-        self.__changesets = system["changesets"]
+        self.__changesets = system["changesets"].changesets
         dirty = self.__dirty_changesets()
         title = f"*{self.strTopLevelTitle}" if dirty else self.strTopLevelTitle
         self.windowTopLevel.set_title(title)
@@ -332,7 +331,9 @@ class MainWindow(UIConnectedWidget):
     def on_syslogMenu_activate(self, *args):
         page = router(ANALYZER_SELECTION.ANALYZE_SYSLOG)
         height = self.get_object("mainWindow").get_size()[1]
-        page.get_object("botBox").set_property("height_request", int(height * Sizing.POLICY_BOTTOM_BOX))
+        page.get_object("botBox").set_property(
+            "height_request", int(height * Sizing.POLICY_BOTTOM_BOX)
+        )
         self.__pack_main_content(page)
         self.__set_trustDbMenu_sensitive(True)
 
@@ -355,7 +356,9 @@ class MainWindow(UIConnectedWidget):
             page = router(ANALYZER_SELECTION.ANALYZE_FROM_AUDIT, file)
             page.object_list.rule_view_activate += self.on_rulesAdminMenu_activate
             height = self.get_object("mainWindow").get_size()[1]
-            page.get_object("botBox").set_property("height_request", int(height * Sizing.POLICY_BOTTOM_BOX))
+            page.get_object("botBox").set_property(
+                "height_request", int(height * Sizing.POLICY_BOTTOM_BOX)
+            )
             self.__pack_main_content(page)
             self.__set_trustDbMenu_sensitive(True)
         fcd.destroy()
@@ -405,12 +408,12 @@ class MainWindow(UIConnectedWidget):
     # ###################### fapolicyd interfacing ##########################
     def on_fapdStartMenu_activate(self, menuitem, data=None):
         logging.debug("on_fapdStartMenu_activate() invoked.")
-        if (self._fapd_status != ServiceStatus.UNKNOWN):
+        if self._fapd_status != ServiceStatus.UNKNOWN:
             self._fapd_mgr.start()
 
     def on_fapdStopMenu_activate(self, menuitem, data=None):
         logging.debug("on_fapdStopMenu_activate() invoked.")
-        if (self._fapd_status != ServiceStatus.UNKNOWN):
+        if self._fapd_status != ServiceStatus.UNKNOWN:
             self._fapd_mgr.stop()
 
     def _enable_fapd_menu_items(self, status: ServiceStatus):
