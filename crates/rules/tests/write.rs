@@ -90,9 +90,9 @@ fn test_dir_multi_file() -> Result<(), Box<dyn Error>> {
 
     let expected = vec![expected0, expected1];
     for (i, f) in read_dir(rules_d)?.enumerate() {
-        let actual = read_string(&f.unwrap().path())?;
+        let actual = read_string(&f.unwrap().path())?.trim();
         println!("{}: expected [{}], actual[{}]", i, expected[i], actual);
-        assert_eq!(expected[i], actual.trim());
+        assert_eq!(expected[i], actual);
     }
 
     let compiled = read_string(&etc_fapolicyd.join("compiled.rules"))?;
@@ -124,9 +124,9 @@ fn test_dir_multi_file_multi_rule() -> Result<(), Box<dyn Error>> {
     let concat = format!("{}\n{}", expected0, expected1);
     let expected = vec![concat.as_str(), expected2];
     for (i, f) in read_dir(rules_d)?.enumerate() {
-        let actual = read_string(&f.unwrap().path())?;
+        let actual = read_string(&f.unwrap().path())?.trim();
         println!("{}: expected [{}], actual[{}]", i, expected[i], actual);
-        assert_eq!(expected[i], actual.trim());
+        assert_eq!(expected[i], actual);
     }
 
     let compiled = read_string(&etc_fapolicyd.join("compiled.rules"))?;
