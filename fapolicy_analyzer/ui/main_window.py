@@ -366,7 +366,7 @@ class MainWindow(UIConnectedWidget):
 
     def on_rulesAdminMenu_activate(self, *args, **kwargs):
         rulesPage = router(ANALYZER_SELECTION.RULES_ADMIN)
-        if kwargs.get("rule_id", None):
+        if kwargs.get("rule_id", None) is not None:
             rulesPage.highlight_row_from_data(kwargs["rule_id"])
         self.__pack_main_content(rulesPage)
         # TODO: figure out a good way to set sensitivity on the menu items based on what is selected
