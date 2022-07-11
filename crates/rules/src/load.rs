@@ -7,7 +7,6 @@
  */
 
 use crate::error::Error;
-use crate::error::Error::DeserializeRulesError;
 use crate::load::RuleFrom::{Disk, Mem};
 use crate::parser::marker;
 use crate::parser::parse::StrTrace;
@@ -92,15 +91,12 @@ fn rules_dir(rules_source_path: PathBuf) -> Result<Vec<RuleSource>, io::Error> {
 }
 
 fn rules_text(rules_text: String) -> Result<Vec<RuleSource>, Error> {
-    let mut origin: Option<PathBuf> = None;
+    let mut origin: Option<PathBuf> = Some(PathBuf::from("000-anon.rules"));
     let mut lines = vec![];
     for line in rules_text.split('\n').map(|s| s.trim()) {
         match marker::parse(StrTrace::new(line)) {
-            Ok((_r, v)) => {
-                // println!("setting origin: {}", v.display().to_string());
-                origin = Some(v)
-            }
-            Err(_e) if origin.as_ref().is_some() => {
+            Ok((_, v)) => origin = Some(v),
+            Err(_) => {
                 let r = origin
                     .as_ref()
                     .map(|p| (p.clone(), line.to_string()))
@@ -108,8 +104,6 @@ fn rules_text(rules_text: String) -> Result<Vec<RuleSource>, Error> {
                     .unwrap();
                 lines.push(r);
             }
-            Err(_e) if !line.is_empty() => return Err(DeserializeRulesError),
-            _ => {}
         };
     }
 
