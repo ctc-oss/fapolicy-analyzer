@@ -57,7 +57,7 @@ def test_loads_store(widget):
 
     widget.load_store(_objects)
     view = widget.get_object("treeView")
-    sortedObjects = sorted(_objects, key=lambda o: next(iter(o.values())).file)#.get("file"))
+    sortedObjects = sorted(_objects, key=lambda o: next(iter(o.values())).file)
     assert [next(iter(t.values())).trust for t in sortedObjects] == [
         strip_markup(x[0]) for x in view.get_model()
     ]
