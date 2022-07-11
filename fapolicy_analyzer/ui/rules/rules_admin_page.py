@@ -67,9 +67,6 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         self.__loading_text = True
         dispatch(request_rules_text())
 
-    def get_list_view(self):
-        return self.__list_view
-
     def highlight_row_from_data(self, data: Any):
         row = self.__list_view.find_selected_row_by_data(data, 1)
         if row:
