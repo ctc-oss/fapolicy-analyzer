@@ -12,7 +12,7 @@ use crate::parser::marker;
 use crate::parser::parse::StrTrace;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::{fs, io};
 
 pub(crate) type RuleSource = (PathBuf, String);
@@ -28,7 +28,7 @@ pub fn rules_from_disk(path: &str) -> Result<Vec<RuleSource>, Error> {
 
 pub(crate) fn rules_from(src: RuleFrom) -> Result<Vec<RuleSource>, Error> {
     let r = match src {
-        Disk(path) if path.is_dir() => rules_dir(path)?,
+        Disk(path) if path.is_dir() => rules_dir(&path)?,
         Disk(path) => rules_file(path)?,
         Mem(txt) => rules_text(txt)?,
     };
@@ -45,16 +45,22 @@ fn rules_file(path: PathBuf) -> Result<Vec<RuleSource>, io::Error> {
     Ok(lines)
 }
 
-fn rules_dir(rules_source_path: PathBuf) -> Result<Vec<RuleSource>, io::Error> {
-    let d_files: Result<Vec<PathBuf>, io::Error> = fs::read_dir(&rules_source_path)?
-        .map(|e| e.map(|e| e.path()))
-        .collect();
+pub fn read_sorted_d_files(from: &Path) -> Result<Vec<PathBuf>, io::Error> {
+    let d_files: Result<Vec<PathBuf>, io::Error> =
+        fs::read_dir(from)?.map(|e| e.map(|e| e.path())).collect();
 
     let mut d_files: Vec<PathBuf> = d_files?
         .into_iter()
         .filter(|p| p.is_file() && p.display().to_string().ends_with(".rules"))
         .collect();
+
     d_files.sort_by_key(|p| p.display().to_string());
+
+    Ok(d_files)
+}
+
+fn rules_dir(rules_source_path: &Path) -> Result<Vec<RuleSource>, io::Error> {
+    let d_files = read_sorted_d_files(rules_source_path)?;
 
     let d_files: Result<Vec<(PathBuf, File)>, io::Error> = d_files
         .into_iter()

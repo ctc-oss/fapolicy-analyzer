@@ -6,6 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+use fapolicy_rules::load::read_sorted_d_files;
 use fapolicy_rules::{read, write};
 use std::error::Error;
 use std::fs::{read_dir, File};
@@ -89,8 +90,8 @@ fn test_dir_multi_file() -> Result<(), Box<dyn Error>> {
     write::db(&db, &rules_d)?;
 
     let expected = vec![expected0, expected1];
-    for (i, f) in read_dir(rules_d)?.enumerate() {
-        let actual = read_string(&f.unwrap().path())?.trim().to_string();
+    for (i, f) in read_sorted_d_files(&rules_d)?.iter().enumerate() {
+        let actual = read_string(f)?.trim().to_string();
         println!("{}: expected [{}], actual[{}]", i, expected[i], actual);
         assert_eq!(expected[i], actual);
     }
