@@ -139,7 +139,7 @@ class SearchableList(UIBuilderWidget, Events):
             return selected is not None
 
         selected = None
-        self.treeView.get_model().foreach(search)
+        self.treeView.get_model().foreach(search) if self.treeView.get_model() is not None else None
         return selected
 
     def on_view_selection_changed(self, selection):
