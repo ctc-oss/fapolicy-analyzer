@@ -167,5 +167,4 @@ def test_highlight_row_from_data(widget, mock_system_feature, mocker):
             "rules_text": MagicMock(),
         }
     )
-
     widget.highlight_row_from_data(0)
