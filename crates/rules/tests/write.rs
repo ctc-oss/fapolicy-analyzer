@@ -32,11 +32,14 @@ fn test_dir_anon_file() -> Result<(), Box<dyn Error>> {
     let expected = r#"allow perm=any all : all"#;
     let db = read::deserialize_rules_db(expected)?;
 
-    let file = tempfile::tempdir()?.path().to_path_buf();
-    write::db(&db, &file)?;
-    let actual = read_string(&file)?;
+    let etc_fapolicyd = tempfile::tempdir()?.into_path();
+    let rules_d = tempfile::tempdir_in(etc_fapolicyd)?.into_path();
+    write::db(&db, &rules_d)?;
 
-    assert_eq!(expected, actual.trim());
+    for f in read_dir(rules_d)? {
+        let actual = read_string(&f.unwrap().path())?;
+        assert_eq!(expected, actual.trim());
+    }
 
     Ok(())
 }
@@ -52,13 +55,18 @@ fn test_dir_single_file() -> Result<(), Box<dyn Error>> {
         expected
     ))?;
 
-    let dir = tempfile::tempdir()?.into_path();
-    write::db(&db, &dir)?;
+    let etc_fapolicyd = tempfile::tempdir()?.into_path();
+    let rules_d = tempfile::tempdir_in(&etc_fapolicyd)?.into_path();
+    write::db(&db, &rules_d)?;
 
-    for f in read_dir(dir)? {
+    for f in read_dir(rules_d)? {
         let actual = read_string(&f.unwrap().path())?;
         assert_eq!(expected, actual.trim());
     }
+
+    let compiled = read_string(&etc_fapolicyd.join("compiled.rules"))?;
+    assert_eq!(compiled, format!("{}\n", expected));
+
     Ok(())
 }
 
@@ -76,15 +84,20 @@ fn test_dir_multi_file() -> Result<(), Box<dyn Error>> {
         expected0, expected1
     ))?;
 
-    let dir = tempfile::tempdir()?.into_path();
-    write::db(&db, &dir)?;
+    let etc_fapolicyd = tempfile::tempdir()?.into_path();
+    let rules_d = tempfile::tempdir_in(&etc_fapolicyd)?.into_path();
+    write::db(&db, &rules_d)?;
 
     let expected = vec![expected0, expected1];
-    for (i, f) in read_dir(dir)?.enumerate() {
+    for (i, f) in read_dir(rules_d)?.enumerate() {
         let actual = read_string(&f.unwrap().path())?;
         println!("expected{}: {}", i, actual);
         assert_eq!(expected[i], actual.trim());
     }
+
+    let compiled = read_string(&etc_fapolicyd.join("compiled.rules"))?;
+    assert_eq!(compiled, format!("{}\n{}\n", expected0, expected1));
+
     Ok(())
 }
 
@@ -104,16 +117,24 @@ fn test_dir_multi_file_multi_rule() -> Result<(), Box<dyn Error>> {
         expected0, expected1, expected2
     ))?;
 
-    let dir = tempfile::tempdir()?.into_path();
-    write::db(&db, &dir)?;
+    let etc_fapolicyd = tempfile::tempdir()?.into_path();
+    let rules_d = tempfile::tempdir_in(&etc_fapolicyd)?.into_path();
+    write::db(&db, &rules_d)?;
 
     let concat = format!("{}\n{}", expected0, expected1);
     let expected = vec![concat.as_str(), expected2];
-    for (i, f) in read_dir(dir)?.enumerate() {
+    for (i, f) in read_dir(rules_d)?.enumerate() {
         let actual = read_string(&f.unwrap().path())?;
         println!("expected{}: {}", i, actual);
         assert_eq!(expected[i], actual.trim());
     }
+
+    let compiled = read_string(&etc_fapolicyd.join("compiled.rules"))?;
+    assert_eq!(
+        compiled,
+        format!("{}\n{}\n{}\n", expected0, expected1, expected2)
+    );
+
     Ok(())
 }
 

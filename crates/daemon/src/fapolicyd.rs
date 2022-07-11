@@ -19,7 +19,6 @@ pub const TRUST_FILE_PATH: &str = "/etc/fapolicyd/fapolicyd.trust";
 pub const RULES_FILE_PATH: &str = "/etc/fapolicyd/rules.d";
 pub const RPM_DB_PATH: &str = "/var/lib/rpm";
 pub const FIFO_PIPE: &str = "/run/fapolicyd/fapolicyd.fifo";
-pub const COMPILED_RULES_PATH: &str = "/etc/fapolicyd/compiled.rules";
 
 const USR_SHARE_ALLOWED_EXTS: [&str; 15] = [
     "pyc", "pyo", "py", "rb", "pl", "stp", "js", "jar", "m4", "php", "el", "pm", "lua", "class",

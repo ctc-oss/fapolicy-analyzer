@@ -15,13 +15,14 @@ use std::path::Path;
 
 pub fn db(db: &DB, to: &Path) -> Result<(), io::Error> {
     if to.is_dir() {
-        rules_dir(db, to)
+        let parent = to.parent().expect("Cannot write to /");
+        rules_dir(db, to, &parent.join("compiled.rules"))
     } else {
         rules_file(db, to)
     }
 }
 
-fn rules_dir(db: &DB, dir: &Path) -> Result<(), io::Error> {
+fn rules_dir(db: &DB, dir: &Path, compiled: &Path) -> Result<(), io::Error> {
     let mut files = HashMap::<&str, Vec<String>>::new();
     for (_, (k, v)) in db.iter() {
         if !files.contains_key(k.as_str()) {
@@ -40,7 +41,7 @@ fn rules_dir(db: &DB, dir: &Path) -> Result<(), io::Error> {
 
     // write compiled.rules
     // todo;; get this from config or constants
-    let mut rf = File::create("/etc/fapolicyd/compiled.rules")?;
+    let mut rf = File::create(compiled)?;
     for (_, (_, e)) in db.iter() {
         rf.write_all(format!("{}\n", e).as_bytes())?;
     }
