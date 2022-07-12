@@ -9,9 +9,9 @@
 use crate::db::DB;
 use std::collections::HashMap;
 use std::fs::File;
-use std::io;
 use std::io::Write;
 use std::path::Path;
+use std::{fs, io};
 
 pub fn db(db: &DB, to: &Path) -> Result<(), io::Error> {
     if to.is_dir() {
@@ -29,6 +29,14 @@ fn rules_dir(db: &DB, dir: &Path, compiled: &Path) -> Result<(), io::Error> {
             files.insert(k, vec![]);
         }
         files.get_mut(k.as_str()).unwrap().push(v.to_string());
+    }
+
+    // clear existing rules.d files
+    for e in fs::read_dir(dir)? {
+        let f = e?.path();
+        if f.ends_with(".rules") {
+            fs::remove_file(f)?;
+        }
     }
 
     // write rules.d files
