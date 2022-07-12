@@ -28,13 +28,13 @@ xs1 = Changeset()
 txt = """
 foo bar baz
 """
-assert not xs1.set(txt)
+assert xs1.set(txt)
 
 # a valid rule without marker
 txt = """
 allow perm=any all : all
 """
-assert not xs1.set(txt)
+assert xs1.set(txt)
 
 # markers are relative to the rules.d dir
 # if using fapolicyd.rules markers are not supported
