@@ -92,7 +92,6 @@ fn test_dir_multi_file() -> Result<(), Box<dyn Error>> {
     let expected = vec![expected0, expected1];
     for (i, f) in read_sorted_d_files(&rules_d)?.iter().enumerate() {
         let actual = read_string(f)?.trim().to_string();
-        println!("{}: expected [{}], actual[{}]", i, expected[i], actual);
         assert_eq!(expected[i], actual);
     }
 
@@ -126,7 +125,6 @@ fn test_dir_multi_file_multi_rule() -> Result<(), Box<dyn Error>> {
     let expected = vec![concat.as_str(), expected2];
     for (i, f) in read_sorted_d_files(&rules_d)?.iter().enumerate() {
         let actual = read_string(f)?.trim().to_string();
-        println!("{}: expected [{}], actual[{}]", i, expected[i], actual);
         assert_eq!(expected[i], actual);
     }
 
