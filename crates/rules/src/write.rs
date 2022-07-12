@@ -34,7 +34,7 @@ fn rules_dir(db: &DB, dir: &Path, compiled: &Path) -> Result<(), io::Error> {
     // clear existing rules.d files
     for e in fs::read_dir(dir)? {
         let f = e?.path();
-        if f.ends_with(".rules") {
+        if f.display().to_string().ends_with(".rules") {
             fs::remove_file(f)?;
         }
     }
