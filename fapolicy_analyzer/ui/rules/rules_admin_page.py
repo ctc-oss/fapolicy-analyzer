@@ -73,6 +73,7 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
             selection = self.__list_view.treeView.get_selection()
             selection.set_select_function(lambda *_: True if _[2] == row else False, row)
             selection.select_path(row)
+            self.__list_view.treeView.scroll_to_cell(row)
 
     def on_next_system(self, system: Any):
         rules_state = system.get("rules")
