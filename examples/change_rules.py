@@ -24,32 +24,39 @@ s1 = System()
 # changeset deserializes rule text into applicable rules
 xs1 = Changeset()
 
-# an invalid rule
+# a changeset has no source prior to parsing
+assert xs1.text() is None
+
+print("# an invalid rule")
 txt = """
 foo bar baz
 """
-assert not xs1.set(txt)
+xs1.parse(txt)
 
-# a valid rule without marker
+# the source text is available on successful parse
+print(xs1.text())
+
+print("# a valid rule without marker")
 txt = """
 allow perm=any all : all
 """
-assert not xs1.set(txt)
+xs1.parse(txt)
+print(xs1.text())
 
 # markers are relative to the rules.d dir
 # if using fapolicyd.rules markers are not supported
 
-# a valid rule with marker
+print("# a valid rule with marker")
 txt = """
 [foo.rules]
 allow perm=any all : all
 """
-assert xs1.set(txt)
-for r in xs1.get():
+xs1.parse(txt)
+for r in xs1.rules():
     print(r)
+print(xs1.text())
 
-print("---")
-# multiple valid rules with markers
+print("# multiple valid rules with markers")
 txt = """
 [foo.rules]
 allow perm=exec all : all
@@ -57,29 +64,49 @@ allow perm=exec all : all
 [bar.rules]
 deny perm=any all : all
 """
-assert xs1.set(txt)
-for r in xs1.get():
+xs1.parse(txt)
+for r in xs1.rules():
     print(r)
+print(xs1.text())
 
-print("---")
-# valid rules under single marker
+print("# valid rules under single marker")
 txt = """
 [foo.rules]
 allow perm=exec all : all
 deny perm=any all : all
 """
-assert xs1.set(txt)
-for r in xs1.get():
+xs1.parse(txt)
+for r in xs1.rules():
     print(r)
+print(xs1.text())
 
-print("---")
-# empty marker
+print("# empty marker")
 txt = """
 [foo.rules]
 allow perm=exec all : all
 
 [bar.rules]
 """
-assert xs1.set(txt)
-for r in xs1.get():
+xs1.parse(txt)
+for r in xs1.rules():
     print(r)
+print(xs1.text())
+prev = xs1.text()
+
+print("# malformed marker")
+txt = """
+[foo.rules
+"""
+try:
+    xs1.parse(txt)
+except RuntimeError as e:
+    # todo;; we need those custom exceptions... without them we
+    #        are reduced to makeshift string based protocols
+    (line, msg, src) = str(e).split(":", 2)
+    print(f"failed to deserialize: {msg}")
+    print(f"\tline {line}: {src}")
+
+# since the last parse failed, the changeset was never
+# updated, the source will remain set to the last successful
+# parse or None if there had not been a successful parse
+assert prev == xs1.text()

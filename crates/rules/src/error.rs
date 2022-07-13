@@ -15,6 +15,6 @@ pub enum Error {
     #[error("File IO Error: {0}")]
     FileIoError(#[from] io::Error),
 
-    #[error("Deserialize rule error")]
-    DeserializeRulesError,
+    #[error("Malformed marker @ {0}: {1}")]
+    MalformedFileMarker(usize, String),
 }

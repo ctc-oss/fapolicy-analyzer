@@ -26,11 +26,11 @@ xs = Changeset()
 
 # demonstrates: rules / sets / multiple markers
 assert xs.set("""
-[foo.rules]
+[05-foo.rules]
 %foo=bar,baz
 allow perm=exec all : all
 
-[bar.rules]
+[10-bar.rules]
 %bing=bam,boom
 deny perm=any all : all
 """)
