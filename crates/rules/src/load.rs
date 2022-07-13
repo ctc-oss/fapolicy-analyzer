@@ -7,6 +7,7 @@
  */
 
 use crate::error::Error;
+use crate::error::Error::MalformedFileMarker;
 use crate::load::RuleFrom::{Disk, Mem};
 use crate::parser::marker;
 use crate::parser::parse::StrTrace;
@@ -99,9 +100,14 @@ fn rules_dir(rules_source_path: &Path) -> Result<Vec<RuleSource>, io::Error> {
 fn rules_text(rules_text: String) -> Result<Vec<RuleSource>, Error> {
     let mut origin: Option<PathBuf> = Some(PathBuf::from("000-anon.rules"));
     let mut lines = vec![];
-    for line in rules_text.split('\n').map(|s| s.trim()) {
+    for (num, line) in rules_text.split('\n').map(|s| s.trim()).enumerate() {
         match marker::parse(StrTrace::new(line)) {
             Ok((_, v)) => origin = Some(v),
+            Err(_) if line.starts_with('[') || line.ends_with(']') => {
+                // todo;; could improve the introspection of the parse error here to improve
+                //        the trace that is reported; the marker parser could also be reviewed
+                return Err(MalformedFileMarker(num + 1, line.trim().to_string()));
+            }
             Err(_) => {
                 let r = origin
                     .as_ref()

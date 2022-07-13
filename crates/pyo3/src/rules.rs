@@ -7,10 +7,11 @@
  */
 
 use pyo3::prelude::*;
-use pyo3::PyObjectProtocol;
+use pyo3::{exceptions, PyObjectProtocol};
 
 use fapolicy_rules::db::Entry::*;
 use fapolicy_rules::db::DB;
+use fapolicy_rules::error::Error::MalformedFileMarker;
 use fapolicy_rules::ops::Changeset;
 use fapolicy_rules::parser::parse::StrTrace;
 use fapolicy_rules::parser::rule::parse_with_error_message;
@@ -26,7 +27,7 @@ pub struct PyRule {
 }
 
 impl PyRule {
-    pub(crate) fn new(
+    pub fn new(
         id: usize,
         text: String,
         origin: String,
@@ -137,11 +138,25 @@ impl PyChangeset {
     }
 
     pub fn get(&self) -> PyResult<Vec<PyRule>> {
+        self.rules()
+    }
+
+    pub fn rules(&self) -> PyResult<Vec<PyRule>> {
         rules_to_vec(self.rs.get())
     }
 
     pub fn set(&mut self, text: String) -> bool {
         self.rs.set(&text).is_ok()
+    }
+
+    pub fn parse(&mut self, text: String) -> PyResult<()> {
+        match self.rs.set(&text) {
+            Ok(_) => Ok(()),
+            Err(MalformedFileMarker(lnum, txt)) => Err(exceptions::PyRuntimeError::new_err(
+                format!("{}:malformed-file-marker:{}", lnum, txt),
+            )),
+            Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{:?}", e))),
+        }
     }
 }
 

@@ -28,28 +28,28 @@ xs1 = Changeset()
 txt = """
 foo bar baz
 """
-assert xs1.set(txt)
+xs1.parse(txt)
 
 # a valid rule without marker
 txt = """
 allow perm=any all : all
 """
-assert xs1.set(txt)
+xs1.parse(txt)
+
 
 # markers are relative to the rules.d dir
 # if using fapolicyd.rules markers are not supported
 
-# a valid rule with marker
+print("# a valid rule with marker")
 txt = """
 [foo.rules]
 allow perm=any all : all
 """
-assert xs1.set(txt)
-for r in xs1.get():
+xs1.parse(txt)
+for r in xs1.rules():
     print(r)
 
-print("---")
-# multiple valid rules with markers
+print("# multiple valid rules with markers")
 txt = """
 [foo.rules]
 allow perm=exec all : all
@@ -57,29 +57,40 @@ allow perm=exec all : all
 [bar.rules]
 deny perm=any all : all
 """
-assert xs1.set(txt)
-for r in xs1.get():
+xs1.parse(txt)
+for r in xs1.rules():
     print(r)
 
-print("---")
-# valid rules under single marker
+print("# valid rules under single marker")
 txt = """
 [foo.rules]
 allow perm=exec all : all
 deny perm=any all : all
 """
-assert xs1.set(txt)
-for r in xs1.get():
+xs1.parse(txt)
+for r in xs1.rules():
     print(r)
 
-print("---")
-# empty marker
+print("# empty marker")
 txt = """
 [foo.rules]
 allow perm=exec all : all
 
 [bar.rules]
 """
-assert xs1.set(txt)
-for r in xs1.get():
+xs1.parse(txt)
+for r in xs1.rules():
     print(r)
+
+print("# malformed marker")
+txt = """
+[foo.rules
+"""
+try:
+    xs1.parse(txt)
+except RuntimeError as e:
+    # todo;; we need those custom exceptions... without them we
+    #        are reduced to makeshift string based protocols
+    (line, msg, src) = str(e).split(":", 2)
+    print(f"failed to deserialize: {msg}")
+    print(f"\tline {line}: {src}")

@@ -8,6 +8,7 @@
 
 use crate::db::{RuleEntry, DB};
 
+use crate::error::Error;
 use crate::read::deserialize_rules_db;
 
 // Mutable
@@ -23,7 +24,7 @@ impl Changeset {
 
     // todo;; how to properly convey lints and errors in the parse fail?
     //        perhaps just roll it up to a _simple_ Error/Warn/Ok result enum
-    pub fn set(&mut self, text: &str) -> Result<&DB, String> {
+    pub fn set(&mut self, text: &str) -> Result<&DB, Error> {
         // todo;; what to do with the source text here?
         //        writing it out verbatim to the disk at deploy would be ideal
         //        but it has to be stashed somewhere until writing at deploy time
@@ -35,7 +36,7 @@ impl Changeset {
                 self.db = r;
                 Ok(&self.db)
             }
-            Err(_) => Err("failed to deserialize db".to_string()),
+            Err(e) => Err(e),
         }
     }
 
