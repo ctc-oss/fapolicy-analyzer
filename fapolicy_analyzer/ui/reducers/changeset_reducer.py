@@ -13,20 +13,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Any, NamedTuple, Optional, Sequence, Union, cast
+from typing import Any, NamedTuple, Optional, Sequence, cast
 
-from fapolicy_analyzer import Changeset, RuleChangeset
 from fapolicy_analyzer.ui.actions import (
     ADD_CHANGESETS,
     CLEAR_CHANGESETS,
     ERROR_APPLY_CHANGESETS,
 )
+from fapolicy_analyzer.ui.changeset_wrapper import Changeset
 from redux import Action, Reducer, handle_actions
 
 
 class ChangesetState(NamedTuple):
     error: Optional[str]
-    changesets: Sequence[Union[Changeset, RuleChangeset]]
+    changesets: Sequence[Changeset]
 
 
 def _create_state(state: ChangesetState, **kwargs: Optional[Any]) -> ChangesetState:
@@ -34,7 +34,7 @@ def _create_state(state: ChangesetState, **kwargs: Optional[Any]) -> ChangesetSt
 
 
 def handle_add_changesets(state: ChangesetState, action: Action) -> ChangesetState:
-    payload = cast(Sequence[Union[Changeset, RuleChangeset]], action.payload)
+    payload = cast(Sequence[Changeset], action.payload)
     return _create_state(state, error=None, changesets=[*state.changesets, *payload])
 
 

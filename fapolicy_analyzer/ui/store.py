@@ -14,17 +14,16 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from fapolicy_analyzer import System
-from redux import Action, create_store
-from redux import select_feature
+from redux import Action, create_store, select_feature
 from rx import operators
 from rx.core.typing import Observable
+
 from .features import (
     NOTIFICATIONS_FEATURE,
     SYSTEM_FEATURE,
     create_notification_feature,
     create_system_feature,
 )
-
 
 store = create_store()
 
