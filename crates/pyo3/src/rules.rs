@@ -145,18 +145,22 @@ impl PyChangeset {
         rules_to_vec(self.rs.get())
     }
 
-    pub fn set(&mut self, text: String) -> bool {
-        self.rs.set(&text).is_ok()
+    pub fn set(&mut self, text: &str) -> bool {
+        self.rs.set(&text.trim()).is_ok()
     }
 
-    pub fn parse(&mut self, text: String) -> PyResult<()> {
-        match self.rs.set(&text) {
+    pub fn parse(&mut self, text: &str) -> PyResult<()> {
+        match self.rs.set(&text.trim()) {
             Ok(_) => Ok(()),
             Err(MalformedFileMarker(lnum, txt)) => Err(exceptions::PyRuntimeError::new_err(
                 format!("{}:malformed-file-marker:{}", lnum, txt),
             )),
             Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{:?}", e))),
         }
+    }
+
+    pub fn text(&self) -> Option<&str> {
+        self.rs.src().map(|s| &**s)
     }
 }
 

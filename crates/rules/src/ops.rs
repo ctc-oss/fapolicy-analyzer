@@ -15,11 +15,16 @@ use crate::read::deserialize_rules_db;
 #[derive(Default, Clone, Debug)]
 pub struct Changeset {
     db: DB,
+    src: Option<String>,
 }
 
 impl Changeset {
     pub fn get(&self) -> &DB {
         &self.db
+    }
+
+    pub fn src(&self) -> Option<&String> {
+        self.src.as_ref()
     }
 
     // todo;; how to properly convey lints and errors in the parse fail?
@@ -34,6 +39,7 @@ impl Changeset {
         match deserialize_rules_db(text) {
             Ok(r) => {
                 self.db = r;
+                self.src = Some(text.to_string());
                 Ok(&self.db)
             }
             Err(e) => Err(e),

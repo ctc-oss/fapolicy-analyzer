@@ -24,18 +24,24 @@ s1 = System()
 # changeset deserializes rule text into applicable rules
 xs1 = Changeset()
 
-# an invalid rule
+# a changeset has no source prior to parsing
+assert xs1.text() is None
+
+print("# an invalid rule")
 txt = """
 foo bar baz
 """
 xs1.parse(txt)
 
-# a valid rule without marker
+# the source text is available on successful parse
+print(xs1.text())
+
+print("# a valid rule without marker")
 txt = """
 allow perm=any all : all
 """
 xs1.parse(txt)
-
+print(xs1.text())
 
 # markers are relative to the rules.d dir
 # if using fapolicyd.rules markers are not supported
@@ -48,6 +54,7 @@ allow perm=any all : all
 xs1.parse(txt)
 for r in xs1.rules():
     print(r)
+print(xs1.text())
 
 print("# multiple valid rules with markers")
 txt = """
@@ -60,6 +67,7 @@ deny perm=any all : all
 xs1.parse(txt)
 for r in xs1.rules():
     print(r)
+print(xs1.text())
 
 print("# valid rules under single marker")
 txt = """
@@ -70,6 +78,7 @@ deny perm=any all : all
 xs1.parse(txt)
 for r in xs1.rules():
     print(r)
+print(xs1.text())
 
 print("# empty marker")
 txt = """
@@ -81,6 +90,8 @@ allow perm=exec all : all
 xs1.parse(txt)
 for r in xs1.rules():
     print(r)
+print(xs1.text())
+prev = xs1.text()
 
 print("# malformed marker")
 txt = """
@@ -94,3 +105,8 @@ except RuntimeError as e:
     (line, msg, src) = str(e).split(":", 2)
     print(f"failed to deserialize: {msg}")
     print(f"\tline {line}: {src}")
+
+# since the last parse failed, the changeset was never
+# updated, the source will remain set to the last successful
+# parse or None if there had not been a successful parse
+assert prev == xs1.text()
