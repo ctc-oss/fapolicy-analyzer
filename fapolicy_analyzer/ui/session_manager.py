@@ -22,15 +22,15 @@ import time
 from datetime import datetime as DT
 from locale import gettext as _
 from sys import stderr
-from typing import Dict, Sequence, Union
+from typing import Sequence
 
-from fapolicy_analyzer import Changeset
 from fapolicy_analyzer.ui.actions import (
     NotificationType,
     add_notification,
     apply_changesets,
     restore_system_checkpoint,
 )
+from fapolicy_analyzer.ui.changeset_wrapper import Changeset
 from fapolicy_analyzer.ui.store import dispatch, get_system_feature
 from fapolicy_analyzer.util.format import f
 
@@ -45,7 +45,7 @@ class SessionManager:
         self.__tmpFileBasename = "/tmp/FaCurrentSession.tmp"
         self.__listAutosavedFilenames = []
         self.__iTmpFileCount = 2
-        self.__changesets: Sequence[Union[Changeset, RuleChangeset]] = []
+        self.__changesets: Sequence[Changeset] = []
 
         get_system_feature().subscribe(on_next=self.on_next_system)
 
@@ -112,19 +112,12 @@ class SessionManager:
         self.__iTmpFileCount = iFilecount
 
     # ######################## Edit Session Mgmt ############################
-    def save_edit_session(
-        self, data: Sequence[Union[Changeset, RuleChangeset]], strJsonFile: str
-    ):
+    def save_edit_session(self, data: Sequence[Changeset], strJsonFile: str):
         def rules_to_string(rules):
             return "\n".join([r.text for r in rules])
 
         # Convert changeset list to list of dicts containing path/action pairs
-        dictPA = [
-            c.get_path_action_map()
-            if isinstance(c, Changeset)
-            else rules_to_string(c.get())
-            for c in data
-        ]
+        dictPA = [c.serialize() for c in data]
         logging.debug("Path/Action Dict: {}".format(dictPA))
 
         # Save the pending changeset queue to the specified json file
@@ -133,34 +126,12 @@ class SessionManager:
             json.dump(dictPA, fp, sort_keys=True, indent=4)
 
     def open_edit_session(self, strJsonFile: str) -> bool:
-        def to_changeset(data: Dict[str, str]) -> Changeset:
-            cs = Changeset()
-            for path, action in data.items():
-                if action == "Add":
-                    cs.add_trust(path)
-                elif action == "Del":
-                    cs.del_trust(path)
-            return cs
-
-        def to_rulechangeset(data: str) -> RuleChangeset:
-            cs = RuleChangeset()
-            cs.set(data)
-            return cs
-
-        def parse_changesets(
-            data: Sequence[Union[dict, str]]
-        ) -> Sequence[Union[Changeset, RuleChangeset]]:
-            return [
-                to_changeset(d) if isinstance(d, dict) else to_rulechangeset(d)
-                for d in data
-            ]
-
         logging.debug(
             "Entered SessionManager::open_edit_session({})".format(strJsonFile)
         )
         with open(strJsonFile, "r") as fp:
             try:
-                d = json.load(fp) or []
+                data = json.load(fp) or []
             except Exception as ex:
                 logging.exception("json.load() failure", ex)
                 dispatch(
@@ -171,8 +142,8 @@ class SessionManager:
                 )
                 return False
 
-        logging.debug("Loaded dict = ", d)
-        changesets = parse_changesets(d)
+        logging.debug("Loaded dict = ", data)
+        changesets = [Changeset.deserialize(d) for d in data]
         logging.debug("SessionManager::open_edit_session():{}".format(changesets))
 
         if changesets:
@@ -228,7 +199,7 @@ class SessionManager:
         self.__cleanup_autosave_sessions()
         return bReturn
 
-    def autosave_edit_session(self, data: Sequence[Union[Changeset, RuleChangeset]]):
+    def autosave_edit_session(self, data: Sequence[Changeset]):
         """Constructs a new tmp session filename w/timestamp, populates it with
         the current session state, saves it, and deletes the oldest tmp session file"""
         logging.debug("SessionManager::__autosave_edit_session()")

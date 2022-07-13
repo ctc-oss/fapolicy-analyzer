@@ -37,7 +37,7 @@ class UIOperation(ABC):
         pass
 
     @abstractmethod
-    def run(self):
+    def run(self, *args):
         pass
 
     def dispose(self):

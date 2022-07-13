@@ -14,9 +14,9 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from typing import Any, Optional, Sequence, Union
+from typing import Any, Optional, Sequence
 
-from fapolicy_analyzer import Changeset, Rule, RuleChangeset
+from fapolicy_analyzer import Rule
 from fapolicy_analyzer.ui.actions import (
     NotificationType,
     add_notification,
@@ -25,6 +25,7 @@ from fapolicy_analyzer.ui.actions import (
     request_rules,
     request_rules_text,
 )
+from fapolicy_analyzer.ui.changeset_wrapper import Changeset, RuleChangeset
 from fapolicy_analyzer.ui.rules.rules_list_view import RulesListView
 from fapolicy_analyzer.ui.rules.rules_status_info import RulesStatusInfo
 from fapolicy_analyzer.ui.rules.rules_text_view import RulesTextView
@@ -65,7 +66,7 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         self.__error_text: Optional[str] = None
         self.__loading_rules: bool = False
         self.__loading_text: bool = False
-        self.__changesets: Sequence[Union[Changeset, RuleChangeset]] = []
+        self.__changesets: Sequence[Changeset] = []
         self.__saving: bool = False
 
         self.__load_rules()
