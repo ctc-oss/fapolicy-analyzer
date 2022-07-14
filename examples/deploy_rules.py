@@ -25,7 +25,8 @@ print("building changeset")
 xs = Changeset()
 
 # demonstrates: rules / sets / multiple markers
-assert xs.set("""
+assert xs.set(
+    """
 [05-foo.rules]
 %foo=bar,baz
 allow perm=exec all : all
@@ -33,7 +34,8 @@ allow perm=exec all : all
 [10-bar.rules]
 %bing=bam,boom
 deny perm=any all : all
-""")
+"""
+)
 
 print("applying changes")
 s2 = s1.apply_rule_changes(xs)
