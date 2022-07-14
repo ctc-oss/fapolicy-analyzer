@@ -68,6 +68,7 @@ def test_populates_guided_editor(widget, mock_system_feature, mocker):
         {
             "rules": MagicMock(error=None, rules=mock_rules, loading=False),
             "rules_text": MagicMock(),
+            "changesets": MagicMock(),
         }
     )
     mock_list_renderer.assert_called_once_with(mock_rules)
@@ -100,6 +101,7 @@ def test_populates_status_info(widget, mock_system_feature, mocker):
         {
             "rules": MagicMock(error=None, rules=mock_rules, loading=False),
             "rules_text": MagicMock(),
+            "changesets": MagicMock(),
         }
     )
     mock_info_renderer.assert_called_once_with(mock_rules)
@@ -109,7 +111,11 @@ def test_populates_status_info(widget, mock_system_feature, mocker):
 def test_handles_rules_exception(mock_dispatch, mock_system_feature):
     mock_dispatch.reset_mock()
     mock_system_feature.on_next(
-        {"rules": MagicMock(error="foo", loading=False), "rules_text": MagicMock()}
+        {
+            "rules": MagicMock(error="foo", loading=False),
+            "rules_text": MagicMock(),
+            "changesets": MagicMock(),
+        }
     )
     mock_dispatch.assert_called_with(
         InstanceOf(Action)
@@ -134,6 +140,7 @@ def test_populates_text_editor(widget, mock_system_feature, mocker):
                 rules_text="foo",
                 loading=False,
             ),
+            "changesets": MagicMock(),
         }
     )
     mock_text_renderer.assert_called_once_with("foo")
@@ -143,7 +150,11 @@ def test_populates_text_editor(widget, mock_system_feature, mocker):
 def test_handles_rules_text_exception(mock_dispatch, mock_system_feature):
     mock_dispatch.reset_mock()
     mock_system_feature.on_next(
-        {"rules": MagicMock(), "rules_text": MagicMock(error="foo", loading=False)}
+        {
+            "rules": MagicMock(),
+            "rules_text": MagicMock(error="foo", loading=False),
+            "changesets": MagicMock(),
+        }
     )
     mock_dispatch.assert_called_with(
         InstanceOf(Action)

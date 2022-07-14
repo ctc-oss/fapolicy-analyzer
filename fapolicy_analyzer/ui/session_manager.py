@@ -133,7 +133,7 @@ class SessionManager:
             try:
                 data = json.load(fp) or []
             except Exception as ex:
-                logging.exception("json.load() failure", ex)
+                logging.exception("json.load() failure: {}".format(ex))
                 dispatch(
                     add_notification(
                         f(_("Failed to load edit session from file {strJsonFile}")),

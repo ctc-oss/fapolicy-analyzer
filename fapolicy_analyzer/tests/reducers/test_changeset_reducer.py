@@ -13,19 +13,28 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import context  # noqa: F401
 from unittest.mock import MagicMock
-from fapolicy_analyzer.ui.reducers.changeset_reducer import (
-    handle_add_changesets,
-    handle_clear_changesets,
-)
+
+import context  # noqa: F401
 
 
-def test_handle_add_changesets():
-    result = handle_add_changesets([], MagicMock(payload=["foo"]))
-    assert list(result) == ["foo"]
+@pytest.fixture()
+def initial_state():
+    return ChangesetState(changesets=[], error=None)
+
+
+def test_handle_add_changesets(initial_state):
+    result = handle_add_changesets(initial_state, MagicMock(payload=["foo"]))
+    assert result == ChangesetState(changesets=["foo"], error=None)
 
 
 def test_handle_clear_changesets():
-    result = handle_clear_changesets(["foo", "foo2"], MagicMock())
-    assert result == []
+    result = handle_clear_changesets(
+        ChangesetState(changesets=["foo", "foo2"], error=None), MagicMock()
+    )
+    assert result == ChangesetState(changesets=[], error=None)
+
+
+def test_handle_error_apply_changesets(initial_state):
+    result = handle_error_apply_changesets(initial_state, MagicMock(payload="foo"))
+    assert result == ChangesetState(error="foo", changesets=[])
