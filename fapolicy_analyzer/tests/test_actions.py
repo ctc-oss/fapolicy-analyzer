@@ -26,6 +26,7 @@ from ui.actions import (
     CLEAR_CHANGESETS,
     DEPLOY_ANCILLARY_TRUST,
     ERROR_ANCILLARY_TRUST,
+    ERROR_APPLY_CHANGESETS,
     ERROR_DEPLOYING_ANCILLARY_TRUST,
     ERROR_EVENTS,
     ERROR_GROUPS,
@@ -35,6 +36,7 @@ from ui.actions import (
     ERROR_SYSTEM_TRUST,
     ERROR_USERS,
     INIT_SYSTEM,
+    MODIFY_RULES_TEXT,
     RECEIVED_ANCILLARY_TRUST,
     RECEIVED_EVENTS,
     RECEIVED_GROUPS,
@@ -62,6 +64,7 @@ from ui.actions import (
     clear_changesets,
     deploy_ancillary_trust,
     error_ancillary_trust,
+    error_apply_changesets,
     error_deploying_ancillary_trust,
     error_events,
     error_groups,
@@ -70,6 +73,7 @@ from ui.actions import (
     error_system_trust,
     error_users,
     init_system,
+    modify_rules_text,
     received_ancillary_trust,
     received_events,
     received_groups,
@@ -127,6 +131,13 @@ def test_apply_changesets():
     assert type(action) is Action
     assert action.type == APPLY_CHANGESETS
     assert action.payload == (changeset,)
+
+
+def test_error_apply_changesets():
+    action = error_apply_changesets("foo")
+    assert type(action) is Action
+    assert action.type == ERROR_APPLY_CHANGESETS
+    assert action.payload == "foo"
 
 
 def test_clear_changesets():
@@ -320,6 +331,14 @@ def test_received_rules_text():
     action = received_rules_text(text)
     assert type(action) is Action
     assert action.type == RECEIVED_RULES_TEXT
+    assert action.payload == text
+
+
+def test_modify_rules_text():
+    text = "some modified rules!"
+    action = modify_rules_text(text)
+    assert type(action) is Action
+    assert action.type == MODIFY_RULES_TEXT
     assert action.payload == text
 
 

@@ -205,6 +205,27 @@ def test_on_untrustBtn_clicked(widget, mock_dispatch, mocker):
     )
 
 
+def test_on_untrustBtn_clicked_no_remove(widget, mocker):
+    mockDialog = MagicMock(
+        get_ref=MagicMock(
+            return_value=MagicMock(run=MagicMock(return_value=Gtk.ResponseType.NO))
+        )
+    )
+    mocker.patch(
+        "ui.ancillary_trust_database_admin.RemoveDeletedDialog", return_value=mockDialog
+    )
+    mock_delete_func = mocker.patch.object(widget, "delete_trusted_files")
+    temp = tempfile.NamedTemporaryFile()
+
+    trust = [
+        MagicMock(status="T", path=temp.name, size=1, hash="abc", spec=Trust),
+        MagicMock(status="T", path="/tmp/bar", size=1, hash="abc", spec=Trust),
+    ]
+    widget.on_trust_selection_changed(trust)
+    widget.get_object("untrustBtn").clicked()
+    mock_delete_func.assert_not_called()
+
+
 def test_on_untrustBtn_clicked_empty(widget, mock_dispatch):
     widget.get_object("untrustBtn").clicked()
     mock_dispatch.assert_not_any_call(
