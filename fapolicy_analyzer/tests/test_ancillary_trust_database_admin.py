@@ -22,7 +22,8 @@ import pytest
 from callee import InstanceOf
 from callee.attributes import Attrs
 from callee.collections import Sequence
-from fapolicy_analyzer import Changeset, Trust
+from fapolicy_analyzer import Trust
+from fapolicy_analyzer.ui.changeset_wrapper import TrustChangeset
 from redux import Action
 from rx.subject import Subject
 from ui.actions import (
@@ -43,6 +44,10 @@ from mocks import mock_System
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
+
+
+def mock_changesets_state(changesets=[], error=False):
+    return MagicMock(spec=TrustChangeset, changesets=changesets, error=error)
 
 
 @pytest.fixture()
@@ -115,7 +120,7 @@ def test_add_trusted_files(widget, mock_dispatch):
     widget.add_trusted_files("foo")
     mock_dispatch.assert_called_with(
         InstanceOf(Action)
-        & Attrs(type=APPLY_CHANGESETS, payload=Sequence(of=InstanceOf(Changeset)))
+        & Attrs(type=APPLY_CHANGESETS, payload=Sequence(of=InstanceOf(TrustChangeset)))
     )
 
 
@@ -125,7 +130,7 @@ def test_delete_trusted_files(widget, mock_dispatch):
         InstanceOf(Action)
         & Attrs(
             type=APPLY_CHANGESETS,
-            payload=Sequence(of=InstanceOf(Changeset)),
+            payload=Sequence(of=InstanceOf(TrustChangeset)),
         )
     )
 
@@ -151,7 +156,7 @@ def test_on_trustBtn_clicked(widget, mock_dispatch, mocker):
         InstanceOf(Action)
         & Attrs(
             type=APPLY_CHANGESETS,
-            payload=Sequence(of=InstanceOf(Changeset)),
+            payload=Sequence(of=InstanceOf(TrustChangeset)),
         )
     )
 
@@ -162,7 +167,7 @@ def test_on_trustBtn_clicked_empty(widget, mock_dispatch):
         InstanceOf(Action)
         & Attrs(
             type=APPLY_CHANGESETS,
-            payload=Sequence(of=InstanceOf(Changeset)),
+            payload=Sequence(of=InstanceOf(TrustChangeset)),
         )
     )
 
@@ -195,7 +200,7 @@ def test_on_untrustBtn_clicked(widget, mock_dispatch, mocker):
         InstanceOf(Action)
         & Attrs(
             type=APPLY_CHANGESETS,
-            payload=Sequence(of=InstanceOf(Changeset)),
+            payload=Sequence(of=InstanceOf(TrustChangeset)),
         )
     )
 
@@ -206,7 +211,7 @@ def test_on_untrustBtn_clicked_empty(widget, mock_dispatch):
         InstanceOf(Action)
         & Attrs(
             type=APPLY_CHANGESETS,
-            payload=Sequence(of=InstanceOf(Changeset)),
+            payload=Sequence(of=InstanceOf(TrustChangeset)),
         )
     )
 
@@ -215,7 +220,7 @@ def test_on_file_added(widget, mock_dispatch):
     widget.on_files_added("foo")
     mock_dispatch.assert_called_with(
         InstanceOf(Action)
-        & Attrs(type=APPLY_CHANGESETS, payload=Sequence(of=InstanceOf(Changeset)))
+        & Attrs(type=APPLY_CHANGESETS, payload=Sequence(of=InstanceOf(TrustChangeset)))
     )
 
 
@@ -223,7 +228,7 @@ def test_on_file_added_empty(widget, mock_dispatch):
     widget.on_files_added(None)
     mock_dispatch.assert_not_any_call(
         InstanceOf(Action)
-        & Attrs(type=APPLY_CHANGESETS, payload=Sequence(of=InstanceOf(Changeset)))
+        & Attrs(type=APPLY_CHANGESETS, payload=Sequence(of=InstanceOf(TrustChangeset)))
     )
 
 
@@ -231,7 +236,7 @@ def test_on_file_deleted(widget, mock_dispatch):
     widget.on_files_deleted("foo")
     mock_dispatch.assert_called_with(
         InstanceOf(Action)
-        & Attrs(type=APPLY_CHANGESETS, payload=Sequence(of=InstanceOf(Changeset)))
+        & Attrs(type=APPLY_CHANGESETS, payload=Sequence(of=InstanceOf(TrustChangeset)))
     )
 
 
@@ -239,7 +244,7 @@ def test_on_file_deleted_empty(widget, mock_dispatch):
     widget.on_files_deleted(None)
     mock_dispatch.assert_not_any_call(
         InstanceOf(Action)
-        & Attrs(type=APPLY_CHANGESETS, payload=Sequence(of=InstanceOf(Changeset)))
+        & Attrs(type=APPLY_CHANGESETS, payload=Sequence(of=InstanceOf(TrustChangeset)))
     )
 
 
@@ -249,7 +254,7 @@ def test_reloads_trust_w_changeset_change(mock_dispatch, mocker):
         "ui.ancillary_trust_database_admin.get_system_feature",
         return_value=mockSystemFeature,
     )
-    mockSystemFeature.on_next({"changesets": []})
+    mockSystemFeature.on_next({"changesets": mock_changesets_state()})
     init_store(mock_System())
     widget = AncillaryTrustDatabaseAdmin()
     mockTrustListSetChangeset = mocker.patch.object(
@@ -257,8 +262,9 @@ def test_reloads_trust_w_changeset_change(mock_dispatch, mocker):
     )
 
     changesets = [MagicMock()]
+    changesets_state = mock_changesets_state(changesets)
     mockSystemFeature.on_next(
-        {"changesets": changesets, "ancillary_trust": MagicMock(error=None)}
+        {"changesets": changesets_state, "ancillary_trust": MagicMock(error=None)}
     )
     mockTrustListSetChangeset.assert_called_with(changesets)
     mock_dispatch.assert_called_with(
@@ -267,7 +273,7 @@ def test_reloads_trust_w_changeset_change(mock_dispatch, mocker):
 
 
 def test_load_trust(mocker):
-    mockChangeset = MagicMock(spec=Changeset)
+    mockChangeset = mock_changesets_state()
     mockSystemFeature = Subject()
     mocker.patch(
         "ui.ancillary_trust_database_admin.get_system_feature",
@@ -278,14 +284,14 @@ def test_load_trust(mocker):
     mockLoadList = mocker.patch.object(widget.trustFileList, "load_trust")
     mockSystemFeature.on_next(
         {
-            "changesets": [mockChangeset],
+            "changesets": mock_changesets_state([mockChangeset]),
             "ancillary_trust": MagicMock(error=False),
         }
     )
 
     mockSystemFeature.on_next(
         {
-            "changesets": [mockChangeset],
+            "changesets": mock_changesets_state([mockChangeset]),
             "ancillary_trust": MagicMock(error=False, loading=False, trust="foo"),
         }
     )
@@ -298,12 +304,15 @@ def test_load_trust_w_exception(mock_dispatch, mocker):
         "ui.ancillary_trust_database_admin.get_system_feature",
         return_value=mockSystemFeature,
     )
-    mockSystemFeature.on_next({"changesets": []})
+    mockSystemFeature.on_next({"changesets": mock_changesets_state()})
     init_store(mock_System())
     AncillaryTrustDatabaseAdmin()
 
     mockSystemFeature.on_next(
-        {"changesets": [], "ancillary_trust": MagicMock(loading=False, error="foo")}
+        {
+            "changesets": mock_changesets_state(),
+            "ancillary_trust": MagicMock(loading=False, error="foo"),
+        }
     )
     mock_dispatch.assert_called_with(
         InstanceOf(Action)

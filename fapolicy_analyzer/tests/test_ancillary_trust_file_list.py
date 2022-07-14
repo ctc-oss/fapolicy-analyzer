@@ -15,8 +15,7 @@
 
 import gi
 import pytest
-
-import context  # noqa: F401
+from fapolicy_analyzer.ui.changeset_wrapper import TrustChangeset  # noqa: F401
 
 gi.require_version("Gtk", "3.0")
 from unittest.mock import MagicMock
@@ -95,7 +94,7 @@ def test_hides_changes_column(widget):
 
 def test_shows_changes_column(widget):
     mockChangeset = MagicMock(
-        get_path_action_map=MagicMock(return_value=({"/tmp/foo": "Add"}))
+        spec=TrustChangeset, serialize=MagicMock(return_value=({"/tmp/foo": "Add"}))
     )
     widget.set_changesets([mockChangeset])
     widget.load_trust(_trust)
@@ -105,7 +104,7 @@ def test_shows_changes_column(widget):
 
 def test_trust_add_actions_in_view(widget):
     mockChangeset = MagicMock(
-        get_path_action_map=MagicMock(return_value=({"/tmp/1": "Add"}))
+        spec=TrustChangeset, serialize=MagicMock(return_value=({"/tmp/1": "Add"}))
     )
     widget.set_changesets([mockChangeset])
     widget.load_trust(_trust)
@@ -116,7 +115,7 @@ def test_trust_add_actions_in_view(widget):
 
 def test_trust_delete_actions_in_view(widget):
     mockChangeset = MagicMock(
-        get_path_action_map=MagicMock(return_value=({"/tmp/foz": "Del"}))
+        spec=TrustChangeset, serialize=MagicMock(return_value=({"/tmp/foz": "Del"}))
     )
     widget.set_changesets([mockChangeset])
     widget.load_trust(_trust)

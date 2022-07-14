@@ -43,6 +43,10 @@ test_changeset = Changeset()
 test_changeset.add_trust("/tmp/DeadBeef.txt")
 
 
+def mock_changesets_state(changesets=[test_changeset], error=False):
+    return MagicMock(changesets=changesets, error=error)
+
+
 @pytest.fixture()
 def mock_dispatch(mocker):
     return mocker.patch("ui.main_window.dispatch")
@@ -54,9 +58,9 @@ def mock_init_store():
 
 
 @pytest.fixture
-def mock_system_features(changesets, mocker):
+def mock_system_features(changesets_state, mocker):
     def push_changeset(observer, *args):
-        observer.on_next({"changesets": changesets})
+        observer.on_next({"changesets": changesets_state})
         observer.on_completed()
 
     system_features_mock = create(push_changeset)
@@ -91,7 +95,7 @@ def test_displays_window(mainWindow):
 
 
 @pytest.mark.usefixtures("mock_system_features")
-@pytest.mark.parametrize("changesets", [[test_changeset]])
+@pytest.mark.parametrize("changesets_state", [mock_changesets_state()])
 def test_shows_confirm_if_unapplied_changes(mainWindow, mocker):
     mockDialog = MagicMock()
     mockDialog.run.return_value = False
@@ -457,9 +461,11 @@ def test_toggles_deploy_changes_toolbar_btn(mocker):
     tool_bar = MainWindow().get_object("appArea").get_children()[1]
     deploy_btn = tool_bar.get_nth_item(0)
     assert not deploy_btn.get_sensitive()
-    system_features_mock.on_next({"changesets": ["foo"]})
+    system_features_mock.on_next(
+        {"changesets": mock_changesets_state(changesets=["foo"])}
+    )
     assert deploy_btn.get_sensitive()
-    system_features_mock.on_next({"changesets": []})
+    system_features_mock.on_next({"changesets": mock_changesets_state(changesets=[])})
     assert not deploy_btn.get_sensitive()
 
 
@@ -472,9 +478,11 @@ def test_toggles_dirty_title(mocker):
     init_store(mock_System())
     windowRef = MainWindow().get_ref()
     assert not windowRef.get_title().startswith("*")
-    system_features_mock.on_next({"changesets": ["foo"]})
+    system_features_mock.on_next(
+        {"changesets": mock_changesets_state(changesets=["foo"])}
+    )
     assert windowRef.get_title().startswith("*")
-    system_features_mock.on_next({"changesets": []})
+    system_features_mock.on_next({"changesets": mock_changesets_state(changesets=[])})
     assert not windowRef.get_title().startswith("*")
 
 
@@ -498,7 +506,7 @@ def test_on_fapdStopMenu_activate(mainWindow, mocker):
 def test_enable_fapd_menu_items(mainWindow, mocker):
     mainWindow._fapdControlPermitted = True
     mainWindow._enable_fapd_menu_items(ServiceStatus.TRUE)
-    assert(not mainWindow._fapdStartMenuItem.get_sensitive())
+    assert not mainWindow._fapdStartMenuItem.get_sensitive()
 
 
 def test_on_update_daemon_status(mainWindow, mocker):

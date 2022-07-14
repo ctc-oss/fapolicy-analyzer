@@ -4,11 +4,6 @@ from typing import Dict, Generic, TypeVar, Union
 import fapolicy_analyzer
 from fapolicy_analyzer import System
 
-# T = TypeVar("T", TrustChangeset, RuleChangeset)
-
-
-# class Changeset(Generic[T]):
-
 T = TypeVar("T", Dict[str, str], str)
 
 

@@ -18,23 +18,23 @@ import json
 import os
 import time
 from datetime import datetime as DT
-from unittest.mock import call, mock_open
+from unittest.mock import MagicMock, call, mock_open
 
 import pytest
 from callee import Attr, EndsWith, InstanceOf, StartsWith
-from fapolicy_analyzer import Changeset
 from fapolicy_analyzer.ui.actions import (
     ADD_NOTIFICATION,
     APPLY_CHANGESETS,
     RESTORE_SYSTEM_CHECKPOINT,
 )
+from fapolicy_analyzer.ui.changeset_wrapper import RuleChangeset, TrustChangeset
+from fapolicy_analyzer.ui.session_manager import SessionManager
 from redux import Action
-from ui.session_manager import SessionManager
 
 import context  # noqa: F401
 
 test_changes = [
-    {"/data_space/man_from_mars.txt": "Add"},
+    "foo rules",
     {
         "/data_space/this/is/a/longer/path/now_is_the_time.txt": "Del",
         "/data_space/Integration.json": "Add",
@@ -48,10 +48,14 @@ test_json = json.dumps(
     indent=4,
 )
 
-test_changesets = [Changeset(), Changeset()]
-test_changesets[0].add_trust("/data_space/man_from_mars.txt")
-test_changesets[1].del_trust("/data_space/this/is/a/longer/path/now_is_the_time.txt")
-test_changesets[1].add_trust("/data_space/Integration.json")
+test_changesets = [RuleChangeset(), TrustChangeset()]
+test_changesets[0].set("foo rules")
+test_changesets[1].delete("/data_space/this/is/a/longer/path/now_is_the_time.txt")
+test_changesets[1].add("/data_space/Integration.json")
+
+
+def mock_changesets_state(changesets=test_changesets, error=False):
+    return MagicMock(changesets=changesets, error=error)
 
 
 @pytest.fixture
@@ -92,7 +96,7 @@ def autosaved_files():
 
 @pytest.fixture()
 def mock_dispatch(mocker):
-    return mocker.patch("ui.session_manager.dispatch")
+    return mocker.patch("fapolicy_analyzer.ui.session_manager.dispatch")
 
 
 # ######################## Session Serialization #####################
@@ -112,7 +116,9 @@ def test_open_edit_session(uut, mock_dispatch, mocker):
     # parse changesets to json string to compare
     args, _ = mock_dispatch.call_args_list[1]
     actual = [
-        {path: action for path, action in c.get_path_action_map().items()}
+        {path: action for path, action in c.serialize().items()}
+        if isinstance(c, TrustChangeset)
+        else c.serialize()
         for c in args[0].payload
     ]
 
@@ -121,7 +127,8 @@ def test_open_edit_session(uut, mock_dispatch, mocker):
 
 def test_open_edit_session_w_exception(uut, mock_dispatch, mocker):
     mockFunc = mocker.patch(
-        "ui.session_manager.json.load", side_effect=lambda: IOError("foo")
+        "fapolicy_analyzer.ui.session_manager.json.load",
+        side_effect=lambda: IOError("foo"),
     )
 
     mocker.patch("builtins.open", mock_open())
@@ -137,17 +144,20 @@ def test_save_edit_session(uut, mocker):
 
     mockFile.assert_called_once_with("foo", "w")
     # we need to parse the json written out to the mock object
+    print(mockFile.mock_calls)
     actual = "".join(
         [args[0] for name, args, _ in mockFile.mock_calls if name == "().write"]
     )
+    print(actual)
     expected = test_json
+    print(expected)
     assert actual == expected
 
 
 # ########################### Autosave Sessions #################
 def test_autosave_edit_session(uut_autosave_enabled, mocker):
     mockFile = mocker.patch("builtins.open", mock_open())
-    uut_autosave_enabled.on_next_system({"changesets": test_changesets})
+    uut_autosave_enabled.on_next_system({"changesets": mock_changesets_state()})
 
     mockFile.assert_called_once_with(
         StartsWith(uut_autosave_enabled._SessionManager__tmpFileBasename)
@@ -165,9 +175,10 @@ def test_autosave_edit_session(uut_autosave_enabled, mocker):
 def test_autosave_edit_session_w_exception(mocker, uut_autosave_enabled):
     # Create a mock that throw an exception side-effect
     mockFunc = mocker.patch(
-        "ui.session_manager.SessionManager.save_edit_session", side_effect=IOError
+        "fapolicy_analyzer.ui.session_manager.SessionManager.save_edit_session",
+        side_effect=IOError,
     )
-    uut_autosave_enabled.on_next_system({"changesets": test_changesets})
+    uut_autosave_enabled.on_next_system({"changesets": mock_changesets_state()})
     mockFunc.assert_called()
 
 
@@ -220,7 +231,9 @@ def test_autosave_filecount(uut_autosave_enabled, tmp_path):
     listTmpFiles = glob.glob(strSearchPattern)
 
     for changeset in test_changesets:
-        uut_autosave_enabled.on_next_system({"changesets": [changeset]})
+        uut_autosave_enabled.on_next_system(
+            {"changesets": mock_changesets_state([changeset])}
+        )
 
     # Verify there are three temp files on the filesystem
     strSearchPattern = uut_autosave_enabled._SessionManager__tmpFileBasename + "_*.json"
@@ -239,7 +252,7 @@ def test_detect_previous_session_no_files(uut):
 
 
 def test_detect_previous_session_files(uut_autosave_enabled):
-    uut_autosave_enabled.on_next_system({"changesets": test_changesets})
+    uut_autosave_enabled.on_next_system({"changesets": mock_changesets_state()})
 
     # Verify there temp files on the filesystem
     strSearchPattern = uut_autosave_enabled._SessionManager__tmpFileBasename + "_*.json"
@@ -276,7 +289,9 @@ def test_restore_previous_session(uut_autosave_enabled, autosaved_files, mock_di
     # parse changesets to json string to compare
     args, _ = mock_dispatch.call_args_list[1]
     actual = [
-        {path: action for path, action in c.get_path_action_map().items()}
+        {path: action for path, action in c.serialize().items()}
+        if isinstance(c, TrustChangeset)
+        else c.serialize()
         for c in args[0].payload
     ]
 
@@ -288,7 +303,8 @@ def test_restore_previous_session_w_exception(
 ):
     # Mock the open_edit_session() call such that it throws an exception
     mockFunc = mocker.patch(
-        "ui.session_manager.SessionManager.open_edit_session", side_effect=IOError
+        "fapolicy_analyzer.ui.session_manager.SessionManager.open_edit_session",
+        side_effect=IOError,
     )
 
     # Two json files assumed on disk w/fixture
