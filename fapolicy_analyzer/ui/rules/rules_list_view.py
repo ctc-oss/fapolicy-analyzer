@@ -14,7 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from itertools import groupby
-from typing import Sequence, Tuple
+from typing import Any, Sequence, Tuple
 
 import gi
 from fapolicy_analyzer import Rule
@@ -116,6 +116,14 @@ class RulesListView(SearchableList):
                 Pango.Style.NORMAL,
             ],
         )
+
+    def highlight_row_from_data(self, data: Any):
+        row = self.find_selected_row_by_data(data, 1)
+        if row:
+            selection = self.treeView.get_selection()
+            selection.set_select_function(lambda *_: True if _[2] == row else False, row)
+            selection.select_path(row)
+            self.treeView.scroll_to_cell(row, use_align=True, row_align=0.0)
 
     def __expand_rows_at_root(self, store):
         iter = store.get_iter_first()

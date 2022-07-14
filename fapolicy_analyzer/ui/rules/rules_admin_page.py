@@ -68,12 +68,7 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         dispatch(request_rules_text())
 
     def highlight_row_from_data(self, data: Any):
-        row = self.__list_view.find_selected_row_by_data(data, 1)
-        if row:
-            selection = self.__list_view.treeView.get_selection()
-            selection.set_select_function(lambda *_: True if _[2] == row else False, row)
-            selection.select_path(row)
-            self.__list_view.treeView.scroll_to_cell(row)
+        self.__list_view.highlight_row_from_data(data)
 
     def on_next_system(self, system: Any):
         rules_state = system.get("rules")

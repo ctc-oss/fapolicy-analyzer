@@ -107,6 +107,11 @@ def test_renders_rules(widget):
     ]
 
 
+def test_highlight_row(widget):
+    widget.render_rules(mock_rules)
+    widget.highlight_row_from_data(1)
+
+
 def test_renders_info_rows(widget):
     expected_messages = ["[w] warning message", "[i] other info"]
     expected_colors = [Colors.ORANGE, Colors.BLUE]
