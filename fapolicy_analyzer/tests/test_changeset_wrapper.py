@@ -79,7 +79,7 @@ def test_TrustChangeset_add(mocker):
     mock().add_trust.assert_called_with("foo")
 
 
-def test_TrustChangeset_add(mocker):
+def test_TrustChangeset_delete(mocker):
     mock = mocker.patch(
         "fapolicy_analyzer.ui.changeset_wrapper.fapolicy_analyzer.Changeset"
     )
