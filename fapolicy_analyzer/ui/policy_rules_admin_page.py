@@ -55,7 +55,6 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         UIConnectedWidget.__init__(
             self, get_system_feature(), on_next=self.on_next_system
         )
-
         actions = {
             "analyze": [
                 UIAction(
@@ -67,7 +66,6 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             ]
         }
         UIPage.__init__(self, actions)
-
         self.__n_changesets = 0
         self.__audit_file: Optional[str] = audit_file
         self.__log: Optional[Sequence[EventLog]] = None
@@ -349,17 +347,18 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             self.__selection_state["user"] or self.__selection_state["group"]
         ):
             last_subject = self.__selection_state["subjects"][-1]
-            objects = list(
+            data = list(
                 {
-                    e.object.file: e.object
+                    e.object.file: {e.rule_id: e.object}
                     for e in self.__log.by_subject(last_subject)
                     if e.uid == self.__selection_state["user"]
                     or e.gid == self.__selection_state["group"]
                 }.values()
             )
+
             self.__populate_list(
                 self.object_list,
-                objects,
+                data,
                 "objects",
                 True,
                 self.object_list.get_selected_row_by_file,

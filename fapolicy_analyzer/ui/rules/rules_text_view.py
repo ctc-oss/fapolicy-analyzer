@@ -44,12 +44,13 @@ class RulesTextView(UIBuilderWidget):
             "fapolicy_analyzer.resources.sourceview.language-specs",
             "fapolicyd-rules.lang",
         ) as path:
-            lang_manager.set_search_path(
-                [
-                    *lang_manager.get_search_path(),
-                    os.path.dirname(path.as_posix()),
-                ]
-            )
+            if os.path.dirname(path.as_posix()) not in lang_manager.get_search_path():
+                lang_manager.set_search_path(
+                    [
+                        *lang_manager.get_search_path(),
+                        os.path.dirname(path.as_posix()),
+                    ]
+                )
         return lang_manager.get_language("fapolicyd-rules")
 
     def __get_view_style(self):

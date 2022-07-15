@@ -67,6 +67,9 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         self.__loading_text = True
         dispatch(request_rules_text())
 
+    def highlight_row_from_data(self, data: Any):
+        self.__list_view.highlight_row_from_data(data)
+
     def on_next_system(self, system: Any):
         rules_state = system.get("rules")
         text_state = system.get("rules_text")
