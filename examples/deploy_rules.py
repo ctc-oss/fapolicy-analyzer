@@ -44,8 +44,16 @@ print(f"system2 has {len(s2.rules())} rules defined")
 print("deploying system")
 s2.deploy_only()
 
+# display a diff of the rules
+
 assert xs.set(rule_text.replace("bar", "fizz"))
 
-print("diffing additional changes")
+print("diffing additional changes\n")
 s3 = s2.apply_rule_changes(xs)
-print(rules_difference(s2, s3))
+for ln in rules_difference(s2, s3).split("\n"):
+    if ln.startswith("+"):
+        print('\033[92m', end='')
+    elif ln.startswith("-"):
+        print('\033[91m', end='')
+
+    print(f"{ln}  \033[0m")
