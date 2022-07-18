@@ -203,7 +203,7 @@ class MainWindow(UIConnectedWidget):
 
                     self.get_object("restoreMenu").set_sensitive(False)
                 except Exception:
-                    print("Restore failed")
+                    logging.debug("Restore failed")
         else:
             self.get_object("restoreMenu").set_sensitive(False)
 

@@ -453,9 +453,7 @@ def test_refresh_with_multi_select(
         model, paths = view.get_selection().get_selected_rows()
         return [model.get_value(model.get_iter(p), data_column_num) for p in paths]
 
-    print("selecting user")
     aclListView.get_selection().select_path(Gtk.TreePath.new_first())
-    print(f"selecting subject, model length: {len(subjectListView.get_model())}")
     subjectListView.get_selection().select_all()
     objectListView.get_selection().select_path(Gtk.TreePath.new_first())
 
@@ -468,7 +466,6 @@ def test_refresh_with_multi_select(
             ]
         )
     )
-    print("refreshing")
     refresh_click()
 
     # need to manually execute state reload since we are mocking

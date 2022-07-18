@@ -13,9 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from unittest.mock import MagicMock
+
 import context  # noqa: F401
 import pytest
-from unittest.mock import MagicMock
 from ui.reducers.ancillary_trust_reducer import (
     TrustState,
     handle_add_changesets,
@@ -35,7 +36,6 @@ def initial_state():
 
 def test_handle_request_ancillary_trust(initial_state):
     result = handle_request_ancillary_trust(initial_state, MagicMock())
-    print(result)
     assert result == TrustState(error=None, trust=[], deployed=False, loading=True)
 
 
