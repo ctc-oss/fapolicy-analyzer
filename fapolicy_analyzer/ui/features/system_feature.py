@@ -95,7 +95,6 @@ def create_system_feature(
                 system = System()
                 GLib.idle_add(finish, system)
             except RuntimeError:
-                print("caught exception")
                 logging.exception(SYSTEM_INITIALIZATION_ERROR)
                 GLib.idle_add(finish, None)
 
@@ -118,7 +117,6 @@ def create_system_feature(
             finish(system)
         else:
             executor = ThreadPoolExecutor(max_workers=1)
-            print(f"{executor}: {executor.submit}")
             executor.submit(execute_system)
         return init_system()
 
