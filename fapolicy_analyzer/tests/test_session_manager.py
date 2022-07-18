@@ -144,13 +144,10 @@ def test_save_edit_session(uut, mocker):
 
     mockFile.assert_called_once_with("foo", "w")
     # we need to parse the json written out to the mock object
-    print(mockFile.mock_calls)
     actual = "".join(
         [args[0] for name, args, _ in mockFile.mock_calls if name == "().write"]
     )
-    print(actual)
     expected = test_json
-    print(expected)
     assert actual == expected
 
 

@@ -183,16 +183,13 @@ class SessionManager:
         bReturn = False
         for tmpF in listTmpFiles:
             try:
-                print("Attempting to restore session file: {}".format(tmpF))
                 self.open_edit_session(tmpF)
-                print("Returned from open_edit_session({})".format(tmpF))
                 self.__cleanup_autosave_sessions()
                 bReturn = True
-                print("SUCCESS")
                 break
 
             except Exception:
-                print("FAIL: Restoring {} load failure".format(tmpF))
+                logging.warning("FAIL: Restoring {} load failure".format(tmpF))
                 continue
 
         # All autosaved files failed on loading

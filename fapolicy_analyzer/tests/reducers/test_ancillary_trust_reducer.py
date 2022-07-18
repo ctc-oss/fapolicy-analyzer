@@ -17,11 +17,18 @@ from unittest.mock import MagicMock
 
 import context  # noqa: F401
 import pytest
+
+# Copyright Concurrent Technologies Corporation 2021
 from fapolicy_analyzer.ui.reducers.ancillary_trust_reducer import (
-    TrustState, handle_add_changesets, handle_ancillary_trust_deployed,
-    handle_clear_changesets, handle_error_ancillary_trust,
-    handle_error_deploying_ancillary_trust, handle_received_ancillary_trust,
-    handle_request_ancillary_trust)
+    TrustState,
+    handle_add_changesets,
+    handle_ancillary_trust_deployed,
+    handle_clear_changesets,
+    handle_error_ancillary_trust,
+    handle_error_deploying_ancillary_trust,
+    handle_received_ancillary_trust,
+    handle_request_ancillary_trust,
+)
 
 
 @pytest.fixture()
@@ -31,7 +38,6 @@ def initial_state():
 
 def test_handle_request_ancillary_trust(initial_state):
     result = handle_request_ancillary_trust(initial_state, MagicMock())
-    print(result)
     assert result == TrustState(error=None, trust=[], deployed=False, loading=True)
 
 

@@ -57,7 +57,6 @@ class RuleChangeset(Changeset[str]):
         self.__wrapped.set(change)
 
     def apply_to_system(self, system: System) -> System:
-        print(f"system = {system}")
         return system.apply_rule_changes(self.__wrapped)
 
     def serialize(self) -> str:
