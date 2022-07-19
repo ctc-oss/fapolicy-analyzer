@@ -40,7 +40,7 @@ dataclasses = "==0.6"
 allow_prereleases = true
 
 [scripts]
-test = "pipenv run xvfb-run -a pytest -s --cov fapolicy_analyzer/"
+test = "pipenv run xvfb-run -a pytest -s --cov"
 lint = "pipenv run flake8 fapolicy_analyzer/"
 format = "pipenv run black fapolicy_analyzer/"
 watch-test = "pipenv run xvfb-run -a pytest-watch fapolicy_analyzer/ -- --testmon -s"
