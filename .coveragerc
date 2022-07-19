@@ -1,7 +1,7 @@
 [run]
 source =
-    ui
-    util
+    ui/*
+    util/*
 
 [report]
 show_missing = true
