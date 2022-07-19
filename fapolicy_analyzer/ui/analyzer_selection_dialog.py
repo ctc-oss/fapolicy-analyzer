@@ -30,6 +30,7 @@ class ANALYZER_SELECTION(Enum):
     RULES_ADMIN = 1
     ANALYZE_FROM_AUDIT = 2
     ANALYZE_SYSLOG = 3
+    PROFILER = 4
 
 
 class AnalyzerSelectionDialog(UIBuilderWidget):
