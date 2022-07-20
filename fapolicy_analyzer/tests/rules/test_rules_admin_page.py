@@ -71,7 +71,7 @@ def test_populates_guided_editor(widget, mock_system_feature, mocker):
     mock_rules = [mock_rule()]
     mock_list_renderer = MagicMock()
     mocker.patch(
-        "ui.rules.rules_list_view.RulesListView.render_rules",
+        "fapolicy_analyzer.ui.rules.rules_list_view.RulesListView.render_rules",
         mock_list_renderer,
     )
     mock_system_feature.on_next(
@@ -105,7 +105,7 @@ def test_populates_status_info(mock_system_feature, mocker):
     ]
     mock_info_renderer = MagicMock()
     mocker.patch(
-        "ui.rules.rules_status_info.RulesStatusInfo.render_rule_status",
+        "fapolicy_analyzer.ui.rules.rules_status_info.RulesStatusInfo.render_rule_status",
         mock_info_renderer,
     )
     mock_system_feature.on_next(
@@ -141,7 +141,7 @@ def test_handles_rules_exception(mock_dispatch, mock_system_feature):
 def test_populates_text_editor(mock_system_feature, mocker):
     mock_text_renderer = MagicMock()
     mocker.patch(
-        "ui.rules.rules_text_view.RulesTextView.render_rules",
+        "fapolicy_analyzer.ui.rules.rules_text_view.RulesTextView.render_rules",
         mock_text_renderer,
     )
     mock_system_feature.on_next(
@@ -193,7 +193,7 @@ def test_save_click(widget, mock_dispatch):
 def test_apply_changeset_error(mock_dispatch, mocker):
     mockSystemFeature = Subject()
     mocker.patch(
-        "ui.rules.rules_admin_page.get_system_feature",
+        "fapolicy_analyzer.ui.rules.rules_admin_page.get_system_feature",
         return_value=mockSystemFeature,
     )
     mockSystemFeature.on_next(

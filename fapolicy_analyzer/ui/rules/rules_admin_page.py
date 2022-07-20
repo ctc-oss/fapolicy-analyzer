@@ -17,7 +17,7 @@ import logging
 from typing import Any, Optional, Sequence
 
 from fapolicy_analyzer import Rule
-from ui.actions import (
+from fapolicy_analyzer.ui.actions import (
     NotificationType,
     add_notification,
     apply_changesets,
@@ -25,18 +25,18 @@ from ui.actions import (
     request_rules,
     request_rules_text,
 )
-from ui.changeset_wrapper import Changeset, RuleChangeset
-from ui.rules.rules_list_view import RulesListView
-from ui.rules.rules_status_info import RulesStatusInfo
-from ui.rules.rules_text_view import RulesTextView
-from ui.store import dispatch, get_system_feature
-from ui.strings import (
+from fapolicy_analyzer.ui.changeset_wrapper import Changeset, RuleChangeset
+from fapolicy_analyzer.ui.rules.rules_list_view import RulesListView
+from fapolicy_analyzer.ui.rules.rules_status_info import RulesStatusInfo
+from fapolicy_analyzer.ui.rules.rules_text_view import RulesTextView
+from fapolicy_analyzer.ui.store import dispatch, get_system_feature
+from fapolicy_analyzer.ui.strings import (
     APPLY_CHANGESETS_ERROR_MESSAGE,
     RULES_LOAD_ERROR,
     RULES_TEXT_LOAD_ERROR,
 )
-from ui.ui_page import UIAction, UIPage
-from ui.ui_widget import UIConnectedWidget
+from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
+from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 
 
 class RulesAdminPage(UIConnectedWidget, UIPage):
