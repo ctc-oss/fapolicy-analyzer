@@ -19,10 +19,20 @@ from unittest.mock import MagicMock
 import gi
 import pytest
 from callee import Attrs, InstanceOf
-from fapolicy_analyzer.ui.actions import ADD_NOTIFICATION
+from fapolicy_analyzer.ui.actions import (
+    ADD_NOTIFICATION,
+    APPLY_CHANGESETS,
+    MODIFY_RULES_TEXT,
+    NotificationType,
+)
+from fapolicy_analyzer.ui.changeset_wrapper import RuleChangeset
 from fapolicy_analyzer.ui.rules import RulesAdminPage
 from fapolicy_analyzer.ui.store import init_store
-from fapolicy_analyzer.ui.strings import RULES_LOAD_ERROR, RULES_TEXT_LOAD_ERROR
+from fapolicy_analyzer.ui.strings import (
+    APPLY_CHANGESETS_ERROR_MESSAGE,
+    RULES_LOAD_ERROR,
+    RULES_TEXT_LOAD_ERROR,
+)
 from mocks import mock_rule, mock_System
 from redux import Action
 from rx.subject import Subject
@@ -61,7 +71,7 @@ def test_populates_guided_editor(widget, mock_system_feature, mocker):
     mock_rules = [mock_rule()]
     mock_list_renderer = MagicMock()
     mocker.patch(
-        "fapolicy_analyzer.ui.rules.rules_list_view.RulesListView.render_rules",
+        "ui.rules.rules_list_view.RulesListView.render_rules",
         mock_list_renderer,
     )
     mock_system_feature.on_next(
@@ -74,7 +84,8 @@ def test_populates_guided_editor(widget, mock_system_feature, mocker):
     mock_list_renderer.assert_called_once_with(mock_rules)
 
 
-def test_populates_status_info(widget, mock_system_feature, mocker):
+@pytest.mark.usefixtures("widget")
+def test_populates_status_info(mock_system_feature, mocker):
     mock_rules = [
         MagicMock(
             id=1,
@@ -94,7 +105,7 @@ def test_populates_status_info(widget, mock_system_feature, mocker):
     ]
     mock_info_renderer = MagicMock()
     mocker.patch(
-        "fapolicy_analyzer.ui.rules.rules_status_info.RulesStatusInfo.render_rule_status",
+        "ui.rules.rules_status_info.RulesStatusInfo.render_rule_status",
         mock_info_renderer,
     )
     mock_system_feature.on_next(
@@ -126,10 +137,11 @@ def test_handles_rules_exception(mock_dispatch, mock_system_feature):
     )
 
 
-def test_populates_text_editor(widget, mock_system_feature, mocker):
+@pytest.mark.usefixtures("widget")
+def test_populates_text_editor(mock_system_feature, mocker):
     mock_text_renderer = MagicMock()
     mocker.patch(
-        "fapolicy_analyzer.ui.rules.rules_text_view.RulesTextView.render_rules",
+        "ui.rules.rules_text_view.RulesTextView.render_rules",
         mock_text_renderer,
     )
     mock_system_feature.on_next(
@@ -161,5 +173,51 @@ def test_handles_rules_text_exception(mock_dispatch, mock_system_feature):
         & Attrs(
             type=ADD_NOTIFICATION,
             payload=Attrs(text=RULES_TEXT_LOAD_ERROR),
+        )
+    )
+
+
+def test_handles_rule_text_change(widget, mock_dispatch):
+    widget._text_view.rules_changed("new rules")
+    mock_dispatch.assert_called_with(
+        InstanceOf(Action) & Attrs(type=MODIFY_RULES_TEXT, payload="new rules")
+    )
+
+
+def test_save_click(widget, mock_dispatch):
+    widget._text_view.rules_changed("modified rules")
+    widget.on_save_clicked()
+    mock_dispatch.assert_called_with(InstanceOf(Action) & Attrs(type=APPLY_CHANGESETS))
+
+
+def test_apply_changeset_error(mock_dispatch, mocker):
+    mockSystemFeature = Subject()
+    mocker.patch(
+        "ui.rules.rules_admin_page.get_system_feature",
+        return_value=mockSystemFeature,
+    )
+    mockSystemFeature.on_next(
+        {"changesets": MagicMock(spec=RuleChangeset, changesets=[], error=False)}
+    )
+    init_store(mock_System())
+    widget = RulesAdminPage()
+    widget.on_save_clicked()  # need to set the saving flag to true
+
+    mockSystemFeature.on_next(
+        {
+            "changesets": MagicMock(
+                spec=RuleChangeset, changesets=[MagicMock()], error="bad error"
+            ),
+            "rules": MagicMock(loading=True),
+            "rules_text": MagicMock(loading=True),
+        }
+    )
+    mock_dispatch.assert_called_with(
+        InstanceOf(Action)
+        & Attrs(
+            type=ADD_NOTIFICATION,
+            payload=Attrs(
+                type=NotificationType.ERROR, text=APPLY_CHANGESETS_ERROR_MESSAGE
+            ),
         )
     )

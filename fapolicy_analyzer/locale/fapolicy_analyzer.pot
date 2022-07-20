@@ -7,9 +7,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: fapolicy-analyzer 0.3.1+87.gd110d7a\n"
+"Project-Id-Version: fapolicy-analyzer 0.3.1+105.g4c8168a.dirty\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-07-06 09:20-0400\n"
+"POT-Creation-Date: 2022-07-20 09:27-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.10.1\n"
 
-#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:110
+#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:112
 #: fapolicy_analyzer/ui/system_trust_database_admin.py:103
 msgid ""
 "File: {trust.path}\n"
@@ -26,7 +26,7 @@ msgid ""
 "SHA256: {trust.hash}"
 msgstr ""
 
-#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:120
+#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:122
 #: fapolicy_analyzer/ui/system_trust_database_admin.py:112
 msgid ""
 "{fs.stat(trust.path)}\n"
@@ -66,7 +66,7 @@ msgstr ""
 msgid "{len(deleted)} file{plural(len(deleted))[0]} cannot be found on disk"
 msgstr ""
 
-#: fapolicy_analyzer/ui/session_manager.py:146
+#: fapolicy_analyzer/ui/session_manager.py:140
 msgid "Failed to load edit session from file {strJsonFile}"
 msgstr ""
 
@@ -351,7 +351,11 @@ msgid ""
 "    "
 msgstr ""
 
-#: fapolicy_analyzer/ui/operations/deploy_changesets_op.py:146
+#: fapolicy_analyzer/ui/strings.py:156
+msgid "Error applying changes"
+msgstr ""
+
+#: fapolicy_analyzer/ui/operations/deploy_changesets_op.py:154
 msgid "Deploy Changes"
 msgstr ""
 

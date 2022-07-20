@@ -17,7 +17,7 @@ import logging
 from typing import Any, Optional, Sequence
 
 from fapolicy_analyzer import Rule
-from fapolicy_analyzer.ui.actions import (
+from ui.actions import (
     NotificationType,
     add_notification,
     apply_changesets,
@@ -25,18 +25,18 @@ from fapolicy_analyzer.ui.actions import (
     request_rules,
     request_rules_text,
 )
-from fapolicy_analyzer.ui.changeset_wrapper import Changeset, RuleChangeset
-from fapolicy_analyzer.ui.rules.rules_list_view import RulesListView
-from fapolicy_analyzer.ui.rules.rules_status_info import RulesStatusInfo
-from fapolicy_analyzer.ui.rules.rules_text_view import RulesTextView
-from fapolicy_analyzer.ui.store import dispatch, get_system_feature
-from fapolicy_analyzer.ui.strings import (
+from ui.changeset_wrapper import Changeset, RuleChangeset
+from ui.rules.rules_list_view import RulesListView
+from ui.rules.rules_status_info import RulesStatusInfo
+from ui.rules.rules_text_view import RulesTextView
+from ui.store import dispatch, get_system_feature
+from ui.strings import (
     APPLY_CHANGESETS_ERROR_MESSAGE,
     RULES_LOAD_ERROR,
     RULES_TEXT_LOAD_ERROR,
 )
-from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
-from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
+from ui.ui_page import UIAction, UIPage
+from ui.ui_widget import UIConnectedWidget
 
 
 class RulesAdminPage(UIConnectedWidget, UIPage):
@@ -72,15 +72,15 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         self.__load_rules()
 
     def __init_child_widgets(self):
-        self.__text_view: RulesTextView = RulesTextView()
+        self._text_view: RulesTextView = RulesTextView()
         self.get_object("textEditorContent").pack_start(
-            self.__text_view.get_ref(), True, True, 0
+            self._text_view.get_ref(), True, True, 0
         )
-        self.__text_view.rules_changed += self.on_text_view_rules_changed
+        self._text_view.rules_changed += self.on_text_view_rules_changed
 
-        self.__list_view: RulesListView = RulesListView()
+        self._list_view: RulesListView = RulesListView()
         self.get_object("guidedEditorContent").pack_start(
-            self.__list_view.get_ref(), True, True, 0
+            self._list_view.get_ref(), True, True, 0
         )
 
         self.__status_info = RulesStatusInfo()
@@ -109,7 +109,7 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         dispatch(modify_rules_text(rules))
 
     def highlight_row_from_data(self, data: Any):
-        self.__list_view.highlight_row_from_data(data)
+        self._list_view.highlight_row_from_data(data)
 
     def on_next_system(self, system: Any):
         changesetState = system.get("changesets")
@@ -143,7 +143,7 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
             self.__error_rules = None
             self.__loading_rules = False
             self.__rules = rules_state.rules
-            self.__list_view.render_rules(self.__rules)
+            self._list_view.render_rules(self.__rules)
             self.__status_info.render_rule_status(self.__rules)
 
         if not text_state.loading and self.__error_text != text_state.error:
@@ -159,4 +159,4 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
             self.__error_text = None
             self.__loading_text = False
             self.__rules_text = text_state.rules_text
-            self.__text_view.render_rules(self.__rules_text)
+            self._text_view.render_rules(self.__rules_text)
