@@ -17,7 +17,7 @@ from unittest.mock import MagicMock
 
 import context  # noqa: F401
 import pytest
-from ui.reducers.rule_reducer import (
+from fapolicy_analyzer.ui.reducers.rule_reducer import (
     RuleState,
     handle_error_rules,
     handle_received_rules,

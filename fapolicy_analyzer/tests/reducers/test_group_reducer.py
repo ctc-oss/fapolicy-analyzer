@@ -16,7 +16,7 @@
 import context  # noqa: F401
 import pytest
 from unittest.mock import MagicMock
-from ui.reducers.group_reducer import (
+from fapolicy_analyzer.ui.reducers.group_reducer import (
     GroupState,
     handle_error_groups,
     handle_received_groups,

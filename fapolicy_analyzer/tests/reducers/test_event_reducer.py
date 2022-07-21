@@ -16,7 +16,7 @@
 import context  # noqa: F401
 import pytest
 from unittest.mock import MagicMock
-from ui.reducers.event_reducer import (
+from fapolicy_analyzer.ui.reducers.event_reducer import (
     EventState,
     handle_error_events,
     handle_received_events,

@@ -16,7 +16,7 @@
 import context  # noqa: F401
 import pytest
 from unittest.mock import MagicMock
-from ui.reducers.user_reducer import (
+from fapolicy_analyzer.ui.reducers.user_reducer import (
     UserState,
     handle_error_users,
     handle_received_users,

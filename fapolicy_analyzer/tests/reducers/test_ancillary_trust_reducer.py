@@ -13,19 +13,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from unittest.mock import MagicMock
+
 import context  # noqa: F401
 import pytest
-from unittest.mock import MagicMock
-from ui.reducers.ancillary_trust_reducer import (
-    TrustState,
-    handle_add_changesets,
-    handle_ancillary_trust_deployed,
-    handle_clear_changesets,
-    handle_error_ancillary_trust,
-    handle_error_deploying_ancillary_trust,
-    handle_received_ancillary_trust,
-    handle_request_ancillary_trust,
-)
+from fapolicy_analyzer.ui.reducers.ancillary_trust_reducer import (
+    TrustState, handle_add_changesets, handle_ancillary_trust_deployed,
+    handle_clear_changesets, handle_error_ancillary_trust,
+    handle_error_deploying_ancillary_trust, handle_received_ancillary_trust,
+    handle_request_ancillary_trust)
 
 
 @pytest.fixture()
