@@ -208,6 +208,7 @@ def test_bad_router_option():
         assert excinfo.value.message == "Bad Selection"
 
 
+@pytest.mark.skip(reason="Not currently working in GitHub CI")
 @pytest.mark.usefixtures("es_locale", "mock_init_store", "mock_dispatches")
 def test_localization():
     mainWindow = MainWindow()
