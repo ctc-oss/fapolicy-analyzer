@@ -1,10 +1,13 @@
 [run]
 source =
-    ui
-    util
+    fapolicy_analyzer/ui
+    fapolicy_analyzer/util
+omit =
+    */tests/*
+    fapolicy_analyzer/css/*
+    fapolicy_analyzer/glade/*
+    fapolicy_analyzer/resources/*
 
 [report]
 show_missing = true
 fail_under = 90
-omit =
-    */tests/*

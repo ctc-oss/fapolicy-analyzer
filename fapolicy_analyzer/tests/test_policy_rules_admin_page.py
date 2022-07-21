@@ -19,8 +19,6 @@ from unittest.mock import MagicMock
 import gi
 import pytest
 from callee import Attrs, InstanceOf
-from redux import Action
-from rx.subject import Subject
 from fapolicy_analyzer.ui.actions import (
     ADD_NOTIFICATION,
     REQUEST_EVENTS,
@@ -35,6 +33,8 @@ from fapolicy_analyzer.ui.strings import (
     GET_USERS_ERROR_MSG,
     PARSE_EVENT_LOG_ERROR_MSG,
 )
+from redux import Action
+from rx.subject import Subject
 
 from mocks import mock_events, mock_groups, mock_log, mock_System, mock_users
 
@@ -497,7 +497,10 @@ def test_refresh_with_multi_select(
     ],
 )
 def test_updates_acl_details(widget, view, mockFnName, mocker):
-    mocker.patch(f"ui.policy_rules_admin_page.acl.{mockFnName}", return_value="foo")
+    mocker.patch(
+        f"fapolicy_analyzer.ui.policy_rules_admin_page.acl.{mockFnName}",
+        return_value="foo",
+    )
     textBuffer = widget.get_object("userDetails").get_buffer()
     view.get_selection().select_path(Gtk.TreePath.new_first())
     assert (
