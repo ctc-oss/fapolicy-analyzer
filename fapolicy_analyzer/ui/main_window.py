@@ -370,7 +370,12 @@ class MainWindow(UIConnectedWidget):
         self.__set_trustDbMenu_sensitive(True)
 
     def on_profileExecMenu_activate(self, *args):
-        self.__pack_main_content(router(ANALYZER_SELECTION.PROFILER))
+        page = router(ANALYZER_SELECTION.PROFILER)
+        width = self.get_object("mainWindow").get_size()[0]
+        page.get_object("dirEntry").set_property("width_request", int(width * Sizing.PROFILER_TEXT_ENTRY))
+        page._fapd_mgr = self._fapd_mgr
+        page._fapd_profiler = self._fapd_profiler
+        self.__pack_main_content(page)
         self.__set_trustDbMenu_sensitive(True)
 
     def on_deployChanges_clicked(self, *args):

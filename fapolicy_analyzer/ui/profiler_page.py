@@ -12,16 +12,41 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-from fapolicy_analyzer.ui.ui_page import UIPage
+import logging
+from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 from .store import dispatch, get_system_feature
 
+from .configs import Sizing
+from fapolicy_analyzer.util.format import f
 
 class ProfilerPage(UIConnectedWidget, UIPage):
     def __init__(self):
         UIConnectedWidget.__init__(self, get_system_feature())
-        UIPage.__init__(self, {})
+
+        actions = {
+            "start": [
+                UIAction(
+                    "Start",
+                    "Start Test",
+                    "media-playback-start",
+                    {"clicked": self.on_test_activate},
+                )
+            ],
+            "stop": [
+                UIAction(
+                    "Stop",
+                    "Stop Test",
+                    "media-playback-stop",
+                    {},
+                )
+            ]
+        }
+
+        UIPage.__init__(self, actions)
+
+        self._fapd_mgr = None
+        self._fapd_profiler = None
 
     def get_text(self):
         entryDict = {
@@ -31,4 +56,13 @@ class ProfilerPage(UIConnectedWidget, UIPage):
             "dirText": self.get_object("dirEntry").get_text(),
             "envText": self.get_object("envEntry").get_text(),
         }
-        return entryDict
+
+    def on_test_activate(self, *args):
+        profiling_args = self.get_text()
+        logging.debug(f"Entry text = {profiling_args}")
+        self._fapd_profiler.start_prof_session(profiling_args)
+        fapd_prof_stderr = self._fapd_profiler.fapd_prof_stderr
+        logging.debug(f"Started prof session, stderr={fapd_prof_stderr}")
+
+        sleep(4)
+        self._fapd_profiler.stop_prof_session()
