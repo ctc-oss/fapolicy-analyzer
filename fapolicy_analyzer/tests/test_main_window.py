@@ -178,7 +178,7 @@ def test_opens_analyze_with_syslog_page(mainWindow):
 
 
 def test_opens_rules_admin_page(mainWindow, mocker):
-    mocker.patch("ui.rules.rules_admin_page.get_system_feature")
+    mocker.patch("fapolicy_analyzer.ui.rules.rules_admin_page.get_system_feature")
     menuItem = mainWindow.get_object("rulesAdminMenu")
     menuItem.activate()
     refresh_gui()
@@ -187,7 +187,7 @@ def test_opens_rules_admin_page(mainWindow, mocker):
 
 
 def test_open_rules_admin_with_args(mainWindow, mocker):
-    mocker.patch("ui.rules.rules_admin_page.get_system_feature")
+    mocker.patch("fapolicy_analyzer.ui.rules.rules_admin_page.get_system_feature")
     mainWindow.on_rulesAdminMenu_activate(rule_id=0)
     content = next(iter(mainWindow.get_object("mainContent").get_children()))
     assert Gtk.Buildable.get_name(content) == "rulesAdminPage"
@@ -498,7 +498,7 @@ def test_on_fapdStopMenu_activate(mainWindow, mocker):
 def test_enable_fapd_menu_items(mainWindow, mocker):
     mainWindow._fapdControlPermitted = True
     mainWindow._enable_fapd_menu_items(ServiceStatus.TRUE)
-    assert(not mainWindow._fapdStartMenuItem.get_sensitive())
+    assert not mainWindow._fapdStartMenuItem.get_sensitive()
 
 
 def test_on_update_daemon_status(mainWindow, mocker):

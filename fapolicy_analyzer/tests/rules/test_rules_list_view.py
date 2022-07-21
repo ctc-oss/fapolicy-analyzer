@@ -18,8 +18,8 @@ from unittest.mock import MagicMock
 
 import gi
 import pytest
-from ui.configs import Colors
-from ui.rules.rules_list_view import RulesListView
+from fapolicy_analyzer.ui.configs import Colors
+from fapolicy_analyzer.ui.rules.rules_list_view import RulesListView
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip

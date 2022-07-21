@@ -19,13 +19,13 @@ from unittest.mock import MagicMock
 import gi
 import pytest
 from callee import Attrs, InstanceOf
+from fapolicy_analyzer.ui.actions import ADD_NOTIFICATION
+from fapolicy_analyzer.ui.rules import RulesAdminPage
+from fapolicy_analyzer.ui.store import init_store
+from fapolicy_analyzer.ui.strings import RULES_LOAD_ERROR, RULES_TEXT_LOAD_ERROR
 from mocks import mock_rule, mock_System
 from redux import Action
 from rx.subject import Subject
-from ui.actions import ADD_NOTIFICATION
-from ui.rules import RulesAdminPage
-from ui.store import init_store
-from ui.strings import RULES_LOAD_ERROR, RULES_TEXT_LOAD_ERROR
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
@@ -33,14 +33,14 @@ from gi.repository import Gtk  # isort: skip
 
 @pytest.fixture()
 def mock_dispatch(mocker):
-    return mocker.patch("ui.rules.rules_admin_page.dispatch")
+    return mocker.patch("fapolicy_analyzer.ui.rules.rules_admin_page.dispatch")
 
 
 @pytest.fixture()
 def mock_system_feature(mocker):
     mockSystemFeature = Subject()
     mocker.patch(
-        "ui.rules.rules_admin_page.get_system_feature",
+        "fapolicy_analyzer.ui.rules.rules_admin_page.get_system_feature",
         return_value=mockSystemFeature,
     )
     yield mockSystemFeature
