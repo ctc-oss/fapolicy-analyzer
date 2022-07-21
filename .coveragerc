@@ -1,7 +1,4 @@
 [run]
-source =
-    fapolicy_analyzer/ui
-    fapolicy_analyzer/util
 omit =
     */tests/*
     fapolicy_analyzer/css/*
