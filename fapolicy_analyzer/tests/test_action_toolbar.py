@@ -19,8 +19,8 @@ from unittest.mock import MagicMock
 
 import gi
 import pytest
-from fapolicy_analyzer.ui.action_toolbar import ActionToolbar
-from fapolicy_analyzer.ui.ui_page import UIAction
+from ui.action_toolbar import ActionToolbar
+from ui.ui_page import UIAction
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
