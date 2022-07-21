@@ -1,4 +1,8 @@
 [run]
+debug = 
+    config
+    dataop
+    trace
 omit =
     */tests/*
     fapolicy_analyzer/css/*
