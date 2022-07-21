@@ -10,120 +10,114 @@ on:
 name: Continuous integration
 
 jobs:
-  # headers:
-  #   name: License header check
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Install requirements
-  #       run: |
-  #         ! grep -R -L --exclude-dir=vendor \
-  #           --include='*.py' --include='*.rs' --include='*.glade' --include='*.sh' \
-  #           'Copyright Concurrent Technologies Corporation' *
+  headers:
+    name: License header check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install requirements
+        run: |
+          ! grep -R -L --exclude-dir=vendor \
+            --include='*.py' --include='*.rs' --include='*.glade' --include='*.sh' \
+            'Copyright Concurrent Technologies Corporation' *
 
-  # check:
-  #   name: Check
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Install requirements
-  #       run: |
-  #         sudo apt-get update
-  #         sudo apt-get install libdbus-1-dev
-  #     - uses: actions-rs/toolchain@v1
-  #       with:
-  #         profile: minimal
-  #         toolchain: 1.58.1
-  #         override: true
-  #     - uses: actions-rs/cargo@v1
-  #       with:
-  #         command: check
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install requirements
+        run: |
+          sudo apt-get update
+          sudo apt-get install libdbus-1-dev
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: 1.58.1
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: check
 
-  # test:
-  #   name: Test Suite
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Install requirements
-  #       run: |
-  #         sudo apt-get update
-  #         sudo apt-get install libdbus-1-dev
-  #     - uses: actions-rs/toolchain@v1
-  #       with:
-  #         profile: minimal
-  #         toolchain: 1.58.1
-  #         override: true
-  #     - uses: actions-rs/cargo@v1
-  #       with:
-  #         command: test
-  #         args: --all
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install requirements
+        run: |
+          sudo apt-get update
+          sudo apt-get install libdbus-1-dev
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: 1.58.1
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --all
 
-  # py_build:
-  #   name: Build Python Bindings for Python ${{ matrix.python-version }}
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #     matrix:
-  #       python-version: [ '3.6' ]
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Install requirements
-  #       run: |
-  #         sudo apt-get update
-  #         sudo apt-get install libgtk-3-dev
-  #         sudo apt-get install libgirepository1.0-dev
-  #         sudo apt-get install xvfb
-  #         sudo apt-get install libdbus-1-dev
-  #     - name: Set up Python ${{ matrix.python-version }}
-  #       uses: actions/setup-python@v2
-  #       with:
-  #         python-version: ${{ matrix.python-version }}
-  #     - name: Install Rust 1.58.1
-  #       uses: actions-rs/toolchain@v1
-  #       with:
-  #         profile: minimal
-  #         toolchain: 1.58.1
-  #         override: true
-  #     - name: Install dependencies
-  #       run: |
-  #         python -m pip install --upgrade pip
-  #         pip install pipenv
-  #         pipenv install --dev --python ${{ matrix.python-version }}
-  #     - name: Build
-  #       id: build
-  #       run: |
-  #         pipenv run compile_catalog
-  #         pipenv run python setup.py bdist_wheel
-  #         echo ::set-output name=virt_env::$(pipenv --venv)
-  #     - name: Archive wheel
-  #       uses: actions/upload-artifact@v2
-  #       with:
-  #         name: fapolicy-analyzer-wheel-python-${{ matrix.python-version }}
-  #         path: dist/fapolicy_analyzer-*.whl
-
-  # ui_lint:
-  #   name: UI Lint
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Set up Python 3.6
-  #       uses: actions/setup-python@v2
-  #       with:
-  #         python-version: 3.6
-  #     - name: Install dependencies
-  #       id: install_deps
-  #       run: |
-  #         python -m pip install --upgrade pip
-  #         pip install flake8 flake8-i18n
-  #     - name: Lint with flake8
-  #       run: python -m flake8 ./fapolicy_analyzer
-
-  ui_test:
-    name: UI Test Suite for Python ${{ matrix.python-version }}
-    # needs: py_build
+  py_build:
+    name: Build Python Bindings for Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ '3.6' ]
+        python-version: [ '3.6', '3.9' ]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install requirements
+        run: |
+          sudo apt-get update
+          sudo apt-get install libgtk-3-dev
+          sudo apt-get install libgirepository1.0-dev
+          sudo apt-get install xvfb
+          sudo apt-get install libdbus-1-dev
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Rust 1.58.1
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: 1.58.1
+          override: true
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pipenv
+          pipenv install --dev --python ${{ matrix.python-version }}
+      - name: Build
+        id: build
+        run: |
+          pipenv run compile_catalog
+          pipenv run python setup.py bdist_wheel
+          echo ::set-output name=virt_env::$(pipenv --venv)
+
+  ui_lint:
+    name: UI Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.6
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+      - name: Install dependencies
+        id: install_deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 flake8-i18n
+      - name: Lint with flake8
+        run: python -m flake8 ./fapolicy_analyzer
+
+  ui_test:
+    name: UI Test Suite for Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ '3.6', '3.9' ]
     steps:
       - uses: actions/checkout@v2
       - name: Install requirements
@@ -149,56 +143,43 @@ jobs:
           pip install pipenv
           pipenv install --dev --python ${{ matrix.python-version }}
           echo ::set-output name=virt_env::$(pipenv --venv)
-      # - name: Download bindings package
-      #   id: download
-      #   uses: actions/download-artifact@v2
-      #   with:
-      #     name: fapolicy-analyzer-wheel-python-${{ matrix.python-version }}
-      #     path: /tmp
-      # - name: Install wheel
-      #   run: pipenv install /tmp/fapolicy_analyzer-*.whl
       - name: Setup Bindings
         run: pipenv run python setup.py develop
-      # - name: 'Update path'
-      #   run: |
-      #     for entry in ${{steps.download.outputs.download-path}}/fapolicy*;
-      #       do echo "./$(basename $entry)" >> ${{steps.download.outputs.download-path}}/easy-install.pth;
-      #     done
       - name: Test with pytest
         run: pipenv run test
 
-  # fmt:
-  #   name: Rustfmt
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - uses: actions-rs/toolchain@v1
-  #       with:
-  #         profile: minimal
-  #         toolchain: 1.58.1
-  #         override: true
-  #     - run: rustup component add rustfmt
-  #     - uses: actions-rs/cargo@v1
-  #       with:
-  #         command: fmt
-  #         args: --all -- --check
+  fmt:
+    name: Rustfmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: 1.58.1
+          override: true
+      - run: rustup component add rustfmt
+      - uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
 
-  # clippy:
-  #   name: Clippy
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Install requirements
-  #       run: |
-  #         sudo apt-get update
-  #         sudo apt-get install libdbus-1-dev
-  #     - uses: actions-rs/toolchain@v1
-  #       with:
-  #         profile: minimal
-  #         toolchain: 1.58.1
-  #         override: true
-  #     - run: rustup component add clippy
-  #     - uses: actions-rs/cargo@v1
-  #       with:
-  #         command: clippy
-  #         args: -- -D warnings
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install requirements
+        run: |
+          sudo apt-get update
+          sudo apt-get install libdbus-1-dev
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: 1.58.1
+          override: true
+      - run: rustup component add clippy
+      - uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: -- -D warnings
