@@ -13,16 +13,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import context  # noqa: F401 # isort: skip
 import locale
-
-import gi
-import pytest
-
-import context  # noqa: F401
-
-gi.require_version("Gtk", "3.0")
+import os
+from importlib import reload
 from unittest.mock import MagicMock
 
+import fapolicy_analyzer.ui
+import gi
+import pytest
 from callee import Attrs, InstanceOf
 from fapolicy_analyzer import Changeset
 from fapolicy_analyzer.ui.actions import ADD_NOTIFICATION
@@ -31,13 +30,15 @@ from fapolicy_analyzer.ui.main_window import MainWindow, router
 from fapolicy_analyzer.ui.session_manager import NotificationType, sessionManager
 from fapolicy_analyzer.ui.store import init_store
 from fapolicy_analyzer.ui.strings import AUTOSAVE_RESTORE_ERROR_MSG
-from gi.repository import Gtk
 from redux import Action
 from rx import create
 from rx.subject import Subject
 
 from helpers import refresh_gui
 from mocks import mock_System
+
+gi.require_version("GtkSource", "3.0")
+from gi.repository import Gtk  # isort: skip
 
 test_changeset = Changeset()
 test_changeset.add_trust("/tmp/DeadBeef.txt")
@@ -82,9 +83,13 @@ def mainWindow(mock_init_store, mock_dispatches):
 
 @pytest.fixture
 def es_locale():
-    locale.setlocale(locale.LC_ALL, "es_ES.UTF-8")
+    original = os.environ.get("LANGUAGE", "en")
+    os.environ["LANGUAGE"] = "es"
+    reload(fapolicy_analyzer.ui)
+    print(locale.getlocale())
     yield
-    locale.setlocale(locale.LC_ALL, "")
+    os.environ["LANGUAGE"] = original
+    reload(fapolicy_analyzer.ui)
 
 
 def test_displays_window(mainWindow):

@@ -23,26 +23,24 @@ from typing import Any
 import fapolicy_analyzer.ui.strings as strings
 import gi
 from fapolicy_analyzer import __version__ as app_version
-from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
-from fapolicy_analyzer.util.format import f
-from fapolicy_analyzer.ui.profile_dialog import ProfileDialog
-
 from fapolicy_analyzer.ui.action_toolbar import ActionToolbar
 from fapolicy_analyzer.ui.actions import NotificationType, add_notification
 from fapolicy_analyzer.ui.analyzer_selection_dialog import ANALYZER_SELECTION
 from fapolicy_analyzer.ui.configs import Sizing
 from fapolicy_analyzer.ui.database_admin_page import DatabaseAdminPage
-
-from fapolicy_analyzer.ui.faprofiler import FaProfiler
 from fapolicy_analyzer.ui.fapd_manager import FapdManager, ServiceStatus
+from fapolicy_analyzer.ui.faprofiler import FaProfiler
 from fapolicy_analyzer.ui.notification import Notification
 from fapolicy_analyzer.ui.operations import DeployChangesetsOp
 from fapolicy_analyzer.ui.policy_rules_admin_page import PolicyRulesAdminPage
+from fapolicy_analyzer.ui.profile_dialog import ProfileDialog
 from fapolicy_analyzer.ui.rules import RulesAdminPage
 from fapolicy_analyzer.ui.session_manager import sessionManager
 from fapolicy_analyzer.ui.store import dispatch, get_system_feature
+from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 from fapolicy_analyzer.ui.unapplied_changes_dialog import UnappliedChangesDialog
+from fapolicy_analyzer.util.format import f
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, GLib  # isort: skip
