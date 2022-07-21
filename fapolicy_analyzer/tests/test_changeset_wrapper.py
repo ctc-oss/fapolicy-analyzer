@@ -29,10 +29,11 @@ def test_deserialize_RuleChangeset():
     assert result.serialize() == "rules"
 
 
-def test_deserialize_TrustChangeset():
-    result = Changeset.deserialize({"addition": "Add"})
+@pytest.mark.parametrize("action", ["Add", "Del"])
+def test_deserialize_TrustChangeset(action):
+    result = Changeset.deserialize({"addition": action})
     assert type(result) == TrustChangeset
-    assert result.serialize() == {"addition": "Add"}
+    assert result.serialize() == {"addition": action}
 
 
 def test_bad_deserialize():
