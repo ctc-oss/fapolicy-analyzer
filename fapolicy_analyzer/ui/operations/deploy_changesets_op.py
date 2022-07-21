@@ -29,6 +29,7 @@ from fapolicy_analyzer.ui.actions import (
 )
 from fapolicy_analyzer.ui.confirm_info_dialog import ConfirmInfoDialog
 from fapolicy_analyzer.ui.deploy_confirm_dialog import DeployConfirmDialog
+from fapolicy_analyzer.ui.operations.ui_operation import UIOperation
 from fapolicy_analyzer.ui.store import dispatch, get_system_feature
 from fapolicy_analyzer.ui.strings import (
     ANY_FILES_FILTER_LABEL,
@@ -38,8 +39,6 @@ from fapolicy_analyzer.ui.strings import (
     SAVE_AS_FILE_LABEL,
 )
 from fapolicy_analyzer.util.fapd_dbase import fapd_dbase_snapshot
-
-from .ui_operation import UIOperation
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
