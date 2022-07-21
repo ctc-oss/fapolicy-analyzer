@@ -16,11 +16,12 @@
 from importlib import reload
 from unittest.mock import MagicMock
 
-import fapolicy_analyzer.ui.store as store
 import pytest
+import ui.store as store
 from callee import InstanceOf
 from callee.attributes import Attrs
-from fapolicy_analyzer.ui.actions import (
+from redux import Action, ReduxFeatureModule, create_store
+from ui.actions import (
     ERROR_SYSTEM_INITIALIZATION,
     SYSTEM_INITIALIZED,
     apply_changesets,
@@ -47,10 +48,9 @@ from fapolicy_analyzer.ui.actions import (
     request_system_trust,
     request_users,
 )
-from fapolicy_analyzer.ui.changeset_wrapper import TrustChangeset
-from fapolicy_analyzer.ui.features.system_feature import create_system_feature
-from fapolicy_analyzer.ui.store import dispatch, init_store
-from redux import Action, ReduxFeatureModule, create_store
+from ui.changeset_wrapper import TrustChangeset
+from ui.features.system_feature import create_system_feature
+from ui.store import dispatch, init_store
 
 
 @pytest.fixture
@@ -60,7 +60,7 @@ def mock_dispatch():
 
 @pytest.fixture(autouse=True)
 def mock_idle_add(mocker):
-    mock_glib = mocker.patch("fapolicy_analyzer.ui.features.system_feature.GLib")
+    mock_glib = mocker.patch("ui.features.system_feature.GLib")
     mock_glib.idle_add = lambda fn, *args: fn(*args)
     return mock_glib
 
@@ -68,7 +68,7 @@ def mock_idle_add(mocker):
 @pytest.fixture(autouse=True)
 def mock_threadpoolexecutor(mocker):
     return mocker.patch(
-        "fapolicy_analyzer.ui.features.system_feature.ThreadPoolExecutor",
+        "ui.features.system_feature.ThreadPoolExecutor",
         return_value=MagicMock(submit=lambda x: x()),
     )
 
@@ -83,7 +83,7 @@ def test_creates_system_feature(mock_dispatch):
 
 
 def test_initializes_system(mock_dispatch, mocker):
-    mock_system = mocker.patch("fapolicy_analyzer.ui.features.system_feature.System")
+    mock_system = mocker.patch("ui.features.system_feature.System")
     store = create_store()
     store.add_feature_module(create_system_feature(mock_dispatch))
     mock_system.assert_called()
@@ -97,7 +97,7 @@ def test_initializes_system(mock_dispatch, mocker):
 
 
 def test_uses_provided_system(mock_dispatch, mocker):
-    mock_system = mocker.patch("fapolicy_analyzer.ui.features.system_feature.System")
+    mock_system = mocker.patch("ui.features.system_feature.System")
     system = mock_system()
     mock_system.reset_mock()
     store = create_store()
@@ -114,7 +114,7 @@ def test_uses_provided_system(mock_dispatch, mocker):
 
 def test_handles_system_initialization_error(mock_dispatch, mocker):
     mock_system = mocker.patch(
-        "fapolicy_analyzer.ui.features.system_feature.System",
+        "ui.features.system_feature.System",
         side_effect=RuntimeError(),
     )
     store = create_store()
@@ -130,9 +130,7 @@ def test_handles_system_initialization_error(mock_dispatch, mocker):
 
 
 def test_apply_changset_epic(mocker):
-    mock_add_action = mocker.patch(
-        "fapolicy_analyzer.ui.features.system_feature.add_changesets"
-    )
+    mock_add_action = mocker.patch("ui.features.system_feature.add_changesets")
     mock_system = MagicMock()
     mock_apply = MagicMock()
     changeset = TrustChangeset()
@@ -145,7 +143,7 @@ def test_apply_changset_epic(mocker):
 
 def test_apply_changset_epic_error(mocker):
     mock_error_action = mocker.patch(
-        "fapolicy_analyzer.ui.features.system_feature.error_apply_changesets"
+        "ui.features.system_feature.error_apply_changesets"
     )
     mock_changeset = MagicMock(
         apply_to_system=MagicMock(side_effect=Exception("apply changeset error"))
@@ -176,7 +174,7 @@ def test_request_epic(
     mock_system_fn = MagicMock(return_value=mock_return_value)
     mock_system = MagicMock(**{system_fn_to_mock: mock_system_fn})
     mock_received_action = mocker.patch(
-        f"fapolicy_analyzer.ui.features.system_feature.{receive_action_to_mock.__name__}"
+        f"ui.features.system_feature.{receive_action_to_mock.__name__}"
     )
 
     init_store(mock_system)
@@ -210,7 +208,7 @@ def test_request_epic_error(
         }
     )
     mock_error_action = mocker.patch(
-        f"fapolicy_analyzer.ui.features.system_feature.{error_action_to_mock.__name__}"
+        f"ui.features.system_feature.{error_action_to_mock.__name__}"
     )
     init_store(mock_system)
     dispatch(action_to_dispatch(*(payload or [])))
@@ -218,9 +216,7 @@ def test_request_epic_error(
 
 
 def test_request_events_epic_bad_request(mocker):
-    mock_received_action = mocker.patch(
-        "fapolicy_analyzer.ui.features.system_feature.received_events"
-    )
+    mock_received_action = mocker.patch("ui.features.system_feature.received_events")
 
     init_store(MagicMock())
     dispatch(request_events("foo", None))
@@ -231,7 +227,7 @@ def test_request_events_epic_bad_request(mocker):
 def test_deploy_ancillary_trust_epic(mocker):
     mock_system = MagicMock()
     mock_received_action = mocker.patch(
-        "fapolicy_analyzer.ui.features.system_feature.ancillary_trust_deployed"
+        "ui.features.system_feature.ancillary_trust_deployed"
     )
     init_store(mock_system)
     dispatch(deploy_ancillary_trust())
@@ -244,7 +240,7 @@ def test_deploy_ancillary_trust_epic_error(mocker):
         deploy=MagicMock(side_effect=Exception("deploy trust error"))
     )
     mock_error_action = mocker.patch(
-        "fapolicy_analyzer.ui.features.system_feature.error_deploying_ancillary_trust"
+        "ui.features.system_feature.error_deploying_ancillary_trust"
     )
     init_store(mock_system)
     dispatch(deploy_ancillary_trust())
@@ -253,10 +249,10 @@ def test_deploy_ancillary_trust_epic_error(mocker):
 
 def test_deploy_ancillary_trust_epic_snapshot_error(mocker):
     mocker.patch(
-        "fapolicy_analyzer.ui.features.system_feature.fapd_dbase_snapshot",
+        "ui.features.system_feature.fapd_dbase_snapshot",
         return_value=False,
     )
-    mock_logger = mocker.patch("fapolicy_analyzer.ui.features.system_feature.logging")
+    mock_logger = mocker.patch("ui.features.system_feature.logging")
     init_store(MagicMock())
     dispatch(deploy_ancillary_trust())
     mock_logger.warning.assert_called_with(
