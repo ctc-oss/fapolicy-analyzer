@@ -18,7 +18,7 @@ import gi
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
-from ui.deploy_confirm_dialog import DeployConfirmDialog
+from fapolicy_analyzer.ui.deploy_confirm_dialog import DeployConfirmDialog
 
 
 def test_creates_widget():
@@ -34,12 +34,12 @@ def test_adds_dialog_to_parent():
 
 def test_closes_after_cancel_time(mocker):
     mocker.patch(
-        "ui.trust_file_list.epoch_to_string",
+        "fapolicy_analyzer.ui.trust_file_list.epoch_to_string",
         return_value="10-01-2020",
     )
 
     mocker.patch(
-        "ui.ancillary_trust_file_list.epoch_to_string",
+        "fapolicy_analyzer.ui.ancillary_trust_file_list.epoch_to_string",
         return_value="10-01-2020",
     )
 

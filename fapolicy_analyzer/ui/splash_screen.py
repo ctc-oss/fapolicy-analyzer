@@ -19,9 +19,9 @@ import sys
 gi.require_version("Gtk", "3.0")
 from gi.repository import GLib, Gtk
 import fapolicy_analyzer.ui.strings as strings
-from .main_window import MainWindow
-from .store import get_system_feature
-from .ui_widget import UIConnectedWidget
+from fapolicy_analyzer.ui.main_window import MainWindow
+from fapolicy_analyzer.ui.store import get_system_feature
+from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 
 
 def trust_db_access_failure_dlg():

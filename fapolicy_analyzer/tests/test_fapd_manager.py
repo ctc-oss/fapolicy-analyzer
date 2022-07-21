@@ -15,7 +15,7 @@
 
 import pytest
 from unittest.mock import MagicMock
-from ui.fapd_manager import FapdManager, FapdMode, ServiceStatus
+from fapolicy_analyzer.ui.fapd_manager import FapdManager, FapdMode, ServiceStatus
 
 
 @pytest.fixture
@@ -82,7 +82,9 @@ def test_start_profiling(fapdManager, mocker):
     fapdManager._fapd_status = ServiceStatus.TRUE
     fapdManager._fapd_ref.is_active.return_value = True
     mockProcess = MagicMock()
-    mocker.patch("fapolicy_analyzer.ui.fapd_manager.subprocess.Popen", return_value=mockProcess)
+    mocker.patch(
+        "fapolicy_analyzer.ui.fapd_manager.subprocess.Popen", return_value=mockProcess
+    )
     fapdManager.mode = FapdMode.ONLINE
     fapdManager.start(FapdMode.PROFILING)
     mockFapdHandle.stop.assert_called()

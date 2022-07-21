@@ -25,16 +25,16 @@ from unittest.mock import MagicMock
 
 from callee import Attrs, InstanceOf
 from fapolicy_analyzer import Changeset
+from fapolicy_analyzer.ui.actions import ADD_NOTIFICATION
+from fapolicy_analyzer.ui.fapd_manager import ServiceStatus
+from fapolicy_analyzer.ui.main_window import MainWindow, router
+from fapolicy_analyzer.ui.session_manager import NotificationType, sessionManager
+from fapolicy_analyzer.ui.store import init_store
+from fapolicy_analyzer.ui.strings import AUTOSAVE_RESTORE_ERROR_MSG
 from gi.repository import Gtk
 from redux import Action
 from rx import create
 from rx.subject import Subject
-from ui.actions import ADD_NOTIFICATION
-from ui.fapd_manager import ServiceStatus
-from ui.main_window import MainWindow, router
-from ui.session_manager import NotificationType, sessionManager
-from ui.store import init_store
-from ui.strings import AUTOSAVE_RESTORE_ERROR_MSG
 
 from helpers import refresh_gui
 from mocks import mock_System
@@ -45,7 +45,7 @@ test_changeset.add_trust("/tmp/DeadBeef.txt")
 
 @pytest.fixture()
 def mock_dispatch(mocker):
-    return mocker.patch("ui.main_window.dispatch")
+    return mocker.patch("fapolicy_analyzer.ui.main_window.dispatch")
 
 
 @pytest.fixture
@@ -60,15 +60,18 @@ def mock_system_features(changesets, mocker):
         observer.on_completed()
 
     system_features_mock = create(push_changeset)
-    mocker.patch("ui.main_window.get_system_feature", return_value=system_features_mock)
+    mocker.patch(
+        "fapolicy_analyzer.ui.main_window.get_system_feature",
+        return_value=system_features_mock,
+    )
 
 
 @pytest.fixture
 def mock_dispatches(mocker):
-    mocker.patch("ui.ancillary_trust_database_admin.dispatch")
-    mocker.patch("ui.system_trust_database_admin.dispatch")
-    mocker.patch("ui.policy_rules_admin_page.dispatch")
-    mocker.patch("ui.rules.rules_admin_page.dispatch")
+    mocker.patch("fapolicy_analyzer.ui.ancillary_trust_database_admin.dispatch")
+    mocker.patch("fapolicy_analyzer.ui.system_trust_database_admin.dispatch")
+    mocker.patch("fapolicy_analyzer.ui.policy_rules_admin_page.dispatch")
+    mocker.patch("fapolicy_analyzer.ui.rules.rules_admin_page.dispatch")
 
 
 @pytest.fixture
@@ -96,7 +99,7 @@ def test_shows_confirm_if_unapplied_changes(mainWindow, mocker):
     mockDialog = MagicMock()
     mockDialog.run.return_value = False
     mocker.patch(
-        "ui.main_window.UnappliedChangesDialog.get_ref",
+        "fapolicy_analyzer.ui.main_window.UnappliedChangesDialog.get_ref",
         return_value=mockDialog,
     )
     mainWindow.get_object("quitMenu").activate()
@@ -107,7 +110,7 @@ def test_does_not_show_confirm_if_no_unapplied_changes(mainWindow, mocker):
     mockDialog = MagicMock()
     mockDialog.run.return_value = False
     mocker.patch(
-        "ui.main_window.UnappliedChangesDialog.get_ref",
+        "fapolicy_analyzer.ui.main_window.UnappliedChangesDialog.get_ref",
         return_value=mockDialog,
     )
     mainWindow.get_object("quitMenu").activate()
@@ -145,24 +148,24 @@ def test_opens_analyze_with_audit_page(mainWindow, mocker):
     menuItem = mainWindow.get_object("analyzeMenu")
 
     mocker.patch(
-        "ui.trust_file_list.epoch_to_string",
+        "fapolicy_analyzer.ui.trust_file_list.epoch_to_string",
         return_value="10-01-2020",
     )
 
     mocker.patch(
-        "ui.ancillary_trust_file_list.epoch_to_string",
+        "fapolicy_analyzer.ui.ancillary_trust_file_list.epoch_to_string",
         return_value="10-01-2020",
     )
 
     mocker.patch(
-        "ui.main_window.Gtk.FileChooserDialog.run",
+        "fapolicy_analyzer.ui.main_window.Gtk.FileChooserDialog.run",
         return_value=Gtk.ResponseType.OK,
     )
     mocker.patch(
-        "ui.main_window.Gtk.FileChooserDialog.get_filename",
+        "fapolicy_analyzer.ui.main_window.Gtk.FileChooserDialog.get_filename",
         return_value="foo",
     )
-    mocker.patch("ui.main_window.path.isfile", return_value=True)
+    mocker.patch("fapolicy_analyzer.ui.main_window.path.isfile", return_value=True)
     menuItem.activate()
     refresh_gui()
     content = next(iter(mainWindow.get_object("mainContent").get_children()))
@@ -219,13 +222,16 @@ def test_on_openMenu_activate(mainWindow, mocker):
     mockDialog.run.return_value = Gtk.ResponseType.OK
     mockDialog.get_filename.return_value = "/tmp/open_tmp.json"
     mocker.patch(
-        "ui.main_window.Gtk.FileChooserDialog",
+        "fapolicy_analyzer.ui.main_window.Gtk.FileChooserDialog",
         return_value=mockDialog,
     )
 
-    mocker.patch("ui.main_window.sessionManager.open_edit_session", return_value=True)
+    mocker.patch(
+        "fapolicy_analyzer.ui.main_window.sessionManager.open_edit_session",
+        return_value=True,
+    )
 
-    mocker.patch("ui.main_window.path.isfile", return_value=True)
+    mocker.patch("fapolicy_analyzer.ui.main_window.path.isfile", return_value=True)
     mainWindow.get_object("openMenu").activate()
     sessionManager.open_edit_session.assert_called_with("/tmp/open_tmp.json")
 
@@ -236,13 +242,16 @@ def test_on_openMenu_activate_fail(mainWindow, mock_dispatch, mocker):
     mockDialog.run.return_value = Gtk.ResponseType.OK
     mockDialog.get_filename.return_value = fakeFile
     mocker.patch(
-        "ui.main_window.Gtk.FileChooserDialog",
+        "fapolicy_analyzer.ui.main_window.Gtk.FileChooserDialog",
         return_value=mockDialog,
     )
 
-    mocker.patch("ui.main_window.sessionManager.open_edit_session", return_value=False)
+    mocker.patch(
+        "fapolicy_analyzer.ui.main_window.sessionManager.open_edit_session",
+        return_value=False,
+    )
 
-    mocker.patch("ui.main_window.path.isfile", return_value=True)
+    mocker.patch("fapolicy_analyzer.ui.main_window.path.isfile", return_value=True)
     mainWindow.get_object("openMenu").activate()
     mock_dispatch.assert_called_with(
         InstanceOf(Action)
@@ -259,7 +268,8 @@ def test_on_openMenu_activate_fail(mainWindow, mock_dispatch, mocker):
 def test_on_restoreMenu_activate(mainWindow, mocker):
     mocker.patch("glob.glob", return_value=["foo"])
     mock = mocker.patch(
-        "ui.main_window.sessionManager.open_edit_session", return_value=True
+        "fapolicy_analyzer.ui.main_window.sessionManager.open_edit_session",
+        return_value=True,
     )
     mainWindow.get_object("restoreMenu").activate()
     mock.assert_called_with("foo")
@@ -272,7 +282,8 @@ def test_on_restoreMenu_activate_w_exception(mainWindow, mocker):
     exception thrown.
     """
     mockRestoreAutosave = mocker.patch(
-        "ui.main_window.sessionManager.restore_previous_session", side_effect=IOError
+        "fapolicy_analyzer.ui.main_window.sessionManager.restore_previous_session",
+        side_effect=IOError,
     )
 
     mainWindow.get_object("restoreMenu").activate()
@@ -285,11 +296,12 @@ def test_on_saveAsMenu_activate(mainWindow, mocker):
     mockDialog.run.return_value = Gtk.ResponseType.OK
     mockDialog.get_filename.return_value = "/tmp/save_as_tmp.json"
     mocker.patch(
-        "ui.main_window.Gtk.FileChooserDialog",
+        "fapolicy_analyzer.ui.main_window.Gtk.FileChooserDialog",
         return_value=mockDialog,
     )
     mockFunc = mocker.patch(
-        "ui.main_window.sessionManager.save_edit_session", return_value=True
+        "fapolicy_analyzer.ui.main_window.sessionManager.save_edit_session",
+        return_value=True,
     )
 
     mainWindow.get_object("saveAsMenu").activate()
@@ -299,9 +311,13 @@ def test_on_saveAsMenu_activate(mainWindow, mocker):
 def test_on_saveMenu_activate(mainWindow, mocker):
     # Mock the on_saveAsMenu_activate() call
     mockFunc = mocker.patch(
-        "ui.main_window.MainWindow.on_saveAsMenu_activate", return_value=True
+        "fapolicy_analyzer.ui.main_window.MainWindow.on_saveAsMenu_activate",
+        return_value=True,
     )
-    mocker.patch("ui.main_window.sessionManager.save_edit_session", return_value=True)
+    mocker.patch(
+        "fapolicy_analyzer.ui.main_window.sessionManager.save_edit_session",
+        return_value=True,
+    )
 
     window = mainWindow
     window.get_object("saveMenu").activate()
@@ -310,7 +326,10 @@ def test_on_saveMenu_activate(mainWindow, mocker):
 
 def test_on_saveMenu_activate_w_set_filename(mainWindow, mocker):
     mainWindow.strSessionFilename = "/tmp/save_w_filename_tmp.json"
-    mocker.patch("ui.main_window.sessionManager.save_edit_session", return_value=True)
+    mocker.patch(
+        "fapolicy_analyzer.ui.main_window.sessionManager.save_edit_session",
+        return_value=True,
+    )
 
     mainWindow.get_object("saveMenu").activate()
     sessionManager.save_edit_session.assert_called_with(
@@ -321,7 +340,8 @@ def test_on_saveMenu_activate_w_set_filename(mainWindow, mocker):
 @pytest.mark.usefixtures("mock_init_store", "mock_dispatches")
 def test_on_start(mocker):
     mockDetectAutosave = mocker.patch(
-        "ui.main_window.sessionManager.detect_previous_session", return_value=False
+        "fapolicy_analyzer.ui.main_window.sessionManager.detect_previous_session",
+        return_value=False,
     )
     MainWindow()
     mockDetectAutosave.assert_called()
@@ -341,7 +361,8 @@ def test_on_start_w_declined_restore(mocker):
     """
 
     mockDetectAutosave = mocker.patch(
-        "ui.main_window.sessionManager.detect_previous_session", return_value=True
+        "fapolicy_analyzer.ui.main_window.sessionManager.detect_previous_session",
+        return_value=True,
     )
 
     mockGtkDialog = mocker.patch(
@@ -367,11 +388,13 @@ def test_on_start_w_accepted_restore(mocker):
     """
 
     mockDetectAutosave = mocker.patch(
-        "ui.main_window.sessionManager.detect_previous_session", return_value=True
+        "fapolicy_analyzer.ui.main_window.sessionManager.detect_previous_session",
+        return_value=True,
     )
 
     mockRestoreAutosave = mocker.patch(
-        "ui.main_window.sessionManager.restore_previous_session", return_value=True
+        "fapolicy_analyzer.ui.main_window.sessionManager.restore_previous_session",
+        return_value=True,
     )
 
     mockGtkDialog = mocker.patch(
@@ -398,11 +421,13 @@ def test_on_start_w_restore_exception(mocker):
     """
 
     mockDetectAutosave = mocker.patch(
-        "ui.main_window.sessionManager.detect_previous_session", return_value=True
+        "fapolicy_analyzer.ui.main_window.sessionManager.detect_previous_session",
+        return_value=True,
     )
 
     mockRestoreAutosave = mocker.patch(
-        "ui.main_window.sessionManager.restore_previous_session", side_effect=IOError
+        "fapolicy_analyzer.ui.main_window.sessionManager.restore_previous_session",
+        side_effect=IOError,
     )
 
     mockGtkDialog = mocker.patch(
@@ -418,10 +443,12 @@ def test_on_start_w_restore_exception(mocker):
 @pytest.mark.usefixtures("mock_init_store", "mock_dispatches")
 def test_on_start_w_failed_restore(mock_dispatch, mocker):
     mocker.patch(
-        "ui.main_window.sessionManager.detect_previous_session", return_value=True
+        "fapolicy_analyzer.ui.main_window.sessionManager.detect_previous_session",
+        return_value=True,
     )
     mocker.patch(
-        "ui.main_window.sessionManager.restore_previous_session", return_value=False
+        "fapolicy_analyzer.ui.main_window.sessionManager.restore_previous_session",
+        return_value=False,
     )
     mocker.patch("gi.repository.Gtk.Dialog.run", return_value=Gtk.ResponseType.YES)
 
@@ -439,8 +466,10 @@ def test_on_start_w_failed_restore(mock_dispatch, mocker):
 
 
 def test_toolbar_deploy_operation(mainWindow, mocker):
-    mocker.patch("ui.operations.deploy_changesets_op.get_system_feature")
-    mockDeploy = mocker.patch("ui.main_window.DeployChangesetsOp.run")
+    mocker.patch(
+        "fapolicy_analyzer.ui.operations.deploy_changesets_op.get_system_feature"
+    )
+    mockDeploy = mocker.patch("fapolicy_analyzer.ui.main_window.DeployChangesetsOp.run")
     tool_bar = MainWindow().get_object("appArea").get_children()[1]
     deploy_btn = tool_bar.get_nth_item(0)
     deploy_btn.get_child().clicked()
@@ -450,7 +479,7 @@ def test_toolbar_deploy_operation(mainWindow, mocker):
 def test_toggles_deploy_changes_toolbar_btn(mocker):
     system_features_mock = Subject()
     mocker.patch(
-        "ui.main_window.get_system_feature",
+        "fapolicy_analyzer.ui.main_window.get_system_feature",
         return_value=system_features_mock,
     )
     init_store(mock_System())
@@ -466,7 +495,7 @@ def test_toggles_deploy_changes_toolbar_btn(mocker):
 def test_toggles_dirty_title(mocker):
     system_features_mock = Subject()
     mocker.patch(
-        "ui.main_window.get_system_feature",
+        "fapolicy_analyzer.ui.main_window.get_system_feature",
         return_value=system_features_mock,
     )
     init_store(mock_System())
@@ -512,7 +541,7 @@ def test_on_update_daemon_status(mainWindow, mocker):
 def test_start_daemon_monitor(mainWindow, mocker):
     mockThread = MagicMock()
     mocker.patch(
-        "ui.main_window.Thread",
+        "fapolicy_analyzer.ui.main_window.Thread",
         return_value=mockThread,
     )
     mainWindow._fapd_status = False

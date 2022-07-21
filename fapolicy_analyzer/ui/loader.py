@@ -20,8 +20,8 @@ try:
 except ImportError:
     import importlib_resources as resources
 
-from .strings import LOADER_MESSAGE
-from .ui_widget import UIBuilderWidget
+from fapolicy_analyzer.ui.strings import LOADER_MESSAGE
+from fapolicy_analyzer.ui.ui_widget import UIBuilderWidget
 
 gi.require_version("GtkSource", "3.0")
 from gi.repository import GdkPixbuf  # isort: skip

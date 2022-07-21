@@ -18,14 +18,14 @@ import gi
 from fapolicy_analyzer import Changeset
 from more_itertools import first_true
 
-from .actions import apply_changesets
-from .add_file_button import AddFileButton
-from .configs import Colors
-from .confirm_change_dialog import ConfirmChangeDialog
-from .searchable_list import SearchableList
-from .store import dispatch
-from .strings import FILE_LABEL, FILES_LABEL
-from .trust_reconciliation_dialog import TrustReconciliationDialog
+from fapolicy_analyzer.ui.actions import apply_changesets
+from fapolicy_analyzer.ui.add_file_button import AddFileButton
+from fapolicy_analyzer.ui.configs import Colors
+from fapolicy_analyzer.ui.confirm_change_dialog import ConfirmChangeDialog
+from fapolicy_analyzer.ui.searchable_list import SearchableList
+from fapolicy_analyzer.ui.store import dispatch
+from fapolicy_analyzer.ui.strings import FILE_LABEL, FILES_LABEL
+from fapolicy_analyzer.ui.trust_reconciliation_dialog import TrustReconciliationDialog
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gdk, Gtk  # isort: skip
@@ -268,9 +268,7 @@ class SubjectList(SearchableList):
                     untrustable += 1
 
             self.fileChangeContextMenu.remove(self.fileChangeContextMenu.trustItem)
-            self.fileChangeContextMenu.remove(
-                self.fileChangeContextMenu.untrustItem
-            )
+            self.fileChangeContextMenu.remove(self.fileChangeContextMenu.untrustItem)
             self.fileChangeContextMenu.trustItem.selection_data = None
             self.fileChangeContextMenu.untrustItem.selection_data = None
 
@@ -283,9 +281,7 @@ class SubjectList(SearchableList):
                     changeset,
                 )
             elif trustable and not untrustable:
-                self.fileChangeContextMenu.append(
-                    self.fileChangeContextMenu.trustItem
-                )
+                self.fileChangeContextMenu.append(self.fileChangeContextMenu.trustItem)
                 self.fileChangeContextMenu.trustItem.selection_data = (
                     len(subjects),
                     changeset,

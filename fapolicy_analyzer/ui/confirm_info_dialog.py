@@ -18,8 +18,8 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
-from .configs import Colors
-from .strings import (
+from fapolicy_analyzer.ui.configs import Colors
+from fapolicy_analyzer.ui.strings import (
     CHANGESET_ACTION_ADD,
     CHANGESET_ACTION_DEL,
     DEPLOY_ANCILLARY_CONFIRM_DIALOG_TEXT,

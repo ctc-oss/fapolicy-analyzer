@@ -29,7 +29,7 @@ from fapolicy_analyzer.ui.actions import (
     RESTORE_SYSTEM_CHECKPOINT,
 )
 from redux import Action
-from ui.session_manager import SessionManager
+from fapolicy_analyzer.ui.session_manager import SessionManager
 
 import context  # noqa: F401
 
@@ -92,7 +92,7 @@ def autosaved_files():
 
 @pytest.fixture()
 def mock_dispatch(mocker):
-    return mocker.patch("ui.session_manager.dispatch")
+    return mocker.patch("fapolicy_analyzer.ui.session_manager.dispatch")
 
 
 # ######################## Session Serialization #####################
@@ -121,7 +121,8 @@ def test_open_edit_session(uut, mock_dispatch, mocker):
 
 def test_open_edit_session_w_exception(uut, mock_dispatch, mocker):
     mockFunc = mocker.patch(
-        "ui.session_manager.json.load", side_effect=lambda: IOError("foo")
+        "fapolicy_analyzer.ui.session_manager.json.load",
+        side_effect=lambda: IOError("foo"),
     )
 
     mocker.patch("builtins.open", mock_open())
@@ -165,7 +166,8 @@ def test_autosave_edit_session(uut_autosave_enabled, mocker):
 def test_autosave_edit_session_w_exception(mocker, uut_autosave_enabled):
     # Create a mock that throw an exception side-effect
     mockFunc = mocker.patch(
-        "ui.session_manager.SessionManager.save_edit_session", side_effect=IOError
+        "fapolicy_analyzer.ui.session_manager.SessionManager.save_edit_session",
+        side_effect=IOError,
     )
     uut_autosave_enabled.on_next_system({"changesets": test_changesets})
     mockFunc.assert_called()
@@ -288,7 +290,8 @@ def test_restore_previous_session_w_exception(
 ):
     # Mock the open_edit_session() call such that it throws an exception
     mockFunc = mocker.patch(
-        "ui.session_manager.SessionManager.open_edit_session", side_effect=IOError
+        "fapolicy_analyzer.ui.session_manager.SessionManager.open_edit_session",
+        side_effect=IOError,
     )
 
     # Two json files assumed on disk w/fixture

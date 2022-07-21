@@ -18,9 +18,9 @@ import os
 import pwd
 import subprocess
 import time
-from .actions import NotificationType, add_notification
-from .fapd_manager import FapdMode
-from .store import dispatch
+from fapolicy_analyzer.ui.actions import NotificationType, add_notification
+from fapolicy_analyzer.ui.fapd_manager import FapdMode
+from fapolicy_analyzer.ui.store import dispatch
 from datetime import datetime as DT
 from enum import Enum
 
@@ -47,8 +47,7 @@ class FaProfSession:
             return None
         return {
             k: v.strip('"')
-            for k, v in dict(x.strip().split("=")
-                             for x in string_in.split(",")).items()
+            for k, v in dict(x.strip().split("=") for x in string_in.split(",")).items()
         }
 
     def __init__(self, dictProfTgt, faprofiler=None):
@@ -60,7 +59,9 @@ class FaProfSession:
         self.pwd = dictProfTgt["dirText"]
 
         # Convert comma delimited string of "EnvVar=Value" substrings to dict
-        self.env = FaProfSession._comma_delimited_kv_string_to_dict(dictProfTgt["envText"])
+        self.env = FaProfSession._comma_delimited_kv_string_to_dict(
+            dictProfTgt["envText"]
+        )
 
         self.faprofiler = faprofiler
         self.name = os.path.basename(self.execPath)
@@ -118,10 +119,14 @@ class FaProfSession:
                 logging.debug(f"The uid/gid of the profiling tgt: {uid}/{gid}")
 
                 # Change the ownership of profiling tgt's stdout and stderr
-                logging.debug(f"Changing ownership of fds: {self.fdTgtStdout},{self.fdTgtStderr}")
+                logging.debug(
+                    f"Changing ownership of fds: {self.fdTgtStdout},{self.fdTgtStderr}"
+                )
                 os.fchown(self.fdTgtStdout.fileno(), uid, gid)
                 os.fchown(self.fdTgtStderr.fileno(), uid, gid)
-                logging.debug(f"Changed the profiling tgt stdout/err ownership {uid},{gid}")
+                logging.debug(
+                    f"Changed the profiling tgt stdout/err ownership {uid},{gid}"
+                )
                 u_valid = True
             else:
                 # In production, the following will be the superuser defaults
@@ -148,16 +153,14 @@ class FaProfSession:
         try:
             logging.debug(f"Starting {self.listCmdLine} as {uid}/{gid}")
             logging.debug(f"in {self.pwd} with env: {self.env}")
-            self.procTarget = subprocess.Popen(self.listCmdLine,
-                                               stdout=self.fdTgtStdout,
-                                               stderr=self.fdTgtStderr,
-                                               cwd=working_dir,
-                                               env=self.env,
-                                               preexec_fn=FaProfSession._demote(
-                                                   u_valid,
-                                                   uid,
-                                                   gid)
-                                               )
+            self.procTarget = subprocess.Popen(
+                self.listCmdLine,
+                stdout=self.fdTgtStdout,
+                stderr=self.fdTgtStderr,
+                cwd=working_dir,
+                env=self.env,
+                preexec_fn=FaProfSession._demote(u_valid, uid, gid),
+            )
             logging.debug(self.procTarget.pid)
             self.status = ProfSessionStatus.INPROGRESS
 
@@ -222,7 +225,6 @@ class FaProfSession:
     def clean_all(self):
         logging.debug("FaProfSession::clean_all()")
         # Delete all log file artifacts
-        pass
 
 
 class FaProfiler:

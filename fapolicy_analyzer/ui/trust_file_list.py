@@ -19,9 +19,9 @@ from time import localtime, mktime, strftime, strptime
 import fapolicy_analyzer.ui.strings as strings
 import gi
 
-from .configs import Colors
-from .searchable_list import SearchableList
-from .strings import FILE_LABEL, FILES_LABEL
+from fapolicy_analyzer.ui.configs import Colors
+from fapolicy_analyzer.ui.searchable_list import SearchableList
+from fapolicy_analyzer.ui.strings import FILE_LABEL, FILES_LABEL
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import GLib, Gtk  # isort: skip

@@ -16,11 +16,12 @@
 import fapolicy_analyzer.ui.strings as strings
 import gi
 from events import Events
+
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
-from .configs import Colors
-from .subject_list import SubjectList
+from fapolicy_analyzer.ui.configs import Colors
+from fapolicy_analyzer.ui.subject_list import SubjectList
 
 
 class ObjectList(SubjectList, Events):
@@ -46,6 +47,7 @@ class ObjectList(SubjectList, Events):
     def __markup(self, value, options, seperator=" / ", multiValue=False):
         def wrap(x):
             return f"<u><b>{x}</b></u>"
+
         valueSet = set(value.upper()) if multiValue else {value.upper()}
         matches = set(options).intersection(valueSet)
         return seperator.join([wrap(o) if o in matches else o for o in options])

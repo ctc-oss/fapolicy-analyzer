@@ -19,7 +19,7 @@ import gi
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
-from ui.trust_file_details import TrustFileDetails
+from fapolicy_analyzer.ui.trust_file_details import TrustFileDetails
 
 
 @pytest.fixture

@@ -22,7 +22,7 @@ gi.require_version("Gtk", "3.0")
 from unittest.mock import MagicMock
 
 from gi.repository import Gtk
-from ui.strings import (
+from fapolicy_analyzer.ui.strings import (
     ANCILLARY_DISCREPANCY_FILE_MESSAGE,
     ANCILLARY_TRUSTED_FILE_MESSAGE,
     ANCILLARY_UNKNOWN_FILE_MESSAGE,
@@ -31,12 +31,14 @@ from ui.strings import (
     SYSTEM_UNKNOWN_FILE_MESSAGE,
     UNKNOWN_FILE_MESSAGE,
 )
-from ui.trust_reconciliation_dialog import TrustReconciliationDialog
+from fapolicy_analyzer.ui.trust_reconciliation_dialog import TrustReconciliationDialog
 
 
 @pytest.fixture
 def patch(mocker):
-    mocker.patch("ui.trust_reconciliation_dialog.fs.sha", return_value="abc")
+    mocker.patch(
+        "fapolicy_analyzer.ui.trust_reconciliation_dialog.fs.sha", return_value="abc"
+    )
 
 
 @pytest.fixture
@@ -48,7 +50,7 @@ def mockTrustDetailsWidget(mocker):
         get_ref=MagicMock(return_value=Gtk.Box()),
     )
     mocker.patch(
-        "ui.trust_reconciliation_dialog.TrustFileDetails",
+        "fapolicy_analyzer.ui.trust_reconciliation_dialog.TrustFileDetails",
         return_value=mock,
     )
     return mock
@@ -95,7 +97,8 @@ def test_shows_on_system_data(mockTrustDetailsWidget, mocker):
     mockTrustObj = MagicMock(file="foo")
     mockDatabaseTrust = MagicMock(size=1, hash="abc", status="T")
     mocker.patch(
-        "ui.trust_reconciliation_dialog.fs.stat", return_value="foo file stats"
+        "fapolicy_analyzer.ui.trust_reconciliation_dialog.fs.stat",
+        return_value="foo file stats",
     )
     TrustReconciliationDialog(mockTrustObj, databaseTrust=mockDatabaseTrust)
     mockTrustDetailsWidget.set_on_file_system_view.assert_called_once_with(

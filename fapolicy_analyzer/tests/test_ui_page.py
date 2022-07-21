@@ -14,7 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import context  # noqa: F401 # isort: skip
-from ui.ui_page import UIAction, UIPage
+from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 
 
 def test_merge_actions():

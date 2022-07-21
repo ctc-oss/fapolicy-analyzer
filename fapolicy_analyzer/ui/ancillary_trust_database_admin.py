@@ -23,17 +23,17 @@ from fapolicy_analyzer.util import fs  # noqa: F401
 from fapolicy_analyzer.util.format import f
 from gi.repository import Gtk
 
-from .actions import (
+from fapolicy_analyzer.ui.actions import (
     NotificationType,
     add_notification,
     apply_changesets,
     request_ancillary_trust,
 )
-from .ancillary_trust_file_list import AncillaryTrustFileList
-from .remove_deleted_dialog import RemoveDeletedDialog
-from .store import dispatch, get_system_feature
-from .trust_file_details import TrustFileDetails
-from .ui_widget import UIConnectedWidget
+from fapolicy_analyzer.ui.ancillary_trust_file_list import AncillaryTrustFileList
+from fapolicy_analyzer.ui.remove_deleted_dialog import RemoveDeletedDialog
+from fapolicy_analyzer.ui.store import dispatch, get_system_feature
+from fapolicy_analyzer.ui.trust_file_details import TrustFileDetails
+from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 
 
 class AncillaryTrustDatabaseAdmin(UIConnectedWidget):

@@ -20,25 +20,25 @@ import pytest
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from mocks import mock_System
-from ui.database_admin_page import DatabaseAdminPage
-from ui.store import init_store
+from fapolicy_analyzer.ui.database_admin_page import DatabaseAdminPage
+from fapolicy_analyzer.ui.store import init_store
 
 
 @pytest.fixture
 def widget(mocker):
     mocker.patch(
-        "ui.database_admin_page.AncillaryTrustDatabaseAdmin.get_ref",
+        "fapolicy_analyzer.ui.database_admin_page.AncillaryTrustDatabaseAdmin.get_ref",
         return_value=Gtk.Box(),
     )
     mocker.patch(
-        "ui.database_admin_page.AncillaryTrustDatabaseAdmin._AncillaryTrustDatabaseAdmin__load_trust"
+        "fapolicy_analyzer.ui.database_admin_page.AncillaryTrustDatabaseAdmin._AncillaryTrustDatabaseAdmin__load_trust"
     )
     mocker.patch(
-        "ui.database_admin_page.SystemTrustDatabaseAdmin.get_ref",
+        "fapolicy_analyzer.ui.database_admin_page.SystemTrustDatabaseAdmin.get_ref",
         return_value=Gtk.Box(),
     )
     mocker.patch(
-        "ui.database_admin_page.SystemTrustDatabaseAdmin._SystemTrustDatabaseAdmin__load_trust"
+        "fapolicy_analyzer.ui.database_admin_page.SystemTrustDatabaseAdmin._SystemTrustDatabaseAdmin__load_trust"
     )
     init_store(mock_System())
     return DatabaseAdminPage()

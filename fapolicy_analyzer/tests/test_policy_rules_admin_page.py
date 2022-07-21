@@ -21,16 +21,16 @@ import pytest
 from callee import Attrs, InstanceOf
 from redux import Action
 from rx.subject import Subject
-from ui.actions import (
+from fapolicy_analyzer.ui.actions import (
     ADD_NOTIFICATION,
     REQUEST_EVENTS,
     REQUEST_GROUPS,
     REQUEST_USERS,
     NotificationType,
 )
-from ui.policy_rules_admin_page import PolicyRulesAdminPage
-from ui.store import init_store
-from ui.strings import (
+from fapolicy_analyzer.ui.policy_rules_admin_page import PolicyRulesAdminPage
+from fapolicy_analyzer.ui.store import init_store
+from fapolicy_analyzer.ui.strings import (
     GET_GROUPS_LOG_ERROR_MSG,
     GET_USERS_ERROR_MSG,
     PARSE_EVENT_LOG_ERROR_MSG,
@@ -62,14 +62,14 @@ def _build_state(**kwargs):
 
 @pytest.fixture()
 def mock_dispatch(mocker):
-    return mocker.patch("ui.policy_rules_admin_page.dispatch")
+    return mocker.patch("fapolicy_analyzer.ui.policy_rules_admin_page.dispatch")
 
 
 @pytest.fixture()
 def mock_system_features(mocker):
     system_features_mock = Subject()
     mocker.patch(
-        "ui.policy_rules_admin_page.get_system_feature",
+        "fapolicy_analyzer.ui.policy_rules_admin_page.get_system_feature",
         return_value=system_features_mock,
     )
     yield system_features_mock
@@ -94,12 +94,12 @@ def default_states():
 @pytest.fixture
 def widget(mock_dispatch, mock_system_features, mocker, states):
     mocker.patch(
-        "ui.ancillary_trust_file_list.epoch_to_string",
+        "fapolicy_analyzer.ui.ancillary_trust_file_list.epoch_to_string",
         return_value="10-01-2020",
     )
 
     mocker.patch(
-        "ui.trust_file_list.epoch_to_string",
+        "fapolicy_analyzer.ui.trust_file_list.epoch_to_string",
         return_value="10-01-2020",
     )
 
@@ -509,7 +509,9 @@ def test_updates_acl_details(widget, view, mockFnName, mocker):
 
 
 def test_updates_subject_details(widget, mocker):
-    mocker.patch("ui.policy_rules_admin_page.fs.stat", return_value="foo")
+    mocker.patch(
+        "fapolicy_analyzer.ui.policy_rules_admin_page.fs.stat", return_value="foo"
+    )
     textBuffer = widget.get_object("subjectDetails").get_buffer()
     widget.on_file_selection_changed([MagicMock(file="baz")])
     assert (
@@ -521,7 +523,9 @@ def test_updates_subject_details(widget, mocker):
 
 
 def test_updates_object_details(widget, mocker):
-    mocker.patch("ui.policy_rules_admin_page.fs.stat", return_value="foo")
+    mocker.patch(
+        "fapolicy_analyzer.ui.policy_rules_admin_page.fs.stat", return_value="foo"
+    )
     textBuffer = widget.get_object("objectDetails").get_buffer()
     widget.on_file_selection_changed(
         [MagicMock(file="baz")], type="objects", details_widget_name="objectDetails"
