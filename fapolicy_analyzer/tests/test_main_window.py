@@ -85,10 +85,11 @@ def mainWindow(mock_init_store, mock_dispatches):
 def es_locale():
     original = os.environ.get("LANGUAGE", "en")
     os.environ["LANGUAGE"] = "es"
+    locale.setlocale(locale.LC_ALL, "es_ES.UTF-8")
     reload(fapolicy_analyzer.ui)
-    print(locale.getlocale())
     yield
     os.environ["LANGUAGE"] = original
+    locale.setlocale(locale.LC_ALL, "")
     reload(fapolicy_analyzer.ui)
 
 
