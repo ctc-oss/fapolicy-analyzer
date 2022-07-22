@@ -31,6 +31,7 @@ class ProfilerPage(UIConnectedWidget, UIPage):
                     "Start Test",
                     "media-playback-start",
                     {"clicked": self.on_test_activate},
+                    sensitivity_func=self.start_button_sensitivity
                 )
             ],
             "stop": [
@@ -39,6 +40,7 @@ class ProfilerPage(UIConnectedWidget, UIPage):
                     "Stop Test",
                     "media-playback-stop",
                     {},
+                    sensitivity_func=self.stop_button_sensitivity
                 )
             ]
         }
@@ -47,6 +49,13 @@ class ProfilerPage(UIConnectedWidget, UIPage):
 
         self._fapd_mgr = None
         self._fapd_profiler = None
+        self.running = False
+
+    def stop_button_sensitivity(self):
+        return self.running
+
+    def start_button_sensitivity(self):
+        return not self.running
 
     def get_text(self):
         entryDict = {
@@ -60,9 +69,11 @@ class ProfilerPage(UIConnectedWidget, UIPage):
     def on_test_activate(self, *args):
         profiling_args = self.get_text()
         logging.debug(f"Entry text = {profiling_args}")
+        self.running = True
         self._fapd_profiler.start_prof_session(profiling_args)
         fapd_prof_stderr = self._fapd_profiler.fapd_prof_stderr
         logging.debug(f"Started prof session, stderr={fapd_prof_stderr}")
 
         sleep(4)
         self._fapd_profiler.stop_prof_session()
+        self.running = False
