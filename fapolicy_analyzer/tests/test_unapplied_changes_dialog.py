@@ -15,7 +15,7 @@
 
 import context  # noqa: F401 # isort: skip
 import gi
-from ui.unapplied_changes_dialog import UnappliedChangesDialog
+from fapolicy_analyzer.ui.unapplied_changes_dialog import UnappliedChangesDialog
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip

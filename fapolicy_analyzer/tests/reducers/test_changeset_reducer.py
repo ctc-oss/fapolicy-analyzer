@@ -13,9 +13,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import context  # noqa: F401 # isort: skip
 from unittest.mock import MagicMock
 
-import context  # noqa: F401
+import pytest
+from fapolicy_analyzer.ui.reducers.changeset_reducer import (
+    ChangesetState,
+    handle_add_changesets,
+    handle_clear_changesets,
+    handle_error_apply_changesets,
+)
 
 
 @pytest.fixture()

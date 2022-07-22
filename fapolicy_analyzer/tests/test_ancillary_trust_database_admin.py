@@ -221,7 +221,8 @@ def test_on_untrustBtn_clicked_no_remove(widget, mocker):
         )
     )
     mocker.patch(
-        "ui.ancillary_trust_database_admin.RemoveDeletedDialog", return_value=mockDialog
+        "fapolicy_analyzer.ui.ancillary_trust_database_admin.RemoveDeletedDialog",
+        return_value=mockDialog,
     )
     mock_delete_func = mocker.patch.object(widget, "delete_trusted_files")
     temp = tempfile.NamedTemporaryFile()
