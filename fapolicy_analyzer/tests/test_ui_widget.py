@@ -22,7 +22,7 @@ gi.require_version("Gtk", "3.0")
 from unittest.mock import MagicMock
 
 from gi.repository import Gtk
-from ui.ui_widget import UIBuilderWidget, UIConnectedWidget, UIWidget
+from fapolicy_analyzer.ui.ui_widget import UIBuilderWidget, UIConnectedWidget, UIWidget
 
 
 class concrete_UIBuilderWidget(UIBuilderWidget):
@@ -49,13 +49,13 @@ def uiWidget(mockWidget):
 @pytest.fixture
 def mockBuilder(mocker):
     mock = MagicMock(get_object=MagicMock(), add_from_file=MagicMock())
-    mocker.patch("ui.ui_widget.Gtk.Builder", return_value=mock)
+    mocker.patch("fapolicy_analyzer.ui.ui_widget.Gtk.Builder", return_value=mock)
     return mock
 
 
 @pytest.fixture
 def mockResource(mocker):
-    mock = mocker.patch("ui.ui_widget.resources.path")
+    mock = mocker.patch("fapolicy_analyzer.ui.ui_widget.resources.path")
     mock.return_value.__enter__.return_value.as_posix.return_value = "foo"
     return mock
 

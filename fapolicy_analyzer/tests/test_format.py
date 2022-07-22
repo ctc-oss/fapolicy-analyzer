@@ -13,8 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from fapolicy_analyzer.util.format import f, snake_to_camelcase
+
 import context  # noqa: F401
-from util.format import snake_to_camelcase, f
 
 
 def test_snake_to_camelcase():

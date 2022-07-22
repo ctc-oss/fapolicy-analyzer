@@ -18,8 +18,8 @@ from os import path
 
 import gi
 
-from .strings import OPEN_FILE_LABEL
-from .ui_widget import UIBuilderWidget
+from fapolicy_analyzer.ui.strings import OPEN_FILE_LABEL
+from fapolicy_analyzer.ui.ui_widget import UIBuilderWidget
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip

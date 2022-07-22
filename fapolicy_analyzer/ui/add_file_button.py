@@ -21,7 +21,7 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from events import Events
 from os import path
-from .ui_widget import UIBuilderWidget
+from fapolicy_analyzer.ui.ui_widget import UIBuilderWidget
 
 
 class AddFileButton(UIBuilderWidget, Events):

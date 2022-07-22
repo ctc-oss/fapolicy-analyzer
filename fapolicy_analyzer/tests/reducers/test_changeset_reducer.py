@@ -15,7 +15,10 @@
 
 import context  # noqa: F401
 from unittest.mock import MagicMock
-from ui.reducers.changeset_reducer import handle_add_changesets, handle_clear_changesets
+from fapolicy_analyzer.ui.reducers.changeset_reducer import (
+    handle_add_changesets,
+    handle_clear_changesets,
+)
 
 
 def test_handle_add_changesets():

@@ -18,7 +18,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from redux import Action
-from ui.actions import (
+from fapolicy_analyzer.ui.actions import (
     ADD_CHANGESETS,
     ADD_NOTIFICATION,
     ANCILLARY_TRUST_DEPLOYED,

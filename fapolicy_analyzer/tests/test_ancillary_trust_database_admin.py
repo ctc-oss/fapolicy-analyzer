@@ -23,21 +23,17 @@ from callee import InstanceOf
 from callee.attributes import Attrs
 from callee.collections import Sequence
 from fapolicy_analyzer import Changeset, Trust
+from fapolicy_analyzer.ui.actions import (ADD_NOTIFICATION, APPLY_CHANGESETS,
+                                          REQUEST_ANCILLARY_TRUST,
+                                          NotificationType)
+from fapolicy_analyzer.ui.ancillary_trust_database_admin import \
+    AncillaryTrustDatabaseAdmin
+from fapolicy_analyzer.ui.store import init_store
+from fapolicy_analyzer.ui.strings import (ANCILLARY_TRUST_LOAD_ERROR,
+                                          ANCILLARY_TRUSTED_FILE_MESSAGE,
+                                          ANCILLARY_UNKNOWN_FILE_MESSAGE)
 from redux import Action
 from rx.subject import Subject
-from ui.actions import (
-    ADD_NOTIFICATION,
-    APPLY_CHANGESETS,
-    REQUEST_ANCILLARY_TRUST,
-    NotificationType,
-)
-from ui.ancillary_trust_database_admin import AncillaryTrustDatabaseAdmin
-from ui.store import init_store
-from ui.strings import (
-    ANCILLARY_TRUST_LOAD_ERROR,
-    ANCILLARY_TRUSTED_FILE_MESSAGE,
-    ANCILLARY_UNKNOWN_FILE_MESSAGE,
-)
 
 from mocks import mock_System
 
@@ -47,12 +43,12 @@ from gi.repository import Gtk  # isort: skip
 
 @pytest.fixture()
 def mock_dispatch(mocker):
-    return mocker.patch("ui.ancillary_trust_database_admin.dispatch")
+    return mocker.patch("fapolicy_analyzer.ui.ancillary_trust_database_admin.dispatch")
 
 
 @pytest.fixture
 def widget(mock_dispatch, mocker):
-    mocker.patch("ui.ancillary_trust_database_admin.fs.sha", return_value="abc")
+    mocker.patch("fapolicy_analyzer.ui.ancillary_trust_database_admin.fs.sha", return_value="abc")
     init_store(mock_System())
     return AncillaryTrustDatabaseAdmin()
 
@@ -66,7 +62,7 @@ def test_updates_trust_details(widget, mocker):
     mocker.patch.object(widget.trustFileDetails, "set_on_file_system_view")
     mocker.patch.object(widget.trustFileDetails, "set_trust_status")
     mocker.patch(
-        "ui.ancillary_trust_database_admin.fs.stat", return_value="stat for foo file"
+        "fapolicy_analyzer.ui.ancillary_trust_database_admin.fs.stat", return_value="stat for foo file"
     )
     trust = [MagicMock(status="T", path="/tmp/foo", size=1, hash="abc", spec=Trust)]
     widget.on_trust_selection_changed(trust)
@@ -86,7 +82,7 @@ def test_updates_trust_details_for_deleted_files(widget, mocker):
     mocker.patch.object(widget.trustFileDetails, "set_on_file_system_view")
     mocker.patch.object(widget.trustFileDetails, "set_trust_status")
     mocker.patch(
-        "ui.ancillary_trust_database_admin.fs.stat", return_value="stat for foo file"
+        "fapolicy_analyzer.ui.ancillary_trust_database_admin.fs.stat", return_value="stat for foo file"
     )
     trust = [MagicMock(path="/tmp/foo")]
     widget.on_trust_selection_changed(trust)
@@ -135,7 +131,7 @@ def test_on_trustBtn_clicked(widget, mock_dispatch, mocker):
     mocker.patch.object(widget.trustFileDetails, "set_on_file_system_view")
     mocker.patch.object(widget.trustFileDetails, "set_trust_status")
     mocker.patch(
-        "ui.ancillary_trust_database_admin.fs.stat", return_value="stat for foo file"
+        "fapolicy_analyzer.ui.ancillary_trust_database_admin.fs.stat", return_value="stat for foo file"
     )
 
     temp = tempfile.NamedTemporaryFile()
@@ -172,7 +168,7 @@ def test_on_untrustBtn_clicked(widget, mock_dispatch, mocker):
     mocker.patch.object(widget.trustFileDetails, "set_on_file_system_view")
     mocker.patch.object(widget.trustFileDetails, "set_trust_status")
     mocker.patch(
-        "ui.ancillary_trust_database_admin.fs.stat", return_value="stat for foo file"
+        "fapolicy_analyzer.ui.ancillary_trust_database_admin.fs.stat", return_value="stat for foo file"
     )
 
     mockDialog = MagicMock(
@@ -181,7 +177,7 @@ def test_on_untrustBtn_clicked(widget, mock_dispatch, mocker):
         )
     )
     mocker.patch(
-        "ui.ancillary_trust_database_admin.RemoveDeletedDialog", return_value=mockDialog
+        "fapolicy_analyzer.ui.ancillary_trust_database_admin.RemoveDeletedDialog", return_value=mockDialog
     )
     temp = tempfile.NamedTemporaryFile()
 
@@ -246,7 +242,7 @@ def test_on_file_deleted_empty(widget, mock_dispatch):
 def test_reloads_trust_w_changeset_change(mock_dispatch, mocker):
     mockSystemFeature = Subject()
     mocker.patch(
-        "ui.ancillary_trust_database_admin.get_system_feature",
+        "fapolicy_analyzer.ui.ancillary_trust_database_admin.get_system_feature",
         return_value=mockSystemFeature,
     )
     mockSystemFeature.on_next({"changesets": []})
@@ -270,7 +266,7 @@ def test_load_trust(mocker):
     mockChangeset = MagicMock(spec=Changeset)
     mockSystemFeature = Subject()
     mocker.patch(
-        "ui.ancillary_trust_database_admin.get_system_feature",
+        "fapolicy_analyzer.ui.ancillary_trust_database_admin.get_system_feature",
         return_value=mockSystemFeature,
     )
     init_store(mock_System())
@@ -295,7 +291,7 @@ def test_load_trust(mocker):
 def test_load_trust_w_exception(mock_dispatch, mocker):
     mockSystemFeature = Subject()
     mocker.patch(
-        "ui.ancillary_trust_database_admin.get_system_feature",
+        "fapolicy_analyzer.ui.ancillary_trust_database_admin.get_system_feature",
         return_value=mockSystemFeature,
     )
     mockSystemFeature.on_next({"changesets": []})

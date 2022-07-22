@@ -24,9 +24,9 @@ gi.require_version("Gtk", "3.0")
 from unittest.mock import MagicMock
 
 from gi.repository import Gtk
-from ui.configs import Colors
-from ui.object_list import ObjectList
-from ui.strings import FILE_LABEL, FILES_LABEL
+from fapolicy_analyzer.ui.configs import Colors
+from fapolicy_analyzer.ui.object_list import ObjectList
+from fapolicy_analyzer.ui.strings import FILE_LABEL, FILES_LABEL
 
 
 def _mock_object(trust="", mode="", access="", file="", trust_status=""):
@@ -36,9 +36,21 @@ def _mock_object(trust="", mode="", access="", file="", trust_status=""):
 
 
 _objects = [
-    {0: _mock_object(trust="ST", mode="R", access="A", file="/tmp/foo", trust_status="U")},
-    {1: _mock_object(trust="AT", mode="W", access="A", file="/tmp/baz", trust_status="U")},
-    {2: _mock_object(trust="U", mode="X", access="D", file="/tmp/bar", trust_status="U")},
+    {
+        0: _mock_object(
+            trust="ST", mode="R", access="A", file="/tmp/foo", trust_status="U"
+        )
+    },
+    {
+        1: _mock_object(
+            trust="AT", mode="W", access="A", file="/tmp/baz", trust_status="U"
+        )
+    },
+    {
+        2: _mock_object(
+            trust="U", mode="X", access="D", file="/tmp/bar", trust_status="U"
+        )
+    },
 ]
 
 
@@ -64,7 +76,9 @@ def test_loads_store(widget):
     assert [next(iter(t.values())).access for t in sortedObjects] == [
         strip_markup(x[1]) for x in view.get_model()
     ]
-    assert [next(iter(t.values())).file for t in sortedObjects] == [x[2] for x in view.get_model()]
+    assert [next(iter(t.values())).file for t in sortedObjects] == [
+        x[2] for x in view.get_model()
+    ]
     assert [next(iter(t.values())).mode for t in sortedObjects] == [
         strip_markup(x[6]) for x in view.get_model()
     ]

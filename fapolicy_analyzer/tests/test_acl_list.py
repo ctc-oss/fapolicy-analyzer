@@ -20,7 +20,7 @@ import context  # noqa: F401
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
-from ui.acl_list import ACLList
+from fapolicy_analyzer.ui.acl_list import ACLList
 
 
 @pytest.fixture

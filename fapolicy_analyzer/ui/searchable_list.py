@@ -21,8 +21,8 @@ gi.require_version("Gtk", "3.0")
 from events import Events
 from gi.repository import Gtk
 
-from .loader import Loader
-from .ui_widget import UIBuilderWidget
+from fapolicy_analyzer.ui.loader import Loader
+from fapolicy_analyzer.ui.ui_widget import UIBuilderWidget
 
 
 class SearchableList(UIBuilderWidget, Events):
@@ -139,7 +139,9 @@ class SearchableList(UIBuilderWidget, Events):
             return selected is not None
 
         selected = None
-        self.treeView.get_model().foreach(search) if self.treeView.get_model() is not None else None
+        self.treeView.get_model().foreach(
+            search
+        ) if self.treeView.get_model() is not None else None
         return selected
 
     def on_view_selection_changed(self, selection):

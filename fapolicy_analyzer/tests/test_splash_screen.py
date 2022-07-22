@@ -22,8 +22,8 @@ from gi.repository import Gtk
 from mocks import mock_System
 from rx.subject import Subject
 from unittest.mock import MagicMock
-from ui.splash_screen import SplashScreen
-from ui.store import init_store
+from fapolicy_analyzer.ui.splash_screen import SplashScreen
+from fapolicy_analyzer.ui.store import init_store
 
 
 @pytest.fixture
@@ -35,7 +35,8 @@ def mock_init_store():
 def mock_system_features(mocker):
     system_features_mock = Subject()
     mocker.patch(
-        "ui.splash_screen.get_system_feature", return_value=system_features_mock
+        "fapolicy_analyzer.ui.splash_screen.get_system_feature",
+        return_value=system_features_mock,
     )
     system_features_mock.on_next({"initialized": False})
     return system_features_mock
@@ -56,7 +57,7 @@ def test_displays_window(widget):
 
 @pytest.mark.usefixtures("widget")
 def test_opens_main_window(mock_system_features, mocker):
-    mockMainWindow = mocker.patch("ui.splash_screen.MainWindow")
+    mockMainWindow = mocker.patch("fapolicy_analyzer.ui.splash_screen.MainWindow")
     mock_system_features.on_next({"initialized": True})
     mockMainWindow.assert_called_once()
 
@@ -70,7 +71,10 @@ def test_updates_progressBar(mocker):
 
     mockProgressBar = MagicMock(pulse=MagicMock())
     original_get_object = SplashScreen.get_object
-    mocker.patch("ui.splash_screen.SplashScreen.get_object", new=mock_get_object)
+    mocker.patch(
+        "fapolicy_analyzer.ui.splash_screen.SplashScreen.get_object",
+        new=mock_get_object,
+    )
 
     widget = SplashScreen()
     mockProgressBar.pulse.assert_called_once()

@@ -15,7 +15,7 @@
 
 import gi
 
-from .searchable_list import SearchableList
+from fapolicy_analyzer.ui.searchable_list import SearchableList
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip

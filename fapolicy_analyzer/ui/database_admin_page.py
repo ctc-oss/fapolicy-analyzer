@@ -20,9 +20,11 @@ from fapolicy_analyzer.ui.ui_page import UIPage
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
-from .ancillary_trust_database_admin import AncillaryTrustDatabaseAdmin
-from .system_trust_database_admin import SystemTrustDatabaseAdmin
-from .ui_widget import UIWidget
+from fapolicy_analyzer.ui.ancillary_trust_database_admin import (
+    AncillaryTrustDatabaseAdmin,
+)
+from fapolicy_analyzer.ui.system_trust_database_admin import SystemTrustDatabaseAdmin
+from fapolicy_analyzer.ui.ui_widget import UIWidget
 
 
 class DatabaseAdminPage(UIWidget, UIPage):

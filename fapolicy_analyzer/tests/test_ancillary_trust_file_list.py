@@ -22,9 +22,9 @@ gi.require_version("Gtk", "3.0")
 from unittest.mock import MagicMock
 
 from gi.repository import Gtk
-from ui.ancillary_trust_file_list import AncillaryTrustFileList
-from ui.configs import Colors
-from ui.strings import (
+from fapolicy_analyzer.ui.ancillary_trust_file_list import AncillaryTrustFileList
+from fapolicy_analyzer.ui.configs import Colors
+from fapolicy_analyzer.ui.strings import (
     CHANGESET_ACTION_ADD,
     CHANGESET_ACTION_DEL,
     FILE_LIST_CHANGES_HEADER,

@@ -63,7 +63,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ '3.6', '3.9 ' ]
+        python-version: [ '3.6', '3.9' ]
     steps:
       - uses: actions/checkout@v2
       - name: Install requirements
@@ -94,11 +94,6 @@ jobs:
           pipenv run compile_catalog
           pipenv run python setup.py bdist_wheel
           echo ::set-output name=virt_env::$(pipenv --venv)
-      - name: Archive wheel
-        uses: actions/upload-artifact@v2
-        with:
-          name: fapolicy-analyzer-wheel-python-${{ matrix.python-version }}
-          path: dist/fapolicy_analyzer-*.whl
 
   ui_lint:
     name: UI Lint
@@ -119,11 +114,10 @@ jobs:
 
   ui_test:
     name: UI Test Suite for Python ${{ matrix.python-version }}
-    needs: py_build
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ '3.6', '3.9 ' ]
+        python-version: [ '3.6', '3.9' ]
     steps:
       - uses: actions/checkout@v2
       - name: Install requirements
@@ -149,19 +143,8 @@ jobs:
           pip install pipenv
           pipenv install --dev --python ${{ matrix.python-version }}
           echo ::set-output name=virt_env::$(pipenv --venv)
-      - name: Download bindings package
-        id: download
-        uses: actions/download-artifact@v2
-        with:
-          name: fapolicy-analyzer-wheel-python-${{ matrix.python-version }}
-          path: /tmp
-      - name: Install wheel
-        run: pipenv install /tmp/fapolicy_analyzer-*.whl
-      - name: 'Update path'
-        run: |
-          for entry in ${{steps.download.outputs.download-path}}/fapolicy*;
-            do echo "./$(basename $entry)" >> ${{steps.download.outputs.download-path}}/easy-install.pth;
-          done
+      - name: Setup Bindings
+        run: pipenv run python setup.py develop
       - name: Test with pytest
         run: pipenv run test
 
