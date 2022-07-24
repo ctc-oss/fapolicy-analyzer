@@ -8,7 +8,7 @@
 
 pub mod error;
 pub mod fapolicyd;
-pub use fapolicyd::reload_databases;
+pub use fapolicyd::reload_trust_database;
 
 pub mod rpm;
 pub use rpm::fapolicyd_version as version;

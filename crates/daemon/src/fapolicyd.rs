@@ -32,7 +32,7 @@ pub enum Version {
 }
 
 /// send signal to fapolicyd FIFO pipe to reload the trust database
-pub fn reload_databases() -> Result<(), Error> {
+pub fn reload_trust_database() -> Result<(), Error> {
     let mut fifo = std::fs::OpenOptions::new()
         .write(true)
         .read(false)
