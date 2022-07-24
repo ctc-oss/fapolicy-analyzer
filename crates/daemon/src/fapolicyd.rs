@@ -8,10 +8,12 @@
 
 // todo;; tracking the fapolicyd specific bits in here to determine if bindings are worthwhile
 
-use std::io::Write;
+use std::thread::sleep;
+use std::time::Duration;
 
 use crate::error::Error;
 use crate::error::Error::FapolicydReloadFail;
+use crate::svc::Handle;
 
 pub const TRUST_DB_PATH: &str = "/var/lib/fapolicyd";
 pub const TRUST_DB_NAME: &str = "trust.db";
@@ -32,15 +34,29 @@ pub enum Version {
 }
 
 /// send signal to fapolicyd FIFO pipe to reload the trust database
-pub fn reload_trust_database() -> Result<(), Error> {
-    let mut fifo = std::fs::OpenOptions::new()
-        .write(true)
-        .read(false)
-        .open(FIFO_PIPE)
-        .map_err(|_| FapolicydReloadFail("failed to open fifo pipe".to_string()))?;
+// pub fn reload_databases() -> Result<(), Error> {
+//     let mut fifo = std::fs::OpenOptions::new()
+//         .write(true)
+//         .read(false)
+//         .open(FIFO_PIPE)
+//         .map_err(|_| FapolicydReloadFail("failed to open fifo pipe".to_string()))?;
+//
+//     fifo.write_all("1".as_bytes())
+//         .map_err(|_| FapolicydReloadFail("failed to write reload byte to pipe".to_string()))
+// }
 
-    fifo.write_all("1".as_bytes())
-        .map_err(|_| FapolicydReloadFail("failed to write reload byte to pipe".to_string()))
+pub fn reload() -> Result<(), Error> {
+    let fapolicyd = Handle::default();
+    fapolicyd.stop()?;
+    for _ in 0..10 {
+        sleep(Duration::from_secs(1));
+        if !fapolicyd.active()? {
+            return fapolicyd.start();
+        }
+    }
+    Err(FapolicydReloadFail(
+        "Could not reload after 10 tries".to_string(),
+    ))
 }
 
 /// filtering logic as implemented by fapolicyd rpm backend

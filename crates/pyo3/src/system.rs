@@ -100,7 +100,7 @@ impl PySystem {
     /// Update the host system with this state of this System and signal fapolicyd to reload trust
     pub fn deploy(&self) -> PyResult<()> {
         self.deploy_only().and_then(|_| {
-            fapolicy_daemon::reload_trust_database()
+            fapolicy_daemon::reload()
                 .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))
         })
     }
