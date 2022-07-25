@@ -24,7 +24,7 @@
     <property name="type-hint">dialog</property>
     <property name="message-type">question</property>
     <property name="buttons">yes-no</property>
-    <property name="text" translatable="yes">Keep these trust changes?</property>
+    <property name="text" translatable="yes">Keep these changes?</property>
     <property name="secondary-text" translatable="yes">Reverting to previous settings in 15 seconds.</property>
     <signal name="show" handler="on_after_show" after="yes" swapped="no"/>
     <child internal-child="vbox">

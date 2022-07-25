@@ -7,9 +7,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: fapolicy-analyzer 0.3.1+114.g3107baf.dirty\n"
+"Project-Id-Version: fapolicy-analyzer 0.3.1+115.g7eff687.dirty\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-07-25 11:07-0400\n"
+"POT-Creation-Date: 2022-07-25 12:56-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -52,7 +52,7 @@ msgstr ""
 msgid "Do you wish to continue?"
 msgstr ""
 
-#: fapolicy_analyzer/ui/deploy_confirm_dialog.py:44
+#: fapolicy_analyzer/ui/deploy_revert_dialog.py:45
 msgid "Reverting to previous settings in {i+1} seconds"
 msgstr ""
 
@@ -408,27 +408,27 @@ msgstr ""
 msgid "Cancel"
 msgstr ""
 
-#: fapolicy_analyzer/glade/confirm_info_dialog.glade:7
+#: fapolicy_analyzer/glade/confirm_deployment_dialog.glade:7
 msgid "Deploy Changesets?"
 msgstr ""
 
-#: fapolicy_analyzer/glade/confirm_info_dialog.glade:69
+#: fapolicy_analyzer/glade/confirm_deployment_dialog.glade:71
 msgid ""
 "Are you sure you wish to deploy your changes to the fapolicyd?\n"
 "This will update fapolicyd and restart the service."
 msgstr ""
 
-#: fapolicy_analyzer/glade/confirm_info_dialog.glade:109
+#: fapolicy_analyzer/glade/confirm_deployment_dialog.glade:111
 msgid ""
 "\"Save As...\" fapolicyd data and configuration to archive prior to "
 "deployment."
 msgstr ""
 
-#: fapolicy_analyzer/glade/deploy_confirm_dialog.glade:27
-msgid "Keep these trust changes?"
+#: fapolicy_analyzer/glade/deploy_revert_dialog.glade:27
+msgid "Keep these changes?"
 msgstr ""
 
-#: fapolicy_analyzer/glade/deploy_confirm_dialog.glade:28
+#: fapolicy_analyzer/glade/deploy_revert_dialog.glade:28
 msgid "Reverting to previous settings in 15 seconds."
 msgstr ""
 
