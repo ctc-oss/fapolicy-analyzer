@@ -13,13 +13,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from locale import gettext as _
 from typing import Sequence, Tuple
 
 import gi
+from fapolicy_analyzer import System, rules_difference
+from fapolicy_analyzer.ui.changeset_wrapper import Changeset, TrustChangeset
 from fapolicy_analyzer.ui.configs import Colors
 from fapolicy_analyzer.ui.strings import (
     CHANGESET_ACTION_ADD_TRUST,
     CHANGESET_ACTION_DEL_TRUST,
+    CHANGESET_ACTION_RULES,
     DEPLOY_ANCILLARY_CONFIRM_DLG_ACTION_COL_HDR,
     DEPLOY_ANCILLARY_CONFIRM_DLG_CHANGE_COL_HDR,
 )
@@ -30,7 +34,13 @@ from gi.repository import Gtk  # isort: skip
 
 
 class ConfirmDeploymentDialog(UIBuilderWidget):
-    def __init__(self, parent=None, listPathActionPairs=[]):
+    def __init__(
+        self,
+        changesets: Sequence[Changeset],
+        current_system: System,
+        previous_system: System,
+        parent: Gtk.Window = None,
+    ):
         super().__init__()
 
         if parent:
@@ -38,7 +48,7 @@ class ConfirmDeploymentDialog(UIBuilderWidget):
 
         changes_view = self.get_object("changesTreeView")
         self.__config_changes_view(changes_view)
-        store = self.__load_store(listPathActionPairs)
+        store = self.__load_store(changesets, current_system, previous_system)
         changes_view.set_model(store)
 
     def __config_changes_view(self, view: Gtk.TreeView):
@@ -56,15 +66,61 @@ class ConfirmDeploymentDialog(UIBuilderWidget):
         columnFile.set_sort_column_id(1)
         view.append_column(columnFile)
 
+    def __to_path_action_pairs(
+        self,
+        changesets: Sequence[Changeset],
+        current_system: System,
+        previous_system: System,
+    ) -> Sequence[Tuple[str, str]]:
+        def rules_changes():
+            diffs = rules_difference(previous_system, current_system).split("\n")
+            adds = len([d for d in diffs if d.startswith("+")])
+            dels = len([d for d in diffs if d.startswith("-")])
+            message = (
+                " and ".join(
+                    (
+                        m
+                        for m in [
+                            f"{adds} addition{'s' if adds > 1 else ''}"
+                            if adds
+                            else None,
+                            f"{dels} removal{'s' if dels > 1 else ''}"
+                            if dels
+                            else None,
+                        ]
+                        if m
+                    )
+                )
+                + " made"
+            )
+            return [(_(message), "Rules")]
+
+        def trust_changes():
+            return [
+                t
+                for e in changesets
+                if isinstance(e, TrustChangeset)
+                for t in e.serialize().items()
+            ]
+
+        return [*trust_changes(), *rules_changes()]
+
     def __load_store(
-        self, listPathActionPairs: Sequence[Tuple[str, str]] = []
+        self,
+        changesets: Sequence[Changeset],
+        current_system: System,
+        previous_system: System,
     ) -> Gtk.ListStore:
         action_txt = {
             "Add": CHANGESET_ACTION_ADD_TRUST,
             "Del": CHANGESET_ACTION_DEL_TRUST,
+            "Rules": CHANGESET_ACTION_RULES,
         }
         store = Gtk.ListStore(str, str)
-        for e in listPathActionPairs:
+        pathActionPairs = self.__to_path_action_pairs(
+            changesets, current_system, previous_system
+        )
+        for e in pathActionPairs:
             # tuples are in (path,action) order, displayed as |action|path|
             action = action_txt.get(e[-1], "")
             store.append((action, e[0]))

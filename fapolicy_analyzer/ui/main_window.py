@@ -22,6 +22,7 @@ from typing import Any, Sequence
 
 import fapolicy_analyzer.ui.strings as strings
 import gi
+from fapolicy_analyzer import System
 from fapolicy_analyzer import __version__ as app_version
 from fapolicy_analyzer.ui.action_toolbar import ActionToolbar
 from fapolicy_analyzer.ui.actions import NotificationType, add_notification
@@ -75,6 +76,8 @@ class MainWindow(UIConnectedWidget):
         self._fapd_mgr = FapdManager(self._fapdControlPermitted)
         self._fapd_profiler = FaProfiler(self._fapd_mgr)
         self.__changesets: Sequence[Changeset] = []
+        self.__system: System
+        self.__checkpoint: System
         self.__page = None
 
         toaster = Notification()
@@ -223,6 +226,8 @@ class MainWindow(UIConnectedWidget):
 
     def on_next_system(self, system):
         self.__changesets = system["changesets"].changesets
+        self.__system = system["system"].system
+        self.__checkpoint = system["system"].checkpoint
         dirty = self.__dirty_changesets()
         title = f"*{self.strTopLevelTitle}" if dirty else self.strTopLevelTitle
         self.windowTopLevel.set_title(title)
@@ -403,7 +408,7 @@ class MainWindow(UIConnectedWidget):
 
     def on_deployChanges_clicked(self, *args):
         with DeployChangesetsOp(self.window) as op:
-            op.run(self.__changesets)
+            op.run(self.__changesets, self.__system, self.__checkpoint)
 
     # ###################### fapolicyd interfacing ##########################
     def on_fapdStartMenu_activate(self, menuitem, data=None):

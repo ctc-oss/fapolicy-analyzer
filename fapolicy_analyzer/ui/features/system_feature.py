@@ -51,8 +51,9 @@ from fapolicy_analyzer.ui.actions import (
     received_rules_text,
     received_system_trust,
     received_users,
+    system_checkpoint_set,
     system_initialization_error,
-    system_initialized,
+    system_received,
 )
 from fapolicy_analyzer.ui.changeset_wrapper import Changeset
 from fapolicy_analyzer.ui.reducers import system_reducer
@@ -108,9 +109,10 @@ def create_system_feature(
                 executor.shutdown()
 
             if system:
-                dispatch(system_initialized())
+                dispatch(system_received(system))
+                dispatch(system_checkpoint_set(_checkpoint))
             else:
-                dispatch(system_initialization_error())
+                dispatch(system_initialization_error(True))
 
         if system:
             executor = None
@@ -125,6 +127,7 @@ def create_system_feature(
         changesets = action.payload
         for c in changesets:
             _system = c.apply_to_system(_system)
+        dispatch(system_received(_system))
         return add_changesets(changesets)
 
     def _get_ancillary_trust(_: Action) -> Action:
@@ -146,12 +149,13 @@ def create_system_feature(
     def _set_checkpoint(action: Action) -> Action:
         global _checkpoint
         _checkpoint = _system
-        return action
+        return system_checkpoint_set(_checkpoint)
 
     def _restore_checkpoint(_: Action) -> Action:
         global _system
         _system = _checkpoint
         rollback_fapolicyd(_system)
+        dispatch(system_received(_system))
         return clear_changesets()
 
     def _get_events(action: Action) -> Action:

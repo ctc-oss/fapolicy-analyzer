@@ -13,15 +13,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import gi
 import sys
 
+import gi
+
 gi.require_version("Gtk", "3.0")
-from gi.repository import GLib, Gtk
 import fapolicy_analyzer.ui.strings as strings
 from fapolicy_analyzer.ui.main_window import MainWindow
 from fapolicy_analyzer.ui.store import get_system_feature
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
+from gi.repository import GLib, Gtk
 
 
 def trust_db_access_failure_dlg():
@@ -54,12 +55,14 @@ class SplashScreen(UIConnectedWidget):
         self.progressBar.pulse()
 
     def on_next_system(self, system):
-        if system.get("initialization_error", False):
+        system_state = system.get("system")
+
+        if system_state.error:
             self.dispose()
             trust_db_access_failure_dlg()
             sys.exit(1)
 
-        if system.get("initialized", False):
+        if system_state.system:
             self.dispose()
             MainWindow()
 

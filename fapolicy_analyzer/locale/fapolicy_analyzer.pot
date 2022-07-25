@@ -7,9 +7,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: fapolicy-analyzer 0.3.1+115.g7eff687.dirty\n"
+"Project-Id-Version: fapolicy-analyzer 0.3.1+116.gbd26ad0.dirty\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-07-25 12:56-0400\n"
+"POT-Creation-Date: 2022-07-25 15:47-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -56,7 +56,7 @@ msgstr ""
 msgid "Reverting to previous settings in {i+1} seconds"
 msgstr ""
 
-#: fapolicy_analyzer/ui/main_window.py:257
+#: fapolicy_analyzer/ui/main_window.py:262
 msgid ""
 "An error occurred trying to open the session file, "
 "{self.strSessionFilename}"
@@ -208,47 +208,51 @@ msgstr ""
 msgid "Delete Trust"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:74
-msgid "Add File"
+#: fapolicy_analyzer/ui/strings.py:73
+msgid "Edit Rules"
 msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:75
-msgid "Open File"
+msgid "Add File"
 msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:76
-msgid "Save As..."
+msgid "Open File"
 msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:77
-msgid "FA Session files"
+msgid "Save As..."
 msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:78
-msgid "fapolicyd archive files"
+msgid "FA Session files"
 msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:79
+msgid "fapolicyd archive files"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:80
 msgid "Any files"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:81
+#: fapolicy_analyzer/ui/strings.py:82
 msgid "Profiling target file chown failure"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:82
+#: fapolicy_analyzer/ui/strings.py:83
 msgid "Profiling target Popen failure"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:83
+#: fapolicy_analyzer/ui/strings.py:84
 msgid "Profiling target redirection failure"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:85
+#: fapolicy_analyzer/ui/strings.py:86
 msgid "File path(s) contains embedded whitespace."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:86
+#: fapolicy_analyzer/ui/strings.py:87
 msgid ""
 "fapolicyd currently does not support paths containing spaces. The "
 "following paths will not be added to the Trusted Files List.\n"
@@ -256,7 +260,7 @@ msgid ""
 "\n"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:91
+#: fapolicy_analyzer/ui/strings.py:92
 msgid ""
 "\n"
 "        Restore your prior session now?\n"
@@ -273,57 +277,57 @@ msgid ""
 "        "
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:107
+#: fapolicy_analyzer/ui/strings.py:108
 msgid "An error occurred trying to restore a prior autosaved edit session"
 msgstr ""
 
-#: fapolicy_analyzer/glade/loader.glade:45 fapolicy_analyzer/ui/strings.py:111
+#: fapolicy_analyzer/glade/loader.glade:45 fapolicy_analyzer/ui/strings.py:112
 msgid "Loading..."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:113
+#: fapolicy_analyzer/ui/strings.py:114
 msgid "file"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:114
+#: fapolicy_analyzer/ui/strings.py:115
 msgid "files"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:115
+#: fapolicy_analyzer/ui/strings.py:116
 msgid "user"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:116
+#: fapolicy_analyzer/ui/strings.py:117
 msgid "users"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:117
+#: fapolicy_analyzer/ui/strings.py:118
 msgid "group"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:118
+#: fapolicy_analyzer/ui/strings.py:119
 msgid "groups"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:119
+#: fapolicy_analyzer/ui/strings.py:120
 msgid ""
 "An error occurred trying to parse the event log file. Please try again or"
 " select a different file."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:122
+#: fapolicy_analyzer/ui/strings.py:123
 msgid "An error occurred trying to retrieve the user list. Please try again."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:125
+#: fapolicy_analyzer/ui/strings.py:126
 msgid "An error occurred trying to retrieve the group list. Please try again."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:129
+#: fapolicy_analyzer/ui/strings.py:130
 msgid "Trust Database"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:130
+#: fapolicy_analyzer/ui/strings.py:131
 msgid ""
 "\n"
 "The fapolicyd trusted resources database\n"
@@ -348,11 +352,11 @@ msgid ""
 "    "
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:154
+#: fapolicy_analyzer/ui/strings.py:155
 msgid "Error applying changes"
 msgstr ""
 
-#: fapolicy_analyzer/ui/operations/deploy_changesets_op.py:153
+#: fapolicy_analyzer/ui/operations/deploy_changesets_op.py:139
 msgid "Deploy Changes"
 msgstr ""
 

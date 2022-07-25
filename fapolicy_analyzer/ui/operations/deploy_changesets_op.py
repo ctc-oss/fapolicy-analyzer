@@ -15,9 +15,10 @@
 
 import logging
 from locale import gettext as _
-from typing import Any, Sequence, Tuple
+from typing import Any, Sequence
 
 import gi
+from fapolicy_analyzer import System
 from fapolicy_analyzer.ui.actions import (
     NotificationType,
     add_notification,
@@ -26,7 +27,7 @@ from fapolicy_analyzer.ui.actions import (
     restore_system_checkpoint,
     set_system_checkpoint,
 )
-from fapolicy_analyzer.ui.changeset_wrapper import Changeset, TrustChangeset
+from fapolicy_analyzer.ui.changeset_wrapper import Changeset
 from fapolicy_analyzer.ui.confirm_deployment_dialog import ConfirmDeploymentDialog
 from fapolicy_analyzer.ui.deploy_revert_dialog import DeployRevertDialog
 from fapolicy_analyzer.ui.operations.ui_operation import UIOperation
@@ -96,21 +97,6 @@ class DeployChangesetsOp(UIOperation):
         self.__deploying = False
         self.__subscription = get_system_feature().subscribe(on_next=self.__on_next)
 
-    def __changesets_to_path_action_pairs(
-        self,
-        changesets: Sequence[Changeset],
-    ) -> Sequence[Tuple[str, str]]:
-        """Converts to list of human-readable undeployed path/operation pairs"""
-        return [
-            t
-            for e in changesets
-            for t in (
-                e.serialize().items()
-                if isinstance(e, TrustChangeset)
-                else [("There was a rule file change!!!!", "")]
-            )
-        ]
-
     def __get_fapd_archive_file_name(self) -> str:
         """Display a file chooser dialog to specify the output archive file."""
         fcd = _FapdArchiveFileChooserDialog(self.__window)
@@ -155,7 +141,7 @@ class DeployChangesetsOp(UIOperation):
     def get_icon(self) -> str:
         return "system-software-update"
 
-    def run(self, changesets: Sequence[Changeset]):
+    def run(self, changesets: Sequence[Changeset], system: System, checkpoint: System):
         """
         Deploys the given changesets.
 
@@ -168,9 +154,9 @@ class DeployChangesetsOp(UIOperation):
         -------
         None
         """
-        listPathActionTuples = self.__changesets_to_path_action_pairs(changesets)
-        logging.debug(listPathActionTuples)
-        dlgDeployList = ConfirmDeploymentDialog(self.__window, listPathActionTuples)
+        dlgDeployList = ConfirmDeploymentDialog(
+            changesets, system, checkpoint, parent=self.__window
+        )
         confirm_resp = dlgDeployList.get_ref().run()
         dlgDeployList.get_ref().hide()
 
