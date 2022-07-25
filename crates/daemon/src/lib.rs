@@ -13,5 +13,4 @@ pub use fapolicyd::reload;
 pub mod rpm;
 pub use rpm::fapolicyd_version as version;
 
-#[cfg(feature = "systemd")]
 pub mod svc;
