@@ -20,7 +20,10 @@ import pytest
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gdk
 from helpers import delayed_gui_action
-from ui.analyzer_selection_dialog import AnalyzerSelectionDialog, ANALYZER_SELECTION
+from fapolicy_analyzer.ui.analyzer_selection_dialog import (
+    AnalyzerSelectionDialog,
+    ANALYZER_SELECTION,
+)
 
 
 @pytest.fixture
@@ -55,14 +58,16 @@ def test_analyze_from_audit(widget):
 
 def test_set_audit_file_from_dialog(widget, mocker):
     mocker.patch(
-        "ui.analyzer_selection_dialog.Gtk.FileChooserDialog.run",
+        "fapolicy_analyzer.ui.analyzer_selection_dialog.Gtk.FileChooserDialog.run",
         return_value=Gtk.ResponseType.OK,
     )
     mocker.patch(
-        "ui.analyzer_selection_dialog.Gtk.FileChooserDialog.get_filename",
+        "fapolicy_analyzer.ui.analyzer_selection_dialog.Gtk.FileChooserDialog.get_filename",
         return_value="foo",
     )
-    mocker.patch("ui.analyzer_selection_dialog.path.isfile", return_value=True)
+    mocker.patch(
+        "fapolicy_analyzer.ui.analyzer_selection_dialog.path.isfile", return_value=True
+    )
     auditLogTxt = widget.get_object("auditLogTxt")
     auditLogTxt.emit("icon_press", Gtk.EntryIconPosition.SECONDARY, Gdk.Event())
     assert auditLogTxt.get_text() == "foo"

@@ -19,8 +19,8 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from helpers import delayed_gui_action
-from ui.confirm_info_dialog import ConfirmInfoDialog
-from ui.strings import CHANGESET_ACTION_ADD, CHANGESET_ACTION_DEL
+from fapolicy_analyzer.ui.confirm_info_dialog import ConfirmInfoDialog
+from fapolicy_analyzer.ui.strings import CHANGESET_ACTION_ADD, CHANGESET_ACTION_DEL
 
 
 def test_creates_widget():
@@ -36,7 +36,7 @@ def test_adds_dialog_to_parent():
 
 def test_dialog_actions_responses(mocker):
     mocker.patch(
-        "ui.ancillary_trust_file_list.epoch_to_string",
+        "fapolicy_analyzer.ui.ancillary_trust_file_list.epoch_to_string",
         return_value="10-01-2020",
     )
 

@@ -23,21 +23,25 @@ from callee import InstanceOf, Attrs
 from redux import Action
 from rx.subject import Subject
 from time import sleep
-from ui.actions import Notification as Note, NotificationType, REMOVE_NOTIFICATION
-from ui.notification import Notification
-from ui.session_manager import sessionManager
+from fapolicy_analyzer.ui.actions import (
+    Notification as Note,
+    NotificationType,
+    REMOVE_NOTIFICATION,
+)
+from fapolicy_analyzer.ui.notification import Notification
+from fapolicy_analyzer.ui.session_manager import sessionManager
 
 
 @pytest.fixture()
 def mock_dispatch(mocker):
-    return mocker.patch("ui.notification.dispatch")
+    return mocker.patch("fapolicy_analyzer.ui.notification.dispatch")
 
 
 @pytest.fixture
 def mock_notifications_feature(mocker):
     notifications_feature_mock = Subject()
     mocker.patch(
-        "ui.notification.get_notifications_feature",
+        "fapolicy_analyzer.ui.notification.get_notifications_feature",
         return_value=notifications_feature_mock,
     )
     yield notifications_feature_mock

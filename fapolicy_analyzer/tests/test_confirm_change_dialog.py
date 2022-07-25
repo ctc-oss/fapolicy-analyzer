@@ -22,7 +22,7 @@ from locale import gettext as _
 
 from fapolicy_analyzer.util.format import f
 from gi.repository import Gtk
-from ui.confirm_change_dialog import ConfirmChangeDialog
+from fapolicy_analyzer.ui.confirm_change_dialog import ConfirmChangeDialog
 
 
 def _get_dialog_message(dialog):

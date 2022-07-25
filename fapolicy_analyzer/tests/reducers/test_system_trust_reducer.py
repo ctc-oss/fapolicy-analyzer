@@ -16,7 +16,7 @@
 import context  # noqa: F401
 import pytest
 from unittest.mock import MagicMock
-from ui.reducers.system_trust_reducer import (
+from fapolicy_analyzer.ui.reducers.system_trust_reducer import (
     TrustState,
     handle_error_system_trust,
     handle_received_system_trust,

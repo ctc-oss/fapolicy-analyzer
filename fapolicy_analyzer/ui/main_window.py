@@ -23,26 +23,24 @@ from typing import Any
 import fapolicy_analyzer.ui.strings as strings
 import gi
 from fapolicy_analyzer import __version__ as app_version
+from fapolicy_analyzer.ui.action_toolbar import ActionToolbar
+from fapolicy_analyzer.ui.actions import NotificationType, add_notification
+from fapolicy_analyzer.ui.analyzer_selection_dialog import ANALYZER_SELECTION
+from fapolicy_analyzer.ui.configs import Sizing
+from fapolicy_analyzer.ui.database_admin_page import DatabaseAdminPage
+from fapolicy_analyzer.ui.fapd_manager import FapdManager, ServiceStatus
+from fapolicy_analyzer.ui.faprofiler import FaProfiler
+from fapolicy_analyzer.ui.notification import Notification
+from fapolicy_analyzer.ui.operations import DeployChangesetsOp
+from fapolicy_analyzer.ui.policy_rules_admin_page import PolicyRulesAdminPage
+from fapolicy_analyzer.ui.profile_dialog import ProfileDialog
+from fapolicy_analyzer.ui.rules import RulesAdminPage
+from fapolicy_analyzer.ui.session_manager import sessionManager
+from fapolicy_analyzer.ui.store import dispatch, get_system_feature
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
+from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
+from fapolicy_analyzer.ui.unapplied_changes_dialog import UnappliedChangesDialog
 from fapolicy_analyzer.util.format import f
-from .profile_dialog import ProfileDialog
-
-from .action_toolbar import ActionToolbar
-from .actions import NotificationType, add_notification
-from .analyzer_selection_dialog import ANALYZER_SELECTION
-from .configs import Sizing
-from .database_admin_page import DatabaseAdminPage
-
-from .faprofiler import FaProfiler
-from .fapd_manager import FapdManager, ServiceStatus
-from .notification import Notification
-from .operations import DeployChangesetsOp
-from .policy_rules_admin_page import PolicyRulesAdminPage
-from .rules import RulesAdminPage
-from .session_manager import sessionManager
-from .store import dispatch, get_system_feature
-from .ui_widget import UIConnectedWidget
-from .unapplied_changes_dialog import UnappliedChangesDialog
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, GLib  # isort: skip
@@ -332,7 +330,9 @@ class MainWindow(UIConnectedWidget):
     def on_syslogMenu_activate(self, *args):
         page = router(ANALYZER_SELECTION.ANALYZE_SYSLOG)
         height = self.get_object("mainWindow").get_size()[1]
-        page.get_object("botBox").set_property("height_request", int(height * Sizing.POLICY_BOTTOM_BOX))
+        page.get_object("botBox").set_property(
+            "height_request", int(height * Sizing.POLICY_BOTTOM_BOX)
+        )
         self.__pack_main_content(page)
         self.__set_trustDbMenu_sensitive(True)
 
@@ -355,7 +355,9 @@ class MainWindow(UIConnectedWidget):
             page = router(ANALYZER_SELECTION.ANALYZE_FROM_AUDIT, file)
             page.object_list.rule_view_activate += self.on_rulesAdminMenu_activate
             height = self.get_object("mainWindow").get_size()[1]
-            page.get_object("botBox").set_property("height_request", int(height * Sizing.POLICY_BOTTOM_BOX))
+            page.get_object("botBox").set_property(
+                "height_request", int(height * Sizing.POLICY_BOTTOM_BOX)
+            )
             self.__pack_main_content(page)
             self.__set_trustDbMenu_sensitive(True)
         fcd.destroy()
@@ -405,12 +407,12 @@ class MainWindow(UIConnectedWidget):
     # ###################### fapolicyd interfacing ##########################
     def on_fapdStartMenu_activate(self, menuitem, data=None):
         logging.debug("on_fapdStartMenu_activate() invoked.")
-        if (self._fapd_status != ServiceStatus.UNKNOWN):
+        if self._fapd_status != ServiceStatus.UNKNOWN:
             self._fapd_mgr.start()
 
     def on_fapdStopMenu_activate(self, menuitem, data=None):
         logging.debug("on_fapdStopMenu_activate() invoked.")
-        if (self._fapd_status != ServiceStatus.UNKNOWN):
+        if self._fapd_status != ServiceStatus.UNKNOWN:
             self._fapd_mgr.stop()
 
     def _enable_fapd_menu_items(self, status: ServiceStatus):

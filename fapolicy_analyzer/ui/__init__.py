@@ -12,3 +12,14 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+
+import locale
+
+import pkg_resources
+
+DOMAIN = "fapolicy_analyzer"
+locale.setlocale(locale.LC_ALL, locale.getlocale())
+locale_path = pkg_resources.resource_filename("fapolicy_analyzer", "locale")
+locale.bindtextdomain(DOMAIN, locale_path)
+locale.textdomain(DOMAIN)

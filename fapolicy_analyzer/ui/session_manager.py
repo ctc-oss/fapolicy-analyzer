@@ -24,13 +24,13 @@ from fapolicy_analyzer import Changeset
 from fapolicy_analyzer.util.format import f
 from locale import gettext as _
 from sys import stderr
-from .actions import (
+from fapolicy_analyzer.ui.actions import (
     NotificationType,
     apply_changesets,
     add_notification,
     restore_system_checkpoint,
 )
-from .store import dispatch, get_system_feature
+from fapolicy_analyzer.ui.store import dispatch, get_system_feature
 
 
 class SessionManager:

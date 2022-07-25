@@ -22,9 +22,9 @@ try:
 except ImportError:
     import importlib_resources as resources
 
-from .actions import NotificationType, remove_notification
-from .store import dispatch, get_notifications_feature
-from .ui_widget import UIConnectedWidget
+from fapolicy_analyzer.ui.actions import NotificationType, remove_notification
+from fapolicy_analyzer.ui.store import dispatch, get_notifications_feature
+from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 
 gi.require_version("GtkSource", "3.0")
 from gi.repository import Gio, Gtk  # isort: skip

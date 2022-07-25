@@ -17,7 +17,7 @@ import context  # noqa: F401 # isort: skip
 
 import gi
 import pytest
-from ui.rules.rules_text_view import RulesTextView
+from fapolicy_analyzer.ui.rules.rules_text_view import RulesTextView
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip

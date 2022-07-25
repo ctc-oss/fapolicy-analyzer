@@ -14,8 +14,15 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from typing import Tuple
-from .notification_feature import NOTIFICATIONS_FEATURE, create_notification_feature
-from .system_feature import SYSTEM_FEATURE, create_system_feature
+
+from fapolicy_analyzer.ui.features.notification_feature import (
+    NOTIFICATIONS_FEATURE,
+    create_notification_feature,
+)
+from fapolicy_analyzer.ui.features.system_feature import (
+    SYSTEM_FEATURE,
+    create_system_feature,
+)
 
 __all__: Tuple[str, ...] = (
     "NOTIFICATIONS_FEATURE",
