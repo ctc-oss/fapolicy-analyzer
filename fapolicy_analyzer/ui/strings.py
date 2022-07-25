@@ -28,13 +28,9 @@ RULE_LABEL = _("Rule")
 RULES_LABEL = _("Rules")
 DAEMON_INITIALIZATION_ERROR = _("Error initializing communications with daemon")
 
-DEPLOY_ANCILLARY_CONFIRM_DIALOG_TITLE = _("Deploy Ancillary Trust Changes?")
-DEPLOY_ANCILLARY_CONFIRM_DIALOG_TEXT = _(
-    """Are you sure you wish to deploy your changes to the ancillary trust database?
- This will update the fapolicy trust and restart the service."""
-)
+
 DEPLOY_ANCILLARY_CONFIRM_DLG_ACTION_COL_HDR = _("Action")
-DEPLOY_ANCILLARY_CONFIRM_DLG_PATH_COL_HDR = _("File Path")
+DEPLOY_ANCILLARY_CONFIRM_DLG_CHANGE_COL_HDR = _("Change")
 DEPLOY_ANCILLARY_SUCCESSFUL_MSG = _("Changes successfully deployed.")
 DEPLOY_ANCILLARY_ERROR_MSG = _(
     "An error occurred trying to deploy the changes. Please try again."
@@ -72,6 +68,8 @@ FILE_LIST_ACCESS_HEADER = _("Access")
 
 CHANGESET_ACTION_ADD = _("Add")
 CHANGESET_ACTION_DEL = _("Delete")
+CHANGESET_ACTION_ADD_TRUST = _("Add Trust")
+CHANGESET_ACTION_DEL_TRUST = _("Delete Trust")
 
 ADD_FILE_LABEL = _("Add File")
 OPEN_FILE_LABEL = _("Open File")

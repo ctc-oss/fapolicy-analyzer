@@ -13,24 +13,29 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import context  # noqa: F401
-import gi
 
-gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
+import context  # noqa: F401 # isort: skip
+import gi
+from fapolicy_analyzer.ui.confirm_deployment_dialog import ConfirmDeploymentDialog
+from fapolicy_analyzer.ui.strings import (
+    CHANGESET_ACTION_ADD_TRUST,
+    CHANGESET_ACTION_DEL_TRUST,
+)
+
 from helpers import delayed_gui_action
-from fapolicy_analyzer.ui.confirm_info_dialog import ConfirmInfoDialog
-from fapolicy_analyzer.ui.strings import CHANGESET_ACTION_ADD, CHANGESET_ACTION_DEL
+
+gi.require_version("GtkSource", "3.0")
+from gi.repository import Gtk  # isort: skip
 
 
 def test_creates_widget():
-    widget = ConfirmInfoDialog(parent=Gtk.Window())
-    assert type(widget) is ConfirmInfoDialog
+    widget = ConfirmDeploymentDialog(parent=Gtk.Window())
+    assert type(widget) is ConfirmDeploymentDialog
 
 
 def test_adds_dialog_to_parent():
     parent = Gtk.Window()
-    widget = ConfirmInfoDialog(parent=parent)
+    widget = ConfirmDeploymentDialog(parent=parent).get_ref()
     assert widget.get_transient_for() == parent
 
 
@@ -40,7 +45,7 @@ def test_dialog_actions_responses(mocker):
         return_value="10-01-2020",
     )
 
-    dialog = ConfirmInfoDialog(parent=Gtk.Window())
+    dialog = ConfirmDeploymentDialog(parent=Gtk.Window()).get_ref()
     for expected in [Gtk.ResponseType.YES, Gtk.ResponseType.NO]:
         button = dialog.get_widget_for_response(expected)
         delayed_gui_action(button.clicked, delay=1)
@@ -50,17 +55,14 @@ def test_dialog_actions_responses(mocker):
 
 def test_load_path_action_list():
     path_action_list = [("/tmp/fu.txt", "Add"), ("/tmp/bar.txt", "Del")]
-    widget = ConfirmInfoDialog(Gtk.Window(), path_action_list)
-
-    scrollWindow = next(
-        iter(
-            filter(
-                lambda x: isinstance(x, Gtk.ScrolledWindow),
-                widget.get_content_area().get_children(),
-            )
-        )
-    )
-    view = scrollWindow.get_children()[0]
+    widget = ConfirmDeploymentDialog(Gtk.Window(), path_action_list)
+    view = widget.get_object("changesTreeView")
     rows = [x for x in view.get_model()]
-    assert (CHANGESET_ACTION_ADD, path_action_list[0][0]) == (rows[0][0], rows[0][1])
-    assert (CHANGESET_ACTION_DEL, path_action_list[1][0]) == (rows[1][0], rows[1][1])
+    assert (CHANGESET_ACTION_ADD_TRUST, path_action_list[0][0]) == (
+        rows[0][0],
+        rows[0][1],
+    )
+    assert (CHANGESET_ACTION_DEL_TRUST, path_action_list[1][0]) == (
+        rows[1][0],
+        rows[1][1],
+    )

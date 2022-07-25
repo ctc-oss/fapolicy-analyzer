@@ -63,7 +63,7 @@ def confirm_dialog(confirm_resp, mocker):
         get_save_state=MagicMock(return_value=False),
     )
     mocker.patch(
-        "fapolicy_analyzer.ui.operations.deploy_changesets_op.ConfirmInfoDialog",
+        "fapolicy_analyzer.ui.operations.deploy_changesets_op.ConfirmDeploymentDialog.get_ref",
         return_value=mock_confirm_dialog,
     )
 
@@ -76,7 +76,7 @@ def revert_dialog(revert_resp, mocker):
         run=MagicMock(return_value=revert_resp), hide=MagicMock()
     )
     mocker.patch(
-        "fapolicy_analyzer.ui.operations.deploy_changesets_op.DeployConfirmDialog.get_ref",
+        "fapolicy_analyzer.ui.operations.deploy_changesets_op.DeployRevertDialog.get_ref",
         return_value=mock_revert_dialog,
     )
     return mock_revert_dialog
@@ -245,9 +245,11 @@ def test_handle_deploy_exception(operation):
 @pytest.mark.usefixtures("mock_dispatch")
 def test_saves_state(operation, mocker):
     mocker.patch(
-        "fapolicy_analyzer.ui.operations.deploy_changesets_op.ConfirmInfoDialog",
+        "fapolicy_analyzer.ui.operations.deploy_changesets_op.ConfirmDeploymentDialog",
         return_value=MagicMock(
-            run=MagicMock(return_value=Gtk.ResponseType.YES),
+            get_ref=MagicMock(
+                return_value=MagicMock(run=MagicMock(return_value=Gtk.ResponseType.YES))
+            ),
             get_save_state=MagicMock(return_value=True),
         ),
     )

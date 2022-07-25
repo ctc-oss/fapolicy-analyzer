@@ -27,8 +27,8 @@ from fapolicy_analyzer.ui.actions import (
     set_system_checkpoint,
 )
 from fapolicy_analyzer.ui.changeset_wrapper import Changeset, TrustChangeset
-from fapolicy_analyzer.ui.confirm_info_dialog import ConfirmInfoDialog
-from fapolicy_analyzer.ui.deploy_confirm_dialog import DeployConfirmDialog
+from fapolicy_analyzer.ui.confirm_deployment_dialog import ConfirmDeploymentDialog
+from fapolicy_analyzer.ui.deploy_revert_dialog import DeployRevertDialog
 from fapolicy_analyzer.ui.operations.ui_operation import UIOperation
 from fapolicy_analyzer.ui.store import dispatch, get_system_feature
 from fapolicy_analyzer.ui.strings import (
@@ -120,8 +120,8 @@ class DeployChangesetsOp(UIOperation):
         fcd.destroy()
         return strFilename
 
-    def __display_deploy_confirmation_dialog(self):
-        deployConfirmDialog = DeployConfirmDialog(self.__window).get_ref()
+    def __display_deploy_revert_dialog(self):
+        deployConfirmDialog = DeployRevertDialog(self.__window).get_ref()
         revert_resp = deployConfirmDialog.run()
         deployConfirmDialog.hide()
         if revert_resp == Gtk.ResponseType.YES:
@@ -147,7 +147,7 @@ class DeployChangesetsOp(UIOperation):
                     NotificationType.SUCCESS,
                 )
             )
-            self.__display_deploy_confirmation_dialog()
+            self.__display_deploy_revert_dialog()
 
     def get_text(self) -> str:
         return _("Deploy Changes")
@@ -170,9 +170,9 @@ class DeployChangesetsOp(UIOperation):
         """
         listPathActionTuples = self.__changesets_to_path_action_pairs(changesets)
         logging.debug(listPathActionTuples)
-        dlgDeployList = ConfirmInfoDialog(self.__window, listPathActionTuples)
-        confirm_resp = dlgDeployList.run()
-        dlgDeployList.hide()
+        dlgDeployList = ConfirmDeploymentDialog(self.__window, listPathActionTuples)
+        confirm_resp = dlgDeployList.get_ref().run()
+        dlgDeployList.get_ref().hide()
 
         if confirm_resp == Gtk.ResponseType.YES:
             # Invoke a file chooser dlg and generate the fapd state tarball
@@ -185,7 +185,7 @@ class DeployChangesetsOp(UIOperation):
             self.__deploying = True
             dispatch((deploy_ancillary_trust()))
 
-        dlgDeployList.destroy()
+        dlgDeployList.get_ref().destroy()
 
     def dispose(self):
         """
