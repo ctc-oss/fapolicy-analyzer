@@ -18,14 +18,13 @@
 # WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-from typing import Iterable, MutableMapping, MutableSequence, Optional, Sequence
+from typing import Iterable
 from unittest.case import TestCase
 
 from rx import Observable, operators
 from rx.subject import BehaviorSubject
-from rx.testing import ReactiveTest, TestScheduler
 
-from fapolicy_analyzer.redux import ReduxRootStore, create_store, select
+from fapolicy_analyzer.redux import ReduxRootStore, create_store
 
 from .action import DECREMENT_ACTION, INCREMENT_ACTION
 from .feature import create_counter_feature, select_counter_feature

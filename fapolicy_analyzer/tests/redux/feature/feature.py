@@ -19,22 +19,18 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 from typing import Any
-from rx import Observable, pipe
-from rx.operators import do_action, filter, map, ignore_elements
+from rx import pipe
+from rx.operators import ignore_elements
 
 from fapolicy_analyzer.redux import (
-    Epic,
-    Reducer,
     ReduxFeatureModule,
     combine_epics,
     create_action,
     create_feature_module,
     handle_actions,
-    of_init_feature,
     of_type,
     select_action_payload,
     select_feature,
-    StateType,
     Action,
 )
 

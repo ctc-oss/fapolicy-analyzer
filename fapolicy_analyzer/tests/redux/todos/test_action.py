@@ -35,7 +35,7 @@ class TestAction(TestCase):
 
     def test_add_todo(self):
 
-        text = 'My Action'
+        text = "My Action"
 
         action = add_todo(text)
         assert action.type == ACTION_ADD_TODO

@@ -19,7 +19,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 """ Exposes the feature creator """
-from fapolicy_analyzer.redux import ReduxFeatureModule, create_feature_module, select_feature, select
+from fapolicy_analyzer.redux import ReduxFeatureModule, create_feature_module, select_feature
 
 from .constants import FEATURE_NAME
 from .reducer import COUNTER_REDUCER

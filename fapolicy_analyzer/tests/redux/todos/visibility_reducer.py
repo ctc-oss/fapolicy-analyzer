@@ -20,7 +20,7 @@
 
 from typing import cast
 
-from fapolicy_analyzer.redux import Action, Reducer, create_action, handle_actions
+from fapolicy_analyzer.redux import Action, Reducer, handle_actions
 
 from .action import ACTION_SET_VISIBILITY_FILTER, VisibilityFilters
 
@@ -28,7 +28,7 @@ from .action import ACTION_SET_VISIBILITY_FILTER, VisibilityFilters
 def handle_visibility_filter(state: VisibilityFilters,
                              action: Action) -> VisibilityFilters:
     payload = cast(VisibilityFilters, action.payload)
-    print('payload', payload)
+    print("payload", payload)
     return payload
 
 

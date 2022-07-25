@@ -39,10 +39,10 @@ class TestTodoReducer(TestCase):
 
         store.as_observable().pipe(last()).subscribe(result)
 
-        store.dispatch(add_todo('new todo'))
-        store.dispatch(add_todo('another todo'))
+        store.dispatch(add_todo("new todo"))
+        store.dispatch(add_todo("another todo"))
         store.on_completed()
 
         feat = select_todos_feature(result.value)
 
-        assert len(feat['todos']) == 2
+        assert len(feat["todos"]) == 2

@@ -19,12 +19,10 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 from typing import Any
-from rx import Observable, pipe
-from rx.operators import do_action, filter, map, ignore_elements
+from rx import pipe
+from rx.operators import map, ignore_elements
 
 from fapolicy_analyzer.redux import (
-    Epic,
-    Reducer,
     ReduxFeatureModule,
     combine_epics,
     create_action,
@@ -34,7 +32,6 @@ from fapolicy_analyzer.redux import (
     of_type,
     select_action_payload,
     select_feature,
-    StateType,
     Action,
 )
 
@@ -65,4 +62,3 @@ def create_init_feature() -> ReduxFeatureModule:
     sample_epic = combine_epics(add_epic, init_epic)
 
     return create_feature_module(INIT_FEATURE, sample_reducer, sample_epic)
-

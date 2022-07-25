@@ -1,8 +1,3 @@
-# Version of ReduxPy package
-__version__ = "0.1.12"
-
-from .feature import create_counter_feature, select_counter_feature
-from .action import DECREMENT_ACTION, INCREMENT_ACTION
 # Copyright 2021 Dr. Carsten Leue
 # Copyright Concurrent Technologies Corporation 2021
 #
@@ -23,3 +18,5 @@ from .action import DECREMENT_ACTION, INCREMENT_ACTION
 # WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+# Version of ReduxPy package
+__version__ = "0.1.12"

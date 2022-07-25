@@ -21,11 +21,8 @@
 import unittest
 from unittest import TestCase
 from os.path import dirname
-from fapolicy_analyzer.redux import create_store, create_action, select_feature, ReduxRootStore, select
+from fapolicy_analyzer.redux import create_store, ReduxRootStore, select
 from rx.operators import map, first, filter
-from rx.subject import Subject
-from rx import Observable
-from rx.core.typing import Observer
 from .init.feature import create_init_feature, select_init_feature_module
 
 # Current directory

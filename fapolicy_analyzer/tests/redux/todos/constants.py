@@ -20,4 +20,4 @@
 
 """ some constants """
 
-FEATURE_NAME = '[Todos]'
+FEATURE_NAME = "[Todos]"

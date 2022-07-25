@@ -21,21 +21,21 @@
 """ Action objects and constants """
 from enum import Enum
 from itertools import count
-from typing import Callable, Iterable, Iterator, NamedTuple
+from typing import Callable, Iterator, NamedTuple
 
 from fapolicy_analyzer.redux import Action, create_action
 
 from .constants import FEATURE_NAME
 
-ACTION_ADD_TODO = '%s Add Todo' % FEATURE_NAME
-ACTION_TOGGLE_TODO = '%s Toggle Todo' % FEATURE_NAME
-ACTION_SET_VISIBILITY_FILTER = '%s Set Visibility Filter' % FEATURE_NAME
+ACTION_ADD_TODO = "%s Add Todo" % FEATURE_NAME
+ACTION_TOGGLE_TODO = "%s Toggle Todo" % FEATURE_NAME
+ACTION_SET_VISIBILITY_FILTER = "%s Set Visibility Filter" % FEATURE_NAME
 
 
 class VisibilityFilters(Enum):
-    SHOW_ALL = 'SHOW_ALL'
-    SHOW_COMPLETED = 'SHOW_COMPLETED'
-    SHOW_ACTIVE = 'SHOW_ACTIVE'
+    SHOW_ALL = "SHOW_ALL"
+    SHOW_COMPLETED = "SHOW_COMPLETED"
+    SHOW_ACTIVE = "SHOW_ACTIVE"
 
 
 class TodoPayload(NamedTuple):

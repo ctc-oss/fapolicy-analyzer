@@ -50,7 +50,7 @@ from fapolicy_analyzer.ui.actions import (
 from fapolicy_analyzer.ui.changeset_wrapper import TrustChangeset
 from fapolicy_analyzer.ui.features.system_feature import create_system_feature
 from fapolicy_analyzer.ui.store import dispatch, init_store
-from redux import Action, ReduxFeatureModule, create_store
+from fapolicy_analyzer.redux import Action, ReduxFeatureModule, create_store
 
 
 @pytest.fixture
