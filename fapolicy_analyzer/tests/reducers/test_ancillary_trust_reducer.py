@@ -13,12 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import context  # noqa: F401 # isort: skip
 from unittest.mock import MagicMock
 
-import context  # noqa: F401
 import pytest
-
-# Copyright Concurrent Technologies Corporation 2021
 from fapolicy_analyzer.ui.reducers.ancillary_trust_reducer import (
     TrustState,
     handle_add_changesets,

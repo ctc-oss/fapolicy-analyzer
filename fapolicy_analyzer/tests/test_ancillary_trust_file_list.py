@@ -13,21 +13,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import gi
-import pytest
-from fapolicy_analyzer.ui.changeset_wrapper import TrustChangeset  # noqa: F401
-
-gi.require_version("Gtk", "3.0")
+import context  # noqa: F401 # isort: skip
 from unittest.mock import MagicMock
 
-from gi.repository import Gtk
+import gi
+import pytest
 from fapolicy_analyzer.ui.ancillary_trust_file_list import AncillaryTrustFileList
+from fapolicy_analyzer.ui.changeset_wrapper import TrustChangeset
 from fapolicy_analyzer.ui.configs import Colors
 from fapolicy_analyzer.ui.strings import (
     CHANGESET_ACTION_ADD,
     CHANGESET_ACTION_DEL,
     FILE_LIST_CHANGES_HEADER,
 )
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk  # isort: skip
 
 _trust = [
     MagicMock(status="d", path="/tmp/1", actual=MagicMock(last_modified=123456789)),
