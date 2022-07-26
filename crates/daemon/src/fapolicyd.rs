@@ -45,13 +45,21 @@ pub enum Version {
 //         .map_err(|_| FapolicydReloadFail("failed to write reload byte to pipe".to_string()))
 // }
 
+const RETRIES: u8 = 15;
 pub fn reload() -> Result<(), Error> {
     let fapolicyd = Handle::default();
     fapolicyd.stop()?;
-    for _ in 0..10 {
+    for _ in 0..RETRIES {
         sleep(Duration::from_secs(1));
         if !fapolicyd.active()? {
-            return fapolicyd.start();
+            fapolicyd.start()?;
+            break;
+        }
+    }
+    for _ in 0..RETRIES {
+        sleep(Duration::from_secs(1));
+        if fapolicyd.active()? {
+            return Ok(());
         }
     }
     Err(FapolicydReloadFail(
