@@ -32,6 +32,8 @@ from fapolicy_analyzer.ui.strings import (
     APPLY_CHANGESETS_ERROR_MESSAGE,
     RULES_LOAD_ERROR,
     RULES_TEXT_LOAD_ERROR,
+    RULES_VALIDATION_ERROR,
+    RULES_VALIDATION_WARNING,
 )
 from mocks import mock_rule, mock_System
 from fapolicy_analyzer.redux import Action
@@ -184,10 +186,46 @@ def test_handles_rule_text_change(widget, mock_dispatch):
     )
 
 
-def test_save_click(widget, mock_dispatch):
+def test_validate_clicked_valid(widget, mock_dispatch):
+    widget._text_view.rules_changed("allow perm=open all : all")
+    widget.on_validate_clicked()
+    mock_dispatch.assert_not_any_call(InstanceOf(Action) & Attrs(type=ADD_NOTIFICATION))
+
+
+def test_validate_clicked_invalid(widget, mock_dispatch):
+    widget._text_view.rules_changed("bar baz bah")
+    widget.on_validate_clicked()
+    mock_dispatch.assert_called_with(
+        InstanceOf(Action)
+        & Attrs(
+            type=ADD_NOTIFICATION,
+            payload=Attrs(type=NotificationType.ERROR, text=RULES_VALIDATION_ERROR),
+        )
+    )
+
+
+def test_validate_clicked_warning(widget, mock_dispatch):
+    widget._text_view.rules_changed("allow perm=any exe=/foo : all")
+    widget.on_validate_clicked()
+    mock_dispatch.assert_called_with(
+        InstanceOf(Action)
+        & Attrs(
+            type=ADD_NOTIFICATION,
+            payload=Attrs(type=NotificationType.WARN, text=RULES_VALIDATION_WARNING),
+        )
+    )
+
+
+def test_save_click_valid(widget, mock_dispatch):
     widget._text_view.rules_changed("allow perm=any all : all")
     widget.on_save_clicked()
     mock_dispatch.assert_called_with(InstanceOf(Action) & Attrs(type=APPLY_CHANGESETS))
+
+
+def test_save_click_invalid(widget, mock_dispatch):
+    widget._text_view.rules_changed("bar baz bah")
+    widget.on_save_clicked()
+    mock_dispatch.assert_not_any_call(InstanceOf(Action) & Attrs(type=APPLY_CHANGESETS))
 
 
 def test_apply_changeset_error(mock_dispatch, mocker):

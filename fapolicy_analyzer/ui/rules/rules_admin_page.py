@@ -109,6 +109,8 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
 
     def __valid_changes(self, changeset: RuleChangeset) -> bool:
         rules = changeset.rules()
+        for r in rules:
+            print(r, [(i.category, i.message) for i in r.info])
         if not all([r.is_valid for r in rules]):
             dispatch(
                 add_notification(
