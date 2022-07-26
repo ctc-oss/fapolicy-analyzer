@@ -18,7 +18,7 @@ from locale import gettext as _
 from os import getenv, geteuid, path
 from threading import Thread
 from time import sleep
-from typing import Any
+from typing import Any, Sequence
 
 import fapolicy_analyzer.ui.strings as strings
 import gi
@@ -26,6 +26,7 @@ from fapolicy_analyzer import __version__ as app_version
 from fapolicy_analyzer.ui.action_toolbar import ActionToolbar
 from fapolicy_analyzer.ui.actions import NotificationType, add_notification
 from fapolicy_analyzer.ui.analyzer_selection_dialog import ANALYZER_SELECTION
+from fapolicy_analyzer.ui.changeset_wrapper import Changeset
 from fapolicy_analyzer.ui.configs import Sizing
 from fapolicy_analyzer.ui.database_admin_page import DatabaseAdminPage
 from fapolicy_analyzer.ui.fapd_manager import FapdManager, ServiceStatus
@@ -73,7 +74,7 @@ class MainWindow(UIConnectedWidget):
         self._fapd_monitoring = False
         self._fapd_mgr = FapdManager(self._fapdControlPermitted)
         self._fapd_profiler = FaProfiler(self._fapd_mgr)
-        self.__changesets = []
+        self.__changesets: Sequence[Changeset] = []
         self.__page = None
 
         toaster = Notification()
@@ -201,7 +202,7 @@ class MainWindow(UIConnectedWidget):
 
                     self.get_object("restoreMenu").set_sensitive(False)
                 except Exception:
-                    print("Restore failed")
+                    logging.debug("Restore failed")
         else:
             self.get_object("restoreMenu").set_sensitive(False)
 
@@ -221,7 +222,7 @@ class MainWindow(UIConnectedWidget):
         return self.__unapplied_changes()
 
     def on_next_system(self, system):
-        self.__changesets = system["changesets"]
+        self.__changesets = system["changesets"].changesets
         dirty = self.__dirty_changesets()
         title = f"*{self.strTopLevelTitle}" if dirty else self.strTopLevelTitle
         self.windowTopLevel.set_title(title)

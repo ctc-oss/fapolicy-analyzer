@@ -18,7 +18,7 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import Callable, Sequence
 
 import gi
-from fapolicy_analyzer import Changeset, System, rollback_fapolicyd
+from fapolicy_analyzer import System, rollback_fapolicyd
 from fapolicy_analyzer.ui.actions import (
     APPLY_CHANGESETS,
     DEPLOY_ANCILLARY_TRUST,
@@ -35,6 +35,7 @@ from fapolicy_analyzer.ui.actions import (
     ancillary_trust_deployed,
     clear_changesets,
     error_ancillary_trust,
+    error_apply_changesets,
     error_deploying_ancillary_trust,
     error_events,
     error_groups,
@@ -53,6 +54,7 @@ from fapolicy_analyzer.ui.actions import (
     system_initialization_error,
     system_initialized,
 )
+from fapolicy_analyzer.ui.changeset_wrapper import Changeset
 from fapolicy_analyzer.ui.reducers import system_reducer
 from fapolicy_analyzer.ui.strings import SYSTEM_INITIALIZATION_ERROR
 from fapolicy_analyzer.util.fapd_dbase import fapd_dbase_snapshot
@@ -118,11 +120,12 @@ def create_system_feature(
             executor.submit(execute_system)
         return init_system()
 
-    def _apply_changesets(changesets: Sequence[Changeset]) -> Sequence[Changeset]:
+    def _apply_changesets(action: Action) -> Sequence[Changeset]:
         global _system
+        changesets = action.payload
         for c in changesets:
-            _system = _system.apply_changeset(c)
-        return changesets
+            _system = c.apply_to_system(_system)
+        return add_changesets(changesets)
 
     def _get_ancillary_trust(_: Action) -> Action:
         trust = _system.ancillary_trust()
@@ -184,7 +187,8 @@ def create_system_feature(
 
     apply_changesets_epic = pipe(
         of_type(APPLY_CHANGESETS),
-        map(lambda action: add_changesets(_apply_changesets(action.payload))),
+        map(_apply_changesets),
+        catch(lambda ex, source: of(error_apply_changesets(str(ex)))),
     )
 
     request_ancillary_trust_epic = pipe(

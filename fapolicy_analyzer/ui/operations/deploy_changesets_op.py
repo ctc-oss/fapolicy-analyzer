@@ -15,10 +15,9 @@
 
 import logging
 from locale import gettext as _
-from typing import Mapping, Sequence, Tuple
+from typing import Any, Sequence, Tuple
 
 import gi
-from fapolicy_analyzer import Changeset
 from fapolicy_analyzer.ui.actions import (
     NotificationType,
     add_notification,
@@ -27,6 +26,7 @@ from fapolicy_analyzer.ui.actions import (
     restore_system_checkpoint,
     set_system_checkpoint,
 )
+from fapolicy_analyzer.ui.changeset_wrapper import Changeset, TrustChangeset
 from fapolicy_analyzer.ui.confirm_info_dialog import ConfirmInfoDialog
 from fapolicy_analyzer.ui.deploy_confirm_dialog import DeployConfirmDialog
 from fapolicy_analyzer.ui.operations.ui_operation import UIOperation
@@ -98,10 +98,18 @@ class DeployChangesetsOp(UIOperation):
 
     def __changesets_to_path_action_pairs(
         self,
-        changesets: Changeset,
+        changesets: Sequence[Changeset],
     ) -> Sequence[Tuple[str, str]]:
         """Converts to list of human-readable undeployed path/operation pairs"""
-        return [t for e in changesets for t in e.get_path_action_map().items()]
+        return [
+            t
+            for e in changesets
+            for t in (
+                e.serialize().items()
+                if isinstance(e, TrustChangeset)
+                else [("There was a rule file change!!!!", "")]
+            )
+        ]
 
     def __get_fapd_archive_file_name(self) -> str:
         """Display a file chooser dialog to specify the output archive file."""
@@ -122,7 +130,7 @@ class DeployChangesetsOp(UIOperation):
         else:
             dispatch(restore_system_checkpoint())
 
-    def __on_next(self, system: Mapping[str, any]):
+    def __on_next(self, system: Any):
         trustState = system.get("ancillary_trust")
 
         if trustState.error and self.__deploying:
@@ -147,7 +155,7 @@ class DeployChangesetsOp(UIOperation):
     def get_icon(self) -> str:
         return "system-software-update"
 
-    def run(self, changesets: Changeset):
+    def run(self, changesets: Sequence[Changeset]):
         """
         Deploys the given changesets.
 

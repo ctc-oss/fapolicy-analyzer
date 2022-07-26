@@ -58,7 +58,6 @@ def test_creates_widget(widget):
 
 def test_loads_store(widget):
     def strip_markup(markup):
-        print(markup)
         return re.search(r"<b>([A-Z]*)</b>", markup).group(1)
 
     widget.load_store(_subjects)

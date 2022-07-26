@@ -16,9 +16,11 @@
 import logging
 import os.path
 from locale import gettext as _
+from typing import Sequence
 
 import fapolicy_analyzer.ui.strings as strings
-from fapolicy_analyzer import Changeset, Trust
+from fapolicy_analyzer import Trust
+from fapolicy_analyzer.ui.changeset_wrapper import Changeset, TrustChangeset
 from fapolicy_analyzer.util import fs  # noqa: F401
 from fapolicy_analyzer.util.format import f
 from gi.repository import Gtk
@@ -39,7 +41,7 @@ from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
     def __init__(self):
         super().__init__(get_system_feature(), on_next=self.on_next_system)
-        self._changesets = []
+        self._changesets: Sequence[Changeset] = []
         self._trust = []
         self._loading = False
         self.selectedFiles = None
@@ -65,15 +67,15 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
         dispatch(apply_changesets(changeset))
 
     def add_trusted_files(self, *files):
-        changeset = Changeset()
+        changeset = TrustChangeset()
         for file in files:
-            changeset.add_trust(file)
+            changeset.add(file)
         self.__apply_changeset(changeset)
 
     def delete_trusted_files(self, *files):
-        changeset = Changeset()
+        changeset = TrustChangeset()
         for file in files:
-            changeset.del_trust(file)
+            changeset.delete(file)
         self.__apply_changeset(changeset)
 
     def on_trust_selection_changed(self, trusts):
@@ -158,13 +160,13 @@ SHA256: {fs.sha(trust.path)}"""
             self.delete_trusted_files(*self.selectedFiles)
 
     def on_next_system(self, system):
-        changesets = system.get("changesets")
+        changesetState = system.get("changesets")
         trustState = system.get("ancillary_trust")
 
         # if changesets have changes request a new ancillary trust
-        if self._changesets != changesets:
-            self._changesets = changesets
-            self.trustFileList.set_changesets(changesets)
+        if self._changesets != changesetState.changesets:
+            self._changesets = changesetState.changesets
+            self.trustFileList.set_changesets(self._changesets)
             self.__load_trust()
 
         # if there was an error loading show appropriate notification
