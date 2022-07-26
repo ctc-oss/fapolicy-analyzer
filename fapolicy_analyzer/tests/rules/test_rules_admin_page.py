@@ -185,7 +185,7 @@ def test_handles_rule_text_change(widget, mock_dispatch):
 
 
 def test_save_click(widget, mock_dispatch):
-    widget._text_view.rules_changed("modified rules")
+    widget._text_view.rules_changed("allow perm=any all : all")
     widget.on_save_clicked()
     mock_dispatch.assert_called_with(InstanceOf(Action) & Attrs(type=APPLY_CHANGESETS))
 

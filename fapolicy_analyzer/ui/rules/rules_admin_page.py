@@ -34,6 +34,8 @@ from fapolicy_analyzer.ui.strings import (
     APPLY_CHANGESETS_ERROR_MESSAGE,
     RULES_LOAD_ERROR,
     RULES_TEXT_LOAD_ERROR,
+    RULES_VALIDATION_ERROR,
+    RULES_VALIDATION_WARNING,
 )
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
@@ -45,15 +47,22 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
             self, get_system_feature(), on_next=self.on_next_system
         )
         actions = {
-            "save": [
+            "rules": [
+                UIAction(
+                    name="Validate",
+                    tooltip="Validate Rules",
+                    icon="emblem-default",
+                    signals={"clicked": self.on_validate_clicked},
+                    sensitivity_func=self.__rules_dirty,
+                ),
                 UIAction(
                     name="Save",
                     tooltip="Save Rules",
                     icon="document-save",
                     signals={"clicked": self.on_save_clicked},
                     sensitivity_func=self.__rules_dirty,
-                )
-            ]
+                ),
+            ],
         }
         UIPage.__init__(self, actions)
 
@@ -98,11 +107,41 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
             and self.__modified_rules_text != self.__rules_text
         )
 
+    def __valid_changes(self, changeset: RuleChangeset) -> bool:
+        rules = changeset.rules()
+        if not all([r.is_valid for r in rules]):
+            dispatch(
+                add_notification(
+                    RULES_VALIDATION_ERROR,
+                    NotificationType.ERROR,
+                )
+            )
+            return False
+
+        if any([True for r in rules for i in r.info if i.category.lower() == "w"]):
+            dispatch(
+                add_notification(
+                    RULES_VALIDATION_WARNING,
+                    NotificationType.WARN,
+                )
+            )
+
+        return True
+
     def on_save_clicked(self, *args):
         changeset = RuleChangeset()
         changeset.set(self.__modified_rules_text)
-        self.__saving = True
-        dispatch(apply_changesets(changeset))
+        if self.__valid_changes(changeset):
+            self.__saving = True
+            dispatch(apply_changesets(changeset))
+        else:
+            self.__status_info.render_rule_status(changeset.rules())
+
+    def on_validate_clicked(self, *args):
+        changeset = RuleChangeset()
+        changeset.set(self.__modified_rules_text)
+        self.__valid_changes(changeset)
+        self.__status_info.render_rule_status(changeset.rules())
 
     def on_text_view_rules_changed(self, rules: str):
         self.__modified_rules_text = rules

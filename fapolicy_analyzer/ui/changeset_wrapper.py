@@ -56,6 +56,9 @@ class RuleChangeset(Changeset[str]):
     def set(self, change: str):
         self.__wrapped.set(change)
 
+    def rules(self):
+        return self.__wrapped.rules()
+
     def apply_to_system(self, system: System) -> System:
         return system.apply_rule_changes(self.__wrapped)
 
