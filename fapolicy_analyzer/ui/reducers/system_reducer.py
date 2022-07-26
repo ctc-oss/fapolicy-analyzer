@@ -24,7 +24,7 @@ from fapolicy_analyzer.ui.reducers.rule_reducer import rule_reducer
 from fapolicy_analyzer.ui.reducers.rules_text_reducer import rules_text_reducer
 from fapolicy_analyzer.ui.reducers.system_trust_reducer import system_trust_reducer
 from fapolicy_analyzer.ui.reducers.user_reducer import user_reducer
-from redux import Reducer, combine_reducers, handle_actions
+from fapolicy_analyzer.redux import Reducer, combine_reducers, handle_actions
 
 system_initialized_reducer: Reducer = handle_actions(
     {SYSTEM_INITIALIZED: lambda *_: True}, False
