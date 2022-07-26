@@ -137,11 +137,11 @@ impl PyChangeset {
         PyChangeset::default()
     }
 
-    pub fn get(&self) -> PyResult<Vec<PyRule>> {
+    pub fn get(&self) -> Vec<PyRule> {
         self.rules()
     }
 
-    pub fn rules(&self) -> PyResult<Vec<PyRule>> {
+    pub fn rules(&self) -> Vec<PyRule> {
         rules_to_vec(self.rs.get())
     }
 
@@ -172,9 +172,8 @@ fn rule_text_error_check(txt: &str) -> Option<String> {
     }
 }
 
-pub(crate) fn rules_to_vec(db: &DB) -> PyResult<Vec<PyRule>> {
-    Ok(db
-        .rules()
+pub(crate) fn rules_to_vec(db: &DB) -> Vec<PyRule> {
+    db.rules()
         .iter()
         .map(|e| {
             let (valid, text, info) = if e.valid {
@@ -194,12 +193,11 @@ pub(crate) fn rules_to_vec(db: &DB) -> PyResult<Vec<PyRule>> {
             };
             PyRule::new(e.id, text, e.origin.clone(), info, valid)
         })
-        .collect())
+        .collect()
 }
 
-pub(crate) fn entries_to_vec(db: &DB) -> PyResult<Vec<PyRule>> {
-    Ok(db
-        .iter()
+pub(crate) fn entries_to_vec(db: &DB) -> Vec<PyRule> {
+    db.iter()
         .map(|(id, (origin, e))| {
             let (valid, text, info) = match e {
                 Invalid { text, error } => {
@@ -215,7 +213,7 @@ pub(crate) fn entries_to_vec(db: &DB) -> PyResult<Vec<PyRule>> {
             };
             PyRule::new(*id, text, origin.to_string(), info, valid)
         })
-        .collect())
+        .collect()
 }
 
 // #[pyfunction]

@@ -25,7 +25,7 @@ print("building changeset")
 xs = Changeset()
 
 # demonstrates: rules / sets / multiple markers
-assert xs.set("""
+rule_text = """
 [05-foo.rules]
 %foo=bar,baz
 allow perm=exec all : all
@@ -33,7 +33,8 @@ allow perm=exec all : all
 [10-bar.rules]
 %bing=bam,boom
 deny perm=any all : all
-""")
+"""
+assert xs.set(rule_text)
 
 print("applying changes")
 s2 = s1.apply_rule_changes(xs)
@@ -42,3 +43,17 @@ print(f"system2 has {len(s2.rules())} rules defined")
 
 print("deploying system")
 s2.deploy_only()
+
+# display a diff of the rules
+
+assert xs.set(rule_text.replace("bar", "fizz"))
+
+print("diffing additional changes\n")
+s3 = s2.apply_rule_changes(xs)
+for ln in rules_difference(s2, s3).split("\n"):
+    if ln.startswith("+"):
+        print('\033[92m', end='')
+    elif ln.startswith("-"):
+        print('\033[91m', end='')
+
+    print(f"{ln}  \033[0m")
