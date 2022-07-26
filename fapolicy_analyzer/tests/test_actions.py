@@ -17,7 +17,7 @@ import context  # noqa: F401 # isort: skip
 from unittest.mock import MagicMock
 
 import pytest
-from redux import Action
+from fapolicy_analyzer.redux import Action
 from fapolicy_analyzer.ui.actions import (
     ADD_CHANGESETS,
     ADD_NOTIFICATION,

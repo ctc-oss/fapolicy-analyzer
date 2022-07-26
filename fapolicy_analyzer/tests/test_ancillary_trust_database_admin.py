@@ -39,7 +39,7 @@ from fapolicy_analyzer.ui.strings import (
     ANCILLARY_TRUSTED_FILE_MESSAGE,
     ANCILLARY_UNKNOWN_FILE_MESSAGE,
 )
-from redux import Action
+from fapolicy_analyzer.redux import Action
 from rx.subject import Subject
 
 from mocks import mock_System

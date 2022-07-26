@@ -35,7 +35,7 @@ from fapolicy_analyzer.ui.strings import (
     DEPLOY_ANCILLARY_SUCCESSFUL_MSG,
 )
 from mocks import mock_System, mock_trust
-from redux import Action
+from fapolicy_analyzer.redux import Action
 from rx.subject import Subject
 
 gi.require_version("Gtk", "3.0")

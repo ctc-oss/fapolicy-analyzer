@@ -17,7 +17,7 @@ from typing import Any, NamedTuple, Optional, Sequence, cast
 
 from fapolicy_analyzer import User
 from fapolicy_analyzer.ui.actions import ERROR_USERS, RECEIVED_USERS, REQUEST_USERS
-from redux import Action, Reducer, handle_actions
+from fapolicy_analyzer.redux import Action, Reducer, handle_actions
 
 
 class UserState(NamedTuple):

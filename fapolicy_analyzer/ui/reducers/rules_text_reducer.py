@@ -21,7 +21,7 @@ from fapolicy_analyzer.ui.actions import (
     RECEIVED_RULES_TEXT,
     REQUEST_RULES_TEXT,
 )
-from redux import Action, Reducer, handle_actions
+from fapolicy_analyzer.redux import Action, Reducer, handle_actions
 
 
 class RulesTextState(NamedTuple):

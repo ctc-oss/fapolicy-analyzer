@@ -29,7 +29,7 @@ from fapolicy_analyzer.ui.actions import (
 )
 from fapolicy_analyzer.ui.changeset_wrapper import RuleChangeset, TrustChangeset
 from fapolicy_analyzer.ui.session_manager import SessionManager
-from redux import Action
+from fapolicy_analyzer.redux import Action
 
 import context  # noqa: F401
 

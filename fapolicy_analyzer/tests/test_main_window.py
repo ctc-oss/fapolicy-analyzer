@@ -30,7 +30,7 @@ from fapolicy_analyzer.ui.main_window import MainWindow, router
 from fapolicy_analyzer.ui.session_manager import NotificationType, sessionManager
 from fapolicy_analyzer.ui.store import init_store
 from fapolicy_analyzer.ui.strings import AUTOSAVE_RESTORE_ERROR_MSG
-from redux import Action
+from fapolicy_analyzer.redux import Action
 from rx import create
 from rx.subject import Subject
 

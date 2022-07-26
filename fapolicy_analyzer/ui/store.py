@@ -20,7 +20,7 @@ from fapolicy_analyzer.ui.features import (
     create_notification_feature,
     create_system_feature,
 )
-from redux import Action, create_store, select_feature
+from fapolicy_analyzer.redux import Action, create_store, select_feature
 from rx import operators
 from rx.core.typing import Observable
 

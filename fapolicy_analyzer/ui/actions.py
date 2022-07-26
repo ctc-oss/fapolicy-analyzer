@@ -18,7 +18,7 @@ from itertools import count
 from typing import Any, Iterator, NamedTuple, Optional, Sequence
 
 from fapolicy_analyzer import Changeset, Event, Group, Rule, Trust, User
-from redux import Action, create_action
+from fapolicy_analyzer.redux import Action, create_action
 
 INIT_SYSTEM = "INIT_SYSTEM"
 SYSTEM_INITIALIZED = "SYSTEM_INITIALIZED"
