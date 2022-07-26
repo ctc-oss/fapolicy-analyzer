@@ -17,7 +17,6 @@ import context  # noqa: F401 # isort: skip
 from unittest.mock import MagicMock
 
 import pytest
-from fapolicy_analyzer.redux import Action
 from fapolicy_analyzer.ui.actions import (
     ADD_CHANGESETS,
     ADD_NOTIFICATION,
@@ -54,7 +53,8 @@ from fapolicy_analyzer.ui.actions import (
     REQUEST_USERS,
     RESTORE_SYSTEM_CHECKPOINT,
     SET_SYSTEM_CHECKPOINT,
-    SYSTEM_INITIALIZED,
+    SYSTEM_CHECKPOINT_SET,
+    SYSTEM_RECEIVED,
     Notification,
     NotificationType,
     add_changesets,
@@ -91,9 +91,11 @@ from fapolicy_analyzer.ui.actions import (
     request_users,
     restore_system_checkpoint,
     set_system_checkpoint,
+    system_checkpoint_set,
     system_initialization_error,
-    system_initialized,
+    system_received,
 )
+from fapolicy_analyzer.redux import Action
 
 
 @pytest.mark.parametrize("notification_type", [t for t in list(NotificationType)])
@@ -214,8 +216,17 @@ def test_error_deploying_ancillary_trust():
 
 def test_set_system_checkpoint():
     action = set_system_checkpoint()
+    assert type(action) is Action
     assert action.type == SET_SYSTEM_CHECKPOINT
     assert not action.payload
+
+
+def test_system_checkpoint_set():
+    mock_checkpoint = MagicMock()
+    action = system_checkpoint_set(mock_checkpoint)
+    assert type(action) is Action
+    assert action.type == SYSTEM_CHECKPOINT_SET
+    assert action.payload == mock_checkpoint
 
 
 def test_restore_system_checkpoint():
@@ -356,15 +367,16 @@ def test_init_system():
     assert not action.payload
 
 
-def test_system_initialized():
-    action = system_initialized()
+def test_system_received():
+    mock_system = MagicMock()
+    action = system_received(mock_system)
     assert type(action) is Action
-    assert action.type == SYSTEM_INITIALIZED
-    assert not action.payload
+    assert action.type == SYSTEM_RECEIVED
+    assert action.payload == mock_system
 
 
 def test_system_initialization_error():
-    action = system_initialization_error()
+    action = system_initialization_error("foo")
     assert type(action) is Action
     assert action.type == ERROR_SYSTEM_INITIALIZATION
-    assert not action.payload
+    assert action.payload == "foo"

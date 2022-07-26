@@ -14,7 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from importlib import reload
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, call
 
 import fapolicy_analyzer.ui.store as store
 import pytest
@@ -22,7 +22,8 @@ from callee import InstanceOf
 from callee.attributes import Attrs
 from fapolicy_analyzer.ui.actions import (
     ERROR_SYSTEM_INITIALIZATION,
-    SYSTEM_INITIALIZED,
+    SYSTEM_CHECKPOINT_SET,
+    SYSTEM_RECEIVED,
     apply_changesets,
     deploy_ancillary_trust,
     error_ancillary_trust,
@@ -50,6 +51,7 @@ from fapolicy_analyzer.ui.actions import (
 from fapolicy_analyzer.ui.changeset_wrapper import TrustChangeset
 from fapolicy_analyzer.ui.features.system_feature import create_system_feature
 from fapolicy_analyzer.ui.store import dispatch, init_store
+from fapolicy_analyzer.ui.strings import SYSTEM_INITIALIZATION_ERROR
 from fapolicy_analyzer.redux import Action, ReduxFeatureModule, create_store
 
 
@@ -83,16 +85,20 @@ def test_creates_system_feature(mock_dispatch):
 
 
 def test_initializes_system(mock_dispatch, mocker):
-    mock_system = mocker.patch("fapolicy_analyzer.ui.features.system_feature.System")
+    system = MagicMock()
+    mock_system = mocker.patch(
+        "fapolicy_analyzer.ui.features.system_feature.System", return_value=system
+    )
     store = create_store()
     store.add_feature_module(create_system_feature(mock_dispatch))
     mock_system.assert_called()
-    mock_dispatch.assert_called_with(
-        InstanceOf(Action)
-        & Attrs(
-            type=SYSTEM_INITIALIZED,
-            payload=None,
-        )
+    mock_dispatch.assert_has_calls(
+        [
+            call(InstanceOf(Action) & Attrs(type=SYSTEM_RECEIVED, payload=system)),
+            call(
+                InstanceOf(Action) & Attrs(type=SYSTEM_CHECKPOINT_SET, payload=system)
+            ),
+        ]
     )
 
 
@@ -103,12 +109,13 @@ def test_uses_provided_system(mock_dispatch, mocker):
     store = create_store()
     store.add_feature_module(create_system_feature(mock_dispatch, system))
     mock_system.assert_not_called()
-    mock_dispatch.assert_called_with(
-        InstanceOf(Action)
-        & Attrs(
-            type=SYSTEM_INITIALIZED,
-            payload=None,
-        )
+    mock_dispatch.assert_has_calls(
+        [
+            call(InstanceOf(Action) & Attrs(type=SYSTEM_RECEIVED, payload=system)),
+            call(
+                InstanceOf(Action) & Attrs(type=SYSTEM_CHECKPOINT_SET, payload=system)
+            ),
+        ]
     )
 
 
@@ -124,14 +131,16 @@ def test_handles_system_initialization_error(mock_dispatch, mocker):
         InstanceOf(Action)
         & Attrs(
             type=ERROR_SYSTEM_INITIALIZATION,
-            payload=None,
+            payload=SYSTEM_INITIALIZATION_ERROR,
         )
     )
 
 
 def test_apply_changset_epic(mocker):
+    result_system = MagicMock()
     mock_add_action = mocker.patch(
-        "fapolicy_analyzer.ui.features.system_feature.add_changesets"
+        "fapolicy_analyzer.ui.features.system_feature.add_changesets",
+        return_value=result_system,
     )
     mock_system = MagicMock()
     mock_apply = MagicMock()

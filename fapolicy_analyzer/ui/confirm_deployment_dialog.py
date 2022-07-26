@@ -73,6 +73,8 @@ class ConfirmDeploymentDialog(UIBuilderWidget):
         previous_system: System,
     ) -> Sequence[Tuple[str, str]]:
         def rules_changes():
+            if not previous_system or not current_system:
+                return []
             diffs = rules_difference(previous_system, current_system).split("\n")
             adds = len([d for d in diffs if d.startswith("+")])
             dels = len([d for d in diffs if d.startswith("-")])

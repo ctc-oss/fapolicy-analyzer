@@ -112,7 +112,7 @@ def create_system_feature(
                 dispatch(system_received(system))
                 dispatch(system_checkpoint_set(_checkpoint))
             else:
-                dispatch(system_initialization_error(True))
+                dispatch(system_initialization_error(SYSTEM_INITIALIZATION_ERROR))
 
         if system:
             executor = None

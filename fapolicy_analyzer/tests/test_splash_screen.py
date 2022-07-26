@@ -13,17 +13,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import context  # noqa: F401
+import context  # noqa: F401 # isort: skip
+
+from unittest.mock import MagicMock
+
 import gi
 import pytest
-
-gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
-from mocks import mock_System
-from rx.subject import Subject
-from unittest.mock import MagicMock
 from fapolicy_analyzer.ui.splash_screen import SplashScreen
 from fapolicy_analyzer.ui.store import init_store
+from rx.subject import Subject
+
+from mocks import mock_System
+
+gi.require_version("GtkSource", "3.0")
+from gi.repository import Gtk  # isort: skip
 
 
 @pytest.fixture
@@ -38,7 +41,7 @@ def mock_system_features(mocker):
         "fapolicy_analyzer.ui.splash_screen.get_system_feature",
         return_value=system_features_mock,
     )
-    system_features_mock.on_next({"initialized": False})
+    system_features_mock.on_next({"system": MagicMock()})
     return system_features_mock
 
 
@@ -57,9 +60,20 @@ def test_displays_window(widget):
 
 @pytest.mark.usefixtures("widget")
 def test_opens_main_window(mock_system_features, mocker):
-    mockMainWindow = mocker.patch("fapolicy_analyzer.ui.splash_screen.MainWindow")
-    mock_system_features.on_next({"initialized": True})
-    mockMainWindow.assert_called_once()
+    mock_main_window = mocker.patch("fapolicy_analyzer.ui.splash_screen.MainWindow")
+    mock_system_features.on_next({"system": MagicMock(system=MagicMock(), error=False)})
+    mock_main_window.assert_called_once()
+
+
+@pytest.mark.usefixtures("widget")
+def test_displays_error_dialog(mock_system_features, mocker):
+    mock_error_dialog = mocker.patch(
+        "fapolicy_analyzer.ui.splash_screen.trust_db_access_failure_dlg"
+    )
+    mock_exit = mocker.patch("fapolicy_analyzer.ui.splash_screen.sys.exit")
+    mock_system_features.on_next({"system": MagicMock(system=None, error=True)})
+    mock_error_dialog.assert_called_once()
+    mock_exit.assert_called_once()
 
 
 @pytest.mark.usefixtures("mock_system_features")

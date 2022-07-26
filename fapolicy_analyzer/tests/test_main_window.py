@@ -61,7 +61,13 @@ def mock_init_store():
 @pytest.fixture
 def mock_system_features(changesets_state, mocker):
     def push_changeset(observer, *args):
-        observer.on_next({"changesets": changesets_state})
+        observer.on_next(
+            {
+                "changesets": changesets_state,
+                "system": MagicMock(),
+                "checkpoint": MagicMock(),
+            }
+        )
         observer.on_completed()
 
     system_features_mock = create(push_changeset)
@@ -498,10 +504,20 @@ def test_toggles_deploy_changes_toolbar_btn(mocker):
     deploy_btn = tool_bar.get_nth_item(0)
     assert not deploy_btn.get_sensitive()
     system_features_mock.on_next(
-        {"changesets": mock_changesets_state(changesets=["foo"])}
+        {
+            "changesets": mock_changesets_state(changesets=["foo"]),
+            "system": MagicMock(),
+            "checkpoint": MagicMock(),
+        }
     )
     assert deploy_btn.get_sensitive()
-    system_features_mock.on_next({"changesets": mock_changesets_state(changesets=[])})
+    system_features_mock.on_next(
+        {
+            "changesets": mock_changesets_state(changesets=[]),
+            "system": MagicMock(),
+            "checkpoint": MagicMock(),
+        }
+    )
     assert not deploy_btn.get_sensitive()
 
 
@@ -515,10 +531,20 @@ def test_toggles_dirty_title(mocker):
     windowRef = MainWindow().get_ref()
     assert not windowRef.get_title().startswith("*")
     system_features_mock.on_next(
-        {"changesets": mock_changesets_state(changesets=["foo"])}
+        {
+            "changesets": mock_changesets_state(changesets=["foo"]),
+            "system": MagicMock(),
+            "checkpoint": MagicMock(),
+        }
     )
     assert windowRef.get_title().startswith("*")
-    system_features_mock.on_next({"changesets": mock_changesets_state(changesets=[])})
+    system_features_mock.on_next(
+        {
+            "changesets": mock_changesets_state(changesets=[]),
+            "system": MagicMock(),
+            "checkpoint": MagicMock(),
+        }
+    )
     assert not windowRef.get_title().startswith("*")
 
 
