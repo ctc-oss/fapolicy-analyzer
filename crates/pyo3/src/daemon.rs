@@ -66,9 +66,10 @@ impl PyHandle {
 
     /// returns the unit status, throws if invalid unit
     pub fn is_active(&self) -> PyResult<bool> {
-        self.rs
-            .active()
-            .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
+        Ok(true)
+        // self.rs
+        //     .active()
+        //     .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
     }
 
     /// returns true if the unit exists, false otherwise
