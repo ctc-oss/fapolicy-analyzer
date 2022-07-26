@@ -209,15 +209,16 @@ class FapdManager():
             logging.debug("fapd is currently DISABLED")
             return ServiceStatus.UNKNOWN
         elif self.mode == FapdMode.ONLINE:
-            try:
-                if self._fapd_lock.acquire(blocking=False):
+            if self._fapd_lock.acquire(blocking=False):
+                try:
                     bStatus = ServiceStatus(self._fapd_ref.is_active())
                     if bStatus != self._fapd_status:
                         logging.debug(f"_status({bStatus} updated")
                         self._fapd_status = bStatus
-                    self._fapd_lock.release()
-            except Exception:
-                logging.warning("Daemon monitor query/update dispatch failed.")
+                except Exception:
+                    logging.warning("Daemon status query/update failed.")
+
+                self._fapd_lock.release()
             return self._fapd_status
         else:
             logging.debug("fapd is in a PROFILING session")
@@ -227,10 +228,15 @@ class FapdManager():
                 return ServiceStatus.FALSE
 
     def capture_online_state(self):
-        logging.debug("capture_online_state()")
-        updated_online_state = ServiceStatus(self._fapd_ref.is_active())
-        self._fapd_prior_online_state = updated_online_state
-        self._fapd_cur_online_state = updated_online_state
+        logging.debug("capture_online_state(): Capturing current online status")
+        if self._fapd_lock.acquire():
+            try:
+                updated_online_state = ServiceStatus(self._fapd_ref.is_active())
+                self._fapd_prior_online_state = updated_online_state
+                self._fapd_cur_online_state = updated_online_state
+            except Exception:
+                logging.warning("Daemon online status query/update failed.")
+            self._fapd_lock.release()
         logging.debug(f"prior_online_state = {self._fapd_prior_online_state}")
 
     def revert_online_state(self):
@@ -241,9 +247,13 @@ class FapdManager():
 
     def initial_daemon_status(self):
         if self._fapd_lock.acquire():
-            self._fapd_ref = Handle("fapolicyd")
-            if self._fapd_ref.is_valid():
-                self._fapd_status = ServiceStatus(self._fapd_ref.is_active())
-            else:
-                self._fapd_status = ServiceStatus.UNKNOWN
+            try:
+                self._fapd_ref = Handle("fapolicyd")
+                if self._fapd_ref.is_valid():
+                    self._fapd_status = ServiceStatus(self._fapd_ref.is_active())
+                else:
+                    self._fapd_status = ServiceStatus.UNKNOWN
+            except Exception as e:
+                print(f"Fapd Handle: is_active() exception: {e}")
+                raise
             self._fapd_lock.release()
