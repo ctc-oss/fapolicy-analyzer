@@ -66,10 +66,9 @@ impl PyHandle {
 
     /// returns the unit status, throws if invalid unit
     pub fn is_active(&self) -> PyResult<bool> {
-        Ok(true)
-        // self.rs
-        //     .active()
-        //     .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
+        self.rs
+            .active()
+            .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
     }
 
     /// returns true if the unit exists, false otherwise
@@ -80,7 +79,7 @@ impl PyHandle {
 
 #[pyfunction]
 fn start_fapolicyd() -> PyResult<()> {
-    match fapolicy_daemon::svc::Handle::default().start() {
+    match Handle::default().start() {
         Ok(_) => {
             println!("starting fapolicyd daemon");
             Ok(())
@@ -91,7 +90,7 @@ fn start_fapolicyd() -> PyResult<()> {
 
 #[pyfunction]
 fn stop_fapolicyd() -> PyResult<()> {
-    match fapolicy_daemon::svc::Handle::default().stop() {
+    match Handle::default().stop() {
         Ok(_) => {
             println!("stopped fapolicyd daemon");
             Ok(())
@@ -123,7 +122,7 @@ fn rollback_fapolicyd(to: PySystem) -> PyResult<()> {
 
 #[pyfunction]
 fn is_fapolicyd_active() -> PyResult<bool> {
-    fapolicy_daemon::svc::Handle::default()
+    Handle::default()
         .active()
         .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
 }
