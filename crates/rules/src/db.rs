@@ -34,6 +34,11 @@ pub struct SetEntry {
     _fk: usize,
 }
 
+#[derive(Clone, Debug)]
+struct CommentEntry {
+    text: String,
+}
+
 /// Rule Definition
 /// Can be valid or invalid
 /// When invalid it provides the text definition
@@ -46,6 +51,7 @@ pub enum Entry {
     SetWithWarning(Set, String),
     Invalid { text: String, error: String },
     InvalidSet { text: String, error: String },
+    Comment(String),
 }
 
 impl Display for Entry {
@@ -55,6 +61,7 @@ impl Display for Entry {
             ValidSet(r) | SetWithWarning(r, _) => r.to_string(),
             Invalid { text, .. } => text.clone(),
             InvalidSet { text, .. } => text.clone(),
+            Comment(text) => text.clone(),
         };
         f.write_fmt(format_args!("{}", txt))
     }
@@ -88,6 +95,7 @@ pub struct DB {
     model: BTreeMap<usize, DbEntry>,
     rules: BTreeMap<usize, RuleEntry>,
     sets: BTreeMap<usize, SetEntry>,
+    comments: BTreeMap<usize, CommentEntry>,
 }
 
 impl From<Vec<(Origin, Entry)>> for DB {
@@ -141,7 +149,14 @@ impl DB {
             })
             .collect();
 
-        Self { model, rules, sets }
+        let comments = BTreeMap::new();
+
+        Self {
+            model,
+            rules,
+            sets,
+            comments,
+        }
     }
 
     /// Get the number of RuleDefs
