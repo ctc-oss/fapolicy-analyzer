@@ -37,6 +37,7 @@ const RETRIES: u8 = 15;
 pub fn reload() -> Result<(), Error> {
     let fapolicyd = Handle::default();
     fapolicyd.stop()?;
+    sleep(Duration::from_secs(2));
     for _ in 0..RETRIES {
         sleep(Duration::from_secs(1));
         if !fapolicyd.active()? {
