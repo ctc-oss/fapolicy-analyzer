@@ -16,7 +16,8 @@ import logging
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 from .store import dispatch, get_system_feature
-
+from os import listdir
+from os.path import isfile, join
 from .configs import Sizing
 from fapolicy_analyzer.util.format import f
 
@@ -66,6 +67,13 @@ class ProfilerPage(UIConnectedWidget, UIPage):
             "envText": self.get_object("envEntry").get_text(),
         }
 
+    def display_log_output(self):
+        text_display = self.get_object("profiledStdOut")
+        args = self.get_text()
+        work_dir = args["dirText"]
+        buff = Gtk.Buffer()
+        files = [f for f in listdir(work_dir) if isfile(join(work_dir,f))]
+
     def on_test_activate(self, *args):
         profiling_args = self.get_text()
         logging.debug(f"Entry text = {profiling_args}")
@@ -76,4 +84,5 @@ class ProfilerPage(UIConnectedWidget, UIPage):
 
         sleep(4)
         self._fapd_profiler.stop_prof_session()
+        self.display_log_output()
         self.running = False

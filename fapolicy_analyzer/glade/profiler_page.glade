@@ -145,7 +145,7 @@
         <property name="visible">True</property>
         <property name="can_focus">True</property>
         <child>
-          <object class="GtkTextView">
+          <object class="GtkTextView" id="profiledStdOut">
             <property name="visible">True</property>
             <property name="sensitive">False</property>
             <property name="can_focus">True</property>
