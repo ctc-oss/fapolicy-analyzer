@@ -13,7 +13,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fapolicy_analyzer.ui.actions import ERROR_SYSTEM_INITIALIZATION, SYSTEM_INITIALIZED
+from typing import Any, NamedTuple, Optional, cast
+
+from fapolicy_analyzer import System
+from fapolicy_analyzer.ui.actions import (
+    ERROR_SYSTEM_INITIALIZATION,
+    SYSTEM_CHECKPOINT_SET,
+    SYSTEM_RECEIVED,
+)
 from fapolicy_analyzer.ui.reducers.ancillary_trust_reducer import (
     ancillary_trust_reducer,
 )
@@ -24,20 +31,46 @@ from fapolicy_analyzer.ui.reducers.rule_reducer import rule_reducer
 from fapolicy_analyzer.ui.reducers.rules_text_reducer import rules_text_reducer
 from fapolicy_analyzer.ui.reducers.system_trust_reducer import system_trust_reducer
 from fapolicy_analyzer.ui.reducers.user_reducer import user_reducer
-from fapolicy_analyzer.redux import Reducer, combine_reducers, handle_actions
+from fapolicy_analyzer.redux import Action, Reducer, combine_reducers, handle_actions
 
-system_initialized_reducer: Reducer = handle_actions(
-    {SYSTEM_INITIALIZED: lambda *_: True}, False
-)
 
-system_initialization_error_reducer: Reducer = handle_actions(
-    {ERROR_SYSTEM_INITIALIZATION: lambda *_: True}, False
-)
+class SystemState(NamedTuple):
+    error: Optional[str]
+    system: System
+    checkpoint: System
+
+
+def _create_state(state: SystemState, **kwargs: Optional[Any]) -> SystemState:
+    return SystemState(**{**state._asdict(), **kwargs})
+
+
+def handle_system_received(state: SystemState, action: Action) -> SystemState:
+    payload = cast(System, action.payload)
+    return _create_state(state, system=payload)
+
+
+def handle_error_system_initialization(
+    state: SystemState, action: Action
+) -> SystemState:
+    payload = cast(str, action.payload)
+    return _create_state(state, error=payload)
+
+
+def handle_system_checkpoint_set(state: SystemState, action: Action) -> SystemState:
+    payload = cast(System, action.payload)
+    return _create_state(state, checkpoint=payload)
+
 
 system_reducer: Reducer = combine_reducers(
     {
-        "initialization_error": system_initialization_error_reducer,
-        "initialized": system_initialized_reducer,
+        "system": handle_actions(
+            {
+                SYSTEM_RECEIVED: handle_system_received,
+                ERROR_SYSTEM_INITIALIZATION: handle_error_system_initialization,
+                SYSTEM_CHECKPOINT_SET: handle_system_checkpoint_set,
+            },
+            SystemState(error=None, system=None, checkpoint=None),
+        ),
         "ancillary_trust": ancillary_trust_reducer,
         "changesets": changeset_reducer,
         "events": event_reducer,
