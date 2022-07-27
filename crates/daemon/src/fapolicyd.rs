@@ -8,7 +8,6 @@
 
 // todo;; tracking the fapolicyd specific bits in here to determine if bindings are worthwhile
 
-use std::io::Write;
 use std::thread::sleep;
 use std::time::Duration;
 
@@ -32,18 +31,6 @@ const USR_SHARE_ALLOWED_EXTS: [&str; 15] = [
 pub enum Version {
     Unknown,
     Release { major: u8, minor: u8, patch: u8 },
-}
-
-/// send signal to fapolicyd FIFO pipe to reload the trust database
-pub fn signal_trust_reload() -> Result<(), Error> {
-    let mut fifo = std::fs::OpenOptions::new()
-        .write(true)
-        .read(false)
-        .open(FIFO_PIPE)
-        .map_err(|_| FapolicydReloadFail("failed to open fifo pipe".to_string()))?;
-
-    fifo.write_all("1".as_bytes())
-        .map_err(|_| FapolicydReloadFail("failed to write reload byte to pipe".to_string()))
 }
 
 const RETRIES: u8 = 15;
