@@ -8,10 +8,9 @@
 
 pub mod error;
 pub mod fapolicyd;
-pub use fapolicyd::reload_databases;
+pub use fapolicyd::reload;
 
 pub mod rpm;
 pub use rpm::fapolicyd_version as version;
 
-#[cfg(feature = "systemd")]
 pub mod svc;

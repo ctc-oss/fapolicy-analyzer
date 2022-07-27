@@ -17,17 +17,18 @@ from enum import Enum
 from itertools import count
 from typing import Any, Iterator, NamedTuple, Optional, Sequence
 
-from fapolicy_analyzer import Changeset, Event, Group, Rule, Trust, User
+from fapolicy_analyzer import Changeset, Event, Group, Rule, System, Trust, User
 from fapolicy_analyzer.redux import Action, create_action
 
 INIT_SYSTEM = "INIT_SYSTEM"
-SYSTEM_INITIALIZED = "SYSTEM_INITIALIZED"
+SYSTEM_RECEIVED = "SYSTEM_RECEIVED"
 ERROR_SYSTEM_INITIALIZATION = "ERROR_SYSTEM_INITIALIZATION"
 
 ADD_NOTIFICATION = "ADD_NOTIFICATION"
 REMOVE_NOTIFICATION = "REMOVE_NOTIFICATION"
 
 SET_SYSTEM_CHECKPOINT = "SET_SYSTEM_CHECKPOINT"
+SYSTEM_CHECKPOINT_SET = "SYSTEM_CHECKPOINT_SET"
 RESTORE_SYSTEM_CHECKPOINT = "RESTORE_SYSTEM_CHECKPOINT"
 
 ADD_CHANGESETS = "ADD_CHANGESETS"
@@ -153,6 +154,10 @@ def set_system_checkpoint() -> Action:
     return _create_action(SET_SYSTEM_CHECKPOINT)
 
 
+def system_checkpoint_set(checkpoint: System) -> Action:
+    return _create_action(SYSTEM_CHECKPOINT_SET, checkpoint)
+
+
 def restore_system_checkpoint() -> Action:
     return _create_action(RESTORE_SYSTEM_CHECKPOINT)
 
@@ -225,9 +230,9 @@ def init_system() -> Action:
     return _create_action(INIT_SYSTEM)
 
 
-def system_initialized() -> Action:
-    return _create_action(SYSTEM_INITIALIZED)
+def system_received(system: System) -> Action:
+    return _create_action(SYSTEM_RECEIVED, system)
 
 
-def system_initialization_error() -> Action:
-    return _create_action(ERROR_SYSTEM_INITIALIZATION)
+def system_initialization_error(error: str) -> Action:
+    return _create_action(ERROR_SYSTEM_INITIALIZATION, error)

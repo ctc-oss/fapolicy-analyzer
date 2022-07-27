@@ -16,15 +16,16 @@
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, GLib
+from locale import gettext as _
 from threading import Thread
 from time import sleep
-from locale import gettext as _
+
 from fapolicy_analyzer.ui.ui_widget import UIBuilderWidget
 from fapolicy_analyzer.util.format import f
+from gi.repository import GLib, Gtk
 
 
-class DeployConfirmDialog(UIBuilderWidget):
+class DeployRevertDialog(UIBuilderWidget):
     def __init__(self, parent=None, cancel_time=30):
         super().__init__()
         if parent:
