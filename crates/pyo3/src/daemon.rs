@@ -114,10 +114,10 @@ fn fapolicyd_version() -> Option<String> {
 #[pyfunction]
 fn rollback_fapolicyd(to: PySystem) -> PyResult<()> {
     stop_fapolicyd()
-        .and_then(|_| wait_for_daemon(false))
+        .and_then(|_| wait_for_daemon(State::Down))
         .and_then(|_| to.deploy_only())
         .and_then(|_| start_fapolicyd())
-        .and_then(|_| wait_for_daemon(true))
+        .and_then(|_| wait_for_daemon(State::Up))
 }
 
 #[pyfunction]
@@ -127,10 +127,16 @@ fn is_fapolicyd_active() -> PyResult<bool> {
         .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
 }
 
-fn wait_for_daemon(active: bool) -> PyResult<()> {
+enum State {
+    Up,
+    Down,
+}
+
+fn wait_for_daemon(state: State) -> PyResult<()> {
+    let dir: bool = matches!(state, State::Up);
     for _ in 0..10 {
         sleep(Duration::from_secs(1));
-        if active
+        if dir
             == Handle::default()
                 .active()
                 .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))?
