@@ -146,11 +146,11 @@ impl PyChangeset {
     }
 
     pub fn set(&mut self, text: &str) -> bool {
-        self.rs.set(&text.trim()).is_ok()
+        self.rs.set(text.trim()).is_ok()
     }
 
     pub fn parse(&mut self, text: &str) -> PyResult<()> {
-        match self.rs.set(&text.trim()) {
+        match self.rs.set(text.trim()) {
             Ok(_) => Ok(()),
             Err(MalformedFileMarker(lnum, txt)) => Err(exceptions::PyRuntimeError::new_err(
                 format!("{}:malformed-file-marker:{}", lnum, txt),
