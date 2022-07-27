@@ -115,9 +115,10 @@ fn fapolicyd_version() -> Option<String> {
 #[pyfunction]
 fn rollback_fapolicyd(to: PySystem) -> PyResult<()> {
     stop_fapolicyd()
+        .and_then(|_| wait_for_daemon(false))
         .and_then(|_| to.deploy_only())
-        .and_then(|_| wait_for_daemon_stop())
         .and_then(|_| start_fapolicyd())
+        .and_then(|_| wait_for_daemon(true))
 }
 
 #[pyfunction]
@@ -127,12 +128,13 @@ fn is_fapolicyd_active() -> PyResult<bool> {
         .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
 }
 
-fn wait_for_daemon_stop() -> PyResult<()> {
+fn wait_for_daemon(active: bool) -> PyResult<()> {
     for _ in 0..10 {
         sleep(Duration::from_secs(1));
-        if !fapolicy_daemon::svc::Handle::default()
-            .active()
-            .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))?
+        if active
+            == Handle::default()
+                .active()
+                .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))?
         {
             return Ok(());
         }
