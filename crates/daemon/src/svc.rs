@@ -148,5 +148,7 @@ mod tests {
         assert!(Inactive.can_be(Failed));
         // Inactive is not Failed
         assert!(!Failed.can_be(Inactive));
+        // Identity
+        assert!(Active.can_be(Active))
     }
 }
