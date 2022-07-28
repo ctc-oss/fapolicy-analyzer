@@ -145,29 +145,11 @@ impl PySystem {
     }
 
     fn rules(&self) -> Vec<PyRule> {
-        rules::rules_to_vec(&self.rs.rules_db)
+        rules::to_vec(&self.rs.rules_db)
     }
 
     fn rules_text(&self) -> String {
-        rules::entries_to_vec(&self.rs.rules_db)
-            .into_iter()
-            .fold((None, String::new()), |x, r| match x {
-                // no origin established yet
-                (None, _) => (
-                    Some(r.origin.clone()),
-                    format!("[{}]\n{}", r.origin, r.text),
-                ),
-                // same origin as previous
-                (Some(last_origin), acc_text) if last_origin == r.origin => {
-                    (Some(last_origin), format!("{}\n{}", acc_text, r.text))
-                }
-                // origin has changed
-                (Some(_), acc_text) => (
-                    Some(r.origin.clone()),
-                    format!("{}\n\n[{}]\n{}", acc_text, r.origin, r.text),
-                ),
-            })
-            .1
+        rules::to_text(&self.rs.rules_db)
     }
 }
 

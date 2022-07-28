@@ -45,12 +45,17 @@ struct CommentEntry {
 /// When valid the text definition can be rendered from the ADTs
 #[derive(Clone, Debug)]
 pub enum Entry {
+    // rules
     ValidRule(Rule),
-    ValidSet(Set),
     RuleWithWarning(Rule, String),
-    SetWithWarning(Set, String),
     Invalid { text: String, error: String },
+
+    // sets
+    ValidSet(Set),
+    SetWithWarning(Set, String),
     InvalidSet { text: String, error: String },
+
+    // other
     Comment(String),
 }
 
@@ -82,7 +87,15 @@ fn is_valid(def: &Entry) -> bool {
 }
 
 fn is_rule(def: &Entry) -> bool {
-    !matches!(def, ValidSet(_) | SetWithWarning(..) | InvalidSet { .. })
+    matches!(def, ValidRule(_) | RuleWithWarning(..) | Invalid { .. })
+}
+
+fn is_set(def: &Entry) -> bool {
+    matches!(def, ValidSet(_) | SetWithWarning(..) | InvalidSet { .. })
+}
+
+fn is_comment(def: &Entry) -> bool {
+    matches!(def, Comment(_))
 }
 
 type Origin = String;
