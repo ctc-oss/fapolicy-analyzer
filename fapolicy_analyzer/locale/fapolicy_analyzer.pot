@@ -7,9 +7,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: fapolicy-analyzer 0.3.1+101.ga756fb6.dirty\n"
+"Project-Id-Version: fapolicy-analyzer 0.3.1+104.g7857488.dirty\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-07-28 09:31-0400\n"
+"POT-Creation-Date: 2022-07-28 14:29-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -104,8 +104,8 @@ msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:27
 msgid ""
-"Save failed. The current rule text is not valid. See Status Information "
-"for details."
+"The current rule text is not valid and cannot be saved. See Status "
+"Information for details."
 msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:30
@@ -537,11 +537,11 @@ msgid "Remove Deleted Files"
 msgstr ""
 
 #: fapolicy_analyzer/glade/rules_admin_page.glade:50
-msgid "Guided Editor"
+msgid "Rules Editor"
 msgstr ""
 
 #: fapolicy_analyzer/glade/rules_admin_page.glade:73
-msgid "Text Editor"
+msgid "Rules View"
 msgstr ""
 
 #: fapolicy_analyzer/glade/rules_status_info.glade:55

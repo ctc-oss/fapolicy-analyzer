@@ -25,7 +25,7 @@ RULES_LOAD_ERROR = _("Error loading Rules")
 RULES_TEXT_LOAD_ERROR = _("Error loading Rules text")
 RULES_FILE_READ_ERROR = _("Error reading the Rules file")
 RULES_VALIDATION_ERROR = _(
-    "Save failed. The current rule text is not valid. See Status Information for details."
+    "The current rule text is not valid and cannot be saved. See Status Information for details."
 )
 RULES_VALIDATION_WARNING = _(
     "The current rule text has warnings. See Status Information for details."
