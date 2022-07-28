@@ -131,6 +131,7 @@ fn is_fapolicyd_active() -> PyResult<bool> {
         .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
 }
 
+#[derive(Debug)]
 enum State {
     Up,
     Down,
@@ -139,11 +140,14 @@ enum State {
 fn wait_for_daemon(state: State) -> PyResult<()> {
     let dir: bool = matches!(state, State::Up);
     for _ in 0..10 {
+        println!("waiting on daemon {dir}...");
         sleep(Duration::from_secs(1));
         if dir == Handle::default().active().unwrap_or(!dir) {
+            println!("daemon is {state:?}...");
             return Ok(());
         }
     }
+    println!("daemon is unresponsive...");
     Err(PyRuntimeError::new_err("Daemon unresponsive"))
 }
 
