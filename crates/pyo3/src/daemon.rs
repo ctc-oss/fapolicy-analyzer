@@ -8,7 +8,7 @@
 
 use crate::system::PySystem;
 use fapolicy_daemon::fapolicyd::Version;
-use fapolicy_daemon::svc::Handle;
+use fapolicy_daemon::svc::{Handle, State};
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
 use std::thread::sleep;
@@ -113,10 +113,10 @@ fn fapolicyd_version() -> Option<String> {
 
 pub(crate) fn deploy(system: &PySystem) -> PyResult<()> {
     stop_fapolicyd()
-        .and_then(|_| wait_for_daemon(State::Down))
+        .and_then(|_| wait_for_daemon(State::Inactive))
         .and_then(|_| system.deploy_only())
         .and_then(|_| start_fapolicyd())
-        .and_then(|_| wait_for_daemon(State::Up))
+        .and_then(|_| wait_for_daemon(State::Active))
 }
 
 #[pyfunction]
@@ -131,19 +131,16 @@ fn is_fapolicyd_active() -> PyResult<bool> {
         .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
 }
 
-#[derive(Debug)]
-enum State {
-    Up,
-    Down,
-}
-
-fn wait_for_daemon(state: State) -> PyResult<()> {
-    let dir: bool = matches!(state, State::Up);
+fn wait_for_daemon(target_state: State) -> PyResult<()> {
     for _ in 0..10 {
-        println!("waiting on daemon {dir}...");
+        println!("waiting on daemon to be {target_state:?}...");
         sleep(Duration::from_secs(1));
-        if dir == Handle::default().active().unwrap_or(!dir) {
-            println!("daemon is {state:?}...");
+        if Handle::default()
+            .state()
+            .map(|state| state == target_state)
+            .unwrap_or(false)
+        {
+            println!("daemon {target_state:?} ready!");
             return Ok(());
         }
     }

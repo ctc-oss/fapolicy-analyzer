@@ -61,7 +61,7 @@ impl Default for Handle {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum State {
     Active,
     Inactive,
