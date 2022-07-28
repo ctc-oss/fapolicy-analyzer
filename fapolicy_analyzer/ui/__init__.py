@@ -76,6 +76,7 @@ def _read_resources(
         ]
     except Exception as ex:
         logging.warning(f"Unable to read resource from package {package}")
+        logging.debug(f"Error reading resource contents for package {package}", ex)
         return []
 
     data_pairs = [_read_resource(package, n) for n in resource_names]
