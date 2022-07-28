@@ -99,7 +99,7 @@ impl PySystem {
 
     /// Update the host system with this state of this System and signal fapolicyd to reload trust
     pub fn deploy(&self) -> PyResult<()> {
-        daemon::deploy(&self).map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))
+        daemon::deploy(self).map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))
     }
 
     /// Update the host system with this state of this System

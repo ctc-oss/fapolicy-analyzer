@@ -8,7 +8,6 @@
 
 use dbus::arg::messageitem::MessageItem;
 use std::fmt;
-use std::process::Command;
 use std::time::Duration;
 
 use dbus::blocking::{BlockingSender, Connection};

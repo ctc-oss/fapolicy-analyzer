@@ -6,7 +6,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use std::string::FromUtf8Error;
 use thiserror::Error;
 
 // errors that can occur in this crate
