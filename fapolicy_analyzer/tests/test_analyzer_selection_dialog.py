@@ -13,17 +13,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import context  # noqa: F401
+import context  # noqa: F401 # isort: skip
 import gi
 import pytest
-
-gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, Gdk
-from helpers import delayed_gui_action
 from fapolicy_analyzer.ui.analyzer_selection_dialog import (
-    AnalyzerSelectionDialog,
     ANALYZER_SELECTION,
+    AnalyzerSelectionDialog,
 )
+
+from helpers import delayed_gui_action
+
+gi.require_version("GtkSource", "3.0")
+from gi.repository import Gtk, Gdk  # isort: skip
 
 
 @pytest.fixture
