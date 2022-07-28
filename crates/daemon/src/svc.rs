@@ -69,6 +69,17 @@ pub enum State {
     Other(String),
 }
 
+impl State {
+    pub fn can_be(&self, other: State) -> bool {
+        use State::*;
+
+        match self {
+            Inactive if other == Failed => true,
+            _ => *self == other,
+        }
+    }
+}
+
 impl Handle {
     pub fn new(name: &str) -> Handle {
         Handle {
@@ -124,5 +135,18 @@ impl Handle {
                 "DBUS unit active check failed".to_string(),
             ))
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::svc::State::*;
+
+    #[test]
+    fn state_can_be() {
+        // Failed is Inactive
+        assert!(Inactive.can_be(Failed));
+        // Inactive is not Failed
+        assert!(!Failed.can_be(Inactive));
     }
 }

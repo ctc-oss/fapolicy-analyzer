@@ -137,10 +137,10 @@ fn wait_for_daemon(target_state: State) -> PyResult<()> {
         sleep(Duration::from_secs(1));
         if Handle::default()
             .state()
-            .map(|state| state == target_state)
+            .map(|state| target_state.can_be(state))
             .unwrap_or(false)
         {
-            eprintln!("daemon is now {target_state:?}");
+            eprintln!("done waiting, daemon is {target_state:?}");
             return Ok(());
         }
     }
