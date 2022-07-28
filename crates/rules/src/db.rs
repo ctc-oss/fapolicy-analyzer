@@ -35,8 +35,10 @@ pub struct SetEntry {
 }
 
 #[derive(Clone, Debug)]
-struct CommentEntry {
-    text: String,
+pub struct CommentEntry {
+    pub text: String,
+    pub origin: Origin,
+    _fk: usize,
 }
 
 /// Rule Definition
@@ -145,24 +147,39 @@ impl DB {
             .iter()
             .enumerate()
             .map(|(fk, v)| (v, fk))
-            .filter(|((_, (_, m)), _)| !is_rule(m))
-            .map(|((id, (o, r)), fk)| {
+            .filter(|((_, (_, m)), _)| is_set(m))
+            .map(|((id, (o, e)), fk)| {
                 (
                     *id,
                     SetEntry {
                         // todo;; extract the set name
                         name: "_".to_string(),
-                        text: r.to_string(),
+                        text: e.to_string(),
                         origin: o.clone(),
-                        valid: is_valid(r),
-                        msg: r.diagnostic_messages(),
+                        valid: is_valid(e),
+                        msg: e.diagnostic_messages(),
                         _fk: fk,
                     },
                 )
             })
             .collect();
 
-        let comments = BTreeMap::new();
+        let comments = model
+            .iter()
+            .enumerate()
+            .map(|(fk, v)| (v, fk))
+            .filter(|((_, (_, m)), _)| is_comment(m))
+            .map(|((id, (o, e)), fk)| {
+                (
+                    *id,
+                    CommentEntry {
+                        text: e.to_string(),
+                        origin: o.clone(),
+                        _fk: fk,
+                    },
+                )
+            })
+            .collect();
 
         Self {
             model,
@@ -195,6 +212,11 @@ impl DB {
     /// Get a vec of all SetEntry refs
     pub fn sets(&self) -> Vec<&SetEntry> {
         self.sets.values().collect()
+    }
+
+    /// Get a vec of all CommentEntry refs
+    pub fn comments(&self) -> Vec<&CommentEntry> {
+        self.comments.values().collect()
     }
 
     pub fn entry(&self, num: usize) -> Option<&Entry> {

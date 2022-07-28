@@ -198,7 +198,7 @@ pub(crate) fn to_vec(db: &DB) -> Vec<PyRule> {
 
 pub(crate) fn to_text(db: &DB) -> String {
     db.iter()
-        .fold((None, String::new()), |x, (id, (origin, e))| match x {
+        .fold((None, String::new()), |x, (_, (origin, e))| match x {
             // no origin established yet
             (None, _) => (
                 Some(origin.clone()),
@@ -220,8 +220,8 @@ pub(crate) fn to_text(db: &DB) -> String {
 
 fn text_for_entry(e: &Entry) -> String {
     match e {
-        Invalid { text, error } => text.clone(),
-        InvalidSet { text, error } => text.clone(),
+        Invalid { text, .. } => text.clone(),
+        InvalidSet { text, .. } => text.clone(),
         ValidRule(r) => r.to_string(),
         ValidSet(s) => s.to_string(),
         RuleWithWarning(r, _) => r.to_string(),
