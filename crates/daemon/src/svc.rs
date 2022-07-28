@@ -93,6 +93,7 @@ impl Handle {
         let p = Props::new(
             &c,
             "org.freedesktop.systemd1",
+            // todo;; the path name may need to be fetched dynamically via a Message
             format!("/org/freedesktop/systemd1/unit/{}_2eservice", self.name),
             "org.freedesktop.systemd1.Unit",
             5000,
