@@ -68,7 +68,7 @@ impl Display for Entry {
             ValidSet(r) | SetWithWarning(r, _) => r.to_string(),
             Invalid { text, .. } => text.clone(),
             InvalidSet { text, .. } => text.clone(),
-            Comment(text) => text.clone(),
+            Comment(text) => format!("#{}", text),
         };
         f.write_fmt(format_args!("{}", txt))
     }
@@ -333,5 +333,10 @@ mod tests {
         for s in subjs.iter().enumerate() {
             assert_eq!(db.entry(s.0).unwrap().unwrap().subj.exe().unwrap(), *s.1);
         }
+    }
+
+    #[test]
+    fn test_prefixed_comment() {
+        assert!(Comment("sometext".to_string()).to_string().starts_with('#'))
     }
 }
