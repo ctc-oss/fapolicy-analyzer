@@ -98,7 +98,7 @@ fn rules_dir(rules_source_path: &Path) -> Result<Vec<RuleSource>, io::Error> {
 }
 
 fn rules_text(rules_text: String) -> Result<Vec<RuleSource>, Error> {
-    let mut origin: Option<PathBuf> = Some(PathBuf::from("000-anon.rules"));
+    let mut origin: Option<PathBuf> = Some(PathBuf::from("00-analyzer.rules"));
     let mut lines = vec![];
     for (num, line) in rules_text.split('\n').map(|s| s.trim()).enumerate() {
         match marker::parse(StrTrace::new(line)) {
