@@ -226,7 +226,7 @@ fn text_for_entry(e: &Entry) -> String {
         ValidSet(s) => s.to_string(),
         RuleWithWarning(r, _) => r.to_string(),
         SetWithWarning(r, _) => r.to_string(),
-        Comment(text) => text.clone(),
+        e @ Comment(_) => e.to_string(),
     }
 }
 
@@ -239,4 +239,17 @@ pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyChangeset>()?;
     m.add_function(wrap_pyfunction!(rule_text_error_check, m)?)?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::rules::text_for_entry;
+    use fapolicy_rules::db::Entry::Comment;
+
+    #[test]
+    fn test_comment_prefix() {
+        let text = text_for_entry(&Comment("foo".to_string()));
+        assert!(text.starts_with('#'));
+        assert!(text.ends_with("foo"));
+    }
 }
