@@ -23,7 +23,4 @@ pub enum Error {
 
     #[error("{0}")]
     ServiceCheckFailure(String),
-
-    #[error("Failed to parse systemctl output")]
-    ServiceCheckParseFailure(#[from] FromUtf8Error),
 }
