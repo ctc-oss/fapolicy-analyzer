@@ -14,6 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
+import logging
 import os
 
 import gi
@@ -38,32 +39,54 @@ class RulesTextView(UIBuilderWidget, Events):
         Events.__init__(self)
         self.__text_view = self.get_object("textView")
 
-        self.__buffer = GtkSource.Buffer.new_with_language(self.__get_view_lang())
-        self.__buffer.set_style_scheme(self.__get_view_style())
+        self.__buffer = GtkSource.Buffer()
+        language = self.__get_view_lang()
+        if language:
+            print(f"loading language {language}")
+            self.__buffer.set_language(language)
+        style = self.__get_view_style()
+        if style:
+            print(f"loading style {style}")
+            self.__buffer.set_style_scheme(self.__get_view_style())
         self.__buffer.connect("changed", self.on_rules_changed)
         self.__text_view.set_buffer(self.__buffer)
 
     def __get_view_lang(self):
         lang_manager = GtkSource.LanguageManager.get_default()
-        with resources.path(
-            "fapolicy_analyzer.resources.sourceview.language-specs",
-            "fapolicyd-rules.lang",
-        ) as path:
-            if os.path.dirname(path.as_posix()) not in lang_manager.get_search_path():
-                lang_manager.set_search_path(
-                    [
-                        *lang_manager.get_search_path(),
-                        os.path.dirname(path.as_posix()),
-                    ]
-                )
+        try:
+            with resources.path(
+                "fapolicy_analyzer.resources.sourceview.language-specs",
+                "fapolicyd-rules.lang",
+            ) as path:
+                if (
+                    os.path.dirname(path.as_posix())
+                    not in lang_manager.get_search_path()
+                ):
+                    lang_manager.set_search_path(
+                        [
+                            *lang_manager.get_search_path(),
+                            os.path.dirname(path.as_posix()),
+                        ]
+                    )
+        except Exception as ex:
+            logging.warn("Could not load the rules language file")
+            logging.debug(
+                "Error loading GtkSource language file fapolicyd-rules.lang", ex
+            )
+
         return lang_manager.get_language("fapolicyd-rules")
 
     def __get_view_style(self):
         style_manager = GtkSource.StyleSchemeManager.get_default()
-        with resources.path(
-            "fapolicy_analyzer.resources.sourceview.styles", "fapolicyd.xml"
-        ) as path:
-            style_manager.prepend_search_path(path.as_posix())
+        try:
+            with resources.path(
+                "fapolicy_analyzer.resources.sourceview.styles", "fapolicyd.xml"
+            ) as path:
+                style_manager.prepend_search_path(path.as_posix())
+        except Exception as ex:
+            logging.warn("Could not load the rules style file")
+            logging.debug("Error loading GtkSource style file fapolicyd.xml", ex)
+
         return style_manager.get_scheme("fapolicyd")
 
     def __get_text(self):

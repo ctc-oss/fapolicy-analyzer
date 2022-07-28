@@ -56,9 +56,11 @@ def _read_resource(package: str, name: str) -> Optional[Tuple[str, str]]:
                 _file = open(path, "r")
                 return (name, _file.read())
             except Exception as ex:
-                logging.warning(f"Unable to read resource {name}", ex)
+                logging.warning(f"Unable to read resource {name}")
+                logging.debug(f"Error loading resource {name}", ex)
             finally:
-                _file.close()
+                if _file:
+                    _file.close()
 
     return None
 
@@ -66,11 +68,16 @@ def _read_resource(package: str, name: str) -> Optional[Tuple[str, str]]:
 def _read_resources(
     package: str, file_exts: Sequence[str] = []
 ) -> Sequence[Tuple[str, str]]:
-    resource_names = [
-        n
-        for n in resources.contents(package)
-        if not file_exts or os.path.splitext(n)[-1] in file_exts
-    ]
+    try:
+        resource_names = [
+            n
+            for n in resources.contents(package)
+            if not file_exts or os.path.splitext(n)[-1] in file_exts
+        ]
+    except Exception as ex:
+        logging.warning(f"Unable to read resource from package {package}")
+        return []
+
     data_pairs = [_read_resource(package, n) for n in resource_names]
     return [d for d in data_pairs if d]
 
