@@ -226,7 +226,7 @@ fn text_for_entry(e: &Entry) -> String {
         ValidSet(s) => s.to_string(),
         RuleWithWarning(r, _) => r.to_string(),
         SetWithWarning(r, _) => r.to_string(),
-        Comment(t) => t.clone(),
+        Comment(text) => format!("#{}", text),
     }
 }
 
