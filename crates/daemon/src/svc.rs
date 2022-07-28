@@ -61,6 +61,14 @@ impl Default for Handle {
     }
 }
 
+#[derive(Clone, Debug)]
+pub enum State {
+    Active,
+    Inactive,
+    Failed,
+    Other(String),
+}
+
 impl Handle {
     pub fn new(name: &str) -> Handle {
         Handle {
@@ -86,8 +94,13 @@ impl Handle {
     }
 
     pub fn active(&self) -> Result<bool, Error> {
+        self.state().map(|state| matches!(state, State::Active))
+    }
+
+    pub fn state(&self) -> Result<State, Error> {
         use dbus::arg::messageitem::Props;
         use dbus::ffidisp::Connection;
+        use State::*;
 
         let c = Connection::new_system()?;
         let p = Props::new(
@@ -100,7 +113,12 @@ impl Handle {
         );
 
         if let MessageItem::Str(state) = p.get("ActiveState")? {
-            Ok(state == "active")
+            Ok(match state.as_str() {
+                "active" => Active,
+                "inactive" => Inactive,
+                "failed" => Failed,
+                _ => Other(state),
+            })
         } else {
             Err(ServiceCheckFailure(
                 "DBUS unit active check failed".to_string(),
