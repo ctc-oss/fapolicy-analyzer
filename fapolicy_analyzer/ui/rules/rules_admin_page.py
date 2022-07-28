@@ -82,13 +82,13 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
 
     def __init_child_widgets(self):
         self._text_view: RulesTextView = RulesTextView()
-        self.get_object("textEditorContent").pack_start(
+        self.get_object("editorViewContent").pack_start(
             self._text_view.get_ref(), True, True, 0
         )
         self._text_view.rules_changed += self.on_text_view_rules_changed
 
         self._list_view: RulesListView = RulesListView()
-        self.get_object("guidedEditorContent").pack_start(
+        self.get_object("rulesViewContent").pack_start(
             self._list_view.get_ref(), True, True, 0
         )
 
