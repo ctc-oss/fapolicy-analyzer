@@ -81,7 +81,7 @@ impl PyHandle {
 fn start_fapolicyd() -> PyResult<()> {
     match Handle::default().start() {
         Ok(_) => {
-            println!("starting fapolicyd daemon");
+            eprintln!("starting fapolicyd daemon");
             Ok(())
         }
         Err(e) => Err(PyRuntimeError::new_err(format!("{:?}", e))),
@@ -92,7 +92,7 @@ fn start_fapolicyd() -> PyResult<()> {
 fn stop_fapolicyd() -> PyResult<()> {
     match Handle::default().stop() {
         Ok(_) => {
-            println!("stopped fapolicyd daemon");
+            eprintln!("stopped fapolicyd daemon");
             Ok(())
         }
         Err(e) => Err(PyRuntimeError::new_err(format!("{:?}", e))),
@@ -132,20 +132,26 @@ fn is_fapolicyd_active() -> PyResult<bool> {
 }
 
 fn wait_for_daemon(target_state: State) -> PyResult<()> {
-    for _ in 0..10 {
-        println!("waiting on daemon to be {target_state:?}...");
+    for _ in 0..15 {
+        eprintln!("waiting on daemon to be {target_state:?}...");
         sleep(Duration::from_secs(1));
         if Handle::default()
             .state()
             .map(|state| state == target_state)
             .unwrap_or(false)
         {
-            println!("daemon {target_state:?} ready!");
+            eprintln!("daemon is now {target_state:?}");
             return Ok(());
         }
     }
-    println!("daemon is unresponsive...");
-    Err(PyRuntimeError::new_err("Daemon unresponsive"))
+
+    let actual_state = Handle::default()
+        .state()
+        .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))?;
+
+    Err(PyRuntimeError::new_err(format!(
+        "Daemon is unresponsive in {actual_state:?} state"
+    )))
 }
 
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
