@@ -121,6 +121,11 @@ pub(crate) fn deploy(system: &PySystem) -> PyResult<()> {
 }
 
 #[pyfunction]
+fn rollback_fapolicyd(to: PySystem) -> PyResult<()> {
+    deploy(&to)
+}
+
+#[pyfunction]
 fn is_fapolicyd_active() -> PyResult<bool> {
     Handle::default()
         .active()
@@ -148,6 +153,7 @@ pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(fapolicyd_version, m)?)?;
     m.add_function(wrap_pyfunction!(start_fapolicyd, m)?)?;
     m.add_function(wrap_pyfunction!(stop_fapolicyd, m)?)?;
+    m.add_function(wrap_pyfunction!(rollback_fapolicyd, m)?)?;
     m.add_function(wrap_pyfunction!(is_fapolicyd_active, m)?)?;
     Ok(())
 }
