@@ -78,23 +78,12 @@ class ConfirmDeploymentDialog(UIBuilderWidget):
             diffs = rules_difference(previous_system, current_system).split("\n")
             adds = len([d for d in diffs if d.startswith("+")])
             dels = len([d for d in diffs if d.startswith("-")])
-            message = (
-                " and ".join(
-                    (
-                        m
-                        for m in [
-                            f"{adds} addition{'s' if adds > 1 else ''}"
-                            if adds
-                            else None,
-                            f"{dels} removal{'s' if dels > 1 else ''}"
-                            if dels
-                            else None,
-                        ]
-                        if m
-                    )
-                )
-                + " made"
-            )
+            if (adds + dels) == 0:
+                return []
+
+            add_text = f"{adds} addition{'s' if adds > 1 else ''}" if adds else None
+            del_text = f"{dels} removal{'s' if dels > 1 else ''}" if dels else None
+            message = " and ".join((m for m in [add_text, del_text] if m)) + " made"
             return [(_(message), "Rules")]
 
         def trust_changes():
