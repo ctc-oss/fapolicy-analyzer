@@ -116,8 +116,7 @@ pub(crate) fn deploy(system: &PySystem) -> PyResult<()> {
         .and_then(|_| wait_for_daemon(State::Down))
         .and_then(|_| system.deploy_only())
         .and_then(|_| start_fapolicyd())
-        // wait but dont throw
-        .and_then(|_| wait_for_daemon(State::Up).or(Ok(())))
+        .and_then(|_| wait_for_daemon(State::Up))
 }
 
 #[pyfunction]
