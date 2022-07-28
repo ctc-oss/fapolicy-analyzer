@@ -34,18 +34,31 @@ pub struct SetEntry {
     _fk: usize,
 }
 
+#[derive(Clone, Debug)]
+pub struct CommentEntry {
+    pub text: String,
+    pub origin: Origin,
+    _fk: usize,
+}
+
 /// Rule Definition
 /// Can be valid or invalid
 /// When invalid it provides the text definition
 /// When valid the text definition can be rendered from the ADTs
 #[derive(Clone, Debug)]
 pub enum Entry {
+    // rules
     ValidRule(Rule),
-    ValidSet(Set),
     RuleWithWarning(Rule, String),
-    SetWithWarning(Set, String),
     Invalid { text: String, error: String },
+
+    // sets
+    ValidSet(Set),
+    SetWithWarning(Set, String),
     InvalidSet { text: String, error: String },
+
+    // other
+    Comment(String),
 }
 
 impl Display for Entry {
@@ -55,6 +68,7 @@ impl Display for Entry {
             ValidSet(r) | SetWithWarning(r, _) => r.to_string(),
             Invalid { text, .. } => text.clone(),
             InvalidSet { text, .. } => text.clone(),
+            Comment(text) => format!("#{}", text),
         };
         f.write_fmt(format_args!("{}", txt))
     }
@@ -75,7 +89,15 @@ fn is_valid(def: &Entry) -> bool {
 }
 
 fn is_rule(def: &Entry) -> bool {
-    !matches!(def, ValidSet(_) | SetWithWarning(..) | InvalidSet { .. })
+    matches!(def, ValidRule(_) | RuleWithWarning(..) | Invalid { .. })
+}
+
+fn is_set(def: &Entry) -> bool {
+    matches!(def, ValidSet(_) | SetWithWarning(..) | InvalidSet { .. })
+}
+
+fn is_comment(def: &Entry) -> bool {
+    matches!(def, Comment(_))
 }
 
 type Origin = String;
@@ -88,6 +110,7 @@ pub struct DB {
     model: BTreeMap<usize, DbEntry>,
     rules: BTreeMap<usize, RuleEntry>,
     sets: BTreeMap<usize, SetEntry>,
+    comments: BTreeMap<usize, CommentEntry>,
 }
 
 impl From<Vec<(Origin, Entry)>> for DB {
@@ -124,24 +147,46 @@ impl DB {
             .iter()
             .enumerate()
             .map(|(fk, v)| (v, fk))
-            .filter(|((_, (_, m)), _)| !is_rule(m))
-            .map(|((id, (o, r)), fk)| {
+            .filter(|((_, (_, m)), _)| is_set(m))
+            .map(|((id, (o, e)), fk)| {
                 (
                     *id,
                     SetEntry {
                         // todo;; extract the set name
                         name: "_".to_string(),
-                        text: r.to_string(),
+                        text: e.to_string(),
                         origin: o.clone(),
-                        valid: is_valid(r),
-                        msg: r.diagnostic_messages(),
+                        valid: is_valid(e),
+                        msg: e.diagnostic_messages(),
                         _fk: fk,
                     },
                 )
             })
             .collect();
 
-        Self { model, rules, sets }
+        let comments = model
+            .iter()
+            .enumerate()
+            .map(|(fk, v)| (v, fk))
+            .filter(|((_, (_, m)), _)| is_comment(m))
+            .map(|((id, (o, e)), fk)| {
+                (
+                    *id,
+                    CommentEntry {
+                        text: e.to_string(),
+                        origin: o.clone(),
+                        _fk: fk,
+                    },
+                )
+            })
+            .collect();
+
+        Self {
+            model,
+            rules,
+            sets,
+            comments,
+        }
     }
 
     /// Get the number of RuleDefs
@@ -167,6 +212,11 @@ impl DB {
     /// Get a vec of all SetEntry refs
     pub fn sets(&self) -> Vec<&SetEntry> {
         self.sets.values().collect()
+    }
+
+    /// Get a vec of all CommentEntry refs
+    pub fn comments(&self) -> Vec<&CommentEntry> {
+        self.comments.values().collect()
     }
 
     pub fn entry(&self, num: usize) -> Option<&Entry> {
@@ -283,5 +333,10 @@ mod tests {
         for s in subjs.iter().enumerate() {
             assert_eq!(db.entry(s.0).unwrap().unwrap().subj.exe().unwrap(), *s.1);
         }
+    }
+
+    #[test]
+    fn test_prefixed_comment() {
+        assert!(Comment("sometext".to_string()).to_string().starts_with('#'))
     }
 }
