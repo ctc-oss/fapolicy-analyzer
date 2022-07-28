@@ -20,11 +20,10 @@ import argparse
 
 import gi
 from fapolicy_analyzer import __version__ as app_version
-from fapolicy_analyzer.util.xdg_utils import xdg_state_dir_prefix
-
 from fapolicy_analyzer.ui.session_manager import sessionManager
-from fapolicy_analyzer.ui.splash_screen import SplashScreen
 from fapolicy_analyzer.ui.store import init_store
+from fapolicy_analyzer.ui.ui_resources import init_resources
+from fapolicy_analyzer.util.xdg_utils import xdg_state_dir_prefix
 
 gi.require_version("Gtk", "3.0")
 gi.require_version("GtkSource", "3.0")
@@ -83,8 +82,11 @@ def show_banner():
 def main():
     _parse_cmdline()
     _register_types()
+    init_resources()
     show_banner()
     init_store()
+    from fapolicy_analyzer.ui.splash_screen import SplashScreen
+
     SplashScreen()
     Gtk.main()
 
