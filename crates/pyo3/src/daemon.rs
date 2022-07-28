@@ -111,13 +111,13 @@ fn fapolicyd_version() -> Option<String> {
     }
 }
 
-#[pyfunction]
-fn rollback_fapolicyd(to: PySystem) -> PyResult<()> {
+pub(crate) fn deploy(system: &PySystem) -> PyResult<()> {
     stop_fapolicyd()
         .and_then(|_| wait_for_daemon(State::Down))
-        .and_then(|_| to.deploy_only())
+        .and_then(|_| system.deploy_only())
         .and_then(|_| start_fapolicyd())
-        .and_then(|_| wait_for_daemon(State::Up))
+        // wait but dont throw
+        .and_then(|_| wait_for_daemon(State::Up).or(Ok(())))
 }
 
 #[pyfunction]
@@ -136,11 +136,7 @@ fn wait_for_daemon(state: State) -> PyResult<()> {
     let dir: bool = matches!(state, State::Up);
     for _ in 0..10 {
         sleep(Duration::from_secs(1));
-        if dir
-            == Handle::default()
-                .active()
-                .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))?
-        {
+        if dir == Handle::default().active().unwrap_or(!dir) {
             return Ok(());
         }
     }
@@ -152,7 +148,6 @@ pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(fapolicyd_version, m)?)?;
     m.add_function(wrap_pyfunction!(start_fapolicyd, m)?)?;
     m.add_function(wrap_pyfunction!(stop_fapolicyd, m)?)?;
-    m.add_function(wrap_pyfunction!(rollback_fapolicyd, m)?)?;
     m.add_function(wrap_pyfunction!(is_fapolicyd_active, m)?)?;
     Ok(())
 }

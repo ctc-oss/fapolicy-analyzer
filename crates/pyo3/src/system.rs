@@ -19,9 +19,9 @@ use fapolicy_app::sys::deploy_app_state;
 use super::trust::PyTrust;
 use crate::acl::{PyGroup, PyUser};
 use crate::analysis::PyEventLog;
-use crate::rules;
 use crate::rules::PyRule;
 use crate::trust;
+use crate::{daemon, rules};
 
 #[pyclass(module = "app", name = "System")]
 #[derive(Clone)]
@@ -99,10 +99,7 @@ impl PySystem {
 
     /// Update the host system with this state of this System and signal fapolicyd to reload trust
     pub fn deploy(&self) -> PyResult<()> {
-        self.deploy_only().and_then(|_| {
-            fapolicy_daemon::reload()
-                .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))
-        })
+        daemon::deploy(&self).map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))
     }
 
     /// Update the host system with this state of this System

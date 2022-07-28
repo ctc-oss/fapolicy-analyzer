@@ -8,7 +8,6 @@
 
 pub mod error;
 pub mod fapolicyd;
-pub use fapolicyd::reload;
 
 pub mod rpm;
 pub use rpm::fapolicyd_version as version;
