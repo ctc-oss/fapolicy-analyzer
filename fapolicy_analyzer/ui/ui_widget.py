@@ -19,8 +19,7 @@ from dataclasses import dataclass
 from typing import Callable
 
 import gi
-from fapolicy_analyzer.ui import DOMAIN
-from fapolicy_analyzer.ui.ui_resources import RESOURCES
+from fapolicy_analyzer.ui import DOMAIN, get_resource
 from fapolicy_analyzer.util.format import snake_to_camelcase
 from rx.core.typing import Observable
 
@@ -82,7 +81,7 @@ class UIBuilderWidget(UIWidget, ABC):
 
     def __init__(self, name=None):
         name = name or self.__module__.split(".")[-1]
-        glade = RESOURCES.get(f"{name}.glade", "")
+        glade = get_resource(f"{name}.glade")
 
         if not glade:
             logging.error(f"Resource {name}.glade is not available.")
