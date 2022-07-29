@@ -2,7 +2,6 @@ on:
   push:
     branches:
       - master
-      - 'ci/*'
     tags:
       - 'v*'
   pull_request:
