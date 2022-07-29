@@ -204,6 +204,11 @@ impl DB {
         self.rules.get(&num)
     }
 
+    /// Get a RuleEntry ref by FK
+    pub fn rule_rev(&self, fk: usize) -> Option<&RuleEntry> {
+        self.rules.iter().find(|(_, e)| e._fk == fk).map(|(_, e)| e)
+    }
+
     /// Get a vec of all RuleEntry refs
     pub fn rules(&self) -> Vec<&RuleEntry> {
         self.rules.values().collect()
