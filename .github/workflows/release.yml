@@ -10,7 +10,7 @@ on:
       - master
       - 'release-*'
 
-name: RPM Build
+name: Build Artifacts
 
 jobs:
   build:
@@ -19,7 +19,7 @@ jobs:
         platform: [ 'fedora:34', 'fedora:35', 'registry.access.redhat.com/ubi8/ubi:8.6' ]
     runs-on: ubuntu-latest
     container: ${{ matrix.platform }}
-    name: Create RPM Release
+    name: Build
     steps:
       - name: Enable rocky appstream if ubi
         run: |
@@ -91,8 +91,8 @@ jobs:
           mv $HOME/rpmbuild/RPMS/*/*.rpm /tmp
           mv $HOME/rpmbuild/SRPMS/*.rpm  /tmp
           mkdir /tmp/tools
-          mv target/release/tdb /tmp/tools/tdb-${{ matrix.triple.target }}
-          mv target/release/rulec /tmp/tools/rulec-${{ matrix.triple.target }}
+          mv target/release/tdb /tmp/tools/tdb-${{ matrix.platform }}
+          mv target/release/rulec /tmp/tools/rulec-${{ matrix.platform }}
 
       - name: Archive RPMs
         uses: actions/upload-artifact@v2
