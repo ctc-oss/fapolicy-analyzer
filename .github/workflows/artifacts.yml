@@ -115,7 +115,7 @@ jobs:
       - name: Archive Tools
         uses: actions/upload-artifact@v2
         with:
-          name: fapolicy-analyzer-rpms
+          name: fapolicy-analyzer-tools
           path: /tmp/tools/*
 
       - name: Strip ref to tag
