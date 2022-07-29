@@ -1,0 +1,76 @@
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - master
+      - 'release-*'
+
+name: Tools Build
+
+jobs:
+  release:
+    name: build-release
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ${{ matrix.triple.os }}
+    env:
+      RUST_BACKTRACE: 1
+    strategy:
+      fail-fast: false
+      matrix:
+        rust: [ stable ]
+        triple:
+          - {
+            os: ubuntu-latest,
+            target: x86_64-unknown-linux-musl,
+            artifact_prefix: linux-musl,
+          }
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y -qq pkg-config libssl-dev musl-tools
+
+      - name: toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          target: ${{ matrix.triple.target }}
+
+      - name: build
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release --target=${{ matrix.triple.target }}
+          toolchain: ${{ matrix.rust }}
+
+      - name: package
+        shell: bash
+        run: |
+          mkdir /tmp/artifacts
+          
+          strip target/${{ matrix.triple.target }}/release/tdb || true
+          strip target/${{ matrix.triple.target }}/release/rulec || true
+          mv target/${{ matrix.triple.target }}/release/tdb /tmp/artifacts/tdb-${{ matrix.triple.target }}
+          mv target/${{ matrix.triple.target }}/release/rules /tmp/artifacts/rulec-${{ matrix.triple.target }}
+
+      - uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v')
+        name: release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          draft: true
+          prerelease: ${{ startsWith(github.ref, 'refs/tags/v0') || contains(github.ref, 'rc') }}
+          files: |
+            /tmp/artifacts/*
