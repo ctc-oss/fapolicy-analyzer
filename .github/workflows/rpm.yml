@@ -2,6 +2,7 @@ on:
   push:
     branches:
       - master
+      - 'ci/*'
     tags:
       - 'v*'
   pull_request:
@@ -73,21 +74,37 @@ jobs:
            cd $HOME/rpmbuild/SPECS
            dnf builddep fapolicy-analyzer.spec -y
 
+      - name: Build tools
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
+          toolchain: ${{ matrix.rust }}
+
       - name: Build the package
         run: |
            cd $HOME/rpmbuild/SPECS
            rpmbuild -ba fapolicy-analyzer.spec
 
-      - name: Export the package
+      - name: Export files
         run: |
           mv $HOME/rpmbuild/RPMS/*/*.rpm /tmp
           mv $HOME/rpmbuild/SRPMS/*.rpm  /tmp
+          mkdir /tmp/tools
+          mv target/release/tdb /tmp/tools
+          mv target/release/rulec /tmp/tools
 
       - name: Archive RPMs
         uses: actions/upload-artifact@v2
         with:
           name: fapolicy-analyzer-rpms
           path: /tmp/*.rpm
+
+      - name: Archive Tools
+        uses: actions/upload-artifact@v2
+        with:
+          name: fapolicy-analyzer-rpms
+          path: /tmp/tools/*
 
       - name: Strip ref to tag
         id: tag_name
@@ -107,3 +124,4 @@ jobs:
           draft: true
           files: |
             /tmp/*.rpm
+            /tmp/tools/*
