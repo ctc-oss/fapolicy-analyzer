@@ -26,29 +26,6 @@ pub enum Version {
     Release { major: u8, minor: u8, patch: u8 },
 }
 
-const RETRIES: u8 = 15;
-pub fn reload() -> Result<(), Error> {
-    let fapolicyd = Handle::default();
-    fapolicyd.stop()?;
-    sleep(Duration::from_secs(2));
-    for _ in 0..RETRIES {
-        sleep(Duration::from_secs(1));
-        if !fapolicyd.active()? {
-            fapolicyd.start()?;
-            break;
-        }
-    }
-    for _ in 0..RETRIES {
-        sleep(Duration::from_secs(1));
-        if fapolicyd.active()? {
-            return Ok(());
-        }
-    }
-    Err(FapolicydReloadFail(
-        "Could not reload after 10 tries".to_string(),
-    ))
-}
-
 /// filtering logic as implemented by fapolicyd rpm backend
 pub(crate) fn keep_entry(p: &str) -> bool {
     match p {
