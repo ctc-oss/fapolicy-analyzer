@@ -16,9 +16,22 @@ jobs:
   build:
     strategy:
       matrix:
-        platform: [ 'fedora:34', 'fedora:35', 'registry.access.redhat.com/ubi8/ubi:8.6' ]
+        rust: [ stable ]
+        triple:
+          - {
+            id: 'fc34',
+            platform: 'fedora:34',
+          }
+          - {
+            id: 'fc35',
+            platform: 'fedora:35',
+          }
+          - {
+            id: 'el8',
+            platform: 'registry.access.redhat.com/ubi8/ubi:8.6',
+          }
     runs-on: ubuntu-latest
-    container: ${{ matrix.platform }}
+    container: ${{ matrix.triple.platform }}
     name: Build
     steps:
       - name: Enable rocky appstream if ubi
@@ -71,8 +84,8 @@ jobs:
 
       - name: Install package build dependencies
         run: |
-           cd $HOME/rpmbuild/SPECS
-           dnf builddep fapolicy-analyzer.spec -y
+          cd $HOME/rpmbuild/SPECS
+          dnf builddep fapolicy-analyzer.spec -y
 
       - name: Build tools
         uses: actions-rs/cargo@v1
@@ -83,16 +96,16 @@ jobs:
 
       - name: Build the package
         run: |
-           cd $HOME/rpmbuild/SPECS
-           rpmbuild -ba fapolicy-analyzer.spec
+          cd $HOME/rpmbuild/SPECS
+          rpmbuild -ba fapolicy-analyzer.spec
 
       - name: Export files
         run: |
           mv $HOME/rpmbuild/RPMS/*/*.rpm /tmp
           mv $HOME/rpmbuild/SRPMS/*.rpm  /tmp
           mkdir /tmp/tools
-          mv target/release/tdb /tmp/tools/tdb-${{ matrix.platform }}
-          mv target/release/rulec /tmp/tools/rulec-${{ matrix.platform }}
+          mv target/release/tdb /tmp/tools/tdb-${{ matrix.triple.id }}
+          mv target/release/rulec /tmp/tools/rulec-${{ matrix.triple.id }}
 
       - name: Archive RPMs
         uses: actions/upload-artifact@v2
