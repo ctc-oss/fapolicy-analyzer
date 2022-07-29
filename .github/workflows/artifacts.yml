@@ -16,7 +16,6 @@ jobs:
   build:
     strategy:
       matrix:
-        rust: [ stable ]
         triple:
           - {
             id: 'fc34',
