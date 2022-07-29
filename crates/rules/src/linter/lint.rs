@@ -62,6 +62,20 @@ mod tests {
     }
 
     #[test]
+    fn lint_short_circuit_none2() -> Result<(), Box<dyn Error>> {
+        let db = deserialize_rules_db(
+            r#"
+        [foo.bar]
+        allow perm=any all : all
+        %foo=bar
+        "#,
+        )?;
+        let r = db.rule(1).unwrap();
+        assert!(r.msg.is_none());
+        Ok(())
+    }
+
+    #[test]
     fn lint_short_circuit_findings() -> Result<(), Box<dyn Error>> {
         let db = deserialize_rules_db(
             r#"
