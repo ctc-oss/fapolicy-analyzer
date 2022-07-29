@@ -44,7 +44,7 @@ class Loader(UIBuilderWidget):
             ) as path:
                 return GdkPixbuf.PixbufAnimation.new_from_file(path.as_posix())
         except Exception as ex:
-            logging.warn("Could not loader image resource")
+            logging.warning("Could not loader image resource")
             logging.debug("Error loading filled_fading_balls.gif", ex)
 
         return None

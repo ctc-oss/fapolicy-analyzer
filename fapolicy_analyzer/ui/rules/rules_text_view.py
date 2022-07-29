@@ -42,11 +42,9 @@ class RulesTextView(UIBuilderWidget, Events):
         self.__buffer = GtkSource.Buffer()
         language = self.__get_view_lang()
         if language:
-            print(f"loading language {language}")
             self.__buffer.set_language(language)
         style = self.__get_view_style()
         if style:
-            print(f"loading style {style}")
             self.__buffer.set_style_scheme(self.__get_view_style())
         self.__buffer.connect("changed", self.on_rules_changed)
         self.__text_view.set_buffer(self.__buffer)
@@ -69,7 +67,7 @@ class RulesTextView(UIBuilderWidget, Events):
                         ]
                     )
         except Exception as ex:
-            logging.warn("Could not load the rules language file")
+            logging.warning("Could not load the rules language file")
             logging.debug(
                 "Error loading GtkSource language file fapolicyd-rules.lang", ex
             )
@@ -84,7 +82,7 @@ class RulesTextView(UIBuilderWidget, Events):
             ) as path:
                 style_manager.prepend_search_path(path.as_posix())
         except Exception as ex:
-            logging.warn("Could not load the rules style file")
+            logging.warning("Could not load the rules style file")
             logging.debug("Error loading GtkSource style file fapolicyd.xml", ex)
 
         return style_manager.get_scheme("fapolicyd")
