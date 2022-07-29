@@ -1,4 +1,0 @@
-allow perm=any uid=0 trust=1 : all
-allow perm=any uid=1000 trust=1 : all
-allow_syslog perm=execute all : trust=1
-deny_syslog perm=execute all : all

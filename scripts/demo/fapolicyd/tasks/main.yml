@@ -26,18 +26,20 @@
     groups: fapolicyd
     append: yes
 
-- name: Install demonstration rules.d
+- name: Ensure rules.d does not exist
+  file:
+    path: /etc/fapolicyd/rules.d
+    state: absent
+
+- name: Install demonstration rules [RHEL8]
   copy:
-    src: "{{ item.src }}"
-    dest: "/etc/fapolicyd/{{ item.dest }}"
-  loop:
-    - { src: trust.compiled.rules, dest: compiled.rules }
-    - { src: rules.d, dest: rules.d }
+    src: "rules.d"
+    dest: "/etc/fapolicyd"
   when:
     - ansible_facts['distribution'] == "RedHat"
     - ansible_facts['distribution_major_version'] == "8"
 
-- name: Install demonstration fapolicyd.rules [LEGACY]
+- name: Install demonstration rules [FC34]
   copy:
     src: "trust.rules.md"
     dest: "/etc/fapolicyd/fapolicyd.rules"
