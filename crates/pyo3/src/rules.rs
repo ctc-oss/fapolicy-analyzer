@@ -10,7 +10,7 @@ use pyo3::prelude::*;
 use pyo3::{exceptions, PyObjectProtocol};
 
 use fapolicy_rules::db::Entry::*;
-use fapolicy_rules::db::DB;
+use fapolicy_rules::db::{Entry, DB};
 use fapolicy_rules::error::Error::MalformedFileMarker;
 use fapolicy_rules::ops::Changeset;
 use fapolicy_rules::parser::parse::StrTrace;
@@ -142,7 +142,7 @@ impl PyChangeset {
     }
 
     pub fn rules(&self) -> Vec<PyRule> {
-        rules_to_vec(self.rs.get())
+        to_vec(self.rs.get())
     }
 
     pub fn set(&mut self, text: &str) -> bool {
@@ -172,7 +172,7 @@ fn rule_text_error_check(txt: &str) -> Option<String> {
     }
 }
 
-pub(crate) fn rules_to_vec(db: &DB) -> Vec<PyRule> {
+pub(crate) fn to_vec(db: &DB) -> Vec<PyRule> {
     db.rules()
         .iter()
         .map(|e| {
@@ -196,24 +196,38 @@ pub(crate) fn rules_to_vec(db: &DB) -> Vec<PyRule> {
         .collect()
 }
 
-pub(crate) fn entries_to_vec(db: &DB) -> Vec<PyRule> {
+pub(crate) fn to_text(db: &DB) -> String {
     db.iter()
-        .map(|(id, (origin, e))| {
-            let (valid, text, info) = match e {
-                Invalid { text, error } => {
-                    (false, text.clone(), vec![("e".to_string(), error.clone())])
-                }
-                InvalidSet { text, error } => {
-                    (false, text.clone(), vec![("e".to_string(), error.clone())])
-                }
-                ValidRule(r) => (true, r.to_string(), vec![]),
-                ValidSet(s) => (true, s.to_string(), vec![]),
-                RuleWithWarning(r, w) => (true, r.to_string(), vec![("w".to_string(), w.clone())]),
-                SetWithWarning(r, w) => (true, r.to_string(), vec![("w".to_string(), w.clone())]),
-            };
-            PyRule::new(*id, text, origin.to_string(), info, valid)
+        .fold((None, String::new()), |x, (_, (origin, e))| match x {
+            // no origin established yet
+            (None, _) => (
+                Some(origin.clone()),
+                format!("[{}]\n{}", origin, text_for_entry(e)),
+            ),
+            // same origin as previous
+            (Some(last_origin), acc_text) if last_origin == *origin => (
+                Some(last_origin),
+                format!("{}\n{}", acc_text, text_for_entry(e)),
+            ),
+            // origin has changed
+            (Some(_), acc_text) => (
+                Some(origin.clone()),
+                format!("{}\n\n[{}]\n{}", acc_text, origin, text_for_entry(e)),
+            ),
         })
-        .collect()
+        .1
+}
+
+fn text_for_entry(e: &Entry) -> String {
+    match e {
+        Invalid { text, .. } => text.clone(),
+        InvalidSet { text, .. } => text.clone(),
+        ValidRule(r) => r.to_string(),
+        ValidSet(s) => s.to_string(),
+        RuleWithWarning(r, _) => r.to_string(),
+        SetWithWarning(r, _) => r.to_string(),
+        e @ Comment(_) => e.to_string(),
+    }
 }
 
 // #[pyfunction]
@@ -225,4 +239,17 @@ pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyChangeset>()?;
     m.add_function(wrap_pyfunction!(rule_text_error_check, m)?)?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::rules::text_for_entry;
+    use fapolicy_rules::db::Entry::Comment;
+
+    #[test]
+    fn test_comment_prefix() {
+        let text = text_for_entry(&Comment("foo".to_string()));
+        assert!(text.starts_with('#'));
+        assert!(text.ends_with("foo"));
+    }
 }

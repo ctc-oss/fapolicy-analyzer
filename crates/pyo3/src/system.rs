@@ -19,9 +19,9 @@ use fapolicy_app::sys::deploy_app_state;
 use super::trust::PyTrust;
 use crate::acl::{PyGroup, PyUser};
 use crate::analysis::PyEventLog;
-use crate::rules;
 use crate::rules::PyRule;
 use crate::trust;
+use crate::{daemon, rules};
 
 #[pyclass(module = "app", name = "System")]
 #[derive(Clone)]
@@ -99,10 +99,7 @@ impl PySystem {
 
     /// Update the host system with this state of this System and signal fapolicyd to reload trust
     pub fn deploy(&self) -> PyResult<()> {
-        self.deploy_only().and_then(|_| {
-            fapolicy_daemon::reload()
-                .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))
-        })
+        daemon::deploy(self).map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))
     }
 
     /// Update the host system with this state of this System
@@ -148,29 +145,11 @@ impl PySystem {
     }
 
     fn rules(&self) -> Vec<PyRule> {
-        rules::rules_to_vec(&self.rs.rules_db)
+        rules::to_vec(&self.rs.rules_db)
     }
 
     fn rules_text(&self) -> String {
-        rules::entries_to_vec(&self.rs.rules_db)
-            .into_iter()
-            .fold((None, String::new()), |x, r| match x {
-                // no origin established yet
-                (None, _) => (
-                    Some(r.origin.clone()),
-                    format!("[{}]\n{}", r.origin, r.text),
-                ),
-                // same origin as previous
-                (Some(last_origin), acc_text) if last_origin == r.origin => {
-                    (Some(last_origin), format!("{}\n{}", acc_text, r.text))
-                }
-                // origin has changed
-                (Some(_), acc_text) => (
-                    Some(r.origin.clone()),
-                    format!("{}\n\n[{}]\n{}", acc_text, r.origin, r.text),
-                ),
-            })
-            .1
+        rules::to_text(&self.rs.rules_db)
     }
 }
 

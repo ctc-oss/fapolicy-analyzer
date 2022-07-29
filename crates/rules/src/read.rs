@@ -106,6 +106,7 @@ fn read_rules_db(xs: Vec<RuleSource>) -> Result<DB, Error> {
             SetDef(s) => Some((source, Entry::ValidSet(s))),
             Malformed(text, error) => Some((source, Entry::Invalid { text, error })),
             MalformedSet(text, error) => Some((source, Entry::InvalidSet { text, error })),
+            Comment(text) => Some((source, Entry::Comment(text))),
             _ => None,
         })
         .collect();

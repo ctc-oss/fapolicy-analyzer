@@ -1,8 +1,21 @@
 # prepare fapolicy analyzer installation
 ---
-- name: analyzer rpm url
+
+- name: set el8 platform variable
+  set_fact:
+    analyzer_platform: "{{ lookup('lines', 'echo el8') }}"
+  when:
+    - ansible_facts['distribution'] == "RedHat"
+
+- name: set fc34 platform variable
+  set_fact:
+    analyzer_platform: "{{ lookup('lines', 'echo fc34') }}"
+  when:
+    - ansible_facts['distribution'] == "Fedora"
+
+- name: format analyzer rpm url
   debug:
-    msg: "{{ analyzer_rpm_download_url }}"
+    msg: "{{ lookup('template', 'analyzer_url.j2') }}"
     verbosity: 0
 
 # todo;; gpg signing
@@ -10,7 +23,7 @@
   yum:
     state: present
     name:
-      - "{{ analyzer_rpm_download_url }}"
+      - "{{ lookup('template', 'analyzer_url.j2') }}"
     disable_gpg_check: yes
 
 - name: update gtk mimes

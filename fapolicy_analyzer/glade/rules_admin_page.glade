@@ -34,7 +34,7 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <child>
-              <object class="GtkBox" id="guidedEditorContent">
+              <object class="GtkBox" id="editorViewContent">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="orientation">vertical</property>
@@ -44,17 +44,17 @@
               </object>
             </child>
             <child type="tab">
-              <object class="GtkLabel" id="tableView">
+              <object class="GtkLabel" id="editorView">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Guided Editor</property>
+                <property name="label" translatable="yes">Rules Editor</property>
               </object>
               <packing>
                 <property name="tab_fill">False</property>
               </packing>
             </child>
             <child>
-              <object class="GtkBox" id="textEditorContent">
+              <object class="GtkBox" id="rulesViewContent">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="orientation">vertical</property>
@@ -67,10 +67,10 @@
               </packing>
             </child>
             <child type="tab">
-              <object class="GtkLabel" id="textView">
+              <object class="GtkLabel" id="rulesView">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Text Editor</property>
+                <property name="label" translatable="yes">Rules View</property>
               </object>
               <packing>
                 <property name="position">1</property>
