@@ -91,8 +91,8 @@ jobs:
           mv $HOME/rpmbuild/RPMS/*/*.rpm /tmp
           mv $HOME/rpmbuild/SRPMS/*.rpm  /tmp
           mkdir /tmp/tools
-          mv target/release/tdb /tmp/tools
-          mv target/release/rulec /tmp/tools
+          mv target/release/tdb /tmp/tools/tdb-${{ matrix.triple.target }}
+          mv target/release/rulec /tmp/tools/rulec-${{ matrix.triple.target }}
 
       - name: Archive RPMs
         uses: actions/upload-artifact@v2
