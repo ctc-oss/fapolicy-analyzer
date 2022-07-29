@@ -113,8 +113,6 @@ class SessionManager:
 
     # ######################## Edit Session Mgmt ############################
     def save_edit_session(self, data: Sequence[Changeset], strJsonFile: str):
-        def rules_to_string(rules):
-            return "\n".join([r.text for r in rules])
 
         # Convert changeset list to list of dicts containing path/action pairs
         dictPA = [c.serialize() for c in data]

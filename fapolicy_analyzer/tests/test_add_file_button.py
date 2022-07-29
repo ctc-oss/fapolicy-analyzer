@@ -13,16 +13,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import gi
-import pytest
-
-import context  # noqa: F401
-
-gi.require_version("Gtk", "3.0")
+import context  # noqa: F401 # isort: skip
 from unittest.mock import MagicMock
 
+import gi
+import pytest
 from fapolicy_analyzer.ui.add_file_button import AddFileButton
-from gi.repository import Gtk
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk  # isort: skip
 
 
 @pytest.fixture

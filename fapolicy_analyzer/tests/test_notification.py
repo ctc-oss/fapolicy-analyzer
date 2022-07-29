@@ -13,23 +13,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import context  # noqa: F401
-import pytest
-import gi
-
-gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
-from callee import InstanceOf, Attrs
-from fapolicy_analyzer.redux import Action
-from rx.subject import Subject
+import context  # noqa: F401 # isort: skip
 from time import sleep
-from fapolicy_analyzer.ui.actions import (
-    Notification as Note,
-    NotificationType,
-    REMOVE_NOTIFICATION,
-)
+
+import gi
+import pytest
+from callee import Attrs, InstanceOf
+from fapolicy_analyzer.redux import Action
+from fapolicy_analyzer.ui.actions import REMOVE_NOTIFICATION
+from fapolicy_analyzer.ui.actions import Notification as Note
+from fapolicy_analyzer.ui.actions import NotificationType
 from fapolicy_analyzer.ui.notification import Notification
 from fapolicy_analyzer.ui.session_manager import sessionManager
+from rx.subject import Subject
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk  # isort: skip
 
 
 @pytest.fixture()

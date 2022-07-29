@@ -15,10 +15,18 @@
 
 import logging
 from concurrent.futures import ThreadPoolExecutor
-from typing import Callable, Sequence
+from typing import Callable
 
 import gi
 from fapolicy_analyzer import System, rollback_fapolicyd
+from fapolicy_analyzer.redux import (
+    Action,
+    ReduxFeatureModule,
+    combine_epics,
+    create_feature_module,
+    of_init_feature,
+    of_type,
+)
 from fapolicy_analyzer.ui.actions import (
     APPLY_CHANGESETS,
     DEPLOY_ANCILLARY_TRUST,
@@ -55,18 +63,9 @@ from fapolicy_analyzer.ui.actions import (
     system_initialization_error,
     system_received,
 )
-from fapolicy_analyzer.ui.changeset_wrapper import Changeset
 from fapolicy_analyzer.ui.reducers import system_reducer
 from fapolicy_analyzer.ui.strings import SYSTEM_INITIALIZATION_ERROR
 from fapolicy_analyzer.util.fapd_dbase import fapd_dbase_snapshot
-from fapolicy_analyzer.redux import (
-    Action,
-    ReduxFeatureModule,
-    combine_epics,
-    create_feature_module,
-    of_init_feature,
-    of_type,
-)
 from rx import of, pipe
 from rx.operators import catch, ignore_elements, map
 
@@ -122,7 +121,7 @@ def create_system_feature(
             executor.submit(execute_system)
         return init_system()
 
-    def _apply_changesets(action: Action) -> Sequence[Changeset]:
+    def _apply_changesets(action: Action) -> Action:
         global _system
         changesets = action.payload
         for c in changesets:
