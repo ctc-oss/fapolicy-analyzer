@@ -17,7 +17,7 @@ use fapolicy_trust::db::DB as TrustDB;
 
 /// An Event parsed from a fapolicyd log
 #[pyclass(module = "log", name = "Event")]
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct PyEvent {
     rs: Analysis,
 }
@@ -47,6 +47,7 @@ pub(crate) fn expand_on_gid(rs: &Analysis) -> Vec<PyEvent> {
             },
         })
     }
+    dbg!(&r);
     r
 }
 
