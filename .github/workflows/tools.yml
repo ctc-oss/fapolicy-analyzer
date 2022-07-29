@@ -2,6 +2,7 @@ on:
   push:
     branches:
       - master
+      - 'ci/*'
     tags:
       - 'v*'
   pull_request:
@@ -64,7 +65,7 @@ jobs:
           mv target/${{ matrix.triple.target }}/release/rules /tmp/artifacts/rulec-${{ matrix.triple.target }}
 
       - uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/v')
+#        if: startsWith(github.ref, 'refs/tags/v')
         name: release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
