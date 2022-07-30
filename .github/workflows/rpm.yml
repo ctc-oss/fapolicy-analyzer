@@ -85,13 +85,6 @@ jobs:
           cd $HOME/rpmbuild/SPECS
           dnf builddep fapolicy-analyzer.spec -y
 
-      - name: Build tools
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --release
-          toolchain: ${{ matrix.rust }}
-
       - name: Build the package
         run: |
           cd $HOME/rpmbuild/SPECS
@@ -101,21 +94,12 @@ jobs:
         run: |
           mv $HOME/rpmbuild/RPMS/*/*.rpm /tmp
           mv $HOME/rpmbuild/SRPMS/*.rpm  /tmp
-          mkdir /tmp/tools
-          mv target/release/tdb /tmp/tools/tdb-${{ matrix.triple.id }}
-          mv target/release/rulec /tmp/tools/rulec-${{ matrix.triple.id }}
 
       - name: Archive RPMs
         uses: actions/upload-artifact@v2
         with:
           name: fapolicy-analyzer-rpms
           path: /tmp/*.rpm
-
-      - name: Archive Tools
-        uses: actions/upload-artifact@v2
-        with:
-          name: fapolicy-analyzer-tools
-          path: /tmp/tools/*
 
       - name: Strip ref to tag
         id: tag_name
@@ -135,4 +119,3 @@ jobs:
           draft: true
           files: |
             /tmp/*.rpm
-            /tmp/tools/*
