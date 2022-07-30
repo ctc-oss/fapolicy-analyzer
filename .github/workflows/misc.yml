@@ -7,7 +7,7 @@ on:
       - master
       - 'release-*'
 
-name: CI
+name: Common CI
 
 jobs:
   headers:
