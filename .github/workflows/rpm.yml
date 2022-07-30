@@ -100,22 +100,3 @@ jobs:
         with:
           name: fapolicy-analyzer-rpms
           path: /tmp/*.rpm
-
-      - name: Strip ref to tag
-        id: tag_name
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d/ -f3)
-
-      - uses: softprops/action-gh-release@v1
-        name: Create Release
-        id: create_release
-        if: startsWith(github.ref, 'refs/tags/v')
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          name: Release ${{ steps.tag_name.outputs.VERSION }}
-          tag_name: ${{ steps.tag_name.outputs.VERSION }}
-          prerelease: ${{ startsWith(github.ref, 'refs/tags/v0') || contains(github.ref, 'rc') }}
-          draft: true
-          files: |
-            /tmp/*.rpm
