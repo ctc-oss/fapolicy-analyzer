@@ -14,7 +14,8 @@ name: Tools Build
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: fedora:29
+    # 28 has glibc-2.27, compatible >= el8, fc, ubuntu 18.04
+    container: fedora:28
     name: Build
     steps:
       - name: Install build deps
