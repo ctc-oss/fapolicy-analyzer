@@ -14,7 +14,7 @@ name: Tools Build
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: fedora:33
+    container: fedora:29
     name: Build
     steps:
       - name: Install build deps
