@@ -14,11 +14,12 @@ name: Tools Build
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: fedora:34
+    container: fedora:33
     name: Build
     steps:
       - name: Install build deps
         run: |
+          dnf groupinstall "Development Tools"
           dnf install -y dbus-devel
 
       - name: Install toolchain
