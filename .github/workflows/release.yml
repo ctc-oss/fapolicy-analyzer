@@ -4,16 +4,11 @@ on:
       - master
     tags:
       - 'v*'
-  pull_request:
-    branches:
-      - master
-      - 'release-*'
 
 name: Release
 
 jobs:
   release:
-    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     name: Build
     steps:
