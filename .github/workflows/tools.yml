@@ -9,7 +9,7 @@ on:
       - master
       - 'release-*'
 
-name: Tools Build
+name: Tools
 
 jobs:
   build:
