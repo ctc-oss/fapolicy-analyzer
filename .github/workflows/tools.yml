@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Install build deps
         run: |
-          dnf groupinstall "Development Tools"
+          dnf groupinstall -y "Development Tools"
           dnf install -y dbus-devel
 
       - name: Install toolchain
