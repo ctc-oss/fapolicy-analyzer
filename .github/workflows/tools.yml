@@ -21,6 +21,9 @@ jobs:
         run: |
           dnf install -y dbus-devel
 
+      - name: Install toolchain
+        uses: actions-rs/toolchain@v1
+
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
@@ -35,7 +38,6 @@ jobs:
         with:
           command: build
           args: --release
-          toolchain: stable
 
       - name: Strip ref to tag
         id: tag_name
