@@ -13,12 +13,24 @@ name: RPM
 
 jobs:
   build:
-    name: Build ${{ matrix.platform }}
+    name: Build ${{ matrix.triple.name }}
     strategy:
       matrix:
-        platform: ['fedora:34', 'fedora:35', 'registry.access.redhat.com/ubi8/ubi:8.6']
+        triple:
+          - {
+            name: 'fc34',
+            image: 'fedora:34',
+          }
+          - {
+            name: 'fc35',
+            image: 'fedora:35',
+          }
+          - {
+            name: 'el8'
+            image: 'registry.access.redhat.com/ubi8/ubi:8.6',
+          }
     runs-on: ubuntu-latest
-    container: ${{ matrix.platform }}
+    container: ${{ matrix.triple.image }}
     steps:
       - name: Enable rocky appstream if ubi
         run: |
