@@ -99,4 +99,6 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         with:
           tag_name: ${{ steps.tag_name.outputs.VERSION }}
+          prerelease: ${{ startsWith(github.ref, 'refs/tags/v0') || contains(github.ref, 'rc') }}
+          draft: true
           files: /tmp/*.rpm
