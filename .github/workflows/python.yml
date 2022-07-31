@@ -1,10 +1,11 @@
 on:
   push:
     branches:
-      - master
+      - 'master'
+      - 'release-*'
   pull_request:
     branches:
-      - master
+      - 'master'
       - 'release-*'
 
 name: Python CI

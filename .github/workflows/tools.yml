@@ -1,12 +1,13 @@
 on:
   push:
     branches:
-      - master
+      - 'master'
+      - 'release-*'
     tags:
       - 'v*'
   pull_request:
     branches:
-      - master
+      - 'master'
       - 'release-*'
 
 name: Tools
