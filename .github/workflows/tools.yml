@@ -53,3 +53,10 @@ jobs:
         with:
           name: fapolicy-analyzer-tools
           path: /tmp/tools/*
+
+      - name: Release artifacts
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          tag_name: ${{ steps.tag_name.outputs.VERSION }}
+          files: /tmp/tools/*

@@ -15,21 +15,9 @@ jobs:
   build:
     strategy:
       matrix:
-        triple:
-          - {
-            id: 'fc34',
-            platform: 'fedora:34',
-          }
-          - {
-            id: 'fc35',
-            platform: 'fedora:35',
-          }
-          - {
-            id: 'el8',
-            platform: 'registry.access.redhat.com/ubi8/ubi:8.6',
-          }
+        platform: ['fedora:34', 'fedora:35', 'registry.access.redhat.com/ubi8/ubi:8.6']
     runs-on: ubuntu-latest
-    container: ${{ matrix.triple.platform }}
+    container: ${{ matrix.platform }}
     name: Build
     steps:
       - name: Enable rocky appstream if ubi
@@ -90,6 +78,11 @@ jobs:
           cd $HOME/rpmbuild/SPECS
           rpmbuild -ba fapolicy-analyzer.spec
 
+      - name: Strip ref to tag
+        id: tag_name
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d/ -f3)
+
       - name: Export files
         run: |
           mv $HOME/rpmbuild/RPMS/*/*.rpm /tmp
@@ -100,3 +93,10 @@ jobs:
         with:
           name: fapolicy-analyzer-rpms
           path: /tmp/*.rpm
+
+      - name: Release artifacts
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          tag_name: ${{ steps.tag_name.outputs.VERSION }}
+          files: /tmp/*.rpm
