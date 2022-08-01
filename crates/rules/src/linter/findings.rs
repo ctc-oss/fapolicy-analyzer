@@ -65,9 +65,10 @@ pub fn l004_duplicate_rule(id: usize, r: &Rule, db: &DB) -> Option<String> {
     // the passed id is 1 indexed, and the iter is 0 indexed, so all rule ids need adjusted
     db.iter()
         .filter(|(&other, _)| other + 1 != id)
-        .find_map(|(dupe, (_, e))| match e {
+        .find_map(|(fk, (_, e))| match e {
             Entry::ValidRule(other) if r == other => {
-                Some(format!("{} ({}, {})", L004_MESSAGE, id, dupe + 1))
+                let dupe = db.rule_rev(*fk).unwrap();
+                Some(format!("{} ({})", L004_MESSAGE, dupe.id))
             }
             _ => None,
         })
@@ -86,6 +87,7 @@ mod tests {
         [foo.bar]
         deny perm=execute all : all
         allow perm=open all : all
+        %foo=bar
         allow_log perm=open all : all
         allow perm=open all : all
         "#,
@@ -95,11 +97,7 @@ mod tests {
         assert!(r.msg.is_some());
         println!("{}", r.msg.as_ref().unwrap());
         assert!(r.msg.as_ref().unwrap().starts_with(L004_MESSAGE));
-        assert!(r
-            .msg
-            .as_ref()
-            .unwrap()
-            .ends_with(&format!("({}, {})", 2, 4)));
+        assert!(r.msg.as_ref().unwrap().ends_with(&format!("({})", 4)));
         Ok(())
     }
 }
