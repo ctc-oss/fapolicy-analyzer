@@ -46,3 +46,17 @@
   when:
     - ansible_facts['distribution'] == "Fedora"
     - ansible_facts['distribution_major_version'] == "34"
+
+- name: Add RuntimeMaxSec to fapolicyd service
+  lineinfile:
+    path: /usr/lib/systemd/system/fapolicyd.service
+    regexp: '^RuntimeMaxSec='
+    insertafter: '^ExecStart=/usr/sbin/fapolicyd'
+    line: 'RuntimeMaxSec=120'
+    state: present
+
+- name: Disable restart of fapolicyd service
+  lineinfile:
+    path: /usr/lib/systemd/system/fapolicyd.service
+    regexp: '^Restart=.*'
+    state: absent

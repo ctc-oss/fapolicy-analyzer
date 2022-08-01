@@ -1,9 +1,20 @@
 # install and initialize dependencies
 ---
+- set_fact:
+    platform_id: "fc{{ ansible_facts['distribution_major_version'] }}"
+  when:
+    - ansible_facts['distribution'] == "Fedora"
+
+- set_fact:
+    platform_id: "el{{ ansible_facts['distribution_major_version'] }}"
+  when:
+    - ansible_facts['distribution'] == "RedHat"
+
 - name: install misc requirements common to the RedHat family
   yum:
     state: present
     name:
+      - jq
       - nano
       - which
       - xorg-x11-xauth
