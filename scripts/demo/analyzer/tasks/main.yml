@@ -1,32 +1,46 @@
 # prepare fapolicy analyzer installation
 ---
 
-- name: set el8 platform variable
-  set_fact:
-    analyzer_platform: "{{ lookup('lines', 'echo el8') }}"
-  when:
-    - ansible_facts['distribution'] == "RedHat"
+- set_fact:
+    analyzer_version: "{{ lookup('env', 'analyzer_version') | default('latest', True) }}"
 
-- name: set fc34 platform variable
-  set_fact:
-    analyzer_platform: "{{ lookup('lines', 'echo fc34') }}"
-  when:
-    - ansible_facts['distribution'] == "Fedora"
+- name: get latest release tag
+  shell: curl https://api.github.com/repos/ctc-oss/fapolicy-analyzer/releases/latest | jq -r .tag_name
+  register: analyzer_latest_version_lookup
+  when: analyzer_version == 'latest'
 
-- name: format analyzer rpm url
+- set_fact:
+    analyzer_version: "{{ analyzer_latest_version_lookup.stdout | default(analyzer_version, True) }}"
+
+- name: show version
   debug:
-    msg: "{{ lookup('template', 'analyzer_url.j2') }}"
+    msg: "{{ analyzer_version }}"
     verbosity: 0
 
-# todo;; gpg signing
-- name: install analyzer
+- name: get release metadata
+  shell: "curl https://api.github.com/repos/ctc-oss/fapolicy-analyzer/releases | jq -r '.[] | select(.tag_name == \"{{ analyzer_version }}\")'"
+  register: analyzer_release_json
+
+- name: register release url
+  shell: "echo '{{ analyzer_release_json.stdout }}' | jq -r '.assets[].browser_download_url | select(contains(\"{{ platform_id }}.x86\"))'"
+  register: analyzer_release_url
+
+- set_fact:
+    analyzer_release_url: "{{ analyzer_release_url.stdout }}"
+
+- name: show rpm url
+  debug:
+    msg: "{{ analyzer_release_url }}"
+    verbosity: 0
+
+- name: install
   yum:
+    name: "{{ analyzer_release_url }}"
     state: present
-    name:
-      - "{{ lookup('template', 'analyzer_url.j2') }}"
-    disable_gpg_check: yes
+    disable_gpg_check: yes  # todo;; gpg signing
 
 - name: update gtk mimes
   shell: |
     update-mime-database /usr/share/mime
     gdk-pixbuf-query-loaders-64 --update-cache
+

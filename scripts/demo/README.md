@@ -14,11 +14,12 @@ vagrant up
 vagrant up --provision
 ```
 
-## Use a GitHub release RPM
+## Use a GitHub release tag
 ```
-export rpm_url='https://github.com/ctc-oss/fapolicy-analyzer/releases/download/v0.3.0-rc02108301/fapolicy-analyzer-0.3.0-0.rc02108301.fc34.x86_64.rpm'
-vagrant up --provision
+analyzer_version=v0.5.3 vagrant up --provision
 ```
+
+if `analyzer_version` is not specified the latest release will be used (non-prerelease)
 
 ## Use a locally built RPM
 ```
