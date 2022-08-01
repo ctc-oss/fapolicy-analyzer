@@ -6,12 +6,14 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use crate::db::DB;
+use crate::db::{Entry, DB};
 use crate::object::Part;
 use crate::Rule;
 use std::path::PathBuf;
 
 pub(crate) const L001_MESSAGE: &str = "Using any+all+all here will short-circuit all other rules.";
+pub(crate) const L004_MESSAGE: &str = "Duplicate rules detected";
+
 pub fn l001(id: usize, r: &Rule, db: &DB) -> Option<String> {
     if id < db.rules().len() // rules are indexed from 1
         && r.perm.is_any()
@@ -57,4 +59,47 @@ pub fn l003_object_path_missing(_id: usize, r: &Rule, _db: &DB) -> Option<String
         .collect::<Vec<String>>()
         .first()
         .cloned()
+}
+
+pub fn l004_duplicate_rule(id: usize, r: &Rule, db: &DB) -> Option<String> {
+    // the passed id is 1 indexed, and the iter is 0 indexed, so all rule ids need adjusted
+    db.iter()
+        .filter(|(&other, _)| other + 1 != id)
+        .find_map(|(dupe, (_, e))| match e {
+            Entry::ValidRule(other) if r == other => {
+                Some(format!("{} ({}, {})", L004_MESSAGE, id, dupe + 1))
+            }
+            _ => None,
+        })
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::linter::findings::L004_MESSAGE;
+    use crate::read::deserialize_rules_db;
+    use std::error::Error;
+
+    #[test]
+    fn lint_duplicates() -> Result<(), Box<dyn Error>> {
+        let db = deserialize_rules_db(
+            r#"
+        [foo.bar]
+        deny perm=execute all : all
+        allow perm=open all : all
+        allow_log perm=open all : all
+        allow perm=open all : all
+        "#,
+        )?;
+        let r = db.rule(2).unwrap();
+
+        assert!(r.msg.is_some());
+        println!("{}", r.msg.as_ref().unwrap());
+        assert!(r.msg.as_ref().unwrap().starts_with(L004_MESSAGE));
+        assert!(r
+            .msg
+            .as_ref()
+            .unwrap()
+            .ends_with(&format!("({}, {})", 2, 4)));
+        Ok(())
+    }
 }
