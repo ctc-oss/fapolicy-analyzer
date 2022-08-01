@@ -13,7 +13,7 @@ use crate::Rule;
 type LintFn = fn(usize, &Rule, &DB) -> Option<String>;
 
 pub fn lint_db(db: DB) -> DB {
-    let lints: Vec<LintFn> = vec![l001, l002, l003];
+    let lints: Vec<LintFn> = vec![l001, l002_subject_path_missing, l003_object_path_missing];
 
     db.iter()
         .map(|(fk, (source, def))| match def {
