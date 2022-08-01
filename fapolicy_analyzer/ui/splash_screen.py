@@ -15,14 +15,14 @@
 
 import sys
 
-import gi
-
-gi.require_version("Gtk", "3.0")
 import fapolicy_analyzer.ui.strings as strings
+import gi
 from fapolicy_analyzer.ui.main_window import MainWindow
 from fapolicy_analyzer.ui.store import get_system_feature
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
-from gi.repository import GLib, Gtk
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import GLib, Gtk  # isort: skip
 
 
 def trust_db_access_failure_dlg():

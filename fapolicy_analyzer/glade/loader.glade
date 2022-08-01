@@ -29,7 +29,6 @@
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <property name="valign">end</property>
-        <property name="pixbuf">../resources/filled_fading_balls.gif</property>
       </object>
       <packing>
         <property name="expand">True</property>

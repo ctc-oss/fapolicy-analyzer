@@ -13,11 +13,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import context  # noqa: F401 # isort: skip
+from unittest.mock import call
 
 import gi
 import pytest
 from fapolicy_analyzer.ui.rules.rules_text_view import RulesTextView
+
+import context  # noqa: F401 # isort: skip
+
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
@@ -42,4 +45,20 @@ def test_renders_rules(widget):
             textBuffer.get_start_iter(), textBuffer.get_end_iter(), True
         )
         == "foo/"
+    )
+
+
+def test_handles_bad_language_file(mocker):
+    mocker.patch(
+        "fapolicy_analyzer.ui.rules.rules_text_view.resources.path",
+        return_value="bad path",
+    )
+    mock_logger = mocker.patch("fapolicy_analyzer.ui.rules.rules_text_view.logging")
+    widget = RulesTextView()
+    assert widget is not None
+    mock_logger.warning.assert_has_calls(
+        [
+            call("Could not load the rules language file"),
+            call("Could not load the rules style file"),
+        ]
     )

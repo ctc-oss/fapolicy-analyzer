@@ -133,6 +133,18 @@ GET_GROUPS_LOG_ERROR_MSG = _(
     "An error occurred trying to retrieve the group list. Please try again."
 )
 
+RESOURCE_LOAD_FAILURE_DIALOG_TEXT = _("Could not load application resources")
+RESOURCE_LOAD_FAILURE_DIALOG_ADD_TEXT = _(
+    """The required application resource files could not be loaded from disk.
+The fapolicy analyzer application cannot open.
+
+Some possible reasons for this failure:
+
+1. Incorrect user permissions on the application resource directory.
+
+2. An incorrectly configured fapolicyd rule set."""
+)
+
 TRUST_DB_READ_FAILURE_DIALOG_TITLE = _("Trust Database")
 TRUST_DB_READ_FAILURE_DIALOG_TEXT = _(
     """

@@ -1,0 +1,71 @@
+on:
+  push:
+    branches:
+      - 'master'
+      - 'release-*'
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - 'master'
+      - 'release-*'
+
+name: Tools
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    # 28 has glibc-2.27, compatible >= el8, fc, ubuntu 18.04
+    container: fedora:28
+    steps:
+      - name: Install build deps
+        run: |
+          dnf groupinstall -y "Development Tools"
+          dnf install -y dbus-devel
+
+      - name: Install toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: 1.58.1
+
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: Generate package version
+        id: package_version
+        run: echo ::set-output name=TAG::$(./version.py)
+
+      - name: Build tools
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
+
+      - name: Strip ref to tag
+        id: tag_name
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d/ -f3)
+
+      - name: Export files
+        run: |
+          mkdir /tmp/tools
+          mv target/release/tdb /tmp/tools/tdb-${{ steps.tag_name.outputs.VERSION }}
+          mv target/release/rulec /tmp/tools/rulec-${{ steps.tag_name.outputs.VERSION }}
+
+      - name: Archive Tools
+        uses: actions/upload-artifact@v2
+        with:
+          name: fapolicy-analyzer-tools
+          path: /tmp/tools/*
+
+      - name: Release artifacts
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          tag_name: ${{ steps.tag_name.outputs.VERSION }}
+          prerelease: ${{ startsWith(github.ref, 'refs/tags/v0') || contains(github.ref, 'rc') }}
+          draft: true
+          files: /tmp/tools/*
