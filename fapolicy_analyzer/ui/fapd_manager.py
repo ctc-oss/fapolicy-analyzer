@@ -15,6 +15,7 @@
 
 import logging
 import os
+import sys
 import subprocess
 
 
@@ -254,6 +255,7 @@ class FapdManager():
                 else:
                     self._fapd_status = ServiceStatus.UNKNOWN
             except Exception as e:
-                print(f"Fapd Handle: is_active() exception: {e}")
+                print(f"Fapd Handle is_valid() or is_active() exception: {e}",
+                      file=sys.stderr)
                 raise
             self._fapd_lock.release()
