@@ -12,14 +12,23 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import glob
 import logging
-from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
-from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
-from .store import dispatch, get_system_feature
+import gi
+import os
+
+from time import sleep
 from os import listdir
 from os.path import isfile, join
 from .configs import Sizing
+from .store import dispatch, get_system_feature
+from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
+from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 from fapolicy_analyzer.util.format import f
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
+
 
 class ProfilerPage(UIConnectedWidget, UIPage):
     def __init__(self):
@@ -67,12 +76,28 @@ class ProfilerPage(UIConnectedWidget, UIPage):
             "envText": self.get_object("envEntry").get_text(),
         }
 
+        return entryDict
+
     def display_log_output(self):
-        text_display = self.get_object("profiledStdOut")
-        args = self.get_text()
-        work_dir = args["dirText"]
-        buff = Gtk.Buffer()
-        files = [f for f in listdir(work_dir) if isfile(join(work_dir,f))]
+        text_display = self.get_object("profilerOutput")
+        buff = Gtk.TextBuffer()
+        work_dir = self.get_text()["dirText"]
+        if work_dir is not None:
+            #files = [f for f in listdir(work_dir) if isfile(join(work_dir,f))]
+            files = glob.glob(work_dir + "/*")
+            latest_file = max(files, key=os.path.getctime)
+            time = "_".join(latest_file.split("_")[2:5])
+            run_files = [f for f in files if time in f]
+
+            for run_file in run_files:
+                buff.insert_markup(buff.get_end_iter(), f"<b>{run_file}</b>", -1)
+                with open(run_file, "r") as f:
+                    lines = f.readlines()
+                buff.insert(buff.get_end_iter(), "".join(lines + ["\n"]))
+
+        else:
+            buff.insert(buff.get_start_iter(), "No files found.")
+        text_display.set_buffer(buff)
 
     def on_test_activate(self, *args):
         profiling_args = self.get_text()

@@ -145,7 +145,7 @@
         <property name="visible">True</property>
         <property name="can_focus">True</property>
         <child>
-          <object class="GtkTextView" id="profiledStdOut">
+          <object class="GtkTextView" id="profilerOutput">
             <property name="visible">True</property>
             <property name="sensitive">False</property>
             <property name="can_focus">True</property>
@@ -159,7 +159,7 @@
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="label" translatable="yes">Command Output</property>
+            <property name="label" translatable="yes">Profiler Output</property>
           </object>
           <packing>
             <property name="tab_fill">False</property>
