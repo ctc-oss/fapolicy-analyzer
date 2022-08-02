@@ -16,17 +16,18 @@
 import pytest
 import os
 from unittest.mock import MagicMock
-from ui.faprofiler import FaProfiler, FaProfSession, ProfSessionStatus
+from fapolicy_analyzer.ui.faprofiler import FaProfiler, FaProfSession, ProfSessionStatus
 
 
 @pytest.fixture
 def faProfSession():
-    dictArgs = {"executeText": "/usr/bin/ls",
-                "argText": "-ltr /tmp",
-                "userText": os.getenv("USER"),
-                "dirText": os.getenv("HOME"),
-                "envText": 'FAPD_LOGPATH=/tmp/tgt_profiler, XX="xx"',
-                }
+    dictArgs = {
+        "executeText": "/usr/bin/ls",
+        "argText": "-ltr /tmp",
+        "userText": os.getenv("USER"),
+        "dirText": os.getenv("HOME"),
+        "envText": 'FAPD_LOGPATH=/tmp/tgt_profiler, XX="xx"',
+    }
     return FaProfSession(dictArgs)
 
 
@@ -43,8 +44,9 @@ def test_faprofsession_init(faProfSession, mocker):
 
 def test_startTarget(faProfSession, mocker):
     mockPopen = MagicMock()
-    mocker.patch("ui.faprofiler.subprocess.Popen",
-                 return_value=mockPopen)
+    mocker.patch(
+        "fapolicy_analyzer.ui.faprofiler.subprocess.Popen", return_value=mockPopen
+    )
     mockPopen.returncode = 0
     assert not faProfSession.procTarget
     faProfSession.startTarget(0)
@@ -56,13 +58,15 @@ def test_startTarget(faProfSession, mocker):
     assert faProfSession.procTarget.returncode == 0
 
     # Emulate a file open() exception
-    mocker.patch("ui.faprofiler.open", side_effect=Exception())
+    mocker.patch("fapolicy_analyzer.ui.faprofiler.open", side_effect=Exception())
     faProfSession.startTarget(1)
     assert faProfSession.fdTgtStdout is None
     assert faProfSession.fdTgtStderr is None
 
     # Emulate a getpwnam() exception
-    mocker.patch("ui.faprofiler.pwd.getpwnam", side_effect=Exception())
+    mocker.patch(
+        "fapolicy_analyzer.ui.faprofiler.pwd.getpwnam", side_effect=Exception()
+    )
     faProfSession.startTarget(1)
     assert faProfSession.fdTgtStdout is None
     assert faProfSession.fdTgtStderr is None
@@ -96,12 +100,13 @@ def test_get_status(faProfSession, mocker):
 # Testing FaProfiler
 def test_start_prof_session(faProfiler, mocker):
     faProfiler.fapd_mgr = MagicMock()
-    dictArgs = {"executeText": "/usr/bin/ls",
-                "argText": "-ltr /tmp",
-                "userText": os.getenv("USER"),
-                "dirText": os.getenv("HOME"),
-                "envText": "FAPD_LOGPATH=/tmp/tgt_profiler,XYZ=123",
-                }
+    dictArgs = {
+        "executeText": "/usr/bin/ls",
+        "argText": "-ltr /tmp",
+        "userText": os.getenv("USER"),
+        "dirText": os.getenv("HOME"),
+        "envText": "FAPD_LOGPATH=/tmp/tgt_profiler,XYZ=123",
+    }
 
     key = faProfiler.start_prof_session(dictArgs)
     assert faProfiler.instance != 0
@@ -110,12 +115,13 @@ def test_start_prof_session(faProfiler, mocker):
 
 def test_stop_prof_session(faProfiler, mocker):
     faProfiler.fapd_mgr = MagicMock()
-    dictArgs = {"executeText": "/usr/bin/ls",
-                "argText": "-ltr /tmp",
-                "userText": os.getenv("USER"),
-                "dirText": os.getenv("HOME"),
-                "envText": "FAPD_LOGPATH=/tmp/tgt_profiler,XYZ=123",
-                }
+    dictArgs = {
+        "executeText": "/usr/bin/ls",
+        "argText": "-ltr /tmp",
+        "userText": os.getenv("USER"),
+        "dirText": os.getenv("HOME"),
+        "envText": "FAPD_LOGPATH=/tmp/tgt_profiler,XYZ=123",
+    }
 
     session_name = faProfiler.start_prof_session(dictArgs)
     assert faProfiler.instance != 0

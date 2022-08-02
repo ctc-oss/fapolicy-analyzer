@@ -16,18 +16,13 @@
 from threading import Timer
 
 import gi
-
-try:
-    from importlib import resources
-except ImportError:
-    import importlib_resources as resources
-
-from .actions import NotificationType, remove_notification
-from .store import dispatch, get_notifications_feature
-from .ui_widget import UIConnectedWidget
+from fapolicy_analyzer.ui import get_resource
+from fapolicy_analyzer.ui.actions import NotificationType, remove_notification
+from fapolicy_analyzer.ui.store import dispatch, get_notifications_feature
+from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 
 gi.require_version("GtkSource", "3.0")
-from gi.repository import Gio, Gtk  # isort: skip
+from gi.repository import Gtk  # isort: skip
 
 
 class Notification(UIConnectedWidget):
@@ -43,8 +38,7 @@ class Notification(UIConnectedWidget):
         self.notification_id = None
 
         styleProvider = Gtk.CssProvider()
-        with resources.path("fapolicy_analyzer.css", "notification.css") as path:
-            styleProvider.load_from_file(Gio.File.new_for_path(path.as_posix()))
+        styleProvider.load_from_data(get_resource("notification.css").encode())
 
         self.style = self.container.get_style_context()
         self.style.add_provider(styleProvider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)

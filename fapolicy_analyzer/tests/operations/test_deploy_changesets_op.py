@@ -35,7 +35,7 @@ from fapolicy_analyzer.ui.strings import (
     DEPLOY_ANCILLARY_SUCCESSFUL_MSG,
 )
 from mocks import mock_System, mock_trust
-from redux import Action
+from fapolicy_analyzer.redux import Action
 from rx.subject import Subject
 
 gi.require_version("Gtk", "3.0")
@@ -63,7 +63,7 @@ def confirm_dialog(confirm_resp, mocker):
         get_save_state=MagicMock(return_value=False),
     )
     mocker.patch(
-        "fapolicy_analyzer.ui.operations.deploy_changesets_op.ConfirmInfoDialog",
+        "fapolicy_analyzer.ui.operations.deploy_changesets_op.ConfirmDeploymentDialog.get_ref",
         return_value=mock_confirm_dialog,
     )
 
@@ -76,7 +76,7 @@ def revert_dialog(revert_resp, mocker):
         run=MagicMock(return_value=revert_resp), hide=MagicMock()
     )
     mocker.patch(
-        "fapolicy_analyzer.ui.operations.deploy_changesets_op.DeployConfirmDialog.get_ref",
+        "fapolicy_analyzer.ui.operations.deploy_changesets_op.DeployRevertDialog.get_ref",
         return_value=mock_revert_dialog,
     )
     return mock_revert_dialog
@@ -86,7 +86,7 @@ def revert_dialog(revert_resp, mocker):
 @pytest.mark.parametrize("revert_resp", [Gtk.ResponseType.NO])
 @pytest.mark.usefixtures("revert_dialog")
 def test_on_confirm_deployment(operation, confirm_dialog, mock_dispatch):
-    operation.run([])
+    operation.run([], None, None)
     mock_dispatch.assert_called_with(
         InstanceOf(Action) & Attrs(type=DEPLOY_ANCILLARY_TRUST)
     )
@@ -112,7 +112,7 @@ def test_deploy_w_exception(mock_dispatch, mocker):
                 ),
             }
         )
-        operation.run([])
+        operation.run([], None, None)
         system_features_mock.on_next(
             {"changesets": [], "ancillary_trust": MagicMock(error="foo")}
         )
@@ -140,7 +140,7 @@ def test_on_neg_confirm_deployment(confirm_dialog, mock_dispatch, mocker):
                 "ancillary_trust": MagicMock(trust=[mock_trust()], error=None),
             }
         )
-        operation.run([])
+        operation.run([], None, None)
     confirm_dialog.run.assert_called()
     confirm_dialog.hide.assert_called()
     mock_dispatch.assert_not_any_call(
@@ -165,7 +165,7 @@ def test_on_revert_deployment(mock_dispatch, mocker):
                 "ancillary_trust": MagicMock(trust=[mock_trust()], error=None),
             }
         )
-        operation.run([])
+        operation.run([], None, None)
         system_features_mock.on_next(
             {
                 "changesets": [],
@@ -207,7 +207,7 @@ def test_on_neg_revert_deployment(mock_dispatch, mocker):
                 "ancillary_trust": MagicMock(trust=[mock_trust()], error=None),
             }
         )
-        operation.run([])
+        operation.run([], None, None)
         system_features_mock.on_next(
             {
                 "changesets": [],
@@ -245,9 +245,11 @@ def test_handle_deploy_exception(operation):
 @pytest.mark.usefixtures("mock_dispatch")
 def test_saves_state(operation, mocker):
     mocker.patch(
-        "fapolicy_analyzer.ui.operations.deploy_changesets_op.ConfirmInfoDialog",
+        "fapolicy_analyzer.ui.operations.deploy_changesets_op.ConfirmDeploymentDialog",
         return_value=MagicMock(
-            run=MagicMock(return_value=Gtk.ResponseType.YES),
+            get_ref=MagicMock(
+                return_value=MagicMock(run=MagicMock(return_value=Gtk.ResponseType.YES))
+            ),
             get_save_state=MagicMock(return_value=True),
         ),
     )
@@ -262,7 +264,7 @@ def test_saves_state(operation, mocker):
     mockSnapshot = mocker.patch(
         "fapolicy_analyzer.ui.operations.deploy_changesets_op.fapd_dbase_snapshot"
     )
-    operation.run([])
+    operation.run([], None, None)
     mockSnapshot.assert_called_once_with("fooFile")
 
 

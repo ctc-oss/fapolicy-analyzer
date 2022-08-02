@@ -13,22 +13,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import gi
-import pytest
-
-import context  # noqa: F401
-
-gi.require_version("Gtk", "3.0")
+import context  # noqa: F401 # isort: skip
 from unittest.mock import MagicMock
 
-from gi.repository import Gtk
-from ui.ancillary_trust_file_list import AncillaryTrustFileList
-from ui.configs import Colors
-from ui.strings import (
+import gi
+import pytest
+from fapolicy_analyzer.ui.ancillary_trust_file_list import AncillaryTrustFileList
+from fapolicy_analyzer.ui.changeset_wrapper import TrustChangeset
+from fapolicy_analyzer.ui.configs import Colors
+from fapolicy_analyzer.ui.strings import (
     CHANGESET_ACTION_ADD,
     CHANGESET_ACTION_DEL,
     FILE_LIST_CHANGES_HEADER,
 )
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk  # isort: skip
 
 _trust = [
     MagicMock(status="d", path="/tmp/1", actual=MagicMock(last_modified=123456789)),
@@ -95,7 +95,7 @@ def test_hides_changes_column(widget):
 
 def test_shows_changes_column(widget):
     mockChangeset = MagicMock(
-        get_path_action_map=MagicMock(return_value=({"/tmp/foo": "Add"}))
+        spec=TrustChangeset, serialize=MagicMock(return_value=({"/tmp/foo": "Add"}))
     )
     widget.set_changesets([mockChangeset])
     widget.load_trust(_trust)
@@ -105,7 +105,7 @@ def test_shows_changes_column(widget):
 
 def test_trust_add_actions_in_view(widget):
     mockChangeset = MagicMock(
-        get_path_action_map=MagicMock(return_value=({"/tmp/1": "Add"}))
+        spec=TrustChangeset, serialize=MagicMock(return_value=({"/tmp/1": "Add"}))
     )
     widget.set_changesets([mockChangeset])
     widget.load_trust(_trust)
@@ -116,7 +116,7 @@ def test_trust_add_actions_in_view(widget):
 
 def test_trust_delete_actions_in_view(widget):
     mockChangeset = MagicMock(
-        get_path_action_map=MagicMock(return_value=({"/tmp/foz": "Del"}))
+        spec=TrustChangeset, serialize=MagicMock(return_value=({"/tmp/foz": "Del"}))
     )
     widget.set_changesets([mockChangeset])
     widget.load_trust(_trust)

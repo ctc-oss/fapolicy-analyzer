@@ -15,11 +15,20 @@
 from unittest.mock import Mock
 
 import gi
+from fapolicy_analyzer.ui import load_resources
 
 gi.require_version("GtkSource", "3.0")
 from gi.repository import GtkSource, GObject  # isort: skip
 
 GObject.type_register(GtkSource.View)
+
+
+def pytest_sessionstart(session):
+    """
+    Called after the Session object has been created and
+    before performing collection and entering the run test loop.
+    """
+    load_resources()
 
 
 def assert_not_any_call(self, *args, **kwargs):

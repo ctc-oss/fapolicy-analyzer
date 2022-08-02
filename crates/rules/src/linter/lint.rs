@@ -16,9 +16,17 @@ pub fn lint_db(db: DB) -> DB {
     let lints: Vec<LintFn> = vec![l001, l002, l003];
 
     db.iter()
-        .map(|(pos, (source, def))| match def {
+        .map(|(fk, (source, def))| match def {
             Entry::ValidRule(r) => {
-                let x: Vec<String> = lints.iter().filter_map(|f| f(*pos, r, &db)).collect();
+                let x: Vec<String> = if let Some(rule_entry) = db.rule_rev(*fk) {
+                    lints
+                        .iter()
+                        .filter_map(|f| f(rule_entry.id, r, &db))
+                        .collect()
+                } else {
+                    vec![]
+                };
+
                 if x.is_empty() {
                     (source.clone(), Entry::ValidRule(r.clone()))
                 } else {
@@ -41,10 +49,38 @@ mod tests {
     use std::error::Error;
 
     #[test]
-    fn lint_simple() -> Result<(), Box<dyn Error>> {
+    fn lint_short_circuit_none() -> Result<(), Box<dyn Error>> {
         let db = deserialize_rules_db(
             r#"
         [foo.bar]
+        allow perm=any all : all
+        "#,
+        )?;
+        let r = db.rule(1).unwrap();
+        assert!(r.msg.is_none());
+        Ok(())
+    }
+
+    #[test]
+    fn lint_short_circuit_none2() -> Result<(), Box<dyn Error>> {
+        let db = deserialize_rules_db(
+            r#"
+        [foo.bar]
+        allow perm=any all : all
+        %foo=bar
+        "#,
+        )?;
+        let r = db.rule(1).unwrap();
+        assert!(r.msg.is_none());
+        Ok(())
+    }
+
+    #[test]
+    fn lint_short_circuit_findings() -> Result<(), Box<dyn Error>> {
+        let db = deserialize_rules_db(
+            r#"
+        [foo.bar]
+        allow perm=any all : all
         allow perm=any all : all
         "#,
         )?;

@@ -13,16 +13,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import gi
-import pytest
-
-import context  # noqa: F401
-
-gi.require_version("Gtk", "3.0")
+import context  # noqa: F401 # isort: skip
 from unittest.mock import MagicMock
 
-from gi.repository import Gtk
-from ui.ui_widget import UIBuilderWidget, UIConnectedWidget, UIWidget
+import gi
+import pytest
+from fapolicy_analyzer.ui.ui_widget import UIBuilderWidget, UIConnectedWidget, UIWidget
+
+gi.require_version("GtkSource", "3.0")
+from gi.repository import Gtk  # isort: skip
 
 
 class concrete_UIBuilderWidget(UIBuilderWidget):
@@ -49,14 +48,15 @@ def uiWidget(mockWidget):
 @pytest.fixture
 def mockBuilder(mocker):
     mock = MagicMock(get_object=MagicMock(), add_from_file=MagicMock())
-    mocker.patch("ui.ui_widget.Gtk.Builder", return_value=mock)
+    mocker.patch("fapolicy_analyzer.ui.ui_widget.Gtk.Builder", return_value=mock)
     return mock
 
 
 @pytest.fixture
 def mockResource(mocker):
-    mock = mocker.patch("ui.ui_widget.resources.path")
-    mock.return_value.__enter__.return_value.as_posix.return_value = "foo"
+    mock = mocker.patch(
+        "fapolicy_analyzer.ui.ui_widget.get_resource", return_value="foo"
+    )
     return mock
 
 
@@ -79,17 +79,15 @@ def test_calls_uiwidget_destroy(uiWidget):
 
 def test_loads_default_glade_file(mockBuilder, mockResource):
     concrete_UIBuilderWidget()
-    mockResource.assert_called_once_with(
-        "fapolicy_analyzer.glade", "test_ui_widget.glade"
-    )
-    mockBuilder.add_from_file.assert_called_once_with("foo")
+    mockResource.assert_called_once_with("test_ui_widget.glade")
+    mockBuilder.add_from_string.assert_called_once_with("foo")
     mockBuilder.get_object.assert_called_once_with("testUiWidget")
 
 
 def test_loads_named_glade_file(mockBuilder, mockResource):
     concrete_UIBuilderWidget("fooWidget")
-    mockResource.assert_called_once_with("fapolicy_analyzer.glade", "fooWidget.glade")
-    mockBuilder.add_from_file.assert_called_once_with("foo")
+    mockResource.assert_called_once_with("fooWidget.glade")
+    mockBuilder.add_from_string.assert_called_once_with("foo")
     mockBuilder.get_object.assert_called_once_with("fooWidget")
 
 

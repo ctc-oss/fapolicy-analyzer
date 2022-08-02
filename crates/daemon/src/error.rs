@@ -6,7 +6,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use std::string::FromUtf8Error;
 use thiserror::Error;
 
 // errors that can occur in this crate
@@ -15,17 +14,12 @@ pub enum Error {
     #[error("{0}")]
     FapolicydReloadFail(String),
 
-    #[cfg(feature = "systemd")]
     #[error("dbus {0}")]
     DbusFailure(#[from] dbus::Error),
 
-    #[cfg(feature = "systemd")]
     #[error("dbus method-call {0}")]
     DbusMethodCall(String),
 
     #[error("{0}")]
     ServiceCheckFailure(String),
-
-    #[error("Failed to parse systemctl output")]
-    ServiceCheckParseFailure(#[from] FromUtf8Error),
 }

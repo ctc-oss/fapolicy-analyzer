@@ -14,10 +14,11 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os
-from util.xdg_utils import (
+
+from fapolicy_analyzer.util.xdg_utils import (
+    xdg_config_dir_prefix,
     xdg_data_dir_prefix,
     xdg_state_dir_prefix,
-    xdg_config_dir_prefix,
 )
 
 

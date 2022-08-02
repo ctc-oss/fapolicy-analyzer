@@ -9,11 +9,4 @@ edition = "2018"
 nom = "6.1.0"
 thiserror = "1.0"
 fapolicy-api = { version = "*", path = "../api" }
-
-[dependencies.dbus]
-version = "0.9"
-optional = true
-
-[features]
-default = []
-systemd = ["dbus"]
+dbus = "0.9"

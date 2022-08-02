@@ -13,15 +13,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import gi
+import logging
 import re
+from os import path
+
 import fapolicy_analyzer.ui.strings as strings
+import gi
+from events import Events
+from fapolicy_analyzer.ui.ui_widget import UIBuilderWidget
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
-from events import Events
-from os import path
-from .ui_widget import UIBuilderWidget
+from gi.repository import Gtk  # isort: skip
 
 
 class AddFileButton(UIBuilderWidget, Events):
@@ -54,7 +56,7 @@ class AddFileButton(UIBuilderWidget, Events):
             # fapolicyd issue 109:Files and Directories with spaces in the name
             #
             # Detect and remove file paths w/embedded spaces. Alert user w/dlg
-            print("Filtering out paths with embedded whitespace")
+            logging.info("Filtering out paths with embedded whitespace")
             listAccepted = [e for e in files if not re.search(r"\s", e)]
             listRejected = [e for e in files if re.search(r"\s", e)]
             if listRejected:

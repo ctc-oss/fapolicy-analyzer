@@ -15,7 +15,7 @@
 
 from typing import Tuple
 
-from .deploy_changesets_op import DeployChangesetsOp
-from .ui_operation import UIOperation
+from fapolicy_analyzer.ui.operations.deploy_changesets_op import DeployChangesetsOp
+from fapolicy_analyzer.ui.operations.ui_operation import UIOperation
 
 __all__: Tuple[str, ...] = ("DeployChangesetsOp", "UIOperation")

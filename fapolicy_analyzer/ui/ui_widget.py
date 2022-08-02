@@ -13,32 +13,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import locale
 import logging
 from abc import ABC, ABCMeta
 from dataclasses import dataclass
 from typing import Callable
 
 import gi
-import pkg_resources
-
-try:
-    from importlib import resources
-except ImportError:
-    import importlib_resources as resources
-
+from fapolicy_analyzer.ui import DOMAIN, get_resource
 from fapolicy_analyzer.util.format import snake_to_camelcase
 from rx.core.typing import Observable
 
 gi.require_version("GtkSource", "3.0")
 from gi.repository import Gtk  # isort: skip
-
-
-DOMAIN = "fapolicy_analyzer"
-locale.setlocale(locale.LC_ALL, locale.getlocale())
-locale_path = pkg_resources.resource_filename("fapolicy_analyzer", "locale")
-locale.bindtextdomain(DOMAIN, locale_path)
-locale.textdomain(DOMAIN)
 
 
 class _PostInitCaller(type):
@@ -94,15 +80,15 @@ class UIBuilderWidget(UIWidget, ABC):
     """
 
     def __init__(self, name=None):
-        def gladeFile():
-            filename = f"{name}.glade"
-            with resources.path("fapolicy_analyzer.glade", filename) as path:
-                return path.as_posix()
-
         name = name or self.__module__.split(".")[-1]
+        glade = get_resource(f"{name}.glade")
+
+        if not glade:
+            logging.error(f"Resource {name}.glade is not available.")
+
         self._builder = Gtk.Builder()
         self._builder.set_translation_domain(DOMAIN)
-        self._builder.add_from_file(gladeFile())
+        self._builder.add_from_string(glade)
         self._builder.connect_signals(self)
         UIWidget.__init__(self, self.get_object(snake_to_camelcase(name)))
 

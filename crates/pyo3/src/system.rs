@@ -8,6 +8,7 @@
 
 use pyo3::prelude::*;
 use pyo3::{exceptions, PyResult};
+use similar::{ChangeTag, TextDiff};
 
 use fapolicy_analyzer::events;
 use fapolicy_analyzer::events::db::DB as EventDB;
@@ -18,9 +19,9 @@ use fapolicy_app::sys::deploy_app_state;
 use super::trust::PyTrust;
 use crate::acl::{PyGroup, PyUser};
 use crate::analysis::PyEventLog;
-use crate::rules;
 use crate::rules::PyRule;
 use crate::trust;
+use crate::{daemon, rules};
 
 #[pyclass(module = "app", name = "System")]
 #[derive(Clone)]
@@ -98,10 +99,7 @@ impl PySystem {
 
     /// Update the host system with this state of this System and signal fapolicyd to reload trust
     pub fn deploy(&self) -> PyResult<()> {
-        self.deploy_only().and_then(|_| {
-            fapolicy_daemon::reload_databases()
-                .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))
-        })
+        daemon::deploy(self).map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))
     }
 
     /// Update the host system with this state of this System
@@ -146,35 +144,35 @@ impl PySystem {
         })
     }
 
-    fn rules(&self) -> PyResult<Vec<PyRule>> {
-        rules::rules_to_vec(&self.rs.rules_db)
+    fn rules(&self) -> Vec<PyRule> {
+        rules::to_vec(&self.rs.rules_db)
     }
 
-    fn rules_text(&self) -> PyResult<String> {
-        rules::entries_to_vec(&self.rs.rules_db)
-            .map(|x| {
-                x.into_iter().fold((None, String::new()), |x, r| match x {
-                    // no origin established yet
-                    (None, _) => (
-                        Some(r.origin.clone()),
-                        format!("[{}]\n{}", r.origin, r.text),
-                    ),
-                    // same origin as previous
-                    (Some(last_origin), acc_text) if last_origin == r.origin => {
-                        (Some(last_origin), format!("{}\n{}", acc_text, r.text))
-                    }
-                    // origin has changed
-                    (Some(_), acc_text) => (
-                        Some(r.origin.clone()),
-                        format!("{}\n\n[{}]\n{}", acc_text, r.origin, r.text),
-                    ),
-                })
-            })
-            .map(|(_, s)| s)
+    fn rules_text(&self) -> String {
+        rules::to_text(&self.rs.rules_db)
     }
+}
+
+#[pyfunction]
+fn rules_difference(lhs: &PySystem, rhs: &PySystem) -> String {
+    let ltxt = lhs.rules_text();
+    let rtxt = rhs.rules_text();
+    let diff = TextDiff::from_lines(&ltxt, &rtxt);
+
+    let mut diff_lines = vec![];
+    for line in diff.iter_all_changes() {
+        let sign = match line.tag() {
+            ChangeTag::Delete => "-",
+            ChangeTag::Insert => "+",
+            ChangeTag::Equal => " ",
+        };
+        diff_lines.push(format!("{}{}", sign, line));
+    }
+    diff_lines.join("")
 }
 
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PySystem>()?;
+    m.add_function(wrap_pyfunction!(rules_difference, m)?)?;
     Ok(())
 }

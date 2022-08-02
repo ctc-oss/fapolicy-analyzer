@@ -17,7 +17,7 @@ from typing import Any, NamedTuple, Optional, Sequence, cast
 
 from fapolicy_analyzer import Rule
 from fapolicy_analyzer.ui.actions import ERROR_RULES, RECEIVED_RULES, REQUEST_RULES
-from redux import Action, Reducer, handle_actions
+from fapolicy_analyzer.redux import Action, Reducer, handle_actions
 
 
 class RuleState(NamedTuple):

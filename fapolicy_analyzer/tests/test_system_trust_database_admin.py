@@ -24,27 +24,30 @@ from unittest.mock import MagicMock
 from callee import Attrs, InstanceOf
 from callee.strings import Regex
 from gi.repository import Gtk
-from redux import Action
+from fapolicy_analyzer.redux import Action
 from rx.subject import Subject
-from ui.actions import ADD_NOTIFICATION, NotificationType
-from ui.configs import Colors
-from ui.store import init_store
-from ui.strings import SYSTEM_TRUST_LOAD_ERROR, SYSTEM_TRUSTED_FILE_MESSAGE
-from ui.system_trust_database_admin import SystemTrustDatabaseAdmin
+from fapolicy_analyzer.ui.actions import ADD_NOTIFICATION, NotificationType
+from fapolicy_analyzer.ui.configs import Colors
+from fapolicy_analyzer.ui.store import init_store
+from fapolicy_analyzer.ui.strings import (
+    SYSTEM_TRUST_LOAD_ERROR,
+    SYSTEM_TRUSTED_FILE_MESSAGE,
+)
+from fapolicy_analyzer.ui.system_trust_database_admin import SystemTrustDatabaseAdmin
 
 from mocks import mock_System, mock_trust
 
 
 @pytest.fixture()
 def mock_dispatch(mocker):
-    return mocker.patch("ui.system_trust_database_admin.dispatch")
+    return mocker.patch("fapolicy_analyzer.ui.system_trust_database_admin.dispatch")
 
 
 @pytest.fixture()
 def mock_system_feature(mocker):
     mockSystemFeature = Subject()
     mocker.patch(
-        "ui.system_trust_database_admin.get_system_feature",
+        "fapolicy_analyzer.ui.system_trust_database_admin.get_system_feature",
         return_value=mockSystemFeature,
     )
     yield mockSystemFeature
@@ -77,7 +80,9 @@ def test_updates_trust_details(widget, mocker):
     mocker.patch.object(widget.trustFileDetails, "set_in_database_view")
     mocker.patch.object(widget.trustFileDetails, "set_on_file_system_view")
     mocker.patch.object(widget.trustFileDetails, "set_trust_status")
-    mocker.patch("ui.ancillary_trust_database_admin.fs.sha", return_value="abc")
+    mocker.patch(
+        "fapolicy_analyzer.ui.ancillary_trust_database_admin.fs.sha", return_value="abc"
+    )
     trust = [MagicMock(status="T", path="/tmp/foo", size=1, hash="abc")]
     widget.on_trust_selection_changed(trust)
     widget.trustFileDetails.set_in_database_view.assert_called_with(

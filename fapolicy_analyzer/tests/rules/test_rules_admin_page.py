@@ -19,13 +19,25 @@ from unittest.mock import MagicMock
 import gi
 import pytest
 from callee import Attrs, InstanceOf
+from fapolicy_analyzer.ui.actions import (
+    ADD_NOTIFICATION,
+    APPLY_CHANGESETS,
+    MODIFY_RULES_TEXT,
+    NotificationType,
+)
+from fapolicy_analyzer.ui.changeset_wrapper import RuleChangeset
+from fapolicy_analyzer.ui.rules import RulesAdminPage
+from fapolicy_analyzer.ui.store import init_store
+from fapolicy_analyzer.ui.strings import (
+    APPLY_CHANGESETS_ERROR_MESSAGE,
+    RULES_LOAD_ERROR,
+    RULES_TEXT_LOAD_ERROR,
+    RULES_VALIDATION_ERROR,
+    RULES_VALIDATION_WARNING,
+)
 from mocks import mock_rule, mock_System
-from redux import Action
+from fapolicy_analyzer.redux import Action
 from rx.subject import Subject
-from ui.actions import ADD_NOTIFICATION
-from ui.rules import RulesAdminPage
-from ui.store import init_store
-from ui.strings import RULES_LOAD_ERROR, RULES_TEXT_LOAD_ERROR
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
@@ -33,14 +45,14 @@ from gi.repository import Gtk  # isort: skip
 
 @pytest.fixture()
 def mock_dispatch(mocker):
-    return mocker.patch("ui.rules.rules_admin_page.dispatch")
+    return mocker.patch("fapolicy_analyzer.ui.rules.rules_admin_page.dispatch")
 
 
 @pytest.fixture()
 def mock_system_feature(mocker):
     mockSystemFeature = Subject()
     mocker.patch(
-        "ui.rules.rules_admin_page.get_system_feature",
+        "fapolicy_analyzer.ui.rules.rules_admin_page.get_system_feature",
         return_value=mockSystemFeature,
     )
     yield mockSystemFeature
@@ -68,12 +80,14 @@ def test_populates_guided_editor(widget, mock_system_feature, mocker):
         {
             "rules": MagicMock(error=None, rules=mock_rules, loading=False),
             "rules_text": MagicMock(),
+            "changesets": MagicMock(),
         }
     )
     mock_list_renderer.assert_called_once_with(mock_rules)
 
 
-def test_populates_status_info(widget, mock_system_feature, mocker):
+@pytest.mark.usefixtures("widget")
+def test_populates_status_info(mock_system_feature, mocker):
     mock_rules = [
         MagicMock(
             id=1,
@@ -100,6 +114,7 @@ def test_populates_status_info(widget, mock_system_feature, mocker):
         {
             "rules": MagicMock(error=None, rules=mock_rules, loading=False),
             "rules_text": MagicMock(),
+            "changesets": MagicMock(),
         }
     )
     mock_info_renderer.assert_called_once_with(mock_rules)
@@ -109,7 +124,11 @@ def test_populates_status_info(widget, mock_system_feature, mocker):
 def test_handles_rules_exception(mock_dispatch, mock_system_feature):
     mock_dispatch.reset_mock()
     mock_system_feature.on_next(
-        {"rules": MagicMock(error="foo", loading=False), "rules_text": MagicMock()}
+        {
+            "rules": MagicMock(error="foo", loading=False),
+            "rules_text": MagicMock(),
+            "changesets": MagicMock(),
+        }
     )
     mock_dispatch.assert_called_with(
         InstanceOf(Action)
@@ -120,7 +139,8 @@ def test_handles_rules_exception(mock_dispatch, mock_system_feature):
     )
 
 
-def test_populates_text_editor(widget, mock_system_feature, mocker):
+@pytest.mark.usefixtures("widget")
+def test_populates_text_editor(mock_system_feature, mocker):
     mock_text_renderer = MagicMock()
     mocker.patch(
         "fapolicy_analyzer.ui.rules.rules_text_view.RulesTextView.render_rules",
@@ -134,6 +154,7 @@ def test_populates_text_editor(widget, mock_system_feature, mocker):
                 rules_text="foo",
                 loading=False,
             ),
+            "changesets": MagicMock(),
         }
     )
     mock_text_renderer.assert_called_once_with("foo")
@@ -143,12 +164,98 @@ def test_populates_text_editor(widget, mock_system_feature, mocker):
 def test_handles_rules_text_exception(mock_dispatch, mock_system_feature):
     mock_dispatch.reset_mock()
     mock_system_feature.on_next(
-        {"rules": MagicMock(), "rules_text": MagicMock(error="foo", loading=False)}
+        {
+            "rules": MagicMock(),
+            "rules_text": MagicMock(error="foo", loading=False),
+            "changesets": MagicMock(),
+        }
     )
     mock_dispatch.assert_called_with(
         InstanceOf(Action)
         & Attrs(
             type=ADD_NOTIFICATION,
             payload=Attrs(text=RULES_TEXT_LOAD_ERROR),
+        )
+    )
+
+
+def test_handles_rule_text_change(widget, mock_dispatch):
+    widget._text_view.rules_changed("new rules")
+    mock_dispatch.assert_called_with(
+        InstanceOf(Action) & Attrs(type=MODIFY_RULES_TEXT, payload="new rules")
+    )
+
+
+def test_validate_clicked_valid(widget, mock_dispatch):
+    widget._text_view.rules_changed("allow perm=open all : all")
+    widget.on_validate_clicked()
+    mock_dispatch.assert_not_any_call(InstanceOf(Action) & Attrs(type=ADD_NOTIFICATION))
+
+
+def test_validate_clicked_invalid(widget, mock_dispatch):
+    widget._text_view.rules_changed("bar baz bah")
+    widget.on_validate_clicked()
+    mock_dispatch.assert_called_with(
+        InstanceOf(Action)
+        & Attrs(
+            type=ADD_NOTIFICATION,
+            payload=Attrs(type=NotificationType.ERROR, text=RULES_VALIDATION_ERROR),
+        )
+    )
+
+
+def test_validate_clicked_warning(widget, mock_dispatch):
+    widget._text_view.rules_changed("allow perm=any exe=/foo : all")
+    widget.on_validate_clicked()
+    mock_dispatch.assert_called_with(
+        InstanceOf(Action)
+        & Attrs(
+            type=ADD_NOTIFICATION,
+            payload=Attrs(type=NotificationType.WARN, text=RULES_VALIDATION_WARNING),
+        )
+    )
+
+
+def test_save_click_valid(widget, mock_dispatch):
+    widget._text_view.rules_changed("allow perm=any all : all")
+    widget.on_save_clicked()
+    mock_dispatch.assert_called_with(InstanceOf(Action) & Attrs(type=APPLY_CHANGESETS))
+
+
+def test_save_click_invalid(widget, mock_dispatch):
+    widget._text_view.rules_changed("bar baz bah")
+    widget.on_save_clicked()
+    mock_dispatch.assert_not_any_call(InstanceOf(Action) & Attrs(type=APPLY_CHANGESETS))
+
+
+def test_apply_changeset_error(mock_dispatch, mocker):
+    mockSystemFeature = Subject()
+    mocker.patch(
+        "fapolicy_analyzer.ui.rules.rules_admin_page.get_system_feature",
+        return_value=mockSystemFeature,
+    )
+    mockSystemFeature.on_next(
+        {"changesets": MagicMock(spec=RuleChangeset, changesets=[], error=False)}
+    )
+    init_store(mock_System())
+    widget = RulesAdminPage()
+    widget.on_save_clicked()  # need to set the saving flag to true
+
+    mockSystemFeature.on_next(
+        {
+            "changesets": MagicMock(
+                spec=RuleChangeset, changesets=[MagicMock()], error="bad error"
+            ),
+            "rules": MagicMock(loading=True),
+            "rules_text": MagicMock(loading=True),
+        }
+    )
+    mock_dispatch.assert_called_with(
+        InstanceOf(Action)
+        & Attrs(
+            type=ADD_NOTIFICATION,
+            payload=Attrs(
+                type=NotificationType.ERROR, text=APPLY_CHANGESETS_ERROR_MESSAGE
+            ),
         )
     )

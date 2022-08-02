@@ -1,24 +1,37 @@
 on:
   push:
     branches:
-      - master
+      - 'master'
+      - 'release-*'
     tags:
       - 'v*'
   pull_request:
     branches:
-      - master
+      - 'master'
       - 'release-*'
 
-name: Create RPM Release
+name: RPM
 
 jobs:
   build:
+    name: Build ${{ matrix.triple.name }}
     strategy:
       matrix:
-        platform: [ 'fedora:34', 'fedora:35', 'registry.access.redhat.com/ubi8/ubi:8.6' ]
+        triple:
+          - {
+            name: 'fc34',
+            image: 'fedora:34',
+          }
+          - {
+            name: 'fc35',
+            image: 'fedora:35',
+          }
+          - {
+            name: 'el8',
+            image: 'registry.access.redhat.com/ubi8/ubi:8.6',
+          }
     runs-on: ubuntu-latest
-    container: ${{ matrix.platform }}
-    name: Create RPM Release
+    container: ${{ matrix.triple.image }}
     steps:
       - name: Enable rocky appstream if ubi
         run: |
@@ -70,15 +83,20 @@ jobs:
 
       - name: Install package build dependencies
         run: |
-           cd $HOME/rpmbuild/SPECS
-           dnf builddep fapolicy-analyzer.spec -y
+          cd $HOME/rpmbuild/SPECS
+          dnf builddep fapolicy-analyzer.spec -y
 
       - name: Build the package
         run: |
-           cd $HOME/rpmbuild/SPECS
-           rpmbuild -ba fapolicy-analyzer.spec
+          cd $HOME/rpmbuild/SPECS
+          rpmbuild -ba fapolicy-analyzer.spec
 
-      - name: Export the package
+      - name: Strip ref to tag
+        id: tag_name
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d/ -f3)
+
+      - name: Export files
         run: |
           mv $HOME/rpmbuild/RPMS/*/*.rpm /tmp
           mv $HOME/rpmbuild/SRPMS/*.rpm  /tmp
@@ -89,21 +107,11 @@ jobs:
           name: fapolicy-analyzer-rpms
           path: /tmp/*.rpm
 
-      - name: Strip ref to tag
-        id: tag_name
+      - name: Release artifacts
+        uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/v')
-        run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d/ -f3)
-
-      - uses: softprops/action-gh-release@v1
-        name: Create Release
-        id: create_release
-        if: startsWith(github.ref, 'refs/tags/v')
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: Release ${{ steps.tag_name.outputs.VERSION }}
           tag_name: ${{ steps.tag_name.outputs.VERSION }}
           prerelease: ${{ startsWith(github.ref, 'refs/tags/v0') || contains(github.ref, 'rc') }}
           draft: true
-          files: |
-            /tmp/*.rpm
+          files: /tmp/*.rpm

@@ -23,11 +23,11 @@ from callee.attributes import Attrs
 from callee.collections import Sequence
 from callee.types import InstanceOf
 from fapolicy_analyzer import Changeset
-from redux import Action
-from ui.actions import APPLY_CHANGESETS
-from ui.configs import Colors
-from ui.strings import FILE_LABEL, FILES_LABEL
-from ui.subject_list import _TRUST_RESP, _UNTRUST_RESP, SubjectList
+from fapolicy_analyzer.ui.actions import APPLY_CHANGESETS
+from fapolicy_analyzer.ui.configs import Colors
+from fapolicy_analyzer.ui.strings import FILE_LABEL, FILES_LABEL
+from fapolicy_analyzer.ui.subject_list import _TRUST_RESP, _UNTRUST_RESP, SubjectList
+from fapolicy_analyzer.redux import Action
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gdk, Gtk  # isort: skip
@@ -58,7 +58,6 @@ def test_creates_widget(widget):
 
 def test_loads_store(widget):
     def strip_markup(markup):
-        print(markup)
         return re.search(r"<b>([A-Z]*)</b>", markup).group(1)
 
     widget.load_store(_subjects)
@@ -209,7 +208,7 @@ def test_shows_reconciliation_dialog_on_double_click(
     subject, databaseTrust, widget, mocker
 ):
     mockDialog = mocker.patch(
-        "ui.subject_list.TrustReconciliationDialog",
+        "fapolicy_analyzer.ui.subject_list.TrustReconciliationDialog",
         return_value=MagicMock(get_ref=MagicMock(spec=Gtk.Widget)),
     )
     widget.load_store(
@@ -233,9 +232,14 @@ def test_dispatches_changeset(response, widget, mocker):
     mockChangeset = MagicMock(
         del_trust=MagicMock(), add_trust=MagicMock(), spec=Changeset
     )
-    mocker.patch("ui.subject_list.TrustReconciliationDialog", return_value=mockDialog)
-    mocker.patch("ui.subject_list.Changeset", return_value=mockChangeset)
-    mockDispatch = mocker.patch("ui.subject_list.dispatch")
+    mocker.patch(
+        "fapolicy_analyzer.ui.subject_list.TrustReconciliationDialog",
+        return_value=mockDialog,
+    )
+    mocker.patch(
+        "fapolicy_analyzer.ui.subject_list.Changeset", return_value=mockChangeset
+    )
+    mockDispatch = mocker.patch("fapolicy_analyzer.ui.subject_list.dispatch")
 
     widget.load_store([mockSubject])
     view = widget.get_object("treeView")
@@ -268,7 +272,7 @@ def test_shows_reconciliation_dialog_from_context_menu(
     subject, databaseTrust, widget, mocker
 ):
     mockDialog = mocker.patch(
-        "ui.subject_list.TrustReconciliationDialog",
+        "fapolicy_analyzer.ui.subject_list.TrustReconciliationDialog",
         return_value=MagicMock(get_ref=MagicMock(spec=Gtk.Widget)),
     )
     widget.load_store(
@@ -297,7 +301,7 @@ def test_shows_reconciliation_dialog_from_context_menu(
 )
 def test_shows_change_trust_dialog_from_context_menu(subject, widget, mocker):
     mockDialog = mocker.patch(
-        "ui.subject_list.ConfirmChangeDialog",
+        "fapolicy_analyzer.ui.subject_list.ConfirmChangeDialog",
         return_value=MagicMock(get_ref=MagicMock(spec=Gtk.Widget)),
     )
     widget.load_store(

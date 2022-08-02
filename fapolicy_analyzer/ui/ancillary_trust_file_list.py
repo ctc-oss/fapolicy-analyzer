@@ -19,10 +19,11 @@ from types import SimpleNamespace
 
 import fapolicy_analyzer.ui.strings as strings
 import gi
+from fapolicy_analyzer.ui.changeset_wrapper import TrustChangeset
 
-from .add_file_button import AddFileButton
-from .configs import Colors
-from .trust_file_list import TrustFileList, epoch_to_string
+from fapolicy_analyzer.ui.add_file_button import AddFileButton
+from fapolicy_analyzer.ui.configs import Colors
+from fapolicy_analyzer.ui.trust_file_list import TrustFileList, epoch_to_string
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
@@ -54,7 +55,10 @@ class AncillaryTrustFileList(TrustFileList):
 
         # map change path to action, the action for the last change in the queue wins
         changesetMap = {
-            p: a for e in changesets or [] for (p, a) in e.get_path_action_map().items()
+            p: a
+            for e in changesets or []
+            if isinstance(e, TrustChangeset)
+            for (p, a) in e.serialize().items()
         }
         return reduce(
             reducer,

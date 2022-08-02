@@ -15,23 +15,25 @@
 
 from enum import Enum
 from itertools import count
-from typing import Any, Iterator, NamedTuple, Sequence
+from typing import Any, Iterator, NamedTuple, Optional, Sequence
 
-from fapolicy_analyzer import Changeset, Event, Group, Rule, Trust, User
-from redux import Action, create_action
+from fapolicy_analyzer import Changeset, Event, Group, Rule, System, Trust, User
+from fapolicy_analyzer.redux import Action, create_action
 
 INIT_SYSTEM = "INIT_SYSTEM"
-SYSTEM_INITIALIZED = "SYSTEM_INITIALIZED"
+SYSTEM_RECEIVED = "SYSTEM_RECEIVED"
 ERROR_SYSTEM_INITIALIZATION = "ERROR_SYSTEM_INITIALIZATION"
 
 ADD_NOTIFICATION = "ADD_NOTIFICATION"
 REMOVE_NOTIFICATION = "REMOVE_NOTIFICATION"
 
 SET_SYSTEM_CHECKPOINT = "SET_SYSTEM_CHECKPOINT"
+SYSTEM_CHECKPOINT_SET = "SYSTEM_CHECKPOINT_SET"
 RESTORE_SYSTEM_CHECKPOINT = "RESTORE_SYSTEM_CHECKPOINT"
 
 ADD_CHANGESETS = "ADD_CHANGESETS"
 APPLY_CHANGESETS = "APPLY_CHANGESETS"
+ERROR_APPLY_CHANGESETS = "ERROR_APPLY_CHANGESETS"
 CLEAR_CHANGESETS = "CLEAR_CHANGESET"
 
 REQUEST_ANCILLARY_TRUST = "REQUEST_ANCILLARY_TRUST"
@@ -64,6 +66,7 @@ ERROR_RULES = "ERROR_RULES"
 
 REQUEST_RULES_TEXT = "REQUEST_RULES_TEXT"
 RECEIVED_RULES_TEXT = "RECEIVED_RULES_TEXT"
+MODIFY_RULES_TEXT = "MODIFY_RULES_TEXT"
 ERROR_RULES_TEXT = "ERROR_RULES_TEXT"
 
 
@@ -84,7 +87,7 @@ class NotificationType(Enum):
 class Notification(NamedTuple):
     id: int
     text: str
-    type: NotificationType
+    type: Optional[NotificationType]
 
 
 def add_notification(text: str, type: NotificationType) -> Action:
@@ -101,6 +104,10 @@ def add_changesets(*changesets: Changeset) -> Action:
 
 def apply_changesets(*changesets: Changeset) -> Action:
     return _create_action(APPLY_CHANGESETS, changesets)
+
+
+def error_apply_changesets(error: str) -> Action:
+    return _create_action(ERROR_APPLY_CHANGESETS, error)
 
 
 def clear_changesets() -> Action:
@@ -145,6 +152,10 @@ def error_deploying_ancillary_trust(error: str) -> Action:
 
 def set_system_checkpoint() -> Action:
     return _create_action(SET_SYSTEM_CHECKPOINT)
+
+
+def system_checkpoint_set(checkpoint: System) -> Action:
+    return _create_action(SYSTEM_CHECKPOINT_SET, checkpoint)
 
 
 def restore_system_checkpoint() -> Action:
@@ -207,6 +218,10 @@ def received_rules_text(rules_text: str) -> Action:
     return _create_action(RECEIVED_RULES_TEXT, rules_text)
 
 
+def modify_rules_text(rules_text: str) -> Action:
+    return _create_action(MODIFY_RULES_TEXT, rules_text)
+
+
 def error_rules_text(error: str) -> Action:
     return _create_action(ERROR_RULES_TEXT, error)
 
@@ -215,9 +230,9 @@ def init_system() -> Action:
     return _create_action(INIT_SYSTEM)
 
 
-def system_initialized() -> Action:
-    return _create_action(SYSTEM_INITIALIZED)
+def system_received(system: System) -> Action:
+    return _create_action(SYSTEM_RECEIVED, system)
 
 
-def system_initialization_error() -> Action:
-    return _create_action(ERROR_SYSTEM_INITIALIZATION)
+def system_initialization_error(error: str) -> Action:
+    return _create_action(ERROR_SYSTEM_INITIALIZATION, error)

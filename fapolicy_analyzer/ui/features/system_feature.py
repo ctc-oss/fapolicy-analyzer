@@ -15,10 +15,18 @@
 
 import logging
 from concurrent.futures import ThreadPoolExecutor
-from typing import Callable, Sequence
+from typing import Callable
 
 import gi
-from fapolicy_analyzer import Changeset, System, rollback_fapolicyd
+from fapolicy_analyzer import System, rollback_fapolicyd
+from fapolicy_analyzer.redux import (
+    Action,
+    ReduxFeatureModule,
+    combine_epics,
+    create_feature_module,
+    of_init_feature,
+    of_type,
+)
 from fapolicy_analyzer.ui.actions import (
     APPLY_CHANGESETS,
     DEPLOY_ANCILLARY_TRUST,
@@ -35,6 +43,7 @@ from fapolicy_analyzer.ui.actions import (
     ancillary_trust_deployed,
     clear_changesets,
     error_ancillary_trust,
+    error_apply_changesets,
     error_deploying_ancillary_trust,
     error_events,
     error_groups,
@@ -50,20 +59,13 @@ from fapolicy_analyzer.ui.actions import (
     received_rules_text,
     received_system_trust,
     received_users,
+    system_checkpoint_set,
     system_initialization_error,
-    system_initialized,
+    system_received,
 )
 from fapolicy_analyzer.ui.reducers import system_reducer
 from fapolicy_analyzer.ui.strings import SYSTEM_INITIALIZATION_ERROR
 from fapolicy_analyzer.util.fapd_dbase import fapd_dbase_snapshot
-from redux import (
-    Action,
-    ReduxFeatureModule,
-    combine_epics,
-    create_feature_module,
-    of_init_feature,
-    of_type,
-)
 from rx import of, pipe
 from rx.operators import catch, ignore_elements, map
 
@@ -106,9 +108,10 @@ def create_system_feature(
                 executor.shutdown()
 
             if system:
-                dispatch(system_initialized())
+                dispatch(system_received(system))
+                dispatch(system_checkpoint_set(_checkpoint))
             else:
-                dispatch(system_initialization_error())
+                dispatch(system_initialization_error(SYSTEM_INITIALIZATION_ERROR))
 
         if system:
             executor = None
@@ -118,11 +121,13 @@ def create_system_feature(
             executor.submit(execute_system)
         return init_system()
 
-    def _apply_changesets(changesets: Sequence[Changeset]) -> Sequence[Changeset]:
+    def _apply_changesets(action: Action) -> Action:
         global _system
+        changesets = action.payload
         for c in changesets:
-            _system = _system.apply_changeset(c)
-        return changesets
+            _system = c.apply_to_system(_system)
+        dispatch(system_received(_system))
+        return add_changesets(changesets)
 
     def _get_ancillary_trust(_: Action) -> Action:
         trust = _system.ancillary_trust()
@@ -143,12 +148,13 @@ def create_system_feature(
     def _set_checkpoint(action: Action) -> Action:
         global _checkpoint
         _checkpoint = _system
-        return action
+        return system_checkpoint_set(_checkpoint)
 
     def _restore_checkpoint(_: Action) -> Action:
         global _system
         _system = _checkpoint
         rollback_fapolicyd(_system)
+        dispatch(system_received(_system))
         return clear_changesets()
 
     def _get_events(action: Action) -> Action:
@@ -184,7 +190,8 @@ def create_system_feature(
 
     apply_changesets_epic = pipe(
         of_type(APPLY_CHANGESETS),
-        map(lambda action: add_changesets(_apply_changesets(action.payload))),
+        map(_apply_changesets),
+        catch(lambda ex, source: of(error_apply_changesets(str(ex)))),
     )
 
     request_ancillary_trust_epic = pipe(

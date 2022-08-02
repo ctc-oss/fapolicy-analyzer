@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .ui_widget import UIBuilderWidget
+from fapolicy_analyzer.ui.ui_widget import UIBuilderWidget
 
 
 class TrustFileDetails(UIBuilderWidget):

@@ -6,8 +6,8 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+use dbus::arg::messageitem::MessageItem;
 use std::fmt;
-use std::process::Command;
 use std::time::Duration;
 
 use dbus::blocking::{BlockingSender, Connection};
@@ -52,6 +52,7 @@ fn msg(m: Method, unit: &str) -> Result<Message, Error> {
 #[derive(Clone)]
 pub struct Handle {
     name: String,
+    unit: String,
 }
 
 impl Default for Handle {
@@ -60,58 +61,94 @@ impl Default for Handle {
     }
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub enum State {
+    Active,
+    Inactive,
+    Failed,
+    Other(String),
+}
+
+impl State {
+    pub fn can_be(&self, other: State) -> bool {
+        use State::*;
+
+        match self {
+            Inactive if other == Failed => true,
+            _ => *self == other,
+        }
+    }
+}
+
 impl Handle {
     pub fn new(name: &str) -> Handle {
         Handle {
-            name: format!("{}.service", name),
+            name: name.to_string(),
+            unit: format!("{}.service", name),
         }
     }
 
     pub fn start(&self) -> Result<(), Error> {
-        msg(StartUnit, &self.name).and_then(call).map(|_| ())
+        msg(StartUnit, &self.unit).and_then(call).map(|_| ())
     }
 
     pub fn stop(&self) -> Result<(), Error> {
-        msg(StopUnit, &self.name).and_then(call).map(|_| ())
+        msg(StopUnit, &self.unit).and_then(call).map(|_| ())
     }
 
     pub fn enable(&self) -> Result<(), Error> {
-        msg(EnableUnitFiles, &self.name).and_then(call).map(|_| ())
+        msg(EnableUnitFiles, &self.unit).and_then(call).map(|_| ())
     }
 
     pub fn disable(&self) -> Result<(), Error> {
-        msg(DisableUnitFiles, &self.name).and_then(call).map(|_| ())
+        msg(DisableUnitFiles, &self.unit).and_then(call).map(|_| ())
     }
 
-    // todo;; replace with direct dbus calls
-    // systemctl return codes
-    // 0 - unit is active
-    // 1 - unit not failed
-    // 2 - unused
-    // 3 - unit is not active
-    // 4 - no such unit
     pub fn active(&self) -> Result<bool, Error> {
-        Command::new("systemctl")
-            .arg("--no-pager")
-            .arg("-n0")
-            .arg("status")
-            .arg(&self.name)
-            .output()
-            .map(|o| {
-                if o.status.success() {
-                    Ok(String::from_utf8(o.stdout)?)
-                } else {
-                    match o.status.code() {
-                        Some(1 | 3) => Ok(String::from_utf8(o.stdout)?),
-                        Some(4) => Err(ServiceCheckFailure(
-                            String::from_utf8(o.stderr)?.trim().into(),
-                        )),
-                        // unlikely; either got an unused 2-code or a sigint
-                        _ => Err(ServiceCheckFailure("Unexpected".into())),
-                    }
-                }
+        self.state().map(|state| matches!(state, State::Active))
+    }
+
+    pub fn state(&self) -> Result<State, Error> {
+        use dbus::arg::messageitem::Props;
+        use dbus::ffidisp::Connection;
+        use State::*;
+
+        let c = Connection::new_system()?;
+        let p = Props::new(
+            &c,
+            "org.freedesktop.systemd1",
+            // todo;; the path name may need to be fetched dynamically via a Message
+            format!("/org/freedesktop/systemd1/unit/{}_2eservice", self.name),
+            "org.freedesktop.systemd1.Unit",
+            5000,
+        );
+
+        if let MessageItem::Str(state) = p.get("ActiveState")? {
+            Ok(match state.as_str() {
+                "active" => Active,
+                "inactive" => Inactive,
+                "failed" => Failed,
+                _ => Other(state),
             })
-            .map_err(|_| ServiceCheckFailure("Failed to execute systemctl".into()))?
-            .map(|txt| txt.contains("Active: active"))
+        } else {
+            Err(ServiceCheckFailure(
+                "DBUS unit active check failed".to_string(),
+            ))
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::svc::State::*;
+
+    #[test]
+    fn state_can_be() {
+        // Failed is Inactive
+        assert!(Inactive.can_be(Failed));
+        // Inactive is not Failed
+        assert!(!Failed.can_be(Inactive));
+        // Identity
+        assert!(Active.can_be(Active))
     }
 }
