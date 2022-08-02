@@ -11,7 +11,10 @@ use crate::object::Part;
 use crate::Rule;
 use std::path::PathBuf;
 
-pub(crate) const L001_MESSAGE: &str = "Using any+all+all here will short-circuit all other rules.";
+pub(crate) const L001_MESSAGE: &str = "Using any+all+all here will short-circuit all other rules";
+pub(crate) const L002_MESSAGE: &str = "The subject exe not exist at";
+pub(crate) const L003_MESSAGE_A: &str = "object does not exist at";
+pub(crate) const L003_MESSAGE_B: &str = "The object should be a";
 pub(crate) const L004_MESSAGE: &str = "Duplicate of rule";
 
 pub fn l001(fk: usize, r: &Rule, db: &DB) -> Option<String> {
@@ -30,7 +33,7 @@ pub fn l001(fk: usize, r: &Rule, db: &DB) -> Option<String> {
 pub fn l002_subject_path_missing(_: usize, r: &Rule, _db: &DB) -> Option<String> {
     if let Some(path) = r.subj.exe().map(PathBuf::from) {
         if !path.exists() {
-            Some("The exe specified does not exist.".to_string())
+            Some(format!("{} {}", L002_MESSAGE, path.display()))
         } else {
             None
         }
@@ -43,8 +46,16 @@ fn is_missing(p: &str) -> bool {
     !PathBuf::from(p).exists()
 }
 
-fn path_does_not_exist_message(t: &str) -> String {
-    format!("The {} specified does not exist.", t)
+fn is_dir(p: &str) -> bool {
+    PathBuf::from(p).is_dir()
+}
+
+fn is_file(p: &str) -> bool {
+    PathBuf::from(p).is_file()
+}
+
+fn path_does_not_exist_message(t: &str, p: &str) -> String {
+    format!("{} {} {}", t, L003_MESSAGE_A, p)
 }
 
 pub fn l003_object_path_missing(_: usize, r: &Rule, _db: &DB) -> Option<String> {
@@ -52,9 +63,13 @@ pub fn l003_object_path_missing(_: usize, r: &Rule, _db: &DB) -> Option<String> 
         .parts
         .iter()
         .filter_map(|p| match p {
-            Part::Device(p) if is_missing(p) => Some(path_does_not_exist_message("device")),
-            Part::Dir(p) if is_missing(p) => Some(path_does_not_exist_message("directory")),
-            Part::Path(p) if is_missing(p) => Some(path_does_not_exist_message("path")),
+            Part::Device(p) if is_missing(p) => Some(path_does_not_exist_message("device", p)),
+            Part::Path(p) if is_missing(p) => Some(path_does_not_exist_message("path", p)),
+            Part::Device(p) | Part::Path(p) if !is_file(p) => {
+                Some(format!("{} {}", L003_MESSAGE_B, "file"))
+            }
+            Part::Dir(p) if is_missing(p) => Some(path_does_not_exist_message("dir", p)),
+            Part::Dir(p) if !is_dir(p) => Some(format!("{} {}", L003_MESSAGE_B, "dir")),
             _ => None,
         })
         .collect::<Vec<String>>()
