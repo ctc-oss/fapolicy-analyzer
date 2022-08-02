@@ -12,9 +12,10 @@ use crate::Rule;
 use std::path::PathBuf;
 
 pub(crate) const L001_MESSAGE: &str = "Using any+all+all here will short-circuit all other rules.";
-pub(crate) const L004_MESSAGE: &str = "Duplicate rules detected";
+pub(crate) const L004_MESSAGE: &str = "Duplicate of rule";
 
-pub fn l001(id: usize, r: &Rule, db: &DB) -> Option<String> {
+pub fn l001(fk: usize, r: &Rule, db: &DB) -> Option<String> {
+    let id = db.rule_rev(fk).map(|e| e.id).unwrap();
     if id < db.rules().len() // rules are indexed from 1
         && r.perm.is_any()
         && r.subj.is_all()
@@ -26,7 +27,7 @@ pub fn l001(id: usize, r: &Rule, db: &DB) -> Option<String> {
     }
 }
 
-pub fn l002_subject_path_missing(_id: usize, r: &Rule, _db: &DB) -> Option<String> {
+pub fn l002_subject_path_missing(_: usize, r: &Rule, _db: &DB) -> Option<String> {
     if let Some(path) = r.subj.exe().map(PathBuf::from) {
         if !path.exists() {
             Some("The exe specified does not exist.".to_string())
@@ -38,7 +39,7 @@ pub fn l002_subject_path_missing(_id: usize, r: &Rule, _db: &DB) -> Option<Strin
     }
 }
 
-fn is_missing(p: &String) -> bool {
+fn is_missing(p: &str) -> bool {
     !PathBuf::from(p).exists()
 }
 
@@ -46,7 +47,7 @@ fn path_does_not_exist_message(t: &str) -> String {
     format!("The {} specified does not exist.", t)
 }
 
-pub fn l003_object_path_missing(_id: usize, r: &Rule, _db: &DB) -> Option<String> {
+pub fn l003_object_path_missing(_: usize, r: &Rule, _db: &DB) -> Option<String> {
     r.obj
         .parts
         .iter()
@@ -61,17 +62,18 @@ pub fn l003_object_path_missing(_id: usize, r: &Rule, _db: &DB) -> Option<String
         .cloned()
 }
 
-pub fn l004_duplicate_rule(id: usize, r: &Rule, db: &DB) -> Option<String> {
-    // the passed id is 1 indexed, and the iter is 0 indexed, so all rule ids need adjusted
+pub fn l004_duplicate_rule(fk: usize, r: &Rule, db: &DB) -> Option<String> {
     db.iter()
-        .filter(|(&other, _)| other + 1 != id)
-        .find_map(|(fk, (_, e))| match e {
-            Entry::ValidRule(other) if r == other => {
-                let dupe = db.rule_rev(*fk).unwrap();
-                Some(format!("{} ({})", L004_MESSAGE, dupe.id))
+        .filter_map(|(&fk2, (_, e))| match e {
+            Entry::ValidRule(other) if fk != fk2 && other == r => {
+                let dupe = db.rule_rev(fk2).map(|e| e.id).unwrap();
+                Some(format!("{} {}", L004_MESSAGE, dupe))
             }
             _ => None,
         })
+        .collect::<Vec<String>>()
+        .first()
+        .cloned()
 }
 
 #[cfg(test)]
@@ -85,10 +87,16 @@ mod tests {
         let db = deserialize_rules_db(
             r#"
         [foo.bar]
+        # 1
         deny perm=execute all : all
+        # 2
         allow perm=open all : all
         %foo=bar
+        # 3
+        sdfsdf
+        # 4
         allow_log perm=open all : all
+        # 5
         allow perm=open all : all
         "#,
         )?;
@@ -97,7 +105,7 @@ mod tests {
         assert!(r.msg.is_some());
         println!("{}", r.msg.as_ref().unwrap());
         assert!(r.msg.as_ref().unwrap().starts_with(L004_MESSAGE));
-        assert!(r.msg.as_ref().unwrap().ends_with(&format!("({})", 4)));
+        assert!(r.msg.as_ref().unwrap().ends_with(&5.to_string()));
         Ok(())
     }
 }

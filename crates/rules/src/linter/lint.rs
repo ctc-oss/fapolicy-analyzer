@@ -21,17 +21,9 @@ pub fn lint_db(db: DB) -> DB {
     ];
 
     db.iter()
-        .map(|(fk, (source, def))| match def {
+        .map(|(&fk, (source, def))| match def {
             Entry::ValidRule(r) => {
-                let x: Vec<String> = if let Some(rule_entry) = db.rule_rev(*fk) {
-                    lints
-                        .iter()
-                        .filter_map(|f| f(rule_entry.id, r, &db))
-                        .collect()
-                } else {
-                    vec![]
-                };
-
+                let x: Vec<String> = lints.iter().filter_map(|f| f(fk, r, &db)).collect();
                 if x.is_empty() {
                     (source.clone(), Entry::ValidRule(r.clone()))
                 } else {
