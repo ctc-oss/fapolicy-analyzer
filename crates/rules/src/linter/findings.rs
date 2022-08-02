@@ -58,18 +58,20 @@ fn path_does_not_exist_message(t: &str, p: &str) -> String {
     format!("{} {} {}", t, L003_MESSAGE_A, p)
 }
 
+fn wrong_type_message(t: &str) -> String {
+    format!("{} {}", L003_MESSAGE_B, t)
+}
+
 pub fn l003_object_path_missing(_: usize, r: &Rule, _db: &DB) -> Option<String> {
     r.obj
         .parts
         .iter()
         .filter_map(|p| match p {
             Part::Device(p) if is_missing(p) => Some(path_does_not_exist_message("device", p)),
-            Part::Path(p) if is_missing(p) => Some(path_does_not_exist_message("path", p)),
-            Part::Device(p) | Part::Path(p) if !is_file(p) => {
-                Some(format!("{} {}", L003_MESSAGE_B, "file"))
-            }
+            Part::Path(p) if is_missing(p) => Some(path_does_not_exist_message("file", p)),
             Part::Dir(p) if is_missing(p) => Some(path_does_not_exist_message("dir", p)),
-            Part::Dir(p) if !is_dir(p) => Some(format!("{} {}", L003_MESSAGE_B, "dir")),
+            Part::Dir(p) if !is_dir(p) => Some(wrong_type_message("dir")),
+            Part::Device(p) | Part::Path(p) if !is_file(p) => Some(wrong_type_message("file")),
             _ => None,
         })
         .collect::<Vec<String>>()
@@ -93,7 +95,7 @@ pub fn l004_duplicate_rule(fk: usize, r: &Rule, db: &DB) -> Option<String> {
 
 #[cfg(test)]
 mod tests {
-    use crate::linter::findings::L004_MESSAGE;
+    use crate::linter::findings::{path_does_not_exist_message, L004_MESSAGE};
     use crate::read::deserialize_rules_db;
     use std::error::Error;
 
@@ -118,9 +120,50 @@ mod tests {
         let r = db.rule(2).unwrap();
 
         assert!(r.msg.is_some());
-        println!("{}", r.msg.as_ref().unwrap());
         assert!(r.msg.as_ref().unwrap().starts_with(L004_MESSAGE));
         assert!(r.msg.as_ref().unwrap().ends_with(&5.to_string()));
+        Ok(())
+    }
+
+    #[test]
+    fn lint_missing_dir() -> Result<(), Box<dyn Error>> {
+        let db = deserialize_rules_db("allow perm=any all : dir=/foo")?;
+        let r = db.rule(1).unwrap();
+
+        assert!(r.msg.is_some());
+        println!("{}", r.msg.as_ref().unwrap());
+        assert_eq!(
+            r.msg.as_ref().unwrap(),
+            &path_does_not_exist_message("dir", "/foo")
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn lint_missing_path() -> Result<(), Box<dyn Error>> {
+        let db = deserialize_rules_db("allow perm=any all : path=/foo")?;
+        let r = db.rule(1).unwrap();
+
+        assert!(r.msg.is_some());
+        println!("{}", r.msg.as_ref().unwrap());
+        assert_eq!(
+            r.msg.as_ref().unwrap(),
+            &path_does_not_exist_message("file", "/foo")
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn lint_missing_device() -> Result<(), Box<dyn Error>> {
+        let db = deserialize_rules_db("allow perm=any all : device=/foo")?;
+        let r = db.rule(1).unwrap();
+
+        assert!(r.msg.is_some());
+        println!("{}", r.msg.as_ref().unwrap());
+        assert_eq!(
+            r.msg.as_ref().unwrap(),
+            &path_does_not_exist_message("device", "/foo")
+        );
         Ok(())
     }
 }
