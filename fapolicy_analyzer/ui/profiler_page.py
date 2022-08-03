@@ -98,6 +98,7 @@ class ProfilerPage(UIConnectedWidget, UIPage):
         profiling_args = self.get_text()
         logging.debug(f"Entry text = {profiling_args}")
         self.running = True
+        self._fapd_profiler.fapd_persistance = self.get_object("persistentCheckbox").get_active()
         self._fapd_profiler.start_prof_session(profiling_args)
         fapd_prof_stderr = self._fapd_profiler.fapd_prof_stderr
         logging.debug(f"Started prof session, stderr={fapd_prof_stderr}")
