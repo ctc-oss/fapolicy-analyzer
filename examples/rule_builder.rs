@@ -13,10 +13,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use clap::Clap;
+use clap::Parser;
 use fapolicy_rules::{Decision, Object, Permission, Rule, Subject};
 
-#[derive(Clap)]
+#[derive(Parser)]
 #[clap(name = "Rule Builder")]
 /// Typesafe Rule Building CLI
 struct Opts {

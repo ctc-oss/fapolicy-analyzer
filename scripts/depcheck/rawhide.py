@@ -12,16 +12,18 @@ def available_packages(prefix: str):
     available_major = {}
     available_minor = {}
     for link in links:
-        if link.text.startswith("rust-1.6") or "rust-fbthrift_codegen" in link.text or "rust-packaging-22" in link.text or "rust-srpm-macros" in link.text:
+        link_text = link.text
+        if link_text.startswith("rust-1.6") or "rust-fbthrift_codegen" in link.text or "rust-packaging-22" in link.text or "rust-srpm-macros" in link.text:
             continue
-        if link.text.startswith(prefix):
-            if link.text.startswith("py") and not link.text.startswith("python-"):
-                print(f"----> {link.text}")
+        if link_text.startswith(prefix):
+            if link_text.startswith("py") and not link.text.startswith("python"):
+                link_text = f"python-{link_text.strip('py')}"
+
+            if link_text.startswith("python") and not link_text.startswith("python-"):
                 continue
 
-            # print(link.text)
             # rust-zstd-safe-4.1.4-2.fc37.src.rpm
-            (name, version) = link.text.split("-", 1)[1].rsplit("-", 1)[0].rsplit("-", 1)
+            (name, version) = link_text.split("-", 1)[1].rsplit("-", 1)[0].rsplit("-", 1)
             available[name] = version
             # print(f"{link.text} - {name} - {version}")
             splits = version.split(".", 2)

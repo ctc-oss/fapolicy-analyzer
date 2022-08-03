@@ -32,9 +32,9 @@ members = [
 [dev-dependencies]
 
 [dependencies]
-clap = "3.0.0-beta.2"
+clap = { version = "3.2.15", features = ["derive"] }
 lmdb-rkv = "0.14.0"
-nom = "6.1.0"
+nom = "7.1"
 rayon = "1.5"
 thiserror = "1.0"
 ariadne = "0.1"
