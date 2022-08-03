@@ -18,13 +18,9 @@ import gi
 import os
 
 from time import sleep
-from os import listdir
-from os.path import isfile, join
-from .configs import Sizing
-from .store import dispatch, get_system_feature
+from .store import get_system_feature
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
-from fapolicy_analyzer.util.format import f
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
@@ -83,7 +79,6 @@ class ProfilerPage(UIConnectedWidget, UIPage):
         buff = Gtk.TextBuffer()
         work_dir = self.get_text()["dirText"]
         if work_dir is not None:
-            #files = [f for f in listdir(work_dir) if isfile(join(work_dir,f))]
             files = glob.glob(work_dir + "/*")
             latest_file = max(files, key=os.path.getctime)
             time = "_".join(latest_file.split("_")[2:5])
