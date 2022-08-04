@@ -22,21 +22,11 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
 
-@pytest.fixture()
-def mock_dispatch(mocker):
-    return mocker.patch("ui.profiler_page.dispatch")
-
-
 @pytest.fixture
-def widget(mock_dispatch, mocker):
+def widget(mocker):
     init_store(mock_System())
     return ProfilerPage()
 
 
 def test_creates_widget(widget):
     assert type(widget.get_ref()) is Gtk.Box
-
-
-def test_run_analyzer(widget):
-    widget.get_object("dirEntry").set_text("/tmp")
-    widget.on_test_activate()

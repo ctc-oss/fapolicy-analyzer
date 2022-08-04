@@ -18,7 +18,7 @@ import gi
 import os
 
 from time import sleep
-from .store import get_system_feature
+from fapolicy_analyzer.ui.store import get_system_feature
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 
