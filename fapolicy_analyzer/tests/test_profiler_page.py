@@ -18,6 +18,8 @@ import pytest
 from fapolicy_analyzer.ui.store import init_store
 from mocks import mock_System
 from fapolicy_analyzer.ui.profiler_page import ProfilerPage
+from fapolicy_analyzer.ui.fapd_manager import FapdManager
+from fapolicy_analyzer.ui.faprofiler import FaProfiler
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
@@ -30,3 +32,9 @@ def widget(mocker):
 
 def test_creates_widget(widget):
     assert type(widget.get_ref()) is Gtk.Box
+
+
+def test_run_analyzer(widget):
+    widget._fapd_profiler = FaProfiler(FapdManager(False))
+    widget.get_object("dirEntry").set_text("/tmp")
+    widget.on_test_activate()
