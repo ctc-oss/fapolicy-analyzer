@@ -31,7 +31,6 @@ from fapolicy_analyzer.ui.changeset_wrapper import Changeset
 from fapolicy_analyzer.ui.configs import Sizing
 from fapolicy_analyzer.ui.database_admin_page import DatabaseAdminPage
 from fapolicy_analyzer.ui.fapd_manager import FapdManager, ServiceStatus
-from fapolicy_analyzer.ui.faprofiler import FaProfiler
 from fapolicy_analyzer.ui.notification import Notification
 from fapolicy_analyzer.ui.operations import DeployChangesetsOp
 from fapolicy_analyzer.ui.policy_rules_admin_page import PolicyRulesAdminPage
@@ -76,7 +75,6 @@ class MainWindow(UIConnectedWidget):
         self._fapd_status = ServiceStatus.UNKNOWN
         self._fapd_monitoring = False
         self._fapd_mgr = FapdManager(self._fapdControlPermitted)
-        self._fapd_profiler = FaProfiler(self._fapd_mgr)
         self.__changesets: Sequence[Changeset] = []
         self.__system: System
         self.__checkpoint: System
@@ -383,11 +381,7 @@ class MainWindow(UIConnectedWidget):
         self.__set_trustDbMenu_sensitive(True)
 
     def on_profileExecMenu_activate(self, *args):
-        page = router(ANALYZER_SELECTION.PROFILER)
-        width = self.get_object("mainWindow").get_size()[0]
-        page.get_object("dirEntry").set_property("width_request", int(width * Sizing.PROFILER_TEXT_ENTRY))
-        page._fapd_mgr = self._fapd_mgr
-        page._fapd_profiler = self._fapd_profiler
+        page = router(ANALYZER_SELECTION.PROFILER, (self._fapd_mgr, self.get_ref().get_toplevel()))
         self.__pack_main_content(page)
         self.__set_trustDbMenu_sensitive(True)
 

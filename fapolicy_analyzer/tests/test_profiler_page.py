@@ -27,7 +27,7 @@ from gi.repository import Gtk
 @pytest.fixture
 def widget(mocker):
     init_store(mock_System())
-    return ProfilerPage()
+    return ProfilerPage(FaProfiler(FapdManager(False)))
 
 
 def test_creates_widget(widget):
@@ -35,6 +35,12 @@ def test_creates_widget(widget):
 
 
 def test_run_analyzer(widget):
-    widget._fapd_profiler = FaProfiler(FapdManager(False))
     widget.get_object("dirEntry").set_text("/tmp")
     widget.on_test_activate()
+    textBuffer = widget.get_object("profilerOutput").get_buffer()
+    assert (
+        textBuffer.get_text(
+            textBuffer.get_start_iter(), textBuffer.get_end_iter(), True
+        ).count("\n")
+        == 2
+    )

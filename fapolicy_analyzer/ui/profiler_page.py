@@ -21,15 +21,15 @@ from time import sleep
 from fapolicy_analyzer.ui.store import get_system_feature
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
-
+from fapolicy_analyzer.ui.configs import Sizing
+from fapolicy_analyzer.ui.faprofiler import FaProfiler
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
 
 class ProfilerPage(UIConnectedWidget, UIPage):
-    def __init__(self):
+    def __init__(self, data):
         UIConnectedWidget.__init__(self, get_system_feature())
-
         actions = {
             "start": [
                 UIAction(
@@ -52,10 +52,12 @@ class ProfilerPage(UIConnectedWidget, UIPage):
         }
 
         UIPage.__init__(self, actions)
-
-        self._fapd_mgr = None
-        self._fapd_profiler = None
+        manager, window = data
+        self._fapd_profiler = FaProfiler(manager)
         self.running = False
+
+        width = window.get_size()[0]
+        self.get_object("dirEntry").set_property("width_request", int(width * Sizing.PROFILER_TEXT_ENTRY))
 
     def stop_button_sensitivity(self):
         return self.running
@@ -63,7 +65,7 @@ class ProfilerPage(UIConnectedWidget, UIPage):
     def start_button_sensitivity(self):
         return not self.running
 
-    def get_text(self):
+    def get_entry_dict(self):
         entryDict = {
             "executeText": self.get_object("executeEntry").get_text(),
             "argText": self.get_object("argEntry").get_text(),
@@ -77,7 +79,7 @@ class ProfilerPage(UIConnectedWidget, UIPage):
     def display_log_output(self):
         text_display = self.get_object("profilerOutput")
         buff = Gtk.TextBuffer()
-        work_dir = self.get_text()["dirText"]
+        work_dir = self.get_entry_dict()["dirText"]
         if work_dir is not None:
             files = glob.glob(work_dir + "/*")
             latest_file = max(files, key=os.path.getctime)
@@ -86,16 +88,19 @@ class ProfilerPage(UIConnectedWidget, UIPage):
 
             for run_file in run_files:
                 buff.insert_markup(buff.get_end_iter(), f"<b>{run_file}</b>", -1)
-                with open(run_file, "r") as f:
-                    lines = f.readlines()
-                buff.insert(buff.get_end_iter(), "".join(lines + ["\n"]))
+                try:
+                    with open(run_file, "r") as f:
+                        lines = f.readlines()
+                    buff.insert(buff.get_end_iter(), "".join(lines + ["\n"]))
+                except OSError:
+                    print(f"There was an issue reading from {run_file}.")
 
         else:
             buff.insert(buff.get_start_iter(), "No files found.")
         text_display.set_buffer(buff)
 
     def on_test_activate(self, *args):
-        profiling_args = self.get_text()
+        profiling_args = self.get_entry_dict()
         logging.debug(f"Entry text = {profiling_args}")
         self.running = True
         self._fapd_profiler.fapd_persistance = self.get_object("persistentCheckbox").get_active()
