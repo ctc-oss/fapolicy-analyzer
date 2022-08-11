@@ -13,26 +13,27 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import time
-
 from fapolicy_analyzer import *
 
 #
 # There are two ways to control a service using the dbus backend components
 #
 
-# 1. Static calls that use the default "fapolicyd" service
-print(is_fapolicyd_active())
-stop_fapolicyd()
-print(is_fapolicyd_active())
-start_fapolicyd()
-print(is_fapolicyd_active())
-
-# 2. Stateful object that takes a unit name
+# 1. Stateful object that takes a unit name
 d = Handle("fapolicyd")
 print(d.is_active())
 d.stop()
-time.sleep(1)
+d.wait_until_inactive()
 print(d.is_active())
 d.start()
+d.wait_until_active()
 print(d.is_active())
+
+# 2. Static calls that use the default "fapolicyd" service
+print(is_fapolicyd_active())
+stop_fapolicyd()
+d.wait_until_inactive()
+print(is_fapolicyd_active())
+start_fapolicyd()
+d.wait_until_active()
+print(is_fapolicyd_active())

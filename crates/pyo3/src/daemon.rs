@@ -90,24 +90,14 @@ impl PyHandle {
 
 #[pyfunction]
 fn start_fapolicyd() -> PyResult<()> {
-    match Handle::default().start() {
-        Ok(_) => {
-            eprintln!("starting fapolicyd daemon");
-            Ok(())
-        }
-        Err(e) => Err(PyRuntimeError::new_err(format!("{:?}", e))),
-    }
+    let d: PyHandle = Handle::default().into();
+    d.start()
 }
 
 #[pyfunction]
 fn stop_fapolicyd() -> PyResult<()> {
-    match Handle::default().stop() {
-        Ok(_) => {
-            eprintln!("stopped fapolicyd daemon");
-            Ok(())
-        }
-        Err(e) => Err(PyRuntimeError::new_err(format!("{:?}", e))),
-    }
+    let d: PyHandle = Handle::default().into();
+    d.stop()
 }
 
 #[pyfunction]
