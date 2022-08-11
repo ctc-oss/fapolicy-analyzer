@@ -14,6 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import glob
 import logging
+from events import Events
 from time import sleep
 
 import gi
@@ -26,9 +27,13 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
 
 
-class ProfilerPage(UIConnectedWidget, UIPage):
+class ProfilerPage(UIConnectedWidget, UIPage, Events):
     def __init__(self, fapd_manager):
         UIConnectedWidget.__init__(self, get_system_feature())
+        self.__events__ = [
+            "analyze_button_pushed",
+        ]
+        Events.__init__(self)
         actions = {
             "start": [
                 UIAction(
@@ -53,6 +58,12 @@ class ProfilerPage(UIConnectedWidget, UIPage):
         UIPage.__init__(self, actions)
         self._fapd_profiler = FaProfiler(fapd_manager)
         self.running = False
+
+    def on_analyzerButton_clicked(self, *args):
+        time=self._fapd_profiler.get_profiling_timestamp()
+        file_glob = glob.glob(f"/tmp/fapd*{time}*.stderr")
+        file = file_glob[0] if len(file_glob) == 1 else None
+        self.analyze_button_pushed(file)
 
     def stop_button_sensitivity(self):
         return self.running

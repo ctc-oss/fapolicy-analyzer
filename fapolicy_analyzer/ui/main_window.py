@@ -367,6 +367,10 @@ class MainWindow(UIConnectedWidget):
             self.__set_trustDbMenu_sensitive(True)
         fcd.destroy()
 
+    def activate_file_analyzer(self, file):
+        self.__pack_main_content(router(ANALYZER_SELECTION.ANALYZE_FROM_AUDIT, file))
+        self.__set_trustDbMenu_sensitive(True)
+
     def on_trustDbMenu_activate(self, menuitem, *args):
         self.__pack_main_content(router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN))
         self.__set_trustDbMenu_sensitive(False)
@@ -381,6 +385,7 @@ class MainWindow(UIConnectedWidget):
 
     def on_profileExecMenu_activate(self, *args):
         page = router(ANALYZER_SELECTION.PROFILER, self._fapd_mgr)
+        page.analyze_button_pushed += self.activate_file_analyzer
         self.__pack_main_content(page)
         self.__set_trustDbMenu_sensitive(True)
 
