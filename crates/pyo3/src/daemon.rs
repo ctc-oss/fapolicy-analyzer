@@ -77,10 +77,12 @@ impl PyHandle {
         self.rs.active().is_ok()
     }
 
+    #[args(timeout = 15)]
     pub fn wait_until_active(&self, timeout: usize) -> PyResult<()> {
         wait_for_daemon(Active, timeout)
     }
 
+    #[args(timeout = 15)]
     pub fn wait_until_inactive(&self, timeout: usize) -> PyResult<()> {
         wait_for_daemon(Inactive, timeout)
     }
