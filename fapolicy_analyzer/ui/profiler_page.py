@@ -14,21 +14,21 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import glob
 import logging
-import gi
 import os
-
 from time import sleep
+
+import gi
+from fapolicy_analyzer.ui.faprofiler import FaProfiler
 from fapolicy_analyzer.ui.store import get_system_feature
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
-from fapolicy_analyzer.ui.configs import Sizing
-from fapolicy_analyzer.ui.faprofiler import FaProfiler
+
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
 
 class ProfilerPage(UIConnectedWidget, UIPage):
-    def __init__(self, data):
+    def __init__(self, fapd_manager):
         UIConnectedWidget.__init__(self, get_system_feature())
         actions = {
             "start": [
@@ -37,7 +37,7 @@ class ProfilerPage(UIConnectedWidget, UIPage):
                     "Start Test",
                     "media-playback-start",
                     {"clicked": self.on_test_activate},
-                    sensitivity_func=self.start_button_sensitivity
+                    sensitivity_func=self.start_button_sensitivity,
                 )
             ],
             "stop": [
@@ -46,18 +46,14 @@ class ProfilerPage(UIConnectedWidget, UIPage):
                     "Stop Test",
                     "media-playback-stop",
                     {},
-                    sensitivity_func=self.stop_button_sensitivity
+                    sensitivity_func=self.stop_button_sensitivity,
                 )
-            ]
+            ],
         }
 
         UIPage.__init__(self, actions)
-        manager, window = data
-        self._fapd_profiler = FaProfiler(manager)
+        self._fapd_profiler = FaProfiler(fapd_manager)
         self.running = False
-
-        width = window.get_size()[0]
-        self.get_object("dirEntry").set_property("width_request", int(width * Sizing.PROFILER_TEXT_ENTRY))
 
     def stop_button_sensitivity(self):
         return self.running
@@ -103,7 +99,9 @@ class ProfilerPage(UIConnectedWidget, UIPage):
         profiling_args = self.get_entry_dict()
         logging.debug(f"Entry text = {profiling_args}")
         self.running = True
-        self._fapd_profiler.fapd_persistance = self.get_object("persistentCheckbox").get_active()
+        self._fapd_profiler.fapd_persistance = self.get_object(
+            "persistentCheckbox"
+        ).get_active()
         self._fapd_profiler.start_prof_session(profiling_args)
         fapd_prof_stderr = self._fapd_profiler.fapd_prof_stderr
         logging.debug(f"Started prof session, stderr={fapd_prof_stderr}")

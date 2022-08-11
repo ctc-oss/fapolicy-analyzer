@@ -43,7 +43,6 @@ from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 from fapolicy_analyzer.ui.unapplied_changes_dialog import UnappliedChangesDialog
 from fapolicy_analyzer.util.format import f
 
-
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, GLib  # isort: skip
 
@@ -381,7 +380,7 @@ class MainWindow(UIConnectedWidget):
         self.__set_trustDbMenu_sensitive(True)
 
     def on_profileExecMenu_activate(self, *args):
-        page = router(ANALYZER_SELECTION.PROFILER, (self._fapd_mgr, self.get_ref().get_toplevel()))
+        page = router(ANALYZER_SELECTION.PROFILER, self._fapd_mgr)
         self.__pack_main_content(page)
         self.__set_trustDbMenu_sensitive(True)
 
