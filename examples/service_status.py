@@ -21,19 +21,19 @@ from fapolicy_analyzer import *
 
 # 1. Stateful object that takes a unit name
 d = Handle("fapolicyd")
-print(d.is_active())
+print(f"==== fapolicyd is {'active' if d.is_active() else 'inactive'} ====")
 d.stop()
 d.wait_until_inactive()
-print(d.is_active())
+assert not d.is_active()
 d.start()
 d.wait_until_active()
-print(d.is_active())
+assert d.is_active()
 
 # 2. Static calls that use the default "fapolicyd" service
-print(is_fapolicyd_active())
+assert is_fapolicyd_active()
 stop_fapolicyd()
 d.wait_until_inactive()
-print(is_fapolicyd_active())
+assert not is_fapolicyd_active()
 start_fapolicyd()
 d.wait_until_active()
-print(is_fapolicyd_active())
+assert is_fapolicyd_active()
