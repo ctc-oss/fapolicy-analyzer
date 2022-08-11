@@ -19,7 +19,6 @@ from fapolicy_analyzer.ui.store import init_store
 from mocks import mock_System
 from fapolicy_analyzer.ui.profiler_page import ProfilerPage
 from fapolicy_analyzer.ui.fapd_manager import FapdManager
-from fapolicy_analyzer.ui.faprofiler import FaProfiler
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
