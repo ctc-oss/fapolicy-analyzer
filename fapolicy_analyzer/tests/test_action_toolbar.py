@@ -30,7 +30,7 @@ _test_actions = {
         UIAction(
             name="Test Action",
             tooltip="Test Action Tooltip",
-            icon="window-close",
+            icon="application-exit-symbolic",
             signals={},
             sensitivity_func=lambda: True,
         )
