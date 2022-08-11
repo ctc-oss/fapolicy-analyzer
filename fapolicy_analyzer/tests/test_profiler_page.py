@@ -20,7 +20,7 @@ from mocks import mock_System
 from fapolicy_analyzer.ui.profiler_page import ProfilerPage
 from fapolicy_analyzer.ui.fapd_manager import FapdManager
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk   #isort: skip
+from gi.repository import Gtk  # isort: skip
 
 
 @pytest.fixture
