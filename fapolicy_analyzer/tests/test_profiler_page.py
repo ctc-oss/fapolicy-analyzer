@@ -26,7 +26,7 @@ from gi.repository import Gtk  # isort: skip
 @pytest.fixture
 def widget(mocker):
     init_store(mock_System())
-    return ProfilerPage((FapdManager(False), Gtk.Window()))
+    return ProfilerPage(FapdManager(False))
 
 
 def test_creates_widget(widget):
