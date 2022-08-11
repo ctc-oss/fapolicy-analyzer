@@ -14,7 +14,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import glob
 import logging
-import os
 from time import sleep
 
 import gi
@@ -75,22 +74,19 @@ class ProfilerPage(UIConnectedWidget, UIPage):
     def display_log_output(self):
         text_display = self.get_object("profilerOutput")
         buff = Gtk.TextBuffer()
-        work_dir = self.get_entry_dict()["dirText"]
-        if work_dir is not None:
-            files = glob.glob(work_dir + "/*")
-            latest_file = max(files, key=os.path.getctime)
-            time = "_".join(latest_file.split("_")[2:5])
-            run_files = [f for f in files if time in f]
-
+        files = glob.glob("/tmp/*")
+        time = self._fapd_profiler.get_profiling_timestamp()
+        run_files = [f for f in files if time in f]
+        if len(run_files) > 0:
             for run_file in run_files:
-                buff.insert_markup(buff.get_end_iter(), f"<b>{run_file}</b>", -1)
+                buff.insert_markup(buff.get_end_iter(), f"<b>{run_file}</b>\n", -1)
                 try:
                     with open(run_file, "r") as f:
                         lines = f.readlines()
                     buff.insert(buff.get_end_iter(), "".join(lines + ["\n"]))
+                    buff.insert_markup(buff.get_end_iter(), "<b>" + "=" * len(run_file) + "</b>\n", -1)
                 except OSError as ex:
                     logging.error(f"There was an issue reading from {run_file}.", ex)
-
         else:
             buff.insert(buff.get_start_iter(), "No files found.")
         text_display.set_buffer(buff)
