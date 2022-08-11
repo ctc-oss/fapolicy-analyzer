@@ -99,7 +99,7 @@ pub fn l005_object_dir_missing_trailing_slash(_: usize, r: &Rule, _db: &DB) -> O
         .parts
         .iter()
         .filter_map(|p| match p {
-            Part::Dir(p) if !p.ends_with("/") => Some(format!("{}", L005_MESSAGE)),
+            Part::Dir(p) if !p.ends_with('/') => Some(L005_MESSAGE.to_string()),
             _ => None,
         })
         .collect::<Vec<String>>()
