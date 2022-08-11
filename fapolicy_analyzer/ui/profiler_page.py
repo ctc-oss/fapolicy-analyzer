@@ -24,7 +24,7 @@ from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
+from gi.repository import Gtk #isort: skip
 
 
 class ProfilerPage(UIConnectedWidget, UIPage):
@@ -88,8 +88,8 @@ class ProfilerPage(UIConnectedWidget, UIPage):
                     with open(run_file, "r") as f:
                         lines = f.readlines()
                     buff.insert(buff.get_end_iter(), "".join(lines + ["\n"]))
-                except OSError:
-                    print(f"There was an issue reading from {run_file}.")
+                except OSError as ex:
+                    logging.error(f"There was an issue reading from {run_file}.", ex)
 
         else:
             buff.insert(buff.get_start_iter(), "No files found.")
