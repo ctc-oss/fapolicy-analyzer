@@ -60,10 +60,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         self.running = False
 
     def on_analyzerButton_clicked(self, *args):
-        time = self._fapd_profiler.get_profiling_timestamp()
-        file_glob = glob.glob(f"/tmp/fapd*{time}*.stderr")
-        file = file_glob[0] if len(file_glob) == 1 else None
-        self.analyze_button_pushed(file)
+        self.analyze_button_pushed(self._fapd_profiler.fapd_prof_stderr)
 
     def stop_button_sensitivity(self):
         return self.running
