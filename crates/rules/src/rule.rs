@@ -19,7 +19,7 @@ use crate::{Decision, Object, Permission, Subject};
 ///
 /// ### Currently only v2 rule format is supported.
 ///
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Rule {
     pub subj: Subject,
     pub perm: Permission,
