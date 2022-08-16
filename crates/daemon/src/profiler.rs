@@ -27,6 +27,9 @@ Description=File Access Profiling Daemon
 DefaultDependencies=no
 After=local-fs.target systemd-tmpfiles-setup.service
 
+[Install]
+WantedBy=multi-user.target
+
 [Service]
 Type=simple
 PIDFile=/run/fapolicyp.pid
@@ -34,8 +37,6 @@ ExecStart=/usr/sbin/fapolicyd --debug --permissive --no-details
 StandardOutput=file:/tmp/fapolicyp.stdout.log
 StandardError=file:/tmp/fapolicyp.stderr.log
 
-[Install]
-WantedBy=multi-user.target
 "#;
 
 pub struct Profiler {

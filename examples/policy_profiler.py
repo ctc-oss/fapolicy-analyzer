@@ -14,7 +14,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from fapolicy_analyzer import *
+from time import sleep
+import subprocess
 
 profiler = Profiler()
 profiler.activate()
+subprocess.getoutput(f"cat /etc/fapolicyd/compiled.rules")
 profiler.deactivate()

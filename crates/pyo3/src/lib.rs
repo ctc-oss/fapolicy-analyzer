@@ -21,6 +21,7 @@ fn rust(_py: Python, m: &PyModule) -> PyResult<()> {
     acl::init_module(_py, m)?;
     analysis::init_module(_py, m)?;
     daemon::init_module(_py, m)?;
+    profiler::init_module(_py, m)?;
     rules::init_module(_py, m)?;
     system::init_module(_py, m)?;
     trust::init_module(_py, m)?;

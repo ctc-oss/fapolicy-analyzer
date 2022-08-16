@@ -35,14 +35,18 @@ impl PyProfiler {
         }
     }
 
-    fn activate(&self) -> PyResult<()> {
-        self.activate()
-            .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))
+    fn activate(&mut self) -> PyResult<()> {
+        self.rs
+            .activate()
+            .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))?;
+        Ok(())
     }
 
-    fn deactivate(&self) -> PyResult<()> {
-        self.deactivate()
-            .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))
+    fn deactivate(&mut self) -> PyResult<()> {
+        self.rs
+            .deactivate()
+            .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))?;
+        Ok(())
     }
 }
 
