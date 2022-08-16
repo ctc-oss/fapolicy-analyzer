@@ -16,6 +16,7 @@ pub(crate) const L002_MESSAGE: &str = "The subject exe not exist at";
 pub(crate) const L003_MESSAGE_A: &str = "object does not exist at";
 pub(crate) const L003_MESSAGE_B: &str = "The object should be a";
 pub(crate) const L004_MESSAGE: &str = "Duplicate of rule";
+pub(crate) const L005_MESSAGE: &str = "Directory should have trailing slash";
 
 pub fn l001(fk: usize, r: &Rule, db: &DB) -> Option<String> {
     let id = db.rule_rev(fk).map(|e| e.id).unwrap();
@@ -86,6 +87,19 @@ pub fn l004_duplicate_rule(fk: usize, r: &Rule, db: &DB) -> Option<String> {
                 let dupe = db.rule_rev(fk2).map(|e| e.id).unwrap();
                 Some(format!("{} {}", L004_MESSAGE, dupe))
             }
+            _ => None,
+        })
+        .collect::<Vec<String>>()
+        .first()
+        .cloned()
+}
+
+pub fn l005_object_dir_missing_trailing_slash(_: usize, r: &Rule, _db: &DB) -> Option<String> {
+    r.obj
+        .parts
+        .iter()
+        .filter_map(|p| match p {
+            Part::Dir(p) if !p.ends_with('/') => Some(L005_MESSAGE.to_string()),
             _ => None,
         })
         .collect::<Vec<String>>()
