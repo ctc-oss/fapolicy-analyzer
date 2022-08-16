@@ -27,9 +27,12 @@ struct Opts {
     #[clap(short, long)]
     rules: Option<String>,
 
+    /// out path for daemon stdout log
     #[clap(long)]
     stdout: Option<String>,
 
+    /// the literal target to run, prefix by double hyphens
+    /// faprofiler -- ls -al /tmp
     #[clap(allow_hyphen_values = true)]
     target: Vec<String>,
 }
