@@ -12,7 +12,6 @@ crate-type = ["cdylib"]
 pyo3 = { version="0.15", features = ["abi3-py36"] }
 similar = "2.1"
 
-fapolicy-api = { version = "*", path = "../api" }
 fapolicy-analyzer = { version = "*", path = "../analyzer" }
 fapolicy-app = { version = "*", path = "../app" }
 fapolicy-daemon = { version = "*", path = "../daemon" }

@@ -9,12 +9,11 @@
 use std::collections::hash_map::Iter;
 use std::collections::HashMap;
 
-use fapolicy_api::trust::Trust;
-
 use crate::error::Error;
 use crate::source::TrustSource;
 use crate::source::TrustSource::{Ancillary, System};
 use crate::stat::{check, Actual, Status};
+use crate::Trust;
 
 /// Trust Database
 /// A container for tracking trust entries and their metadata

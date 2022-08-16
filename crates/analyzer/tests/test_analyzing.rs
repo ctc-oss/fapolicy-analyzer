@@ -9,9 +9,9 @@
 use fapolicy_analyzer::events::analysis::Analysis;
 use fapolicy_analyzer::events::db::DB as EventDB;
 use fapolicy_analyzer::events::event::{Event, Perspective};
-use fapolicy_api::trust::Trust;
 use fapolicy_rules::{Decision, Object, Permission, Subject};
 use fapolicy_trust::db::{Rec, DB as TrustDB};
+use fapolicy_trust::Trust;
 
 const BASH_PATH: &str = "/bin/bash";
 
