@@ -8,6 +8,7 @@
 
 use dbus::arg::messageitem::MessageItem;
 use std::fmt;
+use std::thread::sleep;
 use std::time::Duration;
 
 use dbus::blocking::{BlockingSender, Connection};
@@ -135,6 +136,34 @@ impl Handle {
                 "DBUS unit active check failed".to_string(),
             ))
         }
+    }
+}
+
+pub(crate) fn wait_for_daemon(
+    handle: &Handle,
+    target_state: State,
+    seconds: usize,
+) -> Result<(), Error> {
+    for _ in 0..seconds {
+        eprintln!("waiting on daemon to be {target_state:?}...");
+        sleep(Duration::from_secs(1));
+        if handle
+            .state()
+            .map(|state| target_state.can_be(state))
+            .unwrap_or(false)
+        {
+            eprintln!("daemon is now {target_state:?}");
+            return Ok(());
+        }
+    }
+
+    let actual_state = handle.state()?;
+    eprintln!("done waiting, daemon is {target_state:?}");
+
+    if target_state.can_be(actual_state.clone()) {
+        Ok(())
+    } else {
+        Err(Unresponsive)
     }
 }
 
