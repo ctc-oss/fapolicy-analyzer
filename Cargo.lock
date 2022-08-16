@@ -261,6 +261,7 @@ dependencies = [
  "fapolicy-rules",
  "fapolicy-trust",
  "nom",
+ "tempfile",
  "thiserror",
 ]
 

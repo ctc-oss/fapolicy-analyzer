@@ -11,3 +11,4 @@ thiserror = "1.0"
 fapolicy-trust = { version = "*", path = "../trust" }
 fapolicy-rules = { version = "*", path = "../rules" }
 dbus = "0.9"
+tempfile = "3.3"

@@ -1,4 +1,5 @@
 use crate::error::Error;
+use crate::fapolicyd::COMPILED_RULES_PATH;
 use crate::svc::{wait_for_daemon, Handle, State};
 use fapolicy_rules::db::DB;
 use fapolicy_rules::write;
@@ -7,6 +8,7 @@ use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
 use std::process::Command;
+use tempfile::{tempfile, NamedTempFile};
 
 const PROFILER_UNIT_NAME: &str = "fapolicyp";
 const PROFILER_UNIT: &str = r#"
@@ -30,7 +32,7 @@ WantedBy=multi-user.target
 pub struct Profiler {
     pub name: String,
     prev_state: Option<State>,
-    prev_rules: Option<PathBuf>,
+    prev_rules: Option<NamedTempFile>,
 }
 
 impl Default for Profiler {
@@ -70,19 +72,20 @@ impl Profiler {
                 Some(State::Active) => daemon.stop()?,
                 _ => {}
             }
-            // 3 swap the rules file if necessary
+            // 3. swap the rules file if necessary
             if let Some(db) = db {
-                let compiled = PathBuf::from("/etc/fapolicyd/compiled.rules");
-                let backup = PathBuf::from("/tmp/rules.bak");
+                let compiled = PathBuf::from(COMPILED_RULES_PATH);
+                let backup = NamedTempFile::new()?;
                 fs::rename(&compiled, &backup)?;
                 write::compiled_rules(&db, &compiled)?;
+                println!("{:?}", backup);
                 self.prev_rules = Some(backup);
             }
-            // 3. write the profiler unit file
+            // 4. write the profiler unit file
             write_drop_in()?;
-            // 4. start the profiler
+            // 5. start the profiler
             self.handle().start()?;
-            // 5. wait for the profiler to become active
+            // 6. wait for the profiler to become active
             wait_for_daemon(&self.handle(), State::Active, 10)?;
         }
         daemon.state()
@@ -91,20 +94,21 @@ impl Profiler {
     pub fn deactivate(&mut self) -> Result<State, Error> {
         let daemon = Handle::default();
         if self.is_active()? {
+            // 1. stop the daemon
             self.handle().stop()?;
+            // 2. wait for the profiler to become inactive
             wait_for_daemon(&self.handle(), State::Inactive, 10)?;
-            if let Some(f) = self.prev_rules.as_ref() {
-                fs::rename(
-                    PathBuf::from("/tmp/rules.bak"),
-                    PathBuf::from("/etc/fapolicyd/compiled.rules"),
-                )?;
-                self.prev_rules = None;
+            // 3. swap in alternative rules if specified
+            if let Some(f) = self.prev_rules.take() {
+                f.persist(COMPILED_RULES_PATH).map_err(|e| e.error)?;
             }
+            // 4. start daemon if it was previously active
             match &self.prev_state {
                 Some(State::Active) => daemon.start()?,
                 _ => {}
             }
         }
+        // clear the prev state
         self.prev_state = None;
         delete_drop_in()?;
         daemon.state()
