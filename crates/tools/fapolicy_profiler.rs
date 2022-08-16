@@ -15,13 +15,15 @@
 
 use fapolicy_daemon::profiler::Profiler;
 use std::error::Error;
+use std::process::Command;
 use std::thread::sleep;
 use std::time::Duration;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut profiler = Profiler::new();
     profiler.activate()?;
-    sleep(Duration::from_secs(10));
+    let out = Command::new("ls").arg("/tmp").output()?;
+    println!("{}", String::from_utf8(out.stdout)?);
     profiler.deactivate()?;
 
     Ok(())

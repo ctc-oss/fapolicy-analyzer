@@ -18,6 +18,8 @@ After=local-fs.target systemd-tmpfiles-setup.service
 PIDFile=/run/fapolicyp.pid
 #ExecStart=/usr/sbin/fapolicyd --debug --permissive --no-details
 ExecStart=sleepy
+StandardOutput=file:/tmp/fapolicyp.stdout.log
+StandardError=file:/tmp/fapolicyp.stderr.log
 
 [Install]
 WantedBy=multi-user.target
