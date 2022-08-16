@@ -11,5 +11,4 @@ rayon = "1.5"
 serde = { version = "1.0", features = ["derive"] }
 thiserror = "1.0"
 
-fapolicy-api = { version = "*", path = "../api" }
 fapolicy-util = { version = "*", path = "../util" }

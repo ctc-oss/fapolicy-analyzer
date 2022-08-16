@@ -10,13 +10,13 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufReader;
 
-use fapolicy_api::trust::Trust;
 use fapolicy_util::sha::sha256_digest;
 
 use crate::db::{Rec, DB};
 use crate::error::Error;
 use crate::ops::TrustOp::{Add, Del};
 use crate::source::TrustSource;
+use crate::Trust;
 
 #[derive(Clone, Debug)]
 enum TrustOp {
