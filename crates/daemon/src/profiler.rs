@@ -1,3 +1,11 @@
+/*
+ * Copyright Concurrent Technologies Corporation 2021
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+
 use std::fs;
 use std::fs::File;
 use std::io::Write;
@@ -20,10 +28,9 @@ DefaultDependencies=no
 After=local-fs.target systemd-tmpfiles-setup.service
 
 [Service]
-#Type=forking
+Type=simple
 PIDFile=/run/fapolicyp.pid
-#ExecStart=/usr/sbin/fapolicyd --debug --permissive --no-details
-ExecStart=sleepy
+ExecStart=/usr/sbin/fapolicyd --debug --permissive --no-details
 StandardOutput=file:/tmp/fapolicyp.stdout.log
 StandardError=file:/tmp/fapolicyp.stderr.log
 
