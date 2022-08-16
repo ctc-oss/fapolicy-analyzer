@@ -16,8 +16,8 @@
 use clap::Clap;
 use fapolicy_daemon::profiler::Profiler;
 use fapolicy_rules::read::load_rules_db;
-use nom::combinator::opt;
 use std::error::Error;
+use std::path::PathBuf;
 use std::process::Command;
 
 #[derive(Clap)]
@@ -26,6 +26,9 @@ struct Opts {
     /// path to *.rules or rules.d
     #[clap(short, long)]
     rules: Option<String>,
+
+    #[clap(long)]
+    stdout: Option<String>,
 
     #[clap(allow_hyphen_values = true)]
     target: Vec<String>,
@@ -38,11 +41,20 @@ fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<&String> = opts.target.iter().skip(1).collect();
 
     let mut profiler = Profiler::new();
-    let db = if let Some(rules_path) = opts.rules {
-        Some(load_rules_db(&rules_path)?)
-    } else {
-        None
-    };
+    let db = opts
+        .rules
+        .map(|p| load_rules_db(&p).expect("failed to load rules"));
+
+    if let Some(stdout_path) = opts.stdout.map(PathBuf::from) {
+        if stdout_path.exists() {
+            eprintln!(
+                "warning: deleting existing log file from {}",
+                stdout_path.display()
+            );
+            std::fs::remove_file(&stdout_path)?;
+        }
+        profiler.stdout_log = Some(stdout_path);
+    }
 
     profiler.activate_with_rules(db.as_ref())?;
     let out = Command::new(target).args(args).output()?;

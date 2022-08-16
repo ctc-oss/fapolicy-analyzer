@@ -34,14 +34,13 @@ WantedBy=multi-user.target
 Type=simple
 PIDFile=/run/fapolicyp.pid
 ExecStart=/usr/sbin/fapolicyd --debug --permissive --no-details
-# it appears that a bug pre v240 forces append here systemd#10944
-StandardOutput=append:/tmp/fapolicyp.stdout.log
 "#;
 
 pub struct Profiler {
     pub name: String,
     prev_state: Option<State>,
     prev_rules: Option<NamedTempFile>,
+    pub stdout_log: Option<PathBuf>,
 }
 
 impl Default for Profiler {
@@ -50,6 +49,7 @@ impl Default for Profiler {
             name: PROFILER_UNIT_NAME.to_string(),
             prev_state: None,
             prev_rules: None,
+            stdout_log: None,
         }
     }
 }
@@ -92,7 +92,7 @@ impl Profiler {
                 self.prev_rules = Some(backup);
             }
             // 4. write the profiler unit file
-            write_drop_in()?;
+            write_drop_in(self.stdout_log.as_ref())?;
             // 5. start the profiler
             self.handle().start()?;
             // 6. wait for the profiler to become active
@@ -133,9 +133,14 @@ fn path_to_drop_in() -> String {
     format!("/usr/lib/systemd/system/{}.service", PROFILER_UNIT_NAME)
 }
 
-fn write_drop_in() -> Result<(), Error> {
+fn write_drop_in(stdout: Option<&PathBuf>) -> Result<(), Error> {
     let mut unit_file = File::create(path_to_drop_in())?;
-    unit_file.write_all(PROFILER_UNIT.as_bytes())?;
+    let mut text = PROFILER_UNIT.to_string();
+    if let Some(stdout_path) = stdout {
+        // it appears that a bug pre v240 forces append here - systemd#10944
+        text += &format!("StandardOutput=append:{}", stdout_path.display());
+    }
+    unit_file.write_all(text.as_bytes())?;
     Ok(())
 }
 
