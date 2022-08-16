@@ -21,7 +21,6 @@ path = "tests/tests.rs"
 members = [
     "crates/analyzer",
     "crates/app",
-    "crates/api",
     "crates/daemon",
     "crates/pyo3",
     "crates/rules",
@@ -39,7 +38,6 @@ rayon = "1.5"
 thiserror = "1.0"
 ariadne = "0.1"
 
-fapolicy-api = { version = "*", path = "crates/api" }
 fapolicy-analyzer = { version = "*", path = "crates/analyzer" }
 fapolicy-app = { version = "*", path = "crates/app" }
 fapolicy-daemon = { version = "*", path = "crates/daemon" }

@@ -18,6 +18,7 @@ pub fn lint_db(db: DB) -> DB {
         l002_subject_path_missing,
         l003_object_path_missing,
         l004_duplicate_rule,
+        l005_object_dir_missing_trailing_slash,
     ];
 
     db.iter()

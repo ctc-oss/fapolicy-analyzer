@@ -12,8 +12,6 @@ use std::path::Path;
 
 use lmdb::{Cursor, Environment, Transaction};
 
-use fapolicy_api::trust::Trust;
-
 use crate::db::{Rec, DB};
 use crate::error::Error;
 use crate::error::Error::{
@@ -21,6 +19,7 @@ use crate::error::Error::{
 };
 use crate::source::TrustSource;
 use crate::source::TrustSource::{Ancillary, System};
+use crate::Trust;
 
 pub(crate) struct TrustPair {
     pub k: String,
