@@ -53,6 +53,14 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
                     sensitivity_func=self.stop_button_sensitivity,
                 )
             ],
+            "analyze": [
+                UIAction(
+                    "Analyze",
+                    "Analyze Target",
+                    "view-list",
+                    {"clicked": self.on_analyzerButton_clicked},
+                )
+            ],
         }
 
         UIPage.__init__(self, actions)
