@@ -54,12 +54,7 @@ def test_adds_action_buttons(widget):
         button = widget.get_nth_item(idx)
         assert button.get_label() == action.name
         assert button.get_tooltip_text() == action.tooltip
-        assert (
-            button.get_icon_widget().get_pixbuf()
-            == Gtk.IconTheme.get_default().load_icon(
-                action.icon, Gtk.IconSize.LARGE_TOOLBAR, 0
-            )
-        )
+        assert button.get_icon_name() == action.icon
         assert button.get_sensitive() == action.sensitivity_func()
 
 
@@ -92,23 +87,18 @@ def test_uses_fallback_missing_image():
     }
     widget = ActionToolbar(actions)
     button = widget.get_nth_item(0)
-    assert (
-        button.get_icon_widget().get_pixbuf()
-        == Gtk.IconTheme.get_default().load_icon(
-            "image-missing", Gtk.IconSize.LARGE_TOOLBAR, 0
-        )
-    )
+    assert button.get_icon_name() == "image-missing"
 
 
 def test_handles_failed_icon_load(mocker):
-    mock_theme = MagicMock(load_icon=MagicMock(side_effect=Exception()))
+    mock_theme = MagicMock(lookup_icon=MagicMock(side_effect=Exception()))
     mocker.patch(
         "gi.repository.Gtk.IconTheme.get_default",
         return_value=mock_theme,
     )
     widget = ActionToolbar(_test_actions)
     button = widget.get_nth_item(0)
-    assert button.get_icon_widget() is None
+    assert button.get_icon_name() is None
 
 
 def test_adds_seperators(widget):
