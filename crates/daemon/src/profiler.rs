@@ -34,9 +34,8 @@ WantedBy=multi-user.target
 Type=simple
 PIDFile=/run/fapolicyp.pid
 ExecStart=/usr/sbin/fapolicyd --debug --permissive --no-details
-StandardOutput=file:/tmp/fapolicyp.stdout.log
-StandardError=file:/tmp/fapolicyp.stderr.log
-
+# it appears that a bug pre v240 forces append here systemd#10944
+StandardOutput=append:/tmp/fapolicyp.stdout.log
 "#;
 
 pub struct Profiler {
