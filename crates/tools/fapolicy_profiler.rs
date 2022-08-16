@@ -17,10 +17,7 @@ use clap::Clap;
 use fapolicy_daemon::profiler::Profiler;
 use fapolicy_rules::read::load_rules_db;
 use std::error::Error;
-use std::path::PathBuf;
 use std::process::Command;
-use std::thread::sleep;
-use std::time::Duration;
 
 #[derive(Clap)]
 #[clap(name = "File Access Policy Profiler", version = "v0.0.0")]

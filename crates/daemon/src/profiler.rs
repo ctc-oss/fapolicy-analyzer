@@ -1,14 +1,16 @@
-use crate::error::Error;
-use crate::fapolicyd::COMPILED_RULES_PATH;
-use crate::svc::{wait_for_daemon, Handle, State};
-use fapolicy_rules::db::DB;
-use fapolicy_rules::write;
 use std::fs;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
-use std::process::Command;
-use tempfile::{tempfile, NamedTempFile};
+
+use tempfile::NamedTempFile;
+
+use fapolicy_rules::db::DB;
+use fapolicy_rules::write;
+
+use crate::error::Error;
+use crate::fapolicyd::COMPILED_RULES_PATH;
+use crate::svc::{wait_for_daemon, Handle, State};
 
 const PROFILER_UNIT_NAME: &str = "fapolicyp";
 const PROFILER_UNIT: &str = r#"
@@ -68,17 +70,18 @@ impl Profiler {
             // 1. preserve daemon state
             self.prev_state = Some(daemon.state()?);
             // 2. stop daemon if running
-            match &self.prev_state {
-                Some(State::Active) => daemon.stop()?,
-                _ => {}
+            if let Some(State::Active) = self.prev_state {
+                // todo;; probably need to ensure its not in
+                //        a state like restart, init or some such
+                daemon.stop()?
             }
             // 3. swap the rules file if necessary
             if let Some(db) = db {
                 let compiled = PathBuf::from(COMPILED_RULES_PATH);
                 let backup = NamedTempFile::new()?;
                 fs::rename(&compiled, &backup)?;
-                write::compiled_rules(&db, &compiled)?;
-                println!("{:?}", backup);
+                write::compiled_rules(db, &compiled)?;
+                eprintln!("rules backed up to {:?}", backup.path());
                 self.prev_rules = Some(backup);
             }
             // 4. write the profiler unit file
@@ -103,9 +106,9 @@ impl Profiler {
                 f.persist(COMPILED_RULES_PATH).map_err(|e| e.error)?;
             }
             // 4. start daemon if it was previously active
-            match &self.prev_state {
-                Some(State::Active) => daemon.start()?,
-                _ => {}
+            if let Some(State::Active) = self.prev_state {
+                eprintln!("restarting daemon");
+                daemon.start()?;
             }
         }
         // clear the prev state

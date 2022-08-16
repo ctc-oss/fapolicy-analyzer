@@ -160,7 +160,7 @@ pub(crate) fn wait_for_daemon(
     let actual_state = handle.state()?;
     eprintln!("done waiting, daemon is {target_state:?}");
 
-    if target_state.can_be(actual_state.clone()) {
+    if target_state.can_be(actual_state) {
         Ok(())
     } else {
         Err(Unresponsive)

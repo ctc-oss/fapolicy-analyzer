@@ -7,7 +7,6 @@
  */
 
 use crate::db::DB;
-use crate::write;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
@@ -50,7 +49,7 @@ fn rules_dir(db: &DB, dir: &Path, compiled: &Path) -> Result<(), io::Error> {
 
     // write compiled.rules
     // todo;; get this from config or constants
-    compiled_rules(&db, compiled)?;
+    compiled_rules(db, compiled)?;
 
     Ok(())
 }
