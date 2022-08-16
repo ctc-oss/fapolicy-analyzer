@@ -11,6 +11,7 @@ use pyo3::prelude::*;
 pub mod acl;
 pub mod analysis;
 pub mod daemon;
+pub mod profiler;
 pub mod rules;
 pub mod system;
 pub mod trust;
