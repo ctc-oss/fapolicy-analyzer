@@ -13,16 +13,35 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use clap::Clap;
 use fapolicy_daemon::profiler::Profiler;
+use fapolicy_rules::read::load_rules_db;
 use std::error::Error;
+use std::path::PathBuf;
 use std::process::Command;
 use std::thread::sleep;
 use std::time::Duration;
 
+#[derive(Clap)]
+#[clap(name = "File Access Policy Profiler", version = "v0.0.0")]
+struct Opts {
+    /// path to *.rules or rules.d
+    rules_path: Option<String>,
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
+    let opts: Opts = Opts::parse();
     let mut profiler = Profiler::new();
-    profiler.activate()?;
-    let out = Command::new("ls").arg("/tmp").output()?;
+    let db = if let Some(rules_path) = opts.rules_path {
+        Some(load_rules_db(&rules_path)?)
+    } else {
+        None
+    };
+
+    profiler.activate_with_rules(db.as_ref())?;
+    let out = Command::new("cat")
+        .arg("/etc/fapolicyd/compiled.rules")
+        .output()?;
     println!("{}", String::from_utf8(out.stdout)?);
     profiler.deactivate()?;
 

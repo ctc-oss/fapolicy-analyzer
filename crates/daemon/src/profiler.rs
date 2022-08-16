@@ -1,5 +1,7 @@
 use crate::error::Error;
 use crate::svc::{wait_for_daemon, Handle, State};
+use fapolicy_rules::db::DB;
+use fapolicy_rules::write;
 use std::fs;
 use std::fs::File;
 use std::io::Write;
@@ -26,15 +28,17 @@ WantedBy=multi-user.target
 "#;
 
 pub struct Profiler {
-    name: String,
-    prev: Option<State>,
+    pub name: String,
+    prev_state: Option<State>,
+    prev_rules: Option<PathBuf>,
 }
 
 impl Default for Profiler {
     fn default() -> Self {
         Profiler {
             name: PROFILER_UNIT_NAME.to_string(),
-            prev: None,
+            prev_state: None,
+            prev_rules: None,
         }
     }
 }
@@ -53,14 +57,26 @@ impl Profiler {
     }
 
     pub fn activate(&mut self) -> Result<State, Error> {
+        self.activate_with_rules(None)
+    }
+
+    pub fn activate_with_rules(&mut self, db: Option<&DB>) -> Result<State, Error> {
         let daemon = Handle::default();
         if !self.is_active()? {
             // 1. preserve daemon state
-            self.prev = Some(daemon.state()?);
+            self.prev_state = Some(daemon.state()?);
             // 2. stop daemon if running
-            match &self.prev {
+            match &self.prev_state {
                 Some(State::Active) => daemon.stop()?,
                 _ => {}
+            }
+            // 3 swap the rules file if necessary
+            if let Some(db) = db {
+                let compiled = PathBuf::from("/etc/fapolicyd/compiled.rules");
+                let backup = PathBuf::from("/tmp/rules.bak");
+                fs::rename(&compiled, &backup)?;
+                write::compiled_rules(&db, &compiled)?;
+                self.prev_rules = Some(backup);
             }
             // 3. write the profiler unit file
             write_drop_in()?;
@@ -77,12 +93,19 @@ impl Profiler {
         if self.is_active()? {
             self.handle().stop()?;
             wait_for_daemon(&self.handle(), State::Inactive, 10)?;
-            match &self.prev {
+            if let Some(f) = self.prev_rules.as_ref() {
+                fs::rename(
+                    PathBuf::from("/tmp/rules.bak"),
+                    PathBuf::from("/etc/fapolicyd/compiled.rules"),
+                )?;
+                self.prev_rules = None;
+            }
+            match &self.prev_state {
                 Some(State::Active) => daemon.start()?,
                 _ => {}
             }
         }
-        self.prev = None;
+        self.prev_state = None;
         delete_drop_in()?;
         daemon.state()
     }

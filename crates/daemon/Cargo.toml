@@ -9,4 +9,5 @@ edition = "2018"
 nom = "6.1.0"
 thiserror = "1.0"
 fapolicy-trust = { version = "*", path = "../trust" }
+fapolicy-rules = { version = "*", path = "../rules" }
 dbus = "0.9"
