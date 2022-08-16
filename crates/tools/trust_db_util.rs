@@ -18,12 +18,11 @@ use lmdb::{Cursor, DatabaseFlags, Environment, Transaction, WriteFlags};
 use rayon::prelude::*;
 use thiserror::Error;
 
-use fapolicy_api::trust::Trust;
 use fapolicy_app::cfg;
 use fapolicy_daemon::fapolicyd::TRUST_DB_NAME;
 use fapolicy_daemon::rpm::load_system_trust as load_rpm_trust;
-use fapolicy_trust::read;
 use fapolicy_trust::read::{check_trust_db, parse_trust_record};
+use fapolicy_trust::{read, Trust};
 use fapolicy_util::sha::sha256_digest;
 
 use crate::Error::{DirTrustError, DpkgCommandFail, DpkgNotFound, TrustError};

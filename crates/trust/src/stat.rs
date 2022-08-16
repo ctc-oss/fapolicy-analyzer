@@ -10,11 +10,11 @@ use std::fs::File;
 use std::io::{BufReader, ErrorKind};
 use std::time::UNIX_EPOCH;
 
-use fapolicy_api::trust::Trust;
 use fapolicy_util::sha::sha256_digest;
 
 use crate::error::Error;
 use crate::error::Error::{FileIoError, MetaError};
+use crate::Trust;
 
 /// Actual delivers metadata about the actual file that exists on the filesystem.
 /// This is used to identify discrepancies between the trusted and the actual files.
