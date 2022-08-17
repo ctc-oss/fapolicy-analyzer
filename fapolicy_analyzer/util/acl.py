@@ -18,14 +18,14 @@ import subprocess
 
 
 def get_user_details(uid):
-    if not uid:
+    if uid is None or uid < 0:
         return None
     result = subprocess.getstatusoutput(f"id '{uid}'")
     return result[1] if result[0] == 0 else ""
 
 
 def get_group_details(gid):
-    if not gid:
+    if gid is None or gid < 0:
         return None
     try:
         result = grp.getgrgid(gid)

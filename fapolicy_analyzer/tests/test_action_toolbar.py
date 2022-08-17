@@ -19,8 +19,8 @@ from unittest.mock import MagicMock
 
 import gi
 import pytest
-from ui.action_toolbar import ActionToolbar
-from ui.ui_page import UIAction
+from fapolicy_analyzer.ui.action_toolbar import ActionToolbar
+from fapolicy_analyzer.ui.ui_page import UIAction
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
@@ -30,7 +30,7 @@ _test_actions = {
         UIAction(
             name="Test Action",
             tooltip="Test Action Tooltip",
-            icon="help-about",
+            icon="application-exit-symbolic",
             signals={},
             sensitivity_func=lambda: True,
         )
@@ -71,6 +71,34 @@ def test_adds_new_action_button(widget):
     assert widget.get_n_items() == len(
         [a for acts in new_actions.values() for a in acts]
     )
+
+
+def test_uses_fallback_missing_image():
+    actions = {
+        "actions": [
+            UIAction(
+                name="Test Action",
+                tooltip="Test Action Tooltip",
+                icon="bad icon name",
+                signals={},
+                sensitivity_func=lambda: True,
+            )
+        ]
+    }
+    widget = ActionToolbar(actions)
+    button = widget.get_nth_item(0)
+    assert button.get_icon_name() == "image-missing"
+
+
+def test_handles_failed_icon_load(mocker):
+    mock_theme = MagicMock(lookup_icon=MagicMock(side_effect=Exception()))
+    mocker.patch(
+        "gi.repository.Gtk.IconTheme.get_default",
+        return_value=mock_theme,
+    )
+    widget = ActionToolbar(_test_actions)
+    button = widget.get_nth_item(0)
+    assert button.get_icon_name() is None
 
 
 def test_adds_seperators(widget):
