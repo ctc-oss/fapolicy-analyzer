@@ -11,6 +11,6 @@ Provides file access policy rule parsing and linting.
 - https://github.com/ctc-oss/fapolicy-analyzer
 - https://github.com/linux-application-whitelisting/fapolicyd
 
-## License
+### License
 
 MPL v2
