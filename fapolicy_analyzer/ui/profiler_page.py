@@ -12,7 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import glob
+
 import logging
 from events import Events
 from time import sleep
@@ -90,21 +90,24 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
     def display_log_output(self):
         text_display = self.get_object("profilerOutput")
         buff = Gtk.TextBuffer()
-        files = glob.glob("/tmp/*")
-        time = self._fapd_profiler.get_profiling_timestamp()
-        run_files = [f for f in files if time in f]
-        if len(run_files) > 0:
-            for run_file in run_files:
-                buff.insert_markup(buff.get_end_iter(), f"<b>{run_file}</b>\n", -1)
-                try:
+        files = [self._fapd_profiler.fapd_prof_stderr,
+                 self._fapd_profiler.fapd_prof_stdout,
+                 self._fapd_profiler.faprofSession.tgtStderr,
+                 self._fapd_profiler.faprofSession.tgtStdout]
+
+        for run_file in files:
+            buff.insert_markup(buff.get_end_iter(), f"<b>{run_file}</b>\n", -1)
+            try:
+                spacers = 10
+                if run_file is not None:
                     with open(run_file, "r") as f:
                         lines = f.readlines()
                     buff.insert(buff.get_end_iter(), "".join(lines + ["\n"]))
-                    buff.insert_markup(buff.get_end_iter(), "<b>" + "=" * len(run_file) + "</b>\n", -1)
-                except OSError as ex:
-                    logging.error(f"There was an issue reading from {run_file}.", ex)
-        else:
-            buff.insert(buff.get_start_iter(), "No files found.")
+                    spacers = len(run_file)
+                buff.insert_markup(buff.get_end_iter(), "<b>" + "=" * spacers + "</b>\n", -1)
+            except OSError as ex:
+                logging.error(f"There was an issue reading from {run_file}.", ex)
+
         text_display.set_buffer(buff)
 
     def on_test_activate(self, *args):
