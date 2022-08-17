@@ -22,6 +22,10 @@ import subprocess
 from datetime import datetime as DT
 from enum import Enum
 from fapolicy_analyzer import Handle
+from fapolicy_analyzer.ui.actions import (NotificationType, add_notification)
+from fapolicy_analyzer.ui.store import dispatch
+from fapolicy_analyzer.ui.strings import (FAPD_DBUS_STOP_ERROR_MSG,
+                                          FAPD_DBUS_START_ERROR_MSG)
 from threading import Lock
 from time import time, sleep
 
@@ -135,9 +139,15 @@ class FapdManager():
         if instance == FapdMode.ONLINE:
             logging.debug("fapd is initiating an ONLINE session")
             if (self._fapd_status != ServiceStatus.UNKNOWN):
-                with self._fapd_lock:
-                    self._fapd_ref.start()
-                    self.mode = FapdMode.ONLINE
+                try:
+                    with self._fapd_lock:
+                        self._fapd_ref.start()
+                        self.mode = FapdMode.ONLINE
+
+                except Exception:
+                    logging.error(FAPD_DBUS_START_ERROR_MSG)
+                    dispatch(add_notification(FAPD_DBUS_START_ERROR_MSG,
+                                              NotificationType.ERROR))
 
         else:
             # PROFILING
@@ -192,8 +202,14 @@ class FapdManager():
         if instance == FapdMode.ONLINE:
             logging.debug("fapd is terminating an ONLINE session")
             if (self._fapd_status != ServiceStatus.UNKNOWN):
-                with self._fapd_lock:
-                    self._fapd_ref.stop()
+                try:
+                    with self._fapd_lock:
+                        self._fapd_ref.stop()
+
+                except Exception:
+                    logging.error(FAPD_DBUS_STOP_ERROR_MSG)
+                    dispatch(add_notification(FAPD_DBUS_STOP_ERROR_MSG,
+                                              NotificationType.ERROR))
 
         else:
             logging.debug("fapd is terminating a PROFILING session")
