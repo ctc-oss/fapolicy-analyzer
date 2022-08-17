@@ -45,11 +45,7 @@ pub fn parse_with_error_message(i: StrTrace) -> Result<Rule, String> {
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::errat::ErrorAt;
-    use crate::parser::error::RuleParseError;
     use crate::{Decision, ObjPart, Object, Permission, Rvalue, SubjPart, Subject};
-    use core::panicking::assert_failed;
-    use nom::Err::Error;
 
     use super::*;
 
