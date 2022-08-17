@@ -57,7 +57,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
                 UIAction(
                     "Analyze",
                     "Analyze Target",
-                    "view-list",
+                    "applications-science",
                     {"clicked": self.on_analyzerButton_clicked},
                 )
             ],
