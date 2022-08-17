@@ -23,7 +23,7 @@ from fapolicy_analyzer.ui.actions import (
     NotificationType,
     add_notification,
     clear_changesets,
-    deploy_ancillary_trust,
+    deploy_system,
     restore_system_checkpoint,
     set_system_checkpoint,
 )
@@ -34,8 +34,8 @@ from fapolicy_analyzer.ui.operations.ui_operation import UIOperation
 from fapolicy_analyzer.ui.store import dispatch, get_system_feature
 from fapolicy_analyzer.ui.strings import (
     ANY_FILES_FILTER_LABEL,
-    DEPLOY_ANCILLARY_ERROR_MSG,
-    DEPLOY_ANCILLARY_SUCCESSFUL_MSG,
+    DEPLOY_SYSTEM_ERROR_MSG,
+    DEPLOY_SYSTEM_SUCCESSFUL_MSG,
     FA_ARCHIVE_FILES_FILTER_LABEL,
     SAVE_AS_FILE_LABEL,
 )
@@ -117,19 +117,17 @@ class DeployChangesetsOp(UIOperation):
             dispatch(restore_system_checkpoint())
 
     def __on_next(self, system: Any):
-        trustState = system.get("ancillary_trust")
+        systemState = system.get("system")
 
-        if trustState.error and self.__deploying:
+        if systemState.error and self.__deploying:
             self.__deploying = False
-            logging.error("%s: %s", DEPLOY_ANCILLARY_ERROR_MSG, trustState.error)
-            dispatch(
-                add_notification(DEPLOY_ANCILLARY_ERROR_MSG, NotificationType.ERROR)
-            )
-        elif self.__deploying and trustState.deployed:
+            logging.error("%s: %s", DEPLOY_SYSTEM_ERROR_MSG, systemState.error)
+            dispatch(add_notification(DEPLOY_SYSTEM_ERROR_MSG, NotificationType.ERROR))
+        elif self.__deploying and systemState.deployed:
             self.__deploying = False
             dispatch(
                 add_notification(
-                    DEPLOY_ANCILLARY_SUCCESSFUL_MSG,
+                    DEPLOY_SYSTEM_SUCCESSFUL_MSG,
                     NotificationType.SUCCESS,
                 )
             )
@@ -169,7 +167,7 @@ class DeployChangesetsOp(UIOperation):
 
             logging.debug("Deploying...")
             self.__deploying = True
-            dispatch((deploy_ancillary_trust()))
+            dispatch((deploy_system()))
 
         dlgDeployList.get_ref().destroy()
 

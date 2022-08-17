@@ -22,14 +22,15 @@ from unittest.mock import MagicMock, call, mock_open
 
 import pytest
 from callee import Attr, EndsWith, InstanceOf, StartsWith
+from fapolicy_analyzer.redux import Action
 from fapolicy_analyzer.ui.actions import (
     ADD_NOTIFICATION,
     APPLY_CHANGESETS,
+    CLEAR_CHANGESETS,
     RESTORE_SYSTEM_CHECKPOINT,
 )
 from fapolicy_analyzer.ui.changeset_wrapper import RuleChangeset, TrustChangeset
 from fapolicy_analyzer.ui.session_manager import SessionManager
-from fapolicy_analyzer.redux import Action
 
 import context  # noqa: F401
 
@@ -107,6 +108,7 @@ def test_open_edit_session(uut, mock_dispatch, mocker):
     mock_dispatch.assert_has_calls(
         [
             call(InstanceOf(Action) & Attr(type=RESTORE_SYSTEM_CHECKPOINT)),
+            call(InstanceOf(Action) & Attr(type=CLEAR_CHANGESETS)),
             call(InstanceOf(Action) & Attr(type=APPLY_CHANGESETS)),
         ]
     )
@@ -114,7 +116,7 @@ def test_open_edit_session(uut, mock_dispatch, mocker):
     # verify changesets
     expected = test_changes
     # parse changesets to json string to compare
-    args, _ = mock_dispatch.call_args_list[1]
+    args, _ = mock_dispatch.call_args_list[2]
     actual = [
         {path: action for path, action in c.serialize().items()}
         if isinstance(c, TrustChangeset)
@@ -277,6 +279,7 @@ def test_restore_previous_session(uut_autosave_enabled, autosaved_files, mock_di
     mock_dispatch.assert_has_calls(
         [
             call(InstanceOf(Action) & Attr(type=RESTORE_SYSTEM_CHECKPOINT)),
+            call(InstanceOf(Action) & Attr(type=CLEAR_CHANGESETS)),
             call(InstanceOf(Action) & Attr(type=APPLY_CHANGESETS)),
         ]
     )
@@ -284,7 +287,7 @@ def test_restore_previous_session(uut_autosave_enabled, autosaved_files, mock_di
     # verify changesets
     expected = test_changes
     # parse changesets to json string to compare
-    args, _ = mock_dispatch.call_args_list[1]
+    args, _ = mock_dispatch.call_args_list[2]
     actual = [
         {path: action for path, action in c.serialize().items()}
         if isinstance(c, TrustChangeset)

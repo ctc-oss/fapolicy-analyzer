@@ -37,8 +37,8 @@ DAEMON_INITIALIZATION_ERROR = _("Error initializing communications with daemon")
 
 DEPLOY_ANCILLARY_CONFIRM_DLG_ACTION_COL_HDR = _("Action")
 DEPLOY_ANCILLARY_CONFIRM_DLG_CHANGE_COL_HDR = _("Change")
-DEPLOY_ANCILLARY_SUCCESSFUL_MSG = _("Changes successfully deployed.")
-DEPLOY_ANCILLARY_ERROR_MSG = _(
+DEPLOY_SYSTEM_SUCCESSFUL_MSG = _("Changes successfully deployed.")
+DEPLOY_SYSTEM_ERROR_MSG = _(
     "An error occurred trying to deploy the changes. Please try again."
 )
 

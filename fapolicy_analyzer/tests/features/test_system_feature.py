@@ -20,12 +20,13 @@ import fapolicy_analyzer.ui.store as store
 import pytest
 from callee import InstanceOf
 from callee.attributes import Attrs
+from fapolicy_analyzer.redux import Action, ReduxFeatureModule, create_store
 from fapolicy_analyzer.ui.actions import (
     ERROR_SYSTEM_INITIALIZATION,
     SYSTEM_CHECKPOINT_SET,
     SYSTEM_RECEIVED,
     apply_changesets,
-    deploy_ancillary_trust,
+    deploy_system,
     error_ancillary_trust,
     error_events,
     error_groups,
@@ -52,7 +53,6 @@ from fapolicy_analyzer.ui.changeset_wrapper import TrustChangeset
 from fapolicy_analyzer.ui.features.system_feature import create_system_feature
 from fapolicy_analyzer.ui.store import dispatch, init_store
 from fapolicy_analyzer.ui.strings import SYSTEM_INITIALIZATION_ERROR
-from fapolicy_analyzer.redux import Action, ReduxFeatureModule, create_store
 
 
 @pytest.fixture
@@ -237,37 +237,37 @@ def test_request_events_epic_bad_request(mocker):
     mock_received_action.assert_called_with([])
 
 
-def test_deploy_ancillary_trust_epic(mocker):
+def test_deploy_system_epic(mocker):
     mock_system = MagicMock()
     mock_received_action = mocker.patch(
-        "fapolicy_analyzer.ui.features.system_feature.ancillary_trust_deployed"
+        "fapolicy_analyzer.ui.features.system_feature.system_deployed"
     )
     init_store(mock_system)
-    dispatch(deploy_ancillary_trust())
+    dispatch(deploy_system())
     mock_system.deploy.assert_called()
     mock_received_action.assert_called_with()
 
 
-def test_deploy_ancillary_trust_epic_error(mocker):
+def test_deploy_system_epic_error(mocker):
     mock_system = MagicMock(
-        deploy=MagicMock(side_effect=Exception("deploy trust error"))
+        deploy=MagicMock(side_effect=Exception("deploy system error"))
     )
     mock_error_action = mocker.patch(
-        "fapolicy_analyzer.ui.features.system_feature.error_deploying_ancillary_trust"
+        "fapolicy_analyzer.ui.features.system_feature.error_deploying_system"
     )
     init_store(mock_system)
-    dispatch(deploy_ancillary_trust())
-    mock_error_action.assert_called_with("deploy trust error")
+    dispatch(deploy_system())
+    mock_error_action.assert_called_with("deploy system error")
 
 
-def test_deploy_ancillary_trust_epic_snapshot_error(mocker):
+def test_deploy_system_epic_snapshot_error(mocker):
     mocker.patch(
         "fapolicy_analyzer.ui.features.system_feature.fapd_dbase_snapshot",
         return_value=False,
     )
     mock_logger = mocker.patch("fapolicy_analyzer.ui.features.system_feature.logging")
     init_store(MagicMock())
-    dispatch(deploy_ancillary_trust())
+    dispatch(deploy_system())
     mock_logger.warning.assert_called_with(
         "Fapolicyd pre-deploy backup failed, continuing with deployment."
     )
