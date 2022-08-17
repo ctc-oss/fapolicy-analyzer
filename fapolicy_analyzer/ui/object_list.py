@@ -16,12 +16,11 @@
 import fapolicy_analyzer.ui.strings as strings
 import gi
 from events import Events
-
-gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
-
 from fapolicy_analyzer.ui.configs import Colors
 from fapolicy_analyzer.ui.subject_list import SubjectList
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk  # isort: skip
 
 
 class ObjectList(SubjectList, Events):
@@ -32,7 +31,7 @@ class ObjectList(SubjectList, Events):
             "rule_view_activate",
         ]
         Events.__init__(self)
-        self.reconcileContextMenu = self.__build_reconcile_context_menu()
+        self.reconcileContextMenu = self._build_reconcile_context_menu()
 
     def _columns(self):
         columns = super()._columns()
@@ -62,13 +61,10 @@ class ObjectList(SubjectList, Events):
         numModes = len(set(mode.upper()).intersection({"R", "W", "X"}))
         return green if numModes == 3 else orange if numModes > 0 else red
 
-    def __build_reconcile_context_menu(self):
-        menu = Gtk.Menu()
-        reconcileItem = Gtk.MenuItem.new_with_label("Reconcile File")
-        reconcileItem.connect("activate", self.on_reconcile_file_activate)
+    def _build_reconcile_context_menu(self):
+        menu = super()._build_reconcile_context_menu()
         rulesItem = Gtk.MenuItem.new_with_label("Go To Rule")
         rulesItem.connect("activate", self.on_rule_menu_activate)
-        menu.append(reconcileItem)
         menu.append(rulesItem)
         menu.show_all()
         return menu
