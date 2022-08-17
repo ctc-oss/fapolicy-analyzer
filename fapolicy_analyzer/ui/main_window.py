@@ -31,11 +31,10 @@ from fapolicy_analyzer.ui.changeset_wrapper import Changeset
 from fapolicy_analyzer.ui.configs import Sizing
 from fapolicy_analyzer.ui.database_admin_page import DatabaseAdminPage
 from fapolicy_analyzer.ui.fapd_manager import FapdManager, ServiceStatus
-from fapolicy_analyzer.ui.faprofiler import FaProfiler
 from fapolicy_analyzer.ui.notification import Notification
 from fapolicy_analyzer.ui.operations import DeployChangesetsOp
 from fapolicy_analyzer.ui.policy_rules_admin_page import PolicyRulesAdminPage
-from fapolicy_analyzer.ui.profile_dialog import ProfileDialog
+from fapolicy_analyzer.ui.profiler_page import ProfilerPage
 from fapolicy_analyzer.ui.rules import RulesAdminPage
 from fapolicy_analyzer.ui.session_manager import sessionManager
 from fapolicy_analyzer.ui.store import dispatch, get_system_feature
@@ -54,6 +53,7 @@ def router(selection: ANALYZER_SELECTION, data: Any = None) -> UIPage:
         ANALYZER_SELECTION.ANALYZE_FROM_AUDIT: PolicyRulesAdminPage,
         ANALYZER_SELECTION.ANALYZE_SYSLOG: PolicyRulesAdminPage,
         ANALYZER_SELECTION.RULES_ADMIN: RulesAdminPage,
+        ANALYZER_SELECTION.PROFILER: ProfilerPage,
     }.get(selection)
     if route:
         return route(data) if data else route()
@@ -74,7 +74,6 @@ class MainWindow(UIConnectedWidget):
         self._fapd_status = ServiceStatus.UNKNOWN
         self._fapd_monitoring = False
         self._fapd_mgr = FapdManager(self._fapdControlPermitted)
-        self._fapd_profiler = FaProfiler(self._fapd_mgr)
         self.__changesets: Sequence[Changeset] = []
         self.__system: System
         self.__checkpoint: System
@@ -368,6 +367,10 @@ class MainWindow(UIConnectedWidget):
             self.__set_trustDbMenu_sensitive(True)
         fcd.destroy()
 
+    def activate_file_analyzer(self, file):
+        self.__pack_main_content(router(ANALYZER_SELECTION.ANALYZE_FROM_AUDIT, file))
+        self.__set_trustDbMenu_sensitive(True)
+
     def on_trustDbMenu_activate(self, menuitem, *args):
         self.__pack_main_content(router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN))
         self.__set_trustDbMenu_sensitive(False)
@@ -381,29 +384,9 @@ class MainWindow(UIConnectedWidget):
         self.__set_trustDbMenu_sensitive(True)
 
     def on_profileExecMenu_activate(self, *args):
-        logging.debug("MainWindow::on_profileExecMenu_activate()")
-        dlgProfTest = ProfileDialog()
-        response = dlgProfTest.get_ref().run()
-
-        if response == Gtk.ResponseType.OK:
-            profiling_args = dlgProfTest.get_text()
-            logging.debug(f"Entry text = {profiling_args}")
-            self._fapd_profiler.start_prof_session(profiling_args)
-            fapd_prof_stderr = self._fapd_profiler.fapd_prof_stderr
-            logging.debug(f"Started prof session, stderr={fapd_prof_stderr}")
-
-            # Catch termination event here somehow. Monitor pid? Pass in
-            # object returned from start_prof_session() above, or maintain only
-            # in the faprofiler instance.
-            sleep(4)
-            self._fapd_profiler.stop_prof_session()
-
-        # Add termination and/or close button
-        dlgProfTest.get_ref().destroy()
-
-        self.__pack_main_content(
-            router(ANALYZER_SELECTION.ANALYZE_FROM_AUDIT, fapd_prof_stderr)
-        )
+        page = router(ANALYZER_SELECTION.PROFILER, self._fapd_mgr)
+        page.analyze_button_pushed += self.activate_file_analyzer
+        self.__pack_main_content(page)
         self.__set_trustDbMenu_sensitive(True)
 
     def on_deployChanges_clicked(self, *args):
