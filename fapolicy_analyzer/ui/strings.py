@@ -85,6 +85,9 @@ FA_SESSION_FILES_FILTER_LABEL = _("FA Session files")
 FA_ARCHIVE_FILES_FILTER_LABEL = _("fapolicyd archive files")
 ANY_FILES_FILTER_LABEL = _("Any files")
 
+FAPD_DBUS_START_ERROR_MSG = _("On-line fapolicyd start failed")
+FAPD_DBUS_STOP_ERROR_MSG = _("On-line fapolicyd stop failed")
+
 FAPROFILER_TGT_EUID_CHOWN_ERROR_MSG = _("Profiling target file chown failure")
 FAPROFILER_TGT_POPEN_ERROR_MSG = _("Profiling target Popen failure")
 FAPROFILER_TGT_REDIRECTION_ERROR_MSG = _("Profiling target redirection failure")
