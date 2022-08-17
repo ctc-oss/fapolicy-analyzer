@@ -46,7 +46,7 @@ fn obj_part(i: StrTrace) -> TraceResult<ObjPart> {
 
         "trust" => trust_flag(ii)
             .map(|(ii, d)| (ii, ObjPart::Trust(d)))
-            .map_err(|_: nom::Err<TraceError>| nom::Err::Error(ExpectedBoolean(i))),
+            .map_err(|_: nom::Err<TraceError>| nom::Err::Error(ExpectedBoolean(i, ii))),
 
         _ => Err(nom::Err::Error(UnknownObjectPart(i))),
     }

@@ -26,7 +26,7 @@ impl ErrorAt<Trace<&str>> {
         t: Trace<&str>,
         len: usize,
     ) -> ErrorAt<Trace<&'a str>> {
-        ErrorAt(e, t.position(), len)
+        ErrorAt(e, t.position(), t.position + len)
     }
 }
 
@@ -71,7 +71,9 @@ impl<'a> From<RuleParseError<StrTrace<'a>>> for ErrorAt<StrTrace<'a>> {
             ExpectedDirPath(t) => t,
             ExpectedFilePath(t) => t,
             ExpectedPattern(t) => t,
-            ExpectedBoolean(t) => t,
+            ExpectedBoolean(t, v) => {
+                return ErrorAt::<StrTrace<'a>>::new_with_len(e, t, v.current.len())
+            }
             ExpectedFileType(t) => t,
 
             Nom(t, _) => t,

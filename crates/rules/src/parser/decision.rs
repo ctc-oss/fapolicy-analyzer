@@ -43,6 +43,7 @@ pub(crate) fn parse(i: StrTrace) -> TraceResult<Decision> {
     )))(r);
 
     match x {
+        Ok((r, Some(_))) if !r.is_empty() => Err(nom::Err::Error(ExpectedDecision(i))),
         Ok((_, Some(dec))) => Ok((ii, dec)),
         Ok((r, None)) => Err(nom::Err::Error(UnknownDecision(i, r))),
         Err(_) => Err(nom::Err::Error(ExpectedDecision(i))),

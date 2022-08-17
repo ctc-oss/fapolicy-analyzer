@@ -23,14 +23,14 @@ import fapolicy_analyzer.ui
 import gi
 import pytest
 from callee import Attrs, InstanceOf
-from fapolicy_analyzer import Changeset
+from fapolicy_analyzer.redux import Action
 from fapolicy_analyzer.ui.actions import ADD_NOTIFICATION
+from fapolicy_analyzer.ui.changeset_wrapper import TrustChangeset
 from fapolicy_analyzer.ui.fapd_manager import ServiceStatus
 from fapolicy_analyzer.ui.main_window import MainWindow, router
 from fapolicy_analyzer.ui.session_manager import NotificationType, sessionManager
 from fapolicy_analyzer.ui.store import init_store
 from fapolicy_analyzer.ui.strings import AUTOSAVE_RESTORE_ERROR_MSG
-from fapolicy_analyzer.redux import Action
 from rx import create
 from rx.subject import Subject
 
@@ -40,8 +40,8 @@ from mocks import mock_System
 gi.require_version("GtkSource", "3.0")
 from gi.repository import Gtk  # isort: skip
 
-test_changeset = Changeset()
-test_changeset.add_trust("/tmp/DeadBeef.txt")
+test_changeset = TrustChangeset()
+test_changeset.add("/tmp/DeadBeef.txt")
 
 
 def mock_changesets_state(changesets=[test_changeset], error=False):
@@ -203,6 +203,14 @@ def test_opens_rules_admin_page(mainWindow, mocker):
     refresh_gui()
     content = next(iter(mainWindow.get_object("mainContent").get_children()))
     assert Gtk.Buildable.get_name(content) == "rulesAdminPage"
+
+
+def test_opens_profiler_page(mainWindow):
+    menuItem = mainWindow.get_object("profileExecMenu")
+    menuItem.activate()
+    refresh_gui()
+    content = next(iter(mainWindow.get_object("mainContent").get_children()))
+    assert Gtk.Buildable.get_name(content) == "profilerPage"
 
 
 def test_open_rules_admin_with_args(mainWindow, mocker):
