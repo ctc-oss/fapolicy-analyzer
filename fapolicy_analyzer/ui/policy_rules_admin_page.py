@@ -19,8 +19,6 @@ from typing import Optional, Sequence
 import gi
 from events import Events
 from fapolicy_analyzer import EventLog, Group, Trust, User
-from fapolicy_analyzer.util import acl, fs
-
 from fapolicy_analyzer.ui.acl_list import ACLList
 from fapolicy_analyzer.ui.actions import (
     NotificationType,
@@ -45,6 +43,7 @@ from fapolicy_analyzer.ui.strings import (
 from fapolicy_analyzer.ui.subject_list import SubjectList
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
+from fapolicy_analyzer.util import acl, fs
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
@@ -203,7 +202,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         def reselect_rows():
             selections = self.__selection_state[type]
             rows = []
-            if selections and select_func:
+            if selections is not None and select_func:
                 selections = (
                     selections if isinstance(selections, Sequence) else [selections]
                 )
@@ -324,7 +323,10 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         )
 
     def __populate_subjects_from_acl(self):
-        if not self.__selection_state["user"] and not self.__selection_state["group"]:
+        if (
+            self.__selection_state["user"] is None
+            and self.__selection_state["group"] is None
+        ):
             self.__populate_list(self.subject_list, [], "subjects")
             return
 
@@ -333,9 +335,9 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
                 e.subject.file: e.subject
                 for e in (
                     self.__log.by_user(self.__selection_state["user"])
-                    if self.__selection_state["user"]
+                    if self.__selection_state["user"] is not None
                     else self.__log.by_group(self.__selection_state["group"])
-                    if self.__selection_state["group"]
+                    if self.__selection_state["group"] is not None
                     else []
                 )
             }.values()
@@ -344,7 +346,8 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
 
     def __populate_objects(self):
         if self.__selection_state["subjects"] and (
-            self.__selection_state["user"] or self.__selection_state["group"]
+            self.__selection_state["user"] is not None
+            or self.__selection_state["group"] is not None
         ):
             last_subject = self.__selection_state["subjects"][-1]
             data = list(

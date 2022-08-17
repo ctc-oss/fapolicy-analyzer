@@ -205,6 +205,14 @@ def test_opens_rules_admin_page(mainWindow, mocker):
     assert Gtk.Buildable.get_name(content) == "rulesAdminPage"
 
 
+def test_opens_profiler_page(mainWindow):
+    menuItem = mainWindow.get_object("profileExecMenu")
+    menuItem.activate()
+    refresh_gui()
+    content = next(iter(mainWindow.get_object("mainContent").get_children()))
+    assert Gtk.Buildable.get_name(content) == "profilerPage"
+
+
 def test_open_rules_admin_with_args(mainWindow, mocker):
     mocker.patch("fapolicy_analyzer.ui.rules.rules_admin_page.get_system_feature")
     mainWindow.on_rulesAdminMenu_activate(rule_id=0)
