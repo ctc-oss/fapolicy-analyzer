@@ -33,7 +33,7 @@ struct Opts {
 
     /// the literal target to run, prefix by double hyphens
     /// faprofiler -- ls -al /tmp
-    #[clap(allow_hyphen_values = true)]
+    #[clap(required = true, allow_hyphen_values = true)]
     target: Vec<String>,
 }
 
@@ -48,15 +48,15 @@ fn main() -> Result<(), Box<dyn Error>> {
         .rules
         .map(|p| load_rules_db(&p).expect("failed to load rules"));
 
-    if let Some(stdout_path) = opts.stdout.map(PathBuf::from) {
-        if stdout_path.exists() {
+    if let Some(path) = opts.stdout.map(PathBuf::from) {
+        if path.exists() {
             eprintln!(
                 "warning: deleting existing log file from {}",
-                stdout_path.display()
+                path.display()
             );
-            std::fs::remove_file(&stdout_path)?;
+            std::fs::remove_file(&path)?;
         }
-        profiler.stdout_log = Some(stdout_path);
+        profiler.stdout_log = Some(path);
     }
 
     profiler.activate_with_rules(db.as_ref())?;
