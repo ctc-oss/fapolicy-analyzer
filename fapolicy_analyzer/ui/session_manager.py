@@ -28,6 +28,7 @@ from fapolicy_analyzer.ui.actions import (
     NotificationType,
     add_notification,
     apply_changesets,
+    clear_changesets,
     restore_system_checkpoint,
 )
 from fapolicy_analyzer.ui.changeset_wrapper import Changeset
@@ -147,6 +148,7 @@ class SessionManager:
         if changesets:
             # Deleting current edit session history prior to replacing it.
             dispatch(restore_system_checkpoint())
+            dispatch(clear_changesets())
             dispatch(apply_changesets(*changesets))
         return True
 

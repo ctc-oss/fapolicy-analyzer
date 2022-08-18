@@ -17,16 +17,16 @@ import context  # noqa: F401 # isort: skip
 from unittest.mock import MagicMock
 
 import pytest
+from fapolicy_analyzer.redux import Action
 from fapolicy_analyzer.ui.actions import (
     ADD_CHANGESETS,
     ADD_NOTIFICATION,
-    ANCILLARY_TRUST_DEPLOYED,
     APPLY_CHANGESETS,
     CLEAR_CHANGESETS,
-    DEPLOY_ANCILLARY_TRUST,
+    DEPLOY_SYSTEM,
     ERROR_ANCILLARY_TRUST,
     ERROR_APPLY_CHANGESETS,
-    ERROR_DEPLOYING_ANCILLARY_TRUST,
+    ERROR_DEPLOYING_SYSTEM,
     ERROR_EVENTS,
     ERROR_GROUPS,
     ERROR_RULES,
@@ -54,18 +54,18 @@ from fapolicy_analyzer.ui.actions import (
     RESTORE_SYSTEM_CHECKPOINT,
     SET_SYSTEM_CHECKPOINT,
     SYSTEM_CHECKPOINT_SET,
+    SYSTEM_DEPLOYED,
     SYSTEM_RECEIVED,
     Notification,
     NotificationType,
     add_changesets,
     add_notification,
-    ancillary_trust_deployed,
     apply_changesets,
     clear_changesets,
-    deploy_ancillary_trust,
+    deploy_system,
     error_ancillary_trust,
     error_apply_changesets,
-    error_deploying_ancillary_trust,
+    error_deploying_system,
     error_events,
     error_groups,
     error_rules,
@@ -92,10 +92,10 @@ from fapolicy_analyzer.ui.actions import (
     restore_system_checkpoint,
     set_system_checkpoint,
     system_checkpoint_set,
+    system_deployed,
     system_initialization_error,
     system_received,
 )
-from fapolicy_analyzer.redux import Action
 
 
 @pytest.mark.parametrize("notification_type", [t for t in list(NotificationType)])
@@ -193,24 +193,24 @@ def test_error_system_trust():
     assert action.payload == "foo"
 
 
-def test_deploy_ancillary_trust():
-    action = deploy_ancillary_trust()
+def test_deploy_system():
+    action = deploy_system()
     assert type(action) is Action
-    assert action.type == DEPLOY_ANCILLARY_TRUST
+    assert action.type == DEPLOY_SYSTEM
     assert not action.payload
 
 
-def test_ancillary_trust_deployed():
-    action = ancillary_trust_deployed()
+def test_system_deployed():
+    action = system_deployed()
     assert type(action) is Action
-    assert action.type == ANCILLARY_TRUST_DEPLOYED
+    assert action.type == SYSTEM_DEPLOYED
     assert not action.payload
 
 
-def test_error_deploying_ancillary_trust():
-    action = error_deploying_ancillary_trust("foo")
+def test_error_deploying_system():
+    action = error_deploying_system("foo")
     assert type(action) is Action
-    assert action.type == ERROR_DEPLOYING_ANCILLARY_TRUST
+    assert action.type == ERROR_DEPLOYING_SYSTEM
     assert action.payload == "foo"
 
 
