@@ -14,33 +14,42 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import context  # noqa: F401 # isort: skip
-from util.acl import get_group_details, get_user_details
+import pytest
+from fapolicy_analyzer.util.acl import get_group_details, get_user_details
 
 
-def test_get_user_details(mocker):
-    mocker.patch("util.acl.subprocess.getstatusoutput", return_value=(0, "foo"))
-    assert get_user_details(1) == "foo"
+@pytest.mark.parametrize("uid", [0, 1])
+def test_get_user_details(uid, mocker):
+    mocker.patch(
+        "fapolicy_analyzer.util.acl.subprocess.getstatusoutput", return_value=(0, "foo")
+    )
+    assert get_user_details(uid) == "foo"
 
 
 def test_get_user_details_handles_error(mocker):
-    mocker.patch("util.acl.subprocess.getstatusoutput", return_value=(1, "foo"))
+    mocker.patch(
+        "fapolicy_analyzer.util.acl.subprocess.getstatusoutput", return_value=(1, "foo")
+    )
     assert get_user_details(1) == ""
 
 
-def test_get_user_details_handles_none(mocker):
+def test_get_user_details_handles_none():
     assert get_user_details(None) is None
 
 
-def test_get_group_details(mocker):
+@pytest.mark.parametrize("gid", [0, 1])
+def test_get_group_details(gid, mocker):
     mocker.patch(
-        "util.acl.grp.getgrgid", return_value=("foo", "", 99, ["user1", "user2"])
+        "fapolicy_analyzer.util.acl.grp.getgrgid",
+        return_value=("foo", "", 99, ["user1", "user2"]),
     )
-    assert get_group_details(1) == "name=foo gid=99 users=user1,user2"
+    assert get_group_details(gid) == "name=foo gid=99 users=user1,user2"
 
 
 def test_get_group_details_handles_error(mocker):
-    assert get_group_details(-1) == ""
+    mocker.patch("fapolicy_analyzer.util.acl.grp.getgrgid", side_effect=KeyError)
+    assert get_group_details(99) == ""
 
 
-def test_get_group_details_handles_none(mocker):
+def test_get_group_details_handles_none():
     assert get_group_details(None) is None

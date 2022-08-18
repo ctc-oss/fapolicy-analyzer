@@ -230,20 +230,12 @@ name = "fapolicy-analyzer"
 version = "0.4.0"
 dependencies = [
  "chrono",
- "fapolicy-api",
  "fapolicy-daemon",
  "fapolicy-rules",
  "fapolicy-trust",
  "nom",
  "serde",
  "thiserror",
-]
-
-[[package]]
-name = "fapolicy-api"
-version = "0.4.0"
-dependencies = [
- "serde",
 ]
 
 [[package]]
@@ -266,7 +258,7 @@ name = "fapolicy-daemon"
 version = "0.4.0"
 dependencies = [
  "dbus",
- "fapolicy-api",
+ "fapolicy-trust",
  "nom",
  "thiserror",
 ]
@@ -276,20 +268,21 @@ name = "fapolicy-pyo3"
 version = "0.4.0"
 dependencies = [
  "fapolicy-analyzer",
- "fapolicy-api",
  "fapolicy-app",
  "fapolicy-daemon",
  "fapolicy-rules",
  "fapolicy-trust",
  "pyo3",
+ "similar",
 ]
 
 [[package]]
 name = "fapolicy-rules"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "nom",
  "serde",
+ "tempfile",
  "thiserror",
 ]
 
@@ -300,7 +293,6 @@ dependencies = [
  "ariadne",
  "clap",
  "fapolicy-analyzer",
- "fapolicy-api",
  "fapolicy-app",
  "fapolicy-daemon",
  "fapolicy-rules",
@@ -316,7 +308,6 @@ dependencies = [
 name = "fapolicy-trust"
 version = "0.4.0"
 dependencies = [
- "fapolicy-api",
  "fapolicy-util",
  "lmdb-rkv",
  "rayon",
@@ -331,6 +322,15 @@ dependencies = [
  "data-encoding",
  "ring",
  "thiserror",
+]
+
+[[package]]
+name = "fastrand"
+version = "1.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c3fcf0cee53519c866c09b5de1f6c56ff9d647101f81c1964fa632e148896cdf"
+dependencies = [
+ "instant",
 ]
 
 [[package]]
@@ -766,6 +766,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "remove_dir_all"
+version = "0.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3acd125665422973a33ac9d3dd2df85edad0f4ae9b00dafb1a05e43a9f5ef8e7"
+dependencies = [
+ "winapi",
+]
+
+[[package]]
 name = "ring"
 version = "0.16.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -813,6 +822,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "similar"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2e24979f63a11545f5f2c60141afe249d4f19f84581ea2138065e400941d83d3"
+
+[[package]]
 name = "smallvec"
 version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -852,6 +867,20 @@ name = "tap"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "55937e1799185b12863d447f42597ed69d9928686b8d88a1df17376a097d8369"
+
+[[package]]
+name = "tempfile"
+version = "3.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5cdb1ef4eaeeaddc8fbd371e5017057064af0911902ef36b39801f67cc6d79e4"
+dependencies = [
+ "cfg-if 1.0.0",
+ "fastrand",
+ "libc",
+ "redox_syscall",
+ "remove_dir_all",
+ "winapi",
+]
 
 [[package]]
 name = "termcolor"

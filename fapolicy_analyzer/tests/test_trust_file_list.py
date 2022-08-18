@@ -13,9 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fapolicy_analyzer.ui.trust_file_list as trust_file_list
 import gi
 import pytest
-import ui.trust_file_list as trust_file_list
 
 import context  # noqa: F401
 
@@ -23,8 +23,8 @@ gi.require_version("Gtk", "3.0")
 from time import localtime, mktime, strftime
 from unittest.mock import MagicMock
 
+from fapolicy_analyzer.ui.trust_file_list import TrustFileList, epoch_to_string
 from gi.repository import Gtk
-from ui.trust_file_list import TrustFileList, epoch_to_string
 
 from helpers import refresh_gui
 
@@ -52,7 +52,7 @@ def test_uses_custom_trust_func():
 
 def test_uses_custom_markup_func(mocker):
     mocker.patch(
-        "ui.trust_file_list.ThreadPoolExecutor",
+        "fapolicy_analyzer.ui.trust_file_list.ThreadPoolExecutor",
         return_value=MagicMock(submit=lambda x: x()),
     )
     markup_func = MagicMock(return_value="t")
@@ -63,11 +63,12 @@ def test_uses_custom_markup_func(mocker):
 
 def test_loads_trust_store(widget, mocker):
     mocker.patch(
-        "ui.trust_file_list.ThreadPoolExecutor",
+        "fapolicy_analyzer.ui.trust_file_list.ThreadPoolExecutor",
         return_value=MagicMock(submit=lambda x: x()),
     )
     mocker.patch(
-        "ui.trust_file_list.GLib.idle_add", side_effect=lambda x, args: x(args)
+        "fapolicy_analyzer.ui.trust_file_list.GLib.idle_add",
+        side_effect=lambda x, args: x(args),
     )
     widget.load_trust(_trust)
     refresh_gui()
@@ -78,10 +79,10 @@ def test_loads_trust_store(widget, mocker):
 
 def test_cancels_load_trust_store(widget, mocker):
     mocker.patch(
-        "ui.trust_file_list.ThreadPoolExecutor",
+        "fapolicy_analyzer.ui.trust_file_list.ThreadPoolExecutor",
         return_value=MagicMock(submit=lambda x: x()),
     )
-    mockIdleAdd = mocker.patch("ui.trust_file_list.GLib.idle_add")
+    mockIdleAdd = mocker.patch("fapolicy_analyzer.ui.trust_file_list.GLib.idle_add")
     trust_file_list._executorCanceled = True
     widget.load_trust(_trust)
     refresh_gui()

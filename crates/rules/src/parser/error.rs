@@ -36,7 +36,7 @@ pub enum RuleParseError<I> {
     ExpectedDirPath(I),
     ExpectedFilePath(I),
     ExpectedPattern(I),
-    ExpectedBoolean(I),
+    ExpectedBoolean(I, I),
     ExpectedFileType(I),
 
     Nom(I, ErrorKind),
@@ -73,7 +73,7 @@ impl Display for RuleParseError<Trace<&str>> {
             ExpectedDirPath(_) => f.write_str("Expected dir path"),
             ExpectedFilePath(_) => f.write_str("Expected file path"),
             ExpectedPattern(_) => f.write_str("Expected pattern"),
-            ExpectedBoolean(_) => f.write_str("Expected boolean (0, 1) value"),
+            ExpectedBoolean(_, _) => f.write_str("Expected boolean (0, 1) value"),
             ExpectedFileType(_) => f.write_str("Expected mime file type"),
             e @ Nom(_, _) => f.write_fmt(format_args!("{:?}", e)),
         }

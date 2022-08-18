@@ -14,5 +14,6 @@ use nom::sequence::delimited;
 use crate::parser::parse::{StrTrace, TraceResult};
 
 pub(crate) fn parse(i: StrTrace) -> TraceResult<PathBuf> {
+    // todo;; fail if the path contains a directory component; we should expect filename only in the marker
     delimited(tag("["), is_not("]"), tag("]"))(i).map(|(r, path)| (r, PathBuf::from(path.current)))
 }

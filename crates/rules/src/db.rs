@@ -7,108 +7,230 @@
  */
 
 use std::collections::btree_map::Iter;
-use std::collections::{BTreeMap, HashMap};
+use std::collections::BTreeMap;
 use std::fmt::{Display, Formatter};
 
-use crate::Rule;
+use Entry::*;
+
+use crate::{Rule, Set};
+
+#[derive(Clone, Debug)]
+pub struct RuleEntry {
+    pub id: usize,
+    pub text: String,
+    pub origin: Origin,
+    pub valid: bool,
+    pub msg: Option<String>,
+    _fk: usize,
+}
+
+#[derive(Clone, Debug)]
+pub struct SetEntry {
+    pub name: String,
+    pub text: String,
+    pub origin: Origin,
+    pub valid: bool,
+    pub msg: Option<String>,
+    _fk: usize,
+}
+
+#[derive(Clone, Debug)]
+pub struct CommentEntry {
+    pub text: String,
+    pub origin: Origin,
+    _fk: usize,
+}
 
 /// Rule Definition
 /// Can be valid or invalid
 /// When invalid it provides the text definition
 /// When valid the text definition can be rendered from the ADTs
 #[derive(Clone, Debug)]
-pub enum RuleDef {
-    Valid(Rule),
-    ValidWithWarning(Rule, String),
+pub enum Entry {
+    // rules
+    ValidRule(Rule),
+    RuleWithWarning(Rule, String),
     Invalid { text: String, error: String },
+
+    // sets
+    ValidSet(Set),
+    SetWithWarning(Set, String),
+    InvalidSet { text: String, error: String },
+
+    // other
+    Comment(String),
 }
 
-impl Display for RuleDef {
+impl Display for Entry {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let txt = match self {
-            RuleDef::Valid(r) | RuleDef::ValidWithWarning(r, _) => r.to_string(),
-            RuleDef::Invalid { text, .. } => text.clone(),
+            ValidRule(r) | RuleWithWarning(r, _) => r.to_string(),
+            ValidSet(r) | SetWithWarning(r, _) => r.to_string(),
+            Invalid { text, .. } => text.clone(),
+            InvalidSet { text, .. } => text.clone(),
+            Comment(text) => format!("#{}", text),
         };
         f.write_fmt(format_args!("{}", txt))
     }
 }
 
+impl Entry {
+    fn diagnostic_messages(&self) -> Option<String> {
+        match self {
+            RuleWithWarning(_, w) | SetWithWarning(_, w) => Some(w.clone()),
+            Invalid { error, .. } | InvalidSet { error, .. } => Some(error.clone()),
+            _ => None,
+        }
+    }
+}
+
+fn is_valid(def: &Entry) -> bool {
+    !matches!(def, Invalid { .. } | InvalidSet { .. })
+}
+
+fn is_rule(def: &Entry) -> bool {
+    matches!(def, ValidRule(_) | RuleWithWarning(..) | Invalid { .. })
+}
+
+fn is_set(def: &Entry) -> bool {
+    matches!(def, ValidSet(_) | SetWithWarning(..) | InvalidSet { .. })
+}
+
+fn is_comment(def: &Entry) -> bool {
+    matches!(def, Comment(_))
+}
+
+type Origin = String;
+type DbEntry = (Origin, Entry);
+
 /// Rules Database
 /// A container for rules and their metadata
 #[derive(Clone, Debug, Default)]
 pub struct DB {
-    lookup: BTreeMap<usize, RuleDef>,
-    source: HashMap<usize, String>,
+    model: BTreeMap<usize, DbEntry>,
+    rules: BTreeMap<usize, RuleEntry>,
+    sets: BTreeMap<usize, SetEntry>,
+    comments: BTreeMap<usize, CommentEntry>,
 }
 
-impl From<Vec<RuleDef>> for DB {
-    fn from(src: Vec<RuleDef>) -> Self {
-        let lookup: BTreeMap<usize, RuleDef> = src
-            .iter()
-            .enumerate()
-            // fapolicyd rules are 1-based index
-            .map(|(k, v)| (k + 1, v.clone()))
-            .collect();
-        DB {
-            lookup,
-            ..DB::default()
-        }
+impl From<Vec<(Origin, Entry)>> for DB {
+    fn from(s: Vec<(String, Entry)>) -> Self {
+        DB::from_sources(s)
     }
 }
 
 impl DB {
-    /// Construct DB using the provided RuleDefs from the single source
-    pub fn from_source(source: String, defs: Vec<RuleDef>) -> Self {
-        DB::from_sources(defs.into_iter().map(|d| (source.clone(), d)).collect())
-    }
-
     /// Construct DB using the provided RuleDefs and associated sources
-    pub fn from_sources(defs: Vec<(String, RuleDef)>) -> Self {
-        let default: Self = defs
-            .clone()
+    pub(crate) fn from_sources(defs: Vec<(Origin, Entry)>) -> Self {
+        let model: BTreeMap<usize, DbEntry> = defs
             .into_iter()
-            .map(|(_, d)| d)
-            .collect::<Vec<RuleDef>>()
-            .into();
+            .enumerate()
+            .map(|(i, (source, d))| (i, (source, d)))
+            .collect();
+
+        let rules: BTreeMap<usize, RuleEntry> = model
+            .iter()
+            .filter(|(_fk, (_, e))| is_rule(e))
+            .enumerate()
+            .map(|(id, (fk, (o, e)))| RuleEntry {
+                id: id + 1,
+                text: e.to_string(),
+                origin: o.clone(),
+                valid: is_valid(e),
+                msg: e.diagnostic_messages(),
+                _fk: *fk,
+            })
+            .map(|e| (e.id, e))
+            .collect();
+
+        let sets: BTreeMap<usize, SetEntry> = model
+            .iter()
+            .enumerate()
+            .map(|(fk, v)| (v, fk))
+            .filter(|((_, (_, m)), _)| is_set(m))
+            .map(|((id, (o, e)), fk)| {
+                (
+                    *id,
+                    SetEntry {
+                        // todo;; extract the set name
+                        name: "_".to_string(),
+                        text: e.to_string(),
+                        origin: o.clone(),
+                        valid: is_valid(e),
+                        msg: e.diagnostic_messages(),
+                        _fk: fk,
+                    },
+                )
+            })
+            .collect();
+
+        let comments = model
+            .iter()
+            .enumerate()
+            .map(|(fk, v)| (v, fk))
+            .filter(|((_, (_, m)), _)| is_comment(m))
+            .map(|((id, (o, e)), fk)| {
+                (
+                    *id,
+                    CommentEntry {
+                        text: e.to_string(),
+                        origin: o.clone(),
+                        _fk: fk,
+                    },
+                )
+            })
+            .collect();
+
         Self {
-            lookup: default.lookup,
-            source: defs
-                .iter()
-                .enumerate()
-                // fapolicyd rules are 1-based index
-                .map(|(k, (s, _))| (k + 1, s.clone()))
-                .collect(),
+            model,
+            rules,
+            sets,
+            comments,
         }
-    }
-
-    /// Get an iterator to RuleDefs
-    pub fn iter(&self) -> Iter<'_, usize, RuleDef> {
-        self.lookup.iter()
-    }
-
-    /// Get a Vec of RuleDefs
-    pub fn values(&self) -> Vec<&RuleDef> {
-        self.lookup.values().collect()
     }
 
     /// Get the number of RuleDefs
     pub fn len(&self) -> usize {
-        self.lookup.len()
+        self.model.len()
     }
 
     /// Test if there are any RuleDefs in this DB
     pub fn is_empty(&self) -> bool {
-        self.lookup.is_empty()
+        self.model.is_empty()
     }
 
-    /// Get a RuleDef by ID
-    pub fn get(&self, id: usize) -> Option<&RuleDef> {
-        self.lookup.get(&id)
+    /// Get a RuleEntry ref by ID
+    pub fn rule(&self, num: usize) -> Option<&RuleEntry> {
+        self.rules.get(&num)
     }
 
-    /// Get the source of a RuleDef by ID
-    pub fn source(&self, id: usize) -> Option<String> {
-        self.source.get(&id).cloned()
+    /// Get a RuleEntry ref by FK
+    pub fn rule_rev(&self, fk: usize) -> Option<&RuleEntry> {
+        self.rules.iter().find(|(_, e)| e._fk == fk).map(|(_, e)| e)
+    }
+
+    /// Get a vec of all RuleEntry refs
+    pub fn rules(&self) -> Vec<&RuleEntry> {
+        self.rules.values().collect()
+    }
+
+    /// Get a vec of all SetEntry refs
+    pub fn sets(&self) -> Vec<&SetEntry> {
+        self.sets.values().collect()
+    }
+
+    /// Get a vec of all CommentEntry refs
+    pub fn comments(&self) -> Vec<&CommentEntry> {
+        self.comments.values().collect()
+    }
+
+    pub fn entry(&self, num: usize) -> Option<&Entry> {
+        self.model.get(&num).map(|(_, e)| e)
+    }
+
+    /// Get a model iterator
+    pub fn iter(&self) -> Iter<'_, usize, DbEntry> {
+        self.model.iter()
     }
 }
 
@@ -118,26 +240,32 @@ mod tests {
 
     use super::*;
 
-    impl From<Rule> for RuleDef {
+    impl From<Rule> for Entry {
         fn from(r: Rule) -> Self {
-            RuleDef::Valid(r)
+            ValidRule(r)
         }
     }
 
-    fn any_all_all(decision: Decision) -> RuleDef {
-        Rule::new(Subject::all(), Permission::Any, Object::all(), decision).into()
+    impl DB {
+        fn from_source(origin: Origin, defs: Vec<Entry>) -> Self {
+            DB::from_sources(defs.into_iter().map(|d| (origin.clone(), d)).collect())
+        }
     }
 
-    impl RuleDef {
+    impl Entry {
         pub fn unwrap(&self) -> Rule {
             match self {
-                RuleDef::Valid(val) => val.clone(),
-                RuleDef::ValidWithWarning(val, _) => val.clone(),
-                RuleDef::Invalid { text: _, error: _ } => {
-                    panic!("called `RuleDef::unwrap()` on an invalid rule")
+                ValidRule(val) => val.clone(),
+                RuleWithWarning(val, _) => val.clone(),
+                _ => {
+                    panic!("called unwrap on an invalid rule or set def")
                 }
             }
         }
+    }
+
+    fn any_all_all(decision: Decision) -> Entry {
+        Rule::new(Subject::all(), Permission::Any, Object::all(), decision).into()
     }
 
     #[test]
@@ -147,16 +275,17 @@ mod tests {
 
     #[test]
     fn db_create() {
-        let r1: RuleDef = Rule::new(
+        let r1: Entry = Rule::new(
             Subject::all(),
             Permission::Any,
             Object::all(),
             Decision::Allow,
         )
         .into();
-        let db: DB = vec![r1].into();
+        let source = "foo.rules".to_string();
+        let db: DB = vec![(source, r1)].into();
         assert!(!db.is_empty());
-        assert!(db.get(1).is_some());
+        assert!(db.rule(1).is_some());
     }
 
     #[test]
@@ -166,8 +295,8 @@ mod tests {
 
         let source = "/foo/bar.rules";
         let db: DB = DB::from_source(source.to_string(), vec![r1, r2]);
-        assert_eq!(db.source.get(&1).unwrap(), source);
-        assert_eq!(db.source.get(&2).unwrap(), source);
+        assert_eq!(db.rule(1).unwrap().origin, source);
+        assert_eq!(db.rule(2).unwrap().origin, source);
     }
 
     #[test]
@@ -178,23 +307,27 @@ mod tests {
         let source1 = "/foo.rules";
         let source2 = "/bar.rules";
         let db: DB = DB::from_sources(vec![(source1.to_string(), r1), (source2.to_string(), r2)]);
-        assert_eq!(db.source.get(&1).unwrap(), source1);
-        assert_eq!(db.source.get(&2).unwrap(), source2);
+        assert_eq!(db.rule(1).unwrap().origin, source1);
+        assert_eq!(db.rule(2).unwrap().origin, source2);
     }
 
     #[test]
     fn maintain_order() {
+        let source = "foo.rules".to_string();
         let subjs = vec!["fee", "fi", "fo", "fum", "this", "is", "such", "fun"];
-        let rules: Vec<RuleDef> = subjs
+        let rules: Vec<(String, Entry)> = subjs
             .iter()
             .map(|s| {
-                Rule::new(
-                    Subject::from_exe(s),
-                    Permission::Any,
-                    Object::all(),
-                    Decision::Allow,
+                (
+                    source.clone(),
+                    Rule::new(
+                        Subject::from_exe(s),
+                        Permission::Any,
+                        Object::all(),
+                        Decision::Allow,
+                    )
+                    .into(),
                 )
-                .into()
             })
             .collect();
 
@@ -203,7 +336,12 @@ mod tests {
         assert_eq!(db.len(), 8);
 
         for s in subjs.iter().enumerate() {
-            assert_eq!(db.get(s.0 + 1).unwrap().unwrap().subj.exe().unwrap(), *s.1);
+            assert_eq!(db.entry(s.0).unwrap().unwrap().subj.exe().unwrap(), *s.1);
         }
+    }
+
+    #[test]
+    fn test_prefixed_comment() {
+        assert!(Comment("sometext".to_string()).to_string().starts_with('#'))
     }
 }

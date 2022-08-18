@@ -17,8 +17,7 @@ import context  # noqa: F401 # isort: skip
 from unittest.mock import MagicMock
 
 import pytest
-from redux import Action
-from ui.actions import (
+from fapolicy_analyzer.ui.actions import (
     ADD_CHANGESETS,
     ADD_NOTIFICATION,
     ANCILLARY_TRUST_DEPLOYED,
@@ -26,6 +25,7 @@ from ui.actions import (
     CLEAR_CHANGESETS,
     DEPLOY_ANCILLARY_TRUST,
     ERROR_ANCILLARY_TRUST,
+    ERROR_APPLY_CHANGESETS,
     ERROR_DEPLOYING_ANCILLARY_TRUST,
     ERROR_EVENTS,
     ERROR_GROUPS,
@@ -35,6 +35,7 @@ from ui.actions import (
     ERROR_SYSTEM_TRUST,
     ERROR_USERS,
     INIT_SYSTEM,
+    MODIFY_RULES_TEXT,
     RECEIVED_ANCILLARY_TRUST,
     RECEIVED_EVENTS,
     RECEIVED_GROUPS,
@@ -52,7 +53,8 @@ from ui.actions import (
     REQUEST_USERS,
     RESTORE_SYSTEM_CHECKPOINT,
     SET_SYSTEM_CHECKPOINT,
-    SYSTEM_INITIALIZED,
+    SYSTEM_CHECKPOINT_SET,
+    SYSTEM_RECEIVED,
     Notification,
     NotificationType,
     add_changesets,
@@ -62,6 +64,7 @@ from ui.actions import (
     clear_changesets,
     deploy_ancillary_trust,
     error_ancillary_trust,
+    error_apply_changesets,
     error_deploying_ancillary_trust,
     error_events,
     error_groups,
@@ -70,6 +73,7 @@ from ui.actions import (
     error_system_trust,
     error_users,
     init_system,
+    modify_rules_text,
     received_ancillary_trust,
     received_events,
     received_groups,
@@ -87,9 +91,11 @@ from ui.actions import (
     request_users,
     restore_system_checkpoint,
     set_system_checkpoint,
+    system_checkpoint_set,
     system_initialization_error,
-    system_initialized,
+    system_received,
 )
+from fapolicy_analyzer.redux import Action
 
 
 @pytest.mark.parametrize("notification_type", [t for t in list(NotificationType)])
@@ -127,6 +133,13 @@ def test_apply_changesets():
     assert type(action) is Action
     assert action.type == APPLY_CHANGESETS
     assert action.payload == (changeset,)
+
+
+def test_error_apply_changesets():
+    action = error_apply_changesets("foo")
+    assert type(action) is Action
+    assert action.type == ERROR_APPLY_CHANGESETS
+    assert action.payload == "foo"
 
 
 def test_clear_changesets():
@@ -203,8 +216,17 @@ def test_error_deploying_ancillary_trust():
 
 def test_set_system_checkpoint():
     action = set_system_checkpoint()
+    assert type(action) is Action
     assert action.type == SET_SYSTEM_CHECKPOINT
     assert not action.payload
+
+
+def test_system_checkpoint_set():
+    mock_checkpoint = MagicMock()
+    action = system_checkpoint_set(mock_checkpoint)
+    assert type(action) is Action
+    assert action.type == SYSTEM_CHECKPOINT_SET
+    assert action.payload == mock_checkpoint
 
 
 def test_restore_system_checkpoint():
@@ -323,6 +345,14 @@ def test_received_rules_text():
     assert action.payload == text
 
 
+def test_modify_rules_text():
+    text = "some modified rules!"
+    action = modify_rules_text(text)
+    assert type(action) is Action
+    assert action.type == MODIFY_RULES_TEXT
+    assert action.payload == text
+
+
 def test_error_rules_text():
     action = error_rules_text("foo")
     assert type(action) is Action
@@ -337,15 +367,16 @@ def test_init_system():
     assert not action.payload
 
 
-def test_system_initialized():
-    action = system_initialized()
+def test_system_received():
+    mock_system = MagicMock()
+    action = system_received(mock_system)
     assert type(action) is Action
-    assert action.type == SYSTEM_INITIALIZED
-    assert not action.payload
+    assert action.type == SYSTEM_RECEIVED
+    assert action.payload == mock_system
 
 
 def test_system_initialization_error():
-    action = system_initialization_error()
+    action = system_initialization_error("foo")
     assert type(action) is Action
     assert action.type == ERROR_SYSTEM_INITIALIZATION
-    assert not action.payload
+    assert action.payload == "foo"

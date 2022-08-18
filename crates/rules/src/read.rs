@@ -14,7 +14,7 @@ use nom::combinator::{eof, map, recognize};
 use nom::error::{ErrorKind, ParseError};
 use nom::sequence::tuple;
 
-use crate::db::{RuleDef, DB};
+use crate::db::{Entry, DB};
 use crate::error::Error;
 use crate::linter::lint::lint_db;
 use crate::load::RuleFrom::{Disk, Mem};
@@ -29,11 +29,13 @@ enum Line {
     Blank,
     Comment(String),
     SetDef(Set),
-    WellFormedRule(Rule),
-    MalformedRule(String, String),
+    RuleDef(Rule),
+    Malformed(String, String),
+    MalformedSet(String, String),
 }
 
 enum LineError<I> {
+    CannotParseSet(I, String),
     CannotParse(I, String),
     Nom(I, ErrorKind),
 }
@@ -53,11 +55,21 @@ fn parser(i: &str) -> nom::IResult<StrTrace, Line, LineError<&str>> {
         map(blank_line, |_| Blank),
         map(comment::parse, Comment),
         map(set::parse, SetDef),
-        map(rule::parse, WellFormedRule),
+        map(rule::parse, RuleDef),
     ))(StrTrace::new(i))
-    .map_err(|e| match e {
-        nom::Err::Error(e) => nom::Err::Error(LineError::CannotParse(i, format!("{}", e))),
-        e => nom::Err::Error(LineError::CannotParse(i, format!("{:?}", e))),
+    .map_err(|e| {
+        let details = match e {
+            nom::Err::Error(e) => e.to_string(),
+            e => format!("{:?}", e),
+        };
+        // todo;; guess set or rule here based on the line start char?
+        let f = if i.starts_with('%') {
+            LineError::CannotParseSet
+        } else {
+            LineError::CannotParse
+        };
+
+        nom::Err::Error(f(i, details))
     })
 }
 
@@ -74,30 +86,64 @@ pub fn load_rules_db(path: &str) -> Result<DB, Error> {
 }
 
 fn read_rules_db(xs: Vec<RuleSource>) -> Result<DB, Error> {
-    let lookup: Vec<(String, RuleDef)> = xs
+    let lookup: Vec<(String, Entry)> = xs
         .iter()
+        .map(relativized_path)
         .map(|(source, l)| (source, parser(l)))
         .flat_map(|(source, r)| match r {
             Ok((t, rule)) if t.current.is_empty() => Some((source, rule)),
             Ok((_, _)) => None,
             Err(nom::Err::Error(LineError::CannotParse(i, why))) => {
-                Some((source, MalformedRule(i.to_string(), why)))
+                Some((source, Malformed(i.to_string(), why)))
+            }
+            Err(nom::Err::Error(LineError::CannotParseSet(i, why))) => {
+                Some((source, MalformedSet(i.to_string(), why)))
             }
             Err(_) => None,
         })
-        .map(|(source, line)| {
-            let source = source.display().to_string();
-            // todo;; support relative path parsing here
-            let (_, file_name) = source.rsplit_once('/').expect("absolute path");
-            (file_name.to_string(), line)
-        })
-        .map(|(source, line)| (source, line))
         .filter_map(|(source, line)| match line {
-            WellFormedRule(r) => Some((source, RuleDef::Valid(r))),
-            MalformedRule(text, error) => Some((source, RuleDef::Invalid { text, error })),
+            RuleDef(r) => Some((source, Entry::ValidRule(r))),
+            SetDef(s) => Some((source, Entry::ValidSet(s))),
+            Malformed(text, error) => Some((source, Entry::Invalid { text, error })),
+            MalformedSet(text, error) => Some((source, Entry::InvalidSet { text, error })),
+            Comment(text) => Some((source, Entry::Comment(text))),
             _ => None,
         })
         .collect();
 
     Ok(lint_db(DB::from_sources(lookup)))
+}
+
+fn relativized_path(i: &(PathBuf, String)) -> (String, &String) {
+    (
+        // render and split off the filename from full path
+        i.0.display()
+            .to_string()
+            .rsplit_once('/')
+            .map(|(_, rhs)| rhs.to_string())
+            // if there was no / separator then use the full path
+            .unwrap_or_else(|| i.0.display().to_string()),
+        &i.1,
+    )
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::read::relativized_path;
+    use std::path::PathBuf;
+
+    #[test]
+    fn test_relativize_path() {
+        // absolute path
+        let i = (PathBuf::from("/foo/bar.baz"), "boom".to_string());
+        let r = relativized_path(&i);
+        assert_eq!(r.0, "bar.baz");
+        assert_eq!(r.1, "boom");
+
+        // relative path
+        let i = (PathBuf::from("bar.baz"), "boom2".to_string());
+        let r = relativized_path(&i);
+        assert_eq!(r.0, "bar.baz");
+        assert_eq!(r.1, "boom2");
+    }
 }

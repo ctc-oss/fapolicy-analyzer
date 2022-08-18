@@ -13,28 +13,38 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import gi
+import logging
 
 try:
     from importlib import resources
 except ImportError:
     import importlib_resources as resources
 
-from .strings import LOADER_MESSAGE
-from .ui_widget import UIBuilderWidget
-
-gi.require_version("GtkSource", "3.0")
-from gi.repository import GdkPixbuf  # isort: skip
+from fapolicy_analyzer.ui.strings import LOADER_MESSAGE
+from fapolicy_analyzer.ui.ui_widget import UIBuilderWidget
+from gi.repository import GdkPixbuf
 
 
 class Loader(UIBuilderWidget):
     def __init__(self, message=LOADER_MESSAGE):
         super().__init__()
-        with resources.path(
-            "fapolicy_analyzer.resources", "filled_fading_balls.gif"
-        ) as path:
-            animation = GdkPixbuf.PixbufAnimation.new_from_file(path.as_posix())
 
         image = self.get_object("image")
-        image.set_from_animation(animation)
+        animation = self.__load_animation()
+        if animation:
+            image.set_from_animation(animation)
+        else:
+            image.hide()
         self.get_object("message").set_label(message)
+
+    def __load_animation(self) -> GdkPixbuf.PixbufAnimation:
+        try:
+            with resources.path(
+                "fapolicy_analyzer.resources", "filled_fading_balls.gif"
+            ) as path:
+                return GdkPixbuf.PixbufAnimation.new_from_file(path.as_posix())
+        except Exception as ex:
+            logging.warning("Could not loader image resource")
+            logging.debug("Error loading filled_fading_balls.gif", ex)
+
+        return None

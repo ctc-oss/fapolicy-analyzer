@@ -1,0 +1,23 @@
+on:
+  push:
+    branches:
+      - 'master'
+      - 'release-*'
+  pull_request:
+    branches:
+      - 'master'
+      - 'release-*'
+
+name: Common CI
+
+jobs:
+  headers:
+    name: License header check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install requirements
+        run: |
+          ! grep -R -L --exclude-dir=vendor \
+            --include='*.py' --include='*.rs' --include='*.glade' --include='*.sh' \
+            'Copyright Concurrent Technologies Corporation' *

@@ -13,16 +13,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import context  # noqa: F401
 import logging
 import os
-import sys
 import shutil
-import pytest
+import sys
 from unittest.mock import patch
-from ui.session_manager import sessionManager
-from ui.__main__ import main
-from util.xdg_utils import xdg_state_dir_prefix
+
+import pytest
+from fapolicy_analyzer.ui.__main__ import main
+from fapolicy_analyzer.ui.session_manager import sessionManager
+from fapolicy_analyzer.util.xdg_utils import xdg_state_dir_prefix
+
+import context  # noqa: F401
 
 
 @pytest.fixture
@@ -38,9 +40,9 @@ def session():
 
 @pytest.fixture
 def mocks(mocker):
-    mocker.patch("ui.__main__.SplashScreen")
-    mocker.patch("ui.__main__.Gtk")
-    mocker.patch("ui.__main__.init_store")
+    mocker.patch("fapolicy_analyzer.ui.__main__.SplashScreen")
+    mocker.patch("fapolicy_analyzer.ui.__main__.Gtk")
+    mocker.patch("fapolicy_analyzer.ui.__main__.init_store")
 
 
 @pytest.mark.usefixtures("mocks", "session")
@@ -124,9 +126,9 @@ def test_main_no_options(mocker):
     expectTmpPath = xdg_state_home + "/fapolicy-analyzer/FaCurrentSession.tmp"
 
     with patch.object(sys, "argv", testargs):
-        mockSplash = mocker.patch("ui.__main__.SplashScreen")
-        mockGtk = mocker.patch("ui.__main__.Gtk")
-        mockStore = mocker.patch("ui.__main__.init_store")
+        mockSplash = mocker.patch("fapolicy_analyzer.ui.__main__.SplashScreen")
+        mockGtk = mocker.patch("fapolicy_analyzer.ui.__main__.Gtk")
+        mockStore = mocker.patch("fapolicy_analyzer.ui.__main__.init_store")
         main()
 
         assert logging.getLogger().level == logging.WARNING
@@ -147,9 +149,9 @@ def test_main_all_options(mocker):
     testargs = ["prog", "-v", "-a", "-s", "/tmp/TmpFileTemplate.tmp", "-c", "3"]
 
     with patch.object(sys, "argv", testargs):
-        mockSplash = mocker.patch("ui.__main__.SplashScreen")
-        mockGtk = mocker.patch("ui.__main__.Gtk")
-        mockStore = mocker.patch("ui.__main__.init_store")
+        mockSplash = mocker.patch("fapolicy_analyzer.ui.__main__.SplashScreen")
+        mockGtk = mocker.patch("fapolicy_analyzer.ui.__main__.Gtk")
+        mockStore = mocker.patch("fapolicy_analyzer.ui.__main__.init_store")
         main()
 
         assert logging.getLogger().level == logging.DEBUG

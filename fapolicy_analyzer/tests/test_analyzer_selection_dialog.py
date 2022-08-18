@@ -13,14 +13,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import context  # noqa: F401
+import context  # noqa: F401 # isort: skip
 import gi
 import pytest
+from fapolicy_analyzer.ui.analyzer_selection_dialog import (
+    ANALYZER_SELECTION,
+    AnalyzerSelectionDialog,
+)
 
-gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, Gdk
 from helpers import delayed_gui_action
-from ui.analyzer_selection_dialog import AnalyzerSelectionDialog, ANALYZER_SELECTION
+
+gi.require_version("GtkSource", "3.0")
+from gi.repository import Gtk, Gdk  # isort: skip
 
 
 @pytest.fixture
@@ -55,14 +59,16 @@ def test_analyze_from_audit(widget):
 
 def test_set_audit_file_from_dialog(widget, mocker):
     mocker.patch(
-        "ui.analyzer_selection_dialog.Gtk.FileChooserDialog.run",
+        "fapolicy_analyzer.ui.analyzer_selection_dialog.Gtk.FileChooserDialog.run",
         return_value=Gtk.ResponseType.OK,
     )
     mocker.patch(
-        "ui.analyzer_selection_dialog.Gtk.FileChooserDialog.get_filename",
+        "fapolicy_analyzer.ui.analyzer_selection_dialog.Gtk.FileChooserDialog.get_filename",
         return_value="foo",
     )
-    mocker.patch("ui.analyzer_selection_dialog.path.isfile", return_value=True)
+    mocker.patch(
+        "fapolicy_analyzer.ui.analyzer_selection_dialog.path.isfile", return_value=True
+    )
     auditLogTxt = widget.get_object("auditLogTxt")
     auditLogTxt.emit("icon_press", Gtk.EntryIconPosition.SECONDARY, Gdk.Event())
     assert auditLogTxt.get_text() == "foo"

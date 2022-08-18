@@ -8,12 +8,5 @@ edition = "2018"
 [dependencies]
 nom = "6.1.0"
 thiserror = "1.0"
-fapolicy-api = { version = "*", path = "../api" }
-
-[dependencies.dbus]
-version = "0.9"
-optional = true
-
-[features]
-default = []
-systemd = ["dbus"]
+fapolicy-trust = { version = "*", path = "../trust" }
+dbus = "0.9"

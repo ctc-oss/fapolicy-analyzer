@@ -2,11 +2,14 @@
 name = "fapolicy-rules"
 description = "Rule support for fapolicyd"
 license = "MPL-2.0"
-version = "0.4.0"
+version = "0.4.1"
 edition = "2018"
 
 [lib]
 path = "src/lib.rs"
+
+[dev-dependencies]
+tempfile = "3.3"
 
 [dependencies]
 nom = "6.1.0"

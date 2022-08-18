@@ -85,7 +85,7 @@ test: pytest cargo-test
 # Execute the python unit tests
 pytest: build
 	@echo -e "${GRN}  |--- Python unit-testing: Invoking pytest...${NC}"
-	pipenv run xvfb-run -a pytest -s --cov fapolicy_analyzer/
+	pipenv run xvfb-run -a pytest -s --cov=fapolicy_analyzer fapolicy_analyzer/tests/
 
 # Execute the Rust unit-tests
 cargo-test: build

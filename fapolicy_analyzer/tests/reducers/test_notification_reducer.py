@@ -15,8 +15,8 @@
 
 import context  # noqa: F401
 from unittest.mock import MagicMock
-from ui.actions import Notification, NotificationType
-from ui.reducers.notification_reducer import (
+from fapolicy_analyzer.ui.actions import Notification, NotificationType
+from fapolicy_analyzer.ui.reducers.notification_reducer import (
     handle_add_notification,
     handle_remove_notification,
 )

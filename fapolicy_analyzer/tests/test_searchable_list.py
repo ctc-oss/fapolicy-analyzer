@@ -20,7 +20,7 @@ from unittest.mock import MagicMock
 import gi
 import pytest
 from callee import Contains
-from ui.searchable_list import SearchableList
+from fapolicy_analyzer.ui.searchable_list import SearchableList
 
 from helpers import refresh_gui
 

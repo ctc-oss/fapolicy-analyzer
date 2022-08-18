@@ -17,8 +17,8 @@ from fapolicy_analyzer import *
 import argparse
 import sys
 
-green = '\033[91m'
-red = '\033[92m'
+red = '\033[91m'
+green = '\033[92m'
 yellow = '\033[93m'
 blue = '\033[96m'
 gray = '\033[33m'
@@ -41,7 +41,7 @@ def main(*argv):
                 print(gray, end='')
                 print(f"🗎 [{origin}]\033[0m")
 
-            print(red if r.is_valid else green, end='')
+            print(green if r.is_valid else red, end='')
             print(f"{r.id} {r.text} \033[0m")
             for info in r.info:
                 marker = f'[{info.category}]' if info.category != 'e' else ''

@@ -9,6 +9,7 @@
 use std::io;
 use std::process::Command;
 
+use fapolicy_trust::Trust;
 use nom::bytes::complete::tag;
 use nom::character::complete::alphanumeric1;
 use nom::character::complete::digit1;
@@ -20,7 +21,6 @@ use nom::{IResult, InputIter, Parser};
 use thiserror::Error;
 
 use crate::fapolicyd;
-use fapolicy_api::trust::Trust;
 
 use crate::fapolicyd::keep_entry;
 use crate::rpm::Error::{

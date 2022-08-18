@@ -15,6 +15,6 @@
 
 from typing import Tuple
 
-from .rules_admin_page import RulesAdminPage
+from fapolicy_analyzer.ui.rules.rules_admin_page import RulesAdminPage
 
 __all__: Tuple[str, ...] = ("RulesAdminPage",)

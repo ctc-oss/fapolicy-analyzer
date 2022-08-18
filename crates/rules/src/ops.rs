@@ -6,14 +6,16 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use crate::db::{RuleDef, DB};
+use crate::db::{RuleEntry, DB};
 
+use crate::error::Error;
 use crate::read::deserialize_rules_db;
 
 // Mutable
 #[derive(Default, Clone, Debug)]
 pub struct Changeset {
     db: DB,
+    src: Option<String>,
 }
 
 impl Changeset {
@@ -21,24 +23,35 @@ impl Changeset {
         &self.db
     }
 
+    pub fn src(&self) -> Option<&String> {
+        self.src.as_ref()
+    }
+
     // todo;; how to properly convey lints and errors in the parse fail?
     //        perhaps just roll it up to a _simple_ Error/Warn/Ok result enum
-    pub fn set(&mut self, text: &str) -> Result<&DB, String> {
+    pub fn set(&mut self, text: &str) -> Result<&DB, Error> {
+        // todo;; what to do with the source text here?
+        //        writing it out verbatim to the disk at deploy would be ideal
+        //        but it has to be stashed somewhere until writing at deploy time
+        //        Q: use compression?  stash in temp file?  stash in XDG dir?
+        //        there is also the question of preserving the rule editing session
+        //        as was done for trust
         match deserialize_rules_db(text) {
             Ok(r) => {
                 self.db = r;
+                self.src = Some(text.to_string());
                 Ok(&self.db)
             }
-            Err(_) => Err("failed to deserialize db".to_string()),
+            Err(e) => Err(e),
         }
     }
 
-    pub fn rule(&self, id: usize) -> Option<&RuleDef> {
-        self.db.get(id)
+    pub fn rule(&self, id: usize) -> Option<&RuleEntry> {
+        self.db.rule(id)
     }
 
-    pub fn apply(&self) -> DB {
-        DB::default()
+    pub fn apply(&self) -> &DB {
+        &self.db
     }
 }
 
@@ -48,12 +61,12 @@ mod tests {
     use std::error::Error;
 
     #[test]
-    fn deserialize_absolute() -> Result<(), Box<dyn Error>> {
+    fn deserialize() -> Result<(), Box<dyn Error>> {
         let mut cs = Changeset::default();
-        let txt = "[/foo.rules]\ndeny_audit perm=open all : all";
+        let txt = "[foo.rules]\ndeny_audit perm=open all : all";
         let _x1 = cs.set(txt);
 
-        let txt = "[/foo.rules]\nfffdeny_audit perm=open all : all";
+        let txt = "[foo.rules]\nfffdeny_audit perm=open all : all";
         let _x2 = cs.set(txt)?;
 
         Ok(())

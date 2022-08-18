@@ -24,17 +24,19 @@ SYSTEM_TRUST_LOAD_ERROR = _("Error loading System Trust")
 RULES_LOAD_ERROR = _("Error loading Rules")
 RULES_TEXT_LOAD_ERROR = _("Error loading Rules text")
 RULES_FILE_READ_ERROR = _("Error reading the Rules file")
+RULES_VALIDATION_ERROR = _(
+    "The current rule text is not valid and cannot be saved. See Status Information for details."
+)
+RULES_VALIDATION_WARNING = _(
+    "The current rule text has warnings. See Status Information for details."
+)
 RULE_LABEL = _("Rule")
 RULES_LABEL = _("Rules")
 DAEMON_INITIALIZATION_ERROR = _("Error initializing communications with daemon")
 
-DEPLOY_ANCILLARY_CONFIRM_DIALOG_TITLE = _("Deploy Ancillary Trust Changes?")
-DEPLOY_ANCILLARY_CONFIRM_DIALOG_TEXT = _(
-    """Are you sure you wish to deploy your changes to the ancillary trust database?
- This will update the fapolicy trust and restart the service."""
-)
+
 DEPLOY_ANCILLARY_CONFIRM_DLG_ACTION_COL_HDR = _("Action")
-DEPLOY_ANCILLARY_CONFIRM_DLG_PATH_COL_HDR = _("File Path")
+DEPLOY_ANCILLARY_CONFIRM_DLG_CHANGE_COL_HDR = _("Change")
 DEPLOY_ANCILLARY_SUCCESSFUL_MSG = _("Changes successfully deployed.")
 DEPLOY_ANCILLARY_ERROR_MSG = _(
     "An error occurred trying to deploy the changes. Please try again."
@@ -72,6 +74,9 @@ FILE_LIST_ACCESS_HEADER = _("Access")
 
 CHANGESET_ACTION_ADD = _("Add")
 CHANGESET_ACTION_DEL = _("Delete")
+CHANGESET_ACTION_ADD_TRUST = _("Add Trust")
+CHANGESET_ACTION_DEL_TRUST = _("Delete Trust")
+CHANGESET_ACTION_RULES = _("Edit Rules")
 
 ADD_FILE_LABEL = _("Add File")
 OPEN_FILE_LABEL = _("Open File")
@@ -79,6 +84,9 @@ SAVE_AS_FILE_LABEL = _("Save As...")
 FA_SESSION_FILES_FILTER_LABEL = _("FA Session files")
 FA_ARCHIVE_FILES_FILTER_LABEL = _("fapolicyd archive files")
 ANY_FILES_FILTER_LABEL = _("Any files")
+
+FAPD_DBUS_START_ERROR_MSG = _("On-line fapolicyd start failed")
+FAPD_DBUS_STOP_ERROR_MSG = _("On-line fapolicyd stop failed")
 
 FAPROFILER_TGT_EUID_CHOWN_ERROR_MSG = _("Profiling target file chown failure")
 FAPROFILER_TGT_POPEN_ERROR_MSG = _("Profiling target Popen failure")
@@ -128,6 +136,18 @@ GET_GROUPS_LOG_ERROR_MSG = _(
     "An error occurred trying to retrieve the group list. Please try again."
 )
 
+RESOURCE_LOAD_FAILURE_DIALOG_TEXT = _("Could not load application resources")
+RESOURCE_LOAD_FAILURE_DIALOG_ADD_TEXT = _(
+    """The required application resource files could not be loaded from disk.
+The fapolicy analyzer application cannot open.
+
+Some possible reasons for this failure:
+
+1. Incorrect user permissions on the application resource directory.
+
+2. An incorrectly configured fapolicyd rule set."""
+)
+
 TRUST_DB_READ_FAILURE_DIALOG_TITLE = _("Trust Database")
 TRUST_DB_READ_FAILURE_DIALOG_TEXT = _(
     """
@@ -152,3 +172,5 @@ populate the trust database.
 $(HOME)/.config/fapolicy-analyzer/fapolicy-analyzer.toml
     """
 )
+
+APPLY_CHANGESETS_ERROR_MESSAGE = _("Error applying changes")

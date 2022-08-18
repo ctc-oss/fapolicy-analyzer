@@ -85,7 +85,7 @@ impl State {
         Self {
             config: self.config.clone(),
             trust_db: self.trust_db.clone(),
-            rules_db: modified,
+            rules_db: modified.clone(),
             users: self.users.clone(),
             groups: self.groups.clone(),
             daemon_version: self.daemon_version.clone(),

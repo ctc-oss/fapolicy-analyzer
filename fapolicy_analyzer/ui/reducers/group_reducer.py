@@ -17,7 +17,7 @@ from typing import Any, NamedTuple, Optional, Sequence, cast
 
 from fapolicy_analyzer import Group
 from fapolicy_analyzer.ui.actions import ERROR_GROUPS, RECEIVED_GROUPS, REQUEST_GROUPS
-from redux import Action, Reducer, handle_actions
+from fapolicy_analyzer.redux import Action, Reducer, handle_actions
 
 
 class GroupState(NamedTuple):

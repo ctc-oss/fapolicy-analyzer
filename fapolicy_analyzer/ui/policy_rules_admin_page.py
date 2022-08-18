@@ -19,10 +19,8 @@ from typing import Optional, Sequence
 import gi
 from events import Events
 from fapolicy_analyzer import EventLog, Group, Trust, User
-from fapolicy_analyzer.util import acl, fs
-
-from .acl_list import ACLList
-from .actions import (
+from fapolicy_analyzer.ui.acl_list import ACLList
+from fapolicy_analyzer.ui.actions import (
     NotificationType,
     add_notification,
     request_ancillary_trust,
@@ -31,9 +29,9 @@ from .actions import (
     request_system_trust,
     request_users,
 )
-from .object_list import ObjectList
-from .store import dispatch, get_system_feature
-from .strings import (
+from fapolicy_analyzer.ui.object_list import ObjectList
+from fapolicy_analyzer.ui.store import dispatch, get_system_feature
+from fapolicy_analyzer.ui.strings import (
     GET_GROUPS_LOG_ERROR_MSG,
     GET_USERS_ERROR_MSG,
     GROUP_LABEL,
@@ -42,9 +40,10 @@ from .strings import (
     USER_LABEL,
     USERS_LABEL,
 )
-from .subject_list import SubjectList
-from .ui_page import UIAction, UIPage
-from .ui_widget import UIConnectedWidget
+from fapolicy_analyzer.ui.subject_list import SubjectList
+from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
+from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
+from fapolicy_analyzer.util import acl, fs
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
@@ -55,7 +54,6 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         UIConnectedWidget.__init__(
             self, get_system_feature(), on_next=self.on_next_system
         )
-
         actions = {
             "analyze": [
                 UIAction(
@@ -67,7 +65,6 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             ]
         }
         UIPage.__init__(self, actions)
-
         self.__n_changesets = 0
         self.__audit_file: Optional[str] = audit_file
         self.__log: Optional[Sequence[EventLog]] = None
@@ -205,7 +202,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         def reselect_rows():
             selections = self.__selection_state[type]
             rows = []
-            if selections and select_func:
+            if selections is not None and select_func:
                 selections = (
                     selections if isinstance(selections, Sequence) else [selections]
                 )
@@ -326,7 +323,10 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         )
 
     def __populate_subjects_from_acl(self):
-        if not self.__selection_state["user"] and not self.__selection_state["group"]:
+        if (
+            self.__selection_state["user"] is None
+            and self.__selection_state["group"] is None
+        ):
             self.__populate_list(self.subject_list, [], "subjects")
             return
 
@@ -335,9 +335,9 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
                 e.subject.file: e.subject
                 for e in (
                     self.__log.by_user(self.__selection_state["user"])
-                    if self.__selection_state["user"]
+                    if self.__selection_state["user"] is not None
                     else self.__log.by_group(self.__selection_state["group"])
-                    if self.__selection_state["group"]
+                    if self.__selection_state["group"] is not None
                     else []
                 )
             }.values()
@@ -346,20 +346,22 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
 
     def __populate_objects(self):
         if self.__selection_state["subjects"] and (
-            self.__selection_state["user"] or self.__selection_state["group"]
+            self.__selection_state["user"] is not None
+            or self.__selection_state["group"] is not None
         ):
             last_subject = self.__selection_state["subjects"][-1]
-            objects = list(
+            data = list(
                 {
-                    e.object.file: e.object
+                    e.object.file: {e.rule_id: e.object}
                     for e in self.__log.by_subject(last_subject)
                     if e.uid == self.__selection_state["user"]
                     or e.gid == self.__selection_state["group"]
                 }.values()
             )
+
             self.__populate_list(
                 self.object_list,
-                objects,
+                data,
                 "objects",
                 True,
                 self.object_list.get_selected_row_by_file,

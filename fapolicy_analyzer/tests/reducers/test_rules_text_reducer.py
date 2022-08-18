@@ -20,6 +20,7 @@ import pytest
 from fapolicy_analyzer.ui.reducers.rules_text_reducer import (
     RulesTextState,
     handle_error_rules_text,
+    handle_modify_rules_text,
     handle_received_rules_text,
     handle_request_rules_text,
 )
@@ -27,19 +28,34 @@ from fapolicy_analyzer.ui.reducers.rules_text_reducer import (
 
 @pytest.fixture()
 def initial_state():
-    return RulesTextState(error=None, rules_text={}, loading=False)
+    return RulesTextState(
+        error=None, rules_text="", loading=False, modified_rules_text=""
+    )
 
 
 def test_handle_request_rules_text(initial_state):
     result = handle_request_rules_text(initial_state, MagicMock())
-    assert result == RulesTextState(error=None, rules_text={}, loading=True)
+    assert result == RulesTextState(
+        error=None, rules_text="", loading=True, modified_rules_text=""
+    )
 
 
 def test_handle_received_rules_text(initial_state):
     result = handle_received_rules_text(initial_state, MagicMock(payload="foo"))
-    assert result == RulesTextState(error=None, rules_text="foo", loading=False)
+    assert result == RulesTextState(
+        error=None, rules_text="foo", loading=False, modified_rules_text=""
+    )
 
 
 def test_handle_error_rules_text(initial_state):
     result = handle_error_rules_text(initial_state, MagicMock(payload="foo"))
-    assert result == RulesTextState(error="foo", rules_text={}, loading=False)
+    assert result == RulesTextState(
+        error="foo", rules_text="", loading=False, modified_rules_text=""
+    )
+
+
+def test_handle_modify_rules_text(initial_state):
+    result = handle_modify_rules_text(initial_state, MagicMock(payload="modified"))
+    assert result == RulesTextState(
+        error=None, rules_text="", loading=False, modified_rules_text="modified"
+    )

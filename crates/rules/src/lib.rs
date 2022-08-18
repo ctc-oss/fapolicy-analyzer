@@ -29,10 +29,12 @@ pub mod error;
 pub mod load;
 
 mod permission;
-pub mod read;
 mod rule;
 mod set;
 mod subject;
+
+pub mod read;
+pub mod write;
 
 pub(crate) fn bool_to_c(b: bool) -> char {
     if b {

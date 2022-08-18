@@ -6,8 +6,8 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use std::fs::File;
-use std::io::Write;
+use std::io;
+use std::path::PathBuf;
 
 use serde::Deserialize;
 use serde::Serialize;
@@ -16,27 +16,33 @@ use thiserror::Error;
 use fapolicy_daemon::fapolicyd::{RPM_DB_PATH, RULES_FILE_PATH, TRUST_DB_PATH, TRUST_FILE_PATH};
 
 use crate::app::State;
-use crate::sys::Error::WriteAncillaryFail;
+use crate::sys::Error::{WriteAncillaryFail, WriteRulesFail};
 
 #[derive(Error, Debug)]
 pub enum Error {
-    #[error("{0}")]
-    WriteAncillaryFail(String),
+    #[error("Failed to write trust; {0}")]
+    WriteAncillaryFail(io::Error),
+    #[error("Failed to write rules; {0}")]
+    WriteRulesFail(io::Error),
     #[error("{0}")]
     DaemonError(#[from] fapolicy_daemon::error::Error),
 }
 
 pub fn deploy_app_state(state: &State) -> Result<(), Error> {
-    let mut tf = File::create(&state.config.system.ancillary_trust_path)
-        .map_err(|_| WriteAncillaryFail("unable to create ancillary trust".to_string()))?;
-    for (path, meta) in state.trust_db.iter() {
-        if meta.is_ancillary() {
-            tf.write_all(
-                format!("{} {} {}\n", path, meta.trusted.size, meta.trusted.hash).as_bytes(),
-            )
-            .map_err(|_| WriteAncillaryFail("unable to write ancillary trust entry".to_string()))?;
-        }
-    }
+    // write rules model
+    fapolicy_rules::write::db(
+        &state.rules_db,
+        &PathBuf::from(&state.config.system.rules_file_path),
+    )
+    .map_err(WriteRulesFail)?;
+
+    // write file trust db
+    fapolicy_trust::write::file_trust(
+        &state.trust_db,
+        PathBuf::from(&state.config.system.ancillary_trust_path),
+    )
+    .map_err(WriteAncillaryFail)?;
+
     Ok(())
 }
 
