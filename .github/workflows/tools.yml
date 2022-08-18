@@ -52,8 +52,11 @@ jobs:
       - name: Export files
         run: |
           mkdir /tmp/tools
-          mv target/release/tdb /tmp/tools/tdb-${{ steps.tag_name.outputs.VERSION }}
-          mv target/release/rulec /tmp/tools/rulec-${{ steps.tag_name.outputs.VERSION }}
+          mv target/release/tdb /tmp/tools/tdb-${APP_VERSION}
+          mv target/release/rulec /tmp/tools/rulec-${APP_VERSION}
+          mv target/release/faprofiler /tmp/tools/faprofiler-${APP_VERSION}
+        env:
+          APP_VERSION: ${{ steps.tag_name.outputs.VERSION }}
 
       - name: Archive Tools
         uses: actions/upload-artifact@v2
