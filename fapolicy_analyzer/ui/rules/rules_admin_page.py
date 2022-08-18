@@ -16,7 +16,7 @@
 import logging
 from typing import Any, Optional, Sequence
 
-from fapolicy_analyzer import Rule
+from fapolicy_analyzer import Rule, System
 from fapolicy_analyzer.ui.actions import (
     NotificationType,
     add_notification,
@@ -77,6 +77,7 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         self.__loading_text: bool = False
         self.__changesets: Sequence[Changeset] = []
         self.__saving: bool = False
+        self.__system: System = None
 
         self.__load_rules()
 
@@ -109,6 +110,14 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
 
     def __valid_changes(self, changeset: RuleChangeset) -> bool:
         rules = changeset.rules()
+
+        # update the rules list view with changes
+        if self.__system:
+            try:
+                tmp_system = changeset.apply_to_system(self.__system)
+                self._list_view.render_rules(tmp_system.rules())
+            except Exception:
+                logging.warning("Failed to parse validating changeset")
 
         if not all([r.is_valid for r in rules]):
             dispatch(
@@ -155,6 +164,10 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         changesetState = system.get("changesets")
         rules_state = system.get("rules")
         text_state = system.get("rules_text")
+        system_state = system.get("system")
+
+        if self.__system != system_state.system:
+            self.__system = system_state.system
 
         if self.__saving and changesetState.error:
             self.__saving = False

@@ -19,6 +19,7 @@ from unittest.mock import MagicMock
 import gi
 import pytest
 from callee import Attrs, InstanceOf
+from fapolicy_analyzer.redux import Action
 from fapolicy_analyzer.ui.actions import (
     ADD_NOTIFICATION,
     APPLY_CHANGESETS,
@@ -36,11 +37,17 @@ from fapolicy_analyzer.ui.strings import (
     RULES_VALIDATION_WARNING,
 )
 from mocks import mock_rule, mock_System
-from fapolicy_analyzer.redux import Action
 from rx.subject import Subject
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
+
+initial_system = {
+    "rules": MagicMock(error=None, rules=[], loading=False),
+    "rules_text": MagicMock(),
+    "changesets": MagicMock(),
+    "system": MagicMock(),
+}
 
 
 @pytest.fixture()
@@ -73,14 +80,13 @@ def test_populates_guided_editor(widget, mock_system_feature, mocker):
     mock_rules = [mock_rule()]
     mock_list_renderer = MagicMock()
     mocker.patch(
-        "fapolicy_analyzer.ui.rules.rules_list_view.RulesListView.render_rules",
+        "fapolicy_analyzer.ui.rules.rules_admin_page.RulesListView.render_rules",
         mock_list_renderer,
     )
     mock_system_feature.on_next(
         {
+            **initial_system,
             "rules": MagicMock(error=None, rules=mock_rules, loading=False),
-            "rules_text": MagicMock(),
-            "changesets": MagicMock(),
         }
     )
     mock_list_renderer.assert_called_once_with(mock_rules)
@@ -107,14 +113,13 @@ def test_populates_status_info(mock_system_feature, mocker):
     ]
     mock_info_renderer = MagicMock()
     mocker.patch(
-        "fapolicy_analyzer.ui.rules.rules_status_info.RulesStatusInfo.render_rule_status",
+        "fapolicy_analyzer.ui.rules.rules_admin_page.RulesStatusInfo.render_rule_status",
         mock_info_renderer,
     )
     mock_system_feature.on_next(
         {
+            **initial_system,
             "rules": MagicMock(error=None, rules=mock_rules, loading=False),
-            "rules_text": MagicMock(),
-            "changesets": MagicMock(),
         }
     )
     mock_info_renderer.assert_called_once_with(mock_rules)
@@ -125,9 +130,8 @@ def test_handles_rules_exception(mock_dispatch, mock_system_feature):
     mock_dispatch.reset_mock()
     mock_system_feature.on_next(
         {
+            **initial_system,
             "rules": MagicMock(error="foo", loading=False),
-            "rules_text": MagicMock(),
-            "changesets": MagicMock(),
         }
     )
     mock_dispatch.assert_called_with(
@@ -143,18 +147,17 @@ def test_handles_rules_exception(mock_dispatch, mock_system_feature):
 def test_populates_text_editor(mock_system_feature, mocker):
     mock_text_renderer = MagicMock()
     mocker.patch(
-        "fapolicy_analyzer.ui.rules.rules_text_view.RulesTextView.render_rules",
+        "fapolicy_analyzer.ui.rules.rules_admin_page.RulesTextView.render_rules",
         mock_text_renderer,
     )
     mock_system_feature.on_next(
         {
-            "rules": MagicMock(),
+            **initial_system,
             "rules_text": MagicMock(
                 error=None,
                 rules_text="foo",
                 loading=False,
             ),
-            "changesets": MagicMock(),
         }
     )
     mock_text_renderer.assert_called_once_with("foo")
@@ -165,9 +168,8 @@ def test_handles_rules_text_exception(mock_dispatch, mock_system_feature):
     mock_dispatch.reset_mock()
     mock_system_feature.on_next(
         {
-            "rules": MagicMock(),
+            **initial_system,
             "rules_text": MagicMock(error="foo", loading=False),
-            "changesets": MagicMock(),
         }
     )
     mock_dispatch.assert_called_with(
@@ -216,6 +218,35 @@ def test_validate_clicked_warning(widget, mock_dispatch):
     )
 
 
+def test_validate_updates_rules_list(widget, mock_system_feature, mocker):
+    mock_list_renderer = MagicMock()
+    mock_system = MagicMock(rules=MagicMock(return_value="parsed rules"))
+    mocker.patch(
+        "fapolicy_analyzer.ui.rules.rules_admin_page.RulesListView.render_rules",
+        mock_list_renderer,
+    )
+    mocker.patch(
+        "fapolicy_analyzer.ui.rules.rules_admin_page.RuleChangeset.apply_to_system",
+        return_value=mock_system,
+    )
+    mock_system_feature.on_next(initial_system)
+    widget._text_view.rules_changed("allow perm=open all : all")
+    widget.on_validate_clicked()
+    mock_list_renderer.assert_called_with("parsed rules")
+
+
+def test_handles_rules_parsing_failure(widget, mock_system_feature, mocker):
+    mocker.patch(
+        "fapolicy_analyzer.ui.rules.rules_admin_page.RuleChangeset.apply_to_system",
+        side_effect=Exception,
+    )
+    mock_logger = mocker.patch("fapolicy_analyzer.ui.rules.rules_admin_page.logging")
+    mock_system_feature.on_next(initial_system)
+    widget._text_view.rules_changed("allow perm=open all : all")
+    widget.on_validate_clicked()
+    mock_logger.warning.assert_called_with("Failed to parse validating changeset")
+
+
 def test_save_click_valid(widget, mock_dispatch):
     widget._text_view.rules_changed("allow perm=any all : all")
     widget.on_save_clicked()
@@ -243,6 +274,7 @@ def test_apply_changeset_error(mock_dispatch, mocker):
 
     mockSystemFeature.on_next(
         {
+            **initial_system,
             "changesets": MagicMock(
                 spec=RuleChangeset, changesets=[MagicMock()], error="bad error"
             ),
