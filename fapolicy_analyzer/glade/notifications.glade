@@ -18,43 +18,22 @@
 -->
 <interface>
   <requires lib="gtk+" version="3.22"/>
-  <object class="GtkBox" id="notification">
+  <object class="GtkRevealer" id="notifications">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
+    <property name="halign">center</property>
     <property name="valign">start</property>
-    <property name="spacing">20</property>
     <child>
-      <object class="GtkLabel" id="message">
+      <object class="GtkBox" id="notificationsContainer">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="xalign">0</property>
+        <property name="valign">start</property>
+        <property name="orientation">vertical</property>
+        <property name="homogeneous">True</property>
+        <child>
+          <placeholder/>
+        </child>
       </object>
-      <packing>
-        <property name="expand">True</property>
-        <property name="fill">True</property>
-        <property name="position">0</property>
-      </packing>
     </child>
-    <child>
-      <object class="GtkButton" id="closeBtn">
-        <property name="label" translatable="yes">x</property>
-        <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="receives_default">True</property>
-        <property name="relief">none</property>
-        <signal name="clicked" handler="on_closeBtn_clicked" swapped="no"/>
-        <style>
-          <class name="close"/>
-        </style>
-      </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
-        <property name="position">1</property>
-      </packing>
-    </child>
-    <style>
-      <class name="app-notification"/>
-    </style>
   </object>
 </interface>

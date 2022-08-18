@@ -1,4 +1,4 @@
-# Copyright Concurrent Technologies Corporation 2021
+# Copyright Concurrent Technologies Corporation 2022
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,17 +14,11 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import context  # noqa: F401 # isort: skip
-from time import sleep
-
 import gi
 import pytest
-from callee import Attrs, InstanceOf
-from fapolicy_analyzer.redux import Action
-from fapolicy_analyzer.ui.actions import REMOVE_NOTIFICATION
 from fapolicy_analyzer.ui.actions import Notification as Note
 from fapolicy_analyzer.ui.actions import NotificationType
-from fapolicy_analyzer.ui.notification import Notification
-from fapolicy_analyzer.ui.session_manager import sessionManager
+from fapolicy_analyzer.ui.notifications.notifications import Notifications
 from rx.subject import Subject
 
 gi.require_version("Gtk", "3.0")
@@ -33,14 +27,14 @@ from gi.repository import Gtk  # isort: skip
 
 @pytest.fixture()
 def mock_dispatch(mocker):
-    return mocker.patch("fapolicy_analyzer.ui.notification.dispatch")
+    return mocker.patch("fapolicy_analyzer.ui.notifications.dispatch")
 
 
 @pytest.fixture
 def mock_notifications_feature(mocker):
     notifications_feature_mock = Subject()
     mocker.patch(
-        "fapolicy_analyzer.ui.notification.get_notifications_feature",
+        "fapolicy_analyzer.ui.notifications.notifications.get_notifications_feature",
         return_value=notifications_feature_mock,
     )
     yield notifications_feature_mock
@@ -49,19 +43,13 @@ def mock_notifications_feature(mocker):
 
 @pytest.fixture
 def widget(mock_notifications_feature, notifications):
-    widget = Notification(1)
+    widget = Notifications(display_limit=2)
     overlay = Gtk.Overlay()
     overlay.add_overlay(widget.get_ref())
     parent = Gtk.Window()
     parent.add(overlay)
     mock_notifications_feature.on_next(notifications)
     return widget
-
-
-@pytest.fixture
-def state():
-    yield sessionManager
-    sessionManager.systemNotification = None
 
 
 @pytest.mark.usefixtures("mock_notifications_feature")
@@ -71,61 +59,57 @@ def state():
 )
 def test_shows_notification(widget, notification_type):
     assert widget.get_ref().get_child_revealed()
-    assert widget.get_object("message").get_label() == "foo"
-    assert (
-        widget.get_object("container")
-        .get_style_context()
-        .has_class(notification_type.name.lower())
-    )
+    notifications = widget.get_ref().get_child().get_children()
+    assert len(notifications) == 1
+    notification = next(iter(notifications))
+    label = notification.get_children()[0]
+
+    assert label.get_label() == "foo"
+    assert notification.get_style_context().has_class(notification_type.name.lower())
 
 
 @pytest.mark.usefixtures("mock_notifications_feature")
 @pytest.mark.parametrize(
     "notifications",
-    [[Note(0, "foo", t)] for t in list(NotificationType)],
-)
-def test_closes_notification(widget, mock_dispatch, mock_notifications_feature):
-    assert widget.get_ref().get_child_revealed()
-    widget.get_object("closeBtn").clicked()
-    mock_dispatch.assert_called()
-
-    # since we are mocking dispatch we have to manually fire the on_next
-    mock_notifications_feature.on_next([])
-    assert not widget.get_ref().get_child_revealed()
-
-
-@pytest.mark.usefixtures("mock_notifications_feature")
-@pytest.mark.parametrize(
-    "notifications",
-    [[Note(0, "foo", t)] for t in [NotificationType.SUCCESS, NotificationType.INFO]],
-)
-def test_notification_times_out(widget, mock_dispatch, mock_notifications_feature):
-    assert widget.get_ref().get_child_revealed()
-    sleep(1.2)
-    mock_dispatch.assert_called_with(
-        InstanceOf(Action)
-        & Attrs(
-            type=REMOVE_NOTIFICATION,
-            payload=Attrs(
-                id=0,
-            ),
+    [
+        (
+            [
+                Note(0, "note 1", NotificationType.ERROR),
+                Note(1, "note 2", NotificationType.WARN),
+            ]
         )
-    )
-
-    # since we are mocking dispatch we have to manually fire the on_next
-    mock_notifications_feature.on_next([])
-    assert not widget.get_ref().get_child_revealed()
+    ],
+)
+def test_limits_notifications(widget):
+    assert widget.get_ref().get_child_revealed()
+    notifications = widget.get_ref().get_child().get_children()
+    assert len(notifications) == 2
 
 
 @pytest.mark.usefixtures("mock_notifications_feature")
 @pytest.mark.parametrize(
     "notifications",
-    [[Note(0, "foo", t)] for t in [NotificationType.ERROR, NotificationType.WARN]],
+    [
+        (
+            [
+                Note(0, "note 1", NotificationType.ERROR),
+                Note(1, "note 2", NotificationType.WARN),
+                Note(1, "note 2", NotificationType.INFO),
+            ]
+        )
+    ],
 )
-def test_notification_does_not_time_out(widget, mock_dispatch):
+def test_shows_multiple_notifications(widget):
     assert widget.get_ref().get_child_revealed()
-    sleep(1.2)
-    mock_dispatch.assert_not_any_call(
-        InstanceOf(Action) & Attrs(type=REMOVE_NOTIFICATION)
-    )
+    notifications = widget.get_ref().get_child().get_children()
+    assert len(notifications) == 2
+
+
+@pytest.mark.parametrize(
+    "notifications",
+    [([Note(0, "note 1", NotificationType.ERROR)])],
+)
+def test_hides_when_no_notifications(widget, mock_notifications_feature):
     assert widget.get_ref().get_child_revealed()
+    mock_notifications_feature.on_next([])
+    assert not widget.get_ref().get_child_revealed()

@@ -123,6 +123,7 @@ class UIConnectedWidget(UIBuilderWidget, metaclass=_combinedMeta):
         on_next: Callable = None,
         on_error: Callable = None,
         on_completed: Callable = None,
+        **kwargs,
     ):
         self._subscription = self._feature.subscribe(
             on_next=self._on_next,

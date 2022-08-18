@@ -31,7 +31,7 @@ from fapolicy_analyzer.ui.changeset_wrapper import Changeset
 from fapolicy_analyzer.ui.configs import Sizing
 from fapolicy_analyzer.ui.database_admin_page import DatabaseAdminPage
 from fapolicy_analyzer.ui.fapd_manager import FapdManager, ServiceStatus
-from fapolicy_analyzer.ui.notification import Notification
+from fapolicy_analyzer.ui.notifications import Notifications
 from fapolicy_analyzer.ui.operations import DeployChangesetsOp
 from fapolicy_analyzer.ui.policy_rules_admin_page import PolicyRulesAdminPage
 from fapolicy_analyzer.ui.profiler_page import ProfilerPage
@@ -79,8 +79,7 @@ class MainWindow(UIConnectedWidget):
         self.__checkpoint: System
         self.__page = None
 
-        toaster = Notification()
-        self.get_object("overlay").add_overlay(toaster.get_ref())
+        self.get_object("overlay").add_overlay(Notifications().get_ref())
         self.mainContent = self.get_object("mainContent")
         # Set menu items in default initial state
         self.get_object("restoreMenu").set_sensitive(False)
