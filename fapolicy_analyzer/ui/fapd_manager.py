@@ -142,6 +142,7 @@ class FapdManager():
                 try:
                     with self._fapd_lock:
                         self._fapd_ref.start()
+                        self._fapd_ref.wait_until_active(10)
                         self.mode = FapdMode.ONLINE
 
                 except Exception:
@@ -205,6 +206,7 @@ class FapdManager():
                 try:
                     with self._fapd_lock:
                         self._fapd_ref.stop()
+                        self._fapd_ref.wait_until_inactive(10)
 
                 except Exception:
                     logging.error(FAPD_DBUS_STOP_ERROR_MSG)
