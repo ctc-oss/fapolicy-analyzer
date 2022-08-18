@@ -7,9 +7,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: fapolicy-analyzer 0.5.0+72.g5eee4a2.dirty\n"
+"Project-Id-Version: fapolicy-analyzer 0.3.1+123.g88cd9b8.dirty\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-08-17 17:32-0400\n"
+"POT-Creation-Date: 2022-08-18 16:08-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -66,7 +66,7 @@ msgstr ""
 msgid "{len(deleted)} file{plural(len(deleted))[0]} cannot be found on disk"
 msgstr ""
 
-#: fapolicy_analyzer/ui/session_manager.py:137
+#: fapolicy_analyzer/ui/session_manager.py:138
 msgid "Failed to load edit session from file {strJsonFile}"
 msgstr ""
 
@@ -140,137 +140,141 @@ msgstr ""
 msgid "An error occurred trying to deploy the changes. Please try again."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:45
-msgid "This file is trusted in the System Trust Database."
+#: fapolicy_analyzer/ui/strings.py:44
+msgid "Successfully reverted to changes."
 msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:46
+msgid "This file is trusted in the System Trust Database."
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:47
 msgid "There is a discrepancy between this file and the System Trust Database."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:49
+#: fapolicy_analyzer/ui/strings.py:50
 msgid "The trust status of this file is unknown in the System Trust Database."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:53
+#: fapolicy_analyzer/ui/strings.py:54
 msgid "This file is trusted in the Ancillary Trust Database."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:56
+#: fapolicy_analyzer/ui/strings.py:57
 msgid "There is a discrepancy between this file and the Ancillary Trust Database."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:59
+#: fapolicy_analyzer/ui/strings.py:60
 msgid "The trust status of this file is unknown in the Ancillary Trust Database."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:63
+#: fapolicy_analyzer/ui/strings.py:64
 msgid "The trust status of this file is unknown"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:65
+#: fapolicy_analyzer/ui/strings.py:66
 msgid "System Trust Database"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:66
+#: fapolicy_analyzer/ui/strings.py:67
 msgid "Ancillary Trust Database"
 msgstr ""
 
 #: fapolicy_analyzer/glade/ancillary_trust_database_admin.glade:60
 #: fapolicy_analyzer/glade/trust_reconciliation_dialog.glade:41
-#: fapolicy_analyzer/ui/strings.py:68
+#: fapolicy_analyzer/ui/strings.py:69
 msgid "Trust"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:69
+#: fapolicy_analyzer/ui/strings.py:70
 msgid "File"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:70
+#: fapolicy_analyzer/ui/strings.py:71
 msgid "MTime"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:71
+#: fapolicy_analyzer/ui/strings.py:72
 msgid "Changes"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:72
+#: fapolicy_analyzer/ui/strings.py:73
 msgid "Mode"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:73
+#: fapolicy_analyzer/ui/strings.py:74
 msgid "Access"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:75
+#: fapolicy_analyzer/ui/strings.py:76
 msgid "Add"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:76
+#: fapolicy_analyzer/ui/strings.py:77
 msgid "Delete"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:77
+#: fapolicy_analyzer/ui/strings.py:78
 msgid "Add Trust"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:78
+#: fapolicy_analyzer/ui/strings.py:79
 msgid "Delete Trust"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:79
+#: fapolicy_analyzer/ui/strings.py:80
 msgid "Edit Rules"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:81
+#: fapolicy_analyzer/ui/strings.py:82
 msgid "Add File"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:82
+#: fapolicy_analyzer/ui/strings.py:83
 msgid "Open File"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:83
+#: fapolicy_analyzer/ui/strings.py:84
 msgid "Save As..."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:84
+#: fapolicy_analyzer/ui/strings.py:85
 msgid "FA Session files"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:85
+#: fapolicy_analyzer/ui/strings.py:86
 msgid "fapolicyd archive files"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:86
+#: fapolicy_analyzer/ui/strings.py:87
 msgid "Any files"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:88
+#: fapolicy_analyzer/ui/strings.py:89
 msgid "On-line fapolicyd start failed"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:89
+#: fapolicy_analyzer/ui/strings.py:90
 msgid "On-line fapolicyd stop failed"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:91
+#: fapolicy_analyzer/ui/strings.py:92
 msgid "Profiling target file chown failure"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:92
+#: fapolicy_analyzer/ui/strings.py:93
 msgid "Profiling target Popen failure"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:93
+#: fapolicy_analyzer/ui/strings.py:94
 msgid "Profiling target redirection failure"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:95
+#: fapolicy_analyzer/ui/strings.py:96
 msgid "File path(s) contains embedded whitespace."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:96
+#: fapolicy_analyzer/ui/strings.py:97
 msgid ""
 "fapolicyd currently does not support paths containing spaces. The "
 "following paths will not be added to the Trusted Files List.\n"
@@ -278,7 +282,7 @@ msgid ""
 "\n"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:101
+#: fapolicy_analyzer/ui/strings.py:102
 msgid ""
 "\n"
 "        Restore your prior session now?\n"
@@ -295,57 +299,57 @@ msgid ""
 "        "
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:117
+#: fapolicy_analyzer/ui/strings.py:118
 msgid "An error occurred trying to restore a prior autosaved edit session"
 msgstr ""
 
-#: fapolicy_analyzer/glade/loader.glade:44 fapolicy_analyzer/ui/strings.py:121
+#: fapolicy_analyzer/glade/loader.glade:44 fapolicy_analyzer/ui/strings.py:122
 msgid "Loading..."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:123
+#: fapolicy_analyzer/ui/strings.py:124
 msgid "file"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:124
+#: fapolicy_analyzer/ui/strings.py:125
 msgid "files"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:125
+#: fapolicy_analyzer/ui/strings.py:126
 msgid "user"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:126
+#: fapolicy_analyzer/ui/strings.py:127
 msgid "users"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:127
+#: fapolicy_analyzer/ui/strings.py:128
 msgid "group"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:128
+#: fapolicy_analyzer/ui/strings.py:129
 msgid "groups"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:129
+#: fapolicy_analyzer/ui/strings.py:130
 msgid ""
 "An error occurred trying to parse the event log file. Please try again or"
 " select a different file."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:132
+#: fapolicy_analyzer/ui/strings.py:133
 msgid "An error occurred trying to retrieve the user list. Please try again."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:135
+#: fapolicy_analyzer/ui/strings.py:136
 msgid "An error occurred trying to retrieve the group list. Please try again."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:139
+#: fapolicy_analyzer/ui/strings.py:140
 msgid "Could not load application resources"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:140
+#: fapolicy_analyzer/ui/strings.py:141
 msgid ""
 "The required application resource files could not be loaded from disk.\n"
 "The fapolicy analyzer application cannot open.\n"
@@ -357,11 +361,11 @@ msgid ""
 "2. An incorrectly configured fapolicyd rule set."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:151
+#: fapolicy_analyzer/ui/strings.py:152
 msgid "Trust Database"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:152
+#: fapolicy_analyzer/ui/strings.py:153
 msgid ""
 "\n"
 "The fapolicyd trusted resources database\n"
@@ -386,11 +390,11 @@ msgid ""
 "    "
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:176
+#: fapolicy_analyzer/ui/strings.py:177
 msgid "Error applying changes"
 msgstr ""
 
-#: fapolicy_analyzer/ui/operations/deploy_changesets_op.py:139
+#: fapolicy_analyzer/ui/operations/deploy_changesets_op.py:148
 msgid "Deploy Changes"
 msgstr ""
 

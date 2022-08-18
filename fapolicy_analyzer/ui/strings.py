@@ -41,6 +41,7 @@ DEPLOY_SYSTEM_SUCCESSFUL_MSG = _("Changes successfully deployed.")
 DEPLOY_SYSTEM_ERROR_MSG = _(
     "An error occurred trying to deploy the changes. Please try again."
 )
+REVERT_SYSTEM_SUCCESSFUL_MSG = _("Successfully reverted to changes.")
 
 SYSTEM_TRUSTED_FILE_MESSAGE = _("This file is trusted in the System Trust Database.")
 SYSTEM_DISCREPANCY_FILE_MESSAGE = _(
