@@ -34,6 +34,7 @@ from fapolicy_analyzer.ui.store import init_store
 from fapolicy_analyzer.ui.strings import (
     DEPLOY_SYSTEM_ERROR_MSG,
     DEPLOY_SYSTEM_SUCCESSFUL_MSG,
+    REVERT_SYSTEM_SUCCESSFUL_MSG,
 )
 from mocks import mock_System
 from rx.subject import Subject
@@ -153,6 +154,7 @@ def test_on_revert_deployment(mock_dispatch, mocker):
     )
     init_store(mock_System())
     with DeployChangesetsOp(Gtk.Window()) as operation:
+        check_point = MagicMock()
         system_features_mock.on_next(
             {
                 "changesets": [],
@@ -164,6 +166,14 @@ def test_on_revert_deployment(mock_dispatch, mocker):
             {
                 "changesets": [],
                 "system": MagicMock(error=None),
+            }
+        )
+        system_features_mock.on_next(
+            {
+                "changesets": [],
+                "system": MagicMock(
+                    error=None, system=check_point, checkpoint=check_point
+                ),
             }
         )
     mock_dispatch.assert_any_call(
@@ -178,10 +188,15 @@ def test_on_revert_deployment(mock_dispatch, mocker):
     mock_dispatch.assert_any_call(
         InstanceOf(Action) & Attrs(type=RESTORE_SYSTEM_CHECKPOINT)
     )
-    # mock_dispatch.assert_not_any_call(
-    #     InstanceOf(Action) & Attrs(type=SET_SYSTEM_CHECKPOINT)
-    # )
-    # mock_dispatch.assert_not_any_call(InstanceOf(Action) & Attrs(type=CLEAR_CHANGESETS))
+    mock_dispatch.assert_any_call(
+        InstanceOf(Action)
+        & Attrs(
+            type=ADD_NOTIFICATION,
+            payload=Attrs(
+                type=NotificationType.SUCCESS, text=REVERT_SYSTEM_SUCCESSFUL_MSG
+            ),
+        )
+    )
 
 
 @pytest.mark.parametrize("confirm_resp", [Gtk.ResponseType.YES])

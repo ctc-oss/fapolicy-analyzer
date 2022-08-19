@@ -79,7 +79,7 @@ class MainWindow(UIConnectedWidget):
         self.__checkpoint: System
         self.__page = None
 
-        toaster = Notification()
+        toaster = Notification(timer_duration=5)
         self.get_object("overlay").add_overlay(toaster.get_ref())
         self.mainContent = self.get_object("mainContent")
         # Set menu items in default initial state

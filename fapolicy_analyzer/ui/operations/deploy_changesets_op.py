@@ -37,6 +37,7 @@ from fapolicy_analyzer.ui.strings import (
     DEPLOY_SYSTEM_ERROR_MSG,
     DEPLOY_SYSTEM_SUCCESSFUL_MSG,
     FA_ARCHIVE_FILES_FILTER_LABEL,
+    REVERT_SYSTEM_SUCCESSFUL_MSG,
     SAVE_AS_FILE_LABEL,
 )
 from fapolicy_analyzer.util.fapd_dbase import fapd_dbase_snapshot
@@ -95,6 +96,7 @@ class DeployChangesetsOp(UIOperation):
     def __init__(self, parentWindow: Gtk.Window = None) -> None:
         self.__window = parentWindow
         self.__deploying = False
+        self.__reverting = False
         self.__subscription = get_system_feature().subscribe(on_next=self.__on_next)
 
     def __get_fapd_archive_file_name(self) -> str:
@@ -114,6 +116,7 @@ class DeployChangesetsOp(UIOperation):
             dispatch(set_system_checkpoint())
             dispatch(clear_changesets())
         else:
+            self.__reverting = True
             dispatch(restore_system_checkpoint())
 
     def __on_next(self, system: Any):
@@ -132,6 +135,14 @@ class DeployChangesetsOp(UIOperation):
                 )
             )
             self.__display_deploy_revert_dialog()
+        elif self.__reverting and systemState.system == systemState.checkpoint:
+            self.__reverting = False
+            dispatch(
+                add_notification(
+                    REVERT_SYSTEM_SUCCESSFUL_MSG,
+                    NotificationType.SUCCESS,
+                )
+            )
 
     def get_text(self) -> str:
         return _("Deploy Changes")

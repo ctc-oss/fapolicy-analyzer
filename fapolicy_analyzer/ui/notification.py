@@ -64,7 +64,7 @@ class Notification(UIConnectedWidget):
             self.notification_id = first.id
             self.get_ref().set_reveal_child(True)
 
-            if notificationType not in [NotificationType.ERROR, NotificationType.WARN]:
+            if notificationType not in [NotificationType.ERROR]:
                 self.__start_timer()
         else:
             self.get_ref().set_reveal_child(False)
