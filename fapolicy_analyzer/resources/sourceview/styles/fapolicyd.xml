@@ -69,6 +69,6 @@
     <style name="fapolicyd-rules:object" foreground="bordeaux"/>
 
     <!-- File markers -->
-    <style name="fapolicyd-rules:marker" foreground="gray" bold="true" italic="true"/>
+    <style name="fapolicyd-rules:marker" foreground="#AAAA00" bold="true" italic="true"/>
 
 </style-scheme>
