@@ -139,11 +139,7 @@ impl Handle {
     }
 }
 
-pub(crate) fn wait_for_daemon(
-    handle: &Handle,
-    target_state: State,
-    seconds: usize,
-) -> Result<(), Error> {
+pub fn wait_for_daemon(handle: &Handle, target_state: State, seconds: usize) -> Result<(), Error> {
     for _ in 0..seconds {
         eprintln!("waiting on daemon to be {target_state:?}...");
         sleep(Duration::from_secs(1));
