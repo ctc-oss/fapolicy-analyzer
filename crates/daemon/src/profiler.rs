@@ -70,15 +70,19 @@ impl Profiler {
             }
             // 3. swap the rules file if necessary
             if let Some(db) = db {
+                // compiled.rules is always at the default location
                 let compiled = PathBuf::from(COMPILED_RULES_PATH);
+                // create a temp file as the backup location
                 let backup = NamedTempFile::new()?;
+                // move original compiled to backup location
                 fs::rename(&compiled, &backup)?;
+                // write compiled rules for the profiling run
                 write::compiled_rules(db, &compiled)?;
                 eprintln!("rules backed up to {:?}", backup.path());
                 self.prev_rules = Some(backup);
             }
             // 4. write the profiler unit file
-            write_drop_in(self.stdout_log.as_ref())?;
+            write_service(self.stdout_log.as_ref())?;
             // 5. start the profiler
             self.handle().start()?;
             // 6. wait for the profiler to become active
@@ -94,8 +98,9 @@ impl Profiler {
             self.handle().stop()?;
             // 2. wait for the profiler to become inactive
             wait_for_daemon(&self.handle(), State::Inactive, 10)?;
-            // 3. swap in alternative rules if specified
+            // 3. swap original rules back in if they were changed
             if let Some(f) = self.prev_rules.take() {
+                // persist the temp file as the compiled rules
                 f.persist(COMPILED_RULES_PATH).map_err(|e| e.error)?;
             }
             // 4. start daemon if it was previously active
@@ -106,12 +111,9 @@ impl Profiler {
         }
         // clear the prev state
         self.prev_state = None;
+        // delete the service file
         delete_service()?;
         daemon.state()
-    }
-
-    pub fn rollback(&mut self) -> Result<State, Error> {
-        self.deactivate()
     }
 }
 
@@ -119,7 +121,7 @@ fn service_path() -> String {
     format!("/usr/lib/systemd/system/{}.service", PROFILER_UNIT_NAME)
 }
 
-fn write_drop_in(stdout: Option<&PathBuf>) -> Result<(), Error> {
+fn write_service(stdout: Option<&PathBuf>) -> Result<(), Error> {
     let mut unit_file = File::create(service_path())?;
     let mut service_def = include_str!("profiler.service").to_string();
     if let Some(stdout_path) = stdout {
