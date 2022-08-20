@@ -106,7 +106,7 @@ impl Profiler {
         }
         // clear the prev state
         self.prev_state = None;
-        delete_drop_in()?;
+        delete_service()?;
         daemon.state()
     }
 
@@ -115,12 +115,12 @@ impl Profiler {
     }
 }
 
-fn path_to_drop_in() -> String {
+fn service_path() -> String {
     format!("/usr/lib/systemd/system/{}.service", PROFILER_UNIT_NAME)
 }
 
 fn write_drop_in(stdout: Option<&PathBuf>) -> Result<(), Error> {
-    let mut unit_file = File::create(path_to_drop_in())?;
+    let mut unit_file = File::create(service_path())?;
     let mut service_def = include_str!("profiler.service").to_string();
     if let Some(stdout_path) = stdout {
         // append? it appears that a bug pre v240 forces append here - systemd#10944
@@ -134,7 +134,7 @@ fn write_drop_in(stdout: Option<&PathBuf>) -> Result<(), Error> {
     Ok(())
 }
 
-fn delete_drop_in() -> Result<(), Error> {
-    fs::remove_file(PathBuf::from(path_to_drop_in()))?;
+fn delete_service() -> Result<(), Error> {
+    fs::remove_file(PathBuf::from(service_path()))?;
     Ok(())
 }
