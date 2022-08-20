@@ -21,20 +21,6 @@ use crate::fapolicyd::COMPILED_RULES_PATH;
 use crate::svc::{wait_for_daemon, Handle, State};
 
 const PROFILER_UNIT_NAME: &str = "fapolicyp";
-const PROFILER_UNIT: &str = r#"
-[Unit]
-Description=File Access Profiling Daemon
-DefaultDependencies=no
-After=local-fs.target systemd-tmpfiles-setup.service
-
-[Install]
-WantedBy=multi-user.target
-
-[Service]
-Type=simple
-PIDFile=/run/fapolicyp.pid
-ExecStart=/usr/sbin/fapolicyd --debug --permissive --no-details
-"#;
 
 pub struct Profiler {
     pub name: String,
@@ -135,12 +121,16 @@ fn path_to_drop_in() -> String {
 
 fn write_drop_in(stdout: Option<&PathBuf>) -> Result<(), Error> {
     let mut unit_file = File::create(path_to_drop_in())?;
-    let mut text = PROFILER_UNIT.to_string();
+    let mut service_def = include_str!("profiler.service").to_string();
     if let Some(stdout_path) = stdout {
-        // it appears that a bug pre v240 forces append here - systemd#10944
-        text += &format!("StandardOutput=append:{}", stdout_path.display());
+        // append? it appears that a bug pre v240 forces append here - systemd#10944
+        service_def = format!(
+            "{}\nStandardOutput=append:{}",
+            service_def,
+            stdout_path.display()
+        );
     }
-    unit_file.write_all(text.as_bytes())?;
+    unit_file.write_all(service_def.as_bytes())?;
     Ok(())
 }
 
