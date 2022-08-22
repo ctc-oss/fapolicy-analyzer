@@ -43,7 +43,7 @@ class Changeset(ABC, Generic[T]):
             return tcs
         elif isinstance(data, str):
             rcs = RuleChangeset()
-            rcs.set(data)
+            rcs.parse(data)
             return rcs
 
         raise TypeError("Invalid changeset type to deserialize")
@@ -53,7 +53,7 @@ class RuleChangeset(Changeset[str]):
     def __init__(self):
         self.__wrapped = fapolicy_analyzer.RuleChangeset()
 
-    def set(self, change: str):
+    def parse(self, change: str):
         self.__wrapped.parse(change)
 
     def rules(self):

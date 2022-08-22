@@ -50,7 +50,7 @@ test_json = json.dumps(
 )
 
 test_changesets = [RuleChangeset(), TrustChangeset()]
-test_changesets[0].set("foo rules")
+test_changesets[0].parse("foo rules")
 test_changesets[1].delete("/data_space/this/is/a/longer/path/now_is_the_time.txt")
 test_changesets[1].add("/data_space/Integration.json")
 
