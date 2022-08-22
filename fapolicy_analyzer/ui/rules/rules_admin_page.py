@@ -140,7 +140,13 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
 
     def on_save_clicked(self, *args):
         changeset = RuleChangeset()
-        changeset.set(self.__modified_rules_text)
+        try:
+            changeset.set(self.__modified_rules_text)
+        except Exception as e:
+            logging.error(
+                "%s", e
+            )
+
         if self.__valid_changes(changeset):
             self.__saving = True
             dispatch(apply_changesets(changeset))
