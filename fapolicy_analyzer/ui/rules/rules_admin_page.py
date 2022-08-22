@@ -144,7 +144,7 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
             changeset.set(self.__modified_rules_text)
         except Exception as e:
             logging.error(
-                "%s", e
+                "save --------------> %s", e
             )
 
         if self.__valid_changes(changeset):
@@ -155,6 +155,13 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
 
     def on_validate_clicked(self, *args):
         changeset = RuleChangeset()
+        try:
+            changeset.set(self.__modified_rules_text)
+        except Exception as e:
+            logging.error(
+                "validate --------> %s", e
+            )
+
         changeset.set(self.__modified_rules_text)
         self.__valid_changes(changeset)
         self.__status_info.render_rule_status(changeset.rules())
