@@ -11,7 +11,7 @@ use pyo3::{exceptions, PyObjectProtocol};
 
 use fapolicy_rules::db::Entry::*;
 use fapolicy_rules::db::{Entry, DB};
-use fapolicy_rules::error::Error::MalformedFileMarker;
+use fapolicy_rules::error::Error::{MalformedFileMarker, ZeroRulesDefined};
 use fapolicy_rules::ops::Changeset;
 use fapolicy_rules::parser::parse::StrTrace;
 use fapolicy_rules::parser::rule::parse_with_error_message;
@@ -151,6 +151,13 @@ impl PyChangeset {
             Err(MalformedFileMarker(lnum, txt)) => Err(exceptions::PyRuntimeError::new_err(
                 format!("{}:malformed-file-marker:{}", lnum, txt),
             )),
+            Err(ZeroRulesDefined) => {
+                println!("throwing parse error no rules defined");
+                Err(exceptions::PyRuntimeError::new_err(format!(
+                    "{:?}",
+                    ZeroRulesDefined
+                )))
+            }
             Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{:?}", e))),
         }
     }
@@ -162,6 +169,7 @@ impl PyChangeset {
 
 #[pyfunction]
 fn rule_text_error_check(txt: &str) -> Option<String> {
+    println!("error check");
     match parse_with_error_message(StrTrace::new(txt)) {
         Ok(_) => None,
         Err(s) => Some(s),

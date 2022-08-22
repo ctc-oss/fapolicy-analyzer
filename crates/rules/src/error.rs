@@ -17,4 +17,7 @@ pub enum Error {
 
     #[error("Malformed marker @ {0}: {1}")]
     MalformedFileMarker(usize, String),
+
+    #[error("No rules are defined")]
+    ZeroRulesDefined,
 }
