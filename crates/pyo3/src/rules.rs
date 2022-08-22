@@ -145,10 +145,6 @@ impl PyChangeset {
         to_vec(self.rs.get())
     }
 
-    pub fn set(&mut self, text: &str) -> bool {
-        self.rs.set(text.trim()).is_ok()
-    }
-
     pub fn parse(&mut self, text: &str) -> PyResult<()> {
         match self.rs.set(text.trim()) {
             Ok(_) => Ok(()),
