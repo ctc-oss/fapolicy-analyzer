@@ -151,13 +151,10 @@ impl PyChangeset {
             Err(MalformedFileMarker(lnum, txt)) => Err(exceptions::PyRuntimeError::new_err(
                 format!("{}:malformed-file-marker:{}", lnum, txt),
             )),
-            Err(ZeroRulesDefined) => {
-                println!("throwing parse error no rules defined");
-                Err(exceptions::PyRuntimeError::new_err(format!(
-                    "{:?}",
-                    ZeroRulesDefined
-                )))
-            }
+            Err(ZeroRulesDefined) => Err(exceptions::PyRuntimeError::new_err(format!(
+                "{:?}",
+                ZeroRulesDefined
+            ))),
             Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{:?}", e))),
         }
     }
