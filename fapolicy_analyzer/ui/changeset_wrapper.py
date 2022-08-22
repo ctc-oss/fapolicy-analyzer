@@ -54,7 +54,7 @@ class RuleChangeset(Changeset[str]):
         self.__wrapped = fapolicy_analyzer.RuleChangeset()
 
     def set(self, change: str):
-        self.__wrapped.set(change)
+        self.__wrapped.parse(change)
 
     def rules(self):
         return self.__wrapped.rules()
