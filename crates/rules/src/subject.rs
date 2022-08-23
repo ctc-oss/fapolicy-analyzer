@@ -7,6 +7,7 @@
  */
 
 use std::fmt::{Display, Formatter};
+use std::hash::Hash;
 
 use crate::{bool_to_c, SubjPart};
 
@@ -14,7 +15,7 @@ use crate::{bool_to_c, SubjPart};
 /// The subject is the process that is performing actions on system resources.
 /// The fields in the rule that describe the subject are written in a `name=value` format.
 /// There can be one or more subject fields. Each field is and'ed with others to decide if a rule triggers.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug)]
 pub struct Subject {
     pub parts: Vec<Part>,
 }
@@ -78,7 +79,7 @@ impl Subject {
 ///    - `ld_preload`: This matches against access patterns that indicate that the program is being started with either `LD_PRELOAD` or `LD_AUDIT` present in the environment. Note that even without this rule, you have protection against `LD_PRELOAD` of unknown binaries when the rules are written such that trust is used to determine if a library should be opened. In that case, the preloaded library would be denied but the application will still execute. This rule makes it so that even trusted libraries can be denied and the application will not execute.
 ///    - `static`: This matches against ELF files that are statically linked.
 ///
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum Part {
     /// This matches against any subject. When used, this must be the only subject in the rule.
     All,
@@ -130,10 +131,28 @@ impl Display for Part {
     }
 }
 
+impl PartialEq for Subject {
+    fn eq(&self, other: &Self) -> bool {
+        use crate::hasher;
+        hasher(&self.parts) == hasher(&other.parts)
+    }
+
+    fn ne(&self, other: &Self) -> bool {
+        !self.eq(other)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use std::str::FromStr;
+
+    #[test]
+    fn eq() {
+        let s1 = Subject::new(vec![Part::Gid(1), Part::Uid(1)]);
+        let s2 = Subject::new(vec![Part::Uid(1), Part::Gid(1)]);
+        assert_eq!(s1, s2);
+    }
 
     #[test]
     fn display() {
