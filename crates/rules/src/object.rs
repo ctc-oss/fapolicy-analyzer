@@ -111,10 +111,6 @@ impl PartialEq for Object {
         use crate::hasher;
         hasher(&self.parts) == hasher(&other.parts)
     }
-
-    fn ne(&self, other: &Self) -> bool {
-        !self.eq(other)
-    }
 }
 
 #[cfg(test)]
