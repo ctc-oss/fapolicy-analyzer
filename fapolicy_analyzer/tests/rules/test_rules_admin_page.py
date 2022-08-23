@@ -31,6 +31,7 @@ from fapolicy_analyzer.ui.rules import RulesAdminPage
 from fapolicy_analyzer.ui.store import init_store
 from fapolicy_analyzer.ui.strings import (
     APPLY_CHANGESETS_ERROR_MESSAGE,
+    RULES_CHANGESET_PARSE_ERROR,
     RULES_LOAD_ERROR,
     RULES_TEXT_LOAD_ERROR,
     RULES_VALIDATION_ERROR,
@@ -259,6 +260,25 @@ def test_save_click_invalid(widget, mock_dispatch):
     mock_dispatch.assert_not_any_call(InstanceOf(Action) & Attrs(type=APPLY_CHANGESETS))
 
 
+def test_changeset_parse_error(widget, mock_dispatch, mocker):
+    mocker.patch(
+        "fapolicy_analyzer.ui.rules.rules_admin_page.RuleChangeset.parse",
+        side_effect=Exception,
+    )
+    widget._text_view.rules_changed("allow perm=any all : all")
+    widget.on_save_clicked()
+    mock_dispatch.assert_called_with(
+        InstanceOf(Action)
+        & Attrs(
+            type=ADD_NOTIFICATION,
+            payload=Attrs(
+                type=NotificationType.ERROR, text=RULES_CHANGESET_PARSE_ERROR
+            ),
+        )
+    )
+    mock_dispatch.assert_not_any_call(InstanceOf(Action) & Attrs(type=APPLY_CHANGESETS))
+
+
 def test_apply_changeset_error(mock_dispatch, mocker):
     mockSystemFeature = Subject()
     mocker.patch(
@@ -270,6 +290,7 @@ def test_apply_changeset_error(mock_dispatch, mocker):
     )
     init_store(mock_System())
     widget = RulesAdminPage()
+    widget._text_view.rules_changed("allow perm=any all : all")
     widget.on_save_clicked()  # need to set the saving flag to true
 
     mockSystemFeature.on_next(

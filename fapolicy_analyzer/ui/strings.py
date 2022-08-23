@@ -24,6 +24,9 @@ SYSTEM_TRUST_LOAD_ERROR = _("Error loading System Trust")
 RULES_LOAD_ERROR = _("Error loading Rules")
 RULES_TEXT_LOAD_ERROR = _("Error loading Rules text")
 RULES_FILE_READ_ERROR = _("Error reading the Rules file")
+RULES_CHANGESET_PARSE_ERROR = _(
+    "Error parsing the rules text. See log for more details."
+)
 RULES_VALIDATION_ERROR = _(
     "The current rule text is not valid and cannot be saved. See Status Information for details."
 )
