@@ -29,7 +29,7 @@ from fapolicy_analyzer.redux import (
 )
 from fapolicy_analyzer.ui.actions import (
     APPLY_CHANGESETS,
-    DEPLOY_ANCILLARY_TRUST,
+    DEPLOY_SYSTEM,
     REQUEST_ANCILLARY_TRUST,
     REQUEST_EVENTS,
     REQUEST_GROUPS,
@@ -40,11 +40,9 @@ from fapolicy_analyzer.ui.actions import (
     RESTORE_SYSTEM_CHECKPOINT,
     SET_SYSTEM_CHECKPOINT,
     add_changesets,
-    ancillary_trust_deployed,
-    clear_changesets,
     error_ancillary_trust,
     error_apply_changesets,
-    error_deploying_ancillary_trust,
+    error_deploying_system,
     error_events,
     error_groups,
     error_rules,
@@ -60,6 +58,7 @@ from fapolicy_analyzer.ui.actions import (
     received_system_trust,
     received_users,
     system_checkpoint_set,
+    system_deployed,
     system_initialization_error,
     system_received,
 )
@@ -137,13 +136,13 @@ def create_system_feature(
         trust = _system.system_trust()
         return received_system_trust(trust)
 
-    def _deploy_ancillary_trust(_: Action) -> Action:
+    def _deploy_system(_: Action) -> Action:
         if not fapd_dbase_snapshot():
             logging.warning(
                 "Fapolicyd pre-deploy backup failed, continuing with deployment."
             )
         _system.deploy()
-        return ancillary_trust_deployed()
+        return system_deployed()
 
     def _set_checkpoint(action: Action) -> Action:
         global _checkpoint
@@ -154,8 +153,7 @@ def create_system_feature(
         global _system
         _system = _checkpoint
         rollback_fapolicyd(_system)
-        dispatch(system_received(_system))
-        return clear_changesets()
+        return system_received(_system)
 
     def _get_events(action: Action) -> Action:
         log_type, file = action.payload
@@ -206,10 +204,10 @@ def create_system_feature(
         catch(lambda ex, source: of(error_system_trust(str(ex)))),
     )
 
-    deploy_ancillary_trust_epic = pipe(
-        of_type(DEPLOY_ANCILLARY_TRUST),
-        map(_deploy_ancillary_trust),
-        catch(lambda ex, source: of(error_deploying_ancillary_trust(str(ex)))),
+    deploy_system_epic = pipe(
+        of_type(DEPLOY_SYSTEM),
+        map(_deploy_system),
+        catch(lambda ex, source: of(error_deploying_system(str(ex)))),
     )
 
     set_system_checkpoint_epic = pipe(
@@ -219,7 +217,7 @@ def create_system_feature(
     restore_system_checkpoint_epic = pipe(
         of_type(RESTORE_SYSTEM_CHECKPOINT),
         map(_restore_checkpoint),
-        catch(lambda ex, source: of(error_deploying_ancillary_trust(str(ex)))),
+        catch(lambda ex, source: of(error_deploying_system(str(ex)))),
     )
 
     request_events_epic = pipe(
@@ -255,8 +253,8 @@ def create_system_feature(
     system_epic = combine_epics(
         init_epic,
         apply_changesets_epic,
+        deploy_system_epic,
         request_ancillary_trust_epic,
-        deploy_ancillary_trust_epic,
         request_events_epic,
         request_groups_epic,
         request_rules_epic,

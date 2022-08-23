@@ -49,13 +49,13 @@ def test_RuleChangeset_apply():
     mock_system_apply.assert_called_with(sut._RuleChangeset__wrapped)
 
 
-def test_RuleChangeset_set(mocker):
+def test_RuleChangeset_parse(mocker):
     mock = mocker.patch(
         "fapolicy_analyzer.ui.changeset_wrapper.fapolicy_analyzer.RuleChangeset"
     )
     sut = RuleChangeset()
-    sut.set("foo")
-    mock().set.assert_called_with("foo")
+    sut.parse("foo")
+    mock().parse.assert_called_with("foo")
 
 
 def test_RuleChangeset_rules(mocker):
@@ -69,7 +69,7 @@ def test_RuleChangeset_rules(mocker):
 
 def test_RuleChangeset_serialize():
     sut = RuleChangeset()
-    sut.set("foo")
+    sut.parse("foo")
     assert sut.serialize() == "foo"
 
 

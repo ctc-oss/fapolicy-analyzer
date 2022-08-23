@@ -194,9 +194,14 @@ impl DB {
         self.model.len()
     }
 
-    /// Test if there are any RuleDefs in this DB
+    /// Test if there are any Entries in this DB
     pub fn is_empty(&self) -> bool {
         self.model.is_empty()
+    }
+
+    /// Test if there are any RuleEntry in this DB
+    pub fn is_empty_rules(&self) -> bool {
+        self.rules.is_empty()
     }
 
     /// Get a RuleEntry ref by ID
@@ -224,6 +229,7 @@ impl DB {
         self.comments.values().collect()
     }
 
+    /// Get and entry by id (aka the fk)
     pub fn entry(&self, num: usize) -> Option<&Entry> {
         self.model.get(&num).map(|(_, e)| e)
     }
