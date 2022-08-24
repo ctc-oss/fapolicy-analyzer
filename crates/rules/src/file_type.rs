@@ -10,7 +10,7 @@ use std::fmt::{Display, Formatter};
 
 use crate::set::Set;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum Rvalue {
     Any,
     Literal(String),

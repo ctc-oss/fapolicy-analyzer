@@ -14,7 +14,7 @@ use crate::{bool_to_c, ObjPart, Rvalue};
 /// The object is the file that the subject is interacting with.
 /// The fields in the rule that describe the object are written in a `name=value` format.
 /// There can be one or more object fields. Each field is and'ed with others to decide if a rule triggers.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug)]
 pub struct Object {
     pub parts: Vec<Part>,
 }
@@ -52,7 +52,7 @@ impl Object {
 ///     - The hash in the rules should be all lowercase letters and do NOT start with 0x.
 ///     - Lowercase is the default output of sha256sum.
 ///
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum Part {
     /// This matches against any subject. When used, this must be the only subject in the rule.
     All,
@@ -103,6 +103,13 @@ impl Display for Part {
             Part::Path(p) => f.write_fmt(format_args!("path={}", p)),
             Part::Trust(b) => f.write_fmt(format_args!("trust={}", bool_to_c(*b))),
         }
+    }
+}
+
+impl PartialEq for Object {
+    fn eq(&self, other: &Self) -> bool {
+        use crate::hasher;
+        hasher(&self.parts) == hasher(&other.parts)
     }
 }
 

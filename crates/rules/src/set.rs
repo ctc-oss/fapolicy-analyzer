@@ -21,7 +21,7 @@ use std::fmt::{Display, Formatter};
 /// - It is also possible to use a plain list as an attribute value without previous definition.
 /// - The assigned set has to match the attribute type. It is not possible set groups for `TRUST` and `PATTERN` attributes.
 ///
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct Set {
     pub name: String,
     pub values: Vec<String>,
