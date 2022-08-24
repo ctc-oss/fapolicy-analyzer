@@ -15,6 +15,8 @@ pub use self::rule::Rule;
 pub use self::set::Set;
 pub use self::subject::Part as SubjPart;
 pub use self::subject::Subject;
+use std::collections::HashMap;
+use std::hash::Hash;
 
 pub mod ops;
 pub mod parser;
@@ -42,4 +44,15 @@ pub(crate) fn bool_to_c(b: bool) -> char {
     } else {
         '0'
     }
+}
+
+pub(crate) fn hasher<T>(items: &[T]) -> HashMap<&T, usize>
+where
+    T: Eq + Hash,
+{
+    let mut map = HashMap::new();
+    for i in items {
+        *map.entry(i).or_insert(0) += 1
+    }
+    map
 }
