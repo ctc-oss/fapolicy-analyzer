@@ -255,7 +255,7 @@ dependencies = [
 
 [[package]]
 name = "fapolicy-daemon"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "dbus",
  "fapolicy-rules",
@@ -280,7 +280,7 @@ dependencies = [
 
 [[package]]
 name = "fapolicy-rules"
-version = "0.4.2"
+version = "0.4.3"
 dependencies = [
  "nom",
  "serde",
