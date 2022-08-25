@@ -36,6 +36,8 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         UIConnectedWidget.__init__(self, get_system_feature(), on_next=self.on_next_system)
         self.__events__ = [
             "analyze_button_pushed",
+            "reload_profiler",
+            "store_profiler_entry",
         ]
         Events.__init__(self)
         actions = {
@@ -78,6 +80,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         UIPage.__init__(self, actions)
         self._fapd_profiler = FaProfiler(fapd_manager)
         self.running = False
+        self.restore_args = None
 
     def on_next_system(self, system):
         profilerDict = system["profiler"]
@@ -114,6 +117,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
             "envText": self.get_object("envEntry").get_text(),
         }
         dispatch(set_profiler_state(entryDict))
+
         return entryDict
 
     def display_log_output(self):
@@ -141,6 +145,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
 
     def on_test_activate(self, *args):
         profiling_args = self.get_entry_dict()
+        self.restore_args = profiling_args
         logging.debug(f"Entry text = {profiling_args}")
         self.running = True
         self._fapd_profiler.fapd_persistance = self.get_object(

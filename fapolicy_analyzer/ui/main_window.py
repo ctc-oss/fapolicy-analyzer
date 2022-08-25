@@ -139,7 +139,7 @@ class MainWindow(UIConnectedWidget):
 
     def __pack_main_content(self, page: UIPage):
         if self.__page:
-            self.__page.dispose()
+                self.__page.dispose()
         self.__page = page
         self.mainContent.pack_start(page.get_ref(), True, True, 0)
 
@@ -357,18 +357,18 @@ class MainWindow(UIConnectedWidget):
         fcd.hide()
         if response == Gtk.ResponseType.OK and path.isfile((fcd.get_filename())):
             file = fcd.get_filename()
-            page = router(ANALYZER_SELECTION.ANALYZE_FROM_AUDIT, file)
-            page.object_list.rule_view_activate += self.on_rulesAdminMenu_activate
-            height = self.get_object("mainWindow").get_size()[1]
-            page.get_object("botBox").set_property(
-                "height_request", int(height * Sizing.POLICY_BOTTOM_BOX)
-            )
-            self.__pack_main_content(page)
-            self.__set_trustDbMenu_sensitive(True)
+            self.activate_file_analyzer(file)
         fcd.destroy()
 
+
     def activate_file_analyzer(self, file):
-        self.__pack_main_content(router(ANALYZER_SELECTION.ANALYZE_FROM_AUDIT, file))
+        page = router(ANALYZER_SELECTION.ANALYZE_FROM_AUDIT, file)
+        page.object_list.rule_view_activate += self.on_rulesAdminMenu_activate
+        height = self.get_object("mainWindow").get_size()[1]
+        page.get_object("botBox").set_property(
+            "height_request", int(height * Sizing.POLICY_BOTTOM_BOX)
+        )
+        self.__pack_main_content(page)
         self.__set_trustDbMenu_sensitive(True)
 
     def on_trustDbMenu_activate(self, menuitem, *args):
@@ -385,9 +385,17 @@ class MainWindow(UIConnectedWidget):
 
     def on_profileExecMenu_activate(self, *args):
         page = router(ANALYZER_SELECTION.PROFILER, self._fapd_mgr)
+        page.reload_profiler += self.reload_profile_data
         page.analyze_button_pushed += self.activate_file_analyzer
+        page.store_profiler_entry += self.store_profiler_data
         self.__pack_main_content(page)
         self.__set_trustDbMenu_sensitive(True)
+
+    def store_profiler_data(self, profiler_data):
+        self.profiler_entry = profiler_data
+
+    def reload_profile_data(self, *args):
+        self.__page.restore_args = self.profiler_entry
 
     def on_deployChanges_clicked(self, *args):
         with DeployChangesetsOp(self.window) as op:
