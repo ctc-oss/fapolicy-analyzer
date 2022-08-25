@@ -32,6 +32,8 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         UIConnectedWidget.__init__(self, get_system_feature())
         self.__events__ = [
             "analyze_button_pushed",
+            "reload_profiler",
+            "store_profiler_entry",
         ]
         Events.__init__(self)
         actions = {
@@ -61,14 +63,32 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
                     {"clicked": self.on_analyzerButton_clicked},
                 )
             ],
+            "reload": [
+                UIAction(
+                    "Reload",
+                    "Reload Arguments",
+                    "view-refresh",
+                    {"clicked": self.on_reloadProfiler_clicked},
+                )
+            ],
         }
 
         UIPage.__init__(self, actions)
         self._fapd_profiler = FaProfiler(fapd_manager)
         self.running = False
+        self.restore_args = None
 
     def on_analyzerButton_clicked(self, *args):
         self.analyze_button_pushed(self._fapd_profiler.fapd_prof_stderr)
+
+    def on_reloadProfiler_clicked(self, *args):
+        self.reload_profiler(True)
+        prefixes = ["execute", "arg", "user", "dir", "env"]
+        for prefix in prefixes:
+            buff = self.get_object(prefix + "Entry").get_buffer()
+            buff.set_text(self.restore_args[prefix + "Text"],
+                          len(self.restore_args[prefix + "Text"])
+                          )
 
     def stop_button_sensitivity(self):
         return self.running
@@ -84,6 +104,8 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
             "dirText": self.get_object("dirEntry").get_text(),
             "envText": self.get_object("envEntry").get_text(),
         }
+
+        self.store_profiler_entry(entryDict)
 
         return entryDict
 
@@ -109,6 +131,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
 
     def on_test_activate(self, *args):
         profiling_args = self.get_entry_dict()
+        self.restore_args = profiling_args
         logging.debug(f"Entry text = {profiling_args}")
         self.running = True
         self._fapd_profiler.fapd_persistance = self.get_object(
