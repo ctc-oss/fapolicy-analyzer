@@ -16,9 +16,14 @@
 from typing import Any, NamedTuple, Optional, cast
 
 from fapolicy_analyzer import System
+from fapolicy_analyzer.redux import Action, Reducer, combine_reducers, handle_actions
 from fapolicy_analyzer.ui.actions import (
+    ADD_CHANGESETS,
+    CLEAR_CHANGESETS,
+    ERROR_DEPLOYING_SYSTEM,
     ERROR_SYSTEM_INITIALIZATION,
     SYSTEM_CHECKPOINT_SET,
+    SYSTEM_DEPLOYED,
     SYSTEM_RECEIVED,
 )
 from fapolicy_analyzer.ui.reducers.ancillary_trust_reducer import (
@@ -31,13 +36,13 @@ from fapolicy_analyzer.ui.reducers.rule_reducer import rule_reducer
 from fapolicy_analyzer.ui.reducers.rules_text_reducer import rules_text_reducer
 from fapolicy_analyzer.ui.reducers.system_trust_reducer import system_trust_reducer
 from fapolicy_analyzer.ui.reducers.user_reducer import user_reducer
-from fapolicy_analyzer.redux import Action, Reducer, combine_reducers, handle_actions
 
 
 class SystemState(NamedTuple):
     error: Optional[str]
     system: System
     checkpoint: System
+    deployed: bool
 
 
 def _create_state(state: SystemState, **kwargs: Optional[Any]) -> SystemState:
@@ -61,6 +66,23 @@ def handle_system_checkpoint_set(state: SystemState, action: Action) -> SystemSt
     return _create_state(state, checkpoint=payload)
 
 
+def handle_system_deployed(state: SystemState, action: Action) -> SystemState:
+    return _create_state(state, error=None, deployed=True)
+
+
+def handle_error_deploying_system(state: SystemState, action: Action) -> SystemState:
+    payload = cast(str, action.payload)
+    return _create_state(state, error=payload)
+
+
+def handle_add_changesets(state: SystemState, action: Action) -> SystemState:
+    return _create_state(state, error=None, deployed=False)
+
+
+def handle_clear_changesets(state: SystemState, action: Action) -> SystemState:
+    return _create_state(state, error=None, deployed=True)
+
+
 system_reducer: Reducer = combine_reducers(
     {
         "system": handle_actions(
@@ -68,8 +90,12 @@ system_reducer: Reducer = combine_reducers(
                 SYSTEM_RECEIVED: handle_system_received,
                 ERROR_SYSTEM_INITIALIZATION: handle_error_system_initialization,
                 SYSTEM_CHECKPOINT_SET: handle_system_checkpoint_set,
+                SYSTEM_DEPLOYED: handle_system_deployed,
+                ERROR_DEPLOYING_SYSTEM: handle_error_deploying_system,
+                ADD_CHANGESETS: handle_add_changesets,
+                CLEAR_CHANGESETS: handle_clear_changesets,
             },
-            SystemState(error=None, system=None, checkpoint=None),
+            SystemState(error=None, system=None, checkpoint=None, deployed=False),
         ),
         "ancillary_trust": ancillary_trust_reducer,
         "changesets": changeset_reducer,

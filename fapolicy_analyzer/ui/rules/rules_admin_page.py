@@ -14,9 +14,9 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from typing import Any, Optional, Sequence
+from typing import Any, Optional, Sequence, Tuple
 
-from fapolicy_analyzer import Rule
+from fapolicy_analyzer import Rule, System
 from fapolicy_analyzer.ui.actions import (
     NotificationType,
     add_notification,
@@ -32,6 +32,7 @@ from fapolicy_analyzer.ui.rules.rules_text_view import RulesTextView
 from fapolicy_analyzer.ui.store import dispatch, get_system_feature
 from fapolicy_analyzer.ui.strings import (
     APPLY_CHANGESETS_ERROR_MESSAGE,
+    RULES_CHANGESET_PARSE_ERROR,
     RULES_LOAD_ERROR,
     RULES_TEXT_LOAD_ERROR,
     RULES_VALIDATION_ERROR,
@@ -77,6 +78,7 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         self.__loading_text: bool = False
         self.__changesets: Sequence[Changeset] = []
         self.__saving: bool = False
+        self.__system: System = None
 
         self.__load_rules()
 
@@ -107,7 +109,30 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
             and self.__modified_rules_text != self.__rules_text
         )
 
-    def __valid_changes(self, changeset: RuleChangeset) -> bool:
+    def __update_list_view(self, changeset: RuleChangeset):
+        if self.__system:
+            try:
+                tmp_system = changeset.apply_to_system(self.__system)
+                self._list_view.render_rules(tmp_system.rules())
+            except Exception:
+                logging.warning("Failed to parse validating changeset")
+
+    def __build_and_validate_changeset(self) -> Tuple[RuleChangeset, bool]:
+        changeset = RuleChangeset()
+        valid = True
+
+        try:
+            changeset.parse(self.__modified_rules_text)
+        except Exception as e:
+            logging.error("Error setting changeset rules: %s", e)
+            dispatch(
+                add_notification(
+                    RULES_CHANGESET_PARSE_ERROR,
+                    NotificationType.ERROR,
+                )
+            )
+            return changeset, False
+
         rules = changeset.rules()
 
         if not all([r.is_valid for r in rules]):
@@ -117,7 +142,7 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
                     NotificationType.ERROR,
                 )
             )
-            return False
+            valid = False
 
         if any([True for r in rules for i in r.info if i.category.lower() == "w"]):
             dispatch(
@@ -126,22 +151,20 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
                     NotificationType.WARN,
                 )
             )
-
-        return True
+        return changeset, valid
 
     def on_save_clicked(self, *args):
-        changeset = RuleChangeset()
-        changeset.set(self.__modified_rules_text)
-        if self.__valid_changes(changeset):
+        changeset, valid = self.__build_and_validate_changeset()
+        self.__update_list_view(changeset)
+        if valid:
             self.__saving = True
             dispatch(apply_changesets(changeset))
         else:
             self.__status_info.render_rule_status(changeset.rules())
 
     def on_validate_clicked(self, *args):
-        changeset = RuleChangeset()
-        changeset.set(self.__modified_rules_text)
-        self.__valid_changes(changeset)
+        changeset, _ = self.__build_and_validate_changeset()
+        self.__update_list_view(changeset)
         self.__status_info.render_rule_status(changeset.rules())
 
     def on_text_view_rules_changed(self, rules: str):
@@ -155,6 +178,10 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         changesetState = system.get("changesets")
         rules_state = system.get("rules")
         text_state = system.get("rules_text")
+        system_state = system.get("system")
+
+        if self.__system != system_state.system:
+            self.__system = system_state.system
 
         if self.__saving and changesetState.error:
             self.__saving = False

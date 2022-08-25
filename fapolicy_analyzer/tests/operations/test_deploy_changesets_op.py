@@ -20,10 +20,11 @@ import gi
 import pytest
 from callee import InstanceOf
 from callee.attributes import Attrs
+from fapolicy_analyzer.redux import Action
 from fapolicy_analyzer.ui.actions import (
     ADD_NOTIFICATION,
     CLEAR_CHANGESETS,
-    DEPLOY_ANCILLARY_TRUST,
+    DEPLOY_SYSTEM,
     RESTORE_SYSTEM_CHECKPOINT,
     SET_SYSTEM_CHECKPOINT,
     NotificationType,
@@ -31,11 +32,11 @@ from fapolicy_analyzer.ui.actions import (
 from fapolicy_analyzer.ui.operations.deploy_changesets_op import DeployChangesetsOp
 from fapolicy_analyzer.ui.store import init_store
 from fapolicy_analyzer.ui.strings import (
-    DEPLOY_ANCILLARY_ERROR_MSG,
-    DEPLOY_ANCILLARY_SUCCESSFUL_MSG,
+    DEPLOY_SYSTEM_ERROR_MSG,
+    DEPLOY_SYSTEM_SUCCESSFUL_MSG,
+    REVERT_SYSTEM_SUCCESSFUL_MSG,
 )
-from mocks import mock_System, mock_trust
-from fapolicy_analyzer.redux import Action
+from mocks import mock_System
 from rx.subject import Subject
 
 gi.require_version("Gtk", "3.0")
@@ -87,9 +88,7 @@ def revert_dialog(revert_resp, mocker):
 @pytest.mark.usefixtures("revert_dialog")
 def test_on_confirm_deployment(operation, confirm_dialog, mock_dispatch):
     operation.run([], None, None)
-    mock_dispatch.assert_called_with(
-        InstanceOf(Action) & Attrs(type=DEPLOY_ANCILLARY_TRUST)
-    )
+    mock_dispatch.assert_called_with(InstanceOf(Action) & Attrs(type=DEPLOY_SYSTEM))
     confirm_dialog.run.assert_called()
     confirm_dialog.hide.assert_called()
 
@@ -107,20 +106,18 @@ def test_deploy_w_exception(mock_dispatch, mocker):
         system_features_mock.on_next(
             {
                 "changesets": [],
-                "ancillary_trust": MagicMock(
-                    trust=[mock_trust()], error=None, loading=False
-                ),
+                "system": MagicMock(error=None, loading=False),
             }
         )
         operation.run([], None, None)
         system_features_mock.on_next(
-            {"changesets": [], "ancillary_trust": MagicMock(error="foo")}
+            {"changesets": [], "system": MagicMock(error="foo")}
         )
     mock_dispatch.assert_any_call(
         InstanceOf(Action)
         & Attrs(
             type=ADD_NOTIFICATION,
-            payload=Attrs(type=NotificationType.ERROR, text=DEPLOY_ANCILLARY_ERROR_MSG),
+            payload=Attrs(type=NotificationType.ERROR, text=DEPLOY_SYSTEM_ERROR_MSG),
         )
     )
 
@@ -137,15 +134,13 @@ def test_on_neg_confirm_deployment(confirm_dialog, mock_dispatch, mocker):
         system_features_mock.on_next(
             {
                 "changesets": [],
-                "ancillary_trust": MagicMock(trust=[mock_trust()], error=None),
+                "system": MagicMock(error=None),
             }
         )
         operation.run([], None, None)
     confirm_dialog.run.assert_called()
     confirm_dialog.hide.assert_called()
-    mock_dispatch.assert_not_any_call(
-        InstanceOf(Action) & Attrs(type=DEPLOY_ANCILLARY_TRUST)
-    )
+    mock_dispatch.assert_not_any_call(InstanceOf(Action) & Attrs(type=DEPLOY_SYSTEM))
 
 
 @pytest.mark.parametrize("confirm_resp", [Gtk.ResponseType.YES])
@@ -159,17 +154,26 @@ def test_on_revert_deployment(mock_dispatch, mocker):
     )
     init_store(mock_System())
     with DeployChangesetsOp(Gtk.Window()) as operation:
+        check_point = MagicMock()
         system_features_mock.on_next(
             {
                 "changesets": [],
-                "ancillary_trust": MagicMock(trust=[mock_trust()], error=None),
+                "system": MagicMock(error=None),
             }
         )
         operation.run([], None, None)
         system_features_mock.on_next(
             {
                 "changesets": [],
-                "ancillary_trust": MagicMock(trust=[mock_trust()], error=None),
+                "system": MagicMock(error=None),
+            }
+        )
+        system_features_mock.on_next(
+            {
+                "changesets": [],
+                "system": MagicMock(
+                    error=None, system=check_point, checkpoint=check_point
+                ),
             }
         )
     mock_dispatch.assert_any_call(
@@ -177,17 +181,22 @@ def test_on_revert_deployment(mock_dispatch, mocker):
         & Attrs(
             type=ADD_NOTIFICATION,
             payload=Attrs(
-                type=NotificationType.SUCCESS, text=DEPLOY_ANCILLARY_SUCCESSFUL_MSG
+                type=NotificationType.SUCCESS, text=DEPLOY_SYSTEM_SUCCESSFUL_MSG
             ),
         )
     )
     mock_dispatch.assert_any_call(
         InstanceOf(Action) & Attrs(type=RESTORE_SYSTEM_CHECKPOINT)
     )
-    # mock_dispatch.assert_not_any_call(
-    #     InstanceOf(Action) & Attrs(type=SET_SYSTEM_CHECKPOINT)
-    # )
-    # mock_dispatch.assert_not_any_call(InstanceOf(Action) & Attrs(type=CLEAR_CHANGESETS))
+    mock_dispatch.assert_any_call(
+        InstanceOf(Action)
+        & Attrs(
+            type=ADD_NOTIFICATION,
+            payload=Attrs(
+                type=NotificationType.SUCCESS, text=REVERT_SYSTEM_SUCCESSFUL_MSG
+            ),
+        )
+    )
 
 
 @pytest.mark.parametrize("confirm_resp", [Gtk.ResponseType.YES])
@@ -204,14 +213,14 @@ def test_on_neg_revert_deployment(mock_dispatch, mocker):
         system_features_mock.on_next(
             {
                 "changesets": [],
-                "ancillary_trust": MagicMock(trust=[mock_trust()], error=None),
+                "system": MagicMock(error=None),
             }
         )
         operation.run([], None, None)
         system_features_mock.on_next(
             {
                 "changesets": [],
-                "ancillary_trust": MagicMock(trust=[mock_trust()], error=None),
+                "system": MagicMock(error=None),
             }
         )
     mock_dispatch.assert_any_call(
@@ -219,7 +228,7 @@ def test_on_neg_revert_deployment(mock_dispatch, mocker):
         & Attrs(
             type=ADD_NOTIFICATION,
             payload=Attrs(
-                type=NotificationType.SUCCESS, text=DEPLOY_ANCILLARY_SUCCESSFUL_MSG
+                type=NotificationType.SUCCESS, text=DEPLOY_SYSTEM_SUCCESSFUL_MSG
             ),
         )
     )

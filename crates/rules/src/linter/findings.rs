@@ -140,6 +140,40 @@ mod tests {
     }
 
     #[test]
+    fn lint_duplicate_subject_ordering() -> Result<(), Box<dyn Error>> {
+        let db = deserialize_rules_db(
+            r#"
+        [foo.bar]
+        deny perm=any gid=1 uid=1 : all
+        deny perm=any uid=1 gid=1 : all
+        "#,
+        )?;
+        let r = db.rule(1).unwrap();
+
+        assert!(r.msg.is_some());
+        assert!(r.msg.as_ref().unwrap().starts_with(L004_MESSAGE));
+        assert!(r.msg.as_ref().unwrap().ends_with(&2.to_string()));
+        Ok(())
+    }
+
+    #[test]
+    fn lint_duplicate_object_ordering() -> Result<(), Box<dyn Error>> {
+        let db = deserialize_rules_db(
+            r#"
+        [foo.bar]
+        deny perm=any all : dir=/tmp/ trust=1
+        deny perm=any all : trust=1 dir=/tmp/
+        "#,
+        )?;
+        let r = db.rule(1).unwrap();
+
+        assert!(r.msg.is_some());
+        assert!(r.msg.as_ref().unwrap().starts_with(L004_MESSAGE));
+        assert!(r.msg.as_ref().unwrap().ends_with(&2.to_string()));
+        Ok(())
+    }
+
+    #[test]
     fn lint_missing_dir() -> Result<(), Box<dyn Error>> {
         let db = deserialize_rules_db("allow perm=any all : dir=/foo")?;
         let r = db.rule(1).unwrap();

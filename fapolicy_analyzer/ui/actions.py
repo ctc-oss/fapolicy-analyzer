@@ -44,9 +44,9 @@ REQUEST_SYSTEM_TRUST = "REQUEST_SYSTEM_TRUST"
 RECEIVED_SYSTEM_TRUST = "RECEIVED_SYSTEM_TRUST"
 ERROR_SYSTEM_TRUST = "ERROR_SYSTEM_TRUST"
 
-DEPLOY_ANCILLARY_TRUST = "DEPLOY_ANCILLARY_TRUST"
-ANCILLARY_TRUST_DEPLOYED = "ANCILLARY_TRUST_DEPLOYED"
-ERROR_DEPLOYING_ANCILLARY_TRUST = "ERROR_DEPLOYING_ANCILLARY_TRUST"
+DEPLOY_SYSTEM = "DEPLOY_SYSTEM"
+SYSTEM_DEPLOYED = "SYSTEM_DEPLOYED"
+ERROR_DEPLOYING_SYSTEM = "ERROR_DEPLOYING_SYSTEM"
 
 REQUEST_EVENTS = "REQUEST_EVENTS"
 RECEIVED_EVENTS = "RECEIVED_EVENTS"
@@ -138,16 +138,16 @@ def error_system_trust(error: str) -> Action:
     return _create_action(ERROR_SYSTEM_TRUST, error)
 
 
-def deploy_ancillary_trust() -> Action:
-    return _create_action(DEPLOY_ANCILLARY_TRUST)
+def deploy_system() -> Action:
+    return _create_action(DEPLOY_SYSTEM)
 
 
-def ancillary_trust_deployed() -> Action:
-    return _create_action(ANCILLARY_TRUST_DEPLOYED)
+def system_deployed() -> Action:
+    return _create_action(SYSTEM_DEPLOYED)
 
 
-def error_deploying_ancillary_trust(error: str) -> Action:
-    return _create_action(ERROR_DEPLOYING_ANCILLARY_TRUST, error)
+def error_deploying_system(error: str) -> Action:
+    return _create_action(ERROR_DEPLOYING_SYSTEM, error)
 
 
 def set_system_checkpoint() -> Action:

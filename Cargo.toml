@@ -13,6 +13,10 @@ path = "crates/tools/trust_db_util.rs"
 name = "rulec"
 path = "crates/tools/rule_check.rs"
 
+[[bin]]
+name = "faprofiler"
+path = "crates/tools/fapolicy_profiler.rs"
+
 [[test]]
 name = "integration"
 path = "tests/tests.rs"
