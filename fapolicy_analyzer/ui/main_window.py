@@ -141,7 +141,7 @@ class MainWindow(UIConnectedWidget):
 
     def __pack_main_content(self, page: UIPage):
         if self.__page:
-                self.__page.dispose()
+            self.__page.dispose()
         self.__page = page
         self.mainContent.pack_start(page.get_ref(), True, True, 0)
 
@@ -361,7 +361,6 @@ class MainWindow(UIConnectedWidget):
             file = fcd.get_filename()
             self.activate_file_analyzer(file)
         fcd.destroy()
-
 
     def activate_file_analyzer(self, file):
         page = router(ANALYZER_SELECTION.ANALYZE_FROM_AUDIT, file)
