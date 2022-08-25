@@ -9,14 +9,12 @@
 use crate::system::PySystem;
 use fapolicy_daemon::fapolicyd::Version;
 use fapolicy_daemon::svc::State::{Active, Inactive};
-use fapolicy_daemon::svc::{Handle, State};
+use fapolicy_daemon::svc::{wait_for_daemon, Handle};
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
-use std::thread::sleep;
-use std::time::Duration;
 
 #[pyclass(module = "svc", name = "Handle")]
-#[derive(Clone)]
+#[derive(Clone, Default)]
 /// A handle to a systemd service.
 pub struct PyHandle {
     rs: Handle,
@@ -79,12 +77,14 @@ impl PyHandle {
 
     #[args(timeout = 15)]
     pub fn wait_until_active(&self, timeout: usize) -> PyResult<()> {
-        wait_for_daemon(Active, timeout)
+        wait_for_daemon(&self.rs, Active, timeout)
+            .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
     }
 
     #[args(timeout = 15)]
     pub fn wait_until_inactive(&self, timeout: usize) -> PyResult<()> {
-        wait_for_daemon(Inactive, timeout)
+        wait_for_daemon(&self.rs, Inactive, timeout)
+            .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
     }
 }
 
@@ -113,11 +113,13 @@ fn fapolicyd_version() -> Option<String> {
 }
 
 pub(crate) fn deploy(system: &PySystem) -> PyResult<()> {
-    stop_fapolicyd()
-        .and_then(|_| wait_for_daemon(State::Inactive, 15))
+    let handle = PyHandle::default();
+    handle
+        .stop()
+        .and_then(|_| handle.wait_until_inactive(15))
         .and_then(|_| system.deploy_only())
-        .and_then(|_| start_fapolicyd())
-        .and_then(|_| wait_for_daemon(State::Active, 15))
+        .and_then(|_| handle.start())
+        .and_then(|_| handle.wait_until_active(15))
 }
 
 #[pyfunction]
@@ -130,34 +132,6 @@ fn is_fapolicyd_active() -> PyResult<bool> {
     Handle::default()
         .active()
         .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
-}
-
-fn wait_for_daemon(target_state: State, seconds: usize) -> PyResult<()> {
-    for _ in 0..seconds {
-        eprintln!("waiting on daemon to be {target_state:?}...");
-        sleep(Duration::from_secs(1));
-        if Handle::default()
-            .state()
-            .map(|state| target_state.can_be(state))
-            .unwrap_or(false)
-        {
-            eprintln!("daemon is now {target_state:?}");
-            return Ok(());
-        }
-    }
-
-    let actual_state = Handle::default()
-        .state()
-        .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))?;
-    eprintln!("done waiting, daemon is {target_state:?}");
-
-    if target_state.can_be(actual_state.clone()) {
-        Ok(())
-    } else {
-        Err(PyRuntimeError::new_err(format!(
-            "Daemon is unresponsive in {actual_state:?} state"
-        )))
-    }
 }
 
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {

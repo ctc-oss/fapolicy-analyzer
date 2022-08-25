@@ -49,7 +49,15 @@ fn rules_dir(db: &DB, dir: &Path, compiled: &Path) -> Result<(), io::Error> {
 
     // write compiled.rules
     // todo;; get this from config or constants
-    let mut rf = File::create(compiled)?;
+    compiled_rules(db, compiled)?;
+
+    Ok(())
+}
+
+pub fn compiled_rules(db: &DB, path: &Path) -> Result<(), io::Error> {
+    // write compiled.rules
+    // todo;; get this from config or constants
+    let mut rf = File::create(path)?;
     for (_, (_, e)) in db.iter() {
         rf.write_all(format!("{}\n", e).as_bytes())?;
     }

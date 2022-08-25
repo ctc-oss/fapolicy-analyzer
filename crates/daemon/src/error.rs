@@ -6,6 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+use std::io;
 use thiserror::Error;
 
 // errors that can occur in this crate
@@ -22,4 +23,10 @@ pub enum Error {
 
     #[error("{0}")]
     ServiceCheckFailure(String),
+
+    #[error("Daemon is unresponsive")]
+    Unresponsive,
+
+    #[error("FileIO error: {0}")]
+    IOError(#[from] io::Error),
 }
