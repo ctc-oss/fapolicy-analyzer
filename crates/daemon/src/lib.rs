@@ -12,4 +12,5 @@ pub mod fapolicyd;
 pub mod rpm;
 pub use rpm::fapolicyd_version as version;
 
+pub mod profiler;
 pub mod svc;
