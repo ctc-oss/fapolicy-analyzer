@@ -89,9 +89,10 @@ class MainWindow(UIConnectedWidget):
         # Set fapd status UI element to default 'No' = Red button
         self.fapdStatusLight.set_from_icon_name("process-stop", size=4)
 
-        # Set initial fapd menu item state
+        # Set initial fapd menu items state
         self._fapdStartMenuItem.set_sensitive(False)
         self._fapdStopMenuItem.set_sensitive(False)
+        self.get_object("profileExecMenu").set_sensitive(self._fapdControlPermitted)
 
         self.__add_toolbar()
         self.window.show_all()
