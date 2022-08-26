@@ -59,6 +59,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
                     "Analyze Target",
                     "applications-science",
                     {"clicked": self.on_analyzerButton_clicked},
+                    sensitivity_func=self.analyze_button_sensitivity,
                 )
             ],
         }
@@ -66,6 +67,10 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         UIPage.__init__(self, actions)
         self._fapd_profiler = FaProfiler(fapd_manager)
         self.running = False
+        self.analysis_available = False
+
+    def analyze_button_sensitivity(self):
+        return self.analysis_available
 
     def on_analyzerButton_clicked(self, *args):
         self.analyze_button_pushed(self._fapd_profiler.fapd_prof_stderr)
@@ -125,3 +130,4 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         self._fapd_profiler.stop_prof_session()
         self.display_log_output()
         self.running = False
+        self.analysis_available = True
