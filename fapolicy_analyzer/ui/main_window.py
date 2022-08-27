@@ -92,7 +92,12 @@ class MainWindow(UIConnectedWidget):
         # Set initial fapd menu items state
         self._fapdStartMenuItem.set_sensitive(False)
         self._fapdStopMenuItem.set_sensitive(False)
-        self.get_object("profileExecMenu").set_sensitive(self._fapdControlPermitted)
+
+        # Enable profiler tool menu item if root user, env var, or magic file
+        prof_ui_enable = (self._fapdControlPermitted  # EUID == 0
+                          or getenv("PROF_UI_ENABLE", "false").lower() != "false"
+                          or path.exists("/tmp/prof_ui_enable"))
+        self.get_object("profileExecMenu").set_sensitive(prof_ui_enable)
 
         self.__add_toolbar()
         self.window.show_all()
