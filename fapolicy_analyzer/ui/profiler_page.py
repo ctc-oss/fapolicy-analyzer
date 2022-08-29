@@ -32,6 +32,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         UIConnectedWidget.__init__(self, get_system_feature())
         self.__events__ = [
             "analyze_button_pushed",
+            "refresh_toolbar",
         ]
         Events.__init__(self)
         actions = {
@@ -131,3 +132,4 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         self.display_log_output()
         self.running = False
         self.analysis_available = True
+        self.refresh_toolbar()

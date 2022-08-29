@@ -386,8 +386,12 @@ class MainWindow(UIConnectedWidget):
     def on_profileExecMenu_activate(self, *args):
         page = router(ANALYZER_SELECTION.PROFILER, self._fapd_mgr)
         page.analyze_button_pushed += self.activate_file_analyzer
+        page.refresh_toolbar += self._refresh_toolbar
         self.__pack_main_content(page)
         self.__set_trustDbMenu_sensitive(True)
+
+    def _refresh_toolbar(self):
+        self.__toolbar.refresh_buttons_sensitivity()
 
     def on_deployChanges_clicked(self, *args):
         with DeployChangesetsOp(self.window) as op:
