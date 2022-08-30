@@ -18,8 +18,12 @@ from events import Events
 from time import sleep
 
 import gi
+from fapolicy_analyzer.ui.actions import (
+    set_profiler_state,
+    clear_profiler_state,
+)
 from fapolicy_analyzer.ui.faprofiler import FaProfiler
-from fapolicy_analyzer.ui.store import get_system_feature
+from fapolicy_analyzer.ui.store import dispatch, get_system_feature
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 
@@ -29,7 +33,7 @@ from gi.repository import Gtk  # isort: skip
 
 class ProfilerPage(UIConnectedWidget, UIPage, Events):
     def __init__(self, fapd_manager):
-        UIConnectedWidget.__init__(self, get_system_feature())
+        UIConnectedWidget.__init__(self, get_system_feature(), on_next=self.on_next_system)
         self.__events__ = [
             "analyze_button_pushed",
         ]
@@ -61,14 +65,39 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
                     {"clicked": self.on_analyzerButton_clicked},
                 )
             ],
+            "clear": [
+                UIAction(
+                    "Clear",
+                    "Clear Fields",
+                    "edit-clear",
+                    {"clicked": self.on_clearButton_clicked},
+                )
+            ],
         }
 
         UIPage.__init__(self, actions)
         self._fapd_profiler = FaProfiler(fapd_manager)
         self.running = False
 
+    def on_next_system(self, system):
+        profilerDict = system["profiler"]
+        self.update_field_text(profilerDict)
+
+    def update_field_text(self, profilerDict):
+        prefixes = ["execute", "arg", "user", "dir", "env"]
+        if not profilerDict:
+            profilerDict = {prefix + "Text": "" for prefix in prefixes}
+        for prefix in prefixes:
+            buff = self.get_object(prefix + "Entry").get_buffer()
+            buff.set_text(profilerDict[prefix + "Text"],
+                          len(profilerDict[prefix + "Text"])
+                          )
+
     def on_analyzerButton_clicked(self, *args):
         self.analyze_button_pushed(self._fapd_profiler.fapd_prof_stderr)
+
+    def on_clearButton_clicked(self, *args):
+        dispatch(clear_profiler_state())
 
     def stop_button_sensitivity(self):
         return self.running
@@ -84,7 +113,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
             "dirText": self.get_object("dirEntry").get_text(),
             "envText": self.get_object("envEntry").get_text(),
         }
-
+        dispatch(set_profiler_state(entryDict))
         return entryDict
 
     def display_log_output(self):
