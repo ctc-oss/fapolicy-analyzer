@@ -89,9 +89,15 @@ class MainWindow(UIConnectedWidget):
         # Set fapd status UI element to default 'No' = Red button
         self.fapdStatusLight.set_from_icon_name("process-stop", size=4)
 
-        # Set initial fapd menu item state
+        # Set initial fapd menu items state
         self._fapdStartMenuItem.set_sensitive(False)
         self._fapdStopMenuItem.set_sensitive(False)
+
+        # Enable profiler tool menu item if root user, env var, or magic file
+        prof_ui_enable = (self._fapdControlPermitted  # EUID == 0
+                          or getenv("PROF_UI_ENABLE", "false").lower() != "false"
+                          or path.exists("/tmp/prof_ui_enable"))
+        self.get_object("profileExecMenu").set_sensitive(prof_ui_enable)
 
         self.__add_toolbar()
         self.window.show_all()
@@ -357,17 +363,18 @@ class MainWindow(UIConnectedWidget):
         fcd.hide()
         if response == Gtk.ResponseType.OK and path.isfile((fcd.get_filename())):
             file = fcd.get_filename()
-            self.activate_file_analyzer(file)
+            page = router(ANALYZER_SELECTION.ANALYZE_FROM_AUDIT, file)
+            page.object_list.rule_view_activate += self.on_rulesAdminMenu_activate
+            height = self.get_object("mainWindow").get_size()[1]
+            page.get_object("botBox").set_property(
+                "height_request", int(height * Sizing.POLICY_BOTTOM_BOX)
+            )
+            self.__pack_main_content(page)
+            self.__set_trustDbMenu_sensitive(True)
         fcd.destroy()
 
     def activate_file_analyzer(self, file):
-        page = router(ANALYZER_SELECTION.ANALYZE_FROM_AUDIT, file)
-        page.object_list.rule_view_activate += self.on_rulesAdminMenu_activate
-        height = self.get_object("mainWindow").get_size()[1]
-        page.get_object("botBox").set_property(
-            "height_request", int(height * Sizing.POLICY_BOTTOM_BOX)
-        )
-        self.__pack_main_content(page)
+        self.__pack_main_content(router(ANALYZER_SELECTION.ANALYZE_FROM_AUDIT, file))
         self.__set_trustDbMenu_sensitive(True)
 
     def on_trustDbMenu_activate(self, menuitem, *args):
@@ -384,17 +391,9 @@ class MainWindow(UIConnectedWidget):
 
     def on_profileExecMenu_activate(self, *args):
         page = router(ANALYZER_SELECTION.PROFILER, self._fapd_mgr)
-        page.reload_profiler += self.reload_profile_data
         page.analyze_button_pushed += self.activate_file_analyzer
-        page.store_profiler_entry += self.store_profiler_data
         self.__pack_main_content(page)
         self.__set_trustDbMenu_sensitive(True)
-
-    def store_profiler_data(self, profiler_data):
-        self.profiler_entry = profiler_data
-
-    def reload_profile_data(self, *args):
-        self.__page.restore_args = self.profiler_entry
 
     def on_deployChanges_clicked(self, *args):
         with DeployChangesetsOp(self.window) as op:
