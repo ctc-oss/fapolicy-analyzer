@@ -40,12 +40,8 @@ setup(
     packages=find_namespace_packages(
         include=[
             "fapolicy_analyzer",
-            "fapolicy_analyzer.css",
-            "fapolicy_analyzer.glade",
-            "fapolicy_analyzer.locale",
-            "fapolicy_analyzer.redux",
-            "fapolicy_analyzer.resources",
-            "fapolicy_analyzer.ui",
+            "fapolicy_analyzer.redux*",
+            "fapolicy_analyzer.ui*",
             "fapolicy_analyzer.util"
         ],
     ),
@@ -56,11 +52,11 @@ setup(
     ],
     include_package_data=True,
     package_data={
-        "fapolicy_analyzer": ["locale/*/LC_MESSAGES/*.mo"],
-        "fapolicy_analyzer.css": ["*.css"],
-        "fapolicy_analyzer.glade": ["*.glade"],
-        "fapolicy_analyzer.resources": ["*"],
-        "fapolicy_analyzer.resources.sourceview.language-specs": ["*.lang"],
-        "fapolicy_analyzer.resources.sourceview.styles": ["*.xml"],
+        "fapolicy_analyzer": [
+            "locale/*/LC_MESSAGES/*.mo",
+            "css/*.css",
+            "glade/*.glade",
+            "resources/**"
+        ],
     },
 )
