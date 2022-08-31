@@ -53,10 +53,40 @@ class FaProfSession:
     def __init__(self, dictProfTgt, faprofiler=None):
         logging.debug(f"faProfSession::__init__({dictProfTgt}, {faprofiler})")
         self.execPath = dictProfTgt["executeText"]
-        self.execArgs = dictProfTgt["argText"]
-        self.listCmdLine = [self.execPath] + self.execArgs.split()
         self.user = dictProfTgt["userText"]
         self.pwd = dictProfTgt["dirText"]
+
+        # Validate executable, user, and working directory
+        # exec empty?
+        if not self.execPath:
+            raise ValueError("executeText field is empty")
+
+        # exist?
+        if not os.path.exists(self.execPath):
+            raise ValueError(f"Error: {self.execPath} does not exist.")
+
+        # executable?
+        if not os.access(self.execPath, os.X_OK):
+            raise ValueError(f"Error: {self.execPath} is not executable.")
+
+        # user?
+        try:
+            if self.user:
+                pwd.getpwnam(self.user)
+        except KeyError as e:
+            raise KeyError(f'User {self.user} does not exist.')
+        logging.debug('--> user verified')
+
+        # working dir?
+        if not os.path.exists(self.pwd):
+            raise ValueError(f"Error: {self.pwd} does not exist.")
+
+        if not os.path.isdir(self.pwd):
+            raise ValueError(f"Error: {self.pwd} is not a directory.")
+        logging.debug('--> pwd verified')
+
+        self.execArgs = dictProfTgt["argText"]
+        self.listCmdLine = [self.execPath] + self.execArgs.split()
 
         # Convert comma delimited string of "EnvVar=Value" substrings to dict
         self.env = FaProfSession._comma_delimited_kv_string_to_dict(
