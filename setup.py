@@ -43,6 +43,7 @@ setup(
             "fapolicy_analyzer.css",
             "fapolicy_analyzer.glade",
             "fapolicy_analyzer.redux*",
+            "fapolicy_analyzer.resources*",
             "fapolicy_analyzer.ui*",
             "fapolicy_analyzer.util"
         ],
