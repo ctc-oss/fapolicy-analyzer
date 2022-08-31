@@ -36,6 +36,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         UIConnectedWidget.__init__(self, get_system_feature(), on_next=self.on_next_system)
         self.__events__ = [
             "analyze_button_pushed",
+            "refresh_toolbar",
         ]
         Events.__init__(self)
         actions = {
@@ -63,6 +64,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
                     "Analyze Target",
                     "applications-science",
                     {"clicked": self.on_analyzerButton_clicked},
+                    sensitivity_func=self.analyze_button_sensitivity,
                 )
             ],
             "clear": [
@@ -78,6 +80,10 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         UIPage.__init__(self, actions)
         self._fapd_profiler = FaProfiler(fapd_manager)
         self.running = False
+        self.analysis_available = False
+
+    def analyze_button_sensitivity(self):
+        return self.analysis_available
 
     def on_next_system(self, system):
         profilerDict = system["profiler"]
@@ -154,3 +160,5 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         self._fapd_profiler.stop_prof_session()
         self.display_log_output()
         self.running = False
+        self.analysis_available = True
+        self.refresh_toolbar()
