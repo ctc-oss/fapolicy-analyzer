@@ -39,6 +39,7 @@ setup(
     version=get_version(),
     packages=find_namespace_packages(
         include=[
+            "fapolicy_analyzer",
             "fapolicy_analyzer.css",
             "fapolicy_analyzer.glade",
             "fapolicy_analyzer.locale",
