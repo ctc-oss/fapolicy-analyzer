@@ -103,6 +103,17 @@ def es_locale():
     reload(fapolicy_analyzer.ui)
 
 
+@pytest.fixture
+def profiler_envvar_override(monkeypatch):
+    monkeypatch.setenv("PROF_UI_ENABLE", "TRUE")
+
+
+@pytest.fixture
+def profiler_file_override(mocker):
+    mocker.patch("fapolicy_analyzer.ui.main_window.path.exists",
+                 return_value=True)
+
+
 def test_displays_window(mainWindow):
     window = mainWindow.get_ref()
     assert type(window) is Gtk.Window
@@ -608,6 +619,21 @@ def test_update_fapd_status(mainWindow, mocker):
     mainWindow._update_fapd_status(ServiceStatus.UNKNOWN)
     tupleIdSize = mainWindow.get_object("fapdStatusLight").get_icon_name()
     assert tupleIdSize == ("edit-delete", 4)
+
+
+def test_profiler_ui_envvar_override(profiler_envvar_override, mainWindow):
+    menu_item = mainWindow.get_object("profileExecMenu")
+    assert menu_item.get_sensitive()
+
+
+def test_profiler_ui_default(mainWindow):
+    menu_item = mainWindow.get_object("profileExecMenu")
+    assert not menu_item.get_sensitive()
+
+
+def test_profiler_ui_file_override(profiler_file_override, mainWindow):
+    menu_item = mainWindow.get_object("profileExecMenu")
+    assert menu_item.get_sensitive()
 
 
 def test_added_page_specific_toolbar_buttons(mainWindow):
