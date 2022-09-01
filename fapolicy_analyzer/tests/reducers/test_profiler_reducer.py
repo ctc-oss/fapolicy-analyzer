@@ -17,19 +17,22 @@ import context  # noqa: F401 # isort: skip
 from unittest.mock import MagicMock
 
 from fapolicy_analyzer.ui.reducers.profiler_reducer import (
+    ProfilerState,
     handle_clear_profiler_state,
     handle_set_profiler_state,
+    default_entry,
 )
 
 
 def test_handle_set_profiler_state():
     new_state = {"key1": "value1"}
     result = handle_set_profiler_state(
-        {"oldkey": "oldvalue"}, MagicMock(payload=new_state)
+        ProfilerState(entry={"oldkey": "oldvalue"}, output=""),
+        MagicMock(payload=new_state)
     )
-    assert result == new_state
+    assert result == ProfilerState(entry=new_state, output="")
 
 
 def test_handle_clear_profiler_state():
-    result = handle_clear_profiler_state({"oldkey": "oldvalue"})
-    assert result == {}
+    result = handle_clear_profiler_state(ProfilerState(entry={"oldkey": "oldvalue"}, output=""))
+    assert result == ProfilerState(entry=default_entry, output="")
