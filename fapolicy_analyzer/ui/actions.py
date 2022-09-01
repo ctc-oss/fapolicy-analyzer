@@ -233,8 +233,10 @@ def error_rules_text(error: str) -> Action:
 def set_profiler_state(state: Dict[str, str]) -> Action:
     return _create_action(SET_PROFILER_STATE, state)
 
+
 def set_profiler_output(output: str) -> Action:
     return _create_action(SET_PROFILER_OUTPUT, output)
+
 
 def clear_profiler_state() -> Action:
     return _create_action(CLEAR_PROFILER_STATE)

@@ -97,7 +97,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
             self.update_output_text(system.get("profiler").output)
 
     def update_field_text(self, profilerDict):
-        for k,v in profilerDict.items():
+        for k, v in profilerDict.items():
             self.get_object(k).get_buffer().set_text(v, len(v))
 
     def update_output_text(self, text):
