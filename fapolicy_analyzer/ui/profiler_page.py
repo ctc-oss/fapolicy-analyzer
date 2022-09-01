@@ -20,6 +20,7 @@ from time import sleep
 import gi
 from fapolicy_analyzer.ui.actions import (
     set_profiler_state,
+    set_profiler_output,
     clear_profiler_state,
 )
 from fapolicy_analyzer.ui.faprofiler import FaProfiler
@@ -78,20 +79,24 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         UIPage.__init__(self, actions)
         self._fapd_profiler = FaProfiler(fapd_manager)
         self.running = False
+        self.inputDict = {}
 
     def on_next_system(self, system):
-        profilerDict = system["profiler"]
-        self.update_field_text(profilerDict)
+        if not self.inputDict == system.get("profiler").entry:
+            self.update_field_text(system.get("profiler").entry)
+
+        buff = self.get_object("profilerOutput").get_buffer()
+        text = buff.get_text(buff.get_start_iter(), buff. get_end_iter(), True)
+        if not text == system.get("profiler").output:
+            self.update_output_text(system.get("profiler").output)
 
     def update_field_text(self, profilerDict):
-        prefixes = ["execute", "arg", "user", "dir", "env"]
-        if not profilerDict:
-            profilerDict = {prefix + "Text": "" for prefix in prefixes}
-        for prefix in prefixes:
-            buff = self.get_object(prefix + "Entry").get_buffer()
-            buff.set_text(profilerDict[prefix + "Text"],
-                          len(profilerDict[prefix + "Text"])
-                          )
+        for k,v in profilerDict.items():
+            self.get_object(k).get_buffer().set_text(v, len(v))
+
+    def update_output_text(self, text):
+        buff = self.get_object("profilerOutput").get_buffer()
+        buff.set_text(text, len(text))
 
     def on_analyzerButton_clicked(self, *args):
         self.analyze_button_pushed(self._fapd_profiler.fapd_prof_stderr)
@@ -106,15 +111,15 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         return not self.running
 
     def get_entry_dict(self):
-        entryDict = {
-            "executeText": self.get_object("executeEntry").get_text(),
-            "argText": self.get_object("argEntry").get_text(),
-            "userText": self.get_object("userEntry").get_text(),
-            "dirText": self.get_object("dirEntry").get_text(),
-            "envText": self.get_object("envEntry").get_text(),
+        self.inputDict = {
+            "executeText": self.get_object("executeText").get_text(),
+            "argText": self.get_object("argText").get_text(),
+            "userText": self.get_object("userText").get_text(),
+            "dirText": self.get_object("dirText").get_text(),
+            "envText": self.get_object("envText").get_text(),
         }
-        dispatch(set_profiler_state(entryDict))
-        return entryDict
+        dispatch(set_profiler_state(self.inputDict))
+        return self.inputDict
 
     def display_log_output(self):
         text_display = self.get_object("profilerOutput")
@@ -138,6 +143,8 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
                 logging.error(f"There was an issue reading from {run_file}.", ex)
 
         text_display.set_buffer(buff)
+        text = buff.get_text(buff.get_start_iter(), buff. get_end_iter(), True)
+        dispatch(set_profiler_output(text))
 
     def on_test_activate(self, *args):
         profiling_args = self.get_entry_dict()
@@ -152,5 +159,5 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
 
         sleep(4)
         self._fapd_profiler.stop_prof_session()
-        self.display_log_output()
         self.running = False
+        self.display_log_output()

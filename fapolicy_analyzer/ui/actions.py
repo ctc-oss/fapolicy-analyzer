@@ -70,6 +70,7 @@ MODIFY_RULES_TEXT = "MODIFY_RULES_TEXT"
 ERROR_RULES_TEXT = "ERROR_RULES_TEXT"
 
 SET_PROFILER_STATE = "SET_PROFILER_STATE"
+SET_PROFILER_OUTPUT = "SET_PROFILER_OUTPUT"
 CLEAR_PROFILER_STATE = "CLEAR_PROFILER_STATE"
 
 
@@ -232,6 +233,8 @@ def error_rules_text(error: str) -> Action:
 def set_profiler_state(state: Dict[str, str]) -> Action:
     return _create_action(SET_PROFILER_STATE, state)
 
+def set_profiler_output(output: str) -> Action:
+    return _create_action(SET_PROFILER_OUTPUT, output)
 
 def clear_profiler_state() -> Action:
     return _create_action(CLEAR_PROFILER_STATE)

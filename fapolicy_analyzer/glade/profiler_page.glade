@@ -33,7 +33,7 @@
         <property name="hexpand">True</property>
         <property name="row_homogeneous">True</property>
         <child>
-          <object class="GtkEntry" id="executeEntry">
+          <object class="GtkEntry" id="executeText">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="hexpand">True</property>
@@ -44,7 +44,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkEntry" id="argEntry">
+          <object class="GtkEntry" id="argText">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="hexpand">True</property>
@@ -55,7 +55,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkEntry" id="userEntry">
+          <object class="GtkEntry" id="userText">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="hexpand">True</property>
@@ -66,7 +66,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkEntry" id="dirEntry">
+          <object class="GtkEntry" id="dirText">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="hexpand">True</property>
@@ -77,7 +77,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkEntry" id="envEntry">
+          <object class="GtkEntry" id="envText">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="hexpand">True</property>
