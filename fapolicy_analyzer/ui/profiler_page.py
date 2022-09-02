@@ -95,6 +95,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         text = buff.get_text(buff.get_start_iter(), buff. get_end_iter(), True)
         if not text == system.get("profiler").output:
             self.update_output_text(system.get("profiler").output)
+        self.analysis_available = bool(system.get("profiler").output)
 
     def update_field_text(self, profilerDict):
         for k, v in profilerDict.items():
@@ -167,5 +168,4 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         self._fapd_profiler.stop_prof_session()
         self.running = False
         self.display_log_output()
-        self.analysis_available = True
         self.refresh_toolbar()
