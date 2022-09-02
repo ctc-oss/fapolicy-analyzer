@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import html
 import logging
 from time import sleep
 
@@ -84,6 +85,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         self._fapd_profiler = FaProfiler(fapd_manager)
         self.running = False
         self.inputDict = {}
+        self.markup = ""
         self.analysis_available = False
 
     def analyze_button_sensitivity(self):
@@ -93,20 +95,20 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         if not self.inputDict == system.get("profiler").entry:
             self.update_field_text(system.get("profiler").entry)
 
-        buff = self.get_object("profilerOutput").get_buffer()
-        text = buff.get_text(buff.get_start_iter(), buff.get_end_iter(), True)
-        if not text == system.get("profiler").output:
-            self.update_output_text(system.get("profiler").output)
-            self.analysis_available = bool(system.get("profiler").output)
+        if not self.markup == system.get("profiler").output:
+            self.markup = system.get("profiler").output
+            self.update_output_text(self.markup)
+            self.analysis_available = bool(self.markup)
             self.refresh_toolbar()
 
     def update_field_text(self, profilerDict):
         for k, v in profilerDict.items():
             self.get_object(k).get_buffer().set_text(v, len(v))
 
-    def update_output_text(self, text):
-        buff = self.get_object("profilerOutput").get_buffer()
-        buff.set_text(text, len(text))
+    def update_output_text(self, markup):
+        buff = Gtk.TextBuffer()
+        buff.insert_markup(buff.get_end_iter(), markup, len(markup))
+        self.get_object("profilerOutput").set_buffer(buff)
 
     def on_analyzerButton_clicked(self, *args):
         self.analyze_button_pushed(self._fapd_profiler.fapd_prof_stderr)
@@ -132,7 +134,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         return self.inputDict
 
     def display_log_output(self):
-        text = ""
+        markup = ""
         files = [
             self._fapd_profiler.fapd_prof_stderr,
             self._fapd_profiler.fapd_prof_stdout,
@@ -141,19 +143,18 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         ]
 
         for run_file in files:
-            text += f"<b>{run_file}</b>\n"
+            markup += f"<b>{run_file}</b>\n"
             try:
                 spacers = 10
                 if run_file is not None:
                     with open(run_file, "r") as f:
                         lines = f.readlines()
-                    text += "".join(lines + ["\n"])
+                    markup += html.escape("".join(lines + ["\n"]))
                     spacers = len(run_file)
-                text += "<b>" + "=" * spacers + "</b>\n"
+                markup += f"<b>{'=' * spacers}</b>\n"
             except OSError as ex:
                 logging.error(f"There was an issue reading from {run_file}.", ex)
-
-        dispatch(set_profiler_output(text))
+        dispatch(set_profiler_output(markup))
 
     def on_test_activate(self, *args):
         profiling_args = self.get_entry_dict()
