@@ -42,6 +42,7 @@ setup(
             "fapolicy_analyzer",
             "fapolicy_analyzer.css",
             "fapolicy_analyzer.glade",
+            "fapolicy_analayzer.locale*",
             "fapolicy_analyzer.redux*",
             "fapolicy_analyzer.resources*",
             "fapolicy_analyzer.ui*",
