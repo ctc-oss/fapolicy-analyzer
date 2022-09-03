@@ -61,7 +61,7 @@ def get_config():
     # _version.py
     cfg = VersioneerConfig()
     cfg.VCS = "git"
-    cfg.style = "pep440-branch"
+    cfg.style = "pep440-branch-only"
     cfg.tag_prefix = "v"
     cfg.parentdir_prefix = ""
     cfg.versionfile_source = "version.py"
@@ -627,7 +627,7 @@ def render(pieces, style):
         rendered = render_pep440(pieces)
     elif style == "pep440-branch":
         rendered = render_pep440_branch(pieces)
-    elif style == "render_pep440_branch_only":
+    elif style == "pep440-branch-only":
         rendered = render_pep440_branch_only(pieces)
     elif style == "pep440-pre":
         rendered = render_pep440_pre(pieces)
