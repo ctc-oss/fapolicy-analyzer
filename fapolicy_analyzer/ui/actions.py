@@ -15,7 +15,7 @@
 
 from enum import Enum
 from itertools import count
-from typing import Any, Iterator, NamedTuple, Optional, Sequence
+from typing import Any, Dict, Iterator, NamedTuple, Optional, Sequence
 
 from fapolicy_analyzer import Changeset, Event, Group, Rule, System, Trust, User
 from fapolicy_analyzer.redux import Action, create_action
@@ -68,6 +68,10 @@ REQUEST_RULES_TEXT = "REQUEST_RULES_TEXT"
 RECEIVED_RULES_TEXT = "RECEIVED_RULES_TEXT"
 MODIFY_RULES_TEXT = "MODIFY_RULES_TEXT"
 ERROR_RULES_TEXT = "ERROR_RULES_TEXT"
+
+SET_PROFILER_STATE = "SET_PROFILER_STATE"
+SET_PROFILER_OUTPUT = "SET_PROFILER_OUTPUT"
+CLEAR_PROFILER_STATE = "CLEAR_PROFILER_STATE"
 
 
 def _create_action(type: str, payload: Any = None) -> Action:
@@ -224,6 +228,18 @@ def modify_rules_text(rules_text: str) -> Action:
 
 def error_rules_text(error: str) -> Action:
     return _create_action(ERROR_RULES_TEXT, error)
+
+
+def set_profiler_state(state: Dict[str, str]) -> Action:
+    return _create_action(SET_PROFILER_STATE, state)
+
+
+def set_profiler_output(output: str) -> Action:
+    return _create_action(SET_PROFILER_OUTPUT, output)
+
+
+def clear_profiler_state() -> Action:
+    return _create_action(CLEAR_PROFILER_STATE)
 
 
 def init_system() -> Action:
