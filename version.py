@@ -61,7 +61,7 @@ def get_config():
     # _version.py
     cfg = VersioneerConfig()
     cfg.VCS = "git"
-    cfg.style = "pep440"
+    cfg.style = "pep440-branch"
     cfg.tag_prefix = "v"
     cfg.parentdir_prefix = ""
     cfg.versionfile_source = "version.py"
@@ -413,7 +413,7 @@ def render_pep440_branch(pieces):
         rendered = pieces["closest-tag"]
         if pieces["distance"] or pieces["dirty"]:
             if pieces["branch"] != "master":
-                rendered += ".dev0"
+                rendered = pieces["branch"].replace("/", "_")
             rendered += plus_or_dot(pieces)
             rendered += "%d.g%s" % (pieces["distance"], pieces["short"])
             if pieces["dirty"]:
@@ -422,7 +422,7 @@ def render_pep440_branch(pieces):
         # exception #1
         rendered = "0"
         if pieces["branch"] != "master":
-            rendered += ".dev0"
+            rendered = pieces["branch"].replace("/", "_")
         rendered += "+untagged.%d.g%s" % (pieces["distance"],
                                           pieces["short"])
         if pieces["dirty"]:
