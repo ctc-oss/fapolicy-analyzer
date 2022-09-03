@@ -38,8 +38,16 @@ setup(
     name="fapolicy-analyzer",
     version=get_version(),
     packages=find_namespace_packages(
-        include=["fapolicy_analyzer", "fapolicy_analyzer.*"],
-        exclude=["*.tests"],
+        include=[
+            "fapolicy_analyzer",
+            "fapolicy_analyzer.css",
+            "fapolicy_analyzer.glade",
+            "fapolicy_analayzer.locale*",
+            "fapolicy_analyzer.redux*",
+            "fapolicy_analyzer.resources*",
+            "fapolicy_analyzer.ui*",
+            "fapolicy_analyzer.util"
+        ],
     ),
     setup_requires=["setuptools", "setuptools_rust"],
     zip_safe=False,
