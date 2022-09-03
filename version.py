@@ -413,7 +413,7 @@ def render_pep440_branch(pieces):
         rendered = pieces["closest-tag"]
         if pieces["distance"] or pieces["dirty"]:
             if pieces["branch"] != "master":
-                rendered = pieces["branch"].replace("/", "_")
+                rendered += ".dev0"
             rendered += plus_or_dot(pieces)
             rendered += "%d.g%s" % (pieces["distance"], pieces["short"])
             if pieces["dirty"]:
@@ -422,7 +422,7 @@ def render_pep440_branch(pieces):
         # exception #1
         rendered = "0"
         if pieces["branch"] != "master":
-            rendered = pieces["branch"].replace("/", "_")
+            rendered += ".dev0"
         rendered += "+untagged.%d.g%s" % (pieces["distance"],
                                           pieces["short"])
         if pieces["dirty"]:
@@ -582,6 +582,35 @@ def render_git_describe_long(pieces):
     return rendered
 
 
+def render_pep440_branch_only(pieces):
+    """TAG[[.dev0]+DISTANCE.gHEX[.dirty]] .
+
+    The ".dev0" means not master branch. Note that .dev0 sorts backwards
+    (a feature branch will appear "older" than the master branch).
+
+    Exceptions:
+    1: no tags. 0[.dev0]+untagged.DISTANCE.gHEX[.dirty]
+    """
+    if pieces["closest-tag"]:
+        rendered = pieces["closest-tag"]
+        if pieces["distance"] or pieces["dirty"]:
+            if pieces["branch"] != "master":
+                rendered = pieces["branch"].replace("/", "_")
+            rendered += plus_or_dot(pieces)
+            rendered += "%d.g%s" % (pieces["distance"], pieces["short"])
+            if pieces["dirty"]:
+                rendered += ".dirty"
+    else:
+        # exception #1
+        rendered = "0"
+        if pieces["branch"] != "master":
+            rendered = pieces["branch"].replace("/", "_")
+        rendered += "+untagged.%d.g%s" % (pieces["distance"],
+                                          pieces["short"])
+        if pieces["dirty"]:
+            rendered += ".dirty"
+    return rendered
+
 def render(pieces, style):
     """Render the given version pieces into the requested style."""
     if pieces["error"]:
@@ -598,6 +627,8 @@ def render(pieces, style):
         rendered = render_pep440(pieces)
     elif style == "pep440-branch":
         rendered = render_pep440_branch(pieces)
+    elif style == "render_pep440_branch_only":
+        rendered = render_pep440_branch_only(pieces)
     elif style == "pep440-pre":
         rendered = render_pep440_pre(pieces)
     elif style == "pep440-post":
