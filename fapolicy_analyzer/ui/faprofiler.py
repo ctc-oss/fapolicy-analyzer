@@ -33,60 +33,37 @@ class ProfSessionStatus(Enum):
     COMPLETED = 2
 
 
+class ProfSessionArgsStatus(Enum):
+    OK = 0
+    ERR_EXEC_EMPTY = 1
+    ERR_EXEC_DOESNT_EXIST = 2
+    ERR_EXEC_NOT_EXECUTABLE = 3
+    ERR_USER_DOESNT_EXIST = 4
+    ERR_PWD_DOESNT_EXIST = 5
+    ERR_PWD_ISNT_DIR = 6
+    UNKNOWN = 7
+
+
+class ProfSessionException(RuntimeError):
+    def __init__(self, msg="Unknown error",
+                 enumError=ProfSessionArgsStatus.UNKNOWN):
+        self.error_msg = f"Profiler Session: {msg}"
+        self.error_enum = enumError
+
+
 class FaProfSession:
-    def _demote(enable, user_uid, user_gid):
-        def result():
-            os.setgid(user_gid)
-            os.setuid(user_uid)
-
-        return result if enable else None
-
-    def _comma_delimited_kv_string_to_dict(string_in):
-        """Generates dictionary from comma separated string of k=v pairs"""
-        if not string_in:
-            return None
-        return {
-            k: v.strip('"')
-            for k, v in dict(x.strip().split("=") for x in string_in.split(",")).items()
-        }
-
     def __init__(self, dictProfTgt, faprofiler=None):
         logging.debug(f"faProfSession::__init__({dictProfTgt}, {faprofiler})")
+        self.validateArgs(dictProfTgt, True)
+
+        # Executable command and arguments
         self.execPath = dictProfTgt["executeText"]
-        self.user = dictProfTgt["userText"]
-        self.pwd = dictProfTgt["dirText"]
-
-        # Validate executable, user, and working directory
-        # exec empty?
-        if not self.execPath:
-            raise ValueError("executeText field is empty")
-
-        # exist?
-        if not os.path.exists(self.execPath):
-            raise ValueError(f"Error: {self.execPath} does not exist.")
-
-        # executable?
-        if not os.access(self.execPath, os.X_OK):
-            raise ValueError(f"Error: {self.execPath} is not executable.")
-
-        # user?
-        try:
-            if self.user:
-                pwd.getpwnam(self.user)
-        except KeyError as e:
-            raise KeyError(f'User {self.user} does not exist.')
-        logging.debug('--> user verified')
-
-        # working dir?
-        if not os.path.exists(self.pwd):
-            raise ValueError(f"Error: {self.pwd} does not exist.")
-
-        if not os.path.isdir(self.pwd):
-            raise ValueError(f"Error: {self.pwd} is not a directory.")
-        logging.debug('--> pwd verified')
-
         self.execArgs = dictProfTgt["argText"]
         self.listCmdLine = [self.execPath] + self.execArgs.split()
+
+        # euid, working directory and environment variables
+        self.user = dictProfTgt["userText"]
+        self.pwd = dictProfTgt["dirText"]
 
         # Convert comma delimited string of "EnvVar=Value" substrings to dict
         self.env = FaProfSession._comma_delimited_kv_string_to_dict(
@@ -256,6 +233,94 @@ class FaProfSession:
         logging.debug("FaProfSession::clean_all()")
         # Delete all log file artifacts
 
+    @staticmethod
+    def validSessionArgs(dictProfTgt):
+        """Determine Profiler session argument status. Return bool"""
+        bReturn = True
+        if FaProfSession.validateArgs(dictProfTgt) != ProfSessionArgsStatus.OK:
+            bReturn = False
+        return bReturn
+
+    @staticmethod
+    def validateArgs(dictProfTgt, throw_exception=False):
+        """
+        Validates the Profiler Session object's user, target, pwd parameters.
+        The 'throw_exception' parameter expects a boolean to dictate wheter the
+        function throws exceptions can or only returns the argument status enum.
+        """
+        logging.debug(f"validateProfArgs({dictProfTgt}")
+        eReturn = ProfSessionArgsStatus.OK
+        error_msg = "Arguments are valid."
+
+        exec_path = dictProfTgt["executeText"]
+        exec_user = dictProfTgt["userText"]
+        exec_pwd = dictProfTgt["dirText"]
+
+        # exec empty?
+        if not exec_path:
+            error_msg = "Error: executeText field is empty"
+            eReturn = ProfSessionArgsStatus.ERR_EXEC_EMPTY
+
+        # exist?
+        elif not os.path.exists(exec_path):
+            error_msg = f"Error: {exec_path} does not exist."
+            eReturn = ProfSessionArgsStatus.ERR_EXEC_DOESNT_EXIST
+
+        # executable?
+        elif not os.access(exec_path, os.X_OK):
+            error_msg = f"Error: {exec_path} is not executable."
+            eReturn = ProfSessionArgsStatus.ERR_EXEC_NOT_EXECUTABLE
+
+        if eReturn == ProfSessionArgsStatus.OK:
+            logging.debug("FaProfSession::validateArgs() --> exec verified")
+
+        # user?
+        if eReturn == ProfSessionArgsStatus.OK:
+            try:
+                if exec_user:
+                    pwd.getpwnam(exec_user)
+            except KeyError as e:
+                logging.debug(f"User {exec_user} does not exist: {e}")
+                error_msg = f"Error: User {exec_user} does not exist."
+                eReturn = ProfSessionArgsStatus.ERR_USER_DOESNT_EXIST
+
+        if eReturn == ProfSessionArgsStatus.OK:
+            logging.debug("FaProfSession::validateArgs() --> user verified")
+
+        # working dir?
+        if eReturn == ProfSessionArgsStatus.OK:
+            if not os.path.exists(exec_pwd):
+                error_msg = f"Error: {exec_pwd} does not exist."
+                eReturn = ProfSessionArgsStatus.ERR_PWD_DOESNT_EXIST
+            elif not os.path.isdir(exec_pwd):
+                error_msg = f"Error: {exec_pwd} is not a directory."
+                eReturn = ProfSessionArgsStatus.ERR_PWD_ISNT_DIR
+
+        if eReturn == ProfSessionArgsStatus.OK:
+            logging.debug("FaProfSession::validateArgs() --> pwd verified")
+
+        # Optionally throw exception if arguments are NG
+        if throw_exception and eReturn != ProfSessionArgsStatus.OK:
+            raise ProfSessionException(error_msg, eReturn)
+
+        return eReturn
+
+    def _demote(enable, user_uid, user_gid):
+        def result():
+            os.setgid(user_gid)
+            os.setuid(user_uid)
+
+        return result if enable else None
+
+    def _comma_delimited_kv_string_to_dict(string_in):
+        """Generates dictionary from comma separated string of k=v pairs"""
+        if not string_in:
+            return None
+        return {
+            k: v.strip('"')
+            for k, v in dict(x.strip().split("=") for x in string_in.split(",")).items()
+        }
+
 
 class FaProfiler:
     def __init__(self, fapd_mgr=None, fapd_persistance=True):
@@ -284,7 +349,16 @@ class FaProfiler:
             self.fapd_prof_stdout = self.fapd_mgr.fapd_profiling_stdout
             self.fapd_prof_stderr = self.fapd_mgr.fapd_profiling_stderr
 
-        self.faprofSession = FaProfSession(dictArgs, self)
+        try:
+            FaProfSession.validateArgs(dictArgs, True)
+            self.faprofSession = FaProfSession(dictArgs, self)
+        except ProfSessionException as e:
+            print(e)
+            raise e
+        except Exception as e:
+            print(e)
+            raise e
+
         key = dictArgs["executeText"] + "-" + str(self.instance)
         self.dictFaProfSession[key] = self.faprofSession
         self.faprofSession.startTarget(self.instance, block_until_term)

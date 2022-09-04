@@ -18,8 +18,9 @@ from events import Events
 from time import sleep
 
 import gi
-from fapolicy_analyzer.ui.faprofiler import FaProfiler
-from fapolicy_analyzer.ui.store import get_system_feature
+# from fapolicy_analyzer.ui.actions import NotificationType, add_notification
+from fapolicy_analyzer.ui.faprofiler import FaProfiler, ProfSessionException
+from fapolicy_analyzer.ui.store import get_system_feature  # , dispatch
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 
@@ -117,11 +118,21 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         self._fapd_profiler.fapd_persistance = self.get_object(
             "persistentCheckbox"
         ).get_active()
-        self._fapd_profiler.start_prof_session(profiling_args)
-        fapd_prof_stderr = self._fapd_profiler.fapd_prof_stderr
-        logging.debug(f"Started prof session, stderr={fapd_prof_stderr}")
+        try:
+            self._fapd_profiler.start_prof_session(profiling_args)
+            fapd_prof_stderr = self._fapd_profiler.fapd_prof_stderr
+            logging.debug(f"Start prof session: stderr={fapd_prof_stderr}")
 
-        sleep(4)
-        self._fapd_profiler.stop_prof_session()
-        self.display_log_output()
-        self.running = False
+            sleep(4)
+            self._fapd_profiler.stop_prof_session()
+            self.display_log_output()
+            self.running = False
+        except ProfSessionException as e:
+            # Profiler Session creation failed because of bad args
+            logging.debug(f"{e.error_msg}, {e.error_enum}")
+            # dispatch(
+            #    add_notification(
+            #        e.error_msg,
+            #        NotificationType.ERROR,
+            #    )
+            # )
