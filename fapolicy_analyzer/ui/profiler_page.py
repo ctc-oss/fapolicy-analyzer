@@ -13,14 +13,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import html
 import logging
-from events import Events
 from time import sleep
 
 import gi
+from events import Events
+from fapolicy_analyzer.ui.actions import (
+    clear_profiler_state,
+    set_profiler_output,
+    set_profiler_state,
+)
 # from fapolicy_analyzer.ui.actions import NotificationType, add_notification
 from fapolicy_analyzer.ui.faprofiler import FaProfiler, ProfSessionException
-from fapolicy_analyzer.ui.store import get_system_feature  # , dispatch
+from fapolicy_analyzer.ui.store import dispatch, get_system_feature
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 
@@ -30,9 +36,12 @@ from gi.repository import Gtk  # isort: skip
 
 class ProfilerPage(UIConnectedWidget, UIPage, Events):
     def __init__(self, fapd_manager):
-        UIConnectedWidget.__init__(self, get_system_feature())
+        UIConnectedWidget.__init__(
+            self, get_system_feature(), on_next=self.on_next_system
+        )
         self.__events__ = [
             "analyze_button_pushed",
+            "refresh_toolbar",
         ]
         Events.__init__(self)
         actions = {
@@ -60,6 +69,15 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
                     "Analyze Target",
                     "applications-science",
                     {"clicked": self.on_analyzerButton_clicked},
+                    sensitivity_func=self.analyze_button_sensitivity,
+                )
+            ],
+            "clear": [
+                UIAction(
+                    "Clear",
+                    "Clear Fields",
+                    "edit-clear",
+                    {"clicked": self.on_clearButton_clicked},
                 )
             ],
         }
@@ -67,9 +85,37 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         UIPage.__init__(self, actions)
         self._fapd_profiler = FaProfiler(fapd_manager)
         self.running = False
+        self.inputDict = {}
+        self.markup = ""
+        self.analysis_available = False
+
+    def analyze_button_sensitivity(self):
+        return self.analysis_available
+
+    def on_next_system(self, system):
+        if not self.inputDict == system.get("profiler").entry:
+            self.update_field_text(system.get("profiler").entry)
+
+        if not self.markup == system.get("profiler").output:
+            self.markup = system.get("profiler").output
+            self.update_output_text(self.markup)
+            self.analysis_available = bool(self.markup)
+            self.refresh_toolbar()
+
+    def update_field_text(self, profilerDict):
+        for k, v in profilerDict.items():
+            self.get_object(k).get_buffer().set_text(v, len(v))
+
+    def update_output_text(self, markup):
+        buff = Gtk.TextBuffer()
+        buff.insert_markup(buff.get_end_iter(), markup, len(markup))
+        self.get_object("profilerOutput").set_buffer(buff)
 
     def on_analyzerButton_clicked(self, *args):
         self.analyze_button_pushed(self._fapd_profiler.fapd_prof_stderr)
+
+    def on_clearButton_clicked(self, *args):
+        dispatch(clear_profiler_state())
 
     def stop_button_sensitivity(self):
         return self.running
@@ -78,38 +124,38 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         return not self.running
 
     def get_entry_dict(self):
-        entryDict = {
-            "executeText": self.get_object("executeEntry").get_text(),
-            "argText": self.get_object("argEntry").get_text(),
-            "userText": self.get_object("userEntry").get_text(),
-            "dirText": self.get_object("dirEntry").get_text(),
-            "envText": self.get_object("envEntry").get_text(),
+        self.inputDict = {
+            "executeText": self.get_object("executeText").get_text(),
+            "argText": self.get_object("argText").get_text(),
+            "userText": self.get_object("userText").get_text(),
+            "dirText": self.get_object("dirText").get_text(),
+            "envText": self.get_object("envText").get_text(),
         }
-
-        return entryDict
+        dispatch(set_profiler_state(self.inputDict))
+        return self.inputDict
 
     def display_log_output(self):
-        text_display = self.get_object("profilerOutput")
-        buff = Gtk.TextBuffer()
-        files = [self._fapd_profiler.fapd_prof_stderr,
-                 self._fapd_profiler.fapd_prof_stdout,
-                 self._fapd_profiler.faprofSession.tgtStderr,
-                 self._fapd_profiler.faprofSession.tgtStdout]
+        markup = ""
+        files = [
+            self._fapd_profiler.fapd_prof_stderr,
+            self._fapd_profiler.fapd_prof_stdout,
+            self._fapd_profiler.faprofSession.tgtStderr,
+            self._fapd_profiler.faprofSession.tgtStdout,
+        ]
 
         for run_file in files:
-            buff.insert_markup(buff.get_end_iter(), f"<b>{run_file}</b>\n", -1)
+            markup += f"<b>{run_file}</b>\n"
             try:
                 spacers = 10
                 if run_file is not None:
                     with open(run_file, "r") as f:
                         lines = f.readlines()
-                    buff.insert(buff.get_end_iter(), "".join(lines + ["\n"]))
+                    markup += html.escape("".join(lines + ["\n"]))
                     spacers = len(run_file)
-                buff.insert_markup(buff.get_end_iter(), "<b>" + "=" * spacers + "</b>\n", -1)
+                markup += f"<b>{'=' * spacers}</b>\n"
             except OSError as ex:
                 logging.error(f"There was an issue reading from {run_file}.", ex)
-
-        text_display.set_buffer(buff)
+        dispatch(set_profiler_output(markup))
 
     def on_test_activate(self, *args):
         profiling_args = self.get_entry_dict()
@@ -125,8 +171,8 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
 
             sleep(4)
             self._fapd_profiler.stop_prof_session()
-            self.display_log_output()
             self.running = False
+            self.display_log_output()
         except ProfSessionException as e:
             # Profiler Session creation failed because of bad args
             logging.debug(f"{e.error_msg}, {e.error_enum}")
