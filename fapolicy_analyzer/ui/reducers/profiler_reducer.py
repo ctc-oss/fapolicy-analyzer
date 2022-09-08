@@ -16,12 +16,18 @@
 from typing import Any, Dict, NamedTuple, Optional, cast
 
 from fapolicy_analyzer.redux import Action, Reducer, handle_actions
-from fapolicy_analyzer.ui.actions import CLEAR_PROFILER_STATE, SET_PROFILER_OUTPUT, SET_PROFILER_STATE
+from fapolicy_analyzer.ui.actions import (
+    CLEAR_PROFILER_STATE,
+    SET_PROFILER_OUTPUT,
+    SET_PROFILER_ANALYSIS_FILE,
+    SET_PROFILER_STATE,
+)
 
 
 class ProfilerState(NamedTuple):
     entry: Dict[str, str]
     output: str
+    file: str
 
 
 default_entry = {"executeText": "",
@@ -45,6 +51,11 @@ def handle_set_profiler_output(state: ProfilerState, action: Action) -> Profiler
     return _create_state(state, output=payload)
 
 
+def handle_set_profiler_analysis_file(state: ProfilerState, action: Action) -> ProfilerState:
+    payload = cast(str, action.payload)
+    return _create_state(state, file=payload)
+
+
 def handle_clear_profiler_state(state: ProfilerState, *args) -> ProfilerState:
     return _create_state(state, entry=default_entry, output="")
 
@@ -53,7 +64,8 @@ profiler_reducer: Reducer = handle_actions(
     {
         SET_PROFILER_STATE: handle_set_profiler_state,
         SET_PROFILER_OUTPUT: handle_set_profiler_output,
+        SET_PROFILER_ANALYSIS_FILE: handle_set_profiler_analysis_file,
         CLEAR_PROFILER_STATE: handle_clear_profiler_state,
     },
-    ProfilerState(entry=default_entry, output="")
+    ProfilerState(entry=default_entry, output="", file="")
 )
