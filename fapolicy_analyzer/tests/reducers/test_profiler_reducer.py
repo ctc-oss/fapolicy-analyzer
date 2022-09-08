@@ -30,9 +30,9 @@ def test_handle_set_profiler_state():
         ProfilerState(entry={"oldkey": "oldvalue"}, output="", file=""),
         MagicMock(payload=new_state)
     )
-    assert result == ProfilerState(entry=new_state, output="")
+    assert result == ProfilerState(entry=new_state, output="", file="")
 
 
 def test_handle_clear_profiler_state():
     result = handle_clear_profiler_state(ProfilerState(entry={"oldkey": "oldvalue"}, output="", file=""))
-    assert result == ProfilerState(entry=default_entry, output="")
+    assert result == ProfilerState(entry=default_entry, output="", file="")
