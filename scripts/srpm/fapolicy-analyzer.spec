@@ -171,3 +171,5 @@ python3 setup.py compile_catalog -f
 %doc README.md
 
 %changelog
+* Fri Sep 09 2022 John Wass <jwass3@gmail.com> 0.6.0-1
+- New release
