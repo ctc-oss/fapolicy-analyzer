@@ -24,7 +24,7 @@ from fapolicy_analyzer.ui.store import dispatch
 from datetime import datetime as DT
 from enum import Enum
 
-import fapolicy_analyzer.ui.strings as strings
+import fapolicy_analyzer.ui.strings as s
 
 
 class ProfSessionStatus(Enum):
@@ -35,13 +35,25 @@ class ProfSessionStatus(Enum):
 
 class ProfSessionArgsStatus(Enum):
     OK = 0
-    ERR_EXEC_EMPTY = 1
-    ERR_EXEC_DOESNT_EXIST = 2
-    ERR_EXEC_NOT_EXECUTABLE = 3
-    ERR_USER_DOESNT_EXIST = 4
-    ERR_PWD_DOESNT_EXIST = 5
-    ERR_PWD_ISNT_DIR = 6
+    EXEC_EMPTY = 1
+    EXEC_DOESNT_EXIST = 2
+    EXEC_NOT_EXECUTABLE = 3
+    USER_DOESNT_EXIST = 4
+    PWD_DOESNT_EXIST = 5
+    PWD_ISNT_DIR = 6
     UNKNOWN = 7
+
+
+mapStatusEnum2Txt = {
+    ProfSessionArgsStatus.OK: s.PROF_ARG_OK,
+    ProfSessionArgsStatus.EXEC_EMPTY: s.PROF_ARG_EXEC_EMPTY,
+    ProfSessionArgsStatus.EXEC_DOESNT_EXIST: s.PROF_ARG_EXEC_DOESNT_EXIST,
+    ProfSessionArgsStatus.EXEC_NOT_EXECUTABLE: s.PROF_ARG_EXEC_NOT_EXECUTABLE,
+    ProfSessionArgsStatus.USER_DOESNT_EXIST: s.PROF_ARG_USER_DOESNT_EXIST,
+    ProfSessionArgsStatus.PWD_DOESNT_EXIST: s.PROF_ARG_PWD_DOESNT_EXIST,
+    ProfSessionArgsStatus.PWD_ISNT_DIR: s.PROF_ARG_PWD_ISNT_DIR,
+    ProfSessionArgsStatus.UNKNOWN: s.PROF_ARG_UNKNOWN,
+}
 
 
 class ProfSessionException(RuntimeError):
@@ -101,10 +113,10 @@ class FaProfSession:
             self.fdTgtStdout = open(self.tgtStdout, "w")
             self.fdTgtStderr = open(self.tgtStderr, "w")
         except Exception as e:
-            logging.warning(f"{strings.FAPROFILER_TGT_REDIRECTION_ERROR_MSG}: {e}")
+            logging.warning(f"{s.FAPROFILER_TGT_REDIRECTION_ERROR_MSG}: {e}")
             dispatch(
                 add_notification(
-                    strings.FAPROFILER_TGT_REDIRECTION_ERROR_MSG + f": {e}",
+                    s.FAPROFILER_TGT_REDIRECTION_ERROR_MSG + f": {e}",
                     NotificationType.ERROR,
                 )
             )
@@ -145,10 +157,10 @@ class FaProfSession:
             # setting prexec_fn = None
             # Typically will only occur in debug/development runs
 
-            logging.error(f"{strings.FAPROFILER_TGT_EUID_CHOWN_ERROR_MSG}: {e}")
+            logging.error(f"{s.FAPROFILER_TGT_EUID_CHOWN_ERROR_MSG}: {e}")
             dispatch(
                 add_notification(
-                    strings.FAPROFILER_TGT_EUID_CHOWN_ERROR_MSG + f": {e}",
+                    s.FAPROFILER_TGT_EUID_CHOWN_ERROR_MSG + f": {e}",
                     NotificationType.ERROR,
                 )
             )
@@ -181,7 +193,7 @@ class FaProfSession:
             logging.error(f"Profiling target Popen failure: {e}")
             dispatch(
                 add_notification(
-                    strings.FAPROFILER_TGT_POPEN_ERROR_MSG + f": {e}",
+                    s.FAPROFILER_TGT_POPEN_ERROR_MSG + f": {e}",
                     NotificationType.ERROR,
                 )
             )
@@ -237,7 +249,7 @@ class FaProfSession:
     def validSessionArgs(dictProfTgt):
         """Determine Profiler session argument status. Return bool"""
         bReturn = True
-        if FaProfSession.validateArgs(dictProfTgt) != ProfSessionArgsStatus.OK:
+        if FaProfSession.validateArgs(dictProfTgt)[0] != ProfSessionArgsStatus.OK:
             bReturn = False
         return bReturn
 
@@ -249,8 +261,8 @@ class FaProfSession:
         function throws exceptions can or only returns the argument status enum.
         """
         logging.debug(f"validateProfArgs({dictProfTgt}")
-        eReturn = ProfSessionArgsStatus.OK
-        error_msg = "Arguments are valid."
+        listReturn = [ProfSessionArgsStatus.OK]
+        error_msg = mapStatusEnum2Txt[ProfSessionArgsStatus.OK]
 
         exec_path = dictProfTgt["executeText"]
         exec_user = dictProfTgt["userText"]
@@ -258,52 +270,59 @@ class FaProfSession:
 
         # exec empty?
         if not exec_path:
-            error_msg = "Error: executeText field is empty"
-            eReturn = ProfSessionArgsStatus.ERR_EXEC_EMPTY
+            error_msg = mapStatusEnum2Txt[ProfSessionArgsStatus.EXEC_EMPTY]
+            listReturn = [ProfSessionArgsStatus.EXEC_EMPTY]
 
         # exist?
         elif not os.path.exists(exec_path):
-            error_msg = f"Error: {exec_path} does not exist."
-            eReturn = ProfSessionArgsStatus.ERR_EXEC_DOESNT_EXIST
+            error_msg = mapStatusEnum2Txt[ProfSessionArgsStatus.EXEC_DOESNT_EXIST].format(exec_path)
+            listReturn = [ProfSessionArgsStatus.EXEC_DOESNT_EXIST]
 
         # executable?
         elif not os.access(exec_path, os.X_OK):
-            error_msg = f"Error: {exec_path} is not executable."
-            eReturn = ProfSessionArgsStatus.ERR_EXEC_NOT_EXECUTABLE
+            error_msg = mapStatusEnum2Txt[ProfSessionArgsStatus.EXEC_NOT_EXECUTABLE].format(exec_path)
+            listReturn = [ProfSessionArgsStatus.EXEC_NOT_EXECUTABLE]
 
-        if eReturn == ProfSessionArgsStatus.OK:
+        if listReturn[0] == ProfSessionArgsStatus.OK:
             logging.debug("FaProfSession::validateArgs() --> exec verified")
 
         # user?
-        if eReturn == ProfSessionArgsStatus.OK:
-            try:
-                if exec_user:
-                    pwd.getpwnam(exec_user)
-            except KeyError as e:
-                logging.debug(f"User {exec_user} does not exist: {e}")
-                error_msg = f"Error: User {exec_user} does not exist."
-                eReturn = ProfSessionArgsStatus.ERR_USER_DOESNT_EXIST
+        try:
+            if exec_user:
+                pwd.getpwnam(exec_user)
+        except KeyError as e:
+            logging.debug(f"User {exec_user} does not exist: {e}")
+            error_msg = mapStatusEnum2Txt[ProfSessionArgsStatus.USER_DOESNT_EXIST].format(exec_user)
+            if listReturn[0] == ProfSessionArgsStatus.OK:
+                listReturn = [ProfSessionArgsStatus.USER_DOESNT_EXIST]
+            else:
+                listReturn.append(ProfSessionArgsStatus.USER_DOESNT_EXIST)
 
-        if eReturn == ProfSessionArgsStatus.OK:
+        if listReturn[0] == ProfSessionArgsStatus.OK:
             logging.debug("FaProfSession::validateArgs() --> user verified")
 
         # working dir?
-        if eReturn == ProfSessionArgsStatus.OK:
-            if not os.path.exists(exec_pwd):
-                error_msg = f"Error: {exec_pwd} does not exist."
-                eReturn = ProfSessionArgsStatus.ERR_PWD_DOESNT_EXIST
-            elif not os.path.isdir(exec_pwd):
-                error_msg = f"Error: {exec_pwd} is not a directory."
-                eReturn = ProfSessionArgsStatus.ERR_PWD_ISNT_DIR
+        if not os.path.exists(exec_pwd):
+            error_msg = mapStatusEnum2Txt[ProfSessionArgsStatus.PWD_DOESNT_EXIST].format(exec_pwd)
+            if listReturn[0] == ProfSessionArgsStatus.OK:
+                listReturn = [ProfSessionArgsStatus.PWD_DOESNT_EXIST]
+            else:
+                listReturn.append(ProfSessionArgsStatus.PWD_DOESNT_EXIST)
+        elif not os.path.isdir(exec_pwd):
+            error_msg = mapStatusEnum2Txt[ProfSessionArgsStatus.PWD_ISNT_DIR].format(exec_pwd)
+            if listReturn[0] == ProfSessionArgsStatus.OK:
+                listReturn = [ProfSessionArgsStatus.PWD_ISNT_DIR]
+            else:
+                listReturn.append(ProfSessionArgsStatus.PWD_ISNT_DIR)
 
-        if eReturn == ProfSessionArgsStatus.OK:
+        if listReturn[0] == ProfSessionArgsStatus.OK:
             logging.debug("FaProfSession::validateArgs() --> pwd verified")
 
         # Optionally throw exception if arguments are NG
-        if throw_exception and eReturn != ProfSessionArgsStatus.OK:
-            raise ProfSessionException(error_msg, eReturn)
-
-        return eReturn
+        if throw_exception and listReturn[0] != ProfSessionArgsStatus.OK:
+            raise ProfSessionException(error_msg, listReturn[0])
+        print(listReturn)
+        return listReturn
 
     def _demote(enable, user_uid, user_gid):
         def result():

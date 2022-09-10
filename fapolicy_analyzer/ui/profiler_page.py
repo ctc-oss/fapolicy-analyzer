@@ -24,8 +24,12 @@ from fapolicy_analyzer.ui.actions import (
     set_profiler_output,
     set_profiler_state,
 )
-# from fapolicy_analyzer.ui.actions import NotificationType, add_notification
-from fapolicy_analyzer.ui.faprofiler import FaProfiler, ProfSessionException
+from fapolicy_analyzer.ui.actions import NotificationType, add_notification
+from fapolicy_analyzer.ui.faprofiler import (
+    FaProfiler,
+    FaProfSession,
+    ProfSessionException,
+)
 from fapolicy_analyzer.ui.store import dispatch, get_system_feature
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
@@ -159,6 +163,18 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
 
     def on_test_activate(self, *args):
         profiling_args = self.get_entry_dict()
+        if not FaProfSession.validSessionArgs(profiling_args):
+            logging.debug("Invalid Profiler arguments")
+            listInvalidEntries = FaProfSession.validateArgs(profiling_args)
+            print(listInvalidEntries)
+            dispatch(
+                add_notification(
+                    "Invalid Profiler Session argument:",
+                    NotificationType.ERROR,
+                )
+            )
+            return
+
         logging.debug(f"Entry text = {profiling_args}")
         self.running = True
         self._fapd_profiler.fapd_persistance = self.get_object(
@@ -176,9 +192,17 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         except ProfSessionException as e:
             # Profiler Session creation failed because of bad args
             logging.debug(f"{e.error_msg}, {e.error_enum}")
-            # dispatch(
-            #    add_notification(
-            #        e.error_msg,
-            #        NotificationType.ERROR,
-            #    )
-            # )
+            dispatch(
+                add_notification(
+                    e.error_msg,
+                    NotificationType.ERROR,
+                )
+            )
+        except Exception as e:
+            logging.debug(f"Unknown exception thrown by start_prof_session {e}")
+            dispatch(
+                add_notification(
+                    "Error: An unknown Profiler Session error has occured.",
+                    NotificationType.ERROR,
+                )
+            )
