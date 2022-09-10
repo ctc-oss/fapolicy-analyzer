@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Dependencies
         run: |
-          sudo dnf install -y git gcc rpm rpmdevtools openssl-devel
+          sudo dnf install -y git gcc rpm rpmdevtools openssl-devel dbus-devel
 
       - name: Set up Python
         uses: actions/setup-python@v2
