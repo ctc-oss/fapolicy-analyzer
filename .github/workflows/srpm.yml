@@ -66,6 +66,7 @@ jobs:
           mkdir -p /tmp/archives
           mv crates.tar.gz /tmp/archives
           mv fapolicy-analyzer.tar.gz /tmp/archives
+          mv /github/home/rpmbuild/RPMS/x86_64/*.rpm /tmp/archives
 
       - name: Archive artifacts
         uses: actions/upload-artifact@v2
