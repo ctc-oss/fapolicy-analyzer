@@ -10,10 +10,11 @@ on:
       - 'master'
       - 'release-*'
 
-name: Rawhide RPM
+name: SRPM
 
 jobs:
-  release:
+  build:
+    name: Build rawhide
     runs-on: ubuntu-latest
     container: fedora:rawhide
     steps:

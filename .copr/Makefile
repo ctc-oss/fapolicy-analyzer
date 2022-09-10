@@ -11,7 +11,7 @@ dnf:
 vendor:
 	cargo check
 	git archive HEAD -o fapolicy-analyzer.tar.gz --prefix=fapolicy-analyzer/
-	./scripts/vendor/vendor.sh
+	./scripts/srpm/vendor.sh
 
 srpm: dnf vendor
 	mkdir -p /tmp/rpmbuild/SOURCES

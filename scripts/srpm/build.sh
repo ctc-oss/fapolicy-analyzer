@@ -2,7 +2,7 @@
 
 # ava
 
-spec_file="fapolicy-analyzer.rawhide.spec"
+spec_file="fapolicy-analyzer.spec"
 
 if [[ "$ONLINE" -eq 1 ]]; then
   cd /root/rpmbuild/SOURCES

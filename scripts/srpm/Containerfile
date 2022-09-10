@@ -5,13 +5,13 @@ RUN dnf install -y rpm-build rpmdevtools dnf-plugins-core python3-pip nano rust-
 WORKDIR /root/rpmbuild
 
 RUN mkdir -p {BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
-COPY scripts/rpm/fapolicy-analyzer.rawhide.spec        SPECS/
+COPY scripts/srpm/fapolicy-analyzer.spec        SPECS/
 
-RUN dnf builddep SPECS/fapolicy-analyzer.rawhide.spec -y
+RUN dnf builddep SPECS/fapolicy-analyzer.spec -y
 
 COPY fapolicy-analyzer.tar.gz SOURCES/
 COPY crates.tar.gz            SOURCES/
-COPY scripts/rpm/build.rawhide.sh ./build.sh
+COPY scripts/srpm/build.sh ./build.sh
 
 WORKDIR /root/rpmbuild
 
