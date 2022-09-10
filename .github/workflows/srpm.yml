@@ -56,20 +56,25 @@ jobs:
         run: |
           make -f .copr/Makefile srpm outdir=/tmp/archives spec=scripts/srpm/fapolicy-analyzer.spec
 
-      - name: Archive
+      - name: Export tarballs
         run: |
           mkdir -p /tmp/archives
-          mv fapolicy-analyzer.tar.gz /tmp/archives
           mv crates.tar.gz /tmp/archives
+          mv fapolicy-analyzer.tar.gz /tmp/archives
 
-      - name: Create Release
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: srpm-artifacts
+          path: |
+            /tmp/archives/*
+
+      - name: Release artifacts
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/v')
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: Release ${{ steps.tag_name.outputs.VERSION }}
           tag_name: ${{ steps.tag_name.outputs.VERSION }}
           prerelease: ${{ startsWith(github.ref, 'refs/tags/v0') || contains(github.ref, 'rc') }}
           draft: true
-          files: /tmp/archives/*
+          files: |
+            /tmp/archives/*.rpm
