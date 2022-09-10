@@ -15,6 +15,7 @@ Source1:        crates.tar.gz
 BuildArch:      x86_64
 BuildRequires:  python3-devel
 BuildRequires:  python3dist(wheel)
+BuildRequires:  python3dist(babel)
 BuildRequires:  python3dist(setuptools-rust)
 BuildRequires:  gettext
 
@@ -157,6 +158,7 @@ echo %{version} > VERSION
 ./scripts/i18n.py
 
 %build
+python3 setup.py compile_catalog -f
 %pyproject_wheel
 
 %install
