@@ -163,10 +163,12 @@ python3 setup.py compile_catalog -f
 %install
 %pyproject_install
 %pyproject_save_files fapolicy_analyzer
+install bin/fapolicy-analyzer %{buildroot}%{_sbindir}/fapolicy-analyzer -D
 
 %check
 
 %files -n %{appname} -f %{pyproject_files}
+%{_sbindir}/fapolicy-analyzer
 
 %doc README.md
 
