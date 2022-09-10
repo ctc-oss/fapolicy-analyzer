@@ -122,14 +122,17 @@ Requires: gtk3
 Requires: dbus-libs
 Requires: gtksourceview3
 
+Provides: fapolicy-analyzer
+
 %description
 %{sum}.
 
 %prep
-# Problem:  the registry location is not writable, blocking extraction of vendored crates
-# Solution: link the contents of the official package registry into a new registry
-#           and then extract the vendored crates tarball into the new registry
-#           after a little mapping and unmapping of that location while building, Success
+# Problem:  the registry location is not writable, which blocks extraction of vendored crates
+# Solution: link the contents of the /usr/share/cargo/registry into a replacement registry
+#           then extract the contents of the vendored crates tarball to the replacement registry
+#           then remap the registry location in the .cargo/config to the replacement registry
+#           finally remap the path prefix for strings literals in panics back to the original
 CARGO_REG_DIR=%{_sourcedir}/registry
 %{__mkdir} -p ${CARGO_REG_DIR}
 for d in %{cargo_registry}/*; do ln -sf ${d} ${CARGO_REG_DIR}; done

@@ -17,8 +17,8 @@
 
 import shutil
 
-import toml
 import requests as req
+import toml
 from bs4 import BeautifulSoup
 
 rawhide_rust = "https://mirrors.kernel.org/fedora/development/rawhide/Everything/source/tree/Packages/r/"
