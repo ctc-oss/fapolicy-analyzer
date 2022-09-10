@@ -1,0 +1,17 @@
+FROM fedora:rawhide AS build-stage
+
+RUN dnf install -y rpm-build rpmdevtools dnf-plugins-core python3-pip nano rust-packaging
+
+WORKDIR /root/rpmbuild
+
+RUN mkdir -p {BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
+COPY scripts/rpm/fapolicy-analyzer.rawhide.spec        SPECS/
+
+RUN dnf builddep SPECS/fapolicy-analyzer.rawhide.spec -y
+
+COPY fapolicy-analyzer.tar.gz SOURCES/
+COPY crates.tar.gz            SOURCES/
+COPY scripts/rpm/build.rawhide.sh ./build.sh
+
+WORKDIR /root/rpmbuild
+

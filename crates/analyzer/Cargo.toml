@@ -12,7 +12,7 @@ path = "src/lib.rs"
 nom = "6.1.0"
 serde = { version = "1.0", features = ["derive"] }
 thiserror = "1.0"
-chrono = "0.4"
+chrono = "0.4.22"
 
 fapolicy-daemon = { version = "*", path = "../daemon" }
 fapolicy-rules = { version = "*", path = "../rules" }

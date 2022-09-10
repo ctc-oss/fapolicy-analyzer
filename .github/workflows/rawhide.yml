@@ -1,0 +1,75 @@
+on:
+  push:
+    branches:
+      - 'master'
+      - 'release-*'
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - 'master'
+      - 'release-*'
+
+name: Rawhide RPM
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    container: fedora:rawhide
+    steps:
+      - name: Dependencies
+        run: |
+          sudo dnf install -y git gcc rpm rpmdevtools openssl-devel
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: 1.58.1
+          override: true
+
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: Strip ref to tag
+        id: tag_name
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d/ -f3)
+
+      - name: Rust dependencies
+        run: |
+          cargo install cargo-vendor-filterer
+
+      # allow the git archive command to run within the repo
+      - name: Allow archive
+        run: |
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+
+      - name: Build SRPM
+        run: |
+          make -f .copr/Makefile srpm outdir=/tmp/archives spec=rulec.spec
+
+      - name: Archive
+        run: |
+          mkdir -p /tmp/archives
+          mv rulec.tar.gz /tmp/archives
+          mv crates.tar.gz /tmp/archives
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          name: Release ${{ steps.tag_name.outputs.VERSION }}
+          tag_name: ${{ steps.tag_name.outputs.VERSION }}
+          prerelease: ${{ startsWith(github.ref, 'refs/tags/v0') || contains(github.ref, 'rc') }}
+          draft: true
+          files: /tmp/archives/*
