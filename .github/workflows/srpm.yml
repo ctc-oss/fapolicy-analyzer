@@ -20,7 +20,7 @@ jobs:
     steps:
       - name: Dependencies
         run: |
-          dnf install -y git gcc rpm rpmdevtools dbus-devel
+          dnf install -y git gcc rpm rpmdevtools dnf-plugins-core dbus-devel
 
       - name: Set up Rust
         uses: actions-rs/toolchain@v1
