@@ -7,7 +7,7 @@ WORKDIR /root/rpmbuild
 RUN mkdir -p {BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
 COPY scripts/srpm/fapolicy-analyzer.spec        SPECS/
 
-RUN dnf builddep SPECS/fapolicy-analyzer.spec -y
+RUN dnf -y builddep SPECS/fapolicy-analyzer.spec
 
 COPY fapolicy-analyzer.tar.gz SOURCES/
 COPY crates.tar.gz            SOURCES/
