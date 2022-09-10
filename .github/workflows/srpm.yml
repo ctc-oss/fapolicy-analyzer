@@ -20,8 +20,8 @@ jobs:
     steps:
       - name: Dependencies
         run: |
-          make -f .copr/Makefile dnf
           dnf install -y gcc rpm rpmdevtools dbus-devel
+          make -f .copr/Makefile dnf
 
       - name: Set up Rust
         uses: actions-rs/toolchain@v1
