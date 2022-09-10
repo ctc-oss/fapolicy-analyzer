@@ -24,8 +24,6 @@ jobs:
 
       - name: Set up Python
         uses: actions/setup-python@v2
-        with:
-          python-version: 3.6
 
       - name: Set up Rust
         uses: actions-rs/toolchain@v1
@@ -55,7 +53,7 @@ jobs:
 
       - name: Build SRPM
         run: |
-          make -f .copr/Makefile srpm outdir=/tmp/archives spec=rulec.spec
+          make -f .copr/Makefile srpm outdir=/tmp/archives spec=scripts/srpm/fapolicy-analyzer.spec
 
       - name: Archive
         run: |
