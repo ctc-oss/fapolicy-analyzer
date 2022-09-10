@@ -20,10 +20,8 @@ jobs:
     steps:
       - name: Dependencies
         run: |
-          sudo dnf install -y git gcc rpm rpmdevtools openssl-devel dbus-devel
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
+          make -f .copr/Makefile dnf
+          dnf install -y gcc rpm rpmdevtools dbus-devel
 
       - name: Set up Rust
         uses: actions-rs/toolchain@v1
