@@ -58,7 +58,7 @@ jobs:
       - name: Archive
         run: |
           mkdir -p /tmp/archives
-          mv rulec.tar.gz /tmp/archives
+          mv fapolicy-analyzer.tar.gz /tmp/archives
           mv crates.tar.gz /tmp/archives
 
       - name: Create Release
