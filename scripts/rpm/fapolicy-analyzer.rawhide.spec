@@ -16,6 +16,7 @@ BuildArch:      x86_64
 BuildRequires:  python3-devel
 BuildRequires:  python3dist(wheel)
 BuildRequires:  python3dist(setuptools-rust)
+BuildRequires:  gettext
 
 BuildRequires:  rust-packaging
 BuildRequires: rust-arrayvec0.5-devel
@@ -152,6 +153,7 @@ echo %{version} > VERSION
 %generate_buildrequires
 %pyproject_buildrequires
 
+# build internationalizations with msgfmt to avoid babel dependency
 ./scripts/i18n.py
 
 %build
