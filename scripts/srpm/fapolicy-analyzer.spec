@@ -17,7 +17,6 @@ BuildRequires:  python3-devel
 BuildRequires:  python3dist(wheel)
 BuildRequires:  python3dist(babel)
 BuildRequires:  python3dist(setuptools-rust)
-BuildRequires:  gettext
 
 BuildRequires:  rust-packaging
 BuildRequires: rust-arrayvec0.5-devel
