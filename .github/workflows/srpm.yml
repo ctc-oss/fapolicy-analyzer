@@ -20,8 +20,7 @@ jobs:
     steps:
       - name: Dependencies
         run: |
-          dnf install -y gcc rpm rpmdevtools dbus-devel
-          make -f .copr/Makefile dnf
+          dnf install -y git gcc rpm rpmdevtools dbus-devel
 
       - name: Set up Rust
         uses: actions-rs/toolchain@v1
@@ -34,6 +33,10 @@ jobs:
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
+
+      - name: Dependencies (.copr/Makefile)
+        run: |
+          make -f .copr/Makefile dnf
 
       - name: Strip ref to tag
         id: tag_name
