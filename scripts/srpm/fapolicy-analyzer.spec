@@ -157,9 +157,6 @@ echo %{version} > VERSION
 %generate_buildrequires
 %pyproject_buildrequires
 
-# build internationalizations with msgfmt to avoid babel dependency
-./scripts/i18n.py
-
 %build
 python3 setup.py compile_catalog -f
 %pyproject_wheel
