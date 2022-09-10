@@ -7,7 +7,7 @@ Version:        0.6.0
 Release:        1%{?dist}
 Summary:        %{sum}
 
-License:        GPLv3
+License:        GPLv3+
 URL:            https://github.com/ctc-oss/fapolicy-analyzer
 Source0:        %{appname}.tar.gz
 Source1:        crates.tar.gz
