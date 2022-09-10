@@ -56,6 +56,10 @@ jobs:
         run: |
           make -f .copr/Makefile srpm outdir=/tmp/archives spec=scripts/srpm/fapolicy-analyzer.spec
 
+      - name: Rebuild SRPM
+        run: |
+          rpmbuild --rebuild /tmp/archives/fapolicy-analyzer-*.src.rpm
+
       - name: Export tarballs
         run: |
           mkdir -p /tmp/archives
