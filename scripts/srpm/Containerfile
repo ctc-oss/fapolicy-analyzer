@@ -1,4 +1,10 @@
-FROM fedora:rawhide AS build-stage
+ARG image=fedora:rawhide
+FROM $image AS build-stage
+
+RUN grep -e "^Red Hat Enterprise Linux" /etc/redhat-release  \
+ && RELEASE=$(grep -oE "[0-9]+\.[0-9]+" /etc/redhat-release) \
+ && dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm \
+ || true
 
 RUN dnf install -y rpm-build rpmdevtools dnf-plugins-core python3-pip nano rust-packaging
 
