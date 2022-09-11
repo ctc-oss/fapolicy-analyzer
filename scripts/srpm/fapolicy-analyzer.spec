@@ -16,6 +16,8 @@ BuildRequires: python3dist(babel)
 %if 0%{?rhel}
 BuildRequires: rust-toolset
 %else
+BuildRequires: python3dist(setuptools-rust)
+
 BuildRequires: rust-packaging
 BuildRequires: python3dist(setuptools-rust)
 
