@@ -5,20 +5,24 @@
     analyzer_version: "{{ lookup('env', 'analyzer_version') | default('latest', True) }}"
 
 # when the version is unspecified and >= fc:37 use Copr
-- name: ============== Import Copr as Source ==============
+- name: Use Copr as Source
   import_tasks: copr.yml
   when: analyzer_version == "latest" and
         ansible_facts['distribution'] == "Fedora" and
         ansible_facts['distribution_major_version'] >= "37"
 
-- name: Import GitHub as Source
+- name: Use GitHub as Source
   import_tasks: github.yml
   when: analyzer_version != "latest" or
         ansible_facts['distribution'] != "Fedora" or
         ansible_facts['distribution_major_version'] < "37"
 
+- name: Reload fapolicyd
+  systemd:
+    name: fapolicyd
+    state: restarted
+
 - name: update gtk mimes
   shell: |
     update-mime-database /usr/share/mime
     gdk-pixbuf-query-loaders-64 --update-cache
-

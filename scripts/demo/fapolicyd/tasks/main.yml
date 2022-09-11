@@ -20,6 +20,11 @@
     groups: fapolicyd
     append: yes
 
+- name: Move original rules to default.rules.d
+  copy:
+    src: /etc/fapolicyd/rules.d
+    dest: /etc/fapolicyd/default.rules.d
+
 - name: Ensure rules.d does not exist
   file:
     path: /etc/fapolicyd/rules.d
@@ -27,13 +32,13 @@
 
 - name: Install demonstration rules.d
   copy:
-    src: "rules.d"
-    dest: "/etc/fapolicyd"
+    src: rules.d
+    dest: /etc/fapolicyd
 
-- name: Install legacy rules [FC34]
+- name: Install legacy demonstration  rules [FC34]
   copy:
-    src: "trust.rules.md"
-    dest: "/etc/fapolicyd/fapolicyd.rules"
+    src: trust.rules.md
+    dest: /etc/fapolicyd/fapolicyd.rules
   when: ansible_facts['distribution'] == "Fedora" and 
         ansible_facts['distribution_major_version'] <= "34"
 
