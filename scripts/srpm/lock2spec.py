@@ -14,8 +14,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
+import os
 import shutil
+import sys
 
 import requests as req
 import toml
@@ -64,6 +65,18 @@ def available_packages():
 
 if __name__ == '__main__':
     vendoring = True
+    os_id = None
+    os_version = None
+    with open("/etc/os-release") as file:
+        release = {}
+        for ln in file.readlines():
+            ln = ln.replace('"', "").strip("\n")
+            if len(ln):
+                k, v = ln.split("=")
+                release[k] = v
+        os_id = release.get("ID") or "unknown"
+        os_version = release["VERSION_ID"]
+    print(f"{os_id}:{os_version}")
 
     rpms = {}
     crates = {}
@@ -93,27 +106,24 @@ if __name__ == '__main__':
             print(f"[vendor] {p} {v}: not available")
             crates[p] = f"%{{crates_source {p} {v}}}"
 
-    print("BuildRequires: rust-packaging")
-    for r in rpms.values():
-        rpm = remappings[r] if r in remappings else r
-        print(f"BuildRequires: {rpm}-devel")
-
-    if overridden_crates:
-        print("# Overridden to rpms due to Fedora version patching")
-        for r in overridden_crates:
-            print(f"BuildRequires: rust-{r}-devel")
-            unvendor.append(r)
-
     excluded_crates = overridden_crates + blacklisted_crates
-    if vendoring:
-        for c in unvendor:
-            shutil.rmtree(f"vendor/{c}", ignore_errors=True)
-    else:
-        i = 1
-        for c, v in crates.items():
-            if c not in excluded_crates:
-                print(f"Source{i}: {v}")
-                i += 1
+    if os_id != "rhel":
+        print("BuildRequires: rust-packaging")
+        for r in rpms.values():
+            rpm = remappings[r] if r in remappings else r
+            print(f"BuildRequires: {rpm}-devel")
 
-    print(f"Official {len(unvendor)}")
-    print(f"Vendored {len(crates) - len(excluded_crates)}")
+        if overridden_crates:
+            print("# Overridden to rpms due to Fedora version patching")
+            for r in overridden_crates:
+                print(f"BuildRequires: rust-{r}-devel")
+                unvendor.append(r)
+
+        for c in unvendor:
+            print(f"[unvendor] {c}")
+            shutil.rmtree(f"vendor/{c}", ignore_errors=True)
+        print(f"Official {len(unvendor)}")
+        print(f"Vendored {len(crates) - len(excluded_crates)}")
+    else:
+        print("BuildRequires: rust-toolset")
+        print(f"Vendored (all) {len(rpms) + len(crates) - len(excluded_crates)}")

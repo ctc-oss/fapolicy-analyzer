@@ -7,13 +7,16 @@ URL:            https://github.com/ctc-oss/fapolicy-analyzer
 Source0:        fapolicy-analyzer.tar.gz
 Source1:        crates.tar.gz
 
-BuildRequires:  python3-devel
-BuildRequires:  python3dist(setuptools)
-BuildRequires:  python3dist(setuptools-rust)
-BuildRequires:  python3dist(pip)
-BuildRequires:  python3dist(wheel)
-BuildRequires:  python3dist(babel)
+BuildRequires: python3-devel
+BuildRequires: python3dist(setuptools)
+BuildRequires: python3dist(setuptools-rust)
+BuildRequires: python3dist(pip)
+BuildRequires: python3dist(wheel)
+BuildRequires: python3dist(babel)
 
+%if 0%{?rhel}
+BuildRequires: rust-toolset
+%else
 BuildRequires: rust-packaging
 BuildRequires: rust-arrayvec0.5-devel
 BuildRequires: rust-atty-devel
@@ -102,6 +105,7 @@ BuildRequires: rust-wyz-devel
 BuildRequires: rust-yansi-devel
 BuildRequires: rust-paste-devel
 BuildRequires: rust-indoc-devel
+%endif
 
 Requires: python3
 Requires: python3-gobject
