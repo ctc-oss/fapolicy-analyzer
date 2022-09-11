@@ -1,8 +1,0 @@
-[build-system]
-requires = ["setuptools", "setuptools-rust"]
-build-backend = "setuptools.build_meta"
-
-[tool.vendoring]
-destination = "vendored/"
-requirements = "scripts/srpm/requirements.txt"
-namespace = "basic.vendored"
