@@ -100,7 +100,6 @@ jobs:
         run: |
           mv $HOME/rpmbuild/RPMS/*/*.rpm /tmp
           mv $HOME/rpmbuild/SRPMS/*.rpm  /tmp
-          mv $HOME/rpmbuild/SPECS/fapolicy-analyzer.spec /tmp/fapolicy-analyzer.${{ matrix.triple.name }}.spec
 
       - name: Archive RPMs
         uses: actions/upload-artifact@v2
@@ -108,7 +107,6 @@ jobs:
           name: fapolicy-analyzer-rpms
           path: |
             /tmp/*.rpm
-            /tmp/*.spec
 
       - name: Release artifacts
         uses: softprops/action-gh-release@v1
@@ -119,4 +117,3 @@ jobs:
           draft: true
           files: |
             /tmp/*.rpm
-            /tmp/*.spec
