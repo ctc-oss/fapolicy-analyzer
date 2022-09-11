@@ -93,7 +93,7 @@ if __name__ == '__main__':
             print(f"[vendor] {p} {v}: not available")
             crates[p] = f"%{{crates_source {p} {v}}}"
 
-    print("BuildRequires:  rust-packaging")
+    print("BuildRequires: rust-packaging")
     for r in rpms.values():
         rpm = remappings[r] if r in remappings else r
         print(f"BuildRequires: {rpm}-devel")

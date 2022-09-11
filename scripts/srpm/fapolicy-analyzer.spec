@@ -14,7 +14,7 @@ BuildRequires:  python3dist(setuptools-rust)
 BuildRequires:  python3dist(wheel)
 BuildRequires:  python3dist(babel)
 
-BuildRequires:  rust-packaging
+BuildRequires: rust-packaging
 BuildRequires: rust-arrayvec0.5-devel
 BuildRequires: rust-atty-devel
 BuildRequires: rust-autocfg-devel
@@ -130,7 +130,6 @@ mkdir -p ${CARGO_REG_DIR}
 for d in %{cargo_registry}/*; do ln -sf ${d} ${CARGO_REG_DIR}; done
 tar xzf %{_sourcedir}/crates.tar.gz -C ${CARGO_REG_DIR}
 
-# use the rust2rpm cargo_prep to update our cargo conf
 %cargo_prep
 
 # remap the registry location in the .cargo/config to the replacement registry
@@ -139,14 +138,10 @@ sed -i "s#%{cargo_registry}#${CARGO_REG_DIR}#g" .cargo/config
 sed -i "/\[build\]/a rustflags = [\"--remap-path-prefix\", \"${CARGO_REG_DIR}=%{cargo_registry}\"]" .cargo/config
 
 %autosetup -p0 -n fapolicy-analyzer
-
-# use whatever is available
 rm Cargo.lock
 
-# use the spec version as the app version
-echo %{version} > VERSION
-
 %build
+echo %{version} > VERSION
 %{python3} setup.py compile_catalog -f
 %py3_build_wheel
 
@@ -161,6 +156,7 @@ install bin/fapolicy-analyzer %{buildroot}%{_sbindir}/fapolicy-analyzer -D
 %{python3_sitearch}/%{modname}-%{version}*
 %{_sbindir}/fapolicy-analyzer
 
+%license LICENSE
 %doc README.md
 
 %changelog
