@@ -9,7 +9,6 @@ Source1:        crates.tar.gz
 
 BuildRequires: python3-devel
 BuildRequires: python3dist(setuptools)
-BuildRequires: python3dist(setuptools-rust)
 BuildRequires: python3dist(pip)
 BuildRequires: python3dist(wheel)
 BuildRequires: python3dist(babel)
@@ -18,6 +17,9 @@ BuildRequires: python3dist(babel)
 BuildRequires: rust-toolset
 %else
 BuildRequires: rust-packaging
+BuildRequires: python3dist(setuptools-rust)
+
+# crates
 BuildRequires: rust-arrayvec0.5-devel
 BuildRequires: rust-atty-devel
 BuildRequires: rust-autocfg-devel
