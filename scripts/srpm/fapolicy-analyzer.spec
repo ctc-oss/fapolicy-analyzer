@@ -122,9 +122,9 @@ Requires: gtksourceview3
 Tools to assist with the configuration and maintenance of Fapolicyd (File Access Policy Daemon).
 
 %prep
-# Problem:  the registry location is not writable, which blocks extraction of vendored crates
-# Solution: link the contents of the /usr/share/cargo/registry into a replacement registry
-#           then extract the contents of the vendored crates tarball to the replacement registry
+# Problem:  the /usr/share/cargo/registry location is not writable, blocking use of vendored crates
+# Solution: link the contents of the /usr/share/cargo/registry into a replacement writable registry
+#           extract the contents of the vendored crate tarball to the replacement writable registry
 CARGO_REG_DIR=%{_sourcedir}/registry
 mkdir -p ${CARGO_REG_DIR}
 for d in %{cargo_registry}/*; do ln -sf ${d} ${CARGO_REG_DIR}; done
@@ -137,7 +137,7 @@ sed -i "s#%{cargo_registry}#${CARGO_REG_DIR}#g" .cargo/config
 # unmap any path strings in the so back to the /usr/share/ registry, otherwise rpm check will bark
 sed -i "/\[build\]/a rustflags = [\"--remap-path-prefix\", \"${CARGO_REG_DIR}=%{cargo_registry}\"]" .cargo/config
 
-%autosetup -p0 -n fapolicy-analyzer
+%autosetup -p0 -n %{name}
 rm Cargo.lock
 
 %build
@@ -147,17 +147,16 @@ echo %{version} > VERSION
 
 %install
 %{py3_install_wheel %{modname}-%{version}*%{_arch}.whl}
-install bin/fapolicy-analyzer %{buildroot}%{_sbindir}/fapolicy-analyzer -D
+install bin/%{name} %{buildroot}%{_sbindir}/%{name} -D
 
 %check
 
-%files -n fapolicy-analyzer
+%files -n %{name}
+%doc README.md
+%license LICENSE
 %{python3_sitearch}/%{modname}
 %{python3_sitearch}/%{modname}-%{version}*
-%{_sbindir}/fapolicy-analyzer
-
-%license LICENSE
-%doc README.md
+%attr(755,root,root) %{_sbindir}/fapolicy-analyzer
 
 %changelog
 * Fri Sep 09 2022 John Wass <jwass3@gmail.com> 0.6.0-1
