@@ -1,22 +1,18 @@
-%global debug_package %{nil}
-%global appname fapolicy-analyzer
-%global sum     File Access rule compiler with validation
-
-Name:           %{appname}
+Summary:        File Access Policy Analyzer
+Name:           fapolicy-analyzer
 Version:        0.6.0
-Release:        1%{?dist}
-Summary:        %{sum}
-
+Release:        1
 License:        GPLv3+
 URL:            https://github.com/ctc-oss/fapolicy-analyzer
-Source0:        %{appname}.tar.gz
+Source0:        fapolicy-analyzer.tar.gz
 Source1:        crates.tar.gz
 
 BuildArch:      x86_64
 BuildRequires:  python3-devel
+BuildRequires:  python3dist(setuptools)
+BuildRequires:  python3dist(setuptools-rust)
 BuildRequires:  python3dist(wheel)
 BuildRequires:  python3dist(babel)
-BuildRequires:  python3dist(setuptools-rust)
 
 BuildRequires:  rust-packaging
 BuildRequires: rust-arrayvec0.5-devel
@@ -104,70 +100,65 @@ BuildRequires: rust-vec_map-devel
 BuildRequires: rust-version_check-devel
 BuildRequires: rust-wyz-devel
 BuildRequires: rust-yansi-devel
-# Overridden to rpms due to Fedora version patching
 BuildRequires: rust-paste-devel
 BuildRequires: rust-indoc-devel
 
-Requires: python%{python3_pkgversion}
-Requires: python%{python3_pkgversion}-gobject
-Requires: python%{python3_pkgversion}-events
-Requires: python%{python3_pkgversion}-configargparse
-Requires: python%{python3_pkgversion}-more-itertools
-Requires: python%{python3_pkgversion}-rx
-Requires: python%{python3_pkgversion}-importlib-resources
-Requires: python%{python3_pkgversion}-importlib-metadata
-Requires: python%{python3_pkgversion}-dataclasses
+Requires: python3
+Requires: python3-gobject
+Requires: python3-events
+Requires: python3-configargparse
+Requires: python3-more-itertools
+Requires: python3-rx
+Requires: python3-importlib-resources
+Requires: python3-importlib-metadata
+Requires: python3-dataclasses
 Requires: gtk3
 Requires: dbus-libs
 Requires: gtksourceview3
 
-Provides: fapolicy-analyzer
+%global modname fapolicy_analyzer
 
 %description
-%{sum}.
+Tools to assist with the configuration and maintenance of Fapolicyd (File Access Policy Daemon).
 
 %prep
 # Problem:  the registry location is not writable, which blocks extraction of vendored crates
 # Solution: link the contents of the /usr/share/cargo/registry into a replacement registry
 #           then extract the contents of the vendored crates tarball to the replacement registry
-#           then remap the registry location in the .cargo/config to the replacement registry
-#           finally remap the path prefix for strings literals in panics back to the original
 CARGO_REG_DIR=%{_sourcedir}/registry
-%{__mkdir} -p ${CARGO_REG_DIR}
+mkdir -p ${CARGO_REG_DIR}
 for d in %{cargo_registry}/*; do ln -sf ${d} ${CARGO_REG_DIR}; done
-%{__tar} xzf %{_sourcedir}/crates.tar.gz -C ${CARGO_REG_DIR}
+tar xzf %{_sourcedir}/crates.tar.gz -C ${CARGO_REG_DIR}
 
 # use the rust2rpm cargo_prep to update our cargo conf
 %cargo_prep
 
-# now we need to tweak the registry location to BUILDROOT before building
+# remap the registry location in the .cargo/config to the replacement registry
 sed -i "s#%{cargo_registry}#${CARGO_REG_DIR}#g" .cargo/config
-# have to undo the tweak in the shared library, otherwise rpm check will balk
+# unmap any path strings in the so back to the /usr/share/ registry, otherwise rpm check will bark
 sed -i "/\[build\]/a rustflags = [\"--remap-path-prefix\", \"${CARGO_REG_DIR}=%{cargo_registry}\"]" .cargo/config
 
-%autosetup -p0 -n %{appname}
+%autosetup -p0 -n fapolicy-analyzer
 
-# get rid of the cargo lock, we will use whatever is available in the registry
+# use whatever is available
 rm Cargo.lock
 
-# for setuptools, set the version of the library to the rpm version
+# use the spec version as the app version
 echo %{version} > VERSION
 
-%generate_buildrequires
-%pyproject_buildrequires
-
 %build
-python3 setup.py compile_catalog -f
-%pyproject_wheel
+%{python3} setup.py compile_catalog -f
+%py3_build_wheel
 
 %install
-%pyproject_install
-%pyproject_save_files fapolicy_analyzer
+%{py3_install_wheel %{modname}-%{version}*%{_arch}.whl}
 install bin/fapolicy-analyzer %{buildroot}%{_sbindir}/fapolicy-analyzer -D
 
 %check
 
-%files -n %{appname} -f %{pyproject_files}
+%files -n fapolicy-analyzer
+%{python3_sitearch}/%{modname}
+%{python3_sitearch}/%{modname}-%{version}*
 %{_sbindir}/fapolicy-analyzer
 
 %doc README.md
