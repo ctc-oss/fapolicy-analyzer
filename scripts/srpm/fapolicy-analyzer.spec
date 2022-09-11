@@ -7,7 +7,6 @@ URL:            https://github.com/ctc-oss/fapolicy-analyzer
 Source0:        fapolicy-analyzer.tar.gz
 Source1:        crates.tar.gz
 
-BuildArch:      x86_64
 BuildRequires:  python3-devel
 BuildRequires:  python3dist(setuptools)
 BuildRequires:  python3dist(setuptools-rust)
