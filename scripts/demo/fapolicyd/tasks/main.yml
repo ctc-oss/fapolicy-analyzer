@@ -14,12 +14,6 @@
     - { src: fapolicyd.conf.md, dest: fapolicyd.conf }
     - { src: demo.trust, dest: fapolicyd.trust }
 
-- name: enable fapolicyd service
-  systemd:
-    name: fapolicyd
-    state: restarted
-    enabled: true
-
 - name: "Add {{ vagrant_user }} to fapolicyd group"
   user:
     name: "{{ vagrant_user }}"
@@ -60,3 +54,10 @@
     path: /usr/lib/systemd/system/fapolicyd.service
     regexp: '^Restart=.*'
     state: absent
+
+- name: Enable fapolicyd service
+  systemd:
+    name: fapolicyd
+    state: restarted
+    daemon_reload: yes
+    enabled: true
