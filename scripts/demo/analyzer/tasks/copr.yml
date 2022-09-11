@@ -1,0 +1,14 @@
+---
+- name: install dnf plugins
+  dnf:
+    name: dnf-plugins-core
+    state: present
+
+- name: enable copr repo
+  shell: |
+    dnf copr enable -y jwass3/fapolicy-analyzer
+
+- name: install analyzer
+  dnf:
+    name: fapolicy-analyzer
+    state: present
