@@ -14,9 +14,16 @@ name: SRPM
 
 jobs:
   build:
-    name: Build rawhide
+    name: Build ${{ matrix.triple.name }}
+    strategy:
+      matrix:
+        triple:
+          - {
+            name: 'rawhide',
+            image: 'fedora:rawhide',
+          }
     runs-on: ubuntu-latest
-    container: fedora:rawhide
+    container: ${{ matrix.triple.image }}
     steps:
       - name: Dependencies
         run: |
