@@ -115,12 +115,15 @@ Requires: python3-events
 Requires: python3-configargparse
 Requires: python3-more-itertools
 Requires: python3-rx
-Requires: python3-importlib-resources
 Requires: python3-importlib-metadata
-Requires: python3-dataclasses
 Requires: gtk3
 Requires: dbus-libs
 Requires: gtksourceview3
+
+%if 0%{?rhel}
+Requires: python3-dataclasses
+Requires: python3-importlib-resources
+%endif
 
 %global modname fapolicy_analyzer
 
