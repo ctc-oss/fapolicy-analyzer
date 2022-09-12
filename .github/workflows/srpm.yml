@@ -68,6 +68,18 @@ jobs:
           dnf builddep -y scripts/srpm/fapolicy-analyzer.spec
           rpmbuild --rebuild /tmp/archives/fapolicy-analyzer-*.src.rpm
 
+      - name: Tag Spec
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          base=https://github.com/$GITHUB_REPOSITORY
+          source=$base/archive/refs/tags/${{ steps.tag_name.outputs.VERSION }}.tar.gz
+          crates=$base/releases/download/${{ steps.tag_name.outputs.VERSION }}/crates.tar.gz
+          out=/tmp/archives/fapolicy-analyzer.${{ matrix.triple.name }}.spec
+
+          cp scripts/srpm/fapolicy-analyzer.spec $out
+          sed -i -e "s#fapolicy-analyzer.tar.gz#$source#" $out
+          sed -i -e "s#crates.tar.gz#$crates#" $out
+
       - name: Export tarballs
         run: |
           mkdir -p /tmp/archives
@@ -81,6 +93,7 @@ jobs:
           name: srpm-artifacts
           path: |
             /tmp/archives/*
+            /tmp/archives/*.spec
 
       - name: Release artifacts
         uses: softprops/action-gh-release@v1
@@ -91,3 +104,4 @@ jobs:
           draft: true
           files: |
             /tmp/archives/*.rpm
+            /tmp/archives/*.spec
