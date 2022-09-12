@@ -6,6 +6,9 @@ License:        GPLv3+
 URL:            https://github.com/ctc-oss/fapolicy-analyzer
 Source0:        fapolicy-analyzer.tar.gz
 Source1:        crates.tar.gz
+%if 0%{?rhel}
+Source2:        python.tar.gz
+%endif
 
 BuildRequires: python3-devel
 BuildRequires: python3dist(setuptools)
@@ -15,9 +18,8 @@ BuildRequires: python3dist(babel)
 
 %if 0%{?rhel}
 BuildRequires: rust-toolset
+BuildRequires: python3dist(typing-extensions)
 %else
-BuildRequires: python3dist(setuptools-rust)
-
 BuildRequires: rust-packaging
 BuildRequires: python3dist(setuptools-rust)
 
@@ -150,6 +152,15 @@ sed -i "/\[build\]/a rustflags = [\"--remap-path-prefix\", \"${CARGO_REG_DIR}=%{
 
 %autosetup -p0 -n %{name}
 rm Cargo.lock
+
+%if 0%{?rhel}
+# install the vendored python source
+tar xzf %{_sourcedir}/python.tar.gz -C %{_sourcedir}
+%{__python3} -m pip list
+%{__python3} -m pip install %{_sourcedir}/python-semanticversion-* --no-deps
+%{__python3} -m pip install %{_sourcedir}/setuptools-rust-* --no-deps
+
+%endif
 
 %build
 echo %{version} > VERSION

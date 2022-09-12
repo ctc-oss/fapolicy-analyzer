@@ -19,4 +19,12 @@ rm -rf vendor
 cargo vendor-filterer --platform=x86_64-unknown-linux-gnu &> /dev/null
 ./scripts/srpm/lock2spec.py
 tar czf crates.tar.gz -C vendor .
+curl -sL -o /tmp/semanticversion.tar.gz https://github.com/rbarrois/python-semanticversion/archive/refs/tags/2.10.0.tar.gz
+git clone https://github.com/PyO3/setuptools-rust.git -b v1.1.2
+mkdir /tmp/____Extract
+tar xzf /tmp/setuptools-rust.tar.gz -C /tmp/____Extract
+tar xzf /tmp/semanticversion.tar.gz -C /tmp/____Extract
+tar czf python.tar.gz -C /tmp/____Extract .
+rm -rf /tmp/____Extract
 du -sh crates.tar.gz
+du -sh python.tar.gz

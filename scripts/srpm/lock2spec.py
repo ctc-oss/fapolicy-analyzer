@@ -107,7 +107,7 @@ if __name__ == '__main__':
             crates[p] = f"%{{crates_source {p} {v}}}"
 
     excluded_crates = overridden_crates + blacklisted_crates
-    if os_id != "rhel":
+    if False:
         print("BuildRequires: rust-packaging")
         for r in rpms.values():
             rpm = remappings[r] if r in remappings else r
