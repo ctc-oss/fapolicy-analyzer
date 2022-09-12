@@ -47,7 +47,7 @@ pub(crate) fn expand_on_gid(rs: &Analysis) -> Vec<PyEvent> {
             },
         })
     }
-    dbg!(&r);
+    //dbg!(&r);
     r
 }
 
@@ -208,7 +208,7 @@ impl PyEventLog {
     fn by_user(&self, uid: i32) -> Vec<PyEvent> {
         analyze(&self.rs, Perspective::User(uid), &self.rs_trust)
             .iter()
-            .flat_map(|e| expand_on_gid(e))
+            .flat_map(|e| expand_on_gid(e).into_iter().filter(|e| e.uid() == uid))
             .collect()
     }
 
@@ -216,7 +216,7 @@ impl PyEventLog {
     fn by_group(&self, gid: i32) -> Vec<PyEvent> {
         analyze(&self.rs, Perspective::Group(gid), &self.rs_trust)
             .iter()
-            .flat_map(|e| expand_on_gid(e))
+            .flat_map(|e| expand_on_gid(e).into_iter().filter(|e| e.gid() == gid))
             .collect()
     }
 }

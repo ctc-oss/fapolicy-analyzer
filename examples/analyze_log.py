@@ -33,15 +33,18 @@ log = s.load_debuglog(args.path)
 
 print(f"Subjects in log: {len(log.subjects())}\n")
 
-print('# Subject events')
-for e in log.by_subject('/bin/bash'):
-    show_event(e)
-print()
+for sub in log.subjects():
+    slog = log.by_subject(sub)
+    if slog:
+        print(f"# Subject {sub} events")
+        for e in slog:
+            show_event(e)
+        print()
 
 for u in s.users():
     ulog = log.by_user(u.id)
     if ulog:
-        print(f"# User events - {u.id}")
+        print(f"# User {u.id} events")
         for e in ulog:
             show_event(e)
         print()
