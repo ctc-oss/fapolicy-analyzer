@@ -14,6 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from fapolicy_analyzer import *
+import argparse
 
 
 def show_event(e):
@@ -22,8 +23,13 @@ def show_event(e):
     print(f'{e.uid}:{e.gid} {s.file} => {o.file}')
 
 
+parser = argparse.ArgumentParser()
+parser.add_argument("path", type=str, help="Event log to analyzer")
+args = parser.parse_args()
+
+
 s = System()
-log = s.events('tests/data/events1.log')
+log = s.load_debuglog(args.path)
 
 print(f"Subjects in log: {len(log.subjects())}\n")
 
@@ -32,16 +38,18 @@ for e in log.by_subject('/bin/bash'):
     show_event(e)
 print()
 
-print('# User events - 1')
-for e in log.by_user(1):
-    show_event(e)
-print()
+for u in s.users():
+    ulog = log.by_user(u.id)
+    if ulog:
+        print(f"# User events - {u.id}")
+        for e in ulog:
+            show_event(e)
+        print()
 
-print('Group events- 555')
-for e in log.by_group(555):
-    show_event(e)
-print()
-
-print('Group events - 888')
-for e in log.by_group(888):
-    show_event(e)
+for g in s.groups():
+    glog = log.by_group(g.id)
+    if glog:
+        print(f"# Group events - {g.id}")
+        for e in glog:
+            show_event(e)
+        print()
