@@ -47,7 +47,6 @@ pub(crate) fn expand_on_gid(rs: &Analysis) -> Vec<PyEvent> {
             },
         })
     }
-    //dbg!(&r);
     r
 }
 
