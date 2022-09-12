@@ -84,7 +84,6 @@ jobs:
         run: |
           mkdir -p /tmp/archives
           mv crates.tar.gz /tmp/archives
-          mv fapolicy-analyzer.tar.gz /tmp/archives
           mv /github/home/rpmbuild/RPMS/x86_64/*.rpm /tmp/archives
 
       - name: Archive artifacts
@@ -93,7 +92,6 @@ jobs:
           name: srpm-artifacts
           path: |
             /tmp/archives/*
-            /tmp/archives/*.spec
 
       - name: Release artifacts
         uses: softprops/action-gh-release@v1
@@ -105,3 +103,4 @@ jobs:
           files: |
             /tmp/archives/*.rpm
             /tmp/archives/*.spec
+            /tmp/archives/*.tar.gz
