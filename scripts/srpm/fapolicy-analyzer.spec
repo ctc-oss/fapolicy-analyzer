@@ -149,7 +149,7 @@ Tools to assist with the configuration and maintenance of Fapolicyd (File Access
 CARGO_REG_DIR=%{_sourcedir}/vendor
 mkdir -p ${CARGO_REG_DIR}
 for d in %{cargo_registry}/*; do ln -sf ${d} ${CARGO_REG_DIR}; done
-tar xzf %{_sourcedir}/vendor-rs.tar.gz -C ${CARGO_REG_DIR} --strip-components=1
+tar xzf %{_sourcedir}/vendor-rs.tar.gz -C ${CARGO_REG_DIR} --strip-components=2
 
 %cargo_prep
 %endif
