@@ -204,5 +204,5 @@ install bin/%{name} %{buildroot}%{_sbindir}/%{name} -D
 %attr(755,root,root) %{_sbindir}/fapolicy-analyzer
 
 %changelog
-* Fri Sep 09 2022 John Wass <jwass3@gmail.com> 0.6.0-1
+* Fri Sep 09 2022 John Wass <jwass3@gmail.com> 0.6.1-1
 - New release
