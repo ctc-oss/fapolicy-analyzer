@@ -170,12 +170,10 @@ rm Cargo.lock
 %if 0%{?rhel}
 # install the vendored python build tooling
 tar xzf %{_sourcedir}/vendor-py.tar.gz -C %{_sourcedir}
-%{python3} -m pip list
 %{python3} -m pip install %{_sourcedir}/pip --no-deps --no-input --quiet
 %{python3} -m pip install %{_sourcedir}/setuptools --no-deps --no-input  --quiet
 %{python3} -m pip install %{_sourcedir}/python-semanticversion --no-deps --no-input  --quiet
 %{python3} -m pip install %{_sourcedir}/setuptools-rust --no-deps --no-input  --quiet
-%{python3} -m pip list
 
 %endif
 
