@@ -76,12 +76,12 @@ jobs:
 
           cp scripts/srpm/fapolicy-analyzer.spec $out
           sed -z -i -e "s#fapolicy-analyzer.tar.gz#$base/fapolicy-analyzer.tar.gz#" $out
-          sed -z -i -e "s#crates.tar.gz#$base/crates.tar.gz#" $out
+          sed -z -i -e "s#vendor-rs.tar.gz#$base/vendor-rs.tar.gz#" $out
 
       - name: Export tarballs
         run: |
           mkdir -p /tmp/archives
-          mv crates.tar.gz /tmp/archives
+          mv vendor-rs.tar.gz /tmp/archives
           mv fapolicy-analyzer.tar.gz /tmp/archives
           mv /github/home/rpmbuild/RPMS/x86_64/*.rpm /tmp/archives
 
