@@ -5,9 +5,9 @@ Release:        1%{?dist}
 License:        GPLv3+
 URL:            https://github.com/ctc-oss/fapolicy-analyzer
 Source0:        fapolicy-analyzer.tar.gz
-Source1:        crates.tar.gz
+Source1:        vendor-rs.tar.gz
 %if 0%{?rhel}
-Source2:        python.tar.gz
+Source2:        vendor-py.tar.gz
 %endif
 
 BuildRequires: python3-devel
@@ -15,10 +15,12 @@ BuildRequires: python3dist(setuptools)
 BuildRequires: python3dist(pip)
 BuildRequires: python3dist(wheel)
 BuildRequires: python3dist(babel)
+BuildRequires: dbus-devel
 
 %if 0%{?rhel}
 BuildRequires: rust-toolset
 BuildRequires: python3dist(typing-extensions)
+BuildRequires: git
 %else
 BuildRequires: rust-packaging
 BuildRequires: python3dist(setuptools-rust)
@@ -141,7 +143,7 @@ Tools to assist with the configuration and maintenance of Fapolicyd (File Access
 CARGO_REG_DIR=%{_sourcedir}/registry
 mkdir -p ${CARGO_REG_DIR}
 for d in %{cargo_registry}/*; do ln -sf ${d} ${CARGO_REG_DIR}; done
-tar xzf %{_sourcedir}/crates.tar.gz -C ${CARGO_REG_DIR}
+tar xzf %{_sourcedir}/vendor-rs.tar.gz -C ${CARGO_REG_DIR}
 
 %cargo_prep
 
@@ -154,11 +156,14 @@ sed -i "/\[build\]/a rustflags = [\"--remap-path-prefix\", \"${CARGO_REG_DIR}=%{
 rm Cargo.lock
 
 %if 0%{?rhel}
-# install the vendored python source
-tar xzf %{_sourcedir}/python.tar.gz -C %{_sourcedir}
+# install the vendored python build tooling
+tar xzf %{_sourcedir}/vendor-py.tar.gz -C %{_sourcedir}
 %{__python3} -m pip list
-%{__python3} -m pip install %{_sourcedir}/python-semanticversion-* --no-deps
-%{__python3} -m pip install %{_sourcedir}/setuptools-rust-* --no-deps
+%{__python3} -m pip install %{_sourcedir}/pip --no-deps
+%{__python3} -m pip install %{_sourcedir}/setuptools --no-deps
+%{__python3} -m pip install %{_sourcedir}/python-semanticversion --no-deps
+%{__python3} -m pip install %{_sourcedir}/setuptools-rust --no-deps
+%{__python3} -m pip list
 
 %endif
 

@@ -15,16 +15,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-rm -rf vendor
-cargo vendor-filterer --platform=x86_64-unknown-linux-gnu &> /dev/null
+# rust
+rm -rf vendor-rs
+cargo vendor-filterer --platform=x86_64-unknown-linux-gnu vendor-rs &> /dev/null
 ./scripts/srpm/lock2spec.py
-tar czf crates.tar.gz -C vendor .
-curl -sL -o /tmp/semanticversion.tar.gz https://github.com/rbarrois/python-semanticversion/archive/refs/tags/2.10.0.tar.gz
-git clone https://github.com/PyO3/setuptools-rust.git -b v1.1.2
-mkdir /tmp/____Extract
-tar xzf /tmp/setuptools-rust.tar.gz -C /tmp/____Extract
-tar xzf /tmp/semanticversion.tar.gz -C /tmp/____Extract
-tar czf python.tar.gz -C /tmp/____Extract .
-rm -rf /tmp/____Extract
-du -sh crates.tar.gz
-du -sh python.tar.gz
+tar czf vendor-rs.tar.gz -C vendor-rs .
+
+# python
+rm -rf vendor-py && mkdir vendor-py && cd vendor-py
+curl -sLO https://github.com/pypa/pip/archive/refs/tags/21.3.1.tar.gz
+curl -sLO https://github.com/pypa/setuptools/archive/refs/tags/v59.6.0.tar.gz
+curl -sLO https://github.com/rbarrois/python-semanticversion/archive/refs/tags/2.8.2.tar.gz
+for f in *.tar.gz; do tar xzf ${f}; rm ${f}; done
+for d in ./*; do mv ${d} $(echo ${d} | rev | cut -d- -f2- | rev); done
+git clone https://github.com/PyO3/setuptools-rust.git -b v1.1.2 &> /dev/null
+
+cd ..
+tar czf vendor-py.tar.gz -C vendor-py .
+
+du -sh vendor-rs.tar.gz
+du -sh vendor-py.tar.gz
