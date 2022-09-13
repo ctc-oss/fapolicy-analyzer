@@ -19,6 +19,9 @@
 rm -rf vendor-rs
 cargo vendor-filterer --platform=x86_64-unknown-linux-gnu vendor-rs &> /dev/null
 ./scripts/srpm/lock2spec.py
+mkdir vendor-tmp
+mv vendor-rs vendor-tmp/vendor
+mv vendor-tmp vendor-rs
 tar czf vendor-rs.tar.gz -C vendor-rs .
 
 # python

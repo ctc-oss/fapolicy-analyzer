@@ -137,20 +137,32 @@ Requires: python3-importlib-resources
 Tools to assist with the configuration and maintenance of Fapolicyd (File Access Policy Daemon).
 
 %prep
-# Problem:  the /usr/share/cargo/registry location is not writable, blocking use of vendored crates
+
+%if 0%{?rhel}
+# on rhel we vendor everything
+%cargo_prep -V1
+%else
+# Goal:     Hybrid crate dependency, mixing packages and vendored
+# Problem:  the /usr/share/cargo/registry location is not writable, blocking the install of vendored crates
 # Solution: link the contents of the /usr/share/cargo/registry into a replacement writable registry
 #           extract the contents of the vendored crate tarball to the replacement writable registry
-CARGO_REG_DIR=%{_sourcedir}/registry
+CARGO_REG_DIR=%{_sourcedir}/vendor
 mkdir -p ${CARGO_REG_DIR}
 for d in %{cargo_registry}/*; do ln -sf ${d} ${CARGO_REG_DIR}; done
-tar xzf %{_sourcedir}/vendor-rs.tar.gz -C ${CARGO_REG_DIR}
+tar xzf %{_sourcedir}/vendor-rs.tar.gz -C ${CARGO_REG_DIR} --strip-components=1
 
 %cargo_prep
+%endif
+
 
 # remap the registry location in the .cargo/config to the replacement registry
 sed -i "s#%{cargo_registry}#${CARGO_REG_DIR}#g" .cargo/config
+
+# todo;; revisit this, on rhel a key already exists...
+%if 0%{?fedora}
 # unmap any path strings in the so back to the /usr/share/ registry, otherwise rpm check will bark
 sed -i "/\[build\]/a rustflags = [\"--remap-path-prefix\", \"${CARGO_REG_DIR}=%{cargo_registry}\"]" .cargo/config
+%endif
 
 %autosetup -p0 -n %{name}
 rm Cargo.lock
@@ -158,12 +170,12 @@ rm Cargo.lock
 %if 0%{?rhel}
 # install the vendored python build tooling
 tar xzf %{_sourcedir}/vendor-py.tar.gz -C %{_sourcedir}
-%{__python3} -m pip list
-%{__python3} -m pip install %{_sourcedir}/pip --no-deps
-%{__python3} -m pip install %{_sourcedir}/setuptools --no-deps
-%{__python3} -m pip install %{_sourcedir}/python-semanticversion --no-deps
-%{__python3} -m pip install %{_sourcedir}/setuptools-rust --no-deps
-%{__python3} -m pip list
+%{python3} -m pip list
+%{python3} -m pip install %{_sourcedir}/pip --no-deps --no-input --quiet
+%{python3} -m pip install %{_sourcedir}/setuptools --no-deps --no-input  --quiet
+%{python3} -m pip install %{_sourcedir}/python-semanticversion --no-deps --no-input  --quiet
+%{python3} -m pip install %{_sourcedir}/setuptools-rust --no-deps --no-input  --quiet
+%{python3} -m pip list
 
 %endif
 
@@ -173,8 +185,14 @@ echo %{version} > VERSION
 %py3_build_wheel
 
 %install
-%{py3_install_wheel %{modname}-%{version}*%{_arch}.whl}
+
 install bin/%{name} %{buildroot}%{_sbindir}/%{name} -D
+
+%if 0%{?rhel}
+%{python3} -m pip install -I dist/%{modname}-%{version}*%{_arch}.whl --root %{buildroot} --no-deps
+%else
+%{py3_install_wheel %{modname}-%{version}*%{_arch}.whl}
+%endif
 
 %check
 

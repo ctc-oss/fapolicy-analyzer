@@ -64,6 +64,7 @@ def available_packages():
 
 
 if __name__ == '__main__':
+    vendor_dir = "vendor-rs"
     vendoring = True
     os_id = None
     os_version = None
@@ -121,7 +122,7 @@ if __name__ == '__main__':
 
         for c in unvendor:
             print(f"[unvendor] {c}")
-            shutil.rmtree(f"vendor/{c}", ignore_errors=True)
+            shutil.rmtree(f"{vendor_dir}/{c}", ignore_errors=True)
         print(f"Official {len(unvendor)}")
         print(f"Vendored {len(crates) - len(excluded_crates)}")
     else:
