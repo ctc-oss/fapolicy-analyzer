@@ -24,4 +24,4 @@ venvs
 
 
 *.tar.gz
-vendor
+/vendor*/
