@@ -154,16 +154,6 @@ tar xzf %{_sourcedir}/vendor-rs.tar.gz -C ${CARGO_REG_DIR} --strip-components=1
 %cargo_prep
 %endif
 
-
-# remap the registry location in the .cargo/config to the replacement registry
-sed -i "s#%{cargo_registry}#${CARGO_REG_DIR}#g" .cargo/config
-
-# todo;; revisit this, on rhel a key already exists...
-%if 0%{?fedora}
-# unmap any path strings in the so back to the /usr/share/ registry, otherwise rpm check will bark
-sed -i "/\[build\]/a rustflags = [\"--remap-path-prefix\", \"${CARGO_REG_DIR}=%{cargo_registry}\"]" .cargo/config
-%endif
-
 %autosetup -p0 -n %{name}
 rm Cargo.lock
 
