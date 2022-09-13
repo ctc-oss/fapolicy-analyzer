@@ -154,6 +154,9 @@ tar xzf %{_sourcedir}/vendor-rs.tar.gz -C ${CARGO_REG_DIR} --strip-components=1
 %cargo_prep
 %endif
 
+# remap the registry location in the .cargo/config to the replacement registry
+sed -i "s#%{cargo_registry}#${CARGO_REG_DIR}#g" .cargo/config
+
 %autosetup -p0 -n %{name}
 rm Cargo.lock
 
