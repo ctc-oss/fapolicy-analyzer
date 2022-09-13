@@ -65,7 +65,6 @@ def available_packages():
 
 if __name__ == '__main__':
     vendor_dir = "vendor-rs"
-    vendoring = True
     os_id = None
     os_version = None
     with open("/etc/os-release") as file:
@@ -77,7 +76,14 @@ if __name__ == '__main__':
                 release[k] = v
         os_id = release.get("ID") or "unknown"
         os_version = release["VERSION_ID"]
+
+    if "TARGET_OS" in os.environ:
+        os_id = os.environ.get("TARGET_OS")
+        print(f"overriding OS ID to {os_id}")
+    vendoring_all = os_id == "rhel"s
     print(f"{os_id}:{os_version}")
+    if vendoring_all:
+        print("== vendoring all ==")
 
     rpms = {}
     crates = {}
@@ -108,7 +114,10 @@ if __name__ == '__main__':
             crates[p] = f"%{{crates_source {p} {v}}}"
 
     excluded_crates = overridden_crates + blacklisted_crates
-    if False:
+    if vendoring_all:
+        print("BuildRequires: rust-toolset")
+        print(f"Vendored (all) {len(rpms) + len(crates) - len(excluded_crates)}")
+    else:
         print("BuildRequires: rust-packaging")
         for r in rpms.values():
             rpm = remappings[r] if r in remappings else r
@@ -125,6 +134,3 @@ if __name__ == '__main__':
             shutil.rmtree(f"{vendor_dir}/{c}", ignore_errors=True)
         print(f"Official {len(unvendor)}")
         print(f"Vendored {len(crates) - len(excluded_crates)}")
-    else:
-        print("BuildRequires: rust-toolset")
-        print(f"Vendored (all) {len(rpms) + len(crates) - len(excluded_crates)}")
