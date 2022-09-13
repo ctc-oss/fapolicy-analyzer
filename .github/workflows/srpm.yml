@@ -63,10 +63,10 @@ jobs:
         run: |
           make -f .copr/Makefile srpm outdir=/tmp/archives spec=scripts/srpm/fapolicy-analyzer.spec
 
-      - name: Rebuild SRPM
-        run: |
-          dnf builddep -y scripts/srpm/fapolicy-analyzer.spec
-          rpmbuild --rebuild /tmp/archives/fapolicy-analyzer-*.src.rpm
+#      - name: Rebuild SRPM
+#        run: |
+#          dnf builddep -y scripts/srpm/fapolicy-analyzer.spec
+#          rpmbuild --rebuild /tmp/archives/fapolicy-analyzer-*.src.rpm
 
       - name: Tag Spec
         if: startsWith(github.ref, 'refs/tags/v')
