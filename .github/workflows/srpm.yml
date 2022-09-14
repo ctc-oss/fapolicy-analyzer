@@ -103,8 +103,12 @@ jobs:
         run: |
           mkdir -p /tmp/archives
           mv vendor-rs.tar.gz /tmp/archives
-          mv vendor-py.tar.gz /tmp/archives
           mv fapolicy-analyzer.tar.gz /tmp/archives
+
+      - name: Export Python tarball
+        if: startsWith(matrix.triple.name, 'el')
+        run: |
+          mv vendor-py.tar.gz /tmp/archives
 
       - name: Archive artifacts
         uses: actions/upload-artifact@v2
