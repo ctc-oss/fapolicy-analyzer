@@ -98,6 +98,7 @@ jobs:
       - name: Export tarballs
         run: |
           mkdir -p /tmp/archives
+          mv vendor-py.tar.gz /tmp/archives
           mv vendor-rs.tar.gz /tmp/archives
           mv fapolicy-analyzer.tar.gz /tmp/archives
 
