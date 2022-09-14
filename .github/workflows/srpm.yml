@@ -96,14 +96,18 @@ jobs:
 
           cp scripts/srpm/fapolicy-analyzer.spec $out
           sed -z -i -e "s#fapolicy-analyzer.tar.gz#$base/fapolicy-analyzer.tar.gz#" $out
-          sed -z -i -e "s#vendor-rs.tar.gz#$base/vendor-rs.tar.gz#" $out
+          sed -z -i -e "s#vendor-rs.tar.gz#$base/vendor-rs.$PLATFORM.tar.gz#" $out
           sed -z -i -e "s#vendor-py.tar.gz#$base/vendor-py.tar.gz#" $out
+        env:
+          PLATFORM: ${{ matrix.triple.name }}
 
       - name: Export tarballs
         run: |
           mkdir -p /tmp/archives
-          mv vendor-rs.tar.gz /tmp/archives
+          mv vendor-rs.tar.gz /tmp/archives/vendor-rs.$PLATFORM.tar.gz
           mv fapolicy-analyzer.tar.gz /tmp/archives
+        env:
+          PLATFORM: ${{ matrix.triple.name }}
 
       - name: Export Python tarball
         if: startsWith(matrix.triple.name, 'el')
