@@ -33,6 +33,13 @@ jobs:
     runs-on: ubuntu-latest
     container: ${{ matrix.triple.image }}
     steps:
+      - name: Enable rocky appstream if ubi
+        if: startsWith(matrix.triple.name, 'el')
+        run: |
+          RELEASE=$(grep -oE "[0-9]+\.[0-9]+" /etc/redhat-release) \
+          && printf "[rocky-$RELEASE-appstream]\nname=Rocky Linux $RELEASE - AppStream\nbaseurl=http://dl.rockylinux.org/pub/rocky/$RELEASE/AppStream/x86_64/os/\ngpgcheck=1\nenabled=1\ngpgkey=https://dl.rockylinux.org/pub/rocky/$RELEASE/AppStream/x86_64/os/RPM-GPG-KEY-rockyofficial\nincludepkgs=rpmdevtools,dbus-devel\n" > /etc/yum.repos.d/Rocky-"$RELEASE"-AppStream.repo \
+          || true
+
       - name: Dependencies
         run: |
           dnf install -y git gcc rpm rpmdevtools dnf-plugins-core dbus-devel
