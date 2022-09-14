@@ -23,7 +23,7 @@ jobs:
             image: 'fedora:37',
           }
           - {
-            name: 'rawhide',
+            name: 'fc38',
             image: 'fedora:rawhide',
           }
           - {
@@ -70,8 +70,8 @@ jobs:
         run: |
           cargo install cargo-vendor-filterer
 
-      # allow the git archive command to run within the repo
-      - name: Allow archive
+      # allows the git archive command to run within the repo
+      - name: Add workspace as git safe directory
         run: |
           git config --global --add safe.directory $GITHUB_WORKSPACE
 
@@ -88,15 +88,14 @@ jobs:
           # todo;; hacking this out for now
           rm /tmp/archives/fapolicy-analyzer-debug*-*.rpm
 
-      - name: Tag Spec
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: Release Spec File
+        # this only needs to be done once, so it gets done on the rhel build
+        if: startsWith(github.ref, 'refs/tags/v') && startsWith(matrix.triple.name, 'el')
         run: |
           base=https://github.com/$GITHUB_REPOSITORY/releases/download/${{ steps.tag_name.outputs.VERSION }}
-          out=/tmp/archives/fapolicy-analyzer.${{ matrix.triple.name }}.spec
-
-          cp scripts/srpm/fapolicy-analyzer.spec $out
+          cp scripts/srpm/fapolicy-analyzer.spec /tmp/archives
           sed -z -i -e "s#fapolicy-analyzer.tar.gz#$base/fapolicy-analyzer.tar.gz#" $out
-          sed -z -i -e "s#vendor-rs.tar.gz#$base/vendor-rs.$PLATFORM.tar.gz#" $out
+          sed -z -i -e "s#vendor-rs.tar.gz#$base/vendor-rs%{?dist}.tar.gz#" $out
           sed -z -i -e "s#vendor-py.tar.gz#$base/vendor-py.tar.gz#" $out
         env:
           PLATFORM: ${{ matrix.triple.name }}
