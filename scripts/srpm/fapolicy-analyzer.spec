@@ -142,7 +142,7 @@ Tools to assist with the configuration and maintenance of Fapolicyd (File Access
 # on rhel we vendor everything
 %cargo_prep -V1
 %else
-# Goal:     Hybrid crate dependency, mixing packages and vendored
+# Goal:     Hybrid crate dependencies, mixing packages and vendored
 # Problem:  the /usr/share/cargo/registry location is not writable, blocking the install of vendored crates
 # Solution: link the contents of the /usr/share/cargo/registry into a replacement writable registry
 #           extract the contents of the vendored crate tarball to the replacement writable registry
@@ -158,6 +158,8 @@ tar xzf %{_sourcedir}/vendor-rs.tar.gz -C ${CARGO_REG_DIR} --strip-components=2
 sed -i "s#%{cargo_registry}#${CARGO_REG_DIR}#g" .cargo/config
 
 %autosetup -p0 -n %{name}
+
+# throw out our lock, use whatever is available in the replacement registry
 rm Cargo.lock
 
 %if 0%{?rhel}
@@ -180,6 +182,7 @@ echo %{version} > VERSION
 install bin/%{name} %{buildroot}%{_sbindir}/%{name} -D
 
 %if 0%{?rhel}
+# the vendored version of pip does not have the strip-prefix flag used by py3_install_wheel, so call it manually
 %{python3} -m pip install -I dist/%{modname}-%{version}*%{_arch}.whl --root %{buildroot} --no-deps
 %else
 %{py3_install_wheel %{modname}-%{version}*%{_arch}.whl}

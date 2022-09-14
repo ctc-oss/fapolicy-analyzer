@@ -19,8 +19,16 @@ jobs:
       matrix:
         triple:
           - {
+            name: 'fc37',
+            image: 'fedora:37',
+          }
+          - {
             name: 'rawhide',
             image: 'fedora:rawhide',
+          }
+          - {
+            name: 'el8',
+            image: 'registry.access.redhat.com/ubi8/ubi:8.6',
           }
     runs-on: ubuntu-latest
     container: ${{ matrix.triple.image }}
