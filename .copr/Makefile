@@ -1,7 +1,7 @@
 .PHONY: clean idenfity dnf vendor vendor-app vendor-py vendor-rs dep srpm
 .SILENT: clean
 
-OS_ID_FN = $(shell grep /etc/os-release -e "^ID=" | cut -d= -f2)
+OS_ID_FN = $(shell grep /etc/os-release -e "^ID=" | tr -d '"' | cut -d= -f2 | cut -d: -f1)
 OS_ID   ?= $(OS_ID_FN)
 
 idenfity:
