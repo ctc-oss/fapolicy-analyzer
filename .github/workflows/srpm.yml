@@ -52,6 +52,7 @@ jobs:
 
       - name: Copr Makefile Dependencies
         run: |
+          dnf install -y make
           make -f .copr/Makefile dnf
 
       - name: Strip ref to tag
