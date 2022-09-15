@@ -19,9 +19,6 @@ dnf:
 	cargo install cargo-vendor-filterer
 
 vendor: vendor-app vendor-py vendor-rs
-	cargo check
-	git archive HEAD -o fapolicy-analyzer.tar.gz --prefix=fapolicy-analyzer/
-	./scripts/srpm/vendor.sh
 
 vendor-app:
 	git archive HEAD -o fapolicy-analyzer.tar.gz --prefix=fapolicy-analyzer/
