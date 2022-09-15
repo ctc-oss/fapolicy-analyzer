@@ -20,11 +20,11 @@ jobs:
         triple:
           - {
             name: 'fc37',
-            image: 'fedora:37',
+            image: 'registry.fedoraproject.org/fedora:37',
           }
           - {
             name: 'fc38',
-            image: 'fedora:rawhide',
+            image: 'registry.fedoraproject.org/fedora:rawhide',
           }
           - {
             name: 'el8',
@@ -83,10 +83,6 @@ jobs:
         run: |
           dnf builddep -y scripts/srpm/fapolicy-analyzer.spec
           rpmbuild --rebuild /tmp/archives/fapolicy-analyzer-*.src.rpm
-          cp /github/home/rpmbuild/RPMS/x86_64/*.rpm /tmp/archives
-          
-          # todo;; hacking this out for now
-          rm /tmp/archives/fapolicy-analyzer-debug*-*.rpm
 
       - name: Release Spec File
         # this only needs to be done once, so it gets done on the rhel build
@@ -101,6 +97,12 @@ jobs:
           sed -z -i -e "s#vendor-py.tar.gz#$base/vendor-py.tar.gz#" $out
         env:
           PLATFORM: ${{ matrix.triple.name }}
+
+      - name: Export RPMs
+        run: |
+          cp /github/home/rpmbuild/RPMS/x86_64/fapolicy-analyzer-${TAG}-*.rpm /tmp/archives
+        env:
+          TAG: ${{ steps.tag_name.outputs.VERSION }}
 
       - name: Export tarballs
         run: |
