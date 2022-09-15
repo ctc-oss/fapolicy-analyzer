@@ -37,8 +37,12 @@ dep: dnf vendor-app vendor-rs
 endif
 
 srpm: idenfity dep
+	@echo "=========================== SRPM ==========================="
+	pwd
 	mkdir -p /tmp/rpmbuild/SOURCES
+	ls -al
 	cp vendor-*.tar.gz fapolicy-analyzer.tar.gz /tmp/rpmbuild/SOURCES
+	cat /etc/os-release
 	rpmbuild -bs -D "_topdir /tmp/rpmbuild" \$(spec)
 	mkdir -p \$(outdir)
 	cp -v /tmp/rpmbuild/SRPMS/* \$(outdir)/
