@@ -93,9 +93,8 @@ jobs:
 
       - name: Export RPMs
         run: |
-          cp /github/home/rpmbuild/RPMS/x86_64/fapolicy-analyzer-${TAG}-*.rpm /tmp/archives
-        env:
-          TAG: ${{ steps.tag_name.outputs.VERSION }}
+          ls | grep -v debug | xargs mv -t /tmp/archives
+        working-directory: /github/home/rpmbuild/RPMS/x86_64
 
       - name: Export tarballs
         run: |
