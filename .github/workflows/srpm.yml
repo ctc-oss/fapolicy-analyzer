@@ -41,16 +41,16 @@ jobs:
           && printf "[rocky-$RELEASE-appstream]\nname=Rocky Linux $RELEASE - AppStream\nbaseurl=http://dl.rockylinux.org/pub/rocky/$RELEASE/AppStream/x86_64/os/\ngpgcheck=1\nenabled=1\ngpgkey=https://dl.rockylinux.org/pub/rocky/$RELEASE/AppStream/x86_64/os/RPM-GPG-KEY-rockyofficial\nincludepkgs=rpmdevtools,dbus-devel\n" > /etc/yum.repos.d/Rocky-"$RELEASE"-AppStream.repo \
           || true
 
-      - name: Dependencies
+      - name: RPM Building Dependencies
         run: |
-          dnf install -y git gcc make rpm rpmdevtools dnf-plugins-core dbus-devel
+          dnf install -y git rpm rpmdevtools dnf-plugins-core
 
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
 
-      - name: Dependencies (.copr/Makefile)
+      - name: Copr Makefile Dependencies
         run: |
           make -f .copr/Makefile dnf
 
