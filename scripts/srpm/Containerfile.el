@@ -1,4 +1,4 @@
-ARG image=registry.access.redhat.com/ubi8/ubi
+ARG image=registry.access.redhat.com/ubi8/ubi:8.6
 FROM $image AS build-stage
 
 ARG USERNAME
