@@ -22,7 +22,6 @@ RUN dnf -y builddep --skip-unavailable SPECS/fapolicy-analyzer.spec
 
 COPY fapolicy-analyzer.tar.gz SOURCES/
 COPY vendor-rs.tar.gz         SOURCES/
-COPY vendor-py.tar.gz         SOURCES/
 COPY scripts/srpm/build.sh    ./build.sh
 
 WORKDIR /root/rpmbuild

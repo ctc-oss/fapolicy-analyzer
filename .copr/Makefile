@@ -1,4 +1,4 @@
-.PHONY: clean idenfity dnf vendor vendor-app vendor-py vendor-rs dep srpm
+.PHONY: clean idenfity dnf vendor vendor-app vendor-rs dep srpm
 .SILENT: clean
 
 OS_ID_FN = $(shell grep /etc/os-release -e "^ID=" | tr -d '"' | cut -d= -f2 | cut -d: -f1)
@@ -10,7 +10,6 @@ idenfity:
 clean:
 	rm -f fapolicy-analyzer.tar.gz
 	rm -f vendor-rs.tar.gz
-	rm -f vendor-py.tar.gz
 
 dnf:
 	dnf install -y git openssl-devel dbus-devel python3-devel python3-pip python3-toml python3-beautifulsoup4 python3-requests python3-babel
@@ -18,20 +17,17 @@ dnf:
 	dnf install -y rust-toolset || true
 	cargo install cargo-vendor-filterer
 
-vendor: vendor-app vendor-py vendor-rs
+vendor: vendor-app vendor-rs
 
 vendor-app:
 	git archive HEAD -o fapolicy-analyzer.tar.gz --prefix=fapolicy-analyzer/
-
-vendor-py:
-	./scripts/srpm/vendor-py.sh
 
 vendor-rs:
 	cargo check
 	./scripts/srpm/vendor-rs.sh
 
 ifeq ($(OS_ID),rhel)
-dep: dnf vendor-app vendor-rs vendor-py
+dep: dnf vendor-app vendor-rs
 else
 dep: dnf vendor-app vendor-rs
 endif

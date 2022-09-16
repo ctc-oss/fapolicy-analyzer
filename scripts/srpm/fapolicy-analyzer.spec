@@ -7,7 +7,10 @@ URL:            https://github.com/ctc-oss/fapolicy-analyzer
 Source0:        fapolicy-analyzer.tar.gz
 Source1:        vendor-rs.tar.gz
 %if 0%{?rhel}
-Source2:        vendor-py.tar.gz
+Source2:        %{pypi_source pip 21.3.1}
+Source3:        %{pypi_source setuptools 59.6.0}
+Source4:        %{pypi_source setuptools-rust 1.1.2}
+Source5:        %{pypi_source semantic_version 2.8.2}
 %endif
 
 BuildRequires: python3-devel
@@ -157,20 +160,18 @@ tar xzf %{_sourcedir}/vendor-rs.tar.gz -C ${CARGO_REG_DIR} --strip-components=2
 # remap the registry location in the .cargo/config to the replacement registry
 sed -i "s#%{cargo_registry}#${CARGO_REG_DIR}#g" .cargo/config
 
-%autosetup -p0 -n %{name}
+%if 0%{?rhel}
+#%setup -T -D -b 2 -c -n %{_builddir}
+%{python3} -m pip install %{_sourcedir}/pip-21.3.1.tar.gz --no-deps --no-input --quiet
+%{python3} -m pip install %{_sourcedir}/setuptools-59.6.0.tar.gz --no-deps --no-input --quiet
+%{python3} -m pip install %{_sourcedir}/setuptools-rust-1.1.2.tar.gz --no-deps --no-input --quiet
+%{python3} -m pip install %{_sourcedir}/semantic_version-2.8.2.tar.gz --no-deps --no-input --quiet
+%endif
 
+%autosetup -p0 -n %{name}
 # throw out our lock, use whatever is available in the replacement registry
 rm Cargo.lock
 
-%if 0%{?rhel}
-# install the vendored python build tooling
-tar xzf %{_sourcedir}/vendor-py.tar.gz -C %{_sourcedir}
-%{python3} -m pip install %{_sourcedir}/pip --no-deps --no-input --quiet
-%{python3} -m pip install %{_sourcedir}/setuptools --no-deps --no-input  --quiet
-%{python3} -m pip install %{_sourcedir}/python-semanticversion --no-deps --no-input  --quiet
-%{python3} -m pip install %{_sourcedir}/setuptools-rust --no-deps --no-input  --quiet
-
-%endif
 
 %build
 echo %{version} > VERSION

@@ -90,7 +90,6 @@ jobs:
           sed -z -i -e "s#fapolicy-analyzer.tar.gz#$base/fapolicy-analyzer.tar.gz#" $out
           sed -z -i -e "s#vendor-rs.tar.gz#$base/vendor-rs.tar.gz#" $out
           sed    -i -e "s#vendor-rs.tar.gz#vendor-rs%{?dist}.tar.gz#" $out
-          sed -z -i -e "s#vendor-py.tar.gz#$base/vendor-py.tar.gz#" $out
         env:
           PLATFORM: ${{ matrix.triple.name }}
 
@@ -106,11 +105,6 @@ jobs:
           mv fapolicy-analyzer.tar.gz /tmp/archives
         env:
           PLATFORM: ${{ matrix.triple.name }}
-
-      - name: Export Python tarball
-        if: startsWith(matrix.triple.name, 'el')
-        run: |
-          mv vendor-py.tar.gz /tmp/archives
 
       - name: Archive artifacts
         uses: actions/upload-artifact@v2
