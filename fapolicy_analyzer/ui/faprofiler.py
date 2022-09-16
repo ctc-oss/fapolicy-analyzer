@@ -44,16 +44,13 @@ class ProfSessionArgsStatus(Enum):
     UNKNOWN = 7
 
 
-mapStatusEnum2Txt = {
-    ProfSessionArgsStatus.OK: s.PROF_ARG_OK,
-    ProfSessionArgsStatus.EXEC_EMPTY: s.PROF_ARG_EXEC_EMPTY,
-    ProfSessionArgsStatus.EXEC_DOESNT_EXIST: s.PROF_ARG_EXEC_DOESNT_EXIST,
-    ProfSessionArgsStatus.EXEC_NOT_EXECUTABLE: s.PROF_ARG_EXEC_NOT_EXECUTABLE,
-    ProfSessionArgsStatus.USER_DOESNT_EXIST: s.PROF_ARG_USER_DOESNT_EXIST,
-    ProfSessionArgsStatus.PWD_DOESNT_EXIST: s.PROF_ARG_PWD_DOESNT_EXIST,
-    ProfSessionArgsStatus.PWD_ISNT_DIR: s.PROF_ARG_PWD_ISNT_DIR,
-    ProfSessionArgsStatus.UNKNOWN: s.PROF_ARG_UNKNOWN,
-}
+def EnumErrorPairs2Str(dictStatusEnums):
+    strReturn = ""
+    print(dictStatusEnums)
+    for e in dictStatusEnums:
+        strReturn += f"\n  Error: {dictStatusEnums[e]}"
+    print(strReturn)
+    return strReturn
 
 
 class ProfSessionException(RuntimeError):
@@ -249,7 +246,7 @@ class FaProfSession:
     def validSessionArgs(dictProfTgt):
         """Determine Profiler session argument status. Return bool"""
         bReturn = True
-        if FaProfSession.validateArgs(dictProfTgt)[0] != ProfSessionArgsStatus.OK:
+        if ProfSessionArgsStatus.OK not in FaProfSession.validateArgs(dictProfTgt):
             bReturn = False
         return bReturn
 
@@ -257,12 +254,14 @@ class FaProfSession:
     def validateArgs(dictProfTgt, throw_exception=False):
         """
         Validates the Profiler Session object's user, target, pwd parameters.
-        The 'throw_exception' parameter expects a boolean to dictate wheter the
-        function throws exceptions can or only returns the argument status enum.
+        The 'throw_exception' parameter expects a boolean to dictate whether the
+        function throws exceptions or only returns a dictionary mapping enums to
+        error msgs.
         """
+        dictReturn = {}
         logging.debug(f"validateProfArgs({dictProfTgt}")
-        listReturn = [ProfSessionArgsStatus.OK]
-        error_msg = mapStatusEnum2Txt[ProfSessionArgsStatus.OK]
+        dictReturn[ProfSessionArgsStatus.OK] = s.PROF_ARG_OK
+        error_msg = s.PROF_ARG_OK
 
         exec_path = dictProfTgt["executeText"]
         exec_user = dictProfTgt["userText"]
@@ -270,20 +269,26 @@ class FaProfSession:
 
         # exec empty?
         if not exec_path:
-            error_msg = mapStatusEnum2Txt[ProfSessionArgsStatus.EXEC_EMPTY]
-            listReturn = [ProfSessionArgsStatus.EXEC_EMPTY]
+            error_msg = s.PROF_ARG_EXEC_EMPTY
+            if ProfSessionArgsStatus.OK in dictReturn:
+                dictReturn.pop(ProfSessionArgsStatus.OK)
+            dictReturn[ProfSessionArgsStatus.EXEC_EMPTY] = error_msg
 
         # exist?
         elif not os.path.exists(exec_path):
-            error_msg = mapStatusEnum2Txt[ProfSessionArgsStatus.EXEC_DOESNT_EXIST].format(exec_path)
-            listReturn = [ProfSessionArgsStatus.EXEC_DOESNT_EXIST]
+            if ProfSessionArgsStatus.OK in dictReturn:
+                dictReturn.pop(ProfSessionArgsStatus.OK)
+            error_msg = exec_path + s.PROF_ARG_EXEC_DOESNT_EXIST
+            dictReturn[ProfSessionArgsStatus.EXEC_DOESNT_EXIST] = error_msg
 
         # executable?
         elif not os.access(exec_path, os.X_OK):
-            error_msg = mapStatusEnum2Txt[ProfSessionArgsStatus.EXEC_NOT_EXECUTABLE].format(exec_path)
-            listReturn = [ProfSessionArgsStatus.EXEC_NOT_EXECUTABLE]
+            if ProfSessionArgsStatus.OK in dictReturn:
+                dictReturn.pop(ProfSessionArgsStatus.OK)
+            error_msg = exec_path + s.PROF_ARG_EXEC_NOT_EXECUTABLE
+            dictReturn[ProfSessionArgsStatus.EXEC_NOT_EXECUTABLE] = error_msg
 
-        if listReturn[0] == ProfSessionArgsStatus.OK:
+        if ProfSessionArgsStatus.OK in dictReturn:
             logging.debug("FaProfSession::validateArgs() --> exec verified")
 
         # user?
@@ -292,37 +297,36 @@ class FaProfSession:
                 pwd.getpwnam(exec_user)
         except KeyError as e:
             logging.debug(f"User {exec_user} does not exist: {e}")
-            error_msg = mapStatusEnum2Txt[ProfSessionArgsStatus.USER_DOESNT_EXIST].format(exec_user)
-            if listReturn[0] == ProfSessionArgsStatus.OK:
-                listReturn = [ProfSessionArgsStatus.USER_DOESNT_EXIST]
-            else:
-                listReturn.append(ProfSessionArgsStatus.USER_DOESNT_EXIST)
+            error_msg = exec_user + s.PROF_ARG_USER_DOESNT_EXIST
+            if ProfSessionArgsStatus.OK in dictReturn:
+                dictReturn.pop(ProfSessionArgsStatus.OK)
+            dictReturn[ProfSessionArgsStatus.USER_DOESNT_EXIST] = error_msg
 
-        if listReturn[0] == ProfSessionArgsStatus.OK:
+        if ProfSessionArgsStatus.OK in dictReturn:
             logging.debug("FaProfSession::validateArgs() --> user verified")
 
         # working dir?
-        if not os.path.exists(exec_pwd):
-            error_msg = mapStatusEnum2Txt[ProfSessionArgsStatus.PWD_DOESNT_EXIST].format(exec_pwd)
-            if listReturn[0] == ProfSessionArgsStatus.OK:
-                listReturn = [ProfSessionArgsStatus.PWD_DOESNT_EXIST]
-            else:
-                listReturn.append(ProfSessionArgsStatus.PWD_DOESNT_EXIST)
-        elif not os.path.isdir(exec_pwd):
-            error_msg = mapStatusEnum2Txt[ProfSessionArgsStatus.PWD_ISNT_DIR].format(exec_pwd)
-            if listReturn[0] == ProfSessionArgsStatus.OK:
-                listReturn = [ProfSessionArgsStatus.PWD_ISNT_DIR]
-            else:
-                listReturn.append(ProfSessionArgsStatus.PWD_ISNT_DIR)
+        # pwd empty?
+        if exec_pwd:
+            if not os.path.exists(exec_pwd):
+                error_msg = exec_pwd + s.PROF_ARG_PWD_DOESNT_EXIST
+                if ProfSessionArgsStatus.OK in dictReturn:
+                    dictReturn.pop(ProfSessionArgsStatus.OK)
+                dictReturn[ProfSessionArgsStatus.PWD_DOESNT_EXIST] = error_msg
 
-        if listReturn[0] == ProfSessionArgsStatus.OK:
+            elif not os.path.isdir(exec_pwd):
+                error_msg = exec_pwd + s.PROF_ARG_PWD_ISNT_DIR
+                if ProfSessionArgsStatus.OK in dictReturn:
+                    dictReturn.pop(ProfSessionArgsStatus.OK)
+                dictReturn[ProfSessionArgsStatus.PWD_ISNT_DIR] = error_msg
+
+        if ProfSessionArgsStatus.OK in dictReturn:
             logging.debug("FaProfSession::validateArgs() --> pwd verified")
 
         # Optionally throw exception if arguments are NG
-        if throw_exception and listReturn[0] != ProfSessionArgsStatus.OK:
-            raise ProfSessionException(error_msg, listReturn[0])
-        print(listReturn)
-        return listReturn
+        if throw_exception and ProfSessionArgsStatus.OK not in dictReturn:
+            raise ProfSessionException(error_msg, dictReturn.keys()[0])
+        return dictReturn
 
     def _demote(enable, user_uid, user_gid):
         def result():

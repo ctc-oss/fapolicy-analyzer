@@ -29,6 +29,7 @@ from fapolicy_analyzer.ui.faprofiler import (
     FaProfiler,
     FaProfSession,
     ProfSessionException,
+    EnumErrorPairs2Str,
 )
 from fapolicy_analyzer.ui.store import dispatch, get_system_feature
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
@@ -165,12 +166,13 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         profiling_args = self.get_entry_dict()
         if not FaProfSession.validSessionArgs(profiling_args):
             logging.debug("Invalid Profiler arguments")
-            listInvalidEntries = FaProfSession.validateArgs(profiling_args)
-            print(listInvalidEntries)
+            dictInvalidEnums = FaProfSession.validateArgs(profiling_args)
+            print(f"on_test_activate: {dictInvalidEnums}")
+            strStatusEnums = EnumErrorPairs2Str(dictInvalidEnums)
             dispatch(
                 add_notification(
-                    "Invalid Profiler Session argument:",
-                    NotificationType.ERROR,
+                    f"Invalid Profiler Session argument(s): {strStatusEnums}",
+                    NotificationType.WARN,
                 )
             )
             return
