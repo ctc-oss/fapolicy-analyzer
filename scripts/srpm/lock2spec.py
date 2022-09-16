@@ -77,7 +77,7 @@ if __name__ == '__main__':
     if "TARGET_OS" in os.environ:
         os_id = os.environ.get("TARGET_OS")
         print(f"overriding OS ID to {os_id}")
-    vendoring_all = os_id == "rhel"
+    vendoring_all = os_id == "rhel" or int(os_version) < 37
     print(f"{os_id}:{os_version}")
     if vendoring_all:
         print("== vendoring all ==")
