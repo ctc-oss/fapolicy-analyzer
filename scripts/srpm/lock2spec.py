@@ -74,10 +74,11 @@ if __name__ == '__main__':
         os_id = release.get("ID") or "unknown"
         os_version = release["VERSION_ID"]
 
-    if "TARGET_OS" in os.environ:
-        os_id = os.environ.get("TARGET_OS")
-        print(f"overriding OS ID to {os_id}")
-    vendoring_all = os_id == "rhel" or int(os_version) < 37
+    if "TARGET_PLATFORM" in os.environ:
+        os_id, os_version = os.environ.get("TARGET_PLATFORM").split(":")
+        print(f"overriding platform to {os_id}:{os_version}")
+
+    vendoring_all = os_id == "rhel" or os_id == "fedora" and int(float(os_version)) < 37
     print(f"{os_id}:{os_version}")
     if vendoring_all:
         print("== vendoring all ==")

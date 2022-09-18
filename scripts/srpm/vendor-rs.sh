@@ -15,13 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+set -e
+
 # rust
 rm -rf vendor-rs
-cargo vendor-filterer --platform=x86_64-unknown-linux-gnu vendor-rs &> /dev/null
+cargo vendor-filterer --platform=x86_64-unknown-linux-gnu vendor-rs/vendor &> /dev/null
 python3 scripts/srpm/lock2spec.py
-mkdir vendor-tmp
-mv vendor-rs vendor-tmp/vendor
-mv vendor-tmp vendor-rs
 tar czf vendor-rs.tar.gz -C vendor-rs .
 
 du -sh vendor-rs.tar.gz
