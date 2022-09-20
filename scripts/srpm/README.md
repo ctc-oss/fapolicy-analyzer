@@ -23,3 +23,14 @@ make -f .copr/Makefile vendor
 podman build --security-opt seccomp=unconfined -t fapolicy-analyzer:rawhide -f scripts/srpm/Containerfile .
 podman run --rm -it fapolicy-analyzer:rawhide
 ```
+
+## rhel subscription
+
+```
+subscription-manager register --username $USERNAME --password $PASSWORD
+subscription-manager attach --servicelevel=standard
+```
+
+## references
+
+- https://developer.fedoraproject.org/deployment/rpm/about.html
