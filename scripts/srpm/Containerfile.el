@@ -1,29 +1,27 @@
 ARG image=registry.access.redhat.com/ubi8/ubi:8.6
 FROM $image AS build-stage
 
-ARG USERNAME
-ARG PASSWORD
-
-RUN rm /etc/rhsm-host
-
-# appears we must activate for appstream with dbus-devel
-#RUN subscription-manager register --username $USERNAME --password $PASSWORD \
-# && subscription-manager attach --servicelevel=standard
-
 RUN dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
 RUN dnf install -y rpm-build dnf-plugins-core python3-pip nano
 
-WORKDIR /root/rpmbuild
+RUN useradd -u 10001 -g 0 -d /home/default default
 
-RUN mkdir -p {BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
-COPY scripts/srpm/fapolicy-analyzer.spec        SPECS/
+USER 10001
+RUN mkdir -p /home/default/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
+WORKDIR /home/default/rpmbuild
 
+COPY --chown=10001:0 scripts/srpm/fapolicy-analyzer.spec        SPECS/
+
+USER root
 RUN dnf -y builddep --skip-unavailable SPECS/fapolicy-analyzer.spec
 
-COPY fapolicy-analyzer.tar.gz SOURCES/
-COPY vendor-rs.tar.gz         SOURCES/
-COPY scripts/srpm/build.sh    ./build.sh
+USER 10001
+WORKDIR /home/default/rpmbuild
 
-WORKDIR /root/rpmbuild
+COPY --chown=10001:0 fapolicy-analyzer.tar.gz SOURCES/
+COPY --chown=10001:0 vendor-rs.tar.gz         SOURCES/
+COPY --chown=10001:0 scripts/srpm/build.sh    ./build.sh
+
+WORKDIR /home/default/rpmbuild
 
 CMD ./build.sh
