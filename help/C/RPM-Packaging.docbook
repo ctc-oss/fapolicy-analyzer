@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article>
+<article
+  xmlns="http://docbook.org/ns/docbook" version="5.0"
+  xmlns:xlink="http://www.w3.org/1999/xlink" >
+  <info>
+    <title></title>
+  </info>
+<section xml:id="packaging-the-fapolicy-analyzer-rpm">
+  <title>Packaging the fapolicy analyzer RPM</title>
+  <para>
+    Build an RPM that includes the Rust bindings and the Python dist.
+    The standard tools for building Python RPMs or Rust RPMs didn’t play
+    well with our layout. So what we have is a two stage process of (1)
+    building a bdist wheel and (2) using that wheel to build the RPM.
+    The source RPM includes the wheel as the only source file.
+  </para>
+  <section xml:id="how-we-package">
+    <title>how we package</title>
+    <orderedlist numeration="arabic" spacing="compact">
+      <listitem>
+        <para>
+          build a wheel
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          use the wheel as the rpm source
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          install the wheel in the rpm build
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          capture the python site-install files
+        </para>
+      </listitem>
+    </orderedlist>
+  </section>
+  <section xml:id="build-the-builder-image">
+    <title>build the builder image</title>
+    <para>
+      From the root of the project
+    </para>
+    <para>
+      <literal>docker build -t rpmbuilder -f scripts/rpm/Dockerfile .</literal>
+    </para>
+  </section>
+  <section xml:id="build-the-rpm-in-the-builder-container">
+    <title>build the rpm in the builder container</title>
+    <para>
+      <literal>docker run --rm -it -v /tmp:/output rpmbuilder:latest</literal>
+    </para>
+    <para>
+      RPMs will end up in <literal>/tmp</literal> on the host machine.
+    </para>
+  </section>
+  <section xml:id="test-installing-rpm-in-a-container">
+    <title>test installing rpm in a container</title>
+    <para>
+      <literal>docker run --rm -it -v /tmp:/rpms fedora:32 dnf install -y /rpms/fapolicy-analyzer-*.rpm</literal>
+    </para>
+  </section>
+  <section xml:id="guidelines">
+    <title>Guidelines</title>
+    <para>
+      It is important to reference the guidelines here when packaging: -
+      https://docs.fedoraproject.org/en-US/packaging-guidelines/Python/
+    </para>
+  </section>
+</section>
+</article>

@@ -94,9 +94,11 @@ class MainWindow(UIConnectedWidget):
         self._fapdStopMenuItem.set_sensitive(False)
 
         # Enable profiler tool menu item if root user, env var, or magic file
-        prof_ui_enable = (self._fapdControlPermitted  # EUID == 0
-                          or getenv("PROF_UI_ENABLE", "false").lower() != "false"
-                          or path.exists("/tmp/prof_ui_enable"))
+        prof_ui_enable = (
+            self._fapdControlPermitted  # EUID == 0
+            or getenv("PROF_UI_ENABLE", "false").lower() != "false"
+            or path.exists("/tmp/prof_ui_enable")
+        )
         self.get_object("profileExecMenu").set_sensitive(prof_ui_enable)
 
         self.__add_toolbar()
@@ -337,6 +339,14 @@ class MainWindow(UIConnectedWidget):
         aboutDialog.set_version(f"v{app_version}")
         aboutDialog.run()
         aboutDialog.hide()
+
+    def on_helpMenu_activate(self, *args):
+        # if meld.conf.DATADIR_IS_UNINSTALLED:
+        #     uri = "http://meldmerge.org/help/"
+        # else:
+        #     uri = "help:meld"
+        uri = "help:fapolicy-analyzer/Home.docbook"
+        Gtk.show_uri_on_window(self.window, uri, Gtk.get_current_event_time())
 
     def on_syslogMenu_activate(self, *args):
         page = router(ANALYZER_SELECTION.ANALYZE_SYSLOG)

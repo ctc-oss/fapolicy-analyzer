@@ -1,0 +1,360 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article>
+<article
+  xmlns="http://docbook.org/ns/docbook" version="5.0"
+  xmlns:xlink="http://www.w3.org/1999/xlink" >
+  <info>
+    <title></title>
+  </info>
+<section xml:id="policykit-integration">
+  <title>PolicyKit Integration</title>
+  <section xml:id="tldr---bottom-line">
+    <title>tldr - Bottom Line</title>
+    <itemizedlist spacing="compact">
+      <listitem>
+        <para>
+          pkexec expects authentication to occur by an external agent
+          via dbus IPC.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          The authentication agent may or may not be already running. If
+          you are in a desktop session then an authentication agent
+          associated with the gnome desktop is available. If you are in
+          a remote ssh session, you will need to start an pkttyagent
+          agent.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Upon successful authentication, the runtime environment will
+          not contain any environment variable settings from the calling
+          shell session. They can be explicitly expanded and passed via
+          pkexec arguments. ## Introduction ## polkit (the former
+          policykit project) is a freedesktop.org project that provides
+          an authentication and authorization service to an application.
+          From this integrator’s perspective, it appears to be a fairly
+          complex subsystem with marginal documentation. Between local
+          and remote execution scenarios, there are a number of
+          variables: Filesystem permissions, X11 configuration
+          (forwarding and authentication), and polkit configuration, and
+          finally shell session environment.
+        </para>
+      </listitem>
+    </itemizedlist>
+<literallayout>What is known: * A background daemon, polkitd is the ultimate arbiter for allowing/denying operations. * A DBus resident authentication service agent works to provide independent user authentication. I believe there are other IPC channels available for communicating with the polkitd however the vast majority of resources leverage the DBus. - Applications started from the Gnome Desktop can expect an existing dbus authentication agent to be running. - Remote ssh session applications can not assume an agent. Although pkexec is documented to invoke pkttyagent to serve that function, there appears to be a bug in some versions. * pkexec manipulates the runtime environment for security’s sake. This includes the DISPLAY and XAUTHORITY env vars, consequently executing GUI applications over ssh sessions (even those started with the -X and -Y) can require creative configurations. - pkexec env:
+<literal>SHELL=/bin/bash</literal>
+<literal>LANG=en_US.UTF-8</literal>
+<literal>TERM=xterm-256color</literal>
+<literal>PATH=/usr/sbin:/usr/bin:/sbin:/bin:/root/bin</literal>
+<literal>LOGNAME=root</literal>
+<literal>USER=root</literal>
+<literal>HOME=/root</literal>
+<literal>PKEXEC_UID=1000</literal></literallayout>
+    <para>
+      Of course, I’m not particularly happy to see in the manpage for
+      pkexec that GUI applications running over ssh are not supported
+      out of the box. I will continue to scour the manpages for a magic
+      option to automagically handle X11 forwarding and authentication,
+      or the resources that can provide the guidance to enable the basic
+      ssh session usecase:
+    </para>
+    <blockquote>
+      <programlisting>
+   The environment that PROGRAM will run it, will be set to a minimal
+   known and safe environment in order to avoid injecting code through
+   LD_LIBRARY_PATH or similar mechanisms. In addition the PKEXEC_UID
+   environment variable is set to the user id of the process invoking
+   pkexec. As a result, pkexec will not by default allow you to run X11
+   applications as another user since the $DISPLAY and $XAUTHORITY
+   environment variables are not set. These two variables will be retained
+   if the org.freedesktop.policykit.exec.allow_gui annotation on an action
+   is set to a nonempty value; this is discouraged, though, and should
+   only be used for legacy programs.
+</programlisting>
+    </blockquote>
+    <para>
+      Nonetheless, I’m going to attempt to reset the DISPLAY and add X11
+      cookie handling as described here:
+    </para>
+    <para>
+      https://www.thegeekdiary.com/how-to-set-x11-forwarding-export-remote-display-for-users-who-switch-accounts-using-sudo/
+    </para>
+    <para>
+      I have determined that an action config file with the
+      above-mentioned org.freedesktop.policykit.exec.allow_gui
+      annotation set to yes/true is not required in order to use pkexec.
+    </para>
+    <section xml:id="debugging-dbus-and-polkit">
+      <title>Debugging DBus and PolKit</title>
+      <para>
+        As I continue to look for the configurations that will allow
+        pkexec to reset the DISPLAY to that handled transparently by
+        ssh, I’ve run across configurations for increasing the verbosity
+        of the dbus/polkit framework. As of today, 17 Sept 2021, I
+        haven’t attempted these suggestions yet.
+      </para>
+      <para>
+        From: https://wiki.kubuntu.org/DebuggingPolicykit
+      </para>
+      <section xml:id="how-to-obtain-logs">
+        <title>How to obtain logs</title>
+        <para>
+          There may be a number of processes involved in PolicyKit. The
+          architecture is explained in more detail in the polkit(8) man
+          page.
+        </para>
+        <para>
+          Unfortunately, there is no unified logging mechanism
+          implemented in the framework itself. This implies the fact
+          that there is no single config option to turn the logging on
+          and observe the results in a predefined file. Instead, one
+          needs to apply some actions to an individual PolicyKit process
+          - depending on what symptoms or which part of the process
+          needs to be examined.
+        </para>
+        <para>
+          Some signs of PolicyKit operation may be found in
+          /var/log/auth.log, but if anything beside that is required
+          (and in case of any PolicyKit issue probably will, as auth.log
+          entries are rather brief) some extra actions need to be
+          undertaken.
+        </para>
+        <para>
+          The PolicyKit implementation makes extensive use of GLib. That
+          is also true for printing debug messages. Since version 2.32
+          the debug messages are disabled by default, some additional
+          effort is required to enable them. For more details please see
+          the GLib documentation.
+        </para>
+        <para>
+          In this case:
+        </para>
+        <blockquote>
+          <para>
+            <literal>G_MESSAGES_DEBUG=all</literal>
+          </para>
+        </blockquote>
+        <para>
+          should enable the binaries to produce more verbose output.
+        </para>
+      </section>
+      <section xml:id="polkitd">
+        <title>polkitd</title>
+        <para>
+          polkitd provides the org.freedesktop.PolicyKit1 D-Bus service
+          on the system message bus. It is started automatically by the
+          D-Bus daemon on first request to the service. This is set up
+          in
+          /usr/share/dbus-1/system-services/org.freedesktop.PolicyKit1.service.
+          To capture polkitd debug output the Exec= section of this file
+          may be modified in the following way:
+        </para>
+        <blockquote>
+          <para>
+            <literal>Exec=/bin/sh -c 'G_MESSAGES_DEBUG=all /usr/lib/policykit-1/polkitd &gt; /tmp/polkitd.log 2&gt;&amp;1'</literal>
+          </para>
+        </blockquote>
+        <para>
+          Killing the polkitd process with sudo killall polkitd or
+          restarting the system should allow to capture all polkitd
+          output in the /tmp/polkitd.log file.
+        </para>
+      </section>
+      <section xml:id="polkit-gnome-authentication-agent-1">
+        <title>polkit-gnome-authentication-agent-1</title>
+        <para>
+          The libpolkit-agent-1 of the framework in Ubuntu is
+          implemented by the polkit-gnome-authentication-agent-1
+          process. It is autostarted on the desktop thanks to the
+          following file:
+          /etc/xdg/autostart/polkit-gnome-authentication-agent-1.desktop
+          This could be modified in a manner similar to
+          /usr/share/dbus-1/system-services/org.freedesktop.PolicyKit1.service,
+          but a session restart would be required to reflect the changes
+          to the file. A better solution may be to run:
+        </para>
+        <blockquote>
+          <para>
+            killall -q polkit-gnome-authentication-agent-1 ;  
+            POLKIT_DEBUG=1 G_MESSAGES_DEBUG=all  
+            /usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1
+            2&gt;&amp;1   &gt;
+            /tmp/polkit-gnome-authentication-agent-1.log &amp;
+          </para>
+        </blockquote>
+        <para>
+          This will stop the polkit-gnome-authentication-agent-1 process
+          (if running) and restart it redirecting all output (including
+          the desired debugging information) to
+          /tmp/polkit-gnome-authentication-agent-1.log. Please note that
+          there is another variable set in this case: POLKIT_DEBUG=1.
+          This enables the full debugging output available in this
+          section of the PolicyKit implementation.
+        </para>
+      </section>
+    </section>
+  </section>
+  <section xml:id="prototyping-and-observations">
+    <title>Prototyping and Observations</title>
+    <para>
+      On a Fedora 34 x86_64 VM w/o an active fapolicy-policy development
+      environment, fapolicy-analyzer was installed via dnf using the 0.2
+      release rpm from https://github.com/ctc-oss/fapolicy-analyzer/.
+      The as shipped, installed executable /usr/sbin/fapolicy-analyzer
+      is a wrapper script:
+    </para>
+    <blockquote>
+      <para>
+        #!/usr/bin/bash
+      </para>
+      <para>
+        python3 -m fapolicy_analyzer.ui
+      </para>
+    </blockquote>
+    <para>
+      This script was edited in-place, modifying the polkit commands,
+      environment variables, the invoked program, and executed in a
+      number of local and remote scenarios: ### As shipped,
+      /usr/sbin/fapolicy-analyzer wrapper script ### First tests will
+      establish baseline, for both in group and out of group access.
+      Bottom line: Remote X11 forwarding for the tool doesn’t appear to
+      be working, although it does work when xeyes is substituted in for
+      the tool. #### The shipped script w/the user
+      <emphasis role="strong">not</emphasis> in the fapolicyd group ####
+      This configuration represents the normal user scenario (where the
+      user does not have filesystem permission to access the fapolicyd
+      database at /usr/lib/fapolicyd/) * Local: GUI appeared as
+      expected, however the fapolicyd database could not be accessed as
+      expected:
+    </para>
+    <blockquote>
+      <para>
+        <literal>WARN: fapolicyd trust db was not found</literal>
+      </para>
+    </blockquote>
+    <itemizedlist spacing="compact">
+      <listitem>
+        <para>
+          ssh -X from VM host: Application executed correctly but on
+          remote display, i.e. DISPLAY was not forwarded. As above, and
+          as expected the fapolicyd database could not be accessed with
+          the same WARN message.
+        </para>
+      </listitem>
+    </itemizedlist>
+    <section xml:id="the-shipped-script-wthe-user-in-the-fapolicyd-group">
+      <title>The shipped script w/the user in the fapolicyd
+      group</title>
+      <para>
+        This configuration (the user has filesystem permission to access
+        the fapolicyd database at /usr/lib/fapolicyd/) was to eliminate
+        the filesystem permissions. * Local: Good, works as expected. *
+        ssh -X from VM host: Application executed correctly but on
+        remote display, i.e. DISPLAY was not forwarded. * In a related
+        test: Swapped out the python3 -m fapolicy-analyzer.ui command
+        for xeyes. Both local and remote ssh invocations ran correctly
+        and as expected, consequently basic X11 forwarding via ssh -X is
+        assumed good. * !Update!: The above statement regarding X11
+        forwarding not working for the fapolicy-analyzer still is true,
+        however not 100% of the time. This anomaly extends to gnome GUI
+        applications, and can be cleared by unsetting the
+        XDG_RUNTIME_DIR environment variable. For instance xeyes
+        exhibits correct DISPLAY forwarding, while gnome-calculator may
+        or may not exhibit correct handling of the DISPLAY. unsetting
+        the XDG_RUNTIME_DIR env var clears the issue immediately.
+        Consequently the same observation holds true for the
+        fapolicy-analyzer. At the time of the writing (9/20/21), I do
+        not know the root cause. There is a noticable difference in the
+        ssh debug information displayed (The ssh option -vv) between an
+        X11 session with correct forwards and that of one with incorrect
+        forwarding. I’m speculating that the auth1/cookie information
+        may not be consistently maintained (or restored) when switching
+        between standard ssh/X11 sessions, and those that transition to
+        higher permissions.
+      </para>
+      <para>
+        Ref:
+        <literal>https://askubuntu.com/questions/995470/x11-forwarding-fails-with-some-apps-opening-in-remote-display-and-some-in-local</literal>
+      </para>
+    </section>
+    <section xml:id="adding-polkits-pkexec-and-pkttyagent">
+      <title>Adding polkit’s pkexec and pkttyagent</title>
+      <para>
+        This will be done incrementally with both a pure text based
+        executable and the simple gui utility, xeyes. Note: During this
+        testing, the pkttyagent service was manually terminated between
+        test runs. The executable file /usr/sbin/fapolicy-analyzer was
+        edited in place as follows:
+      </para>
+      <section xml:id="using-pkexec-to-invoke-a-simple-text-based-application">
+        <title>Using pkexec to invoke a simple text based
+        application</title>
+        <blockquote>
+          <para>
+            <literal>pkttyagent --process $$ &amp; pkexec --disable-internal-agent /usr/bin/echo &quot;Another freedesktop.org delivery of quality software.&quot;</literal>
+          </para>
+        </blockquote>
+        <para>
+          Both local and remote ssh invocations worked correctly and as
+          expected.
+        </para>
+      </section>
+      <section xml:id="using-pkexec-to-invoke-a-simple-gui-application">
+        <title>Using pkexec to invoke a simple GUI application</title>
+        <blockquote>
+          <para>
+            <literal>pkttyagent --process $$ &amp; pkexec --disable-internal-agent /usr/bin/xeyes</literal>
+          </para>
+        </blockquote>
+        <para>
+          After successful authentication, both local and remote ssh
+          executions responded with:
+        </para>
+        <blockquote>
+<literallayout>$ fapolicy-analyzer
+==== AUTHENTICATING FOR org.freedesktop.policykit.exec ====
+Authentication is needed to run <quote>/usr/bin/xeyes</quote> as the super user
+Authenticating as: Thomas Archambault (toma)
+Password:
+==== AUTHENTICATION COMPLETE ====
+Error: Can’t open display:
+$</literallayout>
+        </blockquote>
+      </section>
+      <section xml:id="using-pkexec-to-invoke-a-simple-gui-application-with-the-display-and-xauth-env-variables">
+        <title>Using pkexec to invoke a simple GUI application with the
+        DISPLAY and XAUTH env variables</title>
+        <para>
+          Here the contents of /usr/sbin/fapolicy-analyzer is modified
+          to:
+        </para>
+        <blockquote>
+          <para>
+            <literal>pkttyagent --process $$ &amp; pkexec  --disable-internal-agent env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY xeyes</literal>
+          </para>
+        </blockquote>
+        <para>
+          The local run was successful.
+        </para>
+        <para>
+          The remote ssh run however resulted in X11 configuration
+          issues:
+        </para>
+        <blockquote>
+<literallayout>$ fapolicy-analyzer
+==== AUTHENTICATING FOR org.freedesktop.policykit.exec ====
+Authentication is needed to run <quote>/usr/bin/env</quote> as the super user
+Authenticating as: Thomas Archambault (toma)
+Password:
+==== AUTHENTICATION COMPLETE ====
+X11 connection rejected because of wrong authentication.
+Error: Can’t open display: localhost:10.0
+$</literallayout>
+        </blockquote>
+      </section>
+    </section>
+  </section>
+</section>
+</article>

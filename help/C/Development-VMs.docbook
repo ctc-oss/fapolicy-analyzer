@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article>
+<article
+  xmlns="http://docbook.org/ns/docbook" version="5.0"
+  xmlns:xlink="http://www.w3.org/1999/xlink" >
+  <info>
+    <title></title>
+  </info>
+<section xml:id="using-scripted-vms-as-development-environments">
+  <title>Using scripted VMs as development environments</title>
+  <section xml:id="creating-the-development-vms">
+    <title>Creating the development VMs</title>
+    <para>
+      To create a Fedora 34 development environment, go to the
+      <literal>scripts/vagrant/fc34</literal> directory in this repo and
+      issue the command:
+    </para>
+    <programlisting>
+ENV=&quot;dev&quot; vagrant up
+</programlisting>
+    <para>
+      To create a RedHat Enterprise Linux 8 (RHEL8) development
+      environment, go to the <literal>scripts/vagrant/rhel8</literal>
+      directory in this repo and issue the command:
+    </para>
+    <programlisting>
+export RHSM_USERNAME=&quot;&lt;USERNAME-HERE&gt;&quot;
+export RHSM_PASSWORD=&quot;&lt;PASSWORD-HERE&gt;&quot;
+ENV=&quot;dev&quot; vagrant up
+</programlisting>
+    <para>
+      Be sure to populate the environment variables
+      <literal>RHSM_USERNAME</literal> and
+      <literal>RHSM_PASSWORD</literal> with your RedHat subscription
+      credentials prior to running vagrant up in this directory. If you
+      don’t have a RedHat account, you can get one for free
+      <link xlink:href="https://sso.redhat.com/auth/realms/redhat-external/login-actions/registration?client_id=rhd-web&amp;tab_id=zXZZLn2YOxs">here</link>.
+    </para>
+  </section>
+  <section xml:id="development-using-the-vms">
+    <title>Development using the VMs</title>
+    <para>
+      The VMs are using a host-side persisted shared folder called
+      <literal>.shared</literal> that resides in the folder where
+      vagrant was run. Inside the VM, this folder is mounted to
+      <literal>/shared</literal>. In this shared folder is a
+      <literal>vagrant/git/fapolicy-analyzer</literal> folder where the
+      source repository is cloned and the
+      <literal>origin/master</literal> branch is checked out and built
+      <emphasis>by default</emphasis>. If a branch other than
+      <literal>origin/master</literal> is desired, you can use the
+      environment variable <literal>GIT_BRANCH</literal> when doing a
+      <literal>vagrant up</literal> or
+      <literal>vagrant provision</literal> and the branch indicated will
+      be checked out and built instead. When logging in as the
+      <literal>vagrant</literal> user, from the vagrant home direcory,
+      there is a <literal>git</literal> symlink that will take you to
+      <literal>/shared/vagrant/git</literal>, then from there is a
+      folder called <literal>fapolicy-analyzer</literal> where
+      development and testing can take place. Typically I like to use a
+      IDE on my host system (vscode) to make changes and then inside the
+      VM, do the building and testing. From the host machine, you can
+      use <literal>git</literal> to <literal>pull</literal> and
+      <literal>push</literal> code into and from the
+      <literal>.shared</literal> directory. I prefer to treat my
+      development and testing environment like
+      <link xlink:href="http://cloudscaling.com/blog/cloud-computing/the-history-of-pets-vs-cattle/">cattle
+      rather than pets</link> and have gotten a lot of milage doing so.
+    </para>
+  </section>
+  <section xml:id="rebuilding">
+    <title>Rebuilding</title>
+    <para>
+      From the top of the repo in the VM:
+    </para>
+    <programlisting>
+pipenv install --dev
+pipenv run python setup.py develop
+</programlisting>
+  </section>
+  <section xml:id="running-the-fapolicy_analyzer-ui">
+    <title>Running the fapolicy_analyzer UI</title>
+    <para>
+      From the top of the repo in the VM:
+    </para>
+    <programlisting>
+pipenv run python -m fapolicy_analyzer.ui
+</programlisting>
+  </section>
+  <section xml:id="vagrant-automated-demo-installation-and-event-generation-scenarios">
+    <title>Vagrant Automated Demo Installation and Event Generation
+    Scenarios</title>
+    <para>
+      The current vagrant/ansible scripting runs a vagrant VM instance
+      through a number of user scenarios that generate fapolicyd events
+      that are captured within the logs. (The ansible playbooks are
+      located under <literal>fapolicy-analyzer/scripts/demo/</literal>)
+    </para>
+    <para>
+      The following is a summary of the automated demo set-up and event
+      generation.
+    </para>
+    <section xml:id="prepare-systems-users-groups">
+      <title>Prepare Systems, Users, Groups</title>
+      <itemizedlist spacing="compact">
+        <listitem>
+          <para>
+            Configure OS platforms
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            Create users and groups; populate groups:
+          </para>
+          <itemizedlist spacing="compact">
+            <listitem>
+              <para>
+                Groups:
+              </para>
+              <itemizedlist spacing="compact">
+                <listitem>
+                  <para>
+                    accountant
+                  </para>
+                </listitem>
+                <listitem>
+                  <para>
+                    developer
+                  </para>
+                </listitem>
+                <listitem>
+                  <para>
+                    sysadmin
+                  </para>
+                </listitem>
+              </itemizedlist>
+            </listitem>
+            <listitem>
+              <para>
+                Users (all are in <quote>user</quote> group)
+              </para>
+              <itemizedlist spacing="compact">
+                <listitem>
+                  <para>
+                    bob
+                  </para>
+                </listitem>
+                <listitem>
+                  <para>
+                    alice
+                  </para>
+                </listitem>
+                <listitem>
+                  <para>
+                    carol
+                  </para>
+                </listitem>
+                <listitem>
+                  <para>
+                    dave (developer group)
+                  </para>
+                </listitem>
+                <listitem>
+                  <para>
+                    eve
+                  </para>
+                </listitem>
+                <listitem>
+                  <para>
+                    mallory
+                  </para>
+                </listitem>
+                <listitem>
+                  <para>
+                    trudy (sysadmin group)
+                  </para>
+                </listitem>
+              </itemizedlist>
+            </listitem>
+          </itemizedlist>
+        </listitem>
+      </itemizedlist>
+    </section>
+    <section xml:id="fapolicyd-installation-and-configuration">
+      <title>fapolicyd installation and configuration</title>
+      <itemizedlist spacing="compact">
+        <listitem>
+          <para>
+            Basic install, customized config, rules, trust
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            Start the daemon
+          </para>
+        </listitem>
+      </itemizedlist>
+    </section>
+    <section xml:id="modify-the-filesystem">
+      <title>Modify the filesystem</title>
+      <itemizedlist spacing="compact">
+        <listitem>
+          <para>
+            Create and populate the /demo directory with a copy of the
+            <quote>ls</quote> executable, renamed as my-ls.
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            Download and install untrusted statically linked functional
+            replacement executables for:
+          </para>
+          <itemizedlist spacing="compact">
+            <listitem>
+              <para>
+                /usr/bin/du (dust -&gt; du)
+              </para>
+            </listitem>
+            <listitem>
+              <para>
+                /usr/bin/cat (bat -&gt; cat)
+              </para>
+            </listitem>
+            <listitem>
+              <para>
+                /demo/my-echo (printr -&gt; echo functional equivalent)
+              </para>
+            </listitem>
+            <listitem>
+              <para>
+                /usr/bin/grep (rg -&gt; grep)
+              </para>
+            </listitem>
+          </itemizedlist>
+        </listitem>
+        <listitem>
+          <para>
+            Copy files into the filesystem independent of an rpm
+            installation i.e. they are not in the system trust database.
+          </para>
+          <itemizedlist spacing="compact">
+            <listitem>
+              <para>
+                /tmp/fapolicyd-readme.md
+              </para>
+            </listitem>
+            <listitem>
+              <para>
+                /usr/local/bin/dbadmin.py
+              </para>
+            </listitem>
+          </itemizedlist>
+        </listitem>
+        <listitem>
+          <para>
+            User <quote>dave</quote> of the <quote>developer</quote>
+            group performs a user local installation of the rust tool
+            suite.
+          </para>
+        </listitem>
+      </itemizedlist>
+    </section>
+    <section xml:id="simulate-user-workflows-to-generate-fapolicyd-events">
+      <title>Simulate user workflows to generate fapolicyd
+      events</title>
+      <itemizedlist spacing="compact">
+        <listitem>
+          <para>
+            The users alice, carol, eve, trudy, (if fapd is executing,
+            unsuccessfully) attempt to execute the untrusted
+            <quote>du</quote> command, <literal>du /tmp</literal>
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            The users alice, carol, mallory, trudy, successfully
+            execute:
+          </para>
+        </listitem>
+      </itemizedlist>
+      <programlisting>
+$ ls /tmp
+$ df -h
+$ which nano
+</programlisting>
+      <itemizedlist spacing="compact">
+        <listitem>
+          <para>
+            Similarly, the full user set of alice, bob, carol, dave,
+            eve, mallory, trudy, (if fapd is executing, unsuccessfully)
+            attempt to execute:
+          </para>
+        </listitem>
+      </itemizedlist>
+      <programlisting>
+$ echo foo | grep foo
+</programlisting>
+      <para>
+        which is denied because the <literal>grep</literal> command has
+        been replaced and is untrusted or there is a cksum discrepancy.
+        * The regular user, <quote>alice</quote> will repeatedly invoke
+        the replaced /usr/bin/du command with a number of arguments.
+        Note that all arguments are fully trusted except for
+        /usr/bin/grep which has been replaced with a statically linked
+        binary. - /sbin/tcpdump - /usr/bin/bash - /usr/bin/curl -
+        /usr/bin/firefox - /usr/bin/gcc - /usr/bin/grep -
+        /usr/bin/python * User <quote>alice</quote> executes the
+        untrusted /usr/local/bin/dbadmin.py * User <quote>dave</quote>
+        attempts to execute his user installed rust compiler,
+        /home/dave/.cargo/bin/rustc. * Finally fapolicyd events are
+        extracted for the journalctl log and saved as
+        <literal>/home/vagrant/events-1.txt</literal>
+      </para>
+    </section>
+  </section>
+</section>
+</article>

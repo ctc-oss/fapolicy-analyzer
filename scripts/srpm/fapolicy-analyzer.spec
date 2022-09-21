@@ -1,3 +1,20 @@
+/*
+ *  Copyright Concurrent Technologies Corporation 2022
+ * 
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ * 
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ * 
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 Summary:       File Access Policy Analyzer
 Name:          fapolicy-analyzer
 Version:       0.6.1
@@ -33,6 +50,8 @@ BuildRequires: python3dist(pip)
 BuildRequires: python3dist(wheel)
 BuildRequires: python3dist(babel)
 BuildRequires: dbus-devel
+BuildRequires: itstool
+BuildRequires: pandoc
 
 %if 0%{?rhel}
 BuildRequires: rust-toolset
@@ -229,6 +248,7 @@ alias python3=%{venv_py3}
 %endif
 
 python3 setup.py compile_catalog -f
+python3 setup.py build_help
 python3 setup.py bdist_wheel
 
 %install

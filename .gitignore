@@ -21,6 +21,11 @@ dist
 src/bin
 target
 venvs
+help/tmp/
+
+
+*.tar.gz
+/vendor*/
 
 
 *.tar.gz

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article>
+<article
+  xmlns="http://docbook.org/ns/docbook" version="5.0"
+  xmlns:xlink="http://www.w3.org/1999/xlink" >
+  <info>
+    <title></title>
+  </info>
+<section xml:id="significance-of-color">
+  <title>Significance of color</title>
+  <orderedlist numeration="arabic" spacing="compact">
+    <listitem>
+      <para>
+        Light blue backgrounds have user actionable items in them.
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Light gray backgrounds are informational.
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Green backgrounds for Subject files in the Analysis screens
+        indicate that access to any Object file is Allowed (A).
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Pink backgrounds for Subject files in the Analysis screens
+        indicate that the Subject has access only to a defined set of
+        Object files.
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Green backgrounds for Object files in the Analysis screens
+        indicate that the file can be accessed using any open mode.
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Green backgrounds indicate a successful artifact deployment in
+        the deployment popups.
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Pink backgrounds for Object files in the Analysis screens
+        indicate that the file can be accessed using only a set of
+        defined open modes (e.g. only for Read (R)).
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Yellow backgrounds indicate that a changed artifact is ready for
+        deployment in the deployment popups.
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Red backgrounds in the Analysis screens indicate that access to
+        those Subject or Object files is denied.
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Red backgrounds indicate a failed artifact deployment in the
+        deployment popups.
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Green backgrounds in the Trust Database Management screens
+        indicate that the file size and/or hash match the file size
+        and/or hash of the file on the file system.
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Red backgrounds in the Trust Database Management screens
+        indicate that the file size and/or hash does not match the file
+        size and/or hash of the file on the file system.
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Bold red text indicates that file trust needs to be reconciled
+        and the text itself, indicates which trust database (ST or AT)
+        the reconciliation needs to take place in.
+      </para>
+    </listitem>
+  </orderedlist>
+</section>
+</article>

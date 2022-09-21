@@ -1,0 +1,1765 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2022-09-21 15:31-0400\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Put one translator per line, in the form NAME <EMAIL>, YEAR1, YEAR2
+msgctxt "_"
+msgid "translator-credits"
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Application-Design.docbook:10
+msgid "Significance of color"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Application-Design.docbook:13
+msgid "Light blue backgrounds have user actionable items in them."
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Application-Design.docbook:18
+msgid "Light gray backgrounds are informational."
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Application-Design.docbook:23
+msgid "Green backgrounds for Subject files in the Analysis screens indicate that access to any Object file is Allowed (A)."
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Application-Design.docbook:29
+msgid "Pink backgrounds for Subject files in the Analysis screens indicate that the Subject has access only to a defined set of Object files."
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Application-Design.docbook:36
+msgid "Green backgrounds for Object files in the Analysis screens indicate that the file can be accessed using any open mode."
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Application-Design.docbook:42
+msgid "Green backgrounds indicate a successful artifact deployment in the deployment popups."
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Application-Design.docbook:48
+msgid "Pink backgrounds for Object files in the Analysis screens indicate that the file can be accessed using only a set of defined open modes (e.g. only for Read (R))."
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Application-Design.docbook:55
+msgid "Yellow backgrounds indicate that a changed artifact is ready for deployment in the deployment popups."
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Application-Design.docbook:61
+msgid "Red backgrounds in the Analysis screens indicate that access to those Subject or Object files is denied."
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Application-Design.docbook:67
+msgid "Red backgrounds indicate a failed artifact deployment in the deployment popups."
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Application-Design.docbook:73
+msgid "Green backgrounds in the Trust Database Management screens indicate that the file size and/or hash match the file size and/or hash of the file on the file system."
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Application-Design.docbook:80
+msgid "Red backgrounds in the Trust Database Management screens indicate that the file size and/or hash does not match the file size and/or hash of the file on the file system."
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Application-Design.docbook:87
+msgid "Bold red text indicates that file trust needs to be reconciled and the text itself, indicates which trust database (ST or AT) the reconciliation needs to take place in."
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Common-errors.docbook:10
+msgid "Common errors"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Common-errors.docbook:11
+msgid "Tracking non-trivial things that have been encountered but not tracked by an issue."
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Common-errors.docbook:16
+msgid "Python bindings"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Common-errors.docbook:19
+msgid "<quote>dynamic module does not define module export function</quote>"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Common-errors.docbook:25
+msgid "package and module name mismatch"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Common-errors.docbook:30
+msgid "https://stackoverflow.com/a/57214688"
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Containers.docbook:10
+msgid "podman build"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Containers.docbook:11
+msgid "From the root of the repo do a"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Containers.docbook:14
+msgid "<literal>podman build -f scripts/docker/Dockerfile .</literal>"
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Containers.docbook:19
+msgid "published images"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Containers.docbook:22
+msgid "<literal>ctcoss/fapolicy-analyzer:latest</literal>"
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Development-VMs.docbook:10
+msgid "Using scripted VMs as development environments"
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Development-VMs.docbook:12
+msgid "Creating the development VMs"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Development-VMs.docbook:13
+msgid "To create a Fedora 34 development environment, go to the <literal>scripts/vagrant/fc34</literal> directory in this repo and issue the command:"
+msgstr ""
+
+#. (itstool) path: section/programlisting
+#: help/C/Development-VMs.docbook:18
+#, no-wrap
+msgid ""
+"\n"
+"ENV=\"dev\" vagrant up\n"
+""
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Development-VMs.docbook:21
+msgid "To create a RedHat Enterprise Linux 8 (RHEL8) development environment, go to the <literal>scripts/vagrant/rhel8</literal> directory in this repo and issue the command:"
+msgstr ""
+
+#. (itstool) path: section/programlisting
+#: help/C/Development-VMs.docbook:26
+#, no-wrap
+msgid ""
+"\n"
+"export RHSM_USERNAME=\"&lt;USERNAME-HERE&gt;\"\n"
+"export RHSM_PASSWORD=\"&lt;PASSWORD-HERE&gt;\"\n"
+"ENV=\"dev\" vagrant up\n"
+""
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Development-VMs.docbook:31
+msgid "Be sure to populate the environment variables <literal>RHSM_USERNAME</literal> and <literal>RHSM_PASSWORD</literal> with your RedHat subscription credentials prior to running vagrant up in this directory. If you don’t have a RedHat account, you can get one for free <link xlink:href=\"https://sso.redhat.com/auth/realms/redhat-external/login-actions/registration?client_id=rhd-web&amp;tab_id=zXZZLn2YOxs\">here</link>."
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Development-VMs.docbook:41
+msgid "Development using the VMs"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Development-VMs.docbook:42
+msgid "The VMs are using a host-side persisted shared folder called <literal>.shared</literal> that resides in the folder where vagrant was run. Inside the VM, this folder is mounted to <literal>/shared</literal>. In this shared folder is a <literal>vagrant/git/fapolicy-analyzer</literal> folder where the source repository is cloned and the <literal>origin/master</literal> branch is checked out and built <emphasis>by default</emphasis>. If a branch other than <literal>origin/master</literal> is desired, you can use the environment variable <literal>GIT_BRANCH</literal> when doing a <literal>vagrant up</literal> or <literal>vagrant provision</literal> and the branch indicated will be checked out and built instead. When logging in as the <literal>vagrant</literal> user, from the vagrant home direcory, there is a <literal>git</literal> symlink that will take you to <literal>/shared/vagrant/git</literal>, then from there is a folder called <literal>fapolicy-analyzer</literal> where development and testing can take place. Typically I like to use a IDE on my host system (vscode) to make changes and then inside the VM, do the building and testing. From the host machine, you can use <literal>git</literal> to <literal>pull</literal> and <literal>push</literal> code into and from the <literal>.shared</literal> directory. I prefer to treat my development and testing environment like <link xlink:href=\"http://cloudscaling.com/blog/cloud-computing/the-history-of-pets-vs-cattle/\">cattle rather than pets</link> and have gotten a lot of milage doing so."
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Development-VMs.docbook:72
+msgid "Rebuilding"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Development-VMs.docbook:73
+#: help/C/Development-VMs.docbook:83
+msgid "From the top of the repo in the VM:"
+msgstr ""
+
+#. (itstool) path: section/programlisting
+#: help/C/Development-VMs.docbook:76
+#, no-wrap
+msgid ""
+"\n"
+"pipenv install --dev\n"
+"pipenv run python setup.py develop\n"
+""
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Development-VMs.docbook:82
+msgid "Running the fapolicy_analyzer UI"
+msgstr ""
+
+#. (itstool) path: section/programlisting
+#: help/C/Development-VMs.docbook:86
+#, no-wrap
+msgid ""
+"\n"
+"pipenv run python -m fapolicy_analyzer.ui\n"
+""
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Development-VMs.docbook:91
+msgid "Vagrant Automated Demo Installation and Event Generation Scenarios"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Development-VMs.docbook:93
+msgid "The current vagrant/ansible scripting runs a vagrant VM instance through a number of user scenarios that generate fapolicyd events that are captured within the logs. (The ansible playbooks are located under <literal>fapolicy-analyzer/scripts/demo/</literal>)"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Development-VMs.docbook:99
+msgid "The following is a summary of the automated demo set-up and event generation."
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Development-VMs.docbook:104
+msgid "Prepare Systems, Users, Groups"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Development-VMs.docbook:107
+msgid "Configure OS platforms"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Development-VMs.docbook:112
+msgid "Create users and groups; populate groups:"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Development-VMs.docbook:117
+msgid "Groups:"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Development-VMs.docbook:122
+msgid "accountant"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Development-VMs.docbook:127
+msgid "developer"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Development-VMs.docbook:132
+msgid "sysadmin"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Development-VMs.docbook:139
+msgid "Users (all are in <quote>user</quote> group)"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Development-VMs.docbook:144
+msgid "bob"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Development-VMs.docbook:149
+msgid "alice"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Development-VMs.docbook:154
+msgid "carol"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Development-VMs.docbook:159
+msgid "dave (developer group)"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Development-VMs.docbook:164
+msgid "eve"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Development-VMs.docbook:169
+msgid "mallory"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Development-VMs.docbook:174
+msgid "trudy (sysadmin group)"
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Development-VMs.docbook:185
+msgid "fapolicyd installation and configuration"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Development-VMs.docbook:188
+msgid "Basic install, customized config, rules, trust"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Development-VMs.docbook:193
+msgid "Start the daemon"
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Development-VMs.docbook:200
+msgid "Modify the filesystem"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Development-VMs.docbook:203
+msgid "Create and populate the /demo directory with a copy of the <quote>ls</quote> executable, renamed as my-ls."
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Development-VMs.docbook:209
+msgid "Download and install untrusted statically linked functional replacement executables for:"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Development-VMs.docbook:215
+msgid "/usr/bin/du (dust -&gt; du)"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Development-VMs.docbook:220
+msgid "/usr/bin/cat (bat -&gt; cat)"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Development-VMs.docbook:225
+msgid "/demo/my-echo (printr -&gt; echo functional equivalent)"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Development-VMs.docbook:230
+msgid "/usr/bin/grep (rg -&gt; grep)"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Development-VMs.docbook:237
+msgid "Copy files into the filesystem independent of an rpm installation i.e. they are not in the system trust database."
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Development-VMs.docbook:243
+msgid "/tmp/fapolicyd-readme.md"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Development-VMs.docbook:248
+msgid "/usr/local/bin/dbadmin.py"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Development-VMs.docbook:255
+msgid "User <quote>dave</quote> of the <quote>developer</quote> group performs a user local installation of the rust tool suite."
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Development-VMs.docbook:264
+msgid "Simulate user workflows to generate fapolicyd events"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Development-VMs.docbook:268
+msgid "The users alice, carol, eve, trudy, (if fapd is executing, unsuccessfully) attempt to execute the untrusted <quote>du</quote> command, <literal>du /tmp</literal>"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Development-VMs.docbook:275
+msgid "The users alice, carol, mallory, trudy, successfully execute:"
+msgstr ""
+
+#. (itstool) path: section/programlisting
+#: help/C/Development-VMs.docbook:281
+#, no-wrap
+msgid ""
+"\n"
+"$ ls /tmp\n"
+"$ df -h\n"
+"$ which nano\n"
+""
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Development-VMs.docbook:288
+msgid "Similarly, the full user set of alice, bob, carol, dave, eve, mallory, trudy, (if fapd is executing, unsuccessfully) attempt to execute:"
+msgstr ""
+
+#. (itstool) path: section/programlisting
+#: help/C/Development-VMs.docbook:295
+#, no-wrap
+msgid ""
+"\n"
+"$ echo foo | grep foo\n"
+""
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Development-VMs.docbook:298
+msgid "which is denied because the <literal>grep</literal> command has been replaced and is untrusted or there is a cksum discrepancy. * The regular user, <quote>alice</quote> will repeatedly invoke the replaced /usr/bin/du command with a number of arguments. Note that all arguments are fully trusted except for /usr/bin/grep which has been replaced with a statically linked binary. - /sbin/tcpdump - /usr/bin/bash - /usr/bin/curl - /usr/bin/firefox - /usr/bin/gcc - /usr/bin/grep - /usr/bin/python * User <quote>alice</quote> executes the untrusted /usr/local/bin/dbadmin.py * User <quote>dave</quote> attempts to execute his user installed rust compiler, /home/dave/.cargo/bin/rustc. * Finally fapolicyd events are extracted for the journalctl log and saved as <literal>/home/vagrant/events-1.txt</literal>"
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Development.docbook:10
+msgid "Development resources"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Development.docbook:11
+msgid "Various development resources."
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Development.docbook:15
+msgid "Python GTK+ 3 with Glade"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Development.docbook:18
+msgid "<link xlink:href=\"ui/glade\">glade schema directory</link>"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Development.docbook:23
+msgid "https://python-gtk-3-tutorial.readthedocs.io/en/latest/builder.html"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Development.docbook:28
+msgid "https://pygobject.readthedocs.io/en/latest/getting_started.html"
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Development.docbook:35
+msgid "python bindings"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Development.docbook:38
+msgid "<link xlink:href=\"py\">python bindings directory</link>"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Development.docbook:43
+msgid "https://github.com/PyO3/pyo3"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Development.docbook:48
+msgid "https://github.com/PyO3/setuptools-rust"
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Development.docbook:55
+msgid "Development Notes"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Development.docbook:56
+msgid "Task and issue specific observations and notes. - <link xlink:href=\"fapa_polkit_integration\">polkit Integration</link>"
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Development.docbook:63
+msgid "Environment setup"
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Development.docbook:65
+msgid "Ubuntu 20.04"
+msgstr ""
+
+#. (itstool) path: section/programlisting
+#: help/C/Development.docbook:66
+#, no-wrap
+msgid ""
+"\n"
+"apt install -y python3.9 python3.9-dev\n"
+"pipenv --python 3.9\n"
+""
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Development.docbook:72
+msgid "Fedora 34"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Development.docbook:73
+msgid "Depending on the state of your system in terms of currently installed packages, you may or may not need to install the following:"
+msgstr ""
+
+#. (itstool) path: section/programlisting
+#: help/C/Development.docbook:78
+#, no-wrap
+msgid ""
+"\n"
+"curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh\n"
+"sudo dnf install -y python-devel # python 3.9.+ is the default\n"
+"sudo dnf install -y cairo cairo-devel python3-wheel gcc zlib-devel bzip2 bzip2-devel \\\n"
+"  readline-devel sqlite sqlite-devel openssl-devel tk-devel git python3-cairo-devel \\\n"
+"  cairo-gobject-devel gobject-introspection-devel dbus-devel gtksourceview3 Xvfb\n"
+"pip install pipenv --user\n"
+""
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Development.docbook:86
+msgid "Install the <literal>fapolicyd</literal> daemon and add your non-root development user to the fapolicyd group. You won’t be able to deploy your trust changes nor start or stop the daemon directly, but the application will run. The daemon will need to be executed at least once to create"
+msgstr ""
+
+#. (itstool) path: section/programlisting
+#: help/C/Development.docbook:93
+#, no-wrap
+msgid ""
+"\n"
+"sudo dnf install fapolicyd\n"
+"sudo usermod -a -G fapolicyd development_user\n"
+"\n"
+"# Set the fapolicyd daemon to run in permissive mode. Modify /usr/lib/systemd/system/fapolicyd.service:\n"
+"# ExecStart=/usr/sbin/fapolicyd --permissive\n"
+"sudo &lt;your choice of editor&gt; /usr/lib/systemd/system/fapolicyd.service\n"
+"\n"
+"# Start the daemon\n"
+"sudo systemctl start fapolicyd.service\n"
+""
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Development.docbook:106
+msgid "Starting the virtual environment and fapolicy-analyzer"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Development.docbook:108
+msgid "A make based command driver has been added to the project which provides a set of targets to invoke common development tasks. To install required python packages, build the bindings, and start the virtual environment execute the following:"
+msgstr ""
+
+#. (itstool) path: section/programlisting
+#: help/C/Development.docbook:114
+#, no-wrap
+msgid ""
+"\n"
+"make shell\n"
+""
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Development.docbook:117
+msgid "which under the hood is executing the following with the <literal>develop</literal> argument to setup.py:"
+msgstr ""
+
+#. (itstool) path: section/programlisting
+#: help/C/Development.docbook:121
+#, no-wrap
+msgid ""
+"\n"
+"pipenv install --dev\n"
+"pipenv shell\n"
+"python3 setup.py [develop | install]\n"
+""
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Development.docbook:126
+msgid "The application can then be invoked with the following:"
+msgstr ""
+
+#. (itstool) path: section/programlisting
+#: help/C/Development.docbook:129
+#, no-wrap
+msgid ""
+"\n"
+"python -m fapolicy_analyzer.ui\n"
+""
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Development.docbook:135
+msgid "The make command driver"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Development.docbook:136
+msgid "There are a number of make targets to kick-off common development tasks. Invoking make without a command-line target will list the higher level targets with a short summary:"
+msgstr ""
+
+#. (itstool) path: section/programlisting
+#: help/C/Development.docbook:141
+#, no-wrap
+msgid ""
+"\n"
+"$ make\n"
+"\n"
+"  Usage: make [target]\n"
+"\n"
+"       fapolicy-analyzer - High level common operation targets\n"
+"\n"
+"     list     - Display common development targets\n"
+"     shell    - Install deps, build bindings, start venv shell\n"
+"     run      - Execute the fapolicy-analyzer\n"
+"     test     - Execute all unit-tests\n"
+"     lint     - Execute source code linting tools\n"
+"     format   - Execute source code formatting\n"
+"     check    - Perform pre-git push tests and formatting\n"
+"     list-all - Display all targets\n"
+"\n"
+"     Note: Options can be passed to fapolicy-analyzer by\n"
+"           setting the OPTIONS environment variable, for example\n"
+"             $ OPTIONS='-v' make run\n"
+"\n"
+"     Note: Errors stop make, ignore them with the '-k' option:\n"
+"             $ make -k [target]\n"
+""
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Development.docbook:166
+msgid "Performance Profiling in the Development Environment"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Development.docbook:167
+msgid "Python has a couple of profiler modules available, <literal>cProfile</literal> and <literal>profile</literal>, which can be used to easily capture profiling data. Analysis is another story…"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Development.docbook:173
+msgid "Just start the fapolicy-analyzer.ui module as an argument to either of the above profilers:"
+msgstr ""
+
+#. (itstool) path: section/programlisting
+#: help/C/Development.docbook:177
+#, no-wrap
+msgid ""
+"\n"
+"(fapolicy-analyzer) [toma@fc34-dev fapolicy-analyzer]$ python -m cProfile -o cProf.fapa.out -m fapolicy_analyzer.ui\n"
+""
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Development.docbook:180
+msgid "The profiler’s <quote>-o FILE</quote> option specifies the output data file, otherwise upon termination an alphabetically sorted function list with runtime data will be displayed on stdout, which is probably not what you had in mind. But by specifying the output data file, you’ve got the data file in hand, and now have the option to sort and query it as desired, e.g."
+msgstr ""
+
+#. (itstool) path: section/programlisting
+#: help/C/Development.docbook:188
+#, no-wrap
+msgid ""
+"\n"
+"$ python\n"
+"&gt;&gt;&gt; import pstats\n"
+"&gt;&gt;&gt; p = pstats.Stats('cProf.fapa.out')\n"
+"&gt;&gt;&gt; p.sort_stats('cumulative').print_stats(10)\n"
+""
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Development.docbook:194
+msgid "Check out the version specific documentation at https://docs.python.org/3/library/profile.html to learn more about sorting and display options."
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Getting-Started.docbook:10
+msgid "As a user"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Getting-Started.docbook:11
+msgid "Download the distribution RPM and install…"
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Getting-Started.docbook:16
+msgid "As a developer"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Getting-Started.docbook:17
+msgid "The <link xlink:href=\"https://github.com/ctc-oss/fapolicy-analyzer/blob/master/scripts/docker/Dockerfile\">Dockerfile</link> is a good reference to set up and build the system as it does all of that."
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Getting-Started.docbook:23
+msgid "But it goes something like"
+msgstr ""
+
+#. (itstool) path: section/programlisting
+#: help/C/Getting-Started.docbook:26
+#, no-wrap
+msgid ""
+"\n"
+"# install rust\n"
+"curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh\n"
+"\n"
+"# install python\n"
+"dnf install python38 python38-devel\n"
+"\n"
+"# install pipenv\n"
+"pip install pipenv\n"
+"\n"
+"# from the python directory\n"
+"pipenv install --dev\n"
+"\n"
+"# install the bindings\n"
+"pipenv run python setup.py develop\n"
+"\n"
+"# from the python/fapolicy_analyzer directory\n"
+"python -m ui\n"
+""
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Getting-Started.docbook:45
+msgid "To run the integration tests you need - Podman installed, see https://podman.io/getting-started/installation - Bats installed, run <literal>scripts/install_bats.sh</literal>"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Getting-Started.docbook:50
+msgid "From the root directory you can run all tests with"
+msgstr ""
+
+#. (itstool) path: section/programlisting
+#: help/C/Getting-Started.docbook:53
+#, no-wrap
+msgid ""
+"\n"
+"bats tests/bats\n"
+""
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Getting-Started.docbook:56
+msgid "or a specific test"
+msgstr ""
+
+#. (itstool) path: section/programlisting
+#: help/C/Getting-Started.docbook:59
+#, no-wrap
+msgid ""
+"\n"
+"bats tests/bats/basic_trust.bats\n"
+""
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Getting-Started.docbook:64
+msgid "The fastest demo"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Getting-Started.docbook:65
+msgid "Start a container - <literal>sudo podman run --rm -it --privileged --entrypoint='' ctcoss/fapolicy-analyzer bash</literal>"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Getting-Started.docbook:69
+msgid "Run the python examples"
+msgstr ""
+
+#. (itstool) path: section/programlisting
+#: help/C/Getting-Started.docbook:72
+#, no-wrap
+msgid ""
+"\n"
+"[root@463dbb504ac8 app]# python3 examples/changeset.py \n"
+"system1 has 0 trust entries\n"
+"adding 5 trust entries\n"
+"adding 5 trust entries\n"
+"applying changeset to current state...\n"
+"system2 has 5 trust entries\n"
+"applying changeset to current state...\n"
+"system3 has 10 trust entries\n"
+""
+msgstr ""
+
+#. (itstool) path: article/para
+#: help/C/Home.docbook:9
+msgid "Welcome to the fapolicy-analyzer wiki!"
+msgstr ""
+
+#. (itstool) path: article/para
+#: help/C/Home.docbook:12
+msgid "See the <link xlink:href=\"https://github.com/ctc-oss/fapolicy-analyzer/wiki/Getting-Started\">Getting started</link> to get up and running."
+msgstr ""
+
+#. (itstool) path: article/para
+#: help/C/Home.docbook:17
+msgid "See the <link xlink:href=\"https://github.com/ctc-oss/fapolicy-analyzer/wiki/User-Guide\">User Guide</link> for a how-to on using the application."
+msgstr ""
+
+#. (itstool) path: article/para
+#: help/C/Home.docbook:22
+msgid "See the <link xlink:href=\"https://github.com/ctc-oss/fapolicy-analyzer/discussions\">Discussions</link> to start a conversation."
+msgstr ""
+
+#. (itstool) path: article/para
+#: help/C/Home.docbook:27
+msgid "See the <link xlink:href=\"https://github.com/ctc-oss/fapolicy-analyzer/issues\">Issues</link> to suggest a feature or report a bug."
+msgstr ""
+
+#. (itstool) path: article/para
+#: help/C/Home.docbook:32
+msgid "See the <link xlink:href=\"https://github.com/ctc-oss/fapolicy-analyzer/blob/master/CONTRIBUTING.md\">Contributing</link> guidelines to start contributing to the project. (todo #110)"
+msgstr ""
+
+#. (itstool) path: article/para
+#: help/C/Integration-Testing.docbook:9
+msgid "We support integration tests running on Travis CI using a stack consisting of containerized fapolicyd, Podman, and Bats. The same tests run locally on your development machine or in your CI process in the cloud. The current integration testing suite (three tests) runs in ~90 seconds on Travis CI."
+msgstr ""
+
+#. (itstool) path: article/para
+#: help/C/Integration-Testing.docbook:16
+msgid "The examples shown below are in our CI process and currently run on every pull request and on every commit to master."
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Integration-Testing.docbook:21
+msgid "tl;dr;"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Integration-Testing.docbook:22
+msgid "We are running fapolicyd in a container, using Podman, from a host machine that has a kernel with appropriate fanotify support. Any directory that is volumed in from the host system can be written from the container and the containerized fapolicyd will pick up the events and do what it does. We add in some conveniences to make tests look pretty and easier to setup, define, and run. We use Travis for cloud CI because we need a VM, other services may also provide this but GitHub Actions does not."
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Integration-Testing.docbook:34
+msgid "A basic example"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Integration-Testing.docbook:35
+msgid "A basic test file looks like this (<link xlink:href=\"https://github.com/ctc-oss/fapolicy-analyzer/blob/master/tests/bats/basic_fapolicyd.bats\">basic_fapolicy.bats</link>)."
+msgstr ""
+
+#. (itstool) path: section/programlisting
+#: help/C/Integration-Testing.docbook:39
+#, no-wrap
+msgid ""
+"\n"
+"setup() {\n"
+"  load \"helper/podman\"\n"
+"  setup_with_rules ctcoss/fapolicyd simple.rules\n"
+"  add bin/simple.sh\n"
+"}\n"
+"\n"
+"@test \"rule: deny script\" {\n"
+"  run in_container /deny/simple.sh\n"
+"  assert_output --partial \"permission denied\"\n"
+"}\n"
+"\n"
+"@test \"rule: allow script\" {\n"
+"  run in_container /allow/simple.sh\n"
+"  assert_output \"OK\"\n"
+"}\n"
+""
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Integration-Testing.docbook:58
+msgid "<literal>setup</literal> sets up the environment for each test."
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Integration-Testing.docbook:65
+msgid "tests run in a Podman container using image <literal>ctcoss/fapolicyd</literal>"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Integration-Testing.docbook:71
+msgid "<literal>simple.rules</literal> from the integration testing etc directory is installed in the container as <literal>/etc/fapolicyd/fapolicyd.rules</literal>"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Integration-Testing.docbook:78
+msgid "a sample script from the integration testing bin directory is copied into a volume"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Integration-Testing.docbook:84
+msgid "for demonstration purposes the volume is mounted as <literal>/allow</literal> and <literal>/deny</literal>"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Integration-Testing.docbook:92
+msgid "In the deny test the script under the /deny volume is called and fapolicyd rejects the execution"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Integration-Testing.docbook:98
+msgid "In the allow test the script is again called but from the /allow volume, this time fapolicyd allows the execution"
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Integration-Testing.docbook:106
+msgid "A slightly more complex example"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Integration-Testing.docbook:107
+msgid "This example demonstrates updating the trust database and restarting fapolicyd all while validating the expected output of each step."
+msgstr ""
+
+#. (itstool) path: section/programlisting
+#: help/C/Integration-Testing.docbook:111
+#, no-wrap
+msgid ""
+"\n"
+"setup() {\n"
+"  load \"helper/podman\"\n"
+"  setup_with_rules ctcoss/fapolicy-analyzer trust.rules\n"
+"  add bin/simple.sh\n"
+"}\n"
+"\n"
+"@test \"trust: add\" {\n"
+"  # initially denied :thumbs_down:\n"
+"  run in_container /deny/simple.sh\n"
+"  assert_output --partial \"permission denied\"\n"
+"\n"
+"  # trust the script\n"
+"  run in_container python3 examples/add_trust.py /deny/simple.sh\n"
+"  assert_output --partial \"applying\"\n"
+"  assert_output --partial \"signaling\"\n"
+"\n"
+"  # give fapolicyd a second to update\n"
+"  sleep 1\n"
+"\n"
+"  # check the db for the script\n"
+"  run in_container python3 examples/show_ancillary.py\n"
+"  assert_output --partial \"/deny/simple.sh\"\n"
+"\n"
+"  # now its runs :thumbs_up:\n"
+"  run in_container /deny/simple.sh\n"
+"  assert_output \"OK\"\n"
+"}\n"
+""
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Integration-Testing.docbook:142
+msgid "Again the <literal>setup</literal> function prepares the environment for the unit test"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Integration-Testing.docbook:150
+msgid "this time using our image with fapolicy tools installed."
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Integration-Testing.docbook:155
+msgid "we use a different set of rules for this test that consults the trust database"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Integration-Testing.docbook:163
+msgid "The test begins by trying to execute an untrusted script, which is denied as expected"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Integration-Testing.docbook:169
+msgid "Using the fapolicy library we add the script to the trust database, verifying the expected output"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Integration-Testing.docbook:175
+msgid "Pause a second, the fapolicyd update signal is not a blocking operation (yet)"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Integration-Testing.docbook:181
+msgid "Verify that the trust entry for the script has been added to the fapolicyd lmdb trust database"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Integration-Testing.docbook:187
+msgid "Execute the previously untrusted script, this time it completes successfully as verified by the output"
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Integration-Testing.docbook:195
+msgid "Requirements"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Integration-Testing.docbook:198
+msgid "Podman"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Integration-Testing.docbook:203
+msgid "Privileged container"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Integration-Testing.docbook:208
+msgid "Modifications to volume directories"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Integration-Testing.docbook:213
+msgid "For CI a VM is required, we use Travis CI"
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Integration-Testing.docbook:220
+msgid "Future"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Integration-Testing.docbook:223
+msgid "Parse useful messages from the fapolicy log to declare in tests"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Integration-Testing.docbook:228
+msgid "eg. <literal>wait_for_update</literal> to parse the trust database updated message so that the test execution blocks until received"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Integration-Testing.docbook:237
+msgid "Roll this into a reusable library that contains the docker build and bats scripts and helpers"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Integration-Testing.docbook:243
+msgid "Investigating modifications to fapolicyd to allow rootless containers to run with <literal>cap-add</literal> rather than as privileged"
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Integration-Testing.docbook:252
+msgid "Reference"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Integration-Testing.docbook:255
+msgid "Bats https://github.com/bats-core/bats-core"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Integration-Testing.docbook:260
+msgid "Podman https://podman.io/"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Integration-Testing.docbook:265
+msgid "https://github.com/jw3/example-fapolicyd-integration-tests"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Integration-Testing.docbook:270
+msgid "https://ortiz.sh/linux/2020/01/11/FANOTIFY-DOCKER.html"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Integration-Testing.docbook:275
+msgid "https://blog.yadutaf.fr/2015/04/25/how-i-shrunk-a-docker-image-by-98-8-featuring-fanotify/"
+msgstr ""
+
+#. (itstool) path: article/para
+#: help/C/Publishing-Releases.docbook:9
+msgid "The core artifact for this project is the RPM, as such the GitHub release process is built into the Release RPM actions workflow."
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Publishing-Releases.docbook:14
+msgid "About the RPM workflow"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Publishing-Releases.docbook:15
+msgid "The workflow executes on every PR and push to master to guarantee that the RPM build process has not been disturbed."
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Publishing-Releases.docbook:19
+msgid "todo;; add note on integration testing the RPM installation"
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Publishing-Releases.docbook:24
+msgid "Releasing is a semi-automated process"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Publishing-Releases.docbook:25
+msgid "The release workflow is semi-automated. The release action will generate a draft release containing the RPM artifacts, but a maintainer is required to review and publish the draft manually. This removes the burden of crafting releases, but still provides the safety of a final sign-off of the materials in the release."
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Publishing-Releases.docbook:34
+msgid "When are draft releases created?"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Publishing-Releases.docbook:35
+msgid "When a tag is pushed that matches a predefined regex pattern the workflow will add a stage to publish the draft release. Another regex will be checked to determine if the release should be flagged as a <quote>prerelease</quote>."
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Publishing-Releases.docbook:42
+msgid "regex patterns"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Publishing-Releases.docbook:43
+msgid "In the workflow <literal>github.ref</literal> is checked against these patterns:"
+msgstr ""
+
+#. (itstool) path: row/entry
+#: help/C/Publishing-Releases.docbook:54
+msgid "Condition"
+msgstr ""
+
+#. (itstool) path: row/entry
+#: help/C/Publishing-Releases.docbook:57
+msgid "Regex"
+msgstr ""
+
+#. (itstool) path: row/entry
+#: help/C/Publishing-Releases.docbook:60
+msgid "Position"
+msgstr ""
+
+#. (itstool) path: row/entry
+#: help/C/Publishing-Releases.docbook:67
+msgid "create release"
+msgstr ""
+
+#. (itstool) path: row/entry
+#: help/C/Publishing-Releases.docbook:70
+msgid "<literal>refs/tags/v*</literal>"
+msgstr ""
+
+#. (itstool) path: row/entry
+#: help/C/Publishing-Releases.docbook:73
+#: help/C/Publishing-Releases.docbook:84
+msgid "starts with"
+msgstr ""
+
+#. (itstool) path: row/entry
+#: help/C/Publishing-Releases.docbook:78
+#: help/C/Publishing-Releases.docbook:89
+msgid "is prerelease"
+msgstr ""
+
+#. (itstool) path: row/entry
+#: help/C/Publishing-Releases.docbook:81
+msgid "<literal>refs/tags/v0</literal>"
+msgstr ""
+
+#. (itstool) path: row/entry
+#: help/C/Publishing-Releases.docbook:92
+msgid "<literal>rc</literal>"
+msgstr ""
+
+#. (itstool) path: row/entry
+#: help/C/Publishing-Releases.docbook:95
+msgid "contains"
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Publishing-Releases.docbook:105
+msgid "Creating tags"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Publishing-Releases.docbook:106
+msgid "Tags should only be created on a release branch, never in master."
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Publishing-Releases.docbook:109
+msgid "For example for v0.2.0"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Publishing-Releases.docbook:114
+msgid "Create release branch"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Publishing-Releases.docbook:119
+msgid "Update versions and other static settings for the release"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Publishing-Releases.docbook:124
+msgid "Commit"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Publishing-Releases.docbook:129
+msgid "Tag v0.2.0-rc1"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Publishing-Releases.docbook:134
+msgid "Continue to develop and tag RCs"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Publishing-Releases.docbook:139
+msgid "Tag v0.2.0"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Publishing-Releases.docbook:144
+msgid "Delete branch"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Publishing-Releases.docbook:149
+msgid "Patches to v0.2.0 can be branched from the previous tag, updated, tagged, deleted."
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/RPM-Packaging.docbook:10
+msgid "Packaging the fapolicy analyzer RPM"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/RPM-Packaging.docbook:11
+msgid "Build an RPM that includes the Rust bindings and the Python dist. The standard tools for building Python RPMs or Rust RPMs didn’t play well with our layout. So what we have is a two stage process of (1) building a bdist wheel and (2) using that wheel to build the RPM. The source RPM includes the wheel as the only source file."
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/RPM-Packaging.docbook:19
+msgid "how we package"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/RPM-Packaging.docbook:22
+msgid "build a wheel"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/RPM-Packaging.docbook:27
+msgid "use the wheel as the rpm source"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/RPM-Packaging.docbook:32
+msgid "install the wheel in the rpm build"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/RPM-Packaging.docbook:37
+msgid "capture the python site-install files"
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/RPM-Packaging.docbook:44
+msgid "build the builder image"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/RPM-Packaging.docbook:45
+msgid "From the root of the project"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/RPM-Packaging.docbook:48
+msgid "<literal>docker build -t rpmbuilder -f scripts/rpm/Dockerfile .</literal>"
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/RPM-Packaging.docbook:53
+msgid "build the rpm in the builder container"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/RPM-Packaging.docbook:54
+msgid "<literal>docker run --rm -it -v /tmp:/output rpmbuilder:latest</literal>"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/RPM-Packaging.docbook:57
+msgid "RPMs will end up in <literal>/tmp</literal> on the host machine."
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/RPM-Packaging.docbook:62
+msgid "test installing rpm in a container"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/RPM-Packaging.docbook:63
+msgid "<literal>docker run --rm -it -v /tmp:/rpms fedora:32 dnf install -y /rpms/fapolicy-analyzer-*.rpm</literal>"
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/RPM-Packaging.docbook:68
+msgid "Guidelines"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/RPM-Packaging.docbook:69
+msgid "It is important to reference the guidelines here when packaging: - https://docs.fedoraproject.org/en-US/packaging-guidelines/Python/"
+msgstr ""
+
+#. (itstool) path: article/para
+#: help/C/Usability-improvement.docbook:9
+msgid "We are looking for unique usability improvements we can add for users of fapolicyd via the GUI or extended tooling."
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Usability-improvement.docbook:14
+msgid "Do you want to keep these changes dialog"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Usability-improvement.docbook:15
+msgid "It is possible, dont ask how we know, to write poor rules, break the trust database, or otherwise misconfigure fapolicyd in such a way that it locks the system requiring reboot or worse to fix it. After doing this some number of times the team got to thinking it might be nice to have a way to rollback the settings."
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Usability-improvement.docbook:22
+msgid "How about a capability that acts like the tried and true video settings dialog"
+msgstr ""
+
+#. (itstool) path: imageobject/imagedata
+#. This is a reference to an external file such as an image or video. When
+#. the file changes, the md5 hash will change to let you know you need to
+#. update your localized copy. The msgstr is not used at all. Set it to
+#. whatever you like once you have updated your copy of the file.
+#: help/C/Usability-improvement.docbook:29
+msgctxt "_"
+msgid "external ref='https://img.wonderhowto.com/img/original/80/28/63561589562263/0/635615895622638028.jpg' md5='__failed__'"
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Usability-improvement.docbook:34
+msgid "flow"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Usability-improvement.docbook:37
+msgid "Spawn a thread with a delay that will"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Usability-improvement.docbook:42
+msgid "stop fapolicyd service"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Usability-improvement.docbook:47
+msgid "rollback previous version of fapolicyd config"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Usability-improvement.docbook:52
+msgid "start fapolicyd service"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/Usability-improvement.docbook:59
+msgid "Accepting the changes in UI cancels the thread"
+msgstr ""
+
+#. (itstool) path: section/literallayout
+#: help/C/Usability-improvement.docbook:64
+#, no-wrap
+msgid ""
+"https://github.com/ctc-oss/fapolicy-analyzer/issues/13\n"
+"https://github.com/ctc-oss/fapolicy-analyzer/issues/50"
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Usability-improvement.docbook:69
+msgid "Initialize empty fapolicyd database"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Usability-improvement.docbook:70
+msgid "The fapolicyd trust database is created when it runs the first time. In some cases, especially in testing scenarios, it is useful to start fapolicyd with a limited set of trust in the database. In other instances, like when executing our GUI application, it’s good to be able to create the database on demand perhaps before fapolicyd starts."
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Usability-improvement.docbook:80
+msgid "Graphical recursive directory add"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Usability-improvement.docbook:81
+msgid "Adding hierarchical directories to the trust database via a graphical file tree selection mechanism allows for fast recursion to select the entries that should be added. Filtering the tree view by file name and type would also be beneficial."
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/Usability-improvement.docbook:89
+msgid "Log analysis"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/Usability-improvement.docbook:90
+msgid "Intelligent parsing and pattern recognition within log messages similar to a <quote>clippy</quote> capability that can point out errors or suggestions about trust or rules."
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/User-Guide.docbook:10
+msgid "File Access Policy Analyzer User Guide"
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/fapa_polkit_integration.docbook:10
+msgid "PolicyKit Integration"
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/fapa_polkit_integration.docbook:12
+msgid "tldr - Bottom Line"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/fapa_polkit_integration.docbook:15
+msgid "pkexec expects authentication to occur by an external agent via dbus IPC."
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/fapa_polkit_integration.docbook:21
+msgid "The authentication agent may or may not be already running. If you are in a desktop session then an authentication agent associated with the gnome desktop is available. If you are in a remote ssh session, you will need to start an pkttyagent agent."
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/fapa_polkit_integration.docbook:30
+msgid "Upon successful authentication, the runtime environment will not contain any environment variable settings from the calling shell session. They can be explicitly expanded and passed via pkexec arguments. ## Introduction ## polkit (the former policykit project) is a freedesktop.org project that provides an authentication and authorization service to an application. From this integrator’s perspective, it appears to be a fairly complex subsystem with marginal documentation. Between local and remote execution scenarios, there are a number of variables: Filesystem permissions, X11 configuration (forwarding and authentication), and polkit configuration, and finally shell session environment."
+msgstr ""
+
+#. (itstool) path: section/literallayout
+#: help/C/fapa_polkit_integration.docbook:46
+#, no-wrap
+msgid ""
+"What is known: * A background daemon, polkitd is the ultimate arbiter for allowing/denying operations. * A DBus resident authentication service agent works to provide independent user authentication. I believe there are other IPC channels available for communicating with the polkitd however the vast majority of resources leverage the DBus. - Applications started from the Gnome Desktop can expect an existing dbus authentication agent to be running. - Remote ssh session applications can not assume an agent. Although pkexec is documented to invoke pkttyagent to serve that function, there appears to be a bug in some versions. * pkexec manipulates the runtime environment for security’s sake. This includes the DISPLAY and XAUTHORITY env vars, consequently executing GUI applications over ssh sessions (even those started with the -X and -Y) can require creative configurations. - pkexec env:\n"
+"<literal>SHELL=/bin/bash</literal>\n"
+"<literal>LANG=en_US.UTF-8</literal>\n"
+"<literal>TERM=xterm-256color</literal>\n"
+"<literal>PATH=/usr/sbin:/usr/bin:/sbin:/bin:/root/bin</literal>\n"
+"<literal>LOGNAME=root</literal>\n"
+"<literal>USER=root</literal>\n"
+"<literal>HOME=/root</literal>\n"
+"<literal>PKEXEC_UID=1000</literal>"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/fapa_polkit_integration.docbook:55
+msgid "Of course, I’m not particularly happy to see in the manpage for pkexec that GUI applications running over ssh are not supported out of the box. I will continue to scour the manpages for a magic option to automagically handle X11 forwarding and authentication, or the resources that can provide the guidance to enable the basic ssh session usecase:"
+msgstr ""
+
+#. (itstool) path: blockquote/programlisting
+#: help/C/fapa_polkit_integration.docbook:64
+#, no-wrap
+msgid ""
+"\n"
+"   The environment that PROGRAM will run it, will be set to a minimal\n"
+"   known and safe environment in order to avoid injecting code through\n"
+"   LD_LIBRARY_PATH or similar mechanisms. In addition the PKEXEC_UID\n"
+"   environment variable is set to the user id of the process invoking\n"
+"   pkexec. As a result, pkexec will not by default allow you to run X11\n"
+"   applications as another user since the $DISPLAY and $XAUTHORITY\n"
+"   environment variables are not set. These two variables will be retained\n"
+"   if the org.freedesktop.policykit.exec.allow_gui annotation on an action\n"
+"   is set to a nonempty value; this is discouraged, though, and should\n"
+"   only be used for legacy programs.\n"
+""
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/fapa_polkit_integration.docbook:77
+msgid "Nonetheless, I’m going to attempt to reset the DISPLAY and add X11 cookie handling as described here:"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/fapa_polkit_integration.docbook:81
+msgid "https://www.thegeekdiary.com/how-to-set-x11-forwarding-export-remote-display-for-users-who-switch-accounts-using-sudo/"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/fapa_polkit_integration.docbook:84
+msgid "I have determined that an action config file with the above-mentioned org.freedesktop.policykit.exec.allow_gui annotation set to yes/true is not required in order to use pkexec."
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/fapa_polkit_integration.docbook:90
+msgid "Debugging DBus and PolKit"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/fapa_polkit_integration.docbook:91
+msgid "As I continue to look for the configurations that will allow pkexec to reset the DISPLAY to that handled transparently by ssh, I’ve run across configurations for increasing the verbosity of the dbus/polkit framework. As of today, 17 Sept 2021, I haven’t attempted these suggestions yet."
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/fapa_polkit_integration.docbook:98
+msgid "From: https://wiki.kubuntu.org/DebuggingPolicykit"
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/fapa_polkit_integration.docbook:102
+msgid "How to obtain logs"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/fapa_polkit_integration.docbook:103
+msgid "There may be a number of processes involved in PolicyKit. The architecture is explained in more detail in the polkit(8) man page."
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/fapa_polkit_integration.docbook:108
+msgid "Unfortunately, there is no unified logging mechanism implemented in the framework itself. This implies the fact that there is no single config option to turn the logging on and observe the results in a predefined file. Instead, one needs to apply some actions to an individual PolicyKit process - depending on what symptoms or which part of the process needs to be examined."
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/fapa_polkit_integration.docbook:117
+msgid "Some signs of PolicyKit operation may be found in /var/log/auth.log, but if anything beside that is required (and in case of any PolicyKit issue probably will, as auth.log entries are rather brief) some extra actions need to be undertaken."
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/fapa_polkit_integration.docbook:124
+msgid "The PolicyKit implementation makes extensive use of GLib. That is also true for printing debug messages. Since version 2.32 the debug messages are disabled by default, some additional effort is required to enable them. For more details please see the GLib documentation."
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/fapa_polkit_integration.docbook:131
+msgid "In this case:"
+msgstr ""
+
+#. (itstool) path: blockquote/para
+#: help/C/fapa_polkit_integration.docbook:135
+msgid "<literal>G_MESSAGES_DEBUG=all</literal>"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/fapa_polkit_integration.docbook:139
+msgid "should enable the binaries to produce more verbose output."
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/fapa_polkit_integration.docbook:144
+msgid "polkitd"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/fapa_polkit_integration.docbook:145
+msgid "polkitd provides the org.freedesktop.PolicyKit1 D-Bus service on the system message bus. It is started automatically by the D-Bus daemon on first request to the service. This is set up in /usr/share/dbus-1/system-services/org.freedesktop.PolicyKit1.service. To capture polkitd debug output the Exec= section of this file may be modified in the following way:"
+msgstr ""
+
+#. (itstool) path: blockquote/para
+#: help/C/fapa_polkit_integration.docbook:155
+msgid "<literal>Exec=/bin/sh -c 'G_MESSAGES_DEBUG=all /usr/lib/policykit-1/polkitd &gt; /tmp/polkitd.log 2&gt;&amp;1'</literal>"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/fapa_polkit_integration.docbook:159
+msgid "Killing the polkitd process with sudo killall polkitd or restarting the system should allow to capture all polkitd output in the /tmp/polkitd.log file."
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/fapa_polkit_integration.docbook:166
+msgid "polkit-gnome-authentication-agent-1"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/fapa_polkit_integration.docbook:167
+msgid "The libpolkit-agent-1 of the framework in Ubuntu is implemented by the polkit-gnome-authentication-agent-1 process. It is autostarted on the desktop thanks to the following file: /etc/xdg/autostart/polkit-gnome-authentication-agent-1.desktop This could be modified in a manner similar to /usr/share/dbus-1/system-services/org.freedesktop.PolicyKit1.service, but a session restart would be required to reflect the changes to the file. A better solution may be to run:"
+msgstr ""
+
+#. (itstool) path: blockquote/para
+#: help/C/fapa_polkit_integration.docbook:179
+msgid "killall -q polkit-gnome-authentication-agent-1 ; POLKIT_DEBUG=1 G_MESSAGES_DEBUG=all /usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1 2&gt;&amp;1 &gt; /tmp/polkit-gnome-authentication-agent-1.log &amp;"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/fapa_polkit_integration.docbook:187
+msgid "This will stop the polkit-gnome-authentication-agent-1 process (if running) and restart it redirecting all output (including the desired debugging information) to /tmp/polkit-gnome-authentication-agent-1.log. Please note that there is another variable set in this case: POLKIT_DEBUG=1. This enables the full debugging output available in this section of the PolicyKit implementation."
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/fapa_polkit_integration.docbook:200
+msgid "Prototyping and Observations"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/fapa_polkit_integration.docbook:201
+msgid "On a Fedora 34 x86_64 VM w/o an active fapolicy-policy development environment, fapolicy-analyzer was installed via dnf using the 0.2 release rpm from https://github.com/ctc-oss/fapolicy-analyzer/. The as shipped, installed executable /usr/sbin/fapolicy-analyzer is a wrapper script:"
+msgstr ""
+
+#. (itstool) path: blockquote/para
+#: help/C/fapa_polkit_integration.docbook:209
+msgid "#!/usr/bin/bash"
+msgstr ""
+
+#. (itstool) path: blockquote/para
+#: help/C/fapa_polkit_integration.docbook:212
+msgid "python3 -m fapolicy_analyzer.ui"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/fapa_polkit_integration.docbook:216
+msgid "This script was edited in-place, modifying the polkit commands, environment variables, the invoked program, and executed in a number of local and remote scenarios: ### As shipped, /usr/sbin/fapolicy-analyzer wrapper script ### First tests will establish baseline, for both in group and out of group access. Bottom line: Remote X11 forwarding for the tool doesn’t appear to be working, although it does work when xeyes is substituted in for the tool. #### The shipped script w/the user <emphasis role=\"strong\">not</emphasis> in the fapolicyd group #### This configuration represents the normal user scenario (where the user does not have filesystem permission to access the fapolicyd database at /usr/lib/fapolicyd/) * Local: GUI appeared as expected, however the fapolicyd database could not be accessed as expected:"
+msgstr ""
+
+#. (itstool) path: blockquote/para
+#: help/C/fapa_polkit_integration.docbook:233
+msgid "<literal>WARN: fapolicyd trust db was not found</literal>"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/fapa_polkit_integration.docbook:239
+msgid "ssh -X from VM host: Application executed correctly but on remote display, i.e. DISPLAY was not forwarded. As above, and as expected the fapolicyd database could not be accessed with the same WARN message."
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/fapa_polkit_integration.docbook:248
+msgid "The shipped script w/the user in the fapolicyd group"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/fapa_polkit_integration.docbook:250
+msgid "This configuration (the user has filesystem permission to access the fapolicyd database at /usr/lib/fapolicyd/) was to eliminate the filesystem permissions. * Local: Good, works as expected. * ssh -X from VM host: Application executed correctly but on remote display, i.e. DISPLAY was not forwarded. * In a related test: Swapped out the python3 -m fapolicy-analyzer.ui command for xeyes. Both local and remote ssh invocations ran correctly and as expected, consequently basic X11 forwarding via ssh -X is assumed good. * !Update!: The above statement regarding X11 forwarding not working for the fapolicy-analyzer still is true, however not 100% of the time. This anomaly extends to gnome GUI applications, and can be cleared by unsetting the XDG_RUNTIME_DIR environment variable. For instance xeyes exhibits correct DISPLAY forwarding, while gnome-calculator may or may not exhibit correct handling of the DISPLAY. unsetting the XDG_RUNTIME_DIR env var clears the issue immediately. Consequently the same observation holds true for the fapolicy-analyzer. At the time of the writing (9/20/21), I do not know the root cause. There is a noticable difference in the ssh debug information displayed (The ssh option -vv) between an X11 session with correct forwards and that of one with incorrect forwarding. I’m speculating that the auth1/cookie information may not be consistently maintained (or restored) when switching between standard ssh/X11 sessions, and those that transition to higher permissions."
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/fapa_polkit_integration.docbook:277
+msgid "Ref: <literal>https://askubuntu.com/questions/995470/x11-forwarding-fails-with-some-apps-opening-in-remote-display-and-some-in-local</literal>"
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/fapa_polkit_integration.docbook:283
+msgid "Adding polkit’s pkexec and pkttyagent"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/fapa_polkit_integration.docbook:284
+msgid "This will be done incrementally with both a pure text based executable and the simple gui utility, xeyes. Note: During this testing, the pkttyagent service was manually terminated between test runs. The executable file /usr/sbin/fapolicy-analyzer was edited in place as follows:"
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/fapa_polkit_integration.docbook:292
+msgid "Using pkexec to invoke a simple text based application"
+msgstr ""
+
+#. (itstool) path: blockquote/para
+#: help/C/fapa_polkit_integration.docbook:295
+msgid "<literal>pkttyagent --process $$ &amp; pkexec --disable-internal-agent /usr/bin/echo \"Another freedesktop.org delivery of quality software.\"</literal>"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/fapa_polkit_integration.docbook:299
+msgid "Both local and remote ssh invocations worked correctly and as expected."
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/fapa_polkit_integration.docbook:305
+msgid "Using pkexec to invoke a simple GUI application"
+msgstr ""
+
+#. (itstool) path: blockquote/para
+#: help/C/fapa_polkit_integration.docbook:307
+msgid "<literal>pkttyagent --process $$ &amp; pkexec --disable-internal-agent /usr/bin/xeyes</literal>"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/fapa_polkit_integration.docbook:311
+msgid "After successful authentication, both local and remote ssh executions responded with:"
+msgstr ""
+
+#. (itstool) path: blockquote/literallayout
+#: help/C/fapa_polkit_integration.docbook:316
+#, no-wrap
+msgid ""
+"$ fapolicy-analyzer\n"
+"==== AUTHENTICATING FOR org.freedesktop.policykit.exec ====\n"
+"Authentication is needed to run <quote>/usr/bin/xeyes</quote> as the super user\n"
+"Authenticating as: Thomas Archambault (toma)\n"
+"Password:\n"
+"==== AUTHENTICATION COMPLETE ====\n"
+"Error: Can’t open display:\n"
+"$"
+msgstr ""
+
+#. (itstool) path: section/title
+#: help/C/fapa_polkit_integration.docbook:327
+msgid "Using pkexec to invoke a simple GUI application with the DISPLAY and XAUTH env variables"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/fapa_polkit_integration.docbook:329
+msgid "Here the contents of /usr/sbin/fapolicy-analyzer is modified to:"
+msgstr ""
+
+#. (itstool) path: blockquote/para
+#: help/C/fapa_polkit_integration.docbook:334
+msgid "<literal>pkttyagent --process $$ &amp; pkexec --disable-internal-agent env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY xeyes</literal>"
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/fapa_polkit_integration.docbook:338
+msgid "The local run was successful."
+msgstr ""
+
+#. (itstool) path: section/para
+#: help/C/fapa_polkit_integration.docbook:341
+msgid "The remote ssh run however resulted in X11 configuration issues:"
+msgstr ""
+
+#. (itstool) path: blockquote/literallayout
+#: help/C/fapa_polkit_integration.docbook:346
+#, no-wrap
+msgid ""
+"$ fapolicy-analyzer\n"
+"==== AUTHENTICATING FOR org.freedesktop.policykit.exec ====\n"
+"Authentication is needed to run <quote>/usr/bin/env</quote> as the super user\n"
+"Authenticating as: Thomas Archambault (toma)\n"
+"Password:\n"
+"==== AUTHENTICATION COMPLETE ====\n"
+"X11 connection rejected because of wrong authentication.\n"
+"Error: Can’t open display: localhost:10.0\n"
+"$"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/fapolicyd.docbook:11
+msgid "<link xlink:href=\"https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/security_hardening/configuring-and-managing-application-whitelists_security-hardening\">fapolicyd application whitelisting</link>"
+msgstr ""
+
+#. (itstool) path: listitem/para
+#: help/C/fapolicyd.docbook:17
+msgid "https://github.com/linux-application-whitelisting/fapolicyd"
+msgstr ""
+

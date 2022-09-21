@@ -1,42 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.38.2 -->
+<!-- Generated with glade 3.22.2 -->
 <!--
-  Copyright Concurrent Technologies Corporation 2021
-
-  This program is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
-
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+     Copyright Concurrent Technologies Corporation 2021
+     
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+     
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+     
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <interface>
   <requires lib="gtk+" version="3.22"/>
   <object class="GtkAboutDialog" id="aboutDialog">
-    <property name="can-focus">False</property>
+    <property name="can_focus">False</property>
     <property name="title" translatable="yes">About File Acccess Policy Analyzer</property>
-    <property name="type-hint">dialog</property>
+    <property name="type_hint">dialog</property>
     <property name="decorated">False</property>
-    <property name="program-name">File Access Policy Analyzer</property>
+    <property name="program_name">File Access Policy Analyzer</property>
     <property name="website">https://github.com/ctc-oss/fapolicy-analyzer/wiki</property>
-    <property name="website-label" translatable="yes">Visit our Wiki for more information</property>
-    <property name="logo-icon-name">changes-prevent</property>
-    <property name="license-type">gpl-3-0</property>
+    <property name="website_label" translatable="yes">Visit our Wiki for more information</property>
+    <property name="logo_icon_name">changes-prevent</property>
+    <property name="license_type">gpl-3-0</property>
+    <child type="titlebar">
+      <placeholder/>
+    </child>
     <child internal-child="vbox">
       <object class="GtkBox">
-        <property name="can-focus">False</property>
+        <property name="can_focus">False</property>
         <property name="orientation">vertical</property>
         <property name="spacing">2</property>
         <child internal-child="action_area">
           <object class="GtkButtonBox">
-            <property name="can-focus">False</property>
-            <property name="layout-style">end</property>
+            <property name="can_focus">False</property>
+            <property name="layout_style">end</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -51,53 +54,56 @@
     </child>
   </object>
   <object class="GtkWindow" id="mainWindow">
-    <property name="can-focus">False</property>
+    <property name="can_focus">False</property>
     <property name="title" translatable="yes">File Access Policy Analyzer</property>
-    <property name="window-position">center</property>
-    <property name="default-width">1024</property>
-    <property name="default-height">768</property>
+    <property name="window_position">center</property>
+    <property name="default_width">1024</property>
+    <property name="default_height">768</property>
     <signal name="delete-event" handler="on_delete_event" swapped="no"/>
     <signal name="destroy" handler="on_destroy" swapped="no"/>
     <signal name="show" handler="on_start" swapped="no"/>
+    <child type="titlebar">
+      <placeholder/>
+    </child>
     <child>
       <object class="GtkOverlay" id="overlay">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
+        <property name="can_focus">False</property>
         <child>
           <object class="GtkBox" id="appArea">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
+            <property name="can_focus">False</property>
             <property name="orientation">vertical</property>
             <child>
               <object class="GtkMenuBar" id="mainMenu">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
+                <property name="can_focus">False</property>
                 <child>
                   <object class="GtkMenuItem">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
+                    <property name="can_focus">False</property>
                     <property name="label" translatable="yes">_File</property>
-                    <property name="use-underline">True</property>
+                    <property name="use_underline">True</property>
                     <child type="submenu">
                       <object class="GtkMenu">
                         <property name="visible">True</property>
-                        <property name="can-focus">False</property>
+                        <property name="can_focus">False</property>
                         <child>
                           <object class="GtkImageMenuItem" id="openMenu">
                             <property name="label">gtk-open</property>
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="use-underline">True</property>
-                            <property name="use-stock">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="use_underline">True</property>
+                            <property name="use_stock">True</property>
                             <signal name="activate" handler="on_openMenu_activate" swapped="no"/>
                           </object>
                         </child>
                         <child>
                           <object class="GtkMenuItem" id="restoreMenu">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
+                            <property name="can_focus">False</property>
                             <property name="label" translatable="yes" comments="Presents option to load prior sessions tmp file (if it exists.)">Restore</property>
-                            <property name="use-underline">True</property>
+                            <property name="use_underline">True</property>
                             <signal name="activate" handler="on_restoreMenu_activate" swapped="no"/>
                           </object>
                         </child>
@@ -105,9 +111,9 @@
                           <object class="GtkImageMenuItem" id="saveMenu">
                             <property name="label">gtk-save</property>
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="use-underline">True</property>
-                            <property name="use-stock">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="use_underline">True</property>
+                            <property name="use_stock">True</property>
                             <signal name="activate" handler="on_saveMenu_activate" swapped="no"/>
                           </object>
                         </child>
@@ -115,9 +121,9 @@
                           <object class="GtkImageMenuItem" id="saveAsMenu">
                             <property name="label">gtk-save-as</property>
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="use-underline">True</property>
-                            <property name="use-stock">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="use_underline">True</property>
+                            <property name="use_stock">True</property>
                             <signal name="activate" handler="on_saveAsMenu_activate" swapped="no"/>
                           </object>
                         </child>
@@ -125,9 +131,9 @@
                           <object class="GtkImageMenuItem" id="quitMenu">
                             <property name="label">gtk-quit</property>
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="use-underline">True</property>
-                            <property name="use-stock">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="use_underline">True</property>
+                            <property name="use_stock">True</property>
                             <signal name="activate" handler="on_destroy" swapped="no"/>
                           </object>
                         </child>
@@ -138,26 +144,26 @@
                 <child>
                   <object class="GtkMenuItem">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
+                    <property name="can_focus">False</property>
                     <property name="label" translatable="yes">_Tool</property>
-                    <property name="use-underline">True</property>
+                    <property name="use_underline">True</property>
                     <child type="submenu">
                       <object class="GtkMenu">
                         <property name="visible">True</property>
-                        <property name="can-focus">False</property>
+                        <property name="can_focus">False</property>
                         <child>
                           <object class="GtkMenuItem" id="syslogMenu">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
+                            <property name="can_focus">False</property>
                             <property name="label" translatable="yes">Analyze From Syslog</property>
-                            <property name="use-underline">True</property>
+                            <property name="use_underline">True</property>
                             <signal name="activate" handler="on_syslogMenu_activate" swapped="no"/>
                           </object>
                         </child>
                         <child>
                           <object class="GtkMenuItem" id="analyzeMenu">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
+                            <property name="can_focus">False</property>
                             <property name="label" translatable="yes">Analyze From Audit Log</property>
                             <signal name="activate" handler="on_analyzeMenu_activate" swapped="no"/>
                           </object>
@@ -165,27 +171,27 @@
                         <child>
                           <object class="GtkMenuItem" id="trustDbMenu">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
+                            <property name="can_focus">False</property>
                             <property name="label" translatable="yes">Administer Trust Databases</property>
-                            <property name="use-underline">True</property>
+                            <property name="use_underline">True</property>
                             <signal name="activate" handler="on_trustDbMenu_activate" swapped="no"/>
                           </object>
                         </child>
                         <child>
                           <object class="GtkMenuItem" id="rulesAdminMenu">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
+                            <property name="can_focus">False</property>
                             <property name="label" translatable="yes">Administer Rules</property>
-                            <property name="use-underline">True</property>
-                            <signal name="activate" handler="on_rulesAdminMenu_activate"  swapped="no"/>
+                            <property name="use_underline">True</property>
+                            <signal name="activate" handler="on_rulesAdminMenu_activate" swapped="no"/>
                           </object>
                         </child>
-			<child>
+                        <child>
                           <object class="GtkMenuItem" id="profileExecMenu">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
+                            <property name="can_focus">False</property>
                             <property name="label" translatable="yes">Profile Executable</property>
-                            <property name="use-underline">True</property>
+                            <property name="use_underline">True</property>
                             <signal name="activate" handler="on_profileExecMenu_activate" swapped="no"/>
                           </object>
                         </child>
@@ -196,19 +202,19 @@
                 <child>
                   <object class="GtkMenuItem">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
+                    <property name="can_focus">False</property>
                     <property name="label" translatable="yes">System</property>
                     <child type="submenu">
                       <object class="GtkMenu">
                         <property name="visible">True</property>
-                        <property name="can-focus">False</property>
+                        <property name="can_focus">False</property>
                         <child>
                           <object class="GtkImageMenuItem" id="fapdStopMenu">
                             <property name="label">Stop Daemon</property>
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="use-underline">True</property>
-                            <property name="use-stock">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="use_underline">True</property>
+                            <property name="use_stock">True</property>
                             <signal name="activate" handler="on_fapdStopMenu_activate" swapped="no"/>
                           </object>
                         </child>
@@ -216,9 +222,9 @@
                           <object class="GtkImageMenuItem" id="fapdStartMenu">
                             <property name="label">Start Daemon</property>
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="use-underline">True</property>
-                            <property name="use-stock">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="use_underline">True</property>
+                            <property name="use_stock">True</property>
                             <signal name="activate" handler="on_fapdStartMenu_activate" swapped="no"/>
                           </object>
                         </child>
@@ -229,20 +235,29 @@
                 <child>
                   <object class="GtkMenuItem">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
+                    <property name="can_focus">False</property>
                     <property name="label" translatable="yes">_Help</property>
-                    <property name="use-underline">True</property>
+                    <property name="use_underline">True</property>
                     <child type="submenu">
                       <object class="GtkMenu">
                         <property name="visible">True</property>
-                        <property name="can-focus">False</property>
+                        <property name="can_focus">False</property>
+                        <child>
+                          <object class="GtkMenuItem" id="helpMenu">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">Documentation</property>
+                            <property name="use_underline">True</property>
+                            <signal name="activate" handler="on_helpMenu_activate" swapped="no"/>
+                          </object>
+                        </child>
                         <child>
                           <object class="GtkImageMenuItem" id="aboutMenu">
                             <property name="label">gtk-about</property>
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="use-underline">True</property>
-                            <property name="use-stock">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="use_underline">True</property>
+                            <property name="use_stock">True</property>
                             <signal name="activate" handler="on_aboutMenu_activate" swapped="no"/>
                           </object>
                         </child>
@@ -263,7 +278,7 @@
             <child>
               <object class="GtkBox" id="mainContent">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
+                <property name="can_focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <placeholder/>
@@ -278,13 +293,13 @@
             <child>
               <object class="GtkStatusbar">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="margin-left">10</property>
-                <property name="margin-right">10</property>
-                <property name="margin-start">10</property>
-                <property name="margin-end">10</property>
-                <property name="margin-top">6</property>
-                <property name="margin-bottom">6</property>
+                <property name="can_focus">False</property>
+                <property name="margin_left">10</property>
+                <property name="margin_right">10</property>
+                <property name="margin_start">10</property>
+                <property name="margin_end">10</property>
+                <property name="margin_top">6</property>
+                <property name="margin_bottom">6</property>
                 <property name="spacing">2</property>
                 <child>
                   <placeholder/>
@@ -292,7 +307,7 @@
                 <child>
                   <object class="GtkLabel">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
+                    <property name="can_focus">False</property>
                     <property name="xpad">4</property>
                     <property name="label" translatable="yes">fapolicyd:</property>
                   </object>
@@ -305,7 +320,7 @@
                 <child>
                   <object class="GtkImage" id="fapdStatusLight">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
+                    <property name="can_focus">False</property>
                     <property name="stock">gtk-yes</property>
                   </object>
                   <packing>

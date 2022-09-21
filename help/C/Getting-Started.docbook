@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article>
+<article
+  xmlns="http://docbook.org/ns/docbook" version="5.0"
+  xmlns:xlink="http://www.w3.org/1999/xlink" >
+  <info>
+    <title></title>
+  </info>
+<section xml:id="as-a-user">
+  <title>As a user</title>
+  <para>
+    Download the distribution RPM and install…
+  </para>
+</section>
+<section xml:id="as-a-developer">
+  <title>As a developer</title>
+  <para>
+    The
+    <link xlink:href="https://github.com/ctc-oss/fapolicy-analyzer/blob/master/scripts/docker/Dockerfile">Dockerfile</link>
+    is a good reference to set up and build the system as it does all of
+    that.
+  </para>
+  <para>
+    But it goes something like
+  </para>
+  <programlisting>
+# install rust
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+# install python
+dnf install python38 python38-devel
+
+# install pipenv
+pip install pipenv
+
+# from the python directory
+pipenv install --dev
+
+# install the bindings
+pipenv run python setup.py develop
+
+# from the python/fapolicy_analyzer directory
+python -m ui
+</programlisting>
+  <para>
+    To run the integration tests you need - Podman installed, see
+    https://podman.io/getting-started/installation - Bats installed, run
+    <literal>scripts/install_bats.sh</literal>
+  </para>
+  <para>
+    From the root directory you can run all tests with
+  </para>
+  <programlisting>
+bats tests/bats
+</programlisting>
+  <para>
+    or a specific test
+  </para>
+  <programlisting>
+bats tests/bats/basic_trust.bats
+</programlisting>
+</section>
+<section xml:id="the-fastest-demo">
+  <title>The fastest demo</title>
+  <para>
+    Start a container -
+    <literal>sudo podman run --rm -it --privileged --entrypoint='' ctcoss/fapolicy-analyzer bash</literal>
+  </para>
+  <para>
+    Run the python examples
+  </para>
+  <programlisting>
+[root@463dbb504ac8 app]# python3 examples/changeset.py 
+system1 has 0 trust entries
+adding 5 trust entries
+adding 5 trust entries
+applying changeset to current state...
+system2 has 5 trust entries
+applying changeset to current state...
+system3 has 10 trust entries
+</programlisting>
+</section>
+</article>

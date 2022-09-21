@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article>
+<article
+  xmlns="http://docbook.org/ns/docbook" version="5.0"
+  xmlns:xlink="http://www.w3.org/1999/xlink" >
+  <info>
+    <title></title>
+  </info>
+<itemizedlist spacing="compact">
+  <listitem>
+    <para>
+      <link xlink:href="https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/security_hardening/configuring-and-managing-application-whitelists_security-hardening">fapolicyd
+      application whitelisting</link>
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+      https://github.com/linux-application-whitelisting/fapolicyd
+    </para>
+  </listitem>
+</itemizedlist>
+</article>

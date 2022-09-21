@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article>
+<article
+  xmlns="http://docbook.org/ns/docbook" version="5.0"
+  xmlns:xlink="http://www.w3.org/1999/xlink" >
+  <info>
+    <title></title>
+  </info>
+<para>
+  We support integration tests running on Travis CI using a stack
+  consisting of containerized fapolicyd, Podman, and Bats. The same
+  tests run locally on your development machine or in your CI process in
+  the cloud. The current integration testing suite (three tests) runs in
+  ~90 seconds on Travis CI.
+</para>
+<para>
+  The examples shown below are in our CI process and currently run on
+  every pull request and on every commit to master.
+</para>
+<section xml:id="tldr">
+  <title>tl;dr;</title>
+  <para>
+    We are running fapolicyd in a container, using Podman, from a host
+    machine that has a kernel with appropriate fanotify support. Any
+    directory that is volumed in from the host system can be written
+    from the container and the containerized fapolicyd will pick up the
+    events and do what it does. We add in some conveniences to make
+    tests look pretty and easier to setup, define, and run. We use
+    Travis for cloud CI because we need a VM, other services may also
+    provide this but GitHub Actions does not.
+  </para>
+</section>
+<section xml:id="a-basic-example">
+  <title>A basic example</title>
+  <para>
+    A basic test file looks like this
+    (<link xlink:href="https://github.com/ctc-oss/fapolicy-analyzer/blob/master/tests/bats/basic_fapolicyd.bats">basic_fapolicy.bats</link>).
+  </para>
+  <programlisting language="bash">
+setup() {
+  load &quot;helper/podman&quot;
+  setup_with_rules ctcoss/fapolicyd simple.rules
+  add bin/simple.sh
+}
+
+@test &quot;rule: deny script&quot; {
+  run in_container /deny/simple.sh
+  assert_output --partial &quot;permission denied&quot;
+}
+
+@test &quot;rule: allow script&quot; {
+  run in_container /allow/simple.sh
+  assert_output &quot;OK&quot;
+}
+</programlisting>
+  <orderedlist numeration="arabic" spacing="compact">
+    <listitem>
+      <para>
+        <literal>setup</literal> sets up the environment for each test.
+      </para>
+    </listitem>
+  </orderedlist>
+  <itemizedlist spacing="compact">
+    <listitem>
+      <para>
+        tests run in a Podman container using image
+        <literal>ctcoss/fapolicyd</literal>
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        <literal>simple.rules</literal> from the integration testing etc
+        directory is installed in the container as
+        <literal>/etc/fapolicyd/fapolicyd.rules</literal>
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        a sample script from the integration testing bin directory is
+        copied into a volume
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        for demonstration purposes the volume is mounted as
+        <literal>/allow</literal> and <literal>/deny</literal>
+      </para>
+    </listitem>
+  </itemizedlist>
+  <orderedlist numeration="arabic" spacing="compact">
+    <listitem override="2">
+      <para>
+        In the deny test the script under the /deny volume is called and
+        fapolicyd rejects the execution
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        In the allow test the script is again called but from the /allow
+        volume, this time fapolicyd allows the execution
+      </para>
+    </listitem>
+  </orderedlist>
+</section>
+<section xml:id="a-slightly-more-complex-example">
+  <title>A slightly more complex example</title>
+  <para>
+    This example demonstrates updating the trust database and restarting
+    fapolicyd all while validating the expected output of each step.
+  </para>
+  <programlisting language="bash">
+setup() {
+  load &quot;helper/podman&quot;
+  setup_with_rules ctcoss/fapolicy-analyzer trust.rules
+  add bin/simple.sh
+}
+
+@test &quot;trust: add&quot; {
+  # initially denied :thumbs_down:
+  run in_container /deny/simple.sh
+  assert_output --partial &quot;permission denied&quot;
+
+  # trust the script
+  run in_container python3 examples/add_trust.py /deny/simple.sh
+  assert_output --partial &quot;applying&quot;
+  assert_output --partial &quot;signaling&quot;
+
+  # give fapolicyd a second to update
+  sleep 1
+
+  # check the db for the script
+  run in_container python3 examples/show_ancillary.py
+  assert_output --partial &quot;/deny/simple.sh&quot;
+
+  # now its runs :thumbs_up:
+  run in_container /deny/simple.sh
+  assert_output &quot;OK&quot;
+}
+</programlisting>
+  <orderedlist numeration="arabic" spacing="compact">
+    <listitem>
+      <para>
+        Again the <literal>setup</literal> function prepares the
+        environment for the unit test
+      </para>
+    </listitem>
+  </orderedlist>
+  <itemizedlist spacing="compact">
+    <listitem>
+      <para>
+        this time using our image with fapolicy tools installed.
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        we use a different set of rules for this test that consults the
+        trust database
+      </para>
+    </listitem>
+  </itemizedlist>
+  <orderedlist numeration="arabic" spacing="compact">
+    <listitem override="2">
+      <para>
+        The test begins by trying to execute an untrusted script, which
+        is denied as expected
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Using the fapolicy library we add the script to the trust
+        database, verifying the expected output
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Pause a second, the fapolicyd update signal is not a blocking
+        operation (yet)
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Verify that the trust entry for the script has been added to the
+        fapolicyd lmdb trust database
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Execute the previously untrusted script, this time it completes
+        successfully as verified by the output
+      </para>
+    </listitem>
+  </orderedlist>
+</section>
+<section xml:id="requirements">
+  <title>Requirements</title>
+  <itemizedlist spacing="compact">
+    <listitem>
+      <para>
+        Podman
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Privileged container
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Modifications to volume directories
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        For CI a VM is required, we use Travis CI
+      </para>
+    </listitem>
+  </itemizedlist>
+</section>
+<section xml:id="future">
+  <title>Future</title>
+  <itemizedlist spacing="compact">
+    <listitem>
+      <para>
+        Parse useful messages from the fapolicy log to declare in tests
+      </para>
+      <itemizedlist spacing="compact">
+        <listitem>
+          <para>
+            eg. <literal>wait_for_update</literal> to parse the trust
+            database updated message so that the test execution blocks
+            until received
+          </para>
+        </listitem>
+      </itemizedlist>
+    </listitem>
+    <listitem>
+      <para>
+        Roll this into a reusable library that contains the docker build
+        and bats scripts and helpers
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Investigating modifications to fapolicyd to allow rootless
+        containers to run with <literal>cap-add</literal> rather than as
+        privileged
+      </para>
+    </listitem>
+  </itemizedlist>
+</section>
+<section xml:id="reference">
+  <title>Reference</title>
+  <itemizedlist spacing="compact">
+    <listitem>
+      <para>
+        Bats https://github.com/bats-core/bats-core
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Podman https://podman.io/
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        https://github.com/jw3/example-fapolicyd-integration-tests
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        https://ortiz.sh/linux/2020/01/11/FANOTIFY-DOCKER.html
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        https://blog.yadutaf.fr/2015/04/25/how-i-shrunk-a-docker-image-by-98-8-featuring-fanotify/
+      </para>
+    </listitem>
+  </itemizedlist>
+</section>
+</article>

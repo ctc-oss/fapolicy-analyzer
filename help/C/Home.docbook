@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article>
+<article
+  xmlns="http://docbook.org/ns/docbook" version="5.0"
+  xmlns:xlink="http://www.w3.org/1999/xlink" >
+  <info>
+    <title></title>
+  </info>
+<para>
+  Welcome to the fapolicy-analyzer wiki!
+</para>
+<para>
+  See the
+  <link xlink:href="https://github.com/ctc-oss/fapolicy-analyzer/wiki/Getting-Started">Getting
+  started</link> to get up and running.
+</para>
+<para>
+  See the
+  <link xlink:href="https://github.com/ctc-oss/fapolicy-analyzer/wiki/User-Guide">User
+  Guide</link> for a how-to on using the application.
+</para>
+<para>
+  See the
+  <link xlink:href="https://github.com/ctc-oss/fapolicy-analyzer/discussions">Discussions</link>
+  to start a conversation.
+</para>
+<para>
+  See the
+  <link xlink:href="https://github.com/ctc-oss/fapolicy-analyzer/issues">Issues</link>
+  to suggest a feature or report a bug.
+</para>
+<para>
+  See the
+  <link xlink:href="https://github.com/ctc-oss/fapolicy-analyzer/blob/master/CONTRIBUTING.md">Contributing</link>
+  guidelines to start contributing to the project. (todo #110)
+</para>
+</article>

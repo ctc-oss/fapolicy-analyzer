@@ -23,7 +23,6 @@ callee = "*"
 pytest-lazy-fixture = "*"
 flake8-quotes = "*"
 autoflake = "*"
-mallard-ducktype = "*"
 
 [packages]
 pycairo = "1.20.0"

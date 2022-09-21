@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article>
+<article
+  xmlns="http://docbook.org/ns/docbook" version="5.0"
+  xmlns:xlink="http://www.w3.org/1999/xlink" >
+  <info>
+    <title></title>
+  </info>
+<section xml:id="development-resources">
+  <title>Development resources</title>
+  <para>
+    Various development resources.
+  </para>
+  <section xml:id="python-gtk-3-with-glade">
+    <title>Python GTK+ 3 with Glade</title>
+    <itemizedlist spacing="compact">
+      <listitem>
+        <para>
+          <link xlink:href="ui/glade">glade schema directory</link>
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          https://python-gtk-3-tutorial.readthedocs.io/en/latest/builder.html
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          https://pygobject.readthedocs.io/en/latest/getting_started.html
+        </para>
+      </listitem>
+    </itemizedlist>
+  </section>
+  <section xml:id="python-bindings">
+    <title>python bindings</title>
+    <itemizedlist spacing="compact">
+      <listitem>
+        <para>
+          <link xlink:href="py">python bindings directory</link>
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          https://github.com/PyO3/pyo3
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          https://github.com/PyO3/setuptools-rust
+        </para>
+      </listitem>
+    </itemizedlist>
+  </section>
+  <section xml:id="development-notes">
+    <title>Development Notes</title>
+    <para>
+      Task and issue specific observations and notes. -
+      <link xlink:href="fapa_polkit_integration">polkit
+      Integration</link>
+    </para>
+  </section>
+  <section xml:id="environment-setup">
+    <title>Environment setup</title>
+    <section xml:id="ubuntu-20.04">
+      <title>Ubuntu 20.04</title>
+      <programlisting>
+apt install -y python3.9 python3.9-dev
+pipenv --python 3.9
+</programlisting>
+    </section>
+    <section xml:id="fedora-34">
+      <title>Fedora 34</title>
+      <para>
+        Depending on the state of your system in terms of currently
+        installed packages, you may or may not need to install the
+        following:
+      </para>
+      <programlisting>
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+sudo dnf install -y python-devel # python 3.9.+ is the default
+sudo dnf install -y cairo cairo-devel python3-wheel gcc zlib-devel bzip2 bzip2-devel \
+  readline-devel sqlite sqlite-devel openssl-devel tk-devel git python3-cairo-devel \
+  cairo-gobject-devel gobject-introspection-devel dbus-devel gtksourceview3 Xvfb
+pip install pipenv --user
+</programlisting>
+      <para>
+        Install the <literal>fapolicyd</literal> daemon and add your
+        non-root development user to the fapolicyd group. You won’t be
+        able to deploy your trust changes nor start or stop the daemon
+        directly, but the application will run. The daemon will need to
+        be executed at least once to create
+      </para>
+      <programlisting>
+sudo dnf install fapolicyd
+sudo usermod -a -G fapolicyd development_user
+
+# Set the fapolicyd daemon to run in permissive mode. Modify /usr/lib/systemd/system/fapolicyd.service:
+# ExecStart=/usr/sbin/fapolicyd --permissive
+sudo &lt;your choice of editor&gt; /usr/lib/systemd/system/fapolicyd.service
+
+# Start the daemon
+sudo systemctl start fapolicyd.service
+</programlisting>
+    </section>
+    <section xml:id="starting-the-virtual-environment-and-fapolicy-analyzer">
+      <title>Starting the virtual environment and
+      fapolicy-analyzer</title>
+      <para>
+        A make based command driver has been added to the project which
+        provides a set of targets to invoke common development tasks. To
+        install required python packages, build the bindings, and start
+        the virtual environment execute the following:
+      </para>
+      <programlisting>
+make shell
+</programlisting>
+      <para>
+        which under the hood is executing the following with the
+        <literal>develop</literal> argument to setup.py:
+      </para>
+      <programlisting>
+pipenv install --dev
+pipenv shell
+python3 setup.py [develop | install]
+</programlisting>
+      <para>
+        The application can then be invoked with the following:
+      </para>
+      <programlisting>
+python -m fapolicy_analyzer.ui
+</programlisting>
+    </section>
+  </section>
+  <section xml:id="the-make-command-driver">
+    <title>The make command driver</title>
+    <para>
+      There are a number of make targets to kick-off common development
+      tasks. Invoking make without a command-line target will list the
+      higher level targets with a short summary:
+    </para>
+    <programlisting>
+$ make
+
+  Usage: make [target]
+
+       fapolicy-analyzer - High level common operation targets
+
+     list     - Display common development targets
+     shell    - Install deps, build bindings, start venv shell
+     run      - Execute the fapolicy-analyzer
+     test     - Execute all unit-tests
+     lint     - Execute source code linting tools
+     format   - Execute source code formatting
+     check    - Perform pre-git push tests and formatting
+     list-all - Display all targets
+
+     Note: Options can be passed to fapolicy-analyzer by
+           setting the OPTIONS environment variable, for example
+             $ OPTIONS='-v' make run
+
+     Note: Errors stop make, ignore them with the '-k' option:
+             $ make -k [target]
+</programlisting>
+  </section>
+  <section xml:id="performance-profiling-in-the-development-environment">
+    <title>Performance Profiling in the Development Environment</title>
+    <para>
+      Python has a couple of profiler modules available,
+      <literal>cProfile</literal> and <literal>profile</literal>, which
+      can be used to easily capture profiling data. Analysis is another
+      story…
+    </para>
+    <para>
+      Just start the fapolicy-analyzer.ui module as an argument to
+      either of the above profilers:
+    </para>
+    <programlisting>
+(fapolicy-analyzer) [toma@fc34-dev fapolicy-analyzer]$ python -m cProfile -o cProf.fapa.out -m fapolicy_analyzer.ui
+</programlisting>
+    <para>
+      The profiler’s <quote>-o FILE</quote> option specifies the output
+      data file, otherwise upon termination an alphabetically sorted
+      function list with runtime data will be displayed on stdout, which
+      is probably not what you had in mind. But by specifying the output
+      data file, you’ve got the data file in hand, and now have the
+      option to sort and query it as desired, e.g.
+    </para>
+    <programlisting>
+$ python
+&gt;&gt;&gt; import pstats
+&gt;&gt;&gt; p = pstats.Stats('cProf.fapa.out')
+&gt;&gt;&gt; p.sort_stats('cumulative').print_stats(10)
+</programlisting>
+    <para>
+      Check out the version specific documentation at
+      https://docs.python.org/3/library/profile.html to learn more about
+      sorting and display options.
+    </para>
+  </section>
+</section>
+</article>

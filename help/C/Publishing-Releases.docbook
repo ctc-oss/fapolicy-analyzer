@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article>
+<article
+  xmlns="http://docbook.org/ns/docbook" version="5.0"
+  xmlns:xlink="http://www.w3.org/1999/xlink" >
+  <info>
+    <title></title>
+  </info>
+<para>
+  The core artifact for this project is the RPM, as such the GitHub
+  release process is built into the Release RPM actions workflow.
+</para>
+<section xml:id="about-the-rpm-workflow">
+  <title>About the RPM workflow</title>
+  <para>
+    The workflow executes on every PR and push to master to guarantee
+    that the RPM build process has not been disturbed.
+  </para>
+  <para>
+    todo;; add note on integration testing the RPM installation
+  </para>
+</section>
+<section xml:id="releasing-is-a-semi-automated-process">
+  <title>Releasing is a semi-automated process</title>
+  <para>
+    The release workflow is semi-automated. The release action will
+    generate a draft release containing the RPM artifacts, but a
+    maintainer is required to review and publish the draft manually.
+    This removes the burden of crafting releases, but still provides the
+    safety of a final sign-off of the materials in the release.
+  </para>
+</section>
+<section xml:id="when-are-draft-releases-created">
+  <title>When are draft releases created?</title>
+  <para>
+    When a tag is pushed that matches a predefined regex pattern the
+    workflow will add a stage to publish the draft release. Another
+    regex will be checked to determine if the release should be flagged
+    as a <quote>prerelease</quote>.
+  </para>
+  <section xml:id="regex-patterns">
+    <title>regex patterns</title>
+    <para>
+      In the workflow <literal>github.ref</literal> is checked against
+      these patterns:
+    </para>
+    <informaltable>
+      <tgroup cols="3">
+        <colspec align="left" />
+        <colspec align="center" />
+        <colspec align="left" />
+        <thead>
+          <row>
+            <entry>
+              Condition
+            </entry>
+            <entry>
+              Regex
+            </entry>
+            <entry>
+              Position
+            </entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>
+              create release
+            </entry>
+            <entry>
+              <literal>refs/tags/v*</literal>
+            </entry>
+            <entry>
+              starts with
+            </entry>
+          </row>
+          <row>
+            <entry>
+              is prerelease
+            </entry>
+            <entry>
+              <literal>refs/tags/v0</literal>
+            </entry>
+            <entry>
+              starts with
+            </entry>
+          </row>
+          <row>
+            <entry>
+              is prerelease
+            </entry>
+            <entry>
+              <literal>rc</literal>
+            </entry>
+            <entry>
+              contains
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </section>
+</section>
+<section xml:id="creating-tags">
+  <title>Creating tags</title>
+  <para>
+    Tags should only be created on a release branch, never in master.
+  </para>
+  <para>
+    For example for v0.2.0
+  </para>
+  <orderedlist numeration="arabic" spacing="compact">
+    <listitem>
+      <para>
+        Create release branch
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Update versions and other static settings for the release
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Commit
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Tag v0.2.0-rc1
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Continue to develop and tag RCs
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Tag v0.2.0
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Delete branch
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Patches to v0.2.0 can be branched from the previous tag,
+        updated, tagged, deleted.
+      </para>
+    </listitem>
+  </orderedlist>
+</section>
+</article>

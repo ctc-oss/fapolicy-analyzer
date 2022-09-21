@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article>
+<article
+  xmlns="http://docbook.org/ns/docbook" version="5.0"
+  xmlns:xlink="http://www.w3.org/1999/xlink" >
+  <info>
+    <title></title>
+  </info>
+<para>
+  We are looking for unique usability improvements we can add for users
+  of fapolicyd via the GUI or extended tooling.
+</para>
+<section xml:id="do-you-want-to-keep-these-changes-dialog">
+  <title>Do you want to keep these changes dialog</title>
+  <para>
+    It is possible, dont ask how we know, to write poor rules, break the
+    trust database, or otherwise misconfigure fapolicyd in such a way
+    that it locks the system requiring reboot or worse to fix it. After
+    doing this some number of times the team got to thinking it might be
+    nice to have a way to rollback the settings.
+  </para>
+  <para>
+    How about a capability that acts like the tried and true video
+    settings dialog
+  </para>
+  <para>
+    <inlinemediaobject>
+      <imageobject>
+        <imagedata fileref="https://img.wonderhowto.com/img/original/80/28/63561589562263/0/635615895622638028.jpg" />
+      </imageobject>
+    </inlinemediaobject>
+  </para>
+  <section xml:id="flow">
+    <title>flow</title>
+    <orderedlist numeration="arabic" spacing="compact">
+      <listitem>
+        <para>
+          Spawn a thread with a delay that will
+        </para>
+        <itemizedlist spacing="compact">
+          <listitem>
+            <para>
+              stop fapolicyd service
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              rollback previous version of fapolicyd config
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              start fapolicyd service
+            </para>
+          </listitem>
+        </itemizedlist>
+      </listitem>
+      <listitem>
+        <para>
+          Accepting the changes in UI cancels the thread
+        </para>
+      </listitem>
+    </orderedlist>
+<literallayout>https://github.com/ctc-oss/fapolicy-analyzer/issues/13
+https://github.com/ctc-oss/fapolicy-analyzer/issues/50</literallayout>
+  </section>
+</section>
+<section xml:id="initialize-empty-fapolicyd-database">
+  <title>Initialize empty fapolicyd database</title>
+  <para>
+    The fapolicyd trust database is created when it runs the first time.
+    In some cases, especially in testing scenarios, it is useful to
+    start fapolicyd with a limited set of trust in the database. In
+    other instances, like when executing our GUI application, it’s good
+    to be able to create the database on demand perhaps before fapolicyd
+    starts.
+  </para>
+</section>
+<section xml:id="graphical-recursive-directory-add">
+  <title>Graphical recursive directory add</title>
+  <para>
+    Adding hierarchical directories to the trust database via a
+    graphical file tree selection mechanism allows for fast recursion to
+    select the entries that should be added. Filtering the tree view by
+    file name and type would also be beneficial.
+  </para>
+</section>
+<section xml:id="log-analysis">
+  <title>Log analysis</title>
+  <para>
+    Intelligent parsing and pattern recognition within log messages
+    similar to a <quote>clippy</quote> capability that can point out
+    errors or suggestions about trust or rules.
+  </para>
+</section>
+</article>
