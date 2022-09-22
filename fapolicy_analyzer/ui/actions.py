@@ -71,6 +71,7 @@ ERROR_RULES_TEXT = "ERROR_RULES_TEXT"
 
 SET_PROFILER_STATE = "SET_PROFILER_STATE"
 SET_PROFILER_OUTPUT = "SET_PROFILER_OUTPUT"
+SET_PROFILER_ANALYSIS_FILE = "SET_PROFILER_ANALYSIS_FILE"
 CLEAR_PROFILER_STATE = "CLEAR_PROFILER_STATE"
 
 
@@ -236,6 +237,10 @@ def set_profiler_state(state: Dict[str, str]) -> Action:
 
 def set_profiler_output(output: str) -> Action:
     return _create_action(SET_PROFILER_OUTPUT, output)
+
+
+def set_profiler_analysis_file(file: str) -> Action:
+    return _create_action(SET_PROFILER_ANALYSIS_FILE, file)
 
 
 def clear_profiler_state() -> Action:
