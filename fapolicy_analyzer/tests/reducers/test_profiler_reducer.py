@@ -27,12 +27,12 @@ from fapolicy_analyzer.ui.reducers.profiler_reducer import (
 def test_handle_set_profiler_state():
     new_state = {"key1": "value1"}
     result = handle_set_profiler_state(
-        ProfilerState(entry={"oldkey": "oldvalue"}, output=""),
+        ProfilerState(entry={"oldkey": "oldvalue"}, output="", file=""),
         MagicMock(payload=new_state)
     )
-    assert result == ProfilerState(entry=new_state, output="")
+    assert result == ProfilerState(entry=new_state, output="", file="")
 
 
 def test_handle_clear_profiler_state():
-    result = handle_clear_profiler_state(ProfilerState(entry={"oldkey": "oldvalue"}, output=""))
-    assert result == ProfilerState(entry=default_entry, output="")
+    result = handle_clear_profiler_state(ProfilerState(entry={"oldkey": "oldvalue"}, output="", file=""))
+    assert result == ProfilerState(entry=default_entry, output="", file="")
