@@ -24,13 +24,6 @@ podman build --security-opt seccomp=unconfined -t fapolicy-analyzer:rawhide -f s
 podman run --rm -it fapolicy-analyzer:rawhide
 ```
 
-## rhel subscription
-
-```
-subscription-manager register --username $USERNAME --password $PASSWORD
-subscription-manager attach --servicelevel=standard
-```
-
 ## references
 
 - https://developer.fedoraproject.org/deployment/rpm/about.html

@@ -161,10 +161,10 @@ tar xzf %{_sourcedir}/vendor-rs.tar.gz -C ${CARGO_REG_DIR} --strip-components=2
 sed -i "s#%{cargo_registry}#${CARGO_REG_DIR}#g" .cargo/config
 
 %if 0%{?rhel}
-%{python3} -m pip install %{_sourcedir}/pip-21.3.1.tar.gz --user --no-deps --no-input --quiet
-%{python3} -m pip install %{_sourcedir}/setuptools-59.6.0.tar.gz --user --no-deps --no-input --quiet
-%{python3} -m pip install %{_sourcedir}/setuptools-rust-1.1.2.tar.gz --user --no-deps --no-input --quiet
-%{python3} -m pip install %{_sourcedir}/semantic_version-2.8.2.tar.gz --user --no-deps --no-input --quiet
+%{python3} -m pip install %{SOURCE2} --user --no-deps --no-input --quiet
+%{python3} -m pip install %{SOURCE3} --user --no-deps --no-input --quiet
+%{python3} -m pip install %{SOURCE4} --user --no-deps --no-input --quiet
+%{python3} -m pip install %{SOURCE5} --user --no-deps --no-input --quiet
 %endif
 
 %autosetup -p0 -n %{name}
