@@ -18,11 +18,11 @@
 spec_file="fapolicy-analyzer.spec"
 
 if [[ "$ONLINE" -eq 1 ]]; then
-  cd /$HOME/rpmbuild/SOURCES
+  cd /tmp/rpmbuild/SOURCES
   spectool -gf "../SPECS/$spec_file"
-  cd /$HOME/rpmbuild/SPECS
+  cd /tmp/rpmbuild/SPECS
   dnf builddep "$spec_file" -y
 fi
 
-cd /$HOME/rpmbuild/SPECS
+cd /tmp/rpmbuild/SPECS
 rpmbuild -ba "$spec_file"
