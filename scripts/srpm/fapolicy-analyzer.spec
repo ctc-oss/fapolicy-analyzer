@@ -205,7 +205,10 @@ rm Cargo.lock
 %build
 echo %{version} > VERSION
 
+%if 0%{?rhel}
 alias python3=/tmp/v/bin/python3
+%endif
+
 python3 setup.py compile_catalog -f
 python3 setup.py bdist_wheel
 
