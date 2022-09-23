@@ -17,6 +17,9 @@ Source8:        %{pypi_source packaging 21.3}
 Source9:        %{pypi_source pyparsing 2.1.0}
 Source10:       %{pypi_source tomli 1.2.3}
 Source11:       %{pypi_source flit_core 3.7.1}
+Source12:       %{pypi_source typing_extensions 3.7.4.3}
+Source13:       https://files.pythonhosted.org/packages/source/p/pytz/pytz-2017.2.zip
+
 %endif
 
 BuildRequires: python3-devel
@@ -173,8 +176,6 @@ sed -i "s#%{cargo_registry}#${CARGO_REG_DIR}#g" .cargo/config
 python3 -m venv /tmp/v
 alias python3=/tmp/v/bin/python3
 
-ln -s /usr/lib/python3.6/site-packages/typing_extensions* /tmp/v/lib/python3.6/site-packages/
-
 # pip needs upgraded
 python3 -m pip install %{SOURCE3} --no-index --quiet
 
@@ -182,12 +183,17 @@ python3 -m pip install %{SOURCE3} --no-index --quiet
 mkdir -p %{_builddir}/setuptools
 tar xzf %{SOURCE4} -C %{_builddir}/setuptools --strip-components=1
 cd %{_builddir}/setuptools
-python3 setup.py install
+python3 setup.py -q install
 python3 -m pip install %{SOURCE5} --find-links=file:///tmp/rpmbuild/SOURCES/ --no-index --quiet
 python3 -m pip install %{SOURCE4} --find-links=file:///tmp/rpmbuild/SOURCES/ --no-index --quiet
 
 # install setuptools-rust and all remaining depends will cascade
 python3 -m pip install %{SOURCE2} --find-links=file:///tmp/rpmbuild/SOURCES/ --no-index --quiet
+
+# other depends
+ln -sf /usr/lib/python3.6/site-packages/{Babel*,babel} /tmp/v/lib/python3.6/site-packages
+python3 -m pip install %{SOURCE12} --find-links=file:///tmp/rpmbuild/SOURCES/ --no-index --quiet
+python3 -m pip install %{SOURCE13} --find-links=file:///tmp/rpmbuild/SOURCES/ --no-index --quiet
 
 %endif
 
@@ -197,9 +203,10 @@ rm Cargo.lock
 
 
 %build
-alias python3=/tmp/v/bin/python3
 echo %{version} > VERSION
-#python3 setup.py compile_catalog -f
+
+alias python3=/tmp/v/bin/python3
+python3 setup.py compile_catalog -f
 python3 setup.py bdist_wheel
 
 %install
