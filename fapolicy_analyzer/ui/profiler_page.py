@@ -22,6 +22,7 @@ from events import Events
 from fapolicy_analyzer.ui.actions import (
     clear_profiler_state,
     set_profiler_output,
+    set_profiler_analysis_file,
     set_profiler_state,
 )
 from fapolicy_analyzer.ui.actions import NotificationType, add_notification
@@ -93,6 +94,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         self.inputDict = {}
         self.markup = ""
         self.analysis_available = False
+        self.analysis_file = ""
 
     def analyze_button_sensitivity(self):
         return self.analysis_available
@@ -107,6 +109,8 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
             self.analysis_available = bool(self.markup)
             self.refresh_toolbar()
 
+        self.analysis_file = system.get("profiler").file
+
     def update_field_text(self, profilerDict):
         for k, v in profilerDict.items():
             self.get_object(k).get_buffer().set_text(v, len(v))
@@ -117,7 +121,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         self.get_object("profilerOutput").set_buffer(buff)
 
     def on_analyzerButton_clicked(self, *args):
-        self.analyze_button_pushed(self._fapd_profiler.fapd_prof_stderr)
+        self.analyze_button_pushed(self.analysis_file)
 
     def on_clearButton_clicked(self, *args):
         dispatch(clear_profiler_state())
@@ -167,12 +171,11 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         if not FaProfSession.validSessionArgs(profiling_args):
             logging.debug("Invalid Profiler arguments")
             dictInvalidEnums = FaProfSession.validateArgs(profiling_args)
-            print(f"on_test_activate: {dictInvalidEnums}")
             strStatusEnums = EnumErrorPairs2Str(dictInvalidEnums)
             dispatch(
                 add_notification(
                     f"Invalid Profiler Session argument(s): {strStatusEnums}",
-                    NotificationType.WARN,
+                    NotificationType.ERROR,
                 )
             )
             return
@@ -189,6 +192,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
 
             sleep(4)
             self._fapd_profiler.stop_prof_session()
+            dispatch(set_profiler_analysis_file(fapd_prof_stderr))
             self.running = False
             self.display_log_output()
         except ProfSessionException as e:
