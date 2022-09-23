@@ -1,4 +1,4 @@
-.PHONY: clean idenfity dnf vendor vendor-app vendor-py vendor-rs dep srpm
+.PHONY: clean idenfity prepfs dnf vendor vendor-app vendor-py vendor-rs dep srpm
 .SILENT: clean
 
 OS_ID_FN = $(shell grep /etc/os-release -e "^ID=" | tr -d '"' | cut -d= -f2 | cut -d: -f1)
@@ -6,6 +6,10 @@ OS_ID   ?= $(OS_ID_FN)
 
 idenfity:
 	@echo "Platform $(OS_ID)"
+
+prepfs:
+	mkdir -p /tmp/rpmbuild/SOURCES
+	mkdir -p \$(outdir)
 
 clean:
 	rm -f fapolicy-analyzer.tar.gz
@@ -38,19 +42,12 @@ vendor-app:
 	git archive HEAD -o fapolicy-analyzer.tar.gz --prefix=fapolicy-analyzer/
 
 vendor-py:
-	spectool -gf \$(spec)
+	spectool -gf -C /tmp/rpmbuild/SOURCES \$(spec)
 
 vendor-rs:
 	cargo check
 	./scripts/srpm/vendor-rs.sh
 
-srpm: idenfity dnf vendor
-	@echo "=========================== SRPM ==========================="
-	pwd
-	mkdir -p /tmp/rpmbuild/SOURCES
-	ls -al
-	cp *.tar.gz /tmp/rpmbuild/SOURCES
-	cat /etc/os-release
+srpm: idenfity prepfs dnf vendor
 	rpmbuild -bs -D "_topdir /tmp/rpmbuild" \$(spec)
-	mkdir -p \$(outdir)
 	cp -v /tmp/rpmbuild/SRPMS/* \$(outdir)/
