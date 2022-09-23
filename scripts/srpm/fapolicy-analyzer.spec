@@ -185,16 +185,16 @@ mkdir -p %{_builddir}/setuptools
 tar xzf %{SOURCE4} -C %{_builddir}/setuptools --strip-components=1
 cd %{_builddir}/setuptools
 python3 setup.py -q install
-python3 -m pip install %{SOURCE5} --find-links=file:///tmp/rpmbuild/SOURCES/ --no-index --quiet
-python3 -m pip install %{SOURCE4} --find-links=file:///tmp/rpmbuild/SOURCES/ --no-index --quiet
+python3 -m pip install %{SOURCE5} --find-links=%{_sourcedir} --no-index --quiet
+python3 -m pip install %{SOURCE4} --find-links=%{_sourcedir} --no-index --quiet
 
 # install setuptools-rust and all remaining depends will cascade
-python3 -m pip install %{SOURCE2} --find-links=file:///tmp/rpmbuild/SOURCES/ --no-index --quiet
+python3 -m pip install %{SOURCE2} --find-links=%{_sourcedir} --no-index --quiet
 
 # other depends
 ln -sf /usr/lib/python3.6/site-packages/{Babel*,babel} /tmp/v/lib/python3.6/site-packages
-python3 -m pip install %{SOURCE12} --find-links=file:///tmp/rpmbuild/SOURCES/ --no-index --quiet
-python3 -m pip install %{SOURCE13} --find-links=file:///tmp/rpmbuild/SOURCES/ --no-index --quiet
+python3 -m pip install %{SOURCE12} --find-links=%{_sourcedir} --no-index --quiet
+python3 -m pip install %{SOURCE13} --find-links=%{_sourcedir} --no-index --quiet
 
 %endif
 
