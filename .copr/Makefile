@@ -47,6 +47,7 @@ vendor-py:
 vendor-rs:
 	cargo check
 	./scripts/srpm/vendor-rs.sh
+	mv vendor-rs.tar.gz /tmp/rpmbuild/SOURCES
 
 srpm: idenfity prepfs dnf vendor
 	rpmbuild -bs -D "_topdir /tmp/rpmbuild" \$(spec)
