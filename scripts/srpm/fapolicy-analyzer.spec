@@ -6,7 +6,9 @@ License:        GPLv3+
 URL:            https://github.com/ctc-oss/fapolicy-analyzer
 Source0:        fapolicy-analyzer.tar.gz
 Source1:        vendor-rs.tar.gz
-%if 0%{?rhel}
+
+# on copr the source containter is never el
+%if 0%{?rhel} || 0%{?fedora} < 37
 Source2:        %{pypi_source setuptools-rust 1.1.2}
 Source3:        %{pypi_source pip 21.3.1}
 Source4:        %{pypi_source setuptools 59.6.0}
@@ -19,7 +21,6 @@ Source10:       %{pypi_source tomli 1.2.3}
 Source11:       %{pypi_source flit_core 3.7.1}
 Source12:       %{pypi_source typing_extensions 3.7.4.3}
 Source13:       https://files.pythonhosted.org/packages/source/p/pytz/pytz-2017.2.zip
-
 %endif
 
 BuildRequires: python3-devel
