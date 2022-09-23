@@ -39,7 +39,7 @@ vendor: vendor-app vendor-rs
 endif
 
 vendor-app:
-	git archive HEAD -o fapolicy-analyzer.tar.gz --prefix=fapolicy-analyzer/
+	git archive HEAD -o /tmp/rpmbuild/SOURCES/fapolicy-analyzer.tar.gz --prefix=fapolicy-analyzer/
 
 vendor-py:
 	spectool -gf -C /tmp/rpmbuild/SOURCES \$(spec)
