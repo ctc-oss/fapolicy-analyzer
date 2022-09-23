@@ -39,7 +39,8 @@ vendor: vendor-app vendor-rs
 endif
 
 vendor-app:
-	git archive HEAD -o /tmp/rpmbuild/SOURCES/fapolicy-analyzer.tar.gz --prefix=fapolicy-analyzer/
+	git archive HEAD -o fapolicy-analyzer.tar.gz --prefix=fapolicy-analyzer/
+	cp fapolicy-analyzer.tar.gz /tmp/rpmbuild/SOURCES/
 
 vendor-py:
 	spectool -gf -C /tmp/rpmbuild/SOURCES \$(spec)
@@ -47,7 +48,7 @@ vendor-py:
 vendor-rs:
 	cargo check
 	./scripts/srpm/vendor-rs.sh
-	mv vendor-rs.tar.gz /tmp/rpmbuild/SOURCES
+	cp vendor-rs.tar.gz /tmp/rpmbuild/SOURCES
 
 srpm: idenfity prepfs dnf vendor
 	rpmbuild -bs -D "_topdir /tmp/rpmbuild" \$(spec)
