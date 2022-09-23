@@ -7,10 +7,16 @@ URL:            https://github.com/ctc-oss/fapolicy-analyzer
 Source0:        fapolicy-analyzer.tar.gz
 Source1:        vendor-rs.tar.gz
 %if 0%{?rhel}
-Source2:        %{pypi_source pip 21.3.1}
-Source3:        %{pypi_source setuptools 59.6.0}
-Source4:        %{pypi_source setuptools-rust 1.1.2}
-Source5:        %{pypi_source semantic_version 2.8.2}
+Source2:        %{pypi_source setuptools-rust 1.1.2}
+Source3:        %{pypi_source pip 21.3.1}
+Source4:        %{pypi_source setuptools 59.6.0}
+Source5:        %{pypi_source wheel 0.37.0}
+Source6:        %{pypi_source setuptools_scm 6.4.2}
+Source7:        %{pypi_source semantic_version 2.8.2}
+Source8:        %{pypi_source packaging 21.3}
+Source9:        %{pypi_source pyparsing 2.1.0}
+Source10:       %{pypi_source tomli 1.2.3}
+Source11:       %{pypi_source flit_core 3.7.1}
 %endif
 
 BuildRequires: python3-devel
@@ -22,6 +28,7 @@ BuildRequires: dbus-devel
 
 %if 0%{?rhel}
 BuildRequires: rust-toolset
+BuildRequires: python3dist(toml)
 BuildRequires: python3dist(typing-extensions)
 BuildRequires: git
 %else
@@ -160,11 +167,28 @@ tar xzf %{_sourcedir}/vendor-rs.tar.gz -C ${CARGO_REG_DIR} --strip-components=2
 # remap the registry location in the .cargo/config to the replacement registry
 sed -i "s#%{cargo_registry}#${CARGO_REG_DIR}#g" .cargo/config
 
+# on rhel we are missing setuptools-rust, and to get it requires
+# upgrades of pip, setuptools, and wheel along with several other dependencies
 %if 0%{?rhel}
-%{python3} -m pip install %{SOURCE2} --user --no-deps --no-input --quiet
-%{python3} -m pip install %{SOURCE3} --user --no-deps --no-input --quiet
-%{python3} -m pip install %{SOURCE4} --user --no-deps --no-input --quiet
-%{python3} -m pip install %{SOURCE5} --user --no-deps --no-input --quiet
+python3 -m venv /tmp/v
+alias python3=/tmp/v/bin/python3
+
+ln -s /usr/lib/python3.6/site-packages/typing_extensions* /tmp/v/lib/python3.6/site-packages/
+
+# pip needs upgraded
+python3 -m pip install %{SOURCE3} --no-index --quiet
+
+# break the setuptools/wheel circular dependency by calling setup.py before pip install
+mkdir -p %{_builddir}/setuptools
+tar xzf %{SOURCE4} -C %{_builddir}/setuptools --strip-components=1
+cd %{_builddir}/setuptools
+python3 setup.py install
+python3 -m pip install %{SOURCE5} --find-links=file:///tmp/rpmbuild/SOURCES/ --no-index --quiet
+python3 -m pip install %{SOURCE4} --find-links=file:///tmp/rpmbuild/SOURCES/ --no-index --quiet
+
+# install setuptools-rust and all remaining depends will cascade
+python3 -m pip install %{SOURCE2} --find-links=file:///tmp/rpmbuild/SOURCES/ --no-index --quiet
+
 %endif
 
 %autosetup -p0 -n %{name}
@@ -173,9 +197,10 @@ rm Cargo.lock
 
 
 %build
+alias python3=/tmp/v/bin/python3
 echo %{version} > VERSION
-%{python3} setup.py compile_catalog -f
-%py3_build_wheel
+#python3 setup.py compile_catalog -f
+python3 setup.py bdist_wheel
 
 %install
 

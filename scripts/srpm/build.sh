@@ -16,13 +16,14 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 spec_file="fapolicy-analyzer.spec"
+rpmbuild_dir=/tmp/rpmbuild
 
 if [[ "$ONLINE" -eq 1 ]]; then
-  cd /tmp/rpmbuild/SOURCES
+  cd ${rpmbuild_dir}/SOURCES
   spectool -gf "../SPECS/$spec_file"
-  cd /tmp/rpmbuild/SPECS
+  cd ${rpmbuild_dir}/SPECS
   dnf builddep "$spec_file" -y
 fi
 
-cd /tmp/rpmbuild/SPECS
-rpmbuild -ba "$spec_file"
+cd ${rpmbuild_dir}/SPECS
+rpmbuild -ba "$spec_file" -D "_topdir ${rpmbuild_dir}"
