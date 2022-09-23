@@ -63,7 +63,7 @@ class ProfSessionException(RuntimeError):
 class FaProfSession:
     def __init__(self, dictProfTgt, faprofiler=None):
         logging.debug(f"faProfSession::__init__({dictProfTgt}, {faprofiler})")
-        self.validateArgs(dictProfTgt, True)
+        self.throwOnInvalidSessionArgs(dictProfTgt)
 
         # Executable command and arguments
         self.execPath = dictProfTgt["executeText"]
@@ -251,12 +251,19 @@ class FaProfSession:
         return bReturn
 
     @staticmethod
-    def validateArgs(dictProfTgt, throw_exception=False):
+    def throwOnInvalidSessionArgs(dictProfTgt):
+        """Throw exception on first invalid Profiler session argument."""
+        dictInvalidEnums = FaProfSession.validateArgs(dictProfTgt)
+        if ProfSessionArgsStatus.OK not in dictInvalidEnums:
+            error_enum = dictInvalidEnums.keys()[0]
+            error_msg = dictInvalidEnums[error_enum]
+            raise ProfSessionException(error_msg, error_enum)
+
+    @staticmethod
+    def validateArgs(dictProfTgt):
         """
         Validates the Profiler Session object's user, target, pwd parameters.
-        The 'throw_exception' parameter expects a boolean to dictate whether the
-        function throws exceptions or only returns a dictionary mapping enums to
-        error msgs.
+        Returns a dictionary mapping enums to error msgs.
         """
         dictReturn = {}
         logging.debug(f"validateProfArgs({dictProfTgt}")
@@ -323,9 +330,6 @@ class FaProfSession:
         if ProfSessionArgsStatus.OK in dictReturn:
             logging.debug("FaProfSession::validateArgs() --> pwd verified")
 
-        # Optionally throw exception if arguments are NG
-        if throw_exception and ProfSessionArgsStatus.OK not in dictReturn:
-            raise ProfSessionException(error_msg, dictReturn.keys()[0])
         return dictReturn
 
     def _demote(enable, user_uid, user_gid):
@@ -373,7 +377,7 @@ class FaProfiler:
             self.fapd_prof_stderr = self.fapd_mgr.fapd_profiling_stderr
 
         try:
-            FaProfSession.validateArgs(dictArgs, True)
+            FaProfSession.validateArgs(dictArgs)
             self.faprofSession = FaProfSession(dictArgs, self)
         except ProfSessionException as e:
             print(e)
