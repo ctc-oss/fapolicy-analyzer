@@ -105,6 +105,7 @@ jobs:
           mv fapolicy-analyzer.tar.gz /tmp/archives
         env:
           PLATFORM: ${{ matrix.triple.name }}
+        working-directory: /github/home/rpmbuild/SOURCES
 
       - name: Archive artifacts
         uses: actions/upload-artifact@v2
