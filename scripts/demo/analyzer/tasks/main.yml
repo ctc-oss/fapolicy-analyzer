@@ -4,18 +4,20 @@
 - set_fact:
     analyzer_version: "{{ lookup('env', 'analyzer_version') | default('latest', True) }}"
 
-# when the version is unspecified and >= fc:37 use Copr
+# when the version is unspecified and fc >= 37 or rhel >= 8 use Copr
+- set_fact:
+    use_copr: analyzer_version == "latest" and
+      (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] | int >= 8)
+      or
+      (ansible_facts['distribution'] == "Fedora" and ansible_facts['distribution_major_version'] | int >= 37)
+
 - name: Use Copr as Source
   import_tasks: copr.yml
-  when: analyzer_version == "latest" and
-        ansible_facts['distribution'] == "Fedora" and
-        ansible_facts['distribution_major_version'] >= "37"
+  when: use_copr
 
 - name: Use GitHub as Source
   import_tasks: github.yml
-  when: analyzer_version != "latest" or
-        ansible_facts['distribution'] != "Fedora" or
-        ansible_facts['distribution_major_version'] < "37"
+  when: not use_copr
 
 - name: Reload fapolicyd
   systemd:
