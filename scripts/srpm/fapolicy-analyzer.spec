@@ -1,26 +1,26 @@
-Summary:        File Access Policy Analyzer
-Name:           fapolicy-analyzer
-Version:        0.6.1
-Release:        1%{?dist}
-License:        GPLv3+
-URL:            https://github.com/ctc-oss/fapolicy-analyzer
-Source0:        fapolicy-analyzer.tar.gz
-Source1:        vendor-rs.tar.gz
+Summary:       File Access Policy Analyzer
+Name:          fapolicy-analyzer
+Version:       0.6.1
+Release:       1%{?dist}
+License:       GPLv3+
+URL:           https://github.com/ctc-oss/fapolicy-analyzer
+Source0:       fapolicy-analyzer.tar.gz
+Source1:       vendor-rs.tar.gz
 
 # on copr the source containter is never el
 %if 0%{?rhel} || 0%{?fedora} < 37
-Source2:        %{pypi_source setuptools-rust 1.1.2}
-Source3:        %{pypi_source pip 21.3.1}
-Source4:        %{pypi_source setuptools 59.6.0}
-Source5:        %{pypi_source wheel 0.37.0}
-Source6:        %{pypi_source setuptools_scm 6.4.2}
-Source7:        %{pypi_source semantic_version 2.8.2}
-Source8:        %{pypi_source packaging 21.3}
-Source9:        %{pypi_source pyparsing 2.1.0}
-Source10:       %{pypi_source tomli 1.2.3}
-Source11:       %{pypi_source flit_core 3.7.1}
-Source12:       %{pypi_source typing_extensions 3.7.4.3}
-Source13:       https://files.pythonhosted.org/packages/source/p/pytz/pytz-2017.2.zip
+Source2:       %{pypi_source setuptools-rust 1.1.2}
+Source3:       %{pypi_source pip 21.3.1}
+Source4:       %{pypi_source setuptools 59.6.0}
+Source5:       %{pypi_source wheel 0.37.0}
+Source6:       %{pypi_source setuptools_scm 6.4.2}
+Source7:       %{pypi_source semantic_version 2.8.2}
+Source8:       %{pypi_source packaging 21.3}
+Source9:       %{pypi_source pyparsing 2.1.0}
+Source10:      %{pypi_source tomli 1.2.3}
+Source11:      %{pypi_source flit_core 3.7.1}
+Source12:      %{pypi_source typing_extensions 3.7.4.3}
+Source13:      https://files.pythonhosted.org/packages/source/p/pytz/pytz-2017.2.zip
 %endif
 
 BuildRequires: python3-devel
@@ -129,20 +129,20 @@ BuildRequires: rust-paste-devel
 BuildRequires: rust-indoc-devel
 %endif
 
-Requires: python3
-Requires: python3-gobject
-Requires: python3-events
-Requires: python3-configargparse
-Requires: python3-more-itertools
-Requires: python3-rx
-Requires: python3-importlib-metadata
-Requires: gtk3
-Requires: dbus-libs
-Requires: gtksourceview3
+Requires:      python3
+Requires:      python3-gobject
+Requires:      python3-events
+Requires:      python3-configargparse
+Requires:      python3-more-itertools
+Requires:      python3-rx
+Requires:      python3-importlib-metadata
+Requires:      gtk3
+Requires:      dbus-libs
+Requires:      gtksourceview3
 
 %if 0%{?rhel}
-Requires: python3-dataclasses
-Requires: python3-importlib-resources
+Requires:      python3-dataclasses
+Requires:      python3-importlib-resources
 %endif
 
 %global modname fapolicy_analyzer
