@@ -146,7 +146,7 @@ Requires:      python3-importlib-resources
 %endif
 
 %global modname      fapolicy_analyzer
-%global venv_dir     /tmp/v
+%global venv_dir     %{_builddir}/vendor-py
 %global venv_py3     %{venv_dir}/bin/python3
 %global venv_lib     %{venv_dir}/lib/python3.6/site-packages
 %global venv_install %{venv_py3} -m pip install --find-links=%{_sourcedir} --no-index --quiet
