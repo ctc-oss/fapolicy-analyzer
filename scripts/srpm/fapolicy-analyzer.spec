@@ -145,7 +145,11 @@ Requires:      python3-dataclasses
 Requires:      python3-importlib-resources
 %endif
 
-%global modname fapolicy_analyzer
+%global modname      fapolicy_analyzer
+%global venv_dir     /tmp/v
+%global venv_py3     %{venv_dir}/bin/python3
+%global venv_lib     %{venv_dir}/lib/python3.6/site-packages
+%global venv_install %{venv_py3} -m pip install --find-links=%{_sourcedir} --no-index --quiet
 
 %description
 Tools to assist with the configuration and maintenance of Fapolicyd (File Access Policy Daemon).
@@ -174,32 +178,31 @@ sed -i "s#%{cargo_registry}#${CARGO_REG_DIR}#g" .cargo/config
 # on rhel we are missing setuptools-rust, and to get it requires
 # upgrades of pip, setuptools, and wheel along with several other dependencies
 %if 0%{?rhel}
-python3 -m venv /tmp/v
-alias python3=/tmp/v/bin/python3
+python3 -m venv %{venv_dir}
 
 # the offline installs seem to require upgraded pip
-python3 -m pip install %{SOURCE3} --no-index --quiet
+%{venv_install} %{SOURCE3}
 
 # the following breaks the setuptools <-> wheel circular dependency
 # by calling setuptools/setup.py before calling pip install on either
 mkdir -p %{_builddir}/setuptools
 tar xzf %{SOURCE4} -C %{_builddir}/setuptools --strip-components=1
 cd %{_builddir}/setuptools
-python3 setup.py -q install
-python3 -m pip install %{SOURCE5} --find-links=%{_sourcedir} --no-index --quiet
-python3 -m pip install %{SOURCE4} --find-links=%{_sourcedir} --no-index --quiet
+%{venv_py3} setup.py -q install
+%{venv_install} %{SOURCE5}
+%{venv_install} %{SOURCE4}
 
 # install setuptools-rust, the known dependencies will install with it
-python3 -m pip install %{SOURCE2} --find-links=%{_sourcedir} --no-index --quiet
+%{venv_install} %{SOURCE2}
 
 # other dependencies
-ln -sf /usr/lib/python3.6/site-packages/{Babel*,babel} /tmp/v/lib/python3.6/site-packages
-python3 -m pip install %{SOURCE12} --find-links=%{_sourcedir} --no-index --quiet
-python3 -m pip install %{SOURCE13} --find-links=%{_sourcedir} --no-index --quiet
+ln -sf  %{python3_sitelib}/{Babel*,babel} %{venv_lib}
+%{venv_install} %{SOURCE12}
+%{venv_install} %{SOURCE13}
 
 # switch venv back to original pip to ensure packaging
-rm -rf /tmp/v/lib/python3.6/site-packages/pip*
-cp -r  /usr/lib/python3.6/site-packages/pip* /tmp/v/lib/python3.6/site-packages
+rm -rf %{venv_lib}/pip*
+cp -r  %{python3_sitelib}/pip* %{venv_lib}
 
 %endif
 
@@ -216,7 +219,7 @@ echo %{version} > VERSION
 %build
 
 %if 0%{?rhel}
-alias python3=/tmp/v/bin/python3
+alias python3=%{venv_py3}
 %endif
 
 python3 setup.py compile_catalog -f
