@@ -152,7 +152,7 @@ Requires:      python3-importlib-resources
 %global venv_install %{venv_py3} -m pip install --find-links=%{_sourcedir} --no-index --quiet
 
 %description
-Tools to assist with the configuration and maintenance of Fapolicyd (File Access Policy Daemon).
+Tools to assist with the configuration and management of fapolicyd (File Access Policy Daemon).
 
 %prep
 
