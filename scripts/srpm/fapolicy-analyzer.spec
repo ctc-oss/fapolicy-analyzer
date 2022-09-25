@@ -192,15 +192,17 @@ cd %{_builddir}/setuptools
 %{venv_install} %{SOURCE5}
 %{venv_install} %{SOURCE4}
 
-# install setuptools-rust, the known dependencies will install with it
+# install setuptools-rust and direct dependencies
 %{venv_install} %{SOURCE2}
 
-# other dependencies
-ln -sf  %{python3_sitelib}/{Babel*,babel} %{venv_lib}
+# install other dependencies
 %{venv_install} %{SOURCE12}
 %{venv_install} %{SOURCE13}
 
-# switch venv back to original pip to ensure packaging
+# babel can be linked from the system install
+ln -sf  %{python3_sitelib}/{Babel*,babel} %{venv_lib}
+
+# switch venv back to the original pip to ensure correct wheel packaging
 rm -rf %{venv_lib}/pip*
 cp -r  %{python3_sitelib}/pip* %{venv_lib}
 
