@@ -164,7 +164,7 @@ Tools to assist with the configuration and management of fapolicyd (File Access 
 # Problem:  the /usr/share/cargo/registry location is not writable, blocking the install of vendored crates
 # Solution: link the contents of the /usr/share/cargo/registry into a replacement writable registry
 #           extract the contents of the vendored crate tarball to the replacement writable registry
-CARGO_REG_DIR=%{_sourcedir}/vendor
+CARGO_REG_DIR=%{_builddir}/vendor-rs
 mkdir -p ${CARGO_REG_DIR}
 for d in %{cargo_registry}/*; do ln -sf ${d} ${CARGO_REG_DIR}; done
 tar xzf %{SOURCE1} -C ${CARGO_REG_DIR} --strip-components=2
