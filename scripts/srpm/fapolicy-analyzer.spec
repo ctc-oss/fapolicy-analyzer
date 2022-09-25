@@ -177,10 +177,11 @@ sed -i "s#%{cargo_registry}#${CARGO_REG_DIR}#g" .cargo/config
 python3 -m venv /tmp/v
 alias python3=/tmp/v/bin/python3
 
-# pip needs upgraded
+# the offline installs seem to require upgraded pip
 python3 -m pip install %{SOURCE3} --no-index --quiet
 
-# break the setuptools/wheel circular dependency by calling setup.py before pip install
+# the following breaks the setuptools <-> wheel circular dependency
+# by calling setuptools/setup.py before calling pip install on either
 mkdir -p %{_builddir}/setuptools
 tar xzf %{SOURCE4} -C %{_builddir}/setuptools --strip-components=1
 cd %{_builddir}/setuptools
@@ -188,10 +189,10 @@ python3 setup.py -q install
 python3 -m pip install %{SOURCE5} --find-links=%{_sourcedir} --no-index --quiet
 python3 -m pip install %{SOURCE4} --find-links=%{_sourcedir} --no-index --quiet
 
-# install setuptools-rust and all remaining depends will cascade
+# install setuptools-rust, the known dependencies will install with it
 python3 -m pip install %{SOURCE2} --find-links=%{_sourcedir} --no-index --quiet
 
-# other depends
+# other dependencies
 ln -sf /usr/lib/python3.6/site-packages/{Babel*,babel} /tmp/v/lib/python3.6/site-packages
 python3 -m pip install %{SOURCE12} --find-links=%{_sourcedir} --no-index --quiet
 python3 -m pip install %{SOURCE13} --find-links=%{_sourcedir} --no-index --quiet
@@ -203,7 +204,9 @@ cp -r  /usr/lib/python3.6/site-packages/pip* /tmp/v/lib/python3.6/site-packages
 %endif
 
 %autosetup -p0 -n %{name}
-# throw out our lock, use whatever is available in the replacement registry
+
+# throw out the checked-in lock
+# this build will use whatever is available in the replacement registry
 rm Cargo.lock
 
 # our setup.py looks up the version from git describe
