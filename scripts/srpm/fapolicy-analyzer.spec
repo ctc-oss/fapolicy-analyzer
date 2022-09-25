@@ -206,9 +206,11 @@ cp -r  /usr/lib/python3.6/site-packages/pip* /tmp/v/lib/python3.6/site-packages
 # throw out our lock, use whatever is available in the replacement registry
 rm Cargo.lock
 
+# our setup.py looks up the version from git describe
+# this overrides that check to the RPM version
+echo %{version} > VERSION
 
 %build
-echo %{version} > VERSION
 
 %if 0%{?rhel}
 alias python3=/tmp/v/bin/python3
