@@ -196,6 +196,10 @@ ln -sf /usr/lib/python3.6/site-packages/{Babel*,babel} /tmp/v/lib/python3.6/site
 python3 -m pip install %{SOURCE12} --find-links=%{_sourcedir} --no-index --quiet
 python3 -m pip install %{SOURCE13} --find-links=%{_sourcedir} --no-index --quiet
 
+# switch venv back to original pip to ensure packaging
+rm -rf /tmp/v/lib/python3.6/site-packages/pip*
+cp -r  /usr/lib/python3.6/site-packages/pip* /tmp/v/lib/python3.6/site-packages
+
 %endif
 
 %autosetup -p0 -n %{name}
@@ -216,13 +220,7 @@ python3 setup.py bdist_wheel
 %install
 
 install bin/%{name} %{buildroot}%{_sbindir}/%{name} -D
-
-%if 0%{?rhel}
-# the vendored version of pip does not have the strip-prefix flag used by py3_install_wheel, so call it manually
-%{python3} -m pip install -I dist/%{modname}-%{version}*%{_arch}.whl --root %{buildroot} --no-deps
-%else
 %{py3_install_wheel %{modname}-%{version}*%{_arch}.whl}
-%endif
 
 %check
 
