@@ -2,7 +2,7 @@
 - name: get latest release tag
   shell: curl https://api.github.com/repos/ctc-oss/fapolicy-analyzer/releases/latest | jq -r .tag_name
   register: analyzer_latest_version_lookup
-  when: analyzer_version == 'latest'
+  when: analyzer_version == 'latest-release'
 
 - set_fact:
     analyzer_version: "{{ analyzer_latest_version_lookup.stdout | default(analyzer_version, True) }}"
