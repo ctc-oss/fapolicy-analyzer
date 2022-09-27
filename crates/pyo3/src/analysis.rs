@@ -12,12 +12,12 @@ use pyo3::prelude::*;
 
 use fapolicy_analyzer::events::analysis::{analyze, Analysis, ObjAnalysis, SubjAnalysis};
 use fapolicy_analyzer::events::db::DB as EventDB;
-use fapolicy_analyzer::events::event::Perspective;
+use fapolicy_analyzer::events::event::{Event, Perspective};
 use fapolicy_trust::db::DB as TrustDB;
 
 /// An Event parsed from a fapolicyd log
 #[pyclass(module = "log", name = "Event")]
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct PyEvent {
     rs: Analysis,
 }
@@ -30,6 +30,24 @@ impl From<PyEvent> for Analysis {
     fn from(py: PyEvent) -> Self {
         py.rs
     }
+}
+
+pub(crate) fn expand_on_gid(rs: &Analysis) -> Vec<PyEvent> {
+    let mut r = vec![];
+    for gid in &rs.event.gid {
+        let e = rs.clone().event;
+        r.push(PyEvent {
+            rs: Analysis {
+                event: Event {
+                    gid: vec![*gid],
+                    ..e
+                },
+                subject: rs.subject.clone(),
+                object: rs.object.clone(),
+            },
+        })
+    }
+    r
 }
 
 #[pymethods]
@@ -181,7 +199,7 @@ impl PyEventLog {
     fn by_subject(&self, path: String) -> Vec<PyEvent> {
         analyze(&self.rs, Perspective::Subject(path), &self.rs_trust)
             .iter()
-            .map(|e| PyEvent::from(e.clone()))
+            .flat_map(|e| expand_on_gid(e))
             .collect()
     }
 
@@ -189,7 +207,7 @@ impl PyEventLog {
     fn by_user(&self, uid: i32) -> Vec<PyEvent> {
         analyze(&self.rs, Perspective::User(uid), &self.rs_trust)
             .iter()
-            .map(|e| PyEvent::from(e.clone()))
+            .flat_map(|e| expand_on_gid(e).into_iter().filter(|e| e.uid() == uid))
             .collect()
     }
 
@@ -197,7 +215,7 @@ impl PyEventLog {
     fn by_group(&self, gid: i32) -> Vec<PyEvent> {
         analyze(&self.rs, Perspective::Group(gid), &self.rs_trust)
             .iter()
-            .map(|e| PyEvent::from(e.clone()))
+            .flat_map(|e| expand_on_gid(e).into_iter().filter(|e| e.gid() == gid))
             .collect()
     }
 }
