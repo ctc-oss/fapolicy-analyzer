@@ -6,7 +6,7 @@
 
 - name: enable copr repo
   shell: |
-    dnf copr enable -y jwass3/fapolicy-analyzer
+    dnf copr enable -y ctc-oss/fapolicy-analyzer
 
 - name: install analyzer
   dnf:

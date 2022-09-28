@@ -1,7 +1,7 @@
 File Access Policy Analyzer SRPM build
 ===
 
-[![Copr build status](https://copr.fedorainfracloud.org/coprs/jwass3/fapolicy-analyzer/package/fapolicy-analyzer/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/jwass3/fapolicy-analyzer/package/fapolicy-analyzer/)
+[![Copr build status](https://copr.fedorainfracloud.org/coprs/ctc-oss/fapolicy-analyzer/package/fapolicy-analyzer/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/ctc-oss/fapolicy-analyzer/package/fapolicy-analyzer/)
 
 ## From Copr
 
