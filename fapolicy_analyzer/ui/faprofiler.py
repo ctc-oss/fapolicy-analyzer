@@ -359,7 +359,6 @@ class FaProfiler:
             self.fapd_prof_stderr = self.fapd_mgr.fapd_profiling_stderr
 
         try:
-            FaProfSession.validateArgs(dictArgs)
             self.faprofSession = FaProfSession(dictArgs, self)
         except ProfSessionException as e:
             logging.error(e)
