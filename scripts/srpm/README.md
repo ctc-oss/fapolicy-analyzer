@@ -5,24 +5,31 @@ File Access Policy Analyzer SRPM build
 
 ## From Copr
 
-From Rawhide Vagrant machine
-
 ```text
 dnf install -y dnf-plugins-core
-dnf copr enable -y jwass3/fapolicy-analyzer
+dnf copr enable -y ctc-oss/fapolicy-analyzer
 dnf install -y fapolicy-analyzer
 ```
 
-
 ## From dev env
 
-From Rawhide container with Podman
+Build from Rawhide container with Podman
 
 ```text
 make -f .copr/Makefile vendor
-podman build --security-opt seccomp=unconfined -t fapolicy-analyzer:rawhide -f scripts/srpm/Containerfile .
-podman run --rm -it fapolicy-analyzer:rawhide
+podman build -t fapolicy-analyzer:rawhide -f scripts/srpm/Containerfile.fc .
+podman run --rm -it --network=none fapolicy-analyzer:rawhide
 ```
+
+or from a RHEL container
+
+```text
+make -f .copr/Makefile vendor
+podman build -t fapolicy-analyzer:el -f scripts/srpm/Containerfile.el .
+podman run --rm -it --network=none fapolicy-analyzer:el
+```
+
+Both examples produce a disconnected build using an unprivileged user.
 
 ## references
 

@@ -1,15 +1,25 @@
 File Access Policy Analyzer
 ===
 
-Tools to assist with the configuration and maintenance of [fapolicyd](https://github.com/linux-application-whitelisting/fapolicyd).
+Tools to assist with the configuration and management of [fapolicyd](https://github.com/linux-application-whitelisting/fapolicyd).
 
-## GUI
+## Install
 
-Run the fapolicy-analyzer UI:
+Using Copr
+
+```text
+dnf install -y dnf-plugins-core
+dnf copr enable -y ctc-oss/fapolicy-analyzer
+dnf install -y fapolicy-analyzer
+```
+
+Or run the fapolicy-analyzer UI after cloning the repo
 
 ```{shell}
 make run
 ```
+
+Or RPM install from a GitHub release [:point_right:](https://github.com/ctc-oss/fapolicy-analyzer/releases/latest)
 
 ## Requirements
 
