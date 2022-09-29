@@ -171,7 +171,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         if not FaProfSession.validSessionArgs(profiling_args):
             logging.debug("Invalid Profiler arguments")
             dictInvalidEnums = FaProfSession.validateArgs(profiling_args)
-            strStatusEnums = EnumErrorPairs2Str(dictInvalidEnums)
+            strStatusEnums = "\n  " + EnumErrorPairs2Str(dictInvalidEnums)
             dispatch(
                 add_notification(
                     f"Invalid Profiler Session argument(s): {strStatusEnums}",
