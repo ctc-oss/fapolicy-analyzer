@@ -3,7 +3,7 @@ File Access Policy Analyzer
 
 Tools to assist with the configuration and management of [fapolicyd](https://github.com/linux-application-whitelisting/fapolicyd).
 
-![GitHub branch checks state](https://img.shields.io/github/checks-runs/ctc-oss/fapolicy-analyzer/master?label=CI)
+![GitHub checks status](https://img.shields.io/github/checks-status/ctc-oss/fapolicy-analyzer/master?label=CI)
 [![Copr build status](https://img.shields.io/badge/dynamic/json?color=B87333&label=Copr&query=builds.latest.state&url=https%3A%2F%2Fcopr.fedorainfracloud.org%2Fapi_3%2Fpackage%3Fownername%3Dctc-oss%26projectname%3Dfapolicy-analyzer%26packagename%3Dfapolicy-analyzer%26with_latest_build%3DTrue)](https://copr.fedorainfracloud.org/coprs/ctc-oss/fapolicy-analyzer/package/fapolicy-analyzer/)
 
 ## Install
