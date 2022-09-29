@@ -170,10 +170,10 @@ for d in %{cargo_registry}/*; do ln -sf ${d} ${CARGO_REG_DIR}; done
 tar xzf %{SOURCE1} -C ${CARGO_REG_DIR} --strip-components=2
 
 %cargo_prep
-%endif
 
 # remap the registry location in the .cargo/config to the replacement registry
 sed -i "s#%{cargo_registry}#${CARGO_REG_DIR}#g" .cargo/config
+%endif
 
 # on rhel we are missing setuptools-rust, and to get it requires
 # upgrades of pip, setuptools, and wheel along with several other dependencies
