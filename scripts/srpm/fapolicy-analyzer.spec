@@ -8,6 +8,7 @@ Source0:       fapolicy-analyzer.tar.gz
 Source1:       vendor-rs.tar.gz
 
 # on copr the source containter is never el
+# we check for low fc version here to remedy that
 %if 0%{?rhel} || 0%{?fedora} < 37
 Source2:       %{pypi_source setuptools-rust 1.1.2}
 Source3:       %{pypi_source pip 21.3.1}
@@ -157,43 +158,45 @@ Tools to assist with the configuration and management of fapolicyd (File Access 
 %prep
 
 %if 0%{?rhel}
-# on rhel we are missing setuptools-rust, and to get it requires
+# Python- on rhel we are missing setuptools-rust, and to get it requires
 # upgrades of pip, setuptools, and wheel along with several other dependencies
-# use a virtual
+# use a virtual environment to isolate changes, %venv_py3 is defined to use this
 python3 -m venv %{venv_dir}
 
-# the offline installs seem to require upgraded pip
+# the upgraded packages will not install with the older pip
 %{venv_install} %{SOURCE3}
 
-# the following breaks the setuptools <-> wheel circular dependency
-# by calling setuptools/setup.py before calling pip install on either
+# there exists a circular dependency between setuptools <-> wheel
+# by calling setuptools/setup.py before pip'ing we can bypass that
 mkdir -p %{_builddir}/setuptools
 tar xzf %{SOURCE4} -C %{_builddir}/setuptools --strip-components=1
 %{venv_py3} %{_builddir}/setuptools/setup.py -q install
+# now pip wheel, and setuptools again
 %{venv_install} %{SOURCE5}
 %{venv_install} %{SOURCE4}
 
-# install setuptools-rust and direct dependencies
+# now pip install setuptools-rust and direct dependencies
 %{venv_install} %{SOURCE2}
 
-# install other dependencies
+# pip install other dependencies
 %{venv_install} %{SOURCE12}
 %{venv_install} %{SOURCE13}
 
 # babel can be linked from the system install
 ln -sf  %{python3_sitelib}/{Babel*,babel} %{venv_lib}
 
-# switch venv back to the original pip to ensure correct wheel packaging
+# now that installs are completed we can switch the venv back to the original pip
+# switching back will ensure the correct (patched) wheel packaging for use in our rpm
 rm -rf %{venv_lib}/pip*
 cp -r  %{python3_sitelib}/pip* %{venv_lib}
 
-# on rhel we vendor everything
+# Rust- on rhel we vendor everything
 %cargo_prep -V1
 %else
-# Goal:     Hybrid crate dependencies, mixing packages and vendored
+# Rust- on Fedora we use hybrid crate dependencies, that is mixing official packages and vendored crates
 # Problem:  the /usr/share/cargo/registry location is not writable, blocking the install of vendored crates
-# Solution: link the contents of the /usr/share/cargo/registry into a replacement writable registry
-#           extract the contents of the vendored crate tarball to the replacement writable registry
+# Solution: link the contents of the /usr/share/cargo/registry into a writable registry location
+#           extract the contents of the vendored crate tarball to the writable registry
 CARGO_REG_DIR=%{_builddir}/vendor-rs
 mkdir -p ${CARGO_REG_DIR}
 for d in %{cargo_registry}/*; do ln -sf ${d} ${CARGO_REG_DIR}; done
@@ -201,14 +204,14 @@ tar xzf %{SOURCE1} -C ${CARGO_REG_DIR} --strip-components=2
 
 %cargo_prep
 
-# remap the registry location in the .cargo/config to the replacement registry
+# remap the registry location in the .cargo/config to the writable registry
 sed -i "s#%{cargo_registry}#${CARGO_REG_DIR}#g" .cargo/config
 %endif
 
 %autosetup -p0 -n %{name}
 
 # throw out the checked-in lock
-# this build will use whatever is available in the replacement registry
+# this build will use whatever is available in the writable registry
 rm Cargo.lock
 
 # our setup.py looks up the version from git describe
@@ -218,6 +221,7 @@ echo %{version} > VERSION
 %build
 
 %if 0%{?rhel}
+# on rhel we want to use the prep'd venv
 alias python3=%{venv_py3}
 %endif
 
