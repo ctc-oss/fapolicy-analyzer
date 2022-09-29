@@ -68,8 +68,9 @@ class parse_help(Command):
         return tmp_dir
 
     def build_docbooks(self):
-        def in_path(file):
-            return path.join(tmp_dir, file)
+        def filters():
+            FILTERS = ["./scripts/pandoc_filters/local-links.lua"]
+            return " ".join([f"--lua-filter='{f}'" for f in FILTERS])
 
         def db_file(file):
             rel_path = path.relpath(file, tmp_dir)
@@ -83,7 +84,7 @@ class parse_help(Command):
             [
                 "sh",
                 "-c",
-                f"pandoc '{md}' -s -f markdown -t docbook  -o '{docbook}'",
+                f"pandoc '{md}' -s {filters()} -f markdown -t docbook  -o '{docbook}'",
             ]
             for md, docbook in files.items()
         ]
