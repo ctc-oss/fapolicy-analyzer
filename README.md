@@ -13,13 +13,9 @@ dnf copr enable -y ctc-oss/fapolicy-analyzer
 dnf install -y fapolicy-analyzer
 ```
 
-Or run the fapolicy-analyzer UI after cloning the repo
-
-```{shell}
-make run
-```
-
 Or RPM install from a GitHub release [:point_right:](https://github.com/ctc-oss/fapolicy-analyzer/releases/latest)
+
+Or use `make run` after cloning the repo
 
 ## Requirements
 
