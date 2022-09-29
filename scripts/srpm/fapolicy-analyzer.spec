@@ -157,27 +157,9 @@ Tools to assist with the configuration and management of fapolicyd (File Access 
 %prep
 
 %if 0%{?rhel}
-# on rhel we vendor everything
-%cargo_prep -V1
-%else
-# Goal:     Hybrid crate dependencies, mixing packages and vendored
-# Problem:  the /usr/share/cargo/registry location is not writable, blocking the install of vendored crates
-# Solution: link the contents of the /usr/share/cargo/registry into a replacement writable registry
-#           extract the contents of the vendored crate tarball to the replacement writable registry
-CARGO_REG_DIR=%{_builddir}/vendor-rs
-mkdir -p ${CARGO_REG_DIR}
-for d in %{cargo_registry}/*; do ln -sf ${d} ${CARGO_REG_DIR}; done
-tar xzf %{SOURCE1} -C ${CARGO_REG_DIR} --strip-components=2
-
-%cargo_prep
-
-# remap the registry location in the .cargo/config to the replacement registry
-sed -i "s#%{cargo_registry}#${CARGO_REG_DIR}#g" .cargo/config
-%endif
-
 # on rhel we are missing setuptools-rust, and to get it requires
 # upgrades of pip, setuptools, and wheel along with several other dependencies
-%if 0%{?rhel}
+# use a virtual
 python3 -m venv %{venv_dir}
 
 # the offline installs seem to require upgraded pip
@@ -187,8 +169,7 @@ python3 -m venv %{venv_dir}
 # by calling setuptools/setup.py before calling pip install on either
 mkdir -p %{_builddir}/setuptools
 tar xzf %{SOURCE4} -C %{_builddir}/setuptools --strip-components=1
-cd %{_builddir}/setuptools
-%{venv_py3} setup.py -q install
+%{venv_py3} %{_builddir}/setuptools/setup.py -q install
 %{venv_install} %{SOURCE5}
 %{venv_install} %{SOURCE4}
 
@@ -206,6 +187,22 @@ ln -sf  %{python3_sitelib}/{Babel*,babel} %{venv_lib}
 rm -rf %{venv_lib}/pip*
 cp -r  %{python3_sitelib}/pip* %{venv_lib}
 
+# on rhel we vendor everything
+%cargo_prep -V1
+%else
+# Goal:     Hybrid crate dependencies, mixing packages and vendored
+# Problem:  the /usr/share/cargo/registry location is not writable, blocking the install of vendored crates
+# Solution: link the contents of the /usr/share/cargo/registry into a replacement writable registry
+#           extract the contents of the vendored crate tarball to the replacement writable registry
+CARGO_REG_DIR=%{_builddir}/vendor-rs
+mkdir -p ${CARGO_REG_DIR}
+for d in %{cargo_registry}/*; do ln -sf ${d} ${CARGO_REG_DIR}; done
+tar xzf %{SOURCE1} -C ${CARGO_REG_DIR} --strip-components=2
+
+%cargo_prep
+
+# remap the registry location in the .cargo/config to the replacement registry
+sed -i "s#%{cargo_registry}#${CARGO_REG_DIR}#g" .cargo/config
 %endif
 
 %autosetup -p0 -n %{name}
