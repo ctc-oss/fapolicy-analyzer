@@ -247,7 +247,7 @@ class FaProfSession:
         """Throw exception on first invalid Profiler session argument."""
         dictInvalidEnums = FaProfSession.validateArgs(dictProfTgt)
         if ProfSessionArgsStatus.OK not in dictInvalidEnums:
-            error_enum = dictInvalidEnums.keys()[0]
+            error_enum = next(iter(dictInvalidEnums))
             error_msg = dictInvalidEnums[error_enum]
             raise ProfSessionException(error_msg, error_enum)
 
@@ -363,13 +363,15 @@ class FaProfiler:
         except ProfSessionException as e:
             logging.error(e)
             raise e
+
+        key = dictArgs["executeText"] + "-" + str(self.instance)
+        self.dictFaProfSession[key] = self.faprofSession
+        try:
+            self.faprofSession.startTarget(self.instance, block_until_term)
         except Exception as e:
             logging.error(e)
             raise e
 
-        key = dictArgs["executeText"] + "-" + str(self.instance)
-        self.dictFaProfSession[key] = self.faprofSession
-        self.faprofSession.startTarget(self.instance, block_until_term)
         if not self.fapd_persistance:
             self.fapd_mgr.stop(FapdMode.PROFILING)
             self.fapd_pid = None
