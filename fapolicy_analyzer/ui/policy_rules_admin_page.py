@@ -16,6 +16,7 @@
 from functools import partial
 from typing import Optional, Sequence
 
+from datetime import datetime
 import gi
 from events import Events
 from fapolicy_analyzer import EventLog, Group, Trust, User
@@ -499,6 +500,20 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
 
     def on_refresh_clicked(self, *args):
         self.__refresh()
+
+    def on_timeSelectBtn_clicked(self, *args):
+        start_time_str = self.get_object("startTimeField").get_buffer().get_text()
+        stop_time_str = self.get_object("stopTimeField").get_buffer().get_text()
+
+        try:
+            start_time = datetime.strptime(start_time_str, "%m/%d/%y %H:%M:%S")
+            stop_time = datetime.strptime(stop_time_str, "%m/%d/%y %H:%M:%S")
+            self.filter_time_selection(start_time, stop_time)
+        except ValueError as ve:
+            print("Error: ", ve)
+
+    def filter_time_selection(self, start_time, stop_time):
+        pass
 
     class Switcher(Events):
         __events__ = ["buttonClicked"]
