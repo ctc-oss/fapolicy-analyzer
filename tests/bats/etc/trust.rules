@@ -1,3 +1,0 @@
-allow perm=execute all : trust=1
-deny_log perm=execute all : dir=/deny
-allow perm=open all : all
