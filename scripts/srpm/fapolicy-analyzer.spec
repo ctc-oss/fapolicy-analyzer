@@ -149,7 +149,7 @@ Requires:      python3-dataclasses
 Requires:      python3-importlib-resources
 %endif
 
-%global modname      fapolicy_analyzer
+%global module       fapolicy_analyzer
 %global venv_dir     %{_builddir}/vendor-py
 %global venv_py3     %{venv_dir}/bin/python3
 %global venv_lib     %{venv_dir}/lib/python3.6/site-packages
@@ -234,15 +234,15 @@ python3 setup.py bdist_wheel
 %install
 
 install bin/%{name} %{buildroot}%{_sbindir}/%{name} -D
-%{py3_install_wheel %{modname}-%{version}*%{_arch}.whl}
+%{py3_install_wheel %{module}-%{version}*%{_arch}.whl}
 
 %check
 
 %files -n %{name}
 %doc scripts/srpm/README
 %license LICENSE
-%{python3_sitearch}/%{modname}
-%{python3_sitearch}/%{modname}-%{version}*
+%{python3_sitearch}/%{module}
+%{python3_sitearch}/%{module}-%{version}*
 %attr(755,root,root) %{_sbindir}/fapolicy-analyzer
 
 %changelog

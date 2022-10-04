@@ -119,7 +119,7 @@ Requires:      gtk3
 Requires:      dbus-libs
 Requires:      gtksourceview3
 
-%global modname      fapolicy_analyzer
+%global module fapolicy_analyzer
 
 %description
 Tools to assist with the configuration and management of fapolicyd (File Access Policy Daemon).
@@ -127,11 +127,11 @@ Tools to assist with the configuration and management of fapolicyd (File Access 
 %prep
 
 # An issue with unpacking the vendored crates is that an unprivileged user
-# cannot write to /usr/share/cargo/registry, which blocks the installation
-# of the vendored crates. To unblock this we link the contents of the
-# /usr/share/cargo/registry into a writable registry directory and extract
-# the contents of the vendored crate tarball to this new writable dir.
-# Later the Cargo config will be updated to point to this new registry dir.
+# cannot write to the default registry at /usr/share/cargo/registry
+# To unblock this, we link the contents of the /usr/share/cargo/registry
+# into a new writable registry location, and then extract the contents of the
+# vendor tarball to this new writable dir.
+# Later the Cargo config will be updated to point to this new registry dir
 CARGO_REG_DIR=%{_builddir}/vendor-rs
 mkdir -p ${CARGO_REG_DIR}
 for d in %{cargo_registry}/*; do ln -sf ${d} ${CARGO_REG_DIR}; done
@@ -139,7 +139,7 @@ tar xzf %{SOURCE1} -C ${CARGO_REG_DIR} --strip-components=2
 
 %cargo_prep
 
-# remap the cargo registry location in .cargo/config to the writable directory
+# here the Cargo config is updated to point to the new registry dir
 sed -i "s#%{cargo_registry}#${CARGO_REG_DIR}#g" .cargo/config
 
 %autosetup -p0 -n %{name}
@@ -160,15 +160,15 @@ python3 setup.py bdist_wheel
 %install
 
 install bin/%{name} %{buildroot}%{_sbindir}/%{name} -D
-%{py3_install_wheel %{modname}-%{version}*%{_arch}.whl}
+%{py3_install_wheel %{module}-%{version}*%{_arch}.whl}
 
 %check
 
 %files -n %{name}
 %doc scripts/srpm/README
 %license LICENSE
-%{python3_sitearch}/%{modname}
-%{python3_sitearch}/%{modname}-%{version}*
+%{python3_sitearch}/%{module}
+%{python3_sitearch}/%{module}-%{version}*
 %attr(755,root,root) %{_sbindir}/fapolicy-analyzer
 
 %changelog
