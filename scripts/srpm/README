@@ -1,0 +1,35 @@
+File Access Policy Analyzer
+---------------------------
+
+This is a GUI tool to support the configuration and management of the
+File Access Policy Daemon (fapolicyd).
+
+For more info on fapolicyd, please see:
+
+https://github.com/linux-application-whitelisting/fapolicyd
+
+
+fapolicyd dependency
+--------------------
+
+This application *can* run on pre-1.1 releases with some automatic feature
+toggles, however the best user experience is to use 1.1 or greater.
+
+syslog configuration
+--------------------
+
+To generate rules that can be analyzed from syslog we require the following
+syslog_format configuration set in fapolicyd.conf
+
+syslog_format = rule,dec,perm,uid,gid,pid,exe,:,path,ftype,trust
+
+
+License
+-------
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Copyright Concurrent Technologies Corporation 2021

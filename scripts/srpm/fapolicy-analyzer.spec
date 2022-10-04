@@ -236,7 +236,7 @@ install bin/%{name} %{buildroot}%{_sbindir}/%{name} -D
 %check
 
 %files -n %{name}
-%doc README.md
+%doc scripts/srpm/README
 %license LICENSE
 %{python3_sitearch}/%{modname}
 %{python3_sitearch}/%{modname}-%{version}*
