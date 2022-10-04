@@ -21,14 +21,17 @@ jobs:
         triple:
           - {
             name: 'fc37',
+            spec: 'fapolicy-analyzer.spec',
             image: 'registry.fedoraproject.org/fedora:37',
           }
           - {
             name: 'fc38',
+            spec: 'fapolicy-analyzer.spec',
             image: 'registry.fedoraproject.org/fedora:rawhide',
           }
           - {
             name: 'el8',
+            spec: 'scripts/srpm/fapolicy-analyzer.spec',
             image: 'registry.access.redhat.com/ubi8/ubi:8.6',
           }
     runs-on: ubuntu-latest
@@ -72,11 +75,11 @@ jobs:
 
       - name: Build SRPM
         run: |
-          make -f .copr/Makefile srpm outdir=/tmp/archives spec=scripts/srpm/fapolicy-analyzer.spec
+          make -f .copr/Makefile srpm outdir=/tmp/archives spec=${{ matrix.triple.spec }}
 
       - name: Rebuild SRPM
         run: |
-          dnf builddep -y scripts/srpm/fapolicy-analyzer.spec
+          dnf builddep -y ${{ matrix.triple.spec }}
           rpmbuild --rebuild /tmp/archives/fapolicy-analyzer-*.src.rpm
 
       - name: Release Spec File
