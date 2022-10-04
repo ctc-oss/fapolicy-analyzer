@@ -5,6 +5,9 @@ Release:       1%{?dist}
 License:       GPLv3+
 URL:           https://github.com/ctc-oss/fapolicy-analyzer
 Source0:       fapolicy-analyzer.tar.gz
+
+# this tarball contains bundled crates not available in Fedora
+# reference: https://bugzilla.redhat.com/show_bug.cgi?id=2124697#c5
 Source1:       vendor-rs.tar.gz
 
 # on copr the source containter is never el
