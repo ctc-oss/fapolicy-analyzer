@@ -11,7 +11,7 @@ on:
       - 'master'
       - 'release-*'
 
-name: SRPM
+name: RPM
 
 jobs:
   build:
