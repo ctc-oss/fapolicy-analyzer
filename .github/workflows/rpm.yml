@@ -83,13 +83,13 @@ jobs:
           rpmbuild --rebuild /tmp/archives/fapolicy-analyzer-*.src.rpm
 
       - name: Release Spec File
-        # this only needs to be done once, so it gets done on the rhel build
-        if: startsWith(github.ref, 'refs/tags/v') && startsWith(matrix.triple.name, 'fc')
+        # this only needs to be done once, and it needs done with the root spec file
+        if: startsWith(github.ref, 'refs/tags/v') && startsWith(matrix.triple.name, 'fc38')
         run: |
           out=/tmp/archives/fapolicy-analyzer.spec
           base=https://github.com/$GITHUB_REPOSITORY/releases/download/${{ steps.tag_name.outputs.VERSION }}
           
-          cp scripts/srpm/fapolicy-analyzer.spec $out
+          cp ${{ matrix.triple.spec }} $out
           sed -z -i -e "s#fapolicy-analyzer.tar.gz#$base/fapolicy-analyzer.tar.gz#" $out
           sed -z -i -e "s#vendor-rs.tar.gz#$base/vendor-rs.tar.gz#" $out
           sed    -i -e "s#vendor-rs.tar.gz#vendor-rs%{?dist}.tar.gz#" $out
