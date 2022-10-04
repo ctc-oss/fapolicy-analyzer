@@ -280,9 +280,6 @@ class FaProfSession:
                 exec_path + s.PROF_ARG_EXEC_NOT_EXECUTABLE
             )
 
-        if ProfSessionArgsStatus.OK in dictReturn:
-            logging.debug("FaProfSession::validateArgs() --> exec verified")
-
         # user?
         try:
             if exec_user:
@@ -292,9 +289,6 @@ class FaProfSession:
             dictReturn[ProfSessionArgsStatus.USER_DOESNT_EXIST] = (
                 exec_user + s.PROF_ARG_USER_DOESNT_EXIST
             )
-
-        if ProfSessionArgsStatus.OK in dictReturn:
-            logging.debug("FaProfSession::validateArgs() --> user verified")
 
         # working dir?
         # pwd empty?
