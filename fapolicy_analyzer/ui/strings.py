@@ -96,6 +96,16 @@ FAPROFILER_TGT_EUID_CHOWN_ERROR_MSG = _("Profiling target file chown failure")
 FAPROFILER_TGT_POPEN_ERROR_MSG = _("Profiling target Popen failure")
 FAPROFILER_TGT_REDIRECTION_ERROR_MSG = _("Profiling target redirection failure")
 
+PROF_ARG_OK = _("Profiler Session arguments are valid.")
+PROF_ARG_EXEC_EMPTY = _("Executable field is empty")
+PROF_ARG_EXEC_DOESNT_EXIST = _(": file does not exist.")
+PROF_ARG_EXEC_NOT_EXECUTABLE = _(": file is not executable")
+PROF_ARG_USER_DOESNT_EXIST = _(": user does not exist")
+PROF_ARG_PWD_DOESNT_EXIST = _(": working directory does not exist.")
+PROF_ARG_PWD_ISNT_DIR = _(": working directory is not a directory.")
+PROF_ARG_ENV_VARS_FORMATING = _(": env vars not comma delimited K=V pairs")
+PROF_ARG_UNKNOWN = _("Error: Unknown Profiler Session arguments")
+
 WHITESPACE_WARNING_DIALOG_TITLE = _("File path(s) contains embedded whitespace.")
 WHITESPACE_WARNING_DIALOG_TEXT = _(
     "fapolicyd currently does not support paths containing spaces. The following paths will not be added to the "

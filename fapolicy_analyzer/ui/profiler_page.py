@@ -25,7 +25,13 @@ from fapolicy_analyzer.ui.actions import (
     set_profiler_analysis_file,
     set_profiler_state,
 )
-from fapolicy_analyzer.ui.faprofiler import FaProfiler
+from fapolicy_analyzer.ui.actions import NotificationType, add_notification
+from fapolicy_analyzer.ui.faprofiler import (
+    FaProfiler,
+    FaProfSession,
+    ProfSessionException,
+    EnumErrorPairs2Str,
+)
 from fapolicy_analyzer.ui.store import dispatch, get_system_feature
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
@@ -162,17 +168,47 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
 
     def on_test_activate(self, *args):
         profiling_args = self.get_entry_dict()
+        if not FaProfSession.validSessionArgs(profiling_args):
+            logging.debug("Invalid Profiler arguments")
+            dictInvalidEnums = FaProfSession.validateArgs(profiling_args)
+            strStatusEnums = "\n  " + EnumErrorPairs2Str(dictInvalidEnums)
+            dispatch(
+                add_notification(
+                    f"Invalid Profiler Session argument(s): {strStatusEnums}",
+                    NotificationType.ERROR,
+                )
+            )
+            return
+
         logging.debug(f"Entry text = {profiling_args}")
         self.running = True
         self._fapd_profiler.fapd_persistance = self.get_object(
             "persistentCheckbox"
         ).get_active()
-        self._fapd_profiler.start_prof_session(profiling_args)
-        fapd_prof_stderr = self._fapd_profiler.fapd_prof_stderr
-        logging.debug(f"Started prof session, stderr={fapd_prof_stderr}")
+        try:
+            self._fapd_profiler.start_prof_session(profiling_args)
+            fapd_prof_stderr = self._fapd_profiler.fapd_prof_stderr
+            logging.debug(f"Start prof session: stderr={fapd_prof_stderr}")
 
-        sleep(4)
-        self._fapd_profiler.stop_prof_session()
-        dispatch(set_profiler_analysis_file(fapd_prof_stderr))
-        self.running = False
-        self.display_log_output()
+            sleep(4)
+            self._fapd_profiler.stop_prof_session()
+            dispatch(set_profiler_analysis_file(fapd_prof_stderr))
+            self.running = False
+            self.display_log_output()
+        except ProfSessionException as e:
+            # Profiler Session creation failed because of bad args
+            logging.debug(f"{e.error_msg}, {e.error_enum}")
+            dispatch(
+                add_notification(
+                    e.error_msg,
+                    NotificationType.ERROR,
+                )
+            )
+        except Exception as e:
+            logging.debug(f"Unknown exception thrown by start_prof_session {e}")
+            dispatch(
+                add_notification(
+                    "Error: An unknown Profiler Session error has occured.",
+                    NotificationType.ERROR,
+                )
+            )
