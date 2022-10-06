@@ -21,3 +21,7 @@ dist
 src/bin
 target
 venvs
+
+
+*.tar.gz
+/vendor*/

@@ -14,38 +14,33 @@
     - { src: fapolicyd.conf.md, dest: fapolicyd.conf }
     - { src: demo.trust, dest: fapolicyd.trust }
 
-- name: enable fapolicyd service
-  systemd:
-    name: fapolicyd
-    state: restarted
-    enabled: true
-
 - name: "Add {{ vagrant_user }} to fapolicyd group"
   user:
     name: "{{ vagrant_user }}"
     groups: fapolicyd
     append: yes
 
+- name: Move original rules to default.rules.d
+  copy:
+    src: /etc/fapolicyd/rules.d
+    dest: /etc/fapolicyd/default.rules.d
+
 - name: Ensure rules.d does not exist
   file:
     path: /etc/fapolicyd/rules.d
     state: absent
 
-- name: Install demonstration rules [RHEL8]
+- name: Install demonstration rules.d
   copy:
-    src: "rules.d"
-    dest: "/etc/fapolicyd"
-  when:
-    - ansible_facts['distribution'] == "RedHat"
-    - ansible_facts['distribution_major_version'] == "8"
+    src: rules.d
+    dest: /etc/fapolicyd
 
-- name: Install demonstration rules [FC34]
+- name: Install legacy demonstration  rules [FC34]
   copy:
-    src: "trust.rules.md"
-    dest: "/etc/fapolicyd/fapolicyd.rules"
-  when:
-    - ansible_facts['distribution'] == "Fedora"
-    - ansible_facts['distribution_major_version'] == "34"
+    src: trust.rules.md
+    dest: /etc/fapolicyd/fapolicyd.rules
+  when: ansible_facts['distribution'] == "Fedora" and 
+        ansible_facts['distribution_major_version'] <= "34"
 
 - name: Add RuntimeMaxSec to fapolicyd service
   lineinfile:
@@ -60,3 +55,10 @@
     path: /usr/lib/systemd/system/fapolicyd.service
     regexp: '^Restart=.*'
     state: absent
+
+- name: Enable fapolicyd service
+  systemd:
+    name: fapolicyd
+    state: restarted
+    daemon_reload: yes
+    enabled: true

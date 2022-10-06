@@ -1,7 +1,7 @@
+Containerfile*
 .*
 *.md
 build
 dist
 target
-**/Dockerfile
 !.git

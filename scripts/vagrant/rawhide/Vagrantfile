@@ -1,0 +1,70 @@
+# Copyright Concurrent Technologies Corporation 2021
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+# Install any missing plugins
+required_plugins = %w( vagrant-vbguest vagrant-proxyconf )
+plugins_to_install = required_plugins.select { |plugin| not Vagrant.has_plugin? plugin }
+if not plugins_to_install.empty?
+  puts "Installing plugins: #{plugins_to_install.join(' ')}"
+  if system "vagrant plugin install #{plugins_to_install.join(' ')}"
+    exec "vagrant #{ARGV.join(' ')}"
+  else
+    abort "Installation of one or more plugins has failed. Aborting."
+  end
+end
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "alvistack/fedora-rawhide"
+  config.vm.box_version = "20220910.1.1"
+
+  config.ssh.forward_agent = true
+  config.ssh.forward_x11 = true
+
+  config.vbguest.auto_update = false
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+  config.vm.provider "virtualbox" do |vb|
+    vb.gui = false
+    vb.memory = "2048"
+  end
+
+  rpm_url = ENV['rpm_url']
+
+  config.proxy.enabled = true
+  config.proxy.http = ENV['http_proxy']
+  config.proxy.https = ENV['https_proxy']
+  config.proxy.no_proxy = "localhost,127.0.0.1"
+
+  env = "prod"
+  git_branch = "origin/master"
+  if ENV['ENV'] == 'dev'
+    if ENV['GIT_BRANCH']
+      git_branch = ENV['GIT_BRANCH']
+    end
+    env = "dev"
+    config.vbguest.auto_update = true
+    Dir.mkdir './.shared/' unless File.exists?('./.shared/')
+    config.vm.synced_folder "./.shared/", "/shared", type: "virtualbox"
+    config.vm.provision :docker
+  end
+
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "../../demo/site.yml"
+    ansible.extra_vars = {
+      env: env,
+      git_branch: git_branch,
+      rpm_url: rpm_url
+    }
+  end
+end
