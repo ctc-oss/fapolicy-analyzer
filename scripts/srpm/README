@@ -4,16 +4,17 @@ File Access Policy Analyzer
 This is a GUI tool to support the configuration and management of the
 File Access Policy Daemon (fapolicyd).
 
-For more info on fapolicyd, please see:
-
-https://github.com/linux-application-whitelisting/fapolicyd
-
 
 fapolicyd dependency
 --------------------
 
 This application *can* run on pre-1.1 releases with some automatic feature
 toggles, however the best user experience is to use 1.1 or greater.
+
+For more info on fapolicyd, please see:
+
+https://github.com/linux-application-whitelisting/fapolicyd
+
 
 syslog configuration
 --------------------
