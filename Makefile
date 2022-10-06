@@ -125,6 +125,16 @@ check: format lint test
 	@echo -e "${GRN}--- Pre-Push checks complete${NC}"
 	git status
 
+fc-rpm:
+	make -f .copr/Makefile vendor
+	podman build -t fapolicy-analyzer:rawhide -f Containerfile .
+	podman run --rm -it --network=none -v /tmp:/v fapolicy-analyzer:rawhide /v
+
+el-rpm:
+	make -f .copr/Makefile vendor
+	podman build -t fapolicy-analyzer:el -f scripts/srpm/Containerfile.el .
+	podman run --rm -it --network=none -v /tmp:/v fapolicy-analyzer:el /v
+
 # Display all Makefile targets
 list-all:
 	@echo

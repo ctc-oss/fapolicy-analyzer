@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#
+
 # Copyright Concurrent Technologies Corporation 2021
 #
 # This program is free software: you can redistribute it and/or modify
@@ -15,4 +15,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-echo -n "OK"
+spec_file="fapolicy-analyzer.spec"
+rpmbuild_dir=/tmp/rpmbuild
+
+if [[ "$ONLINE" -eq 1 ]]; then
+  cd ${rpmbuild_dir}/SOURCES
+  spectool -gf "../SPECS/$spec_file"
+  cd ${rpmbuild_dir}/SPECS
+  dnf builddep "$spec_file" -y
+fi
+
+cd ${rpmbuild_dir}/SPECS
+rpmbuild -ba "$spec_file" -D "_topdir ${rpmbuild_dir}"
+
+if [[ ! -z "$1" ]]; then
+  echo "[build.sh] exporting *rpms to ${1}"
+  cp -v ${rpmbuild_dir}/RPMS/**/*.rpm ${1}
+  cp -v ${rpmbuild_dir}/SRPMS/*.rpm   ${1}
+fi

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#
+
 # Copyright Concurrent Technologies Corporation 2021
 #
 # This program is free software: you can redistribute it and/or modify
@@ -15,4 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-echo -n "OK"
+set -e
+
+# rust
+rm -rf vendor-rs
+cargo vendor-filterer --platform=x86_64-unknown-linux-gnu vendor-rs/vendor &> /dev/null
+python3 scripts/srpm/lock2spec.py
+tar czf vendor-rs.tar.gz -C vendor-rs .
+
+du -sh vendor-rs.tar.gz

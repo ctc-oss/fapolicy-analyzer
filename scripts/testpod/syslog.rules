@@ -1,2 +1,0 @@
-deny_syslog perm=execute all : dir=/deny
-allow_syslog perm=open all : all
