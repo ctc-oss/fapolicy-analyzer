@@ -19,8 +19,8 @@ Tools to assist with the configuration and management of [fapolicyd](https://git
     dnf install -y fapolicy-analyzer
     ```
 - Or RPM install from a GitHub release [:point_right:](https://github.com/ctc-oss/fapolicy-analyzer/releases/latest)
-- Or use `make container` to build a rawhide rpm from a Podman container
-- Or use `make container-el8` to build a rhel8 rpm from a Podman container
+- Or use `make fc-rpm` to build a rawhide rpm from a Podman container
+- Or use `make el-rpm` to build a rhel8 rpm from a Podman container
 - Or use `make run` to use local dev environment
 
 ## Requirements
