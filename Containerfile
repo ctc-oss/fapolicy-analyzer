@@ -9,7 +9,7 @@ USER 10001
 RUN mkdir -p /tmp/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
 WORKDIR /tmp/rpmbuild
 
-COPY --chown=10001:0 scripts/srpm/fapolicy-analyzer.spec        SPECS/
+COPY --chown=10001:0 fapolicy-analyzer.spec SPECS/
 
 USER root
 RUN dnf -y builddep SPECS/fapolicy-analyzer.spec
@@ -25,4 +25,4 @@ COPY --chown=10001:0 scripts/srpm/build.sh    ./build.sh
 
 WORKDIR /tmp/rpmbuild
 
-CMD ./build.sh
+ENTRYPOINT ["/tmp/rpmbuild/build.sh"]

@@ -1,0 +1,7 @@
+Containerfile*
+.*
+*.md
+build
+dist
+target
+!.git

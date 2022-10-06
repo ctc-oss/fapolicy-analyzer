@@ -27,3 +27,9 @@ fi
 
 cd ${rpmbuild_dir}/SPECS
 rpmbuild -ba "$spec_file" -D "_topdir ${rpmbuild_dir}"
+
+if [[ ! -z "$1" ]]; then
+  echo "[build.sh] exporting *rpms to ${1}"
+  cp -v ${rpmbuild_dir}/RPMS/**/*.rpm ${1}
+  cp -v ${rpmbuild_dir}/SRPMS/*.rpm   ${1}
+fi
