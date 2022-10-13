@@ -18,6 +18,4 @@ from time import sleep
 import subprocess
 
 profiler = Profiler()
-profiler.activate()
-subprocess.getoutput(f"cat /etc/fapolicyd/compiled.rules")
-profiler.deactivate()
+profiler.run(f"cat /etc/fapolicyd/compiled.rules")
