@@ -17,6 +17,7 @@ import logging
 import os
 import pwd
 import subprocess
+import shutil
 import time
 from fapolicy_analyzer.ui.actions import NotificationType, add_notification
 from fapolicy_analyzer.ui.fapd_manager import FapdMode
@@ -37,7 +38,7 @@ class ProfSessionArgsStatus(Enum):
     OK = 0
     EXEC_EMPTY = 1
     EXEC_DOESNT_EXIST = 2
-    EXEC_NOT_EXECUTABLE = 3
+    EXEC_NOT_EXEC = 3
     USER_DOESNT_EXIST = 4
     PWD_DOESNT_EXIST = 5
     PWD_ISNT_DIR = 6
@@ -238,6 +239,25 @@ class FaProfSession:
         # Delete all log file artifacts
 
     @staticmethod
+    def _rel_tgt_which(relative_exec, user_provided_path):
+        """
+        Given a specified relative executable and a colon separated PATH string
+        along with the environment PATH variable return the absolute path to
+        the executable
+        """
+        # If exec_path is relative use env var PATH with user provided PATH
+        envvar_path = os.getenv("PATH")
+
+        # Avoid adding a leading or trailing colon to the PATH
+        if envvar_path and user_provided_path:
+            potential_path = f"{envvar_path}:{user_provided_path}"
+        elif envvar_path and not user_provided_path:
+            potential_path = f"{envvar_path}"
+        logging.debug(f"Composite PATH = {potential_path}")
+
+        return shutil.which(relative_exec, path=potential_path)
+
+    @staticmethod
     def validSessionArgs(dictProfTgt):
         """Determine Profiler session argument status. Return bool"""
         return ProfSessionArgsStatus.OK in FaProfSession.validateArgs(dictProfTgt)
@@ -264,22 +284,39 @@ class FaProfSession:
         exec_user = dictProfTgt["userText"]
         exec_pwd = dictProfTgt["dirText"]
 
+        # Convert comma delimited string of "EnvVar=Value" substrings to dict
+        exec_env = FaProfSession._comma_delimited_kv_string_to_dict(
+            dictProfTgt["envText"]
+        )
+
         # exec empty?
         if not exec_path:
             dictReturn[ProfSessionArgsStatus.EXEC_EMPTY] = s.PROF_ARG_EXEC_EMPTY
 
-        # exist?
-        elif not os.path.exists(exec_path):
-            dictReturn[ProfSessionArgsStatus.EXEC_DOESNT_EXIST] = (
-                exec_path + s.PROF_ARG_EXEC_DOESNT_EXIST
-            )
+        else:
+            # If absolute path
+            if os.path.isabs(exec_path):
+                # absolute and exists?
+                if not os.path.exists(exec_path):
+                    dictReturn[ProfSessionArgsStatus.EXEC_DOESNT_EXIST] = (
+                        exec_path + s.PROF_ARG_EXEC_DOESNT_EXIST
+                    )
 
-        # executable?
-        elif not os.access(exec_path, os.X_OK):
-            dictReturn[ProfSessionArgsStatus.EXEC_NOT_EXECUTABLE] = (
-                exec_path + s.PROF_ARG_EXEC_NOT_EXECUTABLE
-            )
-
+                else:
+                    # absolute and executable?
+                    if not os.access(exec_path, os.X_OK):
+                        dictReturn[ProfSessionArgsStatus.EXEC_NOT_EXEC] = (
+                            exec_path + s.PROF_ARG_EXEC_NOT_EXEC
+                        )
+            else:
+                # relative exec path
+                exec_path = FaProfSession._rel_tgt_which(exec_path,
+                                                         exec_env.get("PATH",
+                                                                      ""))
+                if not exec_path:
+                    dictReturn[ProfSessionArgsStatus.EXEC_NOT_EXEC] = (
+                        exec_path + s.PROF_ARG_EXEC_NOT_EXEC
+                    )
         # user?
         try:
             if exec_user:

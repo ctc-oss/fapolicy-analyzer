@@ -209,7 +209,7 @@ def test_validateArgs():
     dictArgs["executeText"] = os.getenv("HOME") + "/.bashrc"
     dict_valid_args_return = FaProfSession.validateArgs(dictArgs)
     assert len(dict_valid_args_return) == 1
-    assert ProfSessionArgsStatus.EXEC_NOT_EXECUTABLE in dict_valid_args_return
+    assert ProfSessionArgsStatus.EXEC_NOT_EXEC in dict_valid_args_return
     dictArgs["executeText"] = "/usr/bin/ls"
 
     # Verify non-existent user is detected
