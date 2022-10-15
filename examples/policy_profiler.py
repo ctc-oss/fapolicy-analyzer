@@ -14,8 +14,14 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from fapolicy_analyzer import *
-from time import sleep
-import subprocess
 
 profiler = Profiler()
-profiler.run(f"cat /etc/fapolicyd/compiled.rules")
+
+# profile a single target in a session
+profiler.profile(f"cat /etc/fapolicyd/compiled.rules")
+
+# profile multiple targets in same session
+profiler.profile_all(["whoami", "id", "pwd", "ls /tmp"])
+
+
+
