@@ -404,6 +404,8 @@ fn load_dpkg_trust() -> Result<Vec<Trust>, Error> {
         .flat_map(|p| Command::new(DPKG_QUERY).args(vec!["-L", p]).output())
         .flat_map(output_lines)
         .flatten()
+        // apply the rpm filter to limit results
+        .filter(|p| fapolicy_daemon::fapolicyd::keep_entry(p))
         .filter_map(|s| match new_trust_record(&s) {
             Ok(t) => Some(t),
             Err(_) => None,
