@@ -239,23 +239,20 @@ class FaProfSession:
         # Delete all log file artifacts
 
     @staticmethod
-    def _rel_tgt_which(relative_exec, user_provided_path):
+    def _rel_tgt_which(relative_exec, user_provided_env):
         """
         Given a specified relative executable and a colon separated PATH string
-        along with the environment PATH variable return the absolute path to
+        or the environment PATH variable return the absolute path to
         the executable
         """
-        # If exec_path is relative use env var PATH with user provided PATH
-        envvar_path = os.getenv("PATH")
+        # If exec_path is relative use user provided PATH or else env var PATH
+        if user_provided_env and "PATH" in user_provided_env:
+            search_path = user_provided_env.get("PATH")
+        else:
+            search_path = os.getenv("PATH")
+        logging.debug(f"Profiling PATH = {search_path}")
 
-        # Avoid adding a leading or trailing colon to the PATH
-        if envvar_path and user_provided_path:
-            potential_path = f"{envvar_path}:{user_provided_path}"
-        elif envvar_path and not user_provided_path:
-            potential_path = f"{envvar_path}"
-        logging.debug(f"Composite PATH = {potential_path}")
-
-        return shutil.which(relative_exec, path=potential_path)
+        return shutil.which(relative_exec, path=search_path)
 
     @staticmethod
     def validSessionArgs(dictProfTgt):
@@ -310,9 +307,9 @@ class FaProfSession:
                         )
             else:
                 # relative exec path
-                exec_path = FaProfSession._rel_tgt_which(exec_path,
-                                                         exec_env.get("PATH",
-                                                                      ""))
+                # This creates an error on Rhel8.6: exec_env.get("PATH",""))
+                # AttributeError: 'NoneType' object has no attribute 'get'
+                exec_path = FaProfSession._rel_tgt_which(exec_path, exec_env)
                 if not exec_path:
                     dictReturn[ProfSessionArgsStatus.EXEC_NOT_EXEC] = (
                         exec_path + s.PROF_ARG_EXEC_NOT_EXEC
