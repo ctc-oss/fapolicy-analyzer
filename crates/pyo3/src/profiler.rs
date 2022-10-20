@@ -6,6 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+use fapolicy_analyzer::users::read_users;
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
 use pyo3::{PyResult, Python};
@@ -36,6 +37,27 @@ impl PyProfiler {
     #[setter]
     fn set_uid(&mut self, uid: u32) {
         self.uid = Some(uid);
+    }
+
+    fn set_user(&mut self, uid_or_uname: &str) -> PyResult<()> {
+        self.uid = if uid_or_uname.starts_with(|x: char| x.is_ascii_alphabetic()) {
+            Some(
+                read_users()
+                    .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))?
+                    .iter()
+                    .find(|x| x.name == uid_or_uname)
+                    .map(|u| u.uid)
+                    .ok_or_else(|| {
+                        PyRuntimeError::new_err(format!(
+                            "unable to lookup uid by uname {}",
+                            uid_or_uname
+                        ))
+                    })?,
+            )
+        } else {
+            Some(uid_or_uname.parse()?)
+        };
+        Ok(())
     }
 
     #[setter]
