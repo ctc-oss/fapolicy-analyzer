@@ -13,15 +13,35 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import sys
+import argparse
+import fapolicy_analyzer
 from fapolicy_analyzer import *
 
-profiler = Profiler()
 
-# profile a single target in a session
-profiler.profile(f"cat /etc/fapolicyd/compiled.rules")
+def main(*argv):
+    print(f"v{fapolicy_analyzer.__version__}")
 
-# profile multiple targets in same session
-profiler.profile_all(["whoami", "id", "pwd", "ls /tmp"])
+    parser = argparse.ArgumentParser()
+    parser.add_argument("target", nargs=argparse.REMAINDER)
+    parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose mode")
+
+    user_opts = parser.add_mutually_exclusive_group(required=False)
+    user_opts.add_argument("-u", "--username", type=str, required=False, help="username")
+    user_opts.add_argument("--uid", type=int, required=False, help="uid")
+
+    args = parser.parse_args()
+
+    print(args.target)
+
+    profiler = Profiler()
+
+    # profile a single target in a session
+    profiler.profile(" ".join(args.target))
+
+    # profile multiple targets in same session
+    #profiler.profile_all(["whoami", "id", "pwd", "ls /tmp"])
 
 
-
+if __name__ == "__main__":
+    main(*sys.argv[1:])
