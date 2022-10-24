@@ -16,6 +16,7 @@
 import logging
 import os
 import pwd
+import re
 import subprocess
 import shutil
 import time
@@ -39,10 +40,11 @@ class ProfSessionArgsStatus(Enum):
     EXEC_EMPTY = 1
     EXEC_DOESNT_EXIST = 2
     EXEC_NOT_EXEC = 3
-    USER_DOESNT_EXIST = 4
-    PWD_DOESNT_EXIST = 5
-    PWD_ISNT_DIR = 6
-    UNKNOWN = 7
+    EXEC_NOT_FOUND = 4
+    USER_DOESNT_EXIST = 5
+    PWD_DOESNT_EXIST = 6
+    PWD_ISNT_DIR = 7
+    UNKNOWN = 8
 
 
 def EnumErrorPairs2Str(dictStatusEnums):
@@ -248,6 +250,10 @@ class FaProfSession:
         # If exec_path is relative use user provided PATH or else env var PATH
         if user_provided_env and "PATH" in user_provided_env:
             search_path = user_provided_env.get("PATH")
+
+            # Expand native PATH env var if in user provided PATH env var string
+            regexPath = re.compile(r"\$\{?PATH\}?")
+            search_path = regexPath.sub(os.environ.get("PATH", ""), search_path)
         else:
             search_path = os.getenv("PATH")
         logging.debug(f"Profiling PATH = {search_path}")
@@ -307,13 +313,14 @@ class FaProfSession:
                         )
             else:
                 # relative exec path
-                # This creates an error on Rhel8.6: exec_env.get("PATH",""))
-                # AttributeError: 'NoneType' object has no attribute 'get'
-                exec_path = FaProfSession._rel_tgt_which(exec_path, exec_env)
-                if not exec_path:
-                    dictReturn[ProfSessionArgsStatus.EXEC_NOT_EXEC] = (
-                        exec_path + s.PROF_ARG_EXEC_NOT_EXEC
+                new_path = FaProfSession._rel_tgt_which(exec_path, exec_env)
+                if not new_path:
+                    dictReturn[ProfSessionArgsStatus.EXEC_NOT_FOUND] = (
+                        exec_path + s.PROF_ARG_EXEC_NOT_FOUND
                     )
+                else:
+                    # Convert relative exec path to absolute exec path
+                    exec_path = new_path
         # user?
         try:
             if exec_user:
