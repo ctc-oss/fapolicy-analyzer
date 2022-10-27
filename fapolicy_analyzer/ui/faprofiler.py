@@ -258,7 +258,7 @@ class FaProfSession:
             search_path = os.getenv("PATH")
         logging.debug(f"Profiling PATH = {search_path}")
 
-        return shutil.which(relative_exec, path=search_path)
+        return os.path.abspath(shutil.which(relative_exec, path=search_path))
 
     @staticmethod
     def validSessionArgs(dictProfTgt):
