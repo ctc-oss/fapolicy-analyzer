@@ -41,5 +41,5 @@ def test_run_analyzer(widget):
         textBuffer.get_text(
             textBuffer.get_start_iter(), textBuffer.get_end_iter(), True
         ).count("\n")
-        == 0
+        == 10
     )

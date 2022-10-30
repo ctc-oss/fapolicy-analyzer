@@ -24,7 +24,7 @@ from fapolicy_analyzer.ui.store import dispatch
 from datetime import datetime as DT
 from enum import Enum
 
-import fapolicy_analyzer.ui.strings as s
+import fapolicy_analyzer.ui.strings as strings
 
 
 class ProfSessionStatus(Enum):
@@ -33,39 +33,28 @@ class ProfSessionStatus(Enum):
     COMPLETED = 2
 
 
-class ProfSessionArgsStatus(Enum):
-    OK = 0
-    EXEC_EMPTY = 1
-    EXEC_DOESNT_EXIST = 2
-    EXEC_NOT_EXECUTABLE = 3
-    USER_DOESNT_EXIST = 4
-    PWD_DOESNT_EXIST = 5
-    PWD_ISNT_DIR = 6
-    UNKNOWN = 7
-
-
-def EnumErrorPairs2Str(dictStatusEnums):
-    return "\n  ".join([f"Error: {r}" for r in (dictStatusEnums or {}).values()])
-
-
-class ProfSessionException(RuntimeError):
-    def __init__(self, msg="Unknown error",
-                 enumError=ProfSessionArgsStatus.UNKNOWN):
-        self.error_msg = f"Profiler Session: {msg}"
-        self.error_enum = enumError
-
-
 class FaProfSession:
+    def _demote(enable, user_uid, user_gid):
+        def result():
+            os.setgid(user_gid)
+            os.setuid(user_uid)
+
+        return result if enable else None
+
+    def _comma_delimited_kv_string_to_dict(string_in):
+        """Generates dictionary from comma separated string of k=v pairs"""
+        if not string_in:
+            return None
+        return {
+            k: v.strip('"')
+            for k, v in dict(x.strip().split("=") for x in string_in.split(",")).items()
+        }
+
     def __init__(self, dictProfTgt, faprofiler=None):
         logging.debug(f"faProfSession::__init__({dictProfTgt}, {faprofiler})")
-        self.throwOnInvalidSessionArgs(dictProfTgt)
-
-        # Executable command and arguments
         self.execPath = dictProfTgt["executeText"]
         self.execArgs = dictProfTgt["argText"]
         self.listCmdLine = [self.execPath] + self.execArgs.split()
-
-        # euid, working directory and environment variables
         self.user = dictProfTgt["userText"]
         self.pwd = dictProfTgt["dirText"]
 
@@ -105,10 +94,10 @@ class FaProfSession:
             self.fdTgtStdout = open(self.tgtStdout, "w")
             self.fdTgtStderr = open(self.tgtStderr, "w")
         except Exception as e:
-            logging.warning(f"{s.FAPROFILER_TGT_REDIRECTION_ERROR_MSG}: {e}")
+            logging.warning(f"{strings.FAPROFILER_TGT_REDIRECTION_ERROR_MSG}: {e}")
             dispatch(
                 add_notification(
-                    s.FAPROFILER_TGT_REDIRECTION_ERROR_MSG + f": {e}",
+                    strings.FAPROFILER_TGT_REDIRECTION_ERROR_MSG + f": {e}",
                     NotificationType.ERROR,
                 )
             )
@@ -149,10 +138,10 @@ class FaProfSession:
             # setting prexec_fn = None
             # Typically will only occur in debug/development runs
 
-            logging.error(f"{s.FAPROFILER_TGT_EUID_CHOWN_ERROR_MSG}: {e}")
+            logging.error(f"{strings.FAPROFILER_TGT_EUID_CHOWN_ERROR_MSG}: {e}")
             dispatch(
                 add_notification(
-                    s.FAPROFILER_TGT_EUID_CHOWN_ERROR_MSG + f": {e}",
+                    strings.FAPROFILER_TGT_EUID_CHOWN_ERROR_MSG + f": {e}",
                     NotificationType.ERROR,
                 )
             )
@@ -185,7 +174,7 @@ class FaProfSession:
             logging.error(f"Profiling target Popen failure: {e}")
             dispatch(
                 add_notification(
-                    s.FAPROFILER_TGT_POPEN_ERROR_MSG + f": {e}",
+                    strings.FAPROFILER_TGT_POPEN_ERROR_MSG + f": {e}",
                     NotificationType.ERROR,
                 )
             )
@@ -237,93 +226,6 @@ class FaProfSession:
         logging.debug("FaProfSession::clean_all()")
         # Delete all log file artifacts
 
-    @staticmethod
-    def validSessionArgs(dictProfTgt):
-        """Determine Profiler session argument status. Return bool"""
-        return ProfSessionArgsStatus.OK in FaProfSession.validateArgs(dictProfTgt)
-
-    @staticmethod
-    def throwOnInvalidSessionArgs(dictProfTgt):
-        """Throw exception on first invalid Profiler session argument."""
-        dictInvalidEnums = FaProfSession.validateArgs(dictProfTgt)
-        if ProfSessionArgsStatus.OK not in dictInvalidEnums:
-            error_enum = next(iter(dictInvalidEnums))
-            error_msg = dictInvalidEnums[error_enum]
-            raise ProfSessionException(error_msg, error_enum)
-
-    @staticmethod
-    def validateArgs(dictProfTgt):
-        """
-        Validates the Profiler Session object's user, target, pwd parameters.
-        Returns a dictionary mapping enums to error msgs.
-        """
-        dictReturn = {}
-        logging.debug(f"validateProfArgs({dictProfTgt}")
-
-        exec_path = dictProfTgt["executeText"]
-        exec_user = dictProfTgt["userText"]
-        exec_pwd = dictProfTgt["dirText"]
-
-        # exec empty?
-        if not exec_path:
-            dictReturn[ProfSessionArgsStatus.EXEC_EMPTY] = s.PROF_ARG_EXEC_EMPTY
-
-        # exist?
-        elif not os.path.exists(exec_path):
-            dictReturn[ProfSessionArgsStatus.EXEC_DOESNT_EXIST] = (
-                exec_path + s.PROF_ARG_EXEC_DOESNT_EXIST
-            )
-
-        # executable?
-        elif not os.access(exec_path, os.X_OK):
-            dictReturn[ProfSessionArgsStatus.EXEC_NOT_EXECUTABLE] = (
-                exec_path + s.PROF_ARG_EXEC_NOT_EXECUTABLE
-            )
-
-        # user?
-        try:
-            if exec_user:
-                pwd.getpwnam(exec_user)
-        except KeyError as e:
-            logging.debug(f"User {exec_user} does not exist: {e}")
-            dictReturn[ProfSessionArgsStatus.USER_DOESNT_EXIST] = (
-                exec_user + s.PROF_ARG_USER_DOESNT_EXIST
-            )
-
-        # working dir?
-        # pwd empty?
-        if exec_pwd:
-            if not os.path.exists(exec_pwd):
-                dictReturn[ProfSessionArgsStatus.PWD_DOESNT_EXIST] = (
-                    exec_pwd + s.PROF_ARG_PWD_DOESNT_EXIST
-                )
-
-            elif not os.path.isdir(exec_pwd):
-                dictReturn[ProfSessionArgsStatus.PWD_ISNT_DIR] = (
-                    exec_pwd + s.PROF_ARG_PWD_ISNT_DIR
-                )
-
-        if not dictReturn:
-            logging.debug("FaProfSession::validateArgs() --> pwd verified")
-
-        return dictReturn or {ProfSessionArgsStatus.OK: s.PROF_ARG_OK}
-
-    def _demote(enable, user_uid, user_gid):
-        def result():
-            os.setgid(user_gid)
-            os.setuid(user_uid)
-
-        return result if enable else None
-
-    def _comma_delimited_kv_string_to_dict(string_in):
-        """Generates dictionary from comma separated string of k=v pairs"""
-        if not string_in:
-            return None
-        return {
-            k: v.strip('"')
-            for k, v in dict(x.strip().split("=") for x in string_in.split(",")).items()
-        }
-
 
 class FaProfiler:
     def __init__(self, fapd_mgr=None, fapd_persistance=True):
@@ -352,20 +254,10 @@ class FaProfiler:
             self.fapd_prof_stdout = self.fapd_mgr.fapd_profiling_stdout
             self.fapd_prof_stderr = self.fapd_mgr.fapd_profiling_stderr
 
-        try:
-            self.faprofSession = FaProfSession(dictArgs, self)
-        except ProfSessionException as e:
-            logging.error(e)
-            raise e
-
+        self.faprofSession = FaProfSession(dictArgs, self)
         key = dictArgs["executeText"] + "-" + str(self.instance)
         self.dictFaProfSession[key] = self.faprofSession
-        try:
-            self.faprofSession.startTarget(self.instance, block_until_term)
-        except Exception as e:
-            logging.error(e)
-            raise e
-
+        self.faprofSession.startTarget(self.instance, block_until_term)
         if not self.fapd_persistance:
             self.fapd_mgr.stop(FapdMode.PROFILING)
             self.fapd_pid = None
