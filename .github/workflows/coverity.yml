@@ -2,13 +2,9 @@ on:
   push:
     branches:
       - 'master'
-  pull_request:
-    branches:
-      - 'master'
 
 name: Coverity Scan
 
-# ___
 jobs:
   coverity:
     runs-on: ubuntu-latest
