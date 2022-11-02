@@ -19,19 +19,72 @@ import shutil
 from distutils import dir_util
 from distutils.cmd import Command
 from glob import glob
+from html.parser import HTMLParser
 from os import path
-from pathlib import Path
+
+import markdown2
+
+
+def _parse_title_from_html(html):
+    class H1Parser(HTMLParser):
+        __parse_data = False
+        headers = []
+
+        def __is_h1(self, tag):
+            return tag == "h1"
+
+        def handle_starttag(self, tag, attrs):
+            self.__parse_data = self.__is_h1(tag)
+
+        def handle_endtag(self, tag):
+            self.__parse_data = not self.__is_h1(tag)
+
+        def handle_data(self, data):
+            if self.__parse_data:
+                self.headers.append(data)
+
+    parser = H1Parser()
+    parser.feed(html)
+    return next(iter(parser.headers), None)
+
+
+def _markdown_to_html(markdown_file, html_output_file):
+    template = """<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>{title}</title>
+</head>
+<body>
+{body}
+</body>
+</html>
+"""
+    try:
+        body = markdown2.markdown_path(markdown_file)
+        title = _parse_title_from_html(body)
+        html = template.format(title=title, body=body)
+        with open(html_output_file, "w") as f:
+            f.write(html)
+    except Exception as e:
+        print(e)
+        return None
+
+    return html_output_file
 
 
 class parse_help(Command):
     description = "Update source controlled help documentation files from online source"
     user_options = [
         ("help-repo=", "r", "git repository of online help files"),
+        ("help-commit", "c", "commit in help-repo to checkout, defaults to HEAD"),
         ("output-dir=", "o", "output directory"),
     ]
+    help_files = ["User-Guide.md"]
 
     def initialize_options(self):
         self.help_repo = None
+        self.help_commit = None
         self.output_dir = None
 
     def finalize_options(self):
@@ -39,11 +92,13 @@ class parse_help(Command):
             self.help_repo = os.getenv(
                 "HELP_REPO", "https://github.com/ctc-oss/fapolicy-analyzer.wiki.git"
             )
+        if not self.help_commit:
+            self.help_commit = os.getenv("HELP_COMMIT", "HEAD")
         if not self.output_dir:
             self.output_dir = "help"
 
     def run(self):
-        c_files = self.build_docbooks()
+        c_files = self.build_help()
         self.update_pot(c_files)
         self.check_help(c_files)
 
@@ -51,7 +106,7 @@ class parse_help(Command):
         for cmd in cmds:
             self.spawn(cmd)
 
-    def clone_help_md(self):
+    def __clone_help_md(self):
         tmp_dir = path.join(self.output_dir, "tmp")
         shutil.rmtree(tmp_dir, ignore_errors=True)
         clone_cmd = [
@@ -63,34 +118,33 @@ class parse_help(Command):
             "--single-branch",
             tmp_dir,
         ]
-        self.spawn(clone_cmd)
+        checkout_cmd = [
+            "git",
+            "-C",
+            tmp_dir,
+            "checkout",
+            self.help_commit,
+        ]
+        self.__spawns([clone_cmd, checkout_cmd])
         shutil.rmtree(path.join(tmp_dir, ".git"), ignore_errors=True)
         return tmp_dir
 
-    def build_docbooks(self):
-        def filters():
-            FILTERS = ["./scripts/pandoc_filters/local-links.lua"]
-            return " ".join([f"--lua-filter='{f}'" for f in FILTERS])
+    def build_help(self):
+        # def filters():
+        #     FILTERS = ["./scripts/pandoc_filters/local-links.lua"]
+        #     return " ".join([f"--lua-filter='{f}'" for f in FILTERS])
 
-        def db_file(file):
+        def html_file(file):
             rel_path = path.relpath(file, tmp_dir)
-            return f"{path.join(c_dir, path.splitext(rel_path)[0])}.docbook"
+            return f"{path.join(c_dir, path.splitext(rel_path)[0])}.html"
 
         c_dir = path.join(self.output_dir, "C")
         os.makedirs(c_dir, exist_ok=True)
-        tmp_dir = self.clone_help_md()
-        files = {md: db_file(md) for md in Path(tmp_dir).rglob("*.md")}
-        parse_cmds = [
-            [
-                "sh",
-                "-c",
-                f"pandoc '{md}' -s {filters()} -f markdown -t docbook  -o '{docbook}'",
-            ]
-            for md, docbook in files.items()
-        ]
-        self.__spawns(parse_cmds)
-
-        return files.values()
+        tmp_dir = self.__clone_help_md()
+        md_files = [path.join(tmp_dir, f) for f in self.help_files]
+        html_files = [_markdown_to_html(md, html_file(md)) for md in md_files]
+        shutil.rmtree(tmp_dir)
+        return html_files
 
     def update_pot(self, c_files):
         pot_file = path.join(self.output_dir, "help.pot")

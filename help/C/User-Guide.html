@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>File Access Policy Analyzer</title>
+</head>
+<body>
+<h1>File Access Policy Analyzer</h1>
+
+<h1>Introduction</h1>
+
+<h2>What is the File Access Policy Analyzer?</h2>
+
+<p>This application consists of several GUI tools that support configuration and management of fapolicyd.</p>
+
+<hr />
+
+<h1>Trust Administration</h1>
+
+<h2>System Trust</h2>
+
+<p>System trust is sourced from the RPM database on the host machine.  The file locations are checked for size and sha256 hash to check for trust status as fapolicyd would.  The GUI highlights the untrusted files in red while trusted are in green.</p>
+
+<p><img src="https://user-images.githubusercontent.com/1545372/199081748-97a00afb-cf28-4195-89ef-622a60f26575.png" alt="image" /></p>
+
+<p>Known issue:  large RPM databases can take some time to load on single core machines.  The system trust code does utilize additional cores so there will be a linear drop in loading time as more cores are available.</p>
+
+<p>From this view you are able to resolve trust issues by adding files with discrepancies to the ancillary trust.</p>
+
+<h2>Ancillary Trust</h2>
+
+<p>In addition to the RPM database, fapolicyd can source trust from a text file or collection of text files.  In the GUI we call this trust Ancillary trust.</p>
+
+<p>From this view you are able to add additional files or directories of files that will add to system trust when the files are not know, or override it if the file was already in the rpm db.</p>
+
+<p><img src="https://user-images.githubusercontent.com/1545372/199081663-578249e8-e81a-4407-8225-71e3db2c3bb6.png" alt="image" /></p>
+
+<h2>Trust.d support</h2>
+
+<p>Ancillary trust currently only supports the single file configuration.  Near term improvements are planned to add support for the trust.d backend.</p>
+
+<hr />
+
+<h1>Rules Administration</h1>
+
+<h2>Rule Editor</h2>
+
+<p>The GUI contains a text based rule editor that provides text highlighting and rules.d flattening to improve the rule editing experience.</p>
+
+<p><img src="https://user-images.githubusercontent.com/1545372/199081822-e50444a4-fca0-43a1-aa82-bc89f88f3547.png" alt="image" /></p>
+
+<h2>Rule Viewer</h2>
+
+<p>The tree view of rules bridges some gaps in rendering of rules within the text editor.  The ability to provide the flattened rule id and perform mouse operations on specific rules is currently limited to this view.</p>
+
+<p><img src="https://user-images.githubusercontent.com/1545372/199081904-8ed77f1f-8ae3-47de-a9b8-365545d238c9.png" alt="image" /></p>
+
+<h2>Flattening of rules.d</h2>
+
+<p>Within the rules.d directory there may be many files each of which can contain many rules.  Determining the order of rules while editing from one of these files can be difficult due to the limited context while viewing a single file.</p>
+
+<p>The editor provides a convenience of flattening all files within rules.d into a single editing view.  Delimiters are inserted to the text view to allow identification and manipulation of multiple file content from the single text view.</p>
+
+<h2>File markers</h2>
+
+<p>The file delimeters in the editor are referred to as file markers.  These annotate the content of the editor to inform it where to break files when writing to disk.</p>
+
+<p>File markers consist of the file name wrapped in square braces</p>
+
+<p><code>[01-my.rules]</code></p>
+
+<hr />
+
+<h1>Policy Profiler</h1>
+
+<p><img src="https://user-images.githubusercontent.com/1545372/199082161-c1ff164d-db6d-4cac-80e2-b0f790453e5d.png" alt="image" /></p>
+
+<h2>How the Profiler works</h2>
+
+<p>Take fapolicyd offline
+Restart fapolicyd service in debug mode, redirecting logs
+Execute an application
+Take profiling fapolicyd offline
+Restart standard fapolicyd service
+Send the logs to the Policy Analyzer</p>
+
+<h2>Configuring a profiler session</h2>
+
+<p>The profile execution is configured similarly to a launch profile in an IDE.  Provide the target, args, working directory, and environment variables.  Additionally we support the ability to run as a different user.</p>
+
+<p>There are plans to add group support to the options as well, in a future enhancement.</p>
+
+<h2>Profiling an application</h2>
+
+<p>Known issue:  there is no feedback to indicate the status of the running application during profiling.  This will be addressed in the future by displaying the log output of the target application.</p>
+
+<h2>Analyzing after profiling</h2>
+
+<p>The analyzer can be accessed in two ways</p>
+
+<ol>
+<li>Load the fapolicyd log file from the profiling session using the tools load from debug log option.</li>
+<li>Click the analyze button on the toolbar once the profiler session has ended.</li>
+</ol>
+
+<hr />
+
+<h1>Policy Analyzer</h1>
+
+<p><img src="https://user-images.githubusercontent.com/1545372/199082308-84511035-03c5-4046-bead-9f100e1c8ff0.png" alt="image" /></p>
+
+<h2>Debug logs</h2>
+
+<h2>Syslog</h2>
+
+<h2>Audit log</h2>
+
+<h2>Reconciling trust</h2>
+
+<hr />
+
+<h1>Deployment</h1>
+
+<h2>What happens during deployment</h2>
+
+<p>Deployment involves applying the current state held within the GUI to disk and having fapolicyd apply it to its state.</p>
+
+<p>To accomplish this we do the following</p>
+
+<ol>
+<li>Stop fapolicyd service</li>
+<li>Write ancillary trust to disk</li>
+<li>Write rules.d to disk</li>
+<li>Start fapolicyd service</li>
+</ol>
+
+<h2>Rolling back a deployment</h2>
+
+<p>After deployment is completed the user will be presented with a dialog asking if they want to keep the applied settings.  There is a 30 second count down during which time you may test the system for functionality.  If the dialog does not confirm that the changes should be kept in place the changes made to the hist will rollback to the previous state.</p>
+
+<p><img src="https://user-images.githubusercontent.com/1545372/199082783-2e8f9bc7-1ab6-47f2-8233-c54247815b21.png" alt="image" /></p>
+
+<p>This is intended to be a fail safe in the case where a misconfiguration disables interaction with the host.</p>
+
+<hr />
+
+<h1>Fapolicyd service control</h1>
+
+<h2>Start and Stop</h2>
+
+<p><img src="https://user-images.githubusercontent.com/1545372/199082898-7b455f1d-9aa1-4d90-ae08-48086c0e5df2.png" alt="image" /></p>
+
+<h2>Fapolicyd-proof control</h2>
+
+<p>DBUS, no disk access, functions even against deny+any+all+all</p>
+
+<hr />
+
+<h1>Session management</h1>
+
+<h2>Saving edits that have not been deployed</h2>
+
+<h2>Restoring edits saved to a file</h2>
+
+</body>
+</html>

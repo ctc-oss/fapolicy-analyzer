@@ -51,7 +51,6 @@ BuildRequires: python3dist(wheel)
 BuildRequires: python3dist(babel)
 BuildRequires: dbus-devel
 BuildRequires: itstool
-BuildRequires: pandoc
 
 %if 0%{?rhel}
 BuildRequires: rust-toolset
