@@ -30,7 +30,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        name: Release ${{ steps.tag_name.outputs.VERSION }}
+        name: ${{ steps.tag_name.outputs.VERSION }}
         tag_name: ${{ steps.tag_name.outputs.VERSION }}
         prerelease: ${{ startsWith(github.ref, 'refs/tags/v0') || contains(github.ref, 'rc') }}
         draft: true

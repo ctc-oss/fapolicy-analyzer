@@ -28,7 +28,7 @@ pub enum Version {
 }
 
 /// filtering logic as implemented by fapolicyd rpm backend
-pub(crate) fn keep_entry(p: &str) -> bool {
+pub fn keep_entry(p: &str) -> bool {
     match p {
         s if s.starts_with("/usr/share") => {
             USR_SHARE_ALLOWED_EXTS.iter().any(|ext| s.ends_with(*ext)) || s.contains("/libexec/")
