@@ -128,20 +128,14 @@ impl PySystem {
     fn load_debuglog(&self, log: &str) -> PyResult<PyEventLog> {
         let xs = events::read::from_debug(log)
             .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))?;
-        Ok(PyEventLog {
-            rs: EventDB::from(xs),
-            rs_trust: self.rs.trust_db.clone(),
-        })
+        Ok(PyEventLog::new(EventDB::from(xs), self.rs.trust_db.clone()))
     }
 
     /// Parse events from syslog at the specified path
     fn load_syslog(&self) -> PyResult<PyEventLog> {
         let xs = events::read::from_syslog(&self.rs.config.system.syslog_file_path)
             .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))?;
-        Ok(PyEventLog {
-            rs: EventDB::from(xs),
-            rs_trust: self.rs.trust_db.clone(),
-        })
+        Ok(PyEventLog::new(EventDB::from(xs), self.rs.trust_db.clone()))
     }
 
     fn rules(&self) -> Vec<PyRule> {

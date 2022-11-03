@@ -185,6 +185,19 @@ impl PyObject {
 pub struct PyEventLog {
     pub(crate) rs: EventDB,
     pub(crate) rs_trust: TrustDB,
+    start: Option<usize>,
+    stop: Option<usize>,
+}
+
+impl PyEventLog {
+    pub(crate) fn new(rs: EventDB, trust: TrustDB) -> Self {
+        Self {
+            rs,
+            rs_trust: trust,
+            start: None,
+            stop: None,
+        }
+    }
 }
 
 #[pymethods]
@@ -193,6 +206,25 @@ impl PyEventLog {
     fn subjects(&self) -> Vec<String> {
         let m: HashSet<String> = self.rs.iter().filter_map(|e| e.subj.exe()).collect();
         m.into_iter().collect()
+    }
+
+    fn within(&self, start: usize, stop: usize) -> PyEventLog {
+        let mut other = self.clone();
+        other.start = Some(start);
+        other.stop = Some(stop);
+        other
+    }
+
+    fn starting(&self, start: usize) -> PyEventLog {
+        let mut other = self.clone();
+        other.start = Some(start);
+        other
+    }
+
+    fn ending(&self, stop: usize) -> PyEventLog {
+        let mut other = self.clone();
+        other.stop = Some(stop);
+        other
     }
 
     /// Get events that fit the given subject perspective perspective
