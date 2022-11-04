@@ -22,6 +22,8 @@ from fapolicy_analyzer import *
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument("--start", type=int, required=False, help="Bound results to this starting point.  As seconds since epoch.")
+    parser.add_argument("--until", type=int, required=False, help="Bound results to this ending point.  As seconds since epoch.")
     parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose mode")
     parser.add_argument("-i", "--input", default="events0.log", help="Specify the fapolicyd event debug log [default: events0.log ]")
 
@@ -55,6 +57,12 @@ def main():
             logging.debug(f"{g}:\t{gmap[g]}")
 
     debug_log = s1.load_debuglog(args.input)
+    if args.start:
+        debug_log.begin(args.start)
+
+    if args.until:
+        debug_log.until(args.until)
+
     for s in debug_log.subjects():
         logging.debug(f" - Getting all events associated with subject: {s}")
         for e in debug_log.by_subject(s):

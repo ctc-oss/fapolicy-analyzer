@@ -208,23 +208,17 @@ impl PyEventLog {
         m.into_iter().collect()
     }
 
-    fn within(&self, start: usize, stop: usize) -> PyEventLog {
-        let mut other = self.clone();
-        other.start = Some(start);
-        other.stop = Some(stop);
-        other
+    fn begin(&mut self, start: usize) {
+        self.start = Some(start);
     }
 
-    fn from(&self, start: usize) -> PyEventLog {
-        let mut other = self.clone();
-        other.start = Some(start);
-        other
+    fn until(&mut self, stop: usize) {
+        self.stop = Some(stop);
     }
 
-    fn until(&self, stop: usize) -> PyEventLog {
-        let mut other = self.clone();
-        other.stop = Some(stop);
-        other
+    fn unbounded(&mut self) {
+        self.start = None;
+        self.stop = None;
     }
 
     /// Get events that fit the given subject perspective perspective
