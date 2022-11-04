@@ -19,38 +19,22 @@ logging.basicConfig(level=logging.WARNING)
 import argparse
 from fapolicy_analyzer import *
 
-# Globals
-verbose_mode = False
-fapd_debug_log="events0.log"
 
-def parse_cmdline():
-    global verbose_mode
-    global fapd_debug_log
-    
+def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-v", "--verbose", action="store_true", help="Enable verbose mode"
-    )
-    parser.add_argument(
-        "-i",
-        "--input",
-        help="Specify the fapolicyd event debug log [default: events0.log ]",
-    )
+    parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose mode")
+    parser.add_argument("-i", "--input", default="events0.log", help="Specify the fapolicyd event debug log [default: events0.log ]")
 
     args = parser.parse_args()
 
     # Set Verbosity Level
     if args.verbose:
-        verbose_mode = True
         logging.root.setLevel(logging.DEBUG)
         logging.debug("Verbosity enabled.")
 
     # Set input fapolicyd event log [default: events0.log]
     if args.input:
         fapd_debug_log=args.input
-
-def main():
-    parse_cmdline()
     
     # config loaded from $HOME/.config/fapolicy-analyzer/fapolicy-analyzer.toml
     s1 = System()
@@ -61,7 +45,7 @@ def main():
     gmap = {g.id: g.name for g in s1.groups()}
 
     # Only iterate and print maps if in verbose mode
-    if verbose_mode:
+    if args.verbose:
         logging.debug("\n\nUser Map:")
         for u in umap:
             logging.debug(f"{u}:\t{umap[u]}")
@@ -70,7 +54,7 @@ def main():
         for g in gmap:
             logging.debug(f"{g}:\t{gmap[g]}")
 
-    debug_log = s1.load_debuglog(fapd_debug_log)
+    debug_log = s1.load_debuglog(args.input)
     for s in debug_log.subjects():
         logging.debug(f" - Getting all events associated with subject: {s}")
         for e in debug_log.by_subject(s):
@@ -88,6 +72,7 @@ def main():
                        "mode": e.object.mode
                    }})
         print("...")
+
 
 if __name__ == "__main__":
     main()
