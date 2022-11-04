@@ -215,13 +215,13 @@ impl PyEventLog {
         other
     }
 
-    fn starting(&self, start: usize) -> PyEventLog {
+    fn from(&self, start: usize) -> PyEventLog {
         let mut other = self.clone();
         other.start = Some(start);
         other
     }
 
-    fn ending(&self, stop: usize) -> PyEventLog {
+    fn until(&self, stop: usize) -> PyEventLog {
         let mut other = self.clone();
         other.stop = Some(stop);
         other
