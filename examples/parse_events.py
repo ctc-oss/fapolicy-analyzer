@@ -25,7 +25,7 @@ def main():
     parser.add_argument("--start", type=int, required=False, help="Bound results to this starting point.  As seconds since epoch.")
     parser.add_argument("--until", type=int, required=False, help="Bound results to this ending point.  As seconds since epoch.")
     parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose mode")
-    parser.add_argument("-i", "--input", default="events0.log", help="Specify the fapolicyd event debug log [default: events0.log ]")
+    parser.add_argument("-i", "--input", default="syslog", help="Specify the fapolicyd event debug source. Use 'syslog' or a path to debug log. [default: 'syslog']")
 
     args = parser.parse_args()
 
@@ -34,10 +34,6 @@ def main():
         logging.root.setLevel(logging.DEBUG)
         logging.debug("Verbosity enabled.")
 
-    # Set input fapolicyd event log [default: events0.log]
-    if args.input:
-        fapd_debug_log=args.input
-    
     # config loaded from $HOME/.config/fapolicy-analyzer/fapolicy-analyzer.toml
     s1 = System()
     print(f"found {len(s1.users())} system users")
@@ -56,7 +52,11 @@ def main():
         for g in gmap:
             logging.debug(f"{g}:\t{gmap[g]}")
 
-    event_log = s1.load_debuglog(args.input)
+    if args.input == "syslog":
+        event_log = s1.load_syslog()
+    else:
+        event_log = s1.load_debuglog(args.input)
+
     if args.start:
         event_log.begin(args.start)
 
