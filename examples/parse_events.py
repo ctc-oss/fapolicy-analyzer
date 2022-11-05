@@ -56,16 +56,16 @@ def main():
         for g in gmap:
             logging.debug(f"{g}:\t{gmap[g]}")
 
-    debug_log = s1.load_debuglog(args.input)
+    event_log = s1.load_debuglog(args.input)
     if args.start:
-        debug_log.begin(args.start)
+        event_log.begin(args.start)
 
     if args.until:
-        debug_log.until(args.until)
+        event_log.until(args.until)
 
-    for s in debug_log.subjects():
+    for s in event_log.subjects():
         logging.debug(f" - Getting all events associated with subject: {s}")
-        for e in debug_log.by_subject(s):
+        for e in event_log.by_subject(s):
             print({"u": umap[e.uid],
                    "g": gmap[e.gid], 
                    "s": {
