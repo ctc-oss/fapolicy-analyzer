@@ -82,6 +82,10 @@ impl PyEvent {
     fn rule_id(&self) -> i32 {
         self.rs.event.rule_id
     }
+
+    fn when(&self) -> Option<i64> {
+        self.rs.event.when.map(|t| t.timestamp())
+    }
 }
 
 /// Subject metadata
