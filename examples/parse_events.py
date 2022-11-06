@@ -13,17 +13,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import  sys
-import logging
-logging.basicConfig(level=logging.WARNING)
+
 import argparse
+import logging
+import time
+
 from fapolicy_analyzer import *
+
+logging.basicConfig(level=logging.WARNING)
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--start", type=int, required=False, help="Bound results to this starting point.  As seconds since epoch.")
-    parser.add_argument("--until", type=int, required=False, help="Bound results to this ending point.  As seconds since epoch.")
+    parser.add_argument("--starting", type=int, required=False, help="Bound results to this starting point, as seconds since epoch. Negative numbers will be treated as relative to now.")
+    parser.add_argument("--until", type=int, required=False, help="Bound results to this ending point, as seconds since epoch. Negative numbers will be treated as relative to now.")
     parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose mode")
     parser.add_argument("-i", "--input", default="syslog", help="Specify the fapolicyd event debug source. Use 'syslog' or a path to debug log. [default: 'syslog']")
 
@@ -57,11 +60,23 @@ def main():
     else:
         event_log = s1.load_debuglog(args.input)
 
-    if args.start:
-        event_log.begin(args.start)
+    now = int(time.time())
+    print(f"current time: {now}")
+    if args.starting:
+        if args.starting < 0:
+            print(f"begin at {now + args.starting}")
+            event_log.begin(now + args.starting)
+        else:
+            print(f"begin at {args.starting}")
+            event_log.begin(args.starting)
 
     if args.until:
-        event_log.until(args.until)
+        if args.until < 0:
+            print(f"end at {now + args.until}")
+            event_log.until(now + args.until)
+        else:
+            print(f"end at {args.until}")
+            event_log.until(args.until)
 
     for s in event_log.subjects():
         logging.debug(f" - Getting all events associated with subject: {s}")
@@ -78,8 +93,9 @@ def main():
                        "trust": e.object.trust,
                        "access": e.object.access,
                        "mode": e.object.mode
-                   }})
-        print("...")
+                   },
+                   "when": e.when()
+                   })
 
 
 if __name__ == "__main__":
