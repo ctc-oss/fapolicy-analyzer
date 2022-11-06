@@ -238,7 +238,7 @@ impl PyEventLog {
             &self.rs_trust,
         )
         .iter()
-        .flat_map(|e| expand_on_gid(e))
+        .flat_map(expand_on_gid)
         .filter(|e| self.temporal_filter(e))
         .collect()
     }
