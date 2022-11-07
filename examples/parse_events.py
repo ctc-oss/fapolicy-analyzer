@@ -39,8 +39,8 @@ def main():
 
     # config loaded from $HOME/.config/fapolicy-analyzer/fapolicy-analyzer.toml
     s1 = System()
-    print(f"found {len(s1.users())} system users")
-    print(f"found {len(s1.groups())} system groups")
+    logging.debug(f"found {len(s1.users())} system users")
+    logging.debug(f"found {len(s1.groups())} system groups")
 
     umap = {u.id: u.name for u in s1.users()}
     gmap = {g.id: g.name for g in s1.groups()}
@@ -61,21 +61,21 @@ def main():
         event_log = s1.load_debuglog(args.input)
 
     now = int(time.time())
-    print(f"current time: {now}")
+    logging.debug(f"current time: {now}")
     if args.starting:
         if args.starting < 0:
-            print(f"begin at {now + args.starting}")
+            logging.debug(f"begin at {now + args.starting}")
             event_log.begin(now + args.starting)
         else:
-            print(f"begin at {args.starting}")
+            logging.debug(f"begin at {args.starting}")
             event_log.begin(args.starting)
 
     if args.until:
         if args.until < 0:
-            print(f"end at {now + args.until}")
+            logging.debug(f"end at {now + args.until}")
             event_log.until(now + args.until)
         else:
-            print(f"end at {args.until}")
+            logging.debug(f"end at {args.until}")
             event_log.until(args.until)
 
     for s in event_log.subjects():
