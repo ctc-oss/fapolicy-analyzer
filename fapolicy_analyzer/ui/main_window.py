@@ -31,6 +31,7 @@ from fapolicy_analyzer.ui.changeset_wrapper import Changeset
 from fapolicy_analyzer.ui.configs import Sizing
 from fapolicy_analyzer.ui.database_admin_page import DatabaseAdminPage
 from fapolicy_analyzer.ui.fapd_manager import FapdManager, ServiceStatus
+from fapolicy_analyzer.ui.help_browser import HelpBrowser
 from fapolicy_analyzer.ui.notification import Notification
 from fapolicy_analyzer.ui.operations import DeployChangesetsOp
 from fapolicy_analyzer.ui.policy_rules_admin_page import PolicyRulesAdminPage
@@ -78,6 +79,7 @@ class MainWindow(UIConnectedWidget):
         self.__system: System
         self.__checkpoint: System
         self.__page = None
+        self.__help = None
 
         toaster = Notification(timer_duration=5)
         self.get_object("overlay").add_overlay(toaster.get_ref())
@@ -226,6 +228,9 @@ class MainWindow(UIConnectedWidget):
         if not isinstance(obj, Gtk.Window) and self.__unapplied_changes():
             return True
 
+        if self.__help:
+            self.__help.destroy()
+
         Gtk.main_quit()
 
     def on_delete_event(self, *args):
@@ -341,12 +346,23 @@ class MainWindow(UIConnectedWidget):
         aboutDialog.hide()
 
     def on_helpMenu_activate(self, *args):
+        def handle_destroy(*args):
+            self.__help = None
+
         # if meld.conf.DATADIR_IS_UNINSTALLED:
         #     uri = "http://meldmerge.org/help/"
         # else:
         #     uri = "help:meld"
-        uri = "help:fapolicy-analyzer/Home.docbook"
-        Gtk.show_uri_on_window(self.window, uri, Gtk.get_current_event_time())
+        # uri = "help:fapolicy-analyzer/Home.docbook"
+        # Gtk.show_uri_on_window(self.window, uri, Gtk.get_current_event_time())
+        if self.__help:
+            self.__help.present()
+        else:
+            self.__help = HelpBrowser(
+                uri="help:fapolicy-analyzer/User-Guide.html",
+            )
+            self.__help.connect("destroy", handle_destroy)
+        self.__help.show()
 
     def on_syslogMenu_activate(self, *args):
         page = router(ANALYZER_SELECTION.ANALYZE_SYSLOG)
