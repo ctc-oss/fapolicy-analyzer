@@ -221,17 +221,12 @@ impl PyEventLog {
         m.into_iter().collect()
     }
 
-    fn begin(&mut self, start: i64) {
-        self.start = Some(start);
+    fn begin(&mut self, start: Option<i64>) {
+        self.start = start;
     }
 
-    fn until(&mut self, stop: i64) {
-        self.stop = Some(stop);
-    }
-
-    fn clear_bounds(&mut self) {
-        self.start = None;
-        self.stop = None;
+    fn until(&mut self, stop: Option<i64>) {
+        self.stop = stop;
     }
 
     /// Get events that fit the given subject perspective perspective
@@ -311,22 +306,23 @@ mod tests {
         };
         assert_eq!(all, log.by_subject(TEST_PATH).len());
 
-        log.begin(1);
+        log.begin(Some(1));
         assert_eq!(all - 1, log.by_subject(TEST_PATH).len());
 
-        log.until(4);
+        log.until(Some(4));
         assert_eq!(all - 2, log.by_subject(TEST_PATH).len());
 
-        log.until(3);
+        log.until(Some(3));
         assert_eq!(all - 3, log.by_subject(TEST_PATH).len());
 
-        log.begin(2);
+        log.begin(Some(2));
         assert_eq!(all - 4, log.by_subject(TEST_PATH).len());
 
-        log.clear_bounds();
+        log.begin(None);
+        log.until(None);
         assert_eq!(all, log.by_subject(TEST_PATH).len());
 
-        log.until(3);
+        log.until(Some(3));
         assert_eq!(all - 2, log.by_subject(TEST_PATH).len());
     }
 }
