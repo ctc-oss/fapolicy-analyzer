@@ -244,7 +244,7 @@ checksum = "e78d4f1cc4ae33bbfc157ed5d5a5ef3bc29227303d595861deb238fcec4e9457"
 
 [[package]]
 name = "fapolicy-analyzer"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "chrono",
  "fapolicy-daemon",
@@ -284,7 +284,7 @@ dependencies = [
 
 [[package]]
 name = "fapolicy-pyo3"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "chrono",
  "fapolicy-analyzer",
