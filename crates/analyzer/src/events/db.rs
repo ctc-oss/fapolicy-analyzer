@@ -19,6 +19,14 @@ impl DB {
         DB { events: es }
     }
 
+    pub fn len(&self) -> usize {
+        self.events.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.events.is_empty()
+    }
+
     /// Get an iterator to the underlying events
     pub fn iter(&self) -> Iter<'_, Event> {
         self.events.iter()
