@@ -43,13 +43,54 @@ class ProfSessionArgsStatus(Enum):
     EXEC_NOT_FOUND = 4
     USER_DOESNT_EXIST = 5
     PWD_DOESNT_EXIST = 6
-    PWD_ISNT_DIR = 7
-    UNKNOWN = 8
+    PWD_ISNT_DIR = 7,
+    ENV_VARS_FORMATING = 8,
+    UNKNOWN = 9
 
 
 def EnumErrorPairs2Str(dictStatusEnums):
     return "\n  ".join([f"Error: {r}" for r in (dictStatusEnums or {}).values()])
 
+def expand_path(colon_separated_str, cwd="."):
+    """Expands user supplied PATH argument that contains embedded 'PATH' 
+    variable, leading colon, terminating colon, or an intermediate double colon.
+    These final three colon notations map to the user supplied working dir.
+    """
+    logging.debug(f"expand_path({colon_separated_str}, {cwd})")
+
+    # Expand native PATH env var if in user provided PATH env var string
+    regexPath = re.compile(r"\$\{?PATH\}?")
+    
+    colon_separated_str = regexPath.sub(os.environ.get("PATH"),
+                                        colon_separated_str)
+
+    # Expand implied '.' notation to supplied cwd argument in search PATH
+    regexTrailingColon = re.compile(r":$")
+    regexLeadingColon = re.compile(r"^:")
+    regexDoubleColon = re.compile(r"::")
+
+    print(f"-> {colon_separated_str}")
+    if regexTrailingColon.search(colon_separated_str):
+        logging.debug("Trailing colon detected.")
+        colon_separated_str = regexTrailingColon.sub(":.", colon_separated_str)
+    if regexLeadingColon.search(colon_separated_str):
+        logging.debug("Leading colon detected.")
+        colon_separated_str = regexLeadingColon.sub(".:", colon_separated_str)
+    if regexDoubleColon.search(colon_separated_str):
+        logging.debug("Internal double colon detected")
+        colon_separated_str = regexDoubleColon.sub(":.:", colon_separated_str)
+    print(f"-> {colon_separated_str}")
+    # Expand periods with user supplied absolute path if provided otherwise
+    # use cwd from runtime environment
+    if cwd is not ".":
+        colon_separated_str = re.sub(":\.$", f":{cwd}", colon_separated_str)
+        colon_separated_str = re.sub("\.:", f"{cwd}:", colon_separated_str)
+        colon_separated_str = re.sub(":\.:", f":{cwd}:", colon_separated_str)
+    
+    
+    logging.debug(f"expand_path::path = {colon_separated_str}")
+    print(f"-> {colon_separated_str}")
+    return colon_separated_str
 
 class ProfSessionException(RuntimeError):
     def __init__(self, msg="Unknown error",
@@ -63,19 +104,40 @@ class FaProfSession:
         logging.debug(f"faProfSession::__init__({dictProfTgt}, {faprofiler})")
         self.throwOnInvalidSessionArgs(dictProfTgt)
 
-        # Executable command and arguments
-        self.execPath = dictProfTgt["executeText"]
-        self.execArgs = dictProfTgt["argText"]
-        self.listCmdLine = [self.execPath] + self.execArgs.split()
-
         # euid, working directory and environment variables
         self.user = dictProfTgt["userText"]
-        self.pwd = dictProfTgt["dirText"]
+
+        # Set pwd - Use current dir for pwd if not supplied by user
+        tmp_d = dictProfTgt["dirText"]
+        self.pwd = tmp_d if tmp_d else os.getcwd()
 
         # Convert comma delimited string of "EnvVar=Value" substrings to dict
         self.env = FaProfSession._comma_delimited_kv_string_to_dict(
             dictProfTgt["envText"]
         )
+
+        # expand and update path if user supplied
+        # Use user provided PATH otherwise use env var PATH, also expand periods
+        # with specified cwd arg value or the default current working dir.
+        if self.env and "PATH" in self.env:
+            search_path = self.env.get("PATH")
+        else:
+            search_path = os.getenv("PATH")
+
+        # Substitute the current working dir for any periods or colons in  path
+        search_path = expand_path(search_path, self.pwd)        
+
+        # Executable command and arguments
+        user_provided_exec = dictProfTgt["executeText"]
+        if os.path.abspath(user_provided_exec):
+            self.execPath = user_provided_exec
+        else:
+            self.execPath = _rel_tgt_which(user_provided_exec, dictProfTgt)
+        logging.debug(f"exec={self.execPath}, Profiling PATH = {search_path}")
+
+
+        self.execArgs = dictProfTgt["argText"]
+        self.listCmdLine = [self.execPath] + self.execArgs.split()
 
         self.faprofiler = faprofiler
         self.name = os.path.basename(self.execPath)
@@ -118,9 +180,6 @@ class FaProfSession:
 
             self.fdTgtStdout = None
             self.fdTgtStderr = None
-
-        # Set pwd - Use current dir for pwd if not supplied by user
-        working_dir = self.pwd if self.pwd else os.getcwd()
 
         # Convert username to uid/gid
         u_valid = False
@@ -171,7 +230,7 @@ class FaProfSession:
                 self.listCmdLine,
                 stdout=self.fdTgtStdout,
                 stderr=self.fdTgtStderr,
-                cwd=working_dir,
+                cwd=self.pwd,
                 env=self.env,
                 preexec_fn=FaProfSession._demote(u_valid, uid, gid),
             )
@@ -241,24 +300,29 @@ class FaProfSession:
         # Delete all log file artifacts
 
     @staticmethod
-    def _rel_tgt_which(relative_exec, user_provided_env):
+    def _rel_tgt_which(relative_exec, user_provided_env, working_dir):
         """
         Given a specified relative executable and a colon separated PATH string
-        or the environment PATH variable return the absolute path to
-        the executable
+        or the environment PATH variable return the absolute path of executable
         """
-        # If exec_path is relative use user provided PATH or else env var PATH
+
+        # Use user provided PATH otherwise use env var PATH, also expand periods
+        # with specified cwd arg value or the default current working dir.
         if user_provided_env and "PATH" in user_provided_env:
             search_path = user_provided_env.get("PATH")
-
-            # Expand native PATH env var if in user provided PATH env var string
-            regexPath = re.compile(r"\$\{?PATH\}?")
-            search_path = regexPath.sub(os.environ.get("PATH", ""), search_path)
         else:
             search_path = os.getenv("PATH")
-        logging.debug(f"Profiling PATH = {search_path}")
 
-        return os.path.abspath(shutil.which(relative_exec, path=search_path))
+        # Substitute the current working dir for any periods or colons in  path
+        search_path = expand_path(search_path, working_dir)        
+        logging.debug(f"exec={relative_exec}, Profiling PATH = {search_path}")
+
+        # If exec path exist, convert to absolute path if needed
+        discovered_exec_path = shutil.which(relative_exec, path=search_path)
+        if discovered_exec_path and not os.path.isabs(discovered_exec_path):
+            discovered_exec_path = os.path.abspath(discovered_exec_path)
+        logging.debug(f"_rel_tgt_which() - return value:{discovered_exec_path}")
+        return discovered_exec_path
 
     @staticmethod
     def validSessionArgs(dictProfTgt):
@@ -287,6 +351,26 @@ class FaProfSession:
         exec_user = dictProfTgt["userText"]
         exec_pwd = dictProfTgt["dirText"]
 
+        # working dir?
+        # pwd empty? Check pwd first because it is used with relative exec paths
+        # as the current working dir
+        if exec_pwd:
+            if not os.path.exists(exec_pwd):
+                dictReturn[ProfSessionArgsStatus.PWD_DOESNT_EXIST] = (
+                    exec_pwd + s.PROF_ARG_PWD_DOESNT_EXIST
+                )
+
+            elif not os.path.isdir(exec_pwd):
+                dictReturn[ProfSessionArgsStatus.PWD_ISNT_DIR] = (
+                    exec_pwd + s.PROF_ARG_PWD_ISNT_DIR
+                )
+        else:
+            # Set it if not set
+            exec_pwd = os.getcwd()
+
+        if not dictReturn:
+            logging.debug("FaProfSession::validateArgs() --> pwd verified")
+
         # Convert comma delimited string of "EnvVar=Value" substrings to dict
         exec_env = FaProfSession._comma_delimited_kv_string_to_dict(
             dictProfTgt["envText"]
@@ -313,7 +397,9 @@ class FaProfSession:
                         )
             else:
                 # relative exec path
-                new_path = FaProfSession._rel_tgt_which(exec_path, exec_env)
+                new_path = FaProfSession._rel_tgt_which(exec_path,
+                                                        exec_env,
+                                                        exec_pwd)
                 if not new_path:
                     dictReturn[ProfSessionArgsStatus.EXEC_NOT_FOUND] = (
                         exec_path + s.PROF_ARG_EXEC_NOT_FOUND
@@ -330,22 +416,6 @@ class FaProfSession:
             dictReturn[ProfSessionArgsStatus.USER_DOESNT_EXIST] = (
                 exec_user + s.PROF_ARG_USER_DOESNT_EXIST
             )
-
-        # working dir?
-        # pwd empty?
-        if exec_pwd:
-            if not os.path.exists(exec_pwd):
-                dictReturn[ProfSessionArgsStatus.PWD_DOESNT_EXIST] = (
-                    exec_pwd + s.PROF_ARG_PWD_DOESNT_EXIST
-                )
-
-            elif not os.path.isdir(exec_pwd):
-                dictReturn[ProfSessionArgsStatus.PWD_ISNT_DIR] = (
-                    exec_pwd + s.PROF_ARG_PWD_ISNT_DIR
-                )
-
-        if not dictReturn:
-            logging.debug("FaProfSession::validateArgs() --> pwd verified")
 
         return dictReturn or {ProfSessionArgsStatus.OK: s.PROF_ARG_OK}
 
