@@ -13,55 +13,40 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import  sys
-import logging
-logging.basicConfig(level=logging.WARNING)
+
 import argparse
+import logging
+import time
+
 from fapolicy_analyzer import *
 
-# Globals
-verbose_mode = False
-fapd_debug_log="events0.log"
+logging.basicConfig(level=logging.WARNING)
 
-def parse_cmdline():
-    global verbose_mode
-    global fapd_debug_log
-    
+
+def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-v", "--verbose", action="store_true", help="Enable verbose mode"
-    )
-    parser.add_argument(
-        "-i",
-        "--input",
-        help="Specify the fapolicyd event debug log [default: events0.log ]",
-    )
+    parser.add_argument("--starting", type=int, required=False, help="Bound results to this starting point, as seconds since epoch. Negative numbers will be treated as relative to now.")
+    parser.add_argument("--until", type=int, required=False, help="Bound results to this ending point, as seconds since epoch. Negative numbers will be treated as relative to now.")
+    parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose mode")
+    parser.add_argument("-i", "--input", default="syslog", help="Specify the fapolicyd event debug source. Use 'syslog' or a path to debug log. [default: 'syslog']")
 
     args = parser.parse_args()
 
     # Set Verbosity Level
     if args.verbose:
-        verbose_mode = True
         logging.root.setLevel(logging.DEBUG)
         logging.debug("Verbosity enabled.")
 
-    # Set input fapolicyd event log [default: events0.log]
-    if args.input:
-        fapd_debug_log=args.input
-
-def main():
-    parse_cmdline()
-    
     # config loaded from $HOME/.config/fapolicy-analyzer/fapolicy-analyzer.toml
     s1 = System()
-    print(f"found {len(s1.users())} system users")
-    print(f"found {len(s1.groups())} system groups")
+    logging.debug(f"found {len(s1.users())} system users")
+    logging.debug(f"found {len(s1.groups())} system groups")
 
     umap = {u.id: u.name for u in s1.users()}
     gmap = {g.id: g.name for g in s1.groups()}
 
     # Only iterate and print maps if in verbose mode
-    if verbose_mode:
+    if args.verbose:
         logging.debug("\n\nUser Map:")
         for u in umap:
             logging.debug(f"{u}:\t{umap[u]}")
@@ -70,10 +55,32 @@ def main():
         for g in gmap:
             logging.debug(f"{g}:\t{gmap[g]}")
 
-    debug_log = s1.load_debuglog(fapd_debug_log)
-    for s in debug_log.subjects():
+    if args.input == "syslog":
+        event_log = s1.load_syslog()
+    else:
+        event_log = s1.load_debuglog(args.input)
+
+    now = int(time.time())
+    logging.debug(f"current time: {now}")
+    if args.starting:
+        if args.starting < 0:
+            logging.debug(f"begin at {now + args.starting}")
+            event_log.begin(now + args.starting)
+        else:
+            logging.debug(f"begin at {args.starting}")
+            event_log.begin(args.starting)
+
+    if args.until:
+        if args.until < 0:
+            logging.debug(f"end at {now + args.until}")
+            event_log.until(now + args.until)
+        else:
+            logging.debug(f"end at {args.until}")
+            event_log.until(args.until)
+
+    for s in event_log.subjects():
         logging.debug(f" - Getting all events associated with subject: {s}")
-        for e in debug_log.by_subject(s):
+        for e in event_log.by_subject(s):
             print({"u": umap[e.uid],
                    "g": gmap[e.gid], 
                    "s": {
@@ -86,8 +93,10 @@ def main():
                        "trust": e.object.trust,
                        "access": e.object.access,
                        "mode": e.object.mode
-                   }})
-        print("...")
+                   },
+                   "when": e.when()
+                   })
+
 
 if __name__ == "__main__":
     main()
