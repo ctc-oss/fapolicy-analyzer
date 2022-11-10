@@ -42,6 +42,7 @@ from fapolicy_analyzer.ui.strings import (
     USERS_LABEL,
 )
 from fapolicy_analyzer.ui.subject_list import SubjectList
+from fapolicy_analyzer.ui.time_select_dialog import TimeSelectDialog
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 from fapolicy_analyzer.util import acl, fs
@@ -502,15 +503,15 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         self.__refresh()
 
     def on_timeSelectBtn_clicked(self, *args):
-        start_time_str = self.get_object("startTimeField").get_buffer().get_text()
-        stop_time_str = self.get_object("stopTimeField").get_buffer().get_text()
-
-        try:
-            start_time = datetime.strptime(start_time_str, "%m/%d/%y %H:%M:%S")
-            stop_time = datetime.strptime(stop_time_str, "%m/%d/%y %H:%M:%S")
-            self.filter_time_selection(start_time, stop_time)
-        except ValueError as ve:
-            print("Error: ", ve)
+        time_dialog = TimeSelectDialog()
+        resp = time_dialog.get_ref().run()
+        time_dialog.get_ref().hide()
+        if resp == 0:
+            time_dialog.get_ref.destroy()
+    
+        start_time = time_dialog.get_time("start")
+        stop_time = time_dialog.get_time("stop")
+        print(start_time, stop_time)
 
     def filter_time_selection(self, start_time, stop_time):
         pass
