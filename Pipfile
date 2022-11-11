@@ -24,6 +24,7 @@ pytest-lazy-fixture = "*"
 flake8-quotes = "*"
 autoflake = "*"
 markdown2 = "*"
+beautifulsoup4 = "*"
 
 [packages]
 pycairo = "1.20.0"

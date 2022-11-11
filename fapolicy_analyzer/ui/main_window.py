@@ -1,3 +1,33 @@
+# Copyright Concurrent Technologies Corporation 2022
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+# Copyright Concurrent Technologies Corporation 2022
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 # Copyright Concurrent Technologies Corporation 2021
 #
 # This program is free software: you can redistribute it and/or modify
@@ -14,14 +44,16 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+import os
 from locale import gettext as _
 from os import getenv, geteuid, path
 from threading import Thread
 from time import sleep
 from typing import Any, Sequence
 
-import fapolicy_analyzer.ui.strings as strings
 import gi
+
+import fapolicy_analyzer.ui.strings as strings
 from fapolicy_analyzer import System
 from fapolicy_analyzer import __version__ as app_version
 from fapolicy_analyzer.ui.action_toolbar import ActionToolbar
@@ -349,17 +381,18 @@ class MainWindow(UIConnectedWidget):
         def handle_destroy(*args):
             self.__help = None
 
-        # if meld.conf.DATADIR_IS_UNINSTALLED:
-        #     uri = "http://meldmerge.org/help/"
-        # else:
-        #     uri = "help:meld"
-        # uri = "help:fapolicy-analyzer/Home.docbook"
-        # Gtk.show_uri_on_window(self.window, uri, Gtk.get_current_event_time())
         if self.__help:
             self.__help.present()
         else:
+            if path.isfile("/usr/share/help/C/fapolicy-analyzer/User-Guide.html"):
+                uri = "help:fapolicy-analyzer/User-Guide.html"
+            elif path.isfile("help/C/User-Guide.html"):
+                # This should only happen in a development environment
+                uri = f"file://{os.getcwd()}/help/C/User-Guide.html"
+            else:
+                uri = "https://github.com/ctc-oss/fapolicy-analyzer/wiki/User-Guide"
             self.__help = HelpBrowser(
-                uri="help:fapolicy-analyzer/User-Guide.html",
+                uri=uri,
             )
             self.__help.connect("destroy", handle_destroy)
         self.__help.show()

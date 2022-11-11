@@ -23,6 +23,34 @@ gi.require_version("WebKit2", "4.0")
 from gi.repository import Gio, Gtk, WebKit2
 
 
+def _handle_help_scheme(request: WebKit2.URISchemeRequest, *args):
+    def open_stream(base, rel_path):
+        full_path = path.join(base, rel_path)
+        if path.isdir(full_path):
+            full_path = path.join(full_path, "index.html")
+        if path.isfile(full_path):
+            return Gio.File.new_for_path(full_path).read()
+        return None
+
+    base_dirs = [
+        "/usr/share/help/C",
+        path.join(path.expanduser("~"), ".local/share/help/C"),
+    ]
+    for base in base_dirs:
+        stream = open_stream(base, request.get_path())
+        if stream:
+            break
+    if not stream:
+        file, _ = Gio.File.new_tmp()
+        stream = file.read()
+
+    request.finish(stream, -1, None)
+
+
+context = WebKit2.WebContext.get_default()
+context.register_uri_scheme("help", _handle_help_scheme)
+
+
 class HelpBrowser(Gtk.Window):
     def __init__(self, *args, uri: str = None, allow_navigation: bool = True, **kwargs):
         super().__init__(
@@ -30,9 +58,8 @@ class HelpBrowser(Gtk.Window):
             *args,
             window_position=Gtk.WindowPosition.CENTER,
             title="Fapolicy Analyzer Help",
-            **kwargs
+            **kwargs,
         )
-        self.__register_help_scheme()
         self.add(self.__build_content(allow_navigation))
         self.set_size_request(800, 600)
         self.show_all()
@@ -44,6 +71,7 @@ class HelpBrowser(Gtk.Window):
         content = Gtk.VBox()
         scrolled_window = Gtk.ScrolledWindow()
         self.webview = WebKit2.WebView()
+        # self.webview.get_settings().set_allow_file_access_from_file_urls(True)
         scrolled_window.add(self.webview)
 
         if allow_navigation:
@@ -65,31 +93,6 @@ class HelpBrowser(Gtk.Window):
 
         content.pack_start(scrolled_window, True, True, 0)
         return content
-
-    def __register_help_scheme(self):
-        context = WebKit2.WebContext.get_default()
-        context.register_uri_scheme("help", self.__handle_help_scheme)
-
-    def __handle_help_scheme(self, request: WebKit2.URISchemeRequest, *args):
-        def open_stream(base, rel_path):
-            full_path = path.join(base, rel_path)
-            if path.isdir(full_path):
-                full_path = path.join(full_path, "index.html")
-            if path.isfile(full_path):
-                return Gio.File.new_for_path(full_path).read()
-            return None
-
-        global_dir = "/usr/share/help/C"
-        local_dir = path.join(path.expanduser("~"), ".local/share/help/C")
-        rel_path = request.get_path()
-
-        stream = open_stream(global_dir, rel_path)
-        if not stream:
-            stream = open_stream(local_dir, rel_path)
-        if not stream:
-            stream = Gio.File.new_tmp().read()
-
-        request.finish(stream, -1, None)
 
     def __handle_load_changed(self, *args):
         self.go_back.set_sensitive(self.webview.can_go_back())

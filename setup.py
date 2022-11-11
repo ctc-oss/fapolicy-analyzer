@@ -33,7 +33,7 @@ import os
 from setuptools import find_namespace_packages, setup
 from setuptools_rust import RustExtension
 
-from fapolicy_analyzer.setup_cmds import build_help, parse_help
+from fapolicy_analyzer.setup_cmds import build_help
 
 
 def get_version():
@@ -86,5 +86,5 @@ setup(
         "fapolicy_analyzer.resources.sourceview.language-specs": ["*.lang"],
         "fapolicy_analyzer.resources.sourceview.styles": ["*.xml"],
     },
-    cmdclass={"build_help": build_help, "parse_help": parse_help},
+    cmdclass={"build_help": build_help},
 )

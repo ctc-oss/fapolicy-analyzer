@@ -21,7 +21,9 @@ dist
 src/bin
 target
 venvs
-help/tmp/
+**/help/tmp/
+**/help/C/
+**/help/**/*.pot
 
 
 *.tar.gz
