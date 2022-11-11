@@ -48,11 +48,16 @@ class ProfSessionArgsStatus(Enum):
     UNKNOWN = 9
 
 
+# ########################## Utility Functions ###########################
 def EnumErrorPairs2Str(dictStatusEnums):
+    """Converts the dict collection of profiler argument error to a string for
+    displaying in the pop-up notification.
+    """
     return "\n  ".join([f"Error: {r}" for r in (dictStatusEnums or {}).values()])
 
+
 def expand_path(colon_separated_str, cwd="."):
-    """Expands user supplied PATH argument that contains embedded 'PATH' 
+    """Expands user supplied PATH argument that contains embedded 'PATH'
     variable, leading colon, terminating colon, or an intermediate double colon.
     These final three colon notations map to the user supplied working dir.
     """
@@ -60,7 +65,7 @@ def expand_path(colon_separated_str, cwd="."):
 
     # Expand native PATH env var if in user provided PATH env var string
     regexPath = re.compile(r"\$\{?PATH\}?")
-    
+
     colon_separated_str = regexPath.sub(os.environ.get("PATH"),
                                         colon_separated_str)
 
@@ -69,7 +74,7 @@ def expand_path(colon_separated_str, cwd="."):
     regexLeadingColon = re.compile(r"^:")
     regexDoubleColon = re.compile(r"::")
 
-    print(f"-> {colon_separated_str}")
+    print(f"-> {colon_separated_str}")  # ToDo: Remove prior to push
     if regexTrailingColon.search(colon_separated_str):
         logging.debug("Trailing colon detected.")
         colon_separated_str = regexTrailingColon.sub(":.", colon_separated_str)
@@ -79,18 +84,48 @@ def expand_path(colon_separated_str, cwd="."):
     if regexDoubleColon.search(colon_separated_str):
         logging.debug("Internal double colon detected")
         colon_separated_str = regexDoubleColon.sub(":.:", colon_separated_str)
-    print(f"-> {colon_separated_str}")
+    print(f"-> {colon_separated_str}")  # ToDo: Remove prior to push
     # Expand periods with user supplied absolute path if provided otherwise
     # use cwd from runtime environment
-    if cwd is not ".":
-        colon_separated_str = re.sub(":\.$", f":{cwd}", colon_separated_str)
-        colon_separated_str = re.sub("\.:", f"{cwd}:", colon_separated_str)
-        colon_separated_str = re.sub(":\.:", f":{cwd}:", colon_separated_str)
-    
-    
+    if cwd != ".":
+        colon_separated_str = re.sub(r":\.$", f":{cwd}", colon_separated_str)
+        colon_separated_str = re.sub(r"\.:", f"{cwd}:", colon_separated_str)
+        colon_separated_str = re.sub(r":\.:", f":{cwd}:", colon_separated_str)
+
     logging.debug(f"expand_path::path = {colon_separated_str}")
-    print(f"-> {colon_separated_str}")
+    print(f"-> {colon_separated_str}")  # ToDo: Remove prior to push
     return colon_separated_str
+
+
+def username_to_uid_gid(username):
+    # Set defaults
+    # In production, the defaults will be the superuser w/uid=0
+    uid = os.getuid()
+    gid = os.getgid()
+    if not username:
+        return (uid, gid)
+
+    try:
+        if username:
+            # Get uid/gid of new user and the associated default group
+            pw_record = pwd.getpwnam(username)
+            uid = pw_record.pw_uid
+            gid = pw_record.pw_gid
+            logging.debug(f"The uid/gid of the profiling tgt: {uid}/{gid}")
+
+    except Exception as e:
+        # Use current uid/gid if getpwnam() or chown throws an exception by
+        # setting prexec_fn = None
+        # Typically will only occur in debug/development runs
+        logging.error(f"{s.FAPROFILER_TGT_EUID_CHOWN_ERROR_MSG}: {e}")
+        dispatch(
+            add_notification(
+                s.FAPROFILER_TGT_EUID_CHOWN_ERROR_MSG + f": {e}",
+                NotificationType.ERROR,
+            )
+        )
+    return (uid, gid)
+
 
 class ProfSessionException(RuntimeError):
     def __init__(self, msg="Unknown error",
@@ -100,9 +135,10 @@ class ProfSessionException(RuntimeError):
 
 
 class FaProfSession:
-    def __init__(self, dictProfTgt, faprofiler=None):
+    def __init__(self, dictProfTgt, instance=0, faprofiler=None):
         logging.debug(f"faProfSession::__init__({dictProfTgt}, {faprofiler})")
         self.throwOnInvalidSessionArgs(dictProfTgt)
+        self.timeStamp = None
 
         # euid, working directory and environment variables
         self.user = dictProfTgt["userText"]
@@ -121,50 +157,46 @@ class FaProfSession:
         # with specified cwd arg value or the default current working dir.
         if self.env and "PATH" in self.env:
             search_path = self.env.get("PATH")
+
+            # Substitute the cwd for any periods or bare colons in  path
+            search_path = expand_path(search_path, self.pwd)
+
+            # Update the PATH in self.env because it will be provided to Popen()
+            self.env["PATH"] = search_path
         else:
             search_path = os.getenv("PATH")
-
-        # Substitute the current working dir for any periods or colons in  path
-        search_path = expand_path(search_path, self.pwd)        
 
         # Executable command and arguments
         user_provided_exec = dictProfTgt["executeText"]
         if os.path.abspath(user_provided_exec):
             self.execPath = user_provided_exec
         else:
-            self.execPath = _rel_tgt_which(user_provided_exec, dictProfTgt)
+            self.execPath = FaProfSession._rel_tgt_which(user_provided_exec, dictProfTgt)
         logging.debug(f"exec={self.execPath}, Profiling PATH = {search_path}")
-
 
         self.execArgs = dictProfTgt["argText"]
         self.listCmdLine = [self.execPath] + self.execArgs.split()
 
         self.faprofiler = faprofiler
         self.name = os.path.basename(self.execPath)
-        self.timeStamp = None
+        self.timeStamp = self._get_profiling_timestamp()
+        self.abs_baselogname = f"/tmp/tgt_profiling_{self.timeStamp}_{self.name}"
+
         self.status = ProfSessionStatus.QUEUED
         self.procTarget = None
 
         # Temp demo workaround for setting target log file paths
         if os.environ.get("FAPD_LOGPATH"):
-            self.tgtStdout = os.environ.get("FAPD_LOGPATH") + f"_{self.name}.stdout"
-            self.tgtStderr = os.environ.get("FAPD_LOGPATH") + f"_{self.name}.stderr"
+            log_dir = os.environ.get("FAPD_LOGPATH")
+            self.tgtStdout = f"{log_dir}_{self.name}.stdout"
+            self.tgtStderr = f"{log_dir}_{self.name}.stderr"
         else:
-            self.tgtStdout = None
-            self.tgtStderr = None
+            self.tgtStdout = f"{self.abs_baselogname}_{instance}.stdout"
+            self.tgtStderr = f"{self.abs_baselogname}_{instance}.stderr"
 
         # File descriptors are state variables; closed in stopTarget()
         self.fdTgtStdout = None
         self.fdTgtStderr = None
-
-    def startTarget(self, instance_count, block_until_termination=True):
-        logging.debug("FaProfSession::startTarget()")
-
-        if not self.tgtStdout:
-            self.timeStamp = self.get_profiling_timestamp()
-            full_basename = f"/tmp/tgt_profiling_{self.timeStamp}_{self.name}"
-            self.tgtStdout = f"{full_basename}_{instance_count}.stdout"
-            self.tgtStderr = f"{full_basename}_{instance_count}.stderr"
 
         try:
             self.fdTgtStdout = open(self.tgtStdout, "w")
@@ -178,33 +210,30 @@ class FaProfSession:
                 )
             )
 
-            self.fdTgtStdout = None
-            self.fdTgtStderr = None
-
         # Convert username to uid/gid
-        u_valid = False
+        self.u_valid = False
         try:
             if self.user:
                 # Get uid/gid of new user and the associated default group
                 pw_record = pwd.getpwnam(self.user)
-                uid = pw_record.pw_uid
-                gid = pw_record.pw_gid
-                logging.debug(f"The uid/gid of the profiling tgt: {uid}/{gid}")
+                self.uid = pw_record.pw_uid
+                self.gid = pw_record.pw_gid
+                logging.debug(f"The uid/gid of the profiling tgt: {self.uid}/{self.gid}")
 
                 # Change the ownership of profiling tgt's stdout and stderr
                 logging.debug(
                     f"Changing ownership of fds: {self.fdTgtStdout},{self.fdTgtStderr}"
                 )
-                os.fchown(self.fdTgtStdout.fileno(), uid, gid)
-                os.fchown(self.fdTgtStderr.fileno(), uid, gid)
+                os.fchown(self.fdTgtStdout.fileno(), self.uid, self.gid)
+                os.fchown(self.fdTgtStderr.fileno(), self.uid, self.gid)
                 logging.debug(
-                    f"Changed the profiling tgt stdout/err ownership {uid},{gid}"
+                    f"Changed the profiling tgt stdout/err ownership {self.uid},{self.gid}"
                 )
-                u_valid = True
+                self.u_valid = True
             else:
                 # In production, the following will be the superuser defaults
-                uid = os.getuid()
-                gid = os.getgid()
+                self.uid = os.getuid()
+                self.gid = os.getgid()
 
         except Exception as e:
             # Use current uid/gid if getpwnam() or chown throws an exception by
@@ -219,12 +248,15 @@ class FaProfSession:
                 )
             )
 
-            uid = os.getuid()  # Place holder args to _demote()
-            gid = os.getgid()
+            self.uid = os.getuid()  # Place holder args to _demote()
+            self.gid = os.getgid()
+
+    def startTarget(self, block_until_termination=True):
+        logging.debug("FaProfSession::startTarget()")
 
         # Capture process object
         try:
-            logging.debug(f"Starting {self.listCmdLine} as {uid}/{gid}")
+            logging.debug(f"Starting {self.listCmdLine} as {self.uid}/{self.gid}")
             logging.debug(f"in {self.pwd} with env: {self.env}")
             self.procTarget = subprocess.Popen(
                 self.listCmdLine,
@@ -232,7 +264,9 @@ class FaProfSession:
                 stderr=self.fdTgtStderr,
                 cwd=self.pwd,
                 env=self.env,
-                preexec_fn=FaProfSession._demote(u_valid, uid, gid),
+                preexec_fn=FaProfSession._demote(self.u_valid,
+                                                 self.uid,
+                                                 self.gid)
             )
             logging.debug(self.procTarget.pid)
             self.status = ProfSessionStatus.INPROGRESS
@@ -251,6 +285,7 @@ class FaProfSession:
                     NotificationType.ERROR,
                 )
             )
+
         return self.procTarget
 
     def stopTarget(self):
@@ -268,7 +303,7 @@ class FaProfSession:
         if self.fdTgtStderr:
             self.fdTgtStderr.close()
 
-    def get_profiling_timestamp(self):
+    def _get_profiling_timestamp(self):
         """
         Timestamp used in session logfile names is associated with the
         current fapd profiling instance
@@ -314,7 +349,7 @@ class FaProfSession:
             search_path = os.getenv("PATH")
 
         # Substitute the current working dir for any periods or colons in  path
-        search_path = expand_path(search_path, working_dir)        
+        search_path = expand_path(search_path, working_dir)
         logging.debug(f"exec={relative_exec}, Profiling PATH = {search_path}")
 
         # If exec path exist, convert to absolute path if needed
@@ -464,7 +499,7 @@ class FaProfiler:
             self.fapd_prof_stderr = self.fapd_mgr.fapd_profiling_stderr
 
         try:
-            self.faprofSession = FaProfSession(dictArgs, self)
+            self.faprofSession = FaProfSession(dictArgs, self.instance, self)
         except ProfSessionException as e:
             logging.error(e)
             raise e
@@ -472,7 +507,7 @@ class FaProfiler:
         key = dictArgs["executeText"] + "-" + str(self.instance)
         self.dictFaProfSession[key] = self.faprofSession
         try:
-            self.faprofSession.startTarget(self.instance, block_until_term)
+            self.faprofSession.startTarget(block_until_term)
         except Exception as e:
             logging.error(e)
             raise e

@@ -13,6 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import os
+import glob
 import pytest
 from unittest.mock import MagicMock
 from fapolicy_analyzer.ui.fapd_manager import FapdManager, FapdMode, ServiceStatus
@@ -90,6 +92,12 @@ def test_start_profiling(fapdManager, mocker):
     fapdManager.start(FapdMode.PROFILING)
     mockFapdHandle.stop.assert_called()
     assert fapdManager.mode == FapdMode.PROFILING
+
+    # Clean up
+    for f in glob.glob("/tmp/fapd_profiling_*.stdout"):
+        os.remove(f)
+    for f in glob.glob("/tmp/fapd_profiling_*.stderr"):
+        os.remove(f)
 
 
 def test_status_disabled(fapdManager, mocker):
