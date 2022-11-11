@@ -21,13 +21,9 @@ dist
 src/bin
 target
 venvs
-**/help/tmp/
-**/help/C/
-**/help/**/*.pot
-
-
-*.tar.gz
-/vendor*/
+help/tmp/
+help/C/
+help/**/*.pot
 
 
 *.tar.gz
