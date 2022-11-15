@@ -69,7 +69,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y itstool
           python -m pip install --upgrade pip
-          pip install markdown2 beautifulsoup4
+          pip install setuptools-rust markdown2 beautifulsoup4
       - name: Setup Help
         run: python setup.py build_help
       - name: Archive Help
