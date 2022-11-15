@@ -1,12 +1,12 @@
 on:
   push:
     branches:
-      - 'master'
-      - 'release-*'
+      - "master"
+      - "release-*"
   pull_request:
     branches:
-      - 'master'
-      - 'release-*'
+      - "master"
+      - "release-*"
 
 name: Python CI
 
@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ '3.6', '3.9' ]
+        python-version: ["3.6", "3.9"]
     steps:
       - uses: actions/checkout@v2
       - name: Install requirements
@@ -48,6 +48,32 @@ jobs:
           pipenv run python setup.py bdist_wheel
           echo ::set-output name=virt_env::$(pipenv --venv)
 
+  help_build:
+    name: Build Help
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Install dependencies
+        id: install_deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y itstool
+          python -m pip install --upgrade pip
+          pip install markdown2 beautifulsoup4
+      - name: Setup Help
+        run: python setup.py build_help
+      - name: Archive Help
+        uses: actions/upload-artifact@v2
+        with:
+          name: fapolicy-analyzer-help
+          path: |
+            help/
+            !help/**/*.pot
+
   ui_lint:
     name: UI Lint
     runs-on: ubuntu-latest
@@ -70,7 +96,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ '3.6', '3.9' ]
+        python-version: ["3.6", "3.9"]
     steps:
       - uses: actions/checkout@v2
       - name: Install requirements
