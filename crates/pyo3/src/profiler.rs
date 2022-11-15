@@ -10,6 +10,7 @@ use fapolicy_analyzer::users::read_users;
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
 use pyo3::{PyResult, Python};
+use std::collections::HashMap;
 use std::os::unix::prelude::CommandExt;
 use std::path::PathBuf;
 use std::process::Command;
@@ -17,12 +18,15 @@ use std::process::Command;
 use fapolicy_daemon::profiler::Profiler;
 use fapolicy_rules::read::load_rules_db;
 
+type EnvVars = HashMap<String, String>;
+
 #[derive(Default)]
 #[pyclass(module = "daemon", name = "Profiler")]
 pub struct PyProfiler {
     uid: Option<u32>,
     gid: Option<u32>,
     pwd: Option<PathBuf>,
+    env: Option<EnvVars>,
     rules: Option<String>,
     stdout: Option<String>,
 }
@@ -73,6 +77,11 @@ impl PyProfiler {
     #[setter]
     fn set_rules(&mut self, path: &str) {
         self.rules = Some(path.to_string())
+    }
+
+    #[setter]
+    fn set_env(&mut self, args: EnvVars) {
+        self.env = Some(args);
     }
 
     #[setter]
@@ -146,6 +155,9 @@ impl PyProfiler {
         }
         if let Some(pwd) = self.pwd.as_ref() {
             cmd.current_dir(pwd);
+        }
+        if let Some(envs) = self.env.as_ref() {
+            cmd.envs(envs);
         }
         let out = cmd.args(args).output()?;
         println!("{}", String::from_utf8(out.stdout)?);
