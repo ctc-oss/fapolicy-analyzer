@@ -160,7 +160,10 @@ impl PyProfiler {
             cmd.envs(envs);
         }
         let out = cmd.args(args).output()?;
+
+        // todo;; externalize the output destination for target stderr/stdout
         println!("{}", String::from_utf8(out.stdout)?);
+        println!("{}", String::from_utf8(out.stderr)?);
 
         Ok(())
     }
