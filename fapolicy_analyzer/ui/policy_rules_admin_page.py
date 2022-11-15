@@ -511,10 +511,14 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
     
         start_time = time_dialog.get_time("start")
         stop_time = time_dialog.get_time("stop")
-        print(start_time, stop_time)
+        self.get_object("startTimeDisplay").get_buffer().set_text(str(start_time))
+        self.get_object("stopTimeDisplay").get_buffer().set_text(str(stop_time))
 
-    def filter_time_selection(self, start_time, stop_time):
-        pass
+        print(int(start_time.timestamp()), int(stop_time.timestamp()))
+
+        self.__log.begin(int(start_time.timestamp()))
+        self.__log.until(int(stop_time.timestamp()))
+        self.__refresh()
 
     class Switcher(Events):
         __events__ = ["buttonClicked"]
