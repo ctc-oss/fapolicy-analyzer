@@ -20,11 +20,44 @@ import urllib.request
 from distutils.cmd import Command
 from logging import getLogger
 from os import path
+from typing import Sequence
 from urllib.parse import urlparse
 
-from fapolicy_analyzer.util.html_parsing import markdown_to_html, parse_media_urls
+import markdown2
+from bs4 import BeautifulSoup
 
 logger = getLogger(__name__)
+
+
+def _parse_media_urls(html: str, filter: str) -> Sequence[str]:
+    soup = BeautifulSoup(html, "html.parser")
+    return [
+        url
+        for url in [img.get("src") for img in soup("img")]
+        if url and url.startswith(filter)
+    ]
+
+
+def _markdown_to_html(markdown_file: str) -> str:
+    def get_title():
+        soup = BeautifulSoup(body, "html.parser")
+        header = soup.find("h1")
+        return header.get_text() if header else "User Guide"
+
+    template = """<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>{title}</title>
+</head>
+<body>
+{body}
+</body>
+</html>
+"""
+    body = markdown2.markdown_path(markdown_file, extras=["header-ids"])
+    title = get_title()
+    return template.format(title=title, body=body)
 
 
 class build_help(Command):
@@ -115,8 +148,8 @@ class build_help(Command):
         md_files = [path.join(tmp_dir, f) for f in self.help_files]
         html_files = []
         for md in md_files:
-            html = markdown_to_html(md)
-            media_urls = parse_media_urls(
+            html = _markdown_to_html(md)
+            media_urls = _parse_media_urls(
                 html, "https://user-images.githubusercontent.com/1545372"
             )
             for url in media_urls:

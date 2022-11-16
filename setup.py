@@ -33,7 +33,7 @@ import os
 from setuptools import find_namespace_packages, setup
 from setuptools_rust import RustExtension
 
-from fapolicy_analyzer.setup_cmds import build_help
+from setup_cmds import build_help
 
 
 def get_version():
