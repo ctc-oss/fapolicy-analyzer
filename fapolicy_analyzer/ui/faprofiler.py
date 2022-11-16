@@ -15,6 +15,7 @@
 
 import logging
 import os
+import pathlib
 import pwd
 import re
 import subprocess
@@ -66,65 +67,39 @@ def expand_path(colon_separated_str, cwd="."):
     # Expand native PATH env var if in user provided PATH env var string
     regexPath = re.compile(r"\$\{?PATH\}?")
 
-    colon_separated_str = regexPath.sub(os.environ.get("PATH"),
-                                        colon_separated_str)
+    expanded_path = regexPath.sub(os.environ.get("PATH"), colon_separated_str)
 
     # Expand implied '.' notation to supplied cwd argument in search PATH
     regexTrailingColon = re.compile(r":$")
     regexLeadingColon = re.compile(r"^:")
     regexDoubleColon = re.compile(r"::")
 
-    print(f"-> {colon_separated_str}")  # ToDo: Remove prior to push
-    if regexTrailingColon.search(colon_separated_str):
+    print(f"-> {expanded_path}")  # ToDo: Remove prior to push
+    if regexTrailingColon.search(expanded_path):
         logging.debug("Trailing colon detected.")
-        colon_separated_str = regexTrailingColon.sub(":.", colon_separated_str)
-    if regexLeadingColon.search(colon_separated_str):
+        expanded_path = regexTrailingColon.sub(":.", expanded_path)
+    if regexLeadingColon.search(expanded_path):
         logging.debug("Leading colon detected.")
-        colon_separated_str = regexLeadingColon.sub(".:", colon_separated_str)
-    if regexDoubleColon.search(colon_separated_str):
+        expanded_path = regexLeadingColon.sub(".:", expanded_path)
+    if regexDoubleColon.search(expanded_path):
         logging.debug("Internal double colon detected")
-        colon_separated_str = regexDoubleColon.sub(":.:", colon_separated_str)
-    print(f"-> {colon_separated_str}")  # ToDo: Remove prior to push
+        expanded_path = regexDoubleColon.sub(":.:", expanded_path)
+
     # Expand periods with user supplied absolute path if provided otherwise
     # use cwd from runtime environment
     if cwd != ".":
-        colon_separated_str = re.sub(r":\.$", f":{cwd}", colon_separated_str)
-        colon_separated_str = re.sub(r"\.:", f"{cwd}:", colon_separated_str)
-        colon_separated_str = re.sub(r":\.:", f":{cwd}:", colon_separated_str)
+        expanded_path = re.sub(r":\.$", f":{cwd}", expanded_path)
+        expanded_path = re.sub(r"^\.:", f"{cwd}:", expanded_path)
+        expanded_path = re.sub(r":\.:", f":{cwd}:", expanded_path)
+        expanded_path = re.sub(r"^\.$", f"{cwd}", expanded_path)
 
-    logging.debug(f"expand_path::path = {colon_separated_str}")
-    print(f"-> {colon_separated_str}")  # ToDo: Remove prior to push
-    return colon_separated_str
+        # Similarly substitute parent of cwd for double periods
+        path_cwd = pathlib.Path(cwd)
+        ppath_cwd = path_cwd.parent
+        expanded_path = re.sub(r"\.\.", f"{ppath_cwd}", expanded_path)
 
-
-def username_to_uid_gid(username):
-    # Set defaults
-    # In production, the defaults will be the superuser w/uid=0
-    uid = os.getuid()
-    gid = os.getgid()
-    if not username:
-        return (uid, gid)
-
-    try:
-        if username:
-            # Get uid/gid of new user and the associated default group
-            pw_record = pwd.getpwnam(username)
-            uid = pw_record.pw_uid
-            gid = pw_record.pw_gid
-            logging.debug(f"The uid/gid of the profiling tgt: {uid}/{gid}")
-
-    except Exception as e:
-        # Use current uid/gid if getpwnam() or chown throws an exception by
-        # setting prexec_fn = None
-        # Typically will only occur in debug/development runs
-        logging.error(f"{s.FAPROFILER_TGT_EUID_CHOWN_ERROR_MSG}: {e}")
-        dispatch(
-            add_notification(
-                s.FAPROFILER_TGT_EUID_CHOWN_ERROR_MSG + f": {e}",
-                NotificationType.ERROR,
-            )
-        )
-    return (uid, gid)
+    logging.debug(f"expand_path::path = {expanded_path}")
+    return expanded_path
 
 
 class ProfSessionException(RuntimeError):
@@ -390,6 +365,7 @@ class FaProfSession:
         # pwd empty? Check pwd first because it is used with relative exec paths
         # as the current working dir
         if exec_pwd:
+            logging.debug(f"Processing current working dir: {exec_pwd}")
             if not os.path.exists(exec_pwd):
                 dictReturn[ProfSessionArgsStatus.PWD_DOESNT_EXIST] = (
                     exec_pwd + s.PROF_ARG_PWD_DOESNT_EXIST

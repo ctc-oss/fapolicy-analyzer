@@ -294,3 +294,32 @@ def test_validateArgs():
     assert ProfSessionArgsStatus.USER_DOESNT_EXIST in dict_valid_args_return
     assert ProfSessionArgsStatus.EXEC_DOESNT_EXIST in dict_valid_args_return
     assert ProfSessionArgsStatus.PWD_DOESNT_EXIST in dict_valid_args_return
+
+
+def test_validateArgs_relative_exec():
+
+    dictArgs = {
+        "executeText": "Now.sh",
+        "argText": "",
+        "userText": os.getenv("USER"),
+        "dirText": "/tmp",
+        "envText": "PATH=.:${PATH}",
+    }
+
+    # Verify non-existent relative exec path is detected
+    dict_valid_args_return = FaProfSession.validateArgs(dictArgs)
+    assert len(dict_valid_args_return) == 1
+    assert ProfSessionArgsStatus.EXEC_NOT_FOUND in dict_valid_args_return
+
+    # Test w/good args; only OK key is in returned dict
+    dictArgs = {
+        "executeText": "ls",
+        "argText": "",
+        "userText": os.getenv("USER"),
+        "dirText": os.getenv("HOME"),
+        "envText": "",
+    }
+
+    dict_valid_args_return = FaProfSession.validateArgs(dictArgs)
+    assert len(dict_valid_args_return) == 1
+    assert ProfSessionArgsStatus.OK in dict_valid_args_return

@@ -129,3 +129,11 @@ def test_status_profiling_fapd(fapdManager, mocker):
     fapdManager.procProfile = MagicMock()
     bStatus = fapdManager._status()
     assert bStatus == ServiceStatus.TRUE
+
+
+def test_initial_daemon_status(fapdManager, mocker):
+    mockFapdHandle = MagicMock()
+    fapdManager._fapd_ref = mockFapdHandle
+    fapdManager._fapd_ref.is_valid = False
+    bStatus = fapdManager._status()
+    assert bStatus == ServiceStatus.UNKNOWN
