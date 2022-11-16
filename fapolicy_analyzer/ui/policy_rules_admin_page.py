@@ -509,15 +509,20 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         if resp == 0:
             time_dialog.get_ref.destroy()
     
-        start_time = time_dialog.get_time("start")
-        stop_time = time_dialog.get_time("stop")
-        self.get_object("startTimeDisplay").get_buffer().set_text(str(start_time))
-        self.get_object("stopTimeDisplay").get_buffer().set_text(str(stop_time))
+        if not time_dialog.get_object("ignoreStartTime").get_active():
+            start_time = time_dialog.get_time("start")
+            self.get_object("startTimeDisplay").get_buffer().set_text(str(start_time))
+            self.__log.begin(int(start_time.timestamp()))
+        else:
+            self.get_object("startTimeDisplay").get_buffer().set_text("")
 
-        print(int(start_time.timestamp()), int(stop_time.timestamp()))
+        if not time_dialog.get_object("ignoreStopTime").get_active():       
+            stop_time = time_dialog.get_time("stop")
+            self.get_object("stopTimeDisplay").get_buffer().set_text(str(stop_time))
+            self.__log.until(int(stop_time.timestamp()))
+        else:
+            self.get_object("stopTimeDisplay").get_buffer().set_text("")
 
-        self.__log.begin(int(start_time.timestamp()))
-        self.__log.until(int(stop_time.timestamp()))
         self.__refresh()
 
     class Switcher(Events):

@@ -42,6 +42,20 @@ class TimeSelectDialog(UIBuilderWidget):
                 
     def on_timeConfirmButton_clicked(self):
         pass
+
+    def on_ignoreStartTime_toggled(self, *args):
+        self.get_object("startMinute").set_sensitive(not self.get_object("startMinute").get_sensitive())
+        self.get_object("startHour").set_sensitive(not self.get_object("startHour").get_sensitive())
+        self.get_object("startDay").set_sensitive(not self.get_object("startDay").get_sensitive())
+        self.get_object("startMonth").set_sensitive(not self.get_object("startMonth").get_sensitive())
+        self.get_object("startYear").set_sensitive(not self.get_object("startYear").get_sensitive())
+        
+    def on_ignoreStopTime_toggled(self, *args):
+        self.get_object("stopMinute").set_sensitive(not self.get_object("stopMinute").get_sensitive())
+        self.get_object("stopHour").set_sensitive(not self.get_object("stopHour").get_sensitive())
+        self.get_object("stopDay").set_sensitive(not self.get_object("stopDay").get_sensitive())
+        self.get_object("stopMonth").set_sensitive(not self.get_object("stopMonth").get_sensitive())
+        self.get_object("stopYear").set_sensitive(not self.get_object("stopYear").get_sensitive())
   
     def get_time(self, sos="start"):
         time_dict = {
