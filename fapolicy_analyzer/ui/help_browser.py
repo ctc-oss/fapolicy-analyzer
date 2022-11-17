@@ -54,7 +54,7 @@ context.register_uri_scheme("help", _handle_help_scheme)
 class HelpBrowser(Gtk.Window):
     def __init__(self, *args, uri: str = None, allow_navigation: bool = True, **kwargs):
         super().__init__(
-            Gtk.WindowType.TOPLEVEL,
+            type=Gtk.WindowType.TOPLEVEL,
             *args,
             window_position=Gtk.WindowPosition.CENTER,
             title="Fapolicy Analyzer Help",

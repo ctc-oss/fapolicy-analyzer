@@ -19,23 +19,24 @@ import os
 from importlib import reload
 from unittest.mock import MagicMock
 
-import fapolicy_analyzer.ui
 import gi
 import pytest
 from callee import Attrs, InstanceOf
+from helpers import refresh_gui
+from mocks import mock_System
+from rx import create
+from rx.subject import Subject
+
+import fapolicy_analyzer.ui
 from fapolicy_analyzer.redux import Action
 from fapolicy_analyzer.ui.actions import ADD_NOTIFICATION
 from fapolicy_analyzer.ui.changeset_wrapper import TrustChangeset
 from fapolicy_analyzer.ui.fapd_manager import ServiceStatus
 from fapolicy_analyzer.ui.main_window import MainWindow, router
-from fapolicy_analyzer.ui.session_manager import NotificationType, sessionManager
+from fapolicy_analyzer.ui.session_manager import (NotificationType,
+                                                  sessionManager)
 from fapolicy_analyzer.ui.store import init_store
 from fapolicy_analyzer.ui.strings import AUTOSAVE_RESTORE_ERROR_MSG
-from rx import create
-from rx.subject import Subject
-
-from helpers import refresh_gui
-from mocks import mock_System
 
 gi.require_version("GtkSource", "3.0")
 from gi.repository import Gtk  # isort: skip
@@ -110,8 +111,7 @@ def profiler_envvar_override(monkeypatch):
 
 @pytest.fixture
 def profiler_file_override(mocker):
-    mocker.patch("fapolicy_analyzer.ui.main_window.path.exists",
-                 return_value=True)
+    mocker.patch("fapolicy_analyzer.ui.main_window.path.exists", return_value=True)
 
 
 def test_displays_window(mainWindow):
@@ -150,6 +150,31 @@ def test_displays_about_dialog(mainWindow, mocker):
     mocker.patch.object(aboutDialog, "run", return_value=0)
     menuItem.activate()
     aboutDialog.run.assert_called()
+
+
+@pytest.mark.parametrize(
+    "expected_uri, patched_file_location",
+    [
+        (
+            "help:fapolicy-analyzer/User-Guide.html",
+            "/usr/share/help/C/fapolicy-analyzer/User-Guide.html",
+        ),
+        (f"file://{os.getcwd()}/help/C/User-Guide.html", "help/C/User-Guide.html"),
+        ("https://github.com/ctc-oss/fapolicy-analyzer/wiki/User-Guide", None),
+    ],
+)
+def test_displays_help_dialog(expected_uri, patched_file_location, mainWindow, mocker):
+    menuItem = mainWindow.get_object("helpMenu")
+    mock_load = MagicMock()
+    # mock_isfile = lambda f: f == patched_file_location
+    mocker.patch("fapolicy_analyzer.ui.main_window.HelpBrowser.load_uri", new=mock_load)
+    mocker.patch(
+        "fapolicy_analyzer.ui.main_window.os.path.isfile",
+        new=lambda f: f == patched_file_location,
+    )
+
+    menuItem.activate()
+    mock_load.assert_called_with(expected_uri)
 
 
 def test_defaults_to_trust_db_admin_page(mainWindow):
