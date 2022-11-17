@@ -16,7 +16,6 @@
 from functools import partial
 from typing import Optional, Sequence
 
-from datetime import datetime
 import gi
 from events import Events
 from fapolicy_analyzer import EventLog, Group, Trust, User
@@ -508,7 +507,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         time_dialog.get_ref().hide()
         if resp == 0:
             time_dialog.get_ref.destroy()
-    
+
         if not time_dialog.get_object("ignoreStartTime").get_active():
             start_time = time_dialog.get_time("start")
             self.get_object("startTimeDisplay").get_buffer().set_text(str(start_time))
@@ -516,7 +515,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         else:
             self.get_object("startTimeDisplay").get_buffer().set_text("")
 
-        if not time_dialog.get_object("ignoreStopTime").get_active():       
+        if not time_dialog.get_object("ignoreStopTime").get_active():
             stop_time = time_dialog.get_time("stop")
             self.get_object("stopTimeDisplay").get_buffer().set_text(str(stop_time))
             self.__log.until(int(stop_time.timestamp()))
