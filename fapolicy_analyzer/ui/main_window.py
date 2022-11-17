@@ -363,6 +363,7 @@ class MainWindow(UIConnectedWidget):
                 uri = "https://github.com/ctc-oss/fapolicy-analyzer/wiki/User-Guide"
             self.__help = HelpBrowser(
                 uri=uri,
+                allow_navigation=False,
             )
             self.__help.connect("destroy", handle_destroy)
         self.__help.show()

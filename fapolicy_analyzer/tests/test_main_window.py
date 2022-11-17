@@ -33,8 +33,7 @@ from fapolicy_analyzer.ui.actions import ADD_NOTIFICATION
 from fapolicy_analyzer.ui.changeset_wrapper import TrustChangeset
 from fapolicy_analyzer.ui.fapd_manager import ServiceStatus
 from fapolicy_analyzer.ui.main_window import MainWindow, router
-from fapolicy_analyzer.ui.session_manager import (NotificationType,
-                                                  sessionManager)
+from fapolicy_analyzer.ui.session_manager import NotificationType, sessionManager
 from fapolicy_analyzer.ui.store import init_store
 from fapolicy_analyzer.ui.strings import AUTOSAVE_RESTORE_ERROR_MSG
 
@@ -164,17 +163,33 @@ def test_displays_about_dialog(mainWindow, mocker):
     ],
 )
 def test_displays_help_dialog(expected_uri, patched_file_location, mainWindow, mocker):
-    menuItem = mainWindow.get_object("helpMenu")
-    mock_load = MagicMock()
-    # mock_isfile = lambda f: f == patched_file_location
-    mocker.patch("fapolicy_analyzer.ui.main_window.HelpBrowser.load_uri", new=mock_load)
+    mock_load = mocker.patch("fapolicy_analyzer.ui.main_window.HelpBrowser.load_uri")
+    mock_show = mocker.patch("fapolicy_analyzer.ui.main_window.HelpBrowser.show_all")
     mocker.patch(
         "fapolicy_analyzer.ui.main_window.os.path.isfile",
         new=lambda f: f == patched_file_location,
     )
 
+    menuItem = mainWindow.get_object("helpMenu")
     menuItem.activate()
+
     mock_load.assert_called_with(expected_uri)
+    mock_show.assert_called()
+    # assert ref is cleaned up on destroy
+    assert mainWindow._MainWindow__help
+    mainWindow._MainWindow__help.destroy()
+    assert not mainWindow._MainWindow__help
+
+
+def test_brings_help_dialog_to_foreground(mainWindow, mocker):
+    mocker.patch("fapolicy_analyzer.ui.main_window.HelpBrowser.load_uri")
+    mock_present = mocker.patch("fapolicy_analyzer.ui.main_window.HelpBrowser.present")
+
+    menuItem = mainWindow.get_object("helpMenu")
+    menuItem.activate()
+    mock_present.assert_not_called()
+    menuItem.activate()
+    mock_present.assert_called()
 
 
 def test_defaults_to_trust_db_admin_page(mainWindow):
