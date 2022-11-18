@@ -72,10 +72,10 @@ jobs:
           pipenv install --dev --keep-outdated --python 3.9
       - name: Setup Help
         id: setup-help
-        run: pipenv run python setup.py build_help && echo "HELP_COMMIT=$HELP_COMMIT" >> $GITHUB_OUTPUT
+        run: PIPENV_DOTENV_LOCATION=help/.env pipenv run python setup.py build_help && echo "HELP_COMMIT=$HELP_COMMIT" >> $GITHUB_OUTPUT
       - name: Create tar of help files
         run: |
-          tar --exclude="help/*.pot" -czvf "help.${{ steps.setup-help.outputs.HELP_COMMIT }}.tar.gz" help/
+          tar --exclude="help/*.pot" --exclude="help/.env" -czvf "help.${{ steps.setup-help.outputs.HELP_COMMIT }}.tar.gz" help/
       - name: Archive Help
         uses: actions/upload-artifact@v2
         with:
