@@ -47,7 +47,7 @@ jobs:
 
       - name: RPM Building Dependencies
         run: |
-          dnf install -y git rpm rpmdevtools dnf-plugins-core python3-markdown2 python3-beautifulsoup4
+          dnf install -y git rpm rpmdevtools dnf-plugins-core
 
       - uses: actions/checkout@v2
         with:

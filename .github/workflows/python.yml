@@ -69,13 +69,13 @@ jobs:
           pip install markdown2 BeautifulSoup4 setuptools-rust
       - name: Setup Help
         run: python setup.py build_help
+      - name: Create tar of help files
+        run: tar -czvf --exclude"help/*.pot" help.tar.gz help/
       - name: Archive Help
         uses: actions/upload-artifact@v2
         with:
           name: fapolicy-analyzer-help
-          path: |
-            help/
-            !help/**/*.pot
+          path: help.tar.gz
 
   ui_lint:
     name: UI Lint
