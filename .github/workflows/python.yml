@@ -73,7 +73,9 @@ jobs:
       - name: Setup Help
         run: pipenv run python setup.py build_help
       - name: Create tar of help files
-        run: tar -czvf --exclude="help/*.pot" help.tar.gz help/
+        run: |
+          export $(grep -v '^#' .env | xargs)
+          tar --exclude="help/*.pot" -czvf "help.$HELP_COMMIT.tar.gz" help/
       - name: Archive Help
         uses: actions/upload-artifact@v2
         with:
