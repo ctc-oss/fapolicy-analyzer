@@ -186,6 +186,8 @@ tar xzf %{SOURCE4} -C %{_builddir}/setuptools --strip-components=1
 # pip install other dependencies
 %{venv_install} %{SOURCE12}
 %{venv_install} %{SOURCE13}
+%{venv_install} %{SOURCE14}
+%{venv_install} %{SOURCE15}
 
 # babel can be linked from the system install
 ln -sf  %{python3_sitelib}/{Babel*,babel} %{venv_lib}
