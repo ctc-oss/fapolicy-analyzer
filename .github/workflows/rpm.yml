@@ -1,15 +1,15 @@
 on:
   push:
     branches:
-      - "master"
-      - "release-*"
-      - "rpm/test/*"
+      - 'master'
+      - 'release-*'
+      - 'rpm/test/*'
     tags:
-      - "v*"
+      - 'v*'
   pull_request:
     branches:
-      - "master"
-      - "release-*"
+      - 'master'
+      - 'release-*'
 
 name: RPM
 
@@ -20,20 +20,20 @@ jobs:
       matrix:
         triple:
           - {
-              name: "fc37",
-              spec: "fapolicy-analyzer.spec",
-              image: "registry.fedoraproject.org/fedora:37",
-            }
+            name: 'fc37',
+            spec: 'fapolicy-analyzer.spec',
+            image: 'registry.fedoraproject.org/fedora:37',
+          }
           - {
-              name: "fc38",
-              spec: "fapolicy-analyzer.spec",
-              image: "registry.fedoraproject.org/fedora:rawhide",
-            }
+            name: 'fc38',
+            spec: 'fapolicy-analyzer.spec',
+            image: 'registry.fedoraproject.org/fedora:rawhide',
+          }
           - {
-              name: "el8",
-              spec: "scripts/srpm/fapolicy-analyzer.spec",
-              image: "registry.access.redhat.com/ubi8/ubi:8.6",
-            }
+            name: 'el8',
+            spec: 'scripts/srpm/fapolicy-analyzer.spec',
+            image: 'registry.access.redhat.com/ubi8/ubi:8.6',
+          }
     runs-on: ubuntu-latest
     container: ${{ matrix.triple.image }}
     steps:
@@ -88,7 +88,7 @@ jobs:
         run: |
           out=/tmp/archives/fapolicy-analyzer.spec
           base=https://github.com/$GITHUB_REPOSITORY/releases/download/${{ steps.tag_name.outputs.VERSION }}
-
+          
           cp ${{ matrix.triple.spec }} $out
           sed -z -i -e "s#fapolicy-analyzer.tar.gz#$base/fapolicy-analyzer.tar.gz#" $out
           sed -z -i -e "s#vendor-rs.tar.gz#$base/vendor-rs.tar.gz#" $out

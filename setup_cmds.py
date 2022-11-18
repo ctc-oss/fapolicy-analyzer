@@ -83,6 +83,7 @@ class build_help(Command):
             )
         if not self.help_commit:
             self.help_commit = os.getenv("HELP_COMMIT", "HEAD")
+            print(f"HELP_COMMIT={self.help_commit}")
         if not self.output_dir:
             self.output_dir = "help"
 
