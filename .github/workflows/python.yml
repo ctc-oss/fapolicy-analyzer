@@ -71,16 +71,16 @@ jobs:
           pip install pipenv
           pipenv install --dev --keep-outdated --python 3.9
       - name: Setup Help
-        run: pipenv run python setup.py build_help
+        id: setup-help
+        run: pipenv run python setup.py build_help && echo "HELP_COMMIT=$HELP_COMMIT" >> $GITHUB_OUTPUT
       - name: Create tar of help files
         run: |
-          export $(grep -v '^#' .env | xargs)
-          tar --exclude="help/*.pot" -czvf "help.$HELP_COMMIT.tar.gz" help/
+          tar --exclude="help/*.pot" -czvf "help.${{ steps.setup-help.outputs.HELP_COMMIT }}.tar.gz" help/
       - name: Archive Help
         uses: actions/upload-artifact@v2
         with:
           name: fapolicy-analyzer-help
-          path: help.tar.gz
+          path: "help.${{ steps.setup-help.outputs.HELP_COMMIT }}.tar.gz"
 
   ui_lint:
     name: UI Lint
