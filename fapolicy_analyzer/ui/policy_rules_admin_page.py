@@ -172,7 +172,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         dispatch(request_groups())
         if self.__audit_file:
             dispatch(request_events("debug", self.__audit_file))
-            self.get_object("timeSelectBtn").set_sensitive(False) 
+            self.get_object("timeSelectBtn").set_sensitive(False)
         else:
             dispatch(request_events("syslog"))
 
@@ -510,7 +510,6 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         time_dialog.get_ref().hide()
         if resp == 0:
             time_dialog.get_ref().destroy()
-            
 
         if not time_dialog.get_object("ignoreStartTime").get_active():
             start_time = time_dialog.get_time("start")

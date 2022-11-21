@@ -80,11 +80,10 @@ class TimeSelectDialog(UIBuilderWidget):
                                      hour=time_dict[sos + "Hour"],
                                      minute=time_dict[sos + "Minute"],
                                      )
-                                    
+
         except ValueError:
-            error_text = f"Could not convert provided information into "
+            error_text = "Could not convert provided information into "
             self.get_object("errorMessage").get_buffer().set_text(error_text, len(error_text))
             date = None
-
 
         return date

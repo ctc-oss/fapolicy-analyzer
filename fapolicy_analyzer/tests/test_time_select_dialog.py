@@ -36,21 +36,22 @@ def test_adds_dialog_to_parent():
     parent = Gtk.Window()
     widget = TimeSelectDialog(parent)
     assert widget.get_ref().get_transient_for() == parent
-    
-    
+
+
 def test_start_time_sensitive_toggle(widget):
     widget.get_object("ignoreStartTime").set_active(True)
-    assert widget.get_object("startMinute").get_sensitive() == False
-    assert widget.get_object("stopMinute").get_sensitive() == True
-    
+    assert widget.get_object("startMinute").get_sensitive() is False
+    assert widget.get_object("stopMinute").get_sensitive() is True
+
 
 def test_stop_time_sensitive_toggle(widget):
     widget.get_object("ignoreStopTime").set_active(True)
-    assert widget.get_object("startMinute").get_sensitive() == True
-    assert widget.get_object("stopMinute").get_sensitive() == False
-    
+    assert widget.get_object("startMinute").get_sensitive() is True
+    assert widget.get_object("stopMinute").get_sensitive() is False
+
+
 def test_both_sensitive_toggle(widget):
     widget.get_object("ignoreStopTime").set_active(True)
     widget.get_object("ignoreStartTime").set_active(True)
-    assert widget.get_object("startMinute").get_sensitive() == False
-    assert widget.get_object("stopMinute").get_sensitive() == False
+    assert widget.get_object("startMinute").get_sensitive() is False
+    assert widget.get_object("stopMinute").get_sensitive() is False
