@@ -25,8 +25,6 @@ Source10:      %{pypi_source tomli 1.2.3}
 Source11:      %{pypi_source flit_core 3.7.1}
 Source12:      %{pypi_source typing_extensions 3.7.4.3}
 Source13:      https://files.pythonhosted.org/packages/source/p/pytz/pytz-2017.2.zip
-Source14:      %{pypi_source markdown2 2.4.6}
-Source15:      %{pypi_source beautifulsoup4 4.11.1}
 %endif
 
 BuildRequires: python3-devel
@@ -186,8 +184,6 @@ tar xzf %{SOURCE4} -C %{_builddir}/setuptools --strip-components=1
 # pip install other dependencies
 %{venv_install} %{SOURCE12}
 %{venv_install} %{SOURCE13}
-%{venv_install} %{SOURCE14}
-%{venv_install} %{SOURCE15}
 
 # babel can be linked from the system install
 ln -sf  %{python3_sitelib}/{Babel*,babel} %{venv_lib}

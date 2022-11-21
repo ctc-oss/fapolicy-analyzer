@@ -16,8 +16,6 @@ BuildRequires: python3dist(pip)
 BuildRequires: python3dist(wheel)
 BuildRequires: python3dist(babel)
 BuildRequires: dbus-devel
-BuildRequires: python3-markdown2
-BuildRequires: python3-beautifulsoup4
 
 BuildRequires: rust-packaging
 BuildRequires: python3dist(setuptools-rust)
