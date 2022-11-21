@@ -14,5 +14,6 @@ pub mod stat;
 mod trust;
 pub use trust::Trust;
 
+pub mod load;
 pub mod read;
 pub mod write;

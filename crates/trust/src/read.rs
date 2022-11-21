@@ -92,6 +92,18 @@ fn parse_strtyped_trust_record(s: &str, t: &str) -> Result<(Trust, TrustSource),
 }
 
 pub fn parse_trust_record(s: &str) -> Result<Trust, Error> {
+    let v: Vec<&str> = s.splitn(3, ' ').collect();
+    match v.as_slice() {
+        [f, sz, sha] => Ok(Trust {
+            path: f.to_string(),
+            size: sz.parse().unwrap(),
+            hash: sha.to_string(),
+        }),
+        _ => Err(MalformattedTrustEntry(s.to_string())),
+    }
+}
+
+pub fn trust_record(s: &str) -> Result<Trust, Error> {
     let mut v: Vec<&str> = s.rsplitn(3, ' ').collect();
     v.reverse();
     match v.as_slice() {
