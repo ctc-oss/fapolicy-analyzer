@@ -39,6 +39,8 @@ from fapolicy_analyzer.ui.strings import (
     PARSE_EVENT_LOG_ERROR_MSG,
     USER_LABEL,
     USERS_LABEL,
+    TIME_SELECTION_START_INVALID,
+    TIME_SELECTION_STOP_INVALID,
 )
 from fapolicy_analyzer.ui.subject_list import SubjectList
 from fapolicy_analyzer.ui.time_select_dialog import TimeSelectDialog
@@ -170,6 +172,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         dispatch(request_groups())
         if self.__audit_file:
             dispatch(request_events("debug", self.__audit_file))
+            self.get_object("timeSelectBtn").set_sensitive(False) 
         else:
             dispatch(request_events("syslog"))
 
@@ -506,10 +509,13 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         resp = time_dialog.get_ref().run()
         time_dialog.get_ref().hide()
         if resp == 0:
-            time_dialog.get_ref.destroy()
+            time_dialog.get_ref().destroy()
+            
 
         if not time_dialog.get_object("ignoreStartTime").get_active():
             start_time = time_dialog.get_time("start")
+            if start_time is None:
+                dispatch(add_notification(TIME_SELECTION_START_INVALID, NotificationType.ERROR))
             self.get_object("startTimeDisplay").get_buffer().set_text(str(start_time))
             self.__log.begin(int(start_time.timestamp()))
         else:
@@ -517,11 +523,14 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
 
         if not time_dialog.get_object("ignoreStopTime").get_active():
             stop_time = time_dialog.get_time("stop")
+            if stop_time is None:
+                dispatch(add_notification(TIME_SELECTION_STOP_INVALID, NotificationType.ERROR))
             self.get_object("stopTimeDisplay").get_buffer().set_text(str(stop_time))
             self.__log.until(int(stop_time.timestamp()))
         else:
             self.get_object("stopTimeDisplay").get_buffer().set_text("")
 
+        time_dialog.get_ref().destroy()
         self.__refresh()
 
     class Switcher(Events):

@@ -188,3 +188,6 @@ $(HOME)/.config/fapolicy-analyzer/fapolicy-analyzer.toml
 )
 
 APPLY_CHANGESETS_ERROR_MESSAGE = _("Error applying changes")
+
+TIME_SELECTION_START_INVALID = _("Selected Start Time is not a valid date")
+TIME_SELECTION_STOP_INVALID = _("Selected Stop Time is not a valid date")

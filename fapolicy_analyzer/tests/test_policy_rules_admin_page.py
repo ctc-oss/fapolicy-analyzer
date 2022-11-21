@@ -133,6 +133,11 @@ def objectListView(widget):
 
 
 @pytest.fixture
+def timeSelectButton(widget):
+    return widget.get_object("timeSelectBtn")
+
+
+@pytest.fixture
 def activeSwitcherButton(widget):
     # find switcher button, either the 1st button in the user list
     # or 2nd button in subject list. Only 1 should exist at any point in time.
@@ -675,3 +680,7 @@ def test_groups_loading_w_exception(mock_system_features, states, mock_dispatch)
             payload=Attrs(type=NotificationType.ERROR, text=GET_GROUPS_LOG_ERROR_MSG),
         )
     )
+
+
+def test_show_time_select_dialog_from_button(widget, timeSelectButton):
+    timeSelectButton.clicked()
