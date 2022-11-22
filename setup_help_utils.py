@@ -112,6 +112,12 @@ def download(
     media_url: str = DEFAULT_MEDIA_URL,
     proxy: Optional[str] = None,
 ) -> Sequence[str]:
+    """
+    Will download the latest help markdown files from the online help
+    repository, convert the files to HTML, parse the HTML for media
+    files, download the media files, and up date the refs in the HTML.
+    """
+
     def html_file(md, html):
         rel_path = path.relpath(md, tmp_dir)
         full_path = f"{path.join(c_dir, path.splitext(rel_path)[0])}.html"

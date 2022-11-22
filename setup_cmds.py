@@ -16,6 +16,7 @@
 
 import os
 import shutil
+from distutils import dir_util
 from distutils.cmd import Command
 from glob import glob
 from logging import getLogger
@@ -24,14 +25,9 @@ from os import path
 logger = getLogger(__name__)
 
 
-class build_help(Command):
-    description = "Update source controlled help documentation files from online source"
+class update_help(Command):
+    description = "Update help documentation files from online source"
     user_options = [
-        (
-            "force-refresh=",
-            "f",
-            "force download even if help files are available locally",
-        ),
         ("help-repo=", "r", "git repository of online help files"),
         ("help-commit=", "c", "commit in help-repo to checkout, defaults to HEAD"),
         ("output-dir=", "o", "output directory"),
@@ -42,9 +38,8 @@ class build_help(Command):
     def initialize_options(self):
         self.help_repo = None
         self.help_commit = None
-        self.output_dir = None
+        self.build_dir = None
         self.proxy = None
-        self.force_refresh = False
 
     def finalize_options(self):
         if not self.help_repo:
@@ -54,8 +49,8 @@ class build_help(Command):
         if not self.help_commit:
             self.help_commit = os.getenv("HELP_COMMIT", "HEAD")
             logger.info(f"HELP_COMMIT={self.help_commit}")
-        if not self.output_dir:
-            self.output_dir = "help"
+        if not self.build_dir:
+            self.build_dir = "help"
 
     def run(self):
         c_files = self.__parse_help()
@@ -67,32 +62,26 @@ class build_help(Command):
             self.spawn(cmd)
 
     def __parse_help(self):
-        c_dir = path.join(self.output_dir, "C")
+        c_dir = path.join(self.build_dir, "C")
+        shutil.rmtree(c_dir, ignore_errors=True)
 
-        if os.path.isdir(c_dir) and len(os.listdir(c_dir)) and not self.force_refresh:
-            _glob = rf"{c_dir}/**/*.html"
-            return glob(_glob, recursive=True)
+        import setup_help_utils
 
-        if self.force_refresh:
-            shutil.rmtree(c_dir)
-
-        import help
-
-        return help.download(
+        return setup_help_utils.download(
             self.help_files,
             self.help_repo,
             self.help_commit,
-            self.output_dir,
+            self.build_dir,
             proxy=self.proxy,
         )
 
     def __generate_translation_template(self, c_files):
-        pot_file = path.join(self.output_dir, "help.pot")
+        pot_file = path.join(self.build_dir, "help.pot")
         itstool_cmd = ["itstool", "-o", pot_file, *c_files]
         self.spawn(itstool_cmd)
 
     def __check_help(self, c_files):
-        c_path = path.join(self.output_dir, "C")
+        c_path = path.join(self.build_dir, "C")
         if not path.exists(c_path):
             return
 
@@ -111,3 +100,62 @@ class build_help(Command):
             if path.exists(f)
         ]
         self.__spawns(lint_cmds)
+
+
+class build_help(Command):
+    description = "Build output directory of help files"
+    user_options = [
+        ("source=", "s", "Source directory of help files"),
+        ("build=", "b", "Output directory of build"),
+    ]
+
+    def initialize_options(self):
+        self.source_dir = None
+        self.build_dir = None
+
+    def finalize_options(self):
+        self.source_dir = self.source_dir or "help"
+        self.build_dir = self.build_dir or path.join("build", "help")
+
+    def run(self):
+        self.c_docs = glob(os.path.join(self.source_dir, "C", "*.html"))
+        name = self.distribution.metadata.name
+        self.selected_languages = self.__get_languages()
+
+        for lang in self.selected_languages:
+            source_path = path.join(self.source_dir, lang)
+            build_path = path.join(self.build_dir, lang, name)
+            os.makedirs(build_path, exist_ok=True)
+
+            if lang != "C":
+                po_file = path.join(source_path, lang + ".po")
+                mo_file = path.join(build_path, lang + ".mo")
+
+                # generate translated files
+                msgfmt = ["msgfmt", po_file, "-o", mo_file]
+                self.spawn(msgfmt)
+                itstool_cmds = [
+                    ["itstool", "-m", mo_file, "-o", build_path, page]
+                    for page in self.c_docs
+                ]
+                self.__spawns(itstool_cmds)
+                os.remove(mo_file)
+
+                # copy media to language directory
+                source_media = path.join(self.source_dir, "C", "media")
+                build_media = path.join(build_path, "media")
+                dir_util.copy_tree(source_media, build_media)
+            else:
+                dir_util.copy_tree(source_path, build_path)
+
+    def __spawns(self, cmds):
+        for cmd in cmds:
+            self.spawn(cmd)
+
+    def __get_languages(self):
+        lang_dirs = [
+            d
+            for d in os.listdir(self.source_dir)
+            if path.isdir(path.join(self.source_dir, d)) and d != "tmp"
+        ]
+        return list(set(["C", *lang_dirs]))

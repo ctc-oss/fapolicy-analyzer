@@ -70,11 +70,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install pipenv
           pipenv install --dev --keep-outdated --python 3.9
-      - name: Setup Help
-        run: PIPENV_DOTENV_LOCATION=help/.env pipenv run python setup.py build_help
+      - name: Build Help
+        run: |
+          export PIPENV_DOTENV_LOCATION=help/.env 
+          pipenv run python setup.py update_help
+          pipenv run python setup.py build_help
       - name: Create tar of help files
         run: |
-          tar --exclude="help/*.pot" --exclude="help/.env" -czvf "help.tar.gz" help/
+          tar -czvf "help.tar.gz" build/help/
       - name: Archive Help
         uses: actions/upload-artifact@v2
         with:
