@@ -92,7 +92,7 @@ class SearchableList(UIBuilderWidget, Events):
         if self.treeView.get_selection():
             self.treeView.get_selection().connect(
                 "changed", self.on_view_selection_changed
-                )
+            )
         self._update_tree_count(self.__get_tree_count())
         self.set_loading(False)
 
