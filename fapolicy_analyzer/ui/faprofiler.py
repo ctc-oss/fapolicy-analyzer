@@ -65,37 +65,19 @@ def expand_path(colon_separated_str, cwd="."):
     logging.debug(f"expand_path({colon_separated_str}, {cwd})")
 
     # Expand native PATH env var if in user provided PATH env var string
-    regexPath = re.compile(r"\$\{?PATH\}?")
+    expanded_path = re.sub(r"\$\{?PATH\}?",
+                                  os.environ.get("PATH"), colon_separated_str)
 
-    expanded_path = regexPath.sub(os.environ.get("PATH"), colon_separated_str)
+    # Expand implied and explicit '.' notation to supplied cwd argument
+    expanded_path = re.sub(r":\.{0,1}$", f":{cwd}", expanded_path)
+    expanded_path = re.sub(r"^\.{0,1}:", f"{cwd}:", expanded_path)
+    expanded_path = re.sub(r":\.{0,1}:", "f:{cwd}:", expanded_path)
+    expanded_path = re.sub(r"^\.$", f"{cwd}", expanded_path)
 
-    # Expand implied '.' notation to supplied cwd argument in search PATH
-    regexTrailingColon = re.compile(r":$")
-    regexLeadingColon = re.compile(r"^:")
-    regexDoubleColon = re.compile(r"::")
-
-    print(f"-> {expanded_path}")  # ToDo: Remove prior to push
-    if regexTrailingColon.search(expanded_path):
-        logging.debug("Trailing colon detected.")
-        expanded_path = regexTrailingColon.sub(":.", expanded_path)
-    if regexLeadingColon.search(expanded_path):
-        logging.debug("Leading colon detected.")
-        expanded_path = regexLeadingColon.sub(".:", expanded_path)
-    if regexDoubleColon.search(expanded_path):
-        logging.debug("Internal double colon detected")
-        expanded_path = regexDoubleColon.sub(":.:", expanded_path)
-
-    # Expand periods with user supplied absolute path if provided otherwise
-    # use cwd from runtime environment
-    if cwd != ".":
-        expanded_path = re.sub(r":\.$", f":{cwd}", expanded_path)
-        expanded_path = re.sub(r"^\.:", f"{cwd}:", expanded_path)
-        expanded_path = re.sub(r":\.:", f":{cwd}:", expanded_path)
-        expanded_path = re.sub(r"^\.$", f"{cwd}", expanded_path)
-
-        # Similarly substitute parent of cwd for double periods
-        path_cwd = pathlib.Path(cwd)
-        ppath_cwd = path_cwd.parent
+    # Similarly substitute parent of cwd for double periods when possible
+    path_cwd = pathlib.Path(cwd)
+    ppath_cwd = path_cwd.parent
+    if ppath_cwd != path_cwd:
         expanded_path = re.sub(r"\.\.", f"{ppath_cwd}", expanded_path)
 
     logging.debug(f"expand_path::path = {expanded_path}")
@@ -119,8 +101,7 @@ class FaProfSession:
         self.user = dictProfTgt["userText"]
 
         # Set pwd - Use current dir for pwd if not supplied by user
-        tmp_d = dictProfTgt["dirText"]
-        self.pwd = tmp_d if tmp_d else os.getcwd()
+        self.pwd = dictProfTgt["dirText"] or os.getcwd()
 
         # Convert comma delimited string of "EnvVar=Value" substrings to dict
         self.env = FaProfSession._comma_delimited_kv_string_to_dict(
