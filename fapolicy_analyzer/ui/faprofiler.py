@@ -66,7 +66,7 @@ def expand_path(colon_separated_str, cwd="."):
 
     # Expand native PATH env var if in user provided PATH env var string
     expanded_path = re.sub(r"\$\{?PATH\}?",
-                                  os.environ.get("PATH"), colon_separated_str)
+                           os.environ.get("PATH"), colon_separated_str)
 
     # Expand implied and explicit '.' notation to supplied cwd argument
     expanded_path = re.sub(r":\.{0,1}$", f":{cwd}", expanded_path)
