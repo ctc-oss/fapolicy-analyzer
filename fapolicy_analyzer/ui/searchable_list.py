@@ -89,7 +89,10 @@ class SearchableList(UIBuilderWidget, Events):
 
         sortableModel = apply_prev_sort(Gtk.TreeModelSort(model=self.treeViewFilter))
         self.treeView.set_model(sortableModel)
-        self.treeView.get_selection().connect("changed", self.on_view_selection_changed)
+        if self.treeView.get_selection():
+            self.treeView.get_selection().connect(
+                "changed", self.on_view_selection_changed
+                )
         self._update_tree_count(self.__get_tree_count())
         self.set_loading(False)
 

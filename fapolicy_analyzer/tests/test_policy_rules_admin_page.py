@@ -682,5 +682,12 @@ def test_groups_loading_w_exception(mock_system_features, states, mock_dispatch)
     )
 
 
-def test_show_time_select_dialog_from_button(widget, timeSelectButton):
-    timeSelectButton.clicked()
+def test_show_time_select_dialog_from_button(mocker, widget):
+    mockDialog = MagicMock()
+    mockDialog.run.return_value = 1
+    mocker.patch(
+        "fapolicy_analyzer.ui.time_select_dialog.TimeSelectDialog.get_ref",
+        return_value=mockDialog,
+    )
+    widget.get_object("timeSelectBtn").clicked()
+    mockDialog.run.assert_called()
