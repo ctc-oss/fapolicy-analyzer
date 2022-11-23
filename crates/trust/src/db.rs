@@ -15,6 +15,14 @@ use crate::source::TrustSource::{Ancillary, System};
 use crate::stat::{check, Actual, Status};
 use crate::Trust;
 
+#[derive(Clone, Debug)]
+pub enum Entry {
+    Valid(Trust),
+    WithWarning(Trust, String),
+    Invalid { text: String, error: String },
+    Comment(String),
+}
+
 /// Trust Database
 /// A container for tracking trust entries and their metadata
 /// Backed by a HashMap lookup table
@@ -83,6 +91,8 @@ pub struct Rec {
     pub status: Option<Status>,
     actual: Option<Actual>,
     source: Option<TrustSource>,
+    pub msg: Option<String>,
+    pub origin: Option<String>,
 }
 
 impl Rec {
@@ -90,9 +100,11 @@ impl Rec {
     pub fn new(t: Trust) -> Self {
         Rec {
             trusted: t,
-            actual: None,
             status: None,
+            actual: None,
             source: None,
+            msg: None,
+            origin: None,
         }
     }
 
@@ -100,7 +112,7 @@ impl Rec {
         Self::new_from(t, System)
     }
 
-    pub fn new_from_ancillary(t: Trust) -> Self {
+    pub fn new_from_file(t: Trust, path: &str) -> Self {
         Self::new_from(t, Ancillary)
     }
 
@@ -111,6 +123,8 @@ impl Rec {
             actual: None,
             status: None,
             source: Some(source),
+            msg: None,
+            origin: None,
         }
     }
 
@@ -121,7 +135,7 @@ impl Rec {
 
     /// Is this record from ancillary trust
     pub fn is_ancillary(&self) -> bool {
-        matches!(&self.source, Some(TrustSource::Ancillary))
+        !self.is_system()
     }
 
     /// Check a Rec into a Rec with updated status
@@ -197,8 +211,8 @@ mod tests {
         assert!(rec.is_system());
         assert!(!rec.is_ancillary());
 
-        let rec = Rec::new_from(t, Ancillary);
-        assert_eq!(*rec.source.as_ref().unwrap(), Ancillary);
+        let rec = Rec::new_from(t, TrustSource::Ancillary);
+        assert_eq!(*rec.source.as_ref().unwrap(), TrustSource::Ancillary);
         assert!(!rec.is_system());
         assert!(rec.is_ancillary());
     }
@@ -210,7 +224,7 @@ mod tests {
         assert!(!Rec::new(t.clone()).is_ancillary());
         assert!(!Rec::new(t.clone()).is_system());
 
-        assert!(Rec::new_from(t.clone(), Ancillary).is_ancillary());
+        assert!(Rec::new_from(t.clone(), TrustSource::Ancillary).is_ancillary());
         assert!(Rec::new_from(t, System).is_system());
     }
 }

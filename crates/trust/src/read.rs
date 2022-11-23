@@ -8,69 +8,73 @@
 
 use rayon::prelude::*;
 use std::collections::HashMap;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use lmdb::{Cursor, Environment, Transaction};
 
-use crate::db::{Rec, DB};
+use crate::db::{Entry, Rec, DB};
 use crate::error::Error;
 use crate::error::Error::{
     LmdbNotFound, LmdbPermissionDenied, LmdbReadFail, MalformattedTrustEntry, UnsupportedTrustType,
 };
+use crate::load::TrustSourceEntry;
 use crate::source::TrustSource;
 use crate::source::TrustSource::{Ancillary, System};
 use crate::Trust;
 
-pub(crate) struct TrustPair {
-    pub k: String,
-    pub v: String,
+fn relativized_path(i: &(PathBuf, String)) -> (String, &String) {
+    (
+        // render and split off the filename from full path
+        i.0.display()
+            .to_string()
+            .rsplit_once('/')
+            .map(|(_, rhs)| rhs.to_string())
+            // if there was no / separator then use the full path
+            .unwrap_or_else(|| i.0.display().to_string()),
+        &i.1,
+    )
 }
 
-impl TrustPair {
-    fn new(b: (&[u8], &[u8])) -> TrustPair {
-        TrustPair {
-            k: String::from_utf8(Vec::from(b.0)).unwrap(),
-            v: String::from_utf8(Vec::from(b.1)).unwrap(),
-        }
+// pub fn read_rules_d(xs: Vec<TrustSourceEntry>) -> Result<DB, Error> {
+//     let lookup: Vec<(String, Entry)> = xs
+//         .iter()
+//         .map(relativized_path)
+//         .map(|(source, l)| (source, parse_trust_record(l)))
+//         .flat_map(|(source, r)| match r {
+//             Ok((t, rule)) => Some((source, rule)),
+//             Ok((_, _)) => None,
+//             Err(nom::Err::Error(LineError::CannotParse(i, why))) => {
+//                 Some((source, Malformed(i.to_string(), why)))
+//             }
+//             Err(nom::Err::Error(LineError::CannotParseSet(i, why))) => {
+//                 Some((source, MalformedSet(i.to_string(), why)))
+//             }
+//             Err(_) => None,
+//         })
+//         .filter_map(|(source, line)| match line {
+//             RuleDef(r) => Some((source, Entry::ValidRule(r))),
+//             SetDef(s) => Some((source, Entry::ValidSet(s))),
+//             Malformed(text, error) => Some((source, Entry::Invalid { text, error })),
+//             MalformedSet(text, error) => Some((source, Entry::InvalidSet { text, error })),
+//             Comment(text) => Some((source, Entry::Comment(text))),
+//             _ => None,
+//         })
+//         .collect();
+//
+//     Ok(lint_db(DB::from_sources(lookup)))
+// }
+
+pub(crate) fn parse_trust_record(s: &str) -> Result<Trust, Error> {
+    let mut v: Vec<&str> = s.rsplitn(3, ' ').collect();
+    v.reverse();
+    match v.as_slice() {
+        [f, sz, sha] => Ok(Trust {
+            path: f.to_string(),
+            size: sz.parse()?,
+            hash: sha.to_string(),
+        }),
+        _ => Err(MalformattedTrustEntry(s.to_string())),
     }
-}
-
-impl From<TrustPair> for (String, Rec) {
-    fn from(kv: TrustPair) -> Self {
-        let (tt, v) = kv.v.split_once(' ').unwrap();
-        let (t, s) = parse_strtyped_trust_record(format!("{} {}", kv.k, v).as_str(), tt)
-            .expect("failed to parse_strtyped_trust_record");
-        (t.path.clone(), Rec::new_from(t, s))
-    }
-}
-
-/// load the fapolicyd backend lmdb database
-/// parse the results into trust entries
-pub fn load_trust_db(path: &str) -> Result<DB, Error> {
-    let env = Environment::new().set_max_dbs(1).open(Path::new(path));
-    let env = match env {
-        Ok(e) => e,
-        Err(lmdb::Error::Other(2)) => return Err(LmdbNotFound(path.to_string())),
-        Err(lmdb::Error::Other(13)) => return Err(LmdbPermissionDenied(path.to_string())),
-        Err(e) => return Err(LmdbReadFail(e)),
-    };
-
-    let db = env.open_db(Some("trust.db")).map_err(LmdbReadFail)?;
-    let lookup: HashMap<String, Rec> = env
-        .begin_ro_txn()
-        .map(|t| {
-            t.open_ro_cursor(db).map(|mut c| {
-                c.iter()
-                    .map(|c| c.unwrap())
-                    .map(|kv| TrustPair::new(kv).into())
-                    .collect()
-            })
-        })
-        .unwrap()
-        .map_err(LmdbReadFail)
-        .unwrap();
-
-    Ok(DB::from(lookup))
 }
 
 pub fn check_trust_db(db: &DB) -> Result<DB, Error> {
@@ -81,39 +85,6 @@ pub fn check_trust_db(db: &DB) -> Result<DB, Error> {
         .collect();
 
     Ok(DB::from(lookup))
-}
-
-fn parse_strtyped_trust_record(s: &str, t: &str) -> Result<(Trust, TrustSource), Error> {
-    match t {
-        "1" => parse_trust_record(s).map(|t| (t, System)),
-        "2" => parse_trust_record(s).map(|t| (t, Ancillary)),
-        v => Err(UnsupportedTrustType(v.to_string())),
-    }
-}
-
-pub fn parse_trust_record(s: &str) -> Result<Trust, Error> {
-    let v: Vec<&str> = s.splitn(3, ' ').collect();
-    match v.as_slice() {
-        [f, sz, sha] => Ok(Trust {
-            path: f.to_string(),
-            size: sz.parse().unwrap(),
-            hash: sha.to_string(),
-        }),
-        _ => Err(MalformattedTrustEntry(s.to_string())),
-    }
-}
-
-pub fn trust_record(s: &str) -> Result<Trust, Error> {
-    let mut v: Vec<&str> = s.rsplitn(3, ' ').collect();
-    v.reverse();
-    match v.as_slice() {
-        [f, sz, sha] => Ok(Trust {
-            path: f.to_string(),
-            size: sz.parse().unwrap(),
-            hash: sha.to_string(),
-        }),
-        _ => Err(MalformattedTrustEntry(s.to_string())),
-    }
 }
 
 #[cfg(test)]
@@ -142,23 +113,6 @@ mod tests {
         assert_eq!(e.size, 157984);
         assert_eq!(
             e.hash,
-            "61a9960bf7d255a85811f4afcac51067b8f2e4c75e21cf4f2af95319d4ed1b87"
-        );
-    }
-
-    #[test]
-    // todo;; additional coverage for type 2 and invalid type
-    fn parse_trust_pair() {
-        let tp = TrustPair::new((
-            "/home/user/my-ls".as_bytes(),
-            "1 157984 61a9960bf7d255a85811f4afcac51067b8f2e4c75e21cf4f2af95319d4ed1b87".as_bytes(),
-        ));
-        let (_, r) = tp.into();
-
-        assert_eq!(r.trusted.path, "/home/user/my-ls");
-        assert_eq!(r.trusted.size, 157984);
-        assert_eq!(
-            r.trusted.hash,
             "61a9960bf7d255a85811f4afcac51067b8f2e4c75e21cf4f2af95319d4ed1b87"
         );
     }

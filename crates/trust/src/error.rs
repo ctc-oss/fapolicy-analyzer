@@ -7,6 +7,7 @@
  */
 
 use std::io;
+use std::num::ParseIntError;
 use thiserror::Error;
 
 /// An Error that can occur in this crate
@@ -30,6 +31,9 @@ pub enum Error {
 
     #[error("Error reading metadata: {0}")]
     MetaError(String),
+
+    #[error("Failed to parse expected size")]
+    ParseSizeError(#[from] ParseIntError),
 
     #[error("{0}")]
     GeneralError(#[from] fapolicy_util::error::Error),
