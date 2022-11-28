@@ -39,8 +39,6 @@ from fapolicy_analyzer.ui.strings import (
     PARSE_EVENT_LOG_ERROR_MSG,
     USER_LABEL,
     USERS_LABEL,
-    TIME_SELECTION_START_INVALID,
-    TIME_SELECTION_STOP_INVALID,
 )
 from fapolicy_analyzer.ui.subject_list import SubjectList
 from fapolicy_analyzer.ui.time_select_dialog import TimeSelectDialog
@@ -105,6 +103,9 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             details_widget_name="objectDetails",
         )
         object_tabs.append_page(self.object_list.get_ref(), Gtk.Label(label="Object"))
+
+        self.get_object("delayDisplay").get_buffer().set_text("1 Hour")
+        self.time_delay = -1
 
         self.__switchers = [
             self.Switcher(
@@ -173,6 +174,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         if self.__audit_file:
             dispatch(request_events("debug", self.__audit_file))
             self.get_object("timeSelectBtn").set_sensitive(False)
+            self.get_object("delayDisplay").set_sensitive(False)
         else:
             dispatch(request_events("syslog"))
 
@@ -404,6 +406,8 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         ):
             self.__events_loading = False
             self.__log = eventsState.log
+            self.__log.begin(-3600) if self.time_delay < 0 else self.__log.begin(-self.time_delay)
+
             exec_primary_data_func()
 
         if userState.error and not userState.loading and self.__users_loading:
@@ -505,31 +509,31 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         self.__refresh()
 
     def on_timeSelectBtn_clicked(self, *args):
+        def plural(count):
+            return "s" if count > 1 else ""
+
         time_dialog = TimeSelectDialog()
+        time_dialog.get_object("timeComboBox").set_active_id("2")
+        time_dialog.get_object("timeNumberSpinner").set_value(1)
         resp = time_dialog.get_ref().run()
         time_dialog.get_ref().hide()
-        if resp == 0:
-            time_dialog.get_ref().destroy()
+        time_unit = time_dialog.get_object("timeComboBox").get_active_id()
+        time_number = time_dialog.get_object("timeNumberSpinner").get_value_as_int()
 
-        if not time_dialog.get_object("ignoreStartTime").get_active():
-            start_time = time_dialog.get_time("start")
-            if start_time is None:
-                dispatch(add_notification(TIME_SELECTION_START_INVALID, NotificationType.ERROR))
-            self.get_object("startTimeDisplay").get_buffer().set_text(str(start_time))
-            self.__log.begin(int(start_time.timestamp()))
-        else:
-            self.get_object("startTimeDisplay").get_buffer().set_text("")
+        if time_unit == "1":
+            seconds = time_number * 60
+            display_unit = "Minute"
+        elif time_unit == "2":
+            seconds = time_number * 3600
+            display_unit = "Hour"
+        elif time_unit == "3":
+            seconds = time_number * 86400
+            display_unit = "Day"
 
-        if not time_dialog.get_object("ignoreStopTime").get_active():
-            stop_time = time_dialog.get_time("stop")
-            if stop_time is None:
-                dispatch(add_notification(TIME_SELECTION_STOP_INVALID, NotificationType.ERROR))
-            self.get_object("stopTimeDisplay").get_buffer().set_text(str(stop_time))
-            self.__log.until(int(stop_time.timestamp()))
-        else:
-            self.get_object("stopTimeDisplay").get_buffer().set_text("")
+        if resp > 0:
+            self.get_object("delayDisplay").get_buffer().set_text(f"{time_number} {display_unit}{plural(time_number)}")
+            self.time_delay = seconds
 
-        time_dialog.get_ref().destroy()
         self.__refresh()
 
     class Switcher(Events):

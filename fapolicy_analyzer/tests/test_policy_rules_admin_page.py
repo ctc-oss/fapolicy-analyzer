@@ -133,11 +133,6 @@ def objectListView(widget):
 
 
 @pytest.fixture
-def timeSelectButton(widget):
-    return widget.get_object("timeSelectBtn")
-
-
-@pytest.fixture
 def activeSwitcherButton(widget):
     # find switcher button, either the 1st button in the user list
     # or 2nd button in subject list. Only 1 should exist at any point in time.
