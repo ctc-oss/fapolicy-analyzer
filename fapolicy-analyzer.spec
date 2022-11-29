@@ -22,6 +22,8 @@ BuildRequires: dbus-devel
 
 BuildRequires: rust-packaging
 BuildRequires: python3dist(setuptools-rust)
+BuildRequires: gettext
+BuildRequires: itstool
 
 BuildRequires: rust-arrayvec0.5-devel
 BuildRequires: rust-atty-devel
