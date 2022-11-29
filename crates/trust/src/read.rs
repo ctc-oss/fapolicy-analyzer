@@ -15,7 +15,7 @@ use lmdb::{Cursor, Environment, Transaction};
 use crate::db::{Entry, Rec, DB};
 use crate::error::Error;
 use crate::error::Error::{
-    LmdbNotFound, LmdbPermissionDenied, LmdbReadFail, MalformattedTrustEntry, UnsupportedTrustType,
+    LmdbNotFound, LmdbPermissionDenied, MalformattedTrustEntry, UnsupportedTrustType,
 };
 use crate::load::TrustSourceEntry;
 use crate::source::TrustSource;
@@ -64,7 +64,7 @@ fn relativized_path(i: &(PathBuf, String)) -> (String, &String) {
 //     Ok(lint_db(DB::from_sources(lookup)))
 // }
 
-pub(crate) fn parse_trust_record(s: &str) -> Result<Trust, Error> {
+pub fn parse_trust_record(s: &str) -> Result<Trust, Error> {
     let mut v: Vec<&str> = s.rsplitn(3, ' ').collect();
     v.reverse();
     match v.as_slice() {

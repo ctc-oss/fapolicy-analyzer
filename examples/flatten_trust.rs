@@ -1,10 +1,10 @@
 use fapolicy_trust::db::Entry;
-use fapolicy_trust::load::{from_dir, from_file, load_trust_db, read_sorted_d_files};
+use fapolicy_trust::load::{from_dir, from_file, load_from_file, read_sorted_d_files};
 use std::error::Error;
 use std::path::PathBuf;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let db = load_trust_db(
+    let db = load_from_file(
         &PathBuf::from("/etc/fapolicyd/trust.d"),
         Some(&PathBuf::from("/etc/fapolicyd/fapolicyd.trust")),
     )?;

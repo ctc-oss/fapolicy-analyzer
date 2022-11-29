@@ -112,7 +112,7 @@ impl Rec {
         Self::new_from(t, System)
     }
 
-    pub fn new_from_file(t: Trust, path: &str) -> Self {
+    pub fn new_from_ancillary(t: Trust) -> Self {
         Self::new_from(t, Ancillary)
     }
 

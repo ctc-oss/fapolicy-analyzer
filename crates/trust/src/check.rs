@@ -1,8 +1,6 @@
 use crate::db::{Rec, DB};
 use crate::error::Error;
-use crate::error::Error::{
-    LmdbNotFound, LmdbPermissionDenied, LmdbReadFail, MalformattedTrustEntry, UnsupportedTrustType,
-};
+use crate::error::Error::{LmdbFailure, LmdbNotFound, LmdbPermissionDenied, UnsupportedTrustType};
 use crate::read::parse_trust_record;
 use crate::source::TrustSource;
 use crate::source::TrustSource::{Ancillary, System};
@@ -53,25 +51,30 @@ pub fn db_sync(db: &mut DB, lmdb_path: &str) -> Result<DB, Error> {
         Ok(e) => e,
         Err(lmdb::Error::Other(2)) => return Err(LmdbNotFound(lmdb_path.to_string())),
         Err(lmdb::Error::Other(13)) => return Err(LmdbPermissionDenied(lmdb_path.to_string())),
-        Err(e) => return Err(LmdbReadFail(e)),
+        Err(e) => return Err(LmdbFailure(e)),
     };
 
-    let lmdb = env.open_db(Some("trust.db")).map_err(LmdbReadFail)?;
-    let c = env.begin_ro_txn()?.open_ro_cursor(lmdb)?;
-    for i in c.iter() {}
-    let lookup: HashMap<String, Rec> = env
-        .begin_ro_txn()
-        .map(|t| {
-            t.open_ro_cursor(lmdb).map(|mut c| {
-                c.iter()
-                    .map(|c| c.unwrap())
-                    .map(|kv| TrustPair::new(kv).into())
-                    .collect()
-            })
-        })
-        .unwrap()
-        .map_err(LmdbReadFail)
-        .unwrap();
+    let lmdb = env.open_db(Some("trust.db"))?;
+    let tx = env.begin_ro_txn()?;
+    let mut c = tx.open_ro_cursor(lmdb)?;
+    let lookup: HashMap<String, Rec> = c
+        .iter()
+        .map(|i| i.map(|kv| TrustPair::new(kv).into()).unwrap())
+        .collect();
+    // for i in c.iter() {}
+    // let lookup: HashMap<String, Rec> = env
+    //     .begin_ro_txn()
+    //     .map(|t| {
+    //         t.open_ro_cursor(lmdb).map(|mut c| {
+    //             c.iter()
+    //                 .map(|c| c.unwrap())
+    //                 .map(|kv| TrustPair::new(kv).into())
+    //                 .collect()
+    //         })
+    //     })
+    //     .unwrap()
+    //     .map_err(LmdbReadFail)
+    //     .unwrap();
 
     Ok(DB::from(lookup))
 }

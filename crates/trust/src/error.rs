@@ -16,7 +16,7 @@ pub enum Error {
     #[error("lmdb db not found, {0}")]
     LmdbNotFound(String),
     #[error("{0}")]
-    LmdbReadFail(lmdb::Error),
+    LmdbFailure(#[from] lmdb::Error),
     #[error("Permission denied, {0}")]
     LmdbPermissionDenied(String),
     #[error("Unsupported Trust type: {0}")]

@@ -20,7 +20,7 @@ fn from_db() {}
 pub(crate) type TrustSourceEntry = (PathBuf, String);
 
 // path to d dir (/etc/fapolicyd/trust.d), optional override file (eg /etc/fapolicyd/fapolicyd.trust
-pub fn load_trust_db(d: &Path, o: Option<&Path>) -> Result<DB, Error> {
+pub fn load_from_file(d: &Path, o: Option<&Path>) -> Result<DB, Error> {
     let mut d_entries = from_dir(d)?;
     let mut o_entries = if let Some(f) = o {
         from_file(f)?
