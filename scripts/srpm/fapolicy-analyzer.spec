@@ -240,7 +240,7 @@ alias python3=%{venv_py3}
 %endif
 
 python3 setup.py compile_catalog -f
-python3 setup.py build_help
+python3 help_utils.py build 
 python3 setup.py bdist_wheel
 
 %install
