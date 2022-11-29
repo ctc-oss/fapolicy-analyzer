@@ -48,7 +48,8 @@ from fapolicy_analyzer.util import acl, fs
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
-
+import datetime
+import time
 
 class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
     def __init__(self, audit_file: str = None):
@@ -415,8 +416,12 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         ):
             self.__events_loading = False
             self.__log = eventsState.log
-            self.__log.begin(-3600) if self.time_delay < 0 else self.__log.begin(-self.time_delay)
-
+            utc = int(datetime.datetime.utcnow().timestamp())
+            tzdelta = int(time.time())- utc
+            if self.time_delay < 0:
+                self.__log.begin(int(time.time()) + tzdelta - 3600) 
+            else:
+                self.__log.begin(int(time.time()) + tzdelta - self.time_delay)
             exec_primary_data_func()
 
         if userState.error and not userState.loading and self.__users_loading:
