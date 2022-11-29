@@ -47,6 +47,7 @@ jobs:
           pipenv run compile_catalog
           pipenv run python setup.py bdist_wheel
           echo ::set-output name=virt_env::$(pipenv --venv)
+
   ui_lint:
     name: UI Lint
     runs-on: ubuntu-latest
