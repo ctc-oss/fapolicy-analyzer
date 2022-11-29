@@ -51,6 +51,7 @@ from gi.repository import Gtk  # isort: skip
 import datetime
 import time
 
+
 class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
     def __init__(self, audit_file: str = None):
         UIConnectedWidget.__init__(
@@ -417,9 +418,9 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             self.__events_loading = False
             self.__log = eventsState.log
             utc = int(datetime.datetime.utcnow().timestamp())
-            tzdelta = int(time.time())- utc
+            tzdelta = int(time.time()) - utc
             if self.time_delay < 0:
-                self.__log.begin(int(time.time()) + tzdelta - 3600) 
+                self.__log.begin(int(time.time()) + tzdelta - 3600)
             else:
                 self.__log.begin(int(time.time()) + tzdelta - self.time_delay)
             exec_primary_data_func()
