@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Copyright Concurrent Technologies Corporation 2022
+  Copyright Concurrent Technologies Corporation 2021
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -79,11 +79,9 @@
             <property name="halign">center</property>
             <property name="valign">center</property>
             <child>
-              <object class="GtkSpinButton" id="timeNumberSpinner">
+              <object class="GtkEntry" id="timeEntryField">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="orientation">vertical</property>
-                <property name="adjustment">timeAdjustment</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -118,7 +116,7 @@
       </object>
     </child>
     <action-widgets>
-      <action-widget response="-5">timeConfirmButton</action-widget>
+      <action-widget response="1">timeConfirmButton</action-widget>
       <action-widget response="-6">button1</action-widget>
     </action-widgets>
   </object>

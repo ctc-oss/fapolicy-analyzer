@@ -55,6 +55,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         UIConnectedWidget.__init__(
             self, get_system_feature(), on_next=self.on_next_system
         )
+        self.__audit_file: Optional[str] = audit_file
         actions = {
             "analyze": [
                 UIAction(
@@ -65,9 +66,18 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
                 )
             ]
         }
+        if not self.__audit_file:
+            actions["time"] = [
+                UIAction(
+                    "Time",
+                    "Time Selection",
+                    "alarm-symbolic",
+                    {"clicked": self.on_timeSelectBtn_clicked},
+                )
+            ]
         UIPage.__init__(self, actions)
         self.__n_changesets = 0
-        self.__audit_file: Optional[str] = audit_file
+
         self.__log: Optional[Sequence[EventLog]] = None
         self.__events_loading = False
         self.__users: Sequence[User] = []
@@ -173,8 +183,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         dispatch(request_groups())
         if self.__audit_file:
             dispatch(request_events("debug", self.__audit_file))
-            self.get_object("timeSelectBtn").set_sensitive(False)
-            self.get_object("delayDisplay").set_sensitive(False)
+            self.get_object("time_bar").set_visible(False)
         else:
             dispatch(request_events("syslog"))
 
@@ -514,11 +523,11 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
 
         time_dialog = TimeSelectDialog()
         time_dialog.get_object("timeComboBox").set_active_id("2")
-        time_dialog.get_object("timeNumberSpinner").set_value(1)
+        time_dialog.get_object("timeEntryField").get_buffer().set_text("1", len("1"))
         resp = time_dialog.get_ref().run()
         time_dialog.get_ref().hide()
         time_unit = time_dialog.get_object("timeComboBox").get_active_id()
-        time_number = time_dialog.get_object("timeNumberSpinner").get_value_as_int()
+        time_number = int(time_dialog.get_object("timeEntryField").get_buffer().get_text())
 
         if time_unit == "1":
             seconds = time_number * 60
@@ -531,7 +540,8 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             display_unit = "Day"
 
         if resp > 0:
-            self.get_object("delayDisplay").get_buffer().set_text(f"{time_number} {display_unit}{plural(time_number)}")
+            disp_string = f"{time_number} {display_unit}{plural(time_number)}"
+            self.get_object("delayDisplay").get_buffer().set_text(disp_string, len(disp_string))
             self.time_delay = seconds
 
         self.__refresh()
