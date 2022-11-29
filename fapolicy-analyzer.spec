@@ -168,8 +168,13 @@ python3 setup.py bdist_wheel
 
 %install
 
-install bin/%{name} %{buildroot}%{_sbindir}/%{name} -D
 %{py3_install_wheel %{module}-%{version}*%{_arch}.whl}
+install bin/%{name} %{buildroot}%{_sbindir}/%{name} -D
+mkdir -p %{buildroot}/%{_datadir}/help/{C,es}/%{name}/media
+install -p -D build/help/C/%{name}/*.html   %{buildroot}/%{_datadir}/help/C/%{name}/
+install -p -D build/help/C/%{name}/media/*  %{buildroot}/%{_datadir}/help/C/%{name}/media/
+install -p -D build/help/es/%{name}/*.html  %{buildroot}/%{_datadir}/help/es/%{name}/
+install -p -D build/help/es/%{name}/media/* %{buildroot}/%{_datadir}/help/es/%{name}/media/
 
 %check
 
@@ -179,6 +184,8 @@ install bin/%{name} %{buildroot}%{_sbindir}/%{name} -D
 %{python3_sitearch}/%{module}
 %{python3_sitearch}/%{module}-%{version}*
 %attr(755,root,root) %{_sbindir}/fapolicy-analyzer
+%{_datadir}/help/C/fapolicy-analyzer
+%{_datadir}/help/es/fapolicy-analyzer
 
 %changelog
 * Fri Sep 09 2022 John Wass <jwass3@gmail.com> 0.6.1-1
