@@ -124,6 +124,11 @@ Requires:      gtk3
 Requires:      dbus-libs
 Requires:      gtksourceview3
 
+# for rendering our html user guide documentation
+# will be addressed with future upgrade of yelp
+Requires:      webkit2gtk3
+Requires:      mesa-dri-drivers
+
 %global module fapolicy_analyzer
 
 %description

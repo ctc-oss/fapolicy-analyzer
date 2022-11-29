@@ -149,6 +149,11 @@ Requires:      gtk3
 Requires:      dbus-libs
 Requires:      gtksourceview3
 
+# for rendering our html user guide documentation
+# will be addressed with future upgrade of yelp
+Requires:      webkit2gtk3
+Requires:      mesa-dri-drivers
+
 %if 0%{?rhel}
 Requires:      python3-dataclasses
 Requires:      python3-importlib-resources
