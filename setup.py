@@ -72,9 +72,6 @@ setup(
         "fapolicy_analyzer.resources.sourceview.language-specs": ["*.lang"],
         "fapolicy_analyzer.resources.sourceview.styles": ["*.xml"],
     },
-    data_files=[
-        ("share/help", glob("build/help/**/*", recursive=True)),
-    ],
     cmdclass={
         "build_help": build_help,
         "update_help": update_help,
