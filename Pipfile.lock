@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "84e7100542c62513c4592fc2be27041b7289e0dd0894612a2fb76047574d1e5f"
+            "sha256": "5ffbba374ab75ba237a7a3aaa2f7115e66cdb9197e9fd90ec3472e649fd5aff5"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -100,7 +100,7 @@
                 "sha256:71c644c5369f4a6e07636f0aa966270449561fcea2e3d6747b8d23efaa9d7832",
                 "sha256:9fe5ea21568a0a70e50f273397638d39b03353731e6cbbb3fd8502a33fec40bc"
             ],
-            "markers": "python_version >= '3.6'",
+            "markers": "python_full_version >= '3.6.0'",
             "version": "==3.6.0"
         }
     },
@@ -434,6 +434,14 @@
             "index": "pypi",
             "version": "==4.2.0"
         },
+        "python-dotenv": {
+            "hashes": [
+                "sha256:b7e3b04a59693c42c36f9ab1cc2acc46fa5df8c78e178fc33a8d4cd05c8d498f",
+                "sha256:d92a187be61fe482e4fd675b6d52200e7be63a12b724abbf931a40ce4fa92938"
+            ],
+            "index": "pypi",
+            "version": "==0.20.0"
+        },
         "pytz": {
             "hashes": [
                 "sha256:222439474e9c98fced559f1709d89e6c9cbf8d79c794ff3eb9f8800064291427",
@@ -547,7 +555,7 @@
                 "sha256:71c644c5369f4a6e07636f0aa966270449561fcea2e3d6747b8d23efaa9d7832",
                 "sha256:9fe5ea21568a0a70e50f273397638d39b03353731e6cbbb3fd8502a33fec40bc"
             ],
-            "markers": "python_version >= '3.6'",
+            "markers": "python_full_version >= '3.6.0'",
             "version": "==3.6.0"
         }
     }

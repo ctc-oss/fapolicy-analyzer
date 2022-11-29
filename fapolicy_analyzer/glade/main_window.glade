@@ -246,7 +246,7 @@
                           <object class="GtkMenuItem" id="helpMenu">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">Documentation</property>
+                            <property name="label" translatable="yes">User Guide</property>
                             <property name="use_underline">True</property>
                             <signal name="activate" handler="on_helpMenu_activate" swapped="no"/>
                           </object>

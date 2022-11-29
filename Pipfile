@@ -25,6 +25,7 @@ flake8-quotes = "*"
 autoflake = "*"
 markdown2 = "*"
 beautifulsoup4 = "*"
+python-dotenv = "*"
 
 [packages]
 pycairo = "1.20.0"

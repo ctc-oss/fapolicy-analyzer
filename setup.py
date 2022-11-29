@@ -14,12 +14,9 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os
-from glob import glob
 
 from setuptools import find_namespace_packages, setup
 from setuptools_rust import RustExtension
-
-from setup_cmds import build_help, update_help
 
 
 def get_version():
@@ -71,9 +68,5 @@ setup(
         "fapolicy_analyzer.resources": ["*"],
         "fapolicy_analyzer.resources.sourceview.language-specs": ["*.lang"],
         "fapolicy_analyzer.resources.sourceview.styles": ["*.xml"],
-    },
-    cmdclass={
-        "build_help": build_help,
-        "update_help": update_help,
     },
 )

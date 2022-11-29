@@ -7,9 +7,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: fapolicy-analyzer 0.3.1+158.gb8d0133\n"
+"Project-Id-Version: fapolicy-analyzer 0.3.1+193.gd4e1328.dirty\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-11-18 06:08-0500\n"
+"POT-Creation-Date: 2022-11-29 15:57-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -564,7 +564,7 @@ msgid "_Help"
 msgstr ""
 
 #: fapolicy_analyzer/glade/main_window.glade:249
-msgid "Documentation"
+msgid "User Guide"
 msgstr ""
 
 #: fapolicy_analyzer/glade/main_window.glade:312
