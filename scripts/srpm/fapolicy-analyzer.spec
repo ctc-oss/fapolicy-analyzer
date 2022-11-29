@@ -27,6 +27,9 @@ Source12:      %{pypi_source typing_extensions 3.7.4.3}
 Source13:      https://files.pythonhosted.org/packages/source/p/pytz/pytz-2017.2.zip
 %endif
 
+# fapolicy-analyzer offline documentation tarball
+Source14:       help-docs.tar.gz
+
 BuildRequires: python3-devel
 BuildRequires: python3dist(setuptools)
 BuildRequires: python3dist(pip)

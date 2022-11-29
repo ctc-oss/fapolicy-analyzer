@@ -23,7 +23,7 @@ dnf: dnf-common
 endif
 
 dnf-common:
-	dnf install -y git openssl-devel dbus-devel python3-devel python3-pip python3-toml python3-beautifulsoup4 python3-requests python3-babel
+	dnf install -y git openssl-devel dbus-devel python3-devel python3-pip python3-toml python3-beautifulsoup4 python3-requests python3-babel python3-markdown2
 	dnf install -y rust-packaging || true
 	dnf install -y rust-toolset || true
 	cargo install cargo-vendor-filterer
@@ -33,9 +33,9 @@ dnf-rpmdev:
 	dnf install -y rpmdevtools
 
 ifeq ($(OS_ID),rhel)
-vendor: vendor-app vendor-rs vendor-py
+vendor: vendor-app vendor-doc vendor-rs vendor-py
 else
-vendor: vendor-app vendor-rs
+vendor: vendor-app vendor-doc vendor-rs
 endif
 
 vendor-app:
@@ -49,6 +49,10 @@ vendor-rs:
 	cargo check
 	./scripts/srpm/vendor-rs.sh
 	cp vendor-rs.tar.gz /tmp/rpmbuild/SOURCES
+
+vendor-doc:
+	pipenv run python setup.py update_help
+	tar --exclude=es -cvzf vendor-docs.tar.gz help
 
 srpm: idenfity prepfs dnf vendor
 	rpmbuild -bs -D "_topdir /tmp/rpmbuild" \$(spec)

@@ -10,6 +10,9 @@ Source0:       fapolicy-analyzer.tar.gz
 # reference: https://bugzilla.redhat.com/show_bug.cgi?id=2124697#c5
 Source1:       vendor-rs.tar.gz
 
+# this tarball contains documentation used to generate help docs
+Source2:       vendor-docs.tar.gz
+
 BuildRequires: python3-devel
 BuildRequires: python3dist(setuptools)
 BuildRequires: python3dist(pip)
