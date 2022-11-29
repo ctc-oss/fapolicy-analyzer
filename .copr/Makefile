@@ -51,7 +51,7 @@ vendor-rs:
 	cp vendor-rs.tar.gz /tmp/rpmbuild/SOURCES
 
 vendor-doc:
-	pipenv run python setup.py update_help
+	python3 setup.py update_help
 	tar --exclude=es -cvzf vendor-docs.tar.gz help
 
 srpm: idenfity prepfs dnf vendor
