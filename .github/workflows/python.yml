@@ -1,12 +1,12 @@
 on:
   push:
     branches:
-      - "master"
-      - "release-*"
+      - 'master'
+      - 'release-*'
   pull_request:
     branches:
-      - "master"
-      - "release-*"
+      - 'master'
+      - 'release-*'
 
 name: Python CI
 
@@ -16,17 +16,18 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.6", "3.9"]
+        python-version: [ '3.6', '3.9' ]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
       - name: Install requirements
         run: |
           sudo apt-get update
           sudo apt-get install libgtk-3-dev
           sudo apt-get install libgirepository1.0-dev
+          sudo apt-get install xvfb
           sudo apt-get install libdbus-1-dev
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install Rust 1.58.1
@@ -45,14 +46,14 @@ jobs:
         run: |
           pipenv run compile_catalog
           pipenv run python setup.py bdist_wheel
-
+          echo ::set-output name=virt_env::$(pipenv --venv)
   ui_lint:
     name: UI Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
       - name: Set up Python 3.6
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v2
         with:
           python-version: 3.6
       - name: Install dependencies
@@ -68,9 +69,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.6", "3.9"]
+        python-version: [ '3.6', '3.9' ]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
       - name: Install requirements
         run: |
           sudo apt-get update
@@ -78,9 +79,8 @@ jobs:
           sudo apt-get install libgirepository1.0-dev
           sudo apt-get install xvfb
           sudo apt-get install libgtksourceview-3.0-dev
-          sudo apt-get install gir1.2-webkit2-4.0
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install extra locales
@@ -94,6 +94,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install pipenv
           pipenv install --dev --python ${{ matrix.python-version }}
+          echo ::set-output name=virt_env::$(pipenv --venv)
       - name: Setup Bindings
         run: pipenv run python setup.py develop
       - name: Test with pytest
