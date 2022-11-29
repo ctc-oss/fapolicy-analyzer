@@ -10,25 +10,25 @@ Source0:       fapolicy-analyzer.tar.gz
 # reference: https://bugzilla.redhat.com/show_bug.cgi?id=2124697#c5
 Source1:       vendor-rs.tar.gz
 
+# this tarball contains documentation used to generate help docs
+Source2:       help-docs.tar.gz
+
 # on copr the source containter is never el
 # we check for low fc version here to remedy that
 %if 0%{?rhel} || 0%{?fedora} < 37
-Source2:       %{pypi_source setuptools-rust 1.1.2}
-Source3:       %{pypi_source pip 21.3.1}
-Source4:       %{pypi_source setuptools 59.6.0}
-Source5:       %{pypi_source wheel 0.37.0}
-Source6:       %{pypi_source setuptools_scm 6.4.2}
-Source7:       %{pypi_source semantic_version 2.8.2}
-Source8:       %{pypi_source packaging 21.3}
-Source9:       %{pypi_source pyparsing 2.1.0}
-Source10:      %{pypi_source tomli 1.2.3}
-Source11:      %{pypi_source flit_core 3.7.1}
-Source12:      %{pypi_source typing_extensions 3.7.4.3}
-Source13:      https://files.pythonhosted.org/packages/source/p/pytz/pytz-2017.2.zip
+Source10:       %{pypi_source setuptools-rust 1.1.2}
+Source11:       %{pypi_source pip 21.3.1}
+Source12:       %{pypi_source setuptools 59.6.0}
+Source13:       %{pypi_source wheel 0.37.0}
+Source14:       %{pypi_source setuptools_scm 6.4.2}
+Source15:       %{pypi_source semantic_version 2.8.2}
+Source16:       %{pypi_source packaging 21.3}
+Source17:       %{pypi_source pyparsing 2.1.0}
+Source18:      %{pypi_source tomli 1.2.3}
+Source19:      %{pypi_source flit_core 3.7.1}
+Source20:      %{pypi_source typing_extensions 3.7.4.3}
+Source21:      https://files.pythonhosted.org/packages/source/p/pytz/pytz-2017.2.zip
 %endif
-
-# fapolicy-analyzer offline documentation tarball
-Source14:       help-docs.tar.gz
 
 BuildRequires: python3-devel
 BuildRequires: python3dist(setuptools)
@@ -170,23 +170,23 @@ Tools to assist with the configuration and management of fapolicyd (File Access 
 python3 -m venv %{venv_dir}
 
 # the upgraded packages will not install with the older pip
-%{venv_install} %{SOURCE3}
+%{venv_install} %{SOURCE11}
 
 # there exists a circular dependency between setuptools <-> wheel
 # by calling setuptools/setup.py before pip'ing we can bypass that
 mkdir -p %{_builddir}/setuptools
-tar xzf %{SOURCE4} -C %{_builddir}/setuptools --strip-components=1
+tar xzf %{SOURCE12} -C %{_builddir}/setuptools --strip-components=1
 %{venv_py3} %{_builddir}/setuptools/setup.py -q install
 # now pip wheel, and setuptools again
-%{venv_install} %{SOURCE5}
-%{venv_install} %{SOURCE4}
+%{venv_install} %{SOURCE13}
+%{venv_install} %{SOURCE12}
 
 # now pip install setuptools-rust and direct dependencies
-%{venv_install} %{SOURCE2}
+%{venv_install} %{SOURCE10}
 
 # pip install other dependencies
-%{venv_install} %{SOURCE12}
-%{venv_install} %{SOURCE13}
+%{venv_install} %{SOURCE20}
+%{venv_install} %{SOURCE21}
 
 # babel can be linked from the system install
 ln -sf  %{python3_sitelib}/{Babel*,babel} %{venv_lib}
