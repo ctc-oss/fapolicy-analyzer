@@ -148,9 +148,7 @@ tar xzf %{SOURCE1} -C ${CARGO_REG_DIR} --strip-components=2
 sed -i "s#%{cargo_registry}#${CARGO_REG_DIR}#g" .cargo/config
 
 %autosetup -p0 -n %{name}
-
-tar xzf %{SOURCE2}
-ls help
+tar xvzf %{SOURCE2}
 
 # throw out the checked-in lock
 # this build will use what is available from the local registry

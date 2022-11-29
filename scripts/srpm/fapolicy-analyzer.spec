@@ -11,7 +11,7 @@ Source0:       fapolicy-analyzer.tar.gz
 Source1:       vendor-rs.tar.gz
 
 # this tarball contains documentation used to generate help docs
-Source2:       help-docs.tar.gz
+Source2:       vendor-docs.tar.gz
 
 # on copr the source containter is never el
 # we check for low fc version here to remedy that
@@ -217,6 +217,7 @@ sed -i "s#%{cargo_registry}#${CARGO_REG_DIR}#g" .cargo/config
 %endif
 
 %autosetup -p0 -n %{name}
+tar xvzf %{SOURCE2}
 
 # throw out the checked-in lock
 # this build will use whatever is available in the writable registry
@@ -234,12 +235,18 @@ alias python3=%{venv_py3}
 %endif
 
 python3 setup.py compile_catalog -f
+python3 setup.py build_help
 python3 setup.py bdist_wheel
 
 %install
 
-install bin/%{name} %{buildroot}%{_sbindir}/%{name} -D
 %{py3_install_wheel %{module}-%{version}*%{_arch}.whl}
+install bin/%{name} %{buildroot}%{_sbindir}/%{name} -D
+mkdir -p %{buildroot}/%{_datadir}/help/{C,es}/%{name}/media
+install -p -D build/help/C/%{name}/*.html   %{buildroot}/%{_datadir}/help/C/%{name}/
+install -p -D build/help/C/%{name}/media/*  %{buildroot}/%{_datadir}/help/C/%{name}/media/
+install -p -D build/help/es/%{name}/*.html  %{buildroot}/%{_datadir}/help/es/%{name}/
+install -p -D build/help/es/%{name}/media/* %{buildroot}/%{_datadir}/help/es/%{name}/media/
 
 %check
 
@@ -249,6 +256,8 @@ install bin/%{name} %{buildroot}%{_sbindir}/%{name} -D
 %{python3_sitearch}/%{module}
 %{python3_sitearch}/%{module}-%{version}*
 %attr(755,root,root) %{_sbindir}/fapolicy-analyzer
+%{_datadir}/help/C/fapolicy-analyzer
+%{_datadir}/help/es/fapolicy-analyzer
 
 %changelog
 * Fri Sep 09 2022 John Wass <jwass3@gmail.com> 0.6.1-1
