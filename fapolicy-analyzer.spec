@@ -19,11 +19,11 @@ BuildRequires: python3dist(pip)
 BuildRequires: python3dist(wheel)
 BuildRequires: python3dist(babel)
 BuildRequires: dbus-devel
+BuildRequires: gettext
+BuildRequires: itstool
 
 BuildRequires: rust-packaging
 BuildRequires: python3dist(setuptools-rust)
-BuildRequires: gettext
-BuildRequires: itstool
 
 BuildRequires: rust-arrayvec0.5-devel
 BuildRequires: rust-atty-devel

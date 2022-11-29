@@ -36,6 +36,8 @@ BuildRequires: python3dist(pip)
 BuildRequires: python3dist(wheel)
 BuildRequires: python3dist(babel)
 BuildRequires: dbus-devel
+BuildRequires: gettext
+BuildRequires: itstool
 
 %if 0%{?rhel}
 BuildRequires: rust-toolset
