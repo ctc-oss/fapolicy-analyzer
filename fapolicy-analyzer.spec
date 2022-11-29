@@ -21,7 +21,6 @@ BuildRequires: python3dist(babel)
 BuildRequires: dbus-devel
 BuildRequires: gettext
 BuildRequires: itstool
-BuildRequires: python3-dotenv
 
 BuildRequires: rust-packaging
 BuildRequires: python3dist(setuptools-rust)
