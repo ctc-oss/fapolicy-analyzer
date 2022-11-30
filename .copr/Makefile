@@ -37,7 +37,7 @@ dnf-rpmdev:
 	dnf install -y rpmdevtools
 
 ifeq ($(OS_ID),rhel)
-vendor: identify prep_rpmbuild_dir vendor-app vendor-doc vendor-rs vendor-py
+vendor: prep_rpmbuild_dir vendor-app vendor-doc vendor-rs vendor-py
 else
 vendor: prep_rpmbuild_dir vendor-app vendor-doc vendor-rs
 endif
