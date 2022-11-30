@@ -53,6 +53,7 @@ vendor-rs:
 vendor-doc:
 	python3 help_utils.py update
 	tar --exclude=es -cvzf vendor-docs.tar.gz help
+	cp vendor-docs.tar.gz /tmp/rpmbuild/SOURCES
 
 srpm: idenfity prepfs dnf vendor
 	rpmbuild -bs -D "_topdir /tmp/rpmbuild" \$(spec)
