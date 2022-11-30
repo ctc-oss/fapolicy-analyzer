@@ -25,9 +25,6 @@ from os import getenv, makedirs, path
 from typing import Optional, Sequence
 from urllib.parse import urlparse
 
-import markdown2
-from bs4 import BeautifulSoup
-
 
 DEFAULT_HELP_FILES = ["User-Guide.md"]
 DEFAULT_REPO = "https://github.com/ctc-oss/fapolicy-analyzer.wiki.git"
@@ -72,6 +69,8 @@ def _clone_help(repo: str, commit: str, output_dir: str) -> str:
 
 
 def _parse_media_urls(html: str, filter: str) -> Sequence[str]:
+    from bs4 import BeautifulSoup
+
     soup = BeautifulSoup(html, "html.parser")
     return [
         url
@@ -81,6 +80,9 @@ def _parse_media_urls(html: str, filter: str) -> Sequence[str]:
 
 
 def _markdown_to_html(markdown_file: str) -> str:
+    import markdown2
+    from bs4 import BeautifulSoup
+
     def get_title():
         soup = BeautifulSoup(body, "html.parser")
         header = soup.find("h1")
