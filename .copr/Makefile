@@ -23,7 +23,7 @@ dnf: dnf-common
 endif
 
 dnf-common:
-	dnf install -y git openssl-devel dbus-devel python3-devel python3-pip python3-toml python3-beautifulsoup4 python3-requests python3-babel python3-markdown2
+	dnf install -y git openssl-devel dbus-devel python3-devel python3-pip python3-toml python3-beautifulsoup4 python3-requests python3-babel python3-markdown2 itstool
 	dnf install -y rust-packaging || true
 	dnf install -y rust-toolset || true
 	cargo install cargo-vendor-filterer
