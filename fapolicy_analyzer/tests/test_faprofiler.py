@@ -77,7 +77,8 @@ def test_faprofsession_fopen_exception(mocker):
 def test_faprofsession_getpwnam_exception(mocker):
     # Emulate a getpwnam() exception
     mocker.patch(
-        "fapolicy_analyzer.ui.faprofiler.pwd.getpwnam", side_effect=Exception()
+        "fapolicy_analyzer.ui.faprofiler.pwd.getpwnam",
+        side_effect=Exception()
     )
 
     dictArgs = {
@@ -92,10 +93,44 @@ def test_faprofsession_getpwnam_exception(mocker):
         FaProfSession(dictArgs)
 
 
+def test_faprofsession_path_env():
+    dictArgs = {
+        "executeText": "ls",
+        "argText": "-ltr /tmp",
+        "userText": os.getenv("USER"),
+        "dirText": os.getenv("HOME"),
+        "envText": 'PATH=/tmp:$PATH, XX="xx"',
+    }
+
+    s = FaProfSession(dictArgs)
+    assert s.fdTgtStdout
+    assert s.fdTgtStderr
+    assert os.path.basename(s.execPath) == dictArgs["executeText"]
+
+    # directory may differ on different platforms; we only care that it's > 0
+    assert os.path.dirname(s.execPath)
+
+
+def test_faprofsession_log_redirection(mocker):
+    os.environ["FAPD_LOGPATH"] = "/tmp/fapd_logpath_test_"
+    dictArgs = {
+        "executeText": "ls",
+        "argText": "-ltr /tmp",
+        "userText": os.getenv("USER"),
+        "dirText": os.getenv("HOME"),
+        "envText": 'PATH=/tmp:$PATH, XX="xx"',
+    }
+
+    s = FaProfSession(dictArgs)
+    assert s.fdTgtStdout
+    assert s.fdTgtStderr
+
+
 def test_startTarget(faProfSession, mocker):
     mockPopen = MagicMock()
     mocker.patch(
-        "fapolicy_analyzer.ui.faprofiler.subprocess.Popen", return_value=mockPopen
+        "fapolicy_analyzer.ui.faprofiler.subprocess.Popen",
+        return_value=mockPopen
     )
     mockPopen.returncode = 0
     assert not faProfSession.procTarget
@@ -106,6 +141,31 @@ def test_startTarget(faProfSession, mocker):
 
     # Although we aren't waiting on the process, it is short-lived and finished
     assert faProfSession.procTarget.returncode == 0
+
+
+def test_startTarget_w_exception(mocker):
+    mocker.patch(
+        "fapolicy_analyzer.ui.faprofiler.subprocess.Popen",
+        side_effect=OSError()
+    )
+
+    mockDispatch = mocker.patch(
+        "fapolicy_analyzer.ui.faprofiler.dispatch",
+    )
+
+    dictArgs = {
+        "executeText": "ls",
+        "argText": "-ltr /tmp",
+        "userText": os.getenv("USER"),
+        "dirText": os.getenv("HOME"),
+        "envText": 'PATH=/tmp:$PATH, XX="xx"',
+    }
+
+    s = FaProfSession(dictArgs)
+
+    assert not s.procTarget
+    s.startTarget()
+    mockDispatch.assert_called()
 
 
 def test_stopTarget(faProfSession, mocker):
@@ -289,37 +349,39 @@ def test_validateArgs():
     }
 
     dict_valid_args_return = FaProfSession.validateArgs(dictArgs)
-    print(dict_valid_args_return)
     assert len(dict_valid_args_return) == 3
     assert ProfSessionArgsStatus.USER_DOESNT_EXIST in dict_valid_args_return
     assert ProfSessionArgsStatus.EXEC_DOESNT_EXIST in dict_valid_args_return
     assert ProfSessionArgsStatus.PWD_DOESNT_EXIST in dict_valid_args_return
 
 
-def test_validateArgs_relative_exec():
-
-    dictArgs = {
-        "executeText": "Now.sh",
-        "argText": "",
-        "userText": os.getenv("USER"),
-        "dirText": "/tmp",
-        "envText": "PATH=.:${PATH}",
-    }
-
-    # Verify non-existent relative exec path is detected
+@pytest.mark.parametrize(
+    "dictArgs, expected_status", [
+        (
+            # Verify non-existent relative exec path is detected
+            {
+                "executeText": "Now.sh",
+                "argText": "",
+                "userText": os.getenv("USER"),
+                "dirText": "/tmp",
+                "envText": "PATH=.:${PATH}",
+            },
+            ProfSessionArgsStatus.EXEC_NOT_FOUND,
+        ),
+        (
+            # Test w/good args; only OK key is in returned dict
+            {
+                "executeText": "ls",
+                "argText": "",
+                "userText": os.getenv("USER"),
+                "dirText": os.getenv("HOME"),
+                "envText": "",
+            },
+            ProfSessionArgsStatus.OK,
+        ),
+    ]
+)
+def test_validateArgs_relative_exec(dictArgs, expected_status):
     dict_valid_args_return = FaProfSession.validateArgs(dictArgs)
     assert len(dict_valid_args_return) == 1
-    assert ProfSessionArgsStatus.EXEC_NOT_FOUND in dict_valid_args_return
-
-    # Test w/good args; only OK key is in returned dict
-    dictArgs = {
-        "executeText": "ls",
-        "argText": "",
-        "userText": os.getenv("USER"),
-        "dirText": os.getenv("HOME"),
-        "envText": "",
-    }
-
-    dict_valid_args_return = FaProfSession.validateArgs(dictArgs)
-    assert len(dict_valid_args_return) == 1
-    assert ProfSessionArgsStatus.OK in dict_valid_args_return
+    assert expected_status in dict_valid_args_return

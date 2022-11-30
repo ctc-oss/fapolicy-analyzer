@@ -124,10 +124,12 @@ class FaProfSession:
 
         # Executable command and arguments
         user_provided_exec = dictProfTgt["executeText"]
-        if os.path.abspath(user_provided_exec):
+        if os.path.isabs(user_provided_exec):
             self.execPath = user_provided_exec
         else:
-            self.execPath = FaProfSession._rel_tgt_which(user_provided_exec, dictProfTgt)
+            self.execPath = FaProfSession._rel_tgt_which(user_provided_exec,
+                                                         self.env,
+                                                         self.pwd)
         logging.debug(f"exec={self.execPath}, Profiling PATH = {search_path}")
 
         self.execArgs = dictProfTgt["argText"]
@@ -142,8 +144,8 @@ class FaProfSession:
         self.procTarget = None
 
         # Temp demo workaround for setting target log file paths
-        if os.environ.get("FAPD_LOGPATH"):
-            log_dir = os.environ.get("FAPD_LOGPATH")
+        log_dir = os.environ.get("FAPD_LOGPATH")
+        if log_dir:
             self.tgtStdout = f"{log_dir}_{self.name}.stdout"
             self.tgtStderr = f"{log_dir}_{self.name}.stderr"
         else:
@@ -335,12 +337,22 @@ class FaProfSession:
         Validates the Profiler Session object's user, target, pwd parameters.
         Returns a dictionary mapping enums to error msgs.
         """
+
+        # Verify all keys are in dictProfTgt; delta_keys should be empty.
+        expected_keys = set(["executeText",
+                             "argText",
+                             "userText",
+                             "dirText",
+                             "envText"])
+        delta_keys = expected_keys.difference(dictProfTgt.keys())
+        if delta_keys:
+            raise KeyError(f"Missing {delta_keys} field(s) from Profiler Page")
+
         dictReturn = {}
         logging.debug(f"validateProfArgs({dictProfTgt}")
-
-        exec_path = dictProfTgt["executeText"]
-        exec_user = dictProfTgt["userText"]
-        exec_pwd = dictProfTgt["dirText"]
+        exec_path = dictProfTgt.get("executeText", "")
+        exec_user = dictProfTgt.get("userText", "")
+        exec_pwd = dictProfTgt.get("dirText", "")
 
         # working dir?
         # pwd empty? Check pwd first because it is used with relative exec paths
@@ -365,7 +377,7 @@ class FaProfSession:
 
         # Convert comma delimited string of "EnvVar=Value" substrings to dict
         exec_env = FaProfSession._comma_delimited_kv_string_to_dict(
-            dictProfTgt["envText"]
+            dictProfTgt.get("envText", "")
         )
 
         # exec empty?
