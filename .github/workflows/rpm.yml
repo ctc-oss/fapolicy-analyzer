@@ -32,7 +32,7 @@ jobs:
           - {
             name: 'el8',
             spec: 'scripts/srpm/fapolicy-analyzer.spec',
-            image: 'registry.access.redhat.com/ubi8/ubi:8.6',
+            image: 'rockylinux:8.6',
           }
     runs-on: ubuntu-latest
     container: ${{ matrix.triple.image }}
