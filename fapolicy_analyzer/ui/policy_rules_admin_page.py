@@ -191,11 +191,6 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         else:
             dispatch(request_events("syslog"))
 
-    def __reset_tree_view(self):
-        self.subject_list
-        self.object_list
-        
-
     def __populate_list(
         self,
         list,
