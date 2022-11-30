@@ -7,9 +7,13 @@ OS_ID   ?= $(OS_ID_FN)
 idenfity:
 	@echo "Platform $(OS_ID)"
 
-prepfs:
-	mkdir -p /tmp/rpmbuild/SOURCES
+prepfs: prep_outdir prep_rpmbuild_dir
+
+prep_outdir:
 	mkdir -p \$(outdir)
+
+prep_rpmbuild_dir:
+	mkdir -p /tmp/rpmbuild/SOURCES/
 
 clean:
 	rm -f fapolicy-analyzer.tar.gz
@@ -33,9 +37,9 @@ dnf-rpmdev:
 	dnf install -y rpmdevtools
 
 ifeq ($(OS_ID),rhel)
-vendor: vendor-app vendor-doc vendor-rs vendor-py
+vendor: prep_rpmbuild_dir vendor-app vendor-doc vendor-rs vendor-py
 else
-vendor: vendor-app vendor-doc vendor-rs
+vendor: prep_rpmbuild_dir vendor-app vendor-doc vendor-rs
 endif
 
 vendor-app:
@@ -43,17 +47,17 @@ vendor-app:
 	cp fapolicy-analyzer.tar.gz /tmp/rpmbuild/SOURCES/
 
 vendor-py:
-	spectool -gf -C /tmp/rpmbuild/SOURCES \$(spec)
+	spectool -gf -C /tmp/rpmbuild/SOURCES/ \$(spec)
 
 vendor-rs:
 	cargo check
 	./scripts/srpm/vendor-rs.sh
-	cp vendor-rs.tar.gz /tmp/rpmbuild/SOURCES
+	cp vendor-rs.tar.gz /tmp/rpmbuild/SOURCES/
 
 vendor-doc:
 	python3 help_utils.py update
 	tar --exclude=es -cvzf vendor-docs.tar.gz help
-	cp vendor-docs.tar.gz /tmp/rpmbuild/SOURCES
+	cp vendor-docs.tar.gz /tmp/rpmbuild/SOURCES/
 
 srpm: idenfity prepfs dnf vendor
 	rpmbuild -bs -D "_topdir /tmp/rpmbuild" \$(spec)
