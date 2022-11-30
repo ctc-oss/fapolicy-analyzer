@@ -27,16 +27,17 @@ from urllib.parse import urlparse
 
 import markdown2
 from bs4 import BeautifulSoup
-from dotenv import load_dotenv
 
-load_dotenv("help/.env")
 
 DEFAULT_HELP_FILES = ["User-Guide.md"]
 DEFAULT_REPO = "https://github.com/ctc-oss/fapolicy-analyzer.wiki.git"
-DEFAULT_COMMIT = getenv("HELP_COMMIT", "HEAD")
+DEFAULT_COMMIT = "HEAD"
 DEFAULT_OUTPUT_DIR = "help"
 DEFAULT_MEDIA_URL = "https://user-images.githubusercontent.com/1545372"
 DEFAULT_BUILD_DIR = path.join("build", DEFAULT_OUTPUT_DIR)
+
+with open("help/ref") as f:
+    DEFAULT_COMMIT = f.readline().strip()
 
 
 def _runs(cmds):
