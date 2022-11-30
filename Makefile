@@ -136,8 +136,8 @@ el-rpm:
 	podman run --rm -it --network=none -v /tmp:/v fapolicy-analyzer:el /v
 
 help-docs:
-	python3 help_utils.py update
-	python3 help_utils.py build
+	python3 help update
+	python3 help build
 
 # Display all Makefile targets
 list-all:

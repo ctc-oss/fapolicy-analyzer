@@ -166,7 +166,7 @@ echo %{version} > VERSION
 %build
 
 python3 setup.py compile_catalog -f
-python3 help_utils.py build 
+python3 help build
 python3 setup.py bdist_wheel
 
 %install

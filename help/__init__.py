@@ -21,7 +21,7 @@ import subprocess
 import urllib.request
 from distutils import dir_util
 from glob import glob
-from os import getenv, makedirs, path
+from os import makedirs, path
 from typing import Optional, Sequence
 from urllib.parse import urlparse
 
@@ -34,7 +34,7 @@ DEFAULT_MEDIA_URL = "https://user-images.githubusercontent.com/1545372"
 DEFAULT_BUILD_DIR = path.join("build", DEFAULT_OUTPUT_DIR)
 
 with open("help/ref") as f:
-    DEFAULT_COMMIT = f.readline().strip()
+    DEFAULT_COMMIT = f.readline().strip() or DEFAULT_COMMIT
 
 
 def _runs(cmds):
@@ -218,7 +218,7 @@ def build_help(
     def _get_languages():
         lang_dirs = [
             d
-            for d in os.listdir(source)
+            for d in os.listdir(source) if not d.startswith("_")
             if path.isdir(path.join(source, d)) and d != "tmp"
         ]
         return list(set(["C", *lang_dirs]))
@@ -299,13 +299,3 @@ def _args():
     )
 
     return parser.parse_args()
-
-
-if __name__ == "__main__":
-    args = vars(_args())
-    cmd = args.pop("cmd", None)
-
-    if cmd:
-        cmd(**args)
-    else:
-        print("Invalid function provided to execute")

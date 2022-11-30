@@ -55,8 +55,8 @@ vendor-rs:
 	cp vendor-rs.tar.gz /tmp/rpmbuild/SOURCES/
 
 vendor-doc:
-	python3 help_utils.py update
-	tar --exclude=es -cvzf vendor-docs.tar.gz help
+	python3 help update
+	tar --exclude=es --exclude=*.py --exclude=.gitignore -cvzf vendor-docs.tar.gz help
 	cp vendor-docs.tar.gz /tmp/rpmbuild/SOURCES/
 
 srpm: identify prepfs dnf vendor
