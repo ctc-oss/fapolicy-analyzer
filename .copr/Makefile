@@ -1,10 +1,10 @@
-.PHONY: clean idenfity prepfs dnf vendor vendor-app vendor-py vendor-rs dep srpm
+.PHONY: clean identify prepfs dnf vendor vendor-app vendor-py vendor-rs dep srpm
 .SILENT: clean
 
 OS_ID_FN = $(shell grep /etc/os-release -e "^ID=" | tr -d '"' | cut -d= -f2 | cut -d: -f1)
 OS_ID   ?= $(OS_ID_FN)
 
-idenfity:
+identify:
 	@echo "Platform $(OS_ID)"
 
 prepfs: prep_outdir prep_rpmbuild_dir
@@ -37,7 +37,7 @@ dnf-rpmdev:
 	dnf install -y rpmdevtools
 
 ifeq ($(OS_ID),rhel)
-vendor: prep_rpmbuild_dir vendor-app vendor-doc vendor-rs vendor-py
+vendor: identify prep_rpmbuild_dir vendor-app vendor-doc vendor-rs vendor-py
 else
 vendor: prep_rpmbuild_dir vendor-app vendor-doc vendor-rs
 endif
@@ -59,6 +59,6 @@ vendor-doc:
 	tar --exclude=es -cvzf vendor-docs.tar.gz help
 	cp vendor-docs.tar.gz /tmp/rpmbuild/SOURCES/
 
-srpm: idenfity prepfs dnf vendor
+srpm: identify prepfs dnf vendor
 	rpmbuild -bs -D "_topdir /tmp/rpmbuild" \$(spec)
 	cp -v /tmp/rpmbuild/SRPMS/* \$(outdir)/
