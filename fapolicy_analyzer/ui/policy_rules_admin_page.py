@@ -118,6 +118,8 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
 
         self.get_object("delayDisplay").get_buffer().set_text("1 Hour")
         self.time_delay = -1
+        self.time_unit = "2"
+        self.time_number = 1
 
         self.__switchers = [
             self.Switcher(
@@ -188,6 +190,11 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             self.get_object("time_bar").set_visible(False)
         else:
             dispatch(request_events("syslog"))
+
+    def __reset_tree_view(self):
+        self.subject_list
+        self.object_list
+        
 
     def __populate_list(
         self,
@@ -528,8 +535,9 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             return "s" if count > 1 else ""
 
         time_dialog = TimeSelectDialog()
-        time_dialog.get_object("timeComboBox").set_active_id("2")
-        time_dialog.get_object("timeEntryField").get_buffer().set_text("1", len("1"))
+        time_dialog.get_object("timeComboBox").set_active_id(self.time_unit)
+        buff = time_dialog.get_object("timeEntryField").get_buffer()
+        buff.set_text(str(self.time_number), len(str(self.time_number)))
         resp = time_dialog.get_ref().run()
         time_dialog.get_ref().hide()
         time_unit = time_dialog.get_object("timeComboBox").get_active_id()
@@ -549,6 +557,8 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             disp_string = f"{time_number} {display_unit}{plural(time_number)}"
             self.get_object("delayDisplay").get_buffer().set_text(disp_string, len(disp_string))
             self.time_delay = seconds
+            self.time_unit = time_unit
+            self.time_number = time_number
 
         self.__refresh()
 
