@@ -8,8 +8,9 @@
 
 // todo;; tracking the fapolicyd specific bits in here to determine if bindings are worthwhile
 
-pub const TRUST_DB_PATH: &str = "/var/lib/fapolicyd";
-pub const TRUST_DB_NAME: &str = "trust.db";
+pub const TRUST_LMDB_PATH: &str = "/var/lib/fapolicyd";
+pub const TRUST_LMDB_NAME: &str = "trust.db";
+pub const TRUST_DIR_PATH: &str = "/etc/fapolicyd/trust.d";
 pub const TRUST_FILE_PATH: &str = "/etc/fapolicyd/fapolicyd.trust";
 pub const RULES_FILE_PATH: &str = "/etc/fapolicyd/rules.d";
 pub const COMPILED_RULES_PATH: &str = "/etc/fapolicyd/compiled.rules";

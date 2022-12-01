@@ -16,7 +16,7 @@
 use std::fs::File;
 use std::io;
 use std::io::{BufRead, BufReader, Write};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 use std::time::SystemTime;
 
@@ -26,10 +26,10 @@ use rayon::prelude::*;
 use thiserror::Error;
 
 use fapolicy_app::cfg;
-use fapolicy_daemon::fapolicyd::TRUST_DB_NAME;
+use fapolicy_daemon::fapolicyd::TRUST_LMDB_NAME;
 use fapolicy_daemon::rpm::load_system_trust as load_rpm_trust;
 use fapolicy_trust::read::{check_trust_db, parse_trust_record};
-use fapolicy_trust::{read, Trust};
+use fapolicy_trust::{load, read, Trust};
 use fapolicy_util::sha::sha256_digest;
 
 use crate::Error::{DirTrustError, DpkgCommandFail, DpkgNotFound, TrustError};
@@ -179,7 +179,7 @@ fn main() -> Result<(), Error> {
     let all_opts: Opts = Opts::parse();
     let trust_db_path = match all_opts.dbdir {
         Some(ref p) => Path::new(p),
-        None => Path::new(&sys_conf.system.trust_db_path),
+        None => Path::new(&sys_conf.system.trust_dir_path),
     };
 
     if !trust_db_path.exists() {
@@ -211,7 +211,7 @@ fn main() -> Result<(), Error> {
 }
 
 fn clear(_: ClearOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
-    if let Ok(db) = env.open_db(Some(TRUST_DB_NAME)) {
+    if let Ok(db) = env.open_db(Some(TRUST_LMDB_NAME)) {
         let mut tx = env.begin_rw_txn()?;
         tx.clear_db(db)?;
         tx.commit()?;
@@ -225,7 +225,7 @@ fn init(opts: InitOpts, verbose: bool, cfg: &cfg::All, env: &Environment) -> Res
         clear(ClearOpts {}, cfg, env)?;
     }
 
-    let db = env.create_db(Some(TRUST_DB_NAME), DatabaseFlags::DUP_SORT)?;
+    let db = env.create_db(Some(TRUST_LMDB_NAME), DatabaseFlags::DUP_SORT)?;
 
     if opts.empty {
         return Ok(());
@@ -272,7 +272,7 @@ fn init(opts: InitOpts, verbose: bool, cfg: &cfg::All, env: &Environment) -> Res
 
 fn load(opts: LoadOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
     let trust = load_ancillary_trust(&opts.path)?;
-    let db = env.open_db(Some(TRUST_DB_NAME))?;
+    let db = env.open_db(Some(TRUST_LMDB_NAME))?;
     let mut tx = env.begin_rw_txn()?;
     for t in trust {
         let v = format!("{} {} {}", 2, t.size, t.hash);
@@ -285,7 +285,7 @@ fn load(opts: LoadOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
 
 fn add(opts: AddRecOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
     let trust = new_trust_record(&opts.path)?;
-    let db = env.open_db(Some(TRUST_DB_NAME))?;
+    let db = env.open_db(Some(TRUST_LMDB_NAME))?;
     let mut tx = env.begin_rw_txn()?;
     let v = format!("{} {} {}", 2, trust.size, trust.hash);
     tx.put(db, &trust.path, &v, WriteFlags::APPEND_DUP)?;
@@ -295,7 +295,7 @@ fn add(opts: AddRecOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
 }
 
 fn del(opts: DelRecOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
-    let db = env.open_db(Some(TRUST_DB_NAME))?;
+    let db = env.open_db(Some(TRUST_LMDB_NAME))?;
     let mut tx = env.begin_rw_txn()?;
     tx.del(db, &opts.path, None)?;
     tx.commit()?;
@@ -304,7 +304,7 @@ fn del(opts: DelRecOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
 }
 
 fn find(opts: SearchDbOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
-    let db = env.open_db(Some(TRUST_DB_NAME))?;
+    let db = env.open_db(Some(TRUST_LMDB_NAME))?;
     let tx = env.begin_ro_txn()?;
     match tx.get(db, &opts.key) {
         Ok(e) => println!("{}", String::from_utf8(Vec::from(e))?),
@@ -315,7 +315,10 @@ fn find(opts: SearchDbOpts, _: &cfg::All, env: &Environment) -> Result<(), Error
 }
 
 fn dump(opts: DumpDbOpts, cfg: &cfg::All) -> Result<(), Error> {
-    let db = read::load_trust_db(&cfg.system.trust_db_path)?;
+    let db = load::load_from_file(
+        &PathBuf::from(&cfg.system.trust_dir_path),
+        Some(&PathBuf::from(&cfg.system.trust_file_path)),
+    )?;
     match opts.outfile {
         None => {
             for (k, v) in db.iter() {
@@ -334,15 +337,19 @@ fn dump(opts: DumpDbOpts, cfg: &cfg::All) -> Result<(), Error> {
 }
 
 fn check(_: CheckDbOpts, cfg: &cfg::All) -> Result<(), Error> {
-    let db = read::load_trust_db(&cfg.system.trust_db_path)?;
+    let db = load::load_from_file(
+        &PathBuf::from(&cfg.system.trust_dir_path),
+        Some(&PathBuf::from(&cfg.system.trust_file_path)),
+    )?;
+
+    let xxx = db.iter().count();
+    println!("db count: {xxx}");
 
     let t = SystemTime::now();
-    let count = check_trust_db(&db)?
-        .iter()
-        .filter(|(_, v)| v.status.is_some())
-        .count();
+    let count = check_trust_db(&db)?.iter().count();
 
     let duration = t.elapsed().expect("timer failure");
+
     println!(
         "checked {} entries in {} seconds",
         count,
@@ -353,7 +360,7 @@ fn check(_: CheckDbOpts, cfg: &cfg::All) -> Result<(), Error> {
 }
 
 fn count(_: CountOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
-    let db = env.open_db(Some(TRUST_DB_NAME))?;
+    let db = env.open_db(Some(TRUST_LMDB_NAME))?;
     let tx = env.begin_ro_txn()?;
     let mut c = tx.open_ro_cursor(db)?;
     let cnt = c.iter().count();

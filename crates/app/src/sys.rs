@@ -7,13 +7,15 @@
  */
 
 use std::io;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
 
-use fapolicy_daemon::fapolicyd::{RPM_DB_PATH, RULES_FILE_PATH, TRUST_DB_PATH, TRUST_FILE_PATH};
+use fapolicy_daemon::fapolicyd::{
+    RPM_DB_PATH, RULES_FILE_PATH, TRUST_DIR_PATH, TRUST_FILE_PATH, TRUST_LMDB_PATH,
+};
 
 use crate::app::State;
 use crate::sys::Error::{WriteAncillaryFail, WriteRulesFail};
@@ -39,7 +41,7 @@ pub fn deploy_app_state(state: &State) -> Result<(), Error> {
     // write file trust db
     fapolicy_trust::write::file_trust(
         &state.trust_db,
-        PathBuf::from(&state.config.system.ancillary_trust_path),
+        PathBuf::from(&state.config.system.trust_dir_path),
     )
     .map_err(WriteAncillaryFail)?;
 
@@ -53,14 +55,27 @@ const RHEL_SYSLOG_LOG_FILE_PATH: &str = "/var/log/messages";
 /// generally loaded from the XDG user configuration
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Config {
-    #[serde(default = "trust_db_path")]
-    pub trust_db_path: String,
+    // rules.d path
     #[serde(default = "rules_file_path")]
     pub rules_file_path: String,
+
+    // lmdb directory path
+    #[serde(default = "trust_lmdb_path")]
+    pub trust_lmdb_path: String,
+
+    // rpmdb path
     #[serde(default = "system_trust_path")]
     pub system_trust_path: String,
-    #[serde(default = "ancillary_trust_path")]
-    pub ancillary_trust_path: String,
+
+    // trust.d path
+    #[serde(default = "trust_dir_path")]
+    pub trust_dir_path: String,
+
+    // fapolicyd.trust path
+    #[serde(default = "trust_file_path")]
+    pub trust_file_path: String,
+
+    // syslog messages file path
     #[serde(default = "syslog_file_path")]
     pub syslog_file_path: String,
 }
@@ -68,10 +83,11 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            trust_db_path: TRUST_DB_PATH.to_string(),
+            trust_lmdb_path: TRUST_LMDB_PATH.to_string(),
             rules_file_path: RULES_FILE_PATH.to_string(),
             system_trust_path: RPM_DB_PATH.to_string(),
-            ancillary_trust_path: TRUST_FILE_PATH.to_string(),
+            trust_dir_path: TRUST_DIR_PATH.to_string(),
+            trust_file_path: TRUST_FILE_PATH.to_string(),
             syslog_file_path: RHEL_SYSLOG_LOG_FILE_PATH.to_string(),
         }
     }
@@ -81,8 +97,8 @@ impl Default for Config {
 // private helpers for serde
 //
 
-fn trust_db_path() -> String {
-    TRUST_DB_PATH.into()
+fn trust_lmdb_path() -> String {
+    TRUST_LMDB_PATH.into()
 }
 
 fn rules_file_path() -> String {
@@ -93,7 +109,11 @@ fn system_trust_path() -> String {
     RPM_DB_PATH.into()
 }
 
-fn ancillary_trust_path() -> String {
+fn trust_dir_path() -> String {
+    TRUST_DIR_PATH.into()
+}
+
+fn trust_file_path() -> String {
     TRUST_FILE_PATH.into()
 }
 

@@ -50,7 +50,10 @@ impl State {
     }
 
     pub fn load(cfg: &All) -> Result<State, Error> {
-        let trust_db = load_from_file(&PathBuf::from(&cfg.system.trust_db_path), None)?;
+        let trust_db = load_from_file(
+            &PathBuf::from(&cfg.system.trust_dir_path),
+            Some(&PathBuf::from(&cfg.system.trust_file_path)),
+        )?;
         let rules_db = load_rules_db(&cfg.system.rules_file_path)?;
         Ok(State {
             config: cfg.clone(),
