@@ -35,4 +35,3 @@ class TimeSelectDialog(UIBuilderWidget):
 
     def get_time_number(self):
         return int(self.get_object("timeEntryField").get_buffer().get_text())
-
