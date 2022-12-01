@@ -57,6 +57,33 @@ def test_faprofsession_init(faProfSession, mocker):
     assert reStderr.match(faProfSession.tgtStderr)
 
 
+@pytest.mark.parametrize(
+    "dictArgs", [
+        # Populate target dictionary w/unexpected keys
+        {
+            "executeText": "Now.sh",
+            "argBadText": "",
+            "userText": os.getenv("USER"),
+            "dirBadText": "/tmp",
+            "envText": "PATH=.:${PATH}",
+        },
+        # Populate target dictionary w/Missing keys
+        {
+            "executeText": "ls",
+            "userText": os.getenv("USER"),
+            "envText": "",
+        },
+    ]
+)
+def test_faprofsession_init_w_bad_keys(dictArgs):
+    with pytest.raises(KeyError) as e:
+        FaProfSession.validateArgs(dictArgs)
+    print(e)
+    with pytest.raises(KeyError) as e:
+        FaProfSession(dictArgs)
+    print(e)
+
+
 def test_faprofsession_fopen_exception(mocker):
     # Emulate a file open() exception
     mocker.patch("fapolicy_analyzer.ui.faprofiler.open",

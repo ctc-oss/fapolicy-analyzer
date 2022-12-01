@@ -91,6 +91,7 @@ class ProfSessionException(RuntimeError):
         self.error_enum = enumError
 
 
+# ########################## Profiler Session ###########################
 class FaProfSession:
     def __init__(self, dictProfTgt, instance=0, faprofiler=None):
         logging.debug(f"faProfSession::__init__({dictProfTgt}, {faprofiler})")
@@ -98,14 +99,14 @@ class FaProfSession:
         self.timeStamp = None
 
         # euid, working directory and environment variables
-        self.user = dictProfTgt["userText"]
+        self.user = dictProfTgt.get("userText", "")
 
         # Set pwd - Use current dir for pwd if not supplied by user
-        self.pwd = dictProfTgt["dirText"] or os.getcwd()
+        self.pwd = dictProfTgt.get("dirText") or os.getcwd()
 
         # Convert comma delimited string of "EnvVar=Value" substrings to dict
         self.env = FaProfSession._comma_delimited_kv_string_to_dict(
-            dictProfTgt["envText"]
+            dictProfTgt.get("envText", "")
         )
 
         # expand and update path if user supplied
@@ -123,7 +124,7 @@ class FaProfSession:
             search_path = os.getenv("PATH")
 
         # Executable command and arguments
-        user_provided_exec = dictProfTgt["executeText"]
+        user_provided_exec = dictProfTgt.get("executeText", "")
         if os.path.isabs(user_provided_exec):
             self.execPath = user_provided_exec
         else:
@@ -132,7 +133,7 @@ class FaProfSession:
                                                          self.pwd)
         logging.debug(f"exec={self.execPath}, Profiling PATH = {search_path}")
 
-        self.execArgs = dictProfTgt["argText"]
+        self.execArgs = dictProfTgt.get("argText", "")
         self.listCmdLine = [self.execPath] + self.execArgs.split()
 
         self.faprofiler = faprofiler
@@ -328,7 +329,7 @@ class FaProfSession:
         dictInvalidEnums = FaProfSession.validateArgs(dictProfTgt)
         if ProfSessionArgsStatus.OK not in dictInvalidEnums:
             error_enum = next(iter(dictInvalidEnums))
-            error_msg = dictInvalidEnums[error_enum]
+            error_msg = dictInvalidEnums.get(error_enum)
             raise ProfSessionException(error_msg, error_enum)
 
     @staticmethod
@@ -346,7 +347,7 @@ class FaProfSession:
                              "envText"])
         delta_keys = expected_keys.difference(dictProfTgt.keys())
         if delta_keys:
-            raise KeyError(f"Missing {delta_keys} field(s) from Profiler Page")
+            raise KeyError(f"Missing {delta_keys} key(s) from Profiler Page")
 
         dictReturn = {}
         logging.debug(f"validateProfArgs({dictProfTgt}")
@@ -440,6 +441,7 @@ class FaProfSession:
         }
 
 
+# ############################## Profiler ###############################
 class FaProfiler:
     def __init__(self, fapd_mgr=None, fapd_persistance=True):
         logging.debug("FaProfiler::__init__()")
@@ -473,7 +475,7 @@ class FaProfiler:
             logging.error(e)
             raise e
 
-        key = dictArgs["executeText"] + "-" + str(self.instance)
+        key = dictArgs.get("executeText", "") + "-" + str(self.instance)
         self.dictFaProfSession[key] = self.faprofSession
         try:
             self.faprofSession.startTarget(block_until_term)
@@ -490,14 +492,14 @@ class FaProfiler:
 
     def status_prof_session(self, sessionName=None):
         logging.debug("FaProfiler::status_prof_session()")
-        return self.dictFaProfSession[sessionName].get_status()
+        return self.dictFaProfSession.get(sessionName).get_status()
 
     def stop_prof_session(self, sessionName=None):
         logging.debug("FaProfiler::stop_prof_session()")
 
         # Stop profiling targets first then stop fapd profiling instance
         if sessionName:
-            self.dictFaProfSession[sessionName].stopTarget()
+            self.dictFaProfSession.get(sessionName).stopTarget()
             del self.dictFaProfSession[sessionName]
         else:
             for k in list(self.dictFaProfSession):
