@@ -45,7 +45,7 @@ class TimeSelectDialog(UIBuilderWidget):
         elif unit_id == "3":
             display_unit = "Day"
         return display_unit
-  
+
     def get_seconds(self):
         unit_id = self.get_time_unit()
         time_val = self.get_time_number()
