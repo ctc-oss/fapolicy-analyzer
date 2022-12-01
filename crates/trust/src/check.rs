@@ -26,7 +26,7 @@ pub(crate) struct TrustPair {
 }
 
 impl TrustPair {
-    fn new(b: (&[u8], &[u8])) -> TrustPair {
+    pub(crate) fn new(b: (&[u8], &[u8])) -> TrustPair {
         TrustPair {
             k: String::from_utf8(Vec::from(b.0)).unwrap(),
             v: String::from_utf8(Vec::from(b.1)).unwrap(),
@@ -41,42 +41,6 @@ impl From<TrustPair> for (String, Rec) {
             .expect("failed to parse_strtyped_trust_record");
         (t.path.clone(), Rec::new_from(t, s))
     }
-}
-
-/// load the fapolicyd backend lmdb database
-/// parse the results into trust entries
-pub fn db_sync(db: &mut DB, lmdb_path: &str) -> Result<DB, Error> {
-    let env = Environment::new().set_max_dbs(1).open(Path::new(lmdb_path));
-    let env = match env {
-        Ok(e) => e,
-        Err(lmdb::Error::Other(2)) => return Err(LmdbNotFound(lmdb_path.to_string())),
-        Err(lmdb::Error::Other(13)) => return Err(LmdbPermissionDenied(lmdb_path.to_string())),
-        Err(e) => return Err(LmdbFailure(e)),
-    };
-
-    let lmdb = env.open_db(Some("trust.db"))?;
-    let tx = env.begin_ro_txn()?;
-    let mut c = tx.open_ro_cursor(lmdb)?;
-    let lookup: HashMap<String, Rec> = c
-        .iter()
-        .map(|i| i.map(|kv| TrustPair::new(kv).into()).unwrap())
-        .collect();
-    // for i in c.iter() {}
-    // let lookup: HashMap<String, Rec> = env
-    //     .begin_ro_txn()
-    //     .map(|t| {
-    //         t.open_ro_cursor(lmdb).map(|mut c| {
-    //             c.iter()
-    //                 .map(|c| c.unwrap())
-    //                 .map(|kv| TrustPair::new(kv).into())
-    //                 .collect()
-    //         })
-    //     })
-    //     .unwrap()
-    //     .map_err(LmdbReadFail)
-    //     .unwrap();
-
-    Ok(DB::from(lookup))
 }
 
 #[cfg(test)]

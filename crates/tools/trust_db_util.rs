@@ -235,7 +235,7 @@ fn init(opts: InitOpts, verbose: bool, cfg: &cfg::All, env: &Environment) -> Res
     let sys = if opts.dpkg {
         load_dpkg_trust()?
     } else {
-        load::system_trust(&PathBuf::from(&cfg.system.system_trust_path))?
+        load::rpm_trust(&PathBuf::from(&cfg.system.system_trust_path))?
     };
 
     let sys = if let Some(c) = opts.count {
@@ -316,7 +316,7 @@ fn find(opts: SearchDbOpts, _: &cfg::All, env: &Environment) -> Result<(), Error
 
 fn dump(opts: DumpDbOpts, cfg: &cfg::All) -> Result<(), Error> {
     let db = load::trust_db(
-        &PathBuf::from(&cfg.system.system_trust_path),
+        &PathBuf::from(&cfg.system.trust_lmdb_path),
         &PathBuf::from(&cfg.system.trust_dir_path),
         Some(&PathBuf::from(&cfg.system.trust_file_path)),
     )?;
@@ -339,13 +339,10 @@ fn dump(opts: DumpDbOpts, cfg: &cfg::All) -> Result<(), Error> {
 
 fn check(_: CheckDbOpts, cfg: &cfg::All) -> Result<(), Error> {
     let db = load::trust_db(
-        &PathBuf::from(&cfg.system.system_trust_path),
+        &PathBuf::from(&cfg.system.trust_lmdb_path),
         &PathBuf::from(&cfg.system.trust_dir_path),
         Some(&PathBuf::from(&cfg.system.trust_file_path)),
     )?;
-
-    let xxx = db.iter().count();
-    println!("db count: {xxx}");
 
     let t = SystemTime::now();
     let count = check_trust_db(&db)?.iter().count();

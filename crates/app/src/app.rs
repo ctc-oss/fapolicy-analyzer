@@ -51,7 +51,7 @@ impl State {
 
     pub fn load(cfg: &All) -> Result<State, Error> {
         let trust_db = load::trust_db(
-            &PathBuf::from(&cfg.system.system_trust_path),
+            &PathBuf::from(&cfg.system.trust_lmdb_path),
             &PathBuf::from(&cfg.system.trust_dir_path),
             Some(&PathBuf::from(&cfg.system.trust_file_path)),
         )?;

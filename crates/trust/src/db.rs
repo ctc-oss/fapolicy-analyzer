@@ -81,6 +81,11 @@ impl DB {
     pub fn put(&mut self, v: Rec) -> Option<Rec> {
         self.lookup.insert(v.trusted.path.clone(), v)
     }
+
+    /// Get a record from the lookup table using the path to the trusted file
+    pub fn get_mut(&mut self, k: &str) -> Option<&mut Rec> {
+        self.lookup.get_mut(k)
+    }
 }
 
 /// Trust Record

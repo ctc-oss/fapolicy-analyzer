@@ -9,8 +9,11 @@ use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 use std::{fs, io};
 
+use lmdb::{Cursor, Environment, Transaction};
 use std::process::Command;
 
+use crate::check::TrustPair;
+use crate::error::Error::{LmdbFailure, LmdbNotFound, LmdbPermissionDenied};
 use fapolicy_util::rpm::ensure_rpm_exists;
 use fapolicy_util::rpm::Error::{ReadRpmDumpFailed, RpmDumpFailed};
 use nom::bytes::complete::tag;
@@ -33,39 +36,25 @@ fn from_db() {}
 
 pub(crate) type TrustSourceEntry = (PathBuf, String);
 
-pub fn trust_db(rpmdb: &Path, trust_d: &Path, trust_file: Option<&Path>) -> Result<DB, Error> {
+pub fn trust_db(lmdb: &Path, trust_d: &Path, trust_file: Option<&Path>) -> Result<DB, Error> {
     // let db = load::load_from_file(
     //     &PathBuf::from(&cfg.system.trust_dir_path),
     //     Some(&PathBuf::from(&cfg.system.trust_file_path)),
     // )?;
     //load_system_trust()
 
-    let mut entries: HashMap<String, Rec> = HashMap::default();
-    for t in system_trust(rpmdb)? {
-        match entries.entry(t.path.clone()) {
-            Entry::Occupied(_) => {
-                eprintln!("duplicated trust record")
-            }
-            Entry::Vacant(e) => {
-                e.insert(Rec::new(t));
-            }
-        }
-    }
+    let mut db = from_lmdb(lmdb)?;
 
     for (o, t) in file_trust(trust_d, trust_file)? {
-        match entries.entry(t.path.clone()) {
-            Entry::Occupied(e) => {
-                eprintln!("duplicated trust record")
-            }
-            Entry::Vacant(e) => {
-                let mut rec = Rec::new(t);
-                rec.origin = Some(o);
-                e.insert(rec);
+        match db.get_mut(&t.path) {
+            None => {}
+            Some(rec) => {
+                rec.origin = Some(o.clone());
             }
         }
     }
 
-    Ok(entries.into())
+    Ok(db)
 }
 
 // path to d dir (/etc/fapolicyd/trust.d), optional override file (eg /etc/fapolicyd/fapolicyd.trust
@@ -149,6 +138,30 @@ pub fn from_dir(from: &Path) -> Result<Vec<TrustSourceEntry>, io::Error> {
         .collect();
 
     Ok(d_files)
+}
+
+/// load the fapolicyd backend lmdb database
+/// parse the results into trust entries
+pub fn from_lmdb(lmdb: &Path) -> Result<DB, Error> {
+    let env = Environment::new().set_max_dbs(1).open(lmdb);
+    let env = match env {
+        Ok(e) => e,
+        Err(lmdb::Error::Other(2)) => return Err(LmdbNotFound(lmdb.display().to_string())),
+        Err(lmdb::Error::Other(13)) => {
+            return Err(LmdbPermissionDenied(lmdb.display().to_string()))
+        }
+        Err(e) => return Err(LmdbFailure(e)),
+    };
+
+    let lmdb = env.open_db(Some("trust.db"))?;
+    let tx = env.begin_ro_txn()?;
+    let mut c = tx.open_ro_cursor(lmdb)?;
+    let lookup: HashMap<String, Rec> = c
+        .iter()
+        .map(|i| i.map(|kv| TrustPair::new(kv).into()).unwrap())
+        .collect();
+
+    Ok(DB::from(lookup))
 }
 
 fn trust_file(path: PathBuf) -> Result<Vec<TrustSourceEntry>, io::Error> {
