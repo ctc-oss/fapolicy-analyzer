@@ -556,6 +556,8 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             self.time_number = time_number
 
         self.__refresh()
+        self.__populate_acls()
+        self.__populate_subjects_from_acl()
 
     class Switcher(Events):
         __events__ = ["buttonClicked"]
