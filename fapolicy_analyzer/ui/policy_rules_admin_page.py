@@ -116,10 +116,10 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         )
         object_tabs.append_page(self.object_list.get_ref(), Gtk.Label(label="Object"))
 
-        self.get_object("delayDisplay").get_buffer().set_text("1 Hour")
-        self.time_delay = -1
-        self.time_unit = "2"
-        self.time_number = 1
+        self.get_object("delayDisplay").set_text("1 Hour")
+        self.__time_delay = -1
+        self.__time_unit = "2"
+        self.__time_number = 1
 
         self.__switchers = [
             self.Switcher(
@@ -421,10 +421,10 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             self.__log = eventsState.log
             utc = int(datetime.datetime.utcnow().timestamp())
             tzdelta = int(time.time()) - utc
-            if self.time_delay < 0:
+            if self.__time_delay < 0:
                 self.__log.begin(int(time.time()) + tzdelta - 3600)
             else:
-                self.__log.begin(int(time.time()) + tzdelta - self.time_delay)
+                self.__log.begin(int(time.time()) + tzdelta - self.__time_delay)
             exec_primary_data_func()
 
         if userState.error and not userState.loading and self.__users_loading:
@@ -530,13 +530,12 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             return "s" if count > 1 else ""
 
         time_dialog = TimeSelectDialog()
-        time_dialog.get_object("timeComboBox").set_active_id(self.time_unit)
-        buff = time_dialog.get_object("timeEntryField").get_buffer()
-        buff.set_text(str(self.time_number), len(str(self.time_number)))
+        time_dialog.set_time_unit(self.__time_unit)
+        time_dialog.set_time_number(self.__time_number)
         resp = time_dialog.get_ref().run()
         time_dialog.get_ref().hide()
-        time_unit = time_dialog.get_object("timeComboBox").get_active_id()
-        time_number = int(time_dialog.get_object("timeEntryField").get_buffer().get_text())
+        time_unit = time_dialog.get_time_unit()
+        time_number = time_dialog.get_time_number()
 
         if time_unit == "1":
             seconds = time_number * 60
@@ -550,10 +549,10 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
 
         if resp > 0:
             disp_string = f"{time_number} {display_unit}{plural(time_number)}"
-            self.get_object("delayDisplay").get_buffer().set_text(disp_string, len(disp_string))
-            self.time_delay = seconds
-            self.time_unit = time_unit
-            self.time_number = time_number
+            self.get_object("delayDisplay").set_text(disp_string)
+            self.__time_delay = seconds
+            self.__time_unit = time_unit
+            self.__time_number = time_number
 
         self.__refresh()
         self.__populate_acls()
