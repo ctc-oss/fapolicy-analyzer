@@ -32,12 +32,11 @@ DEFAULT_OUTPUT_DIR = "help"
 DEFAULT_MEDIA_URL = "https://user-images.githubusercontent.com/1545372"
 DEFAULT_BUILD_DIR = path.join("build", DEFAULT_OUTPUT_DIR)
 
-# create a file named ref in the help dir to specify a commit
 try:
-    with open("help/ref") as f:
+    # attempt to read version from a file in the help dir
+    with open("help/version") as f:
         DEFAULT_COMMIT = f.readline().strip() or "HEAD"
 except FileNotFoundError:
-    print("Help 'ref' file does not exist, defaultng to HEAD")
     DEFAULT_COMMIT = "HEAD"
 
 
