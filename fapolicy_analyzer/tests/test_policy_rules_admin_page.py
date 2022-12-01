@@ -687,10 +687,12 @@ def test_time_select_button_clicked(mocker):
     page = PolicyRulesAdminPage()
     mockDialog = MagicMock()
     mockDialog.run.return_value = 1
+    mockDialog.get_seconds.return_value = 3600
     mocker.patch(
         "fapolicy_analyzer.ui.time_select_dialog.TimeSelectDialog.get_ref",
         return_value=mockDialog,
     )
+
     time_click = next(
         iter(
             [
@@ -702,3 +704,4 @@ def test_time_select_button_clicked(mocker):
     )
     time_click()
     mockDialog.run.assert_called()
+    assert page._time_delay == 3600

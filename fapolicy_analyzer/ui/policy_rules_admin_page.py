@@ -117,7 +117,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         object_tabs.append_page(self.object_list.get_ref(), Gtk.Label(label="Object"))
 
         self.get_object("delayDisplay").set_text("1 Hour")
-        self.__time_delay = -1
+        self._time_delay = -1
         self.__time_unit = "2"
         self.__time_number = 1
 
@@ -421,10 +421,10 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             self.__log = eventsState.log
             utc = int(datetime.datetime.utcnow().timestamp())
             tzdelta = int(time.time()) - utc
-            if self.__time_delay < 0:
+            if self._time_delay < 0:
                 self.__log.begin(int(time.time()) + tzdelta - 3600)
             else:
-                self.__log.begin(int(time.time()) + tzdelta - self.__time_delay)
+                self.__log.begin(int(time.time()) + tzdelta - self._time_delay)
             exec_primary_data_func()
 
         if userState.error and not userState.loading and self.__users_loading:
@@ -534,29 +534,16 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         time_dialog.set_time_number(self.__time_number)
         resp = time_dialog.get_ref().run()
         time_dialog.get_ref().hide()
-        time_unit = time_dialog.get_time_unit()
-        time_number = time_dialog.get_time_number()
-
-        if time_unit == "1":
-            seconds = time_number * 60
-            display_unit = "Minute"
-        elif time_unit == "2":
-            seconds = time_number * 3600
-            display_unit = "Hour"
-        elif time_unit == "3":
-            seconds = time_number * 86400
-            display_unit = "Day"
-
         if resp > 0:
-            disp_string = f"{time_number} {display_unit}{plural(time_number)}"
+            self._time_delay = time_dialog.get_seconds()
+            self.__time_unit = time_dialog.get_time_unit()
+            self.__time_number = time_dialog.get_time_number()
+            disp_string = f"{self.__time_number} {time_dialog.get_unit_str()}{plural(self.__time_number)}"
             self.get_object("delayDisplay").set_text(disp_string)
-            self.__time_delay = seconds
-            self.__time_unit = time_unit
-            self.__time_number = time_number
 
-        self.__refresh()
-        self.__populate_acls()
-        self.__populate_subjects_from_acl()
+            self.__refresh()
+            self.__populate_acls()
+            self.__populate_subjects_from_acl()
 
     class Switcher(Events):
         __events__ = ["buttonClicked"]

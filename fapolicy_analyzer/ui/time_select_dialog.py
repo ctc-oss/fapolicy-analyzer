@@ -35,3 +35,24 @@ class TimeSelectDialog(UIBuilderWidget):
 
     def get_time_number(self):
         return int(self.get_object("timeEntryField").get_buffer().get_text())
+
+    def get_unit_str(self):
+        unit_id = self.get_time_unit()
+        if unit_id == "1":
+            display_unit = "Minute"
+        elif unit_id == "2":
+            display_unit = "Hour"
+        elif unit_id == "3":
+            display_unit = "Day"
+        return display_unit
+  
+    def get_seconds(self):
+        unit_id = self.get_time_unit()
+        time_val = self.get_time_number()
+        if unit_id == "1":
+            seconds = time_val * 60
+        elif unit_id == "2":
+            seconds = time_val * 3600
+        elif unit_id == "3":
+            seconds = time_val * 86400
+        return seconds
