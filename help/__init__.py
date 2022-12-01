@@ -28,13 +28,17 @@ from urllib.parse import urlparse
 
 DEFAULT_HELP_FILES = ["User-Guide.md"]
 DEFAULT_REPO = "https://github.com/ctc-oss/fapolicy-analyzer.wiki.git"
-DEFAULT_COMMIT = "HEAD"
 DEFAULT_OUTPUT_DIR = "help"
 DEFAULT_MEDIA_URL = "https://user-images.githubusercontent.com/1545372"
 DEFAULT_BUILD_DIR = path.join("build", DEFAULT_OUTPUT_DIR)
 
-with open("help/ref") as f:
-    DEFAULT_COMMIT = f.readline().strip() or DEFAULT_COMMIT
+# create a file named ref in the help dir to specify a commit
+try:
+    with open("help/ref") as f:
+        DEFAULT_COMMIT = f.readline().strip() or "HEAD"
+except FileNotFoundError:
+    print("Help 'ref' file does not exist, defaultng to HEAD")
+    DEFAULT_COMMIT = "HEAD"
 
 
 def _runs(cmds):
