@@ -27,7 +27,7 @@ use thiserror::Error;
 
 use fapolicy_app::cfg;
 use fapolicy_daemon::fapolicyd::TRUST_LMDB_NAME;
-use fapolicy_daemon::rpm::load_system_trust as load_rpm_trust;
+use fapolicy_trust::load::keep_entry;
 use fapolicy_trust::read::{check_trust_db, parse_trust_record};
 use fapolicy_trust::{load, read, Trust};
 use fapolicy_util::sha::sha256_digest;
@@ -45,7 +45,7 @@ pub enum Error {
     DpkgCommandFail(io::Error),
 
     #[error("{0}")]
-    RpmError(#[from] fapolicy_daemon::rpm::Error),
+    RpmError(#[from] fapolicy_util::rpm::Error),
 
     #[error("{0}")]
     LmdbError(#[from] lmdb::Error),
@@ -63,7 +63,7 @@ pub enum Error {
     FileError(#[from] io::Error),
 
     #[error("file hashing error, {0}")]
-    HashError(#[from] fapolicy_util::error::Error),
+    HashError(#[from] fapolicy_util::sha::Error),
 
     #[error("error reading stdout")]
     ParseError(#[from] std::string::FromUtf8Error),
@@ -235,7 +235,7 @@ fn init(opts: InitOpts, verbose: bool, cfg: &cfg::All, env: &Environment) -> Res
     let sys = if opts.dpkg {
         load_dpkg_trust()?
     } else {
-        load_rpm_trust(&cfg.system.system_trust_path)?
+        load::system_trust(&PathBuf::from(&cfg.system.system_trust_path))?
     };
 
     let sys = if let Some(c) = opts.count {
@@ -315,7 +315,8 @@ fn find(opts: SearchDbOpts, _: &cfg::All, env: &Environment) -> Result<(), Error
 }
 
 fn dump(opts: DumpDbOpts, cfg: &cfg::All) -> Result<(), Error> {
-    let db = load::load_from_file(
+    let db = load::trust_db(
+        &PathBuf::from(&cfg.system.system_trust_path),
         &PathBuf::from(&cfg.system.trust_dir_path),
         Some(&PathBuf::from(&cfg.system.trust_file_path)),
     )?;
@@ -337,7 +338,8 @@ fn dump(opts: DumpDbOpts, cfg: &cfg::All) -> Result<(), Error> {
 }
 
 fn check(_: CheckDbOpts, cfg: &cfg::All) -> Result<(), Error> {
-    let db = load::load_from_file(
+    let db = load::trust_db(
+        &PathBuf::from(&cfg.system.system_trust_path),
         &PathBuf::from(&cfg.system.trust_dir_path),
         Some(&PathBuf::from(&cfg.system.trust_file_path)),
     )?;
@@ -412,7 +414,7 @@ fn load_dpkg_trust() -> Result<Vec<Trust>, Error> {
         .flat_map(output_lines)
         .flatten()
         // apply the rpm filter to limit results
-        .filter(|p| fapolicy_daemon::fapolicyd::keep_entry(p))
+        .filter(|p| keep_entry(p))
         .filter_map(|s| match new_trust_record(&s) {
             Ok(t) => Some(t),
             Err(_) => None,

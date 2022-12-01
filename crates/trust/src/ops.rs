@@ -101,7 +101,7 @@ pub fn get_path_action_map(cs: &Changeset) -> HashMap<String, String> {
     cs.changes.iter().map(to_pair).collect()
 }
 
-fn new_trust_record(path: &str) -> Result<Trust, Error> {
+fn new_trust_record(path: &str) -> Result<Trust, fapolicy_util::sha::Error> {
     let f = File::open(path)?;
     let sha = sha256_digest(BufReader::new(&f))?;
 

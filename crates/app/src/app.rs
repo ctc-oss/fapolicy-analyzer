@@ -17,7 +17,7 @@ use fapolicy_rules::db::DB as RulesDB;
 use fapolicy_rules::ops::Changeset as RuleChanges;
 use fapolicy_rules::read::load_rules_db;
 use fapolicy_trust::db::DB as TrustDB;
-use fapolicy_trust::load::load_from_file;
+use fapolicy_trust::load;
 use fapolicy_trust::ops::Changeset as TrustChanges;
 use fapolicy_trust::read::check_trust_db;
 
@@ -50,7 +50,8 @@ impl State {
     }
 
     pub fn load(cfg: &All) -> Result<State, Error> {
-        let trust_db = load_from_file(
+        let trust_db = load::trust_db(
+            &PathBuf::from(&cfg.system.system_trust_path),
             &PathBuf::from(&cfg.system.trust_dir_path),
             Some(&PathBuf::from(&cfg.system.trust_file_path)),
         )?;

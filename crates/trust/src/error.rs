@@ -6,6 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+use fapolicy_util::{rpm, sha};
 use std::io;
 use std::num::ParseIntError;
 use thiserror::Error;
@@ -35,6 +36,9 @@ pub enum Error {
     #[error("Failed to parse expected size")]
     ParseSizeError(#[from] ParseIntError),
 
-    #[error("{0}")]
-    GeneralError(#[from] fapolicy_util::error::Error),
+    #[error("Error reading trust from RPM DB {0}")]
+    RpmError(#[from] rpm::Error),
+
+    #[error("Error hashing trust entry {0}")]
+    HashError(#[from] sha::Error),
 }
