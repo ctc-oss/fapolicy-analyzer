@@ -360,7 +360,7 @@ class MainWindow(UIConnectedWidget):
                 # This should only happen in a development environment
                 uri = f"file://{os.getcwd()}/help/C/User-Guide.html"
             else:
-                uri = "https://github.com/ctc-oss/fapolicy-analyzer/wiki/User-Guide"
+                uri = f"file://{os.getcwd()}/help/unavailable.html"
             self.__help = HelpBrowser(
                 uri=uri,
                 allow_navigation=False,
