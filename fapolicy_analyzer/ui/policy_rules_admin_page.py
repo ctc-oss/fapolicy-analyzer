@@ -41,12 +41,15 @@ from fapolicy_analyzer.ui.strings import (
     USERS_LABEL,
 )
 from fapolicy_analyzer.ui.subject_list import SubjectList
+from fapolicy_analyzer.ui.time_select_dialog import TimeSelectDialog
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 from fapolicy_analyzer.util import acl, fs
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
+import datetime
+import time
 
 
 class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
@@ -54,6 +57,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         UIConnectedWidget.__init__(
             self, get_system_feature(), on_next=self.on_next_system
         )
+        self.__audit_file: Optional[str] = audit_file
         actions = {
             "analyze": [
                 UIAction(
@@ -64,9 +68,18 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
                 )
             ]
         }
+        if not self.__audit_file:
+            actions["time"] = [
+                UIAction(
+                    "Time",
+                    "Time Selection",
+                    "alarm-symbolic",
+                    {"clicked": self.on_timeSelectBtn_clicked},
+                )
+            ]
         UIPage.__init__(self, actions)
         self.__n_changesets = 0
-        self.__audit_file: Optional[str] = audit_file
+
         self.__log: Optional[Sequence[EventLog]] = None
         self.__events_loading = False
         self.__users: Sequence[User] = []
@@ -102,6 +115,11 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             details_widget_name="objectDetails",
         )
         object_tabs.append_page(self.object_list.get_ref(), Gtk.Label(label="Object"))
+
+        self.get_object("delayDisplay").set_text("1 Hour")
+        self._time_delay = -1
+        self.__time_unit = "2"
+        self.__time_number = 1
 
         self.__switchers = [
             self.Switcher(
@@ -169,6 +187,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         dispatch(request_groups())
         if self.__audit_file:
             dispatch(request_events("debug", self.__audit_file))
+            self.get_object("time_bar").set_visible(False)
         else:
             dispatch(request_events("syslog"))
 
@@ -400,6 +419,12 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         ):
             self.__events_loading = False
             self.__log = eventsState.log
+            utc = int(datetime.datetime.utcnow().timestamp())
+            tzdelta = int(time.time()) - utc
+            if self._time_delay < 0:
+                self.__log.begin(int(time.time()) + tzdelta - 3600)
+            else:
+                self.__log.begin(int(time.time()) + tzdelta - self._time_delay)
             exec_primary_data_func()
 
         if userState.error and not userState.loading and self.__users_loading:
@@ -499,6 +524,26 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
 
     def on_refresh_clicked(self, *args):
         self.__refresh()
+
+    def on_timeSelectBtn_clicked(self, *args):
+        def plural(count):
+            return "s" if count > 1 else ""
+
+        time_dialog = TimeSelectDialog()
+        time_dialog.set_time_unit(self.__time_unit)
+        time_dialog.set_time_number(self.__time_number)
+        resp = time_dialog.get_ref().run()
+        time_dialog.get_ref().hide()
+        if resp > 0:
+            self._time_delay = time_dialog.get_seconds()
+            self.__time_unit = time_dialog.get_time_unit()
+            self.__time_number = time_dialog.get_time_number()
+            disp_string = f"{self.__time_number} {time_dialog.get_unit_str()}{plural(self.__time_number)}"
+            self.get_object("delayDisplay").set_text(disp_string)
+
+            self.__refresh()
+            self.__populate_acls()
+            self.__populate_subjects_from_acl()
 
     class Switcher(Events):
         __events__ = ["buttonClicked"]
