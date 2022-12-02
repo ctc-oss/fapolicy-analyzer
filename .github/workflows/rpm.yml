@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     container: ${{ matrix.props.image }}
     steps:
-      - name: Enable Rocky AppStream and EPEL
+      - name: Enable EPEL
         if: startsWith(matrix.props.name, 'el')
         run: |
           dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
