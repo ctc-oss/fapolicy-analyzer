@@ -159,7 +159,7 @@ def test_displays_about_dialog(mainWindow, mocker):
             "/usr/share/help/C/fapolicy-analyzer/User-Guide.html",
         ),
         (f"file://{os.getcwd()}/help/C/User-Guide.html", "help/C/User-Guide.html"),
-        ("https://github.com/ctc-oss/fapolicy-analyzer/wiki/User-Guide", None),
+        (f"file://{os.getcwd()}/help/unavailable.html", "help/unavailable.html"),
     ],
 )
 def test_displays_help_dialog(expected_uri, patched_file_location, mainWindow, mocker):
