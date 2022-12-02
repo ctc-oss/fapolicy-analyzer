@@ -8,14 +8,18 @@
 
 use rayon::prelude::*;
 use std::collections::HashMap;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
+use std::{fs, io};
 
+use crate::check::TrustPair;
 use lmdb::{Cursor, Environment, Transaction};
 
 use crate::db::{Entry, Rec, DB};
 use crate::error::Error;
 use crate::error::Error::{
-    LmdbNotFound, LmdbPermissionDenied, MalformattedTrustEntry, UnsupportedTrustType,
+    LmdbFailure, LmdbNotFound, LmdbPermissionDenied, MalformattedTrustEntry, UnsupportedTrustType,
 };
 use crate::load::TrustSourceEntry;
 use crate::source::TrustSource;
@@ -35,36 +39,7 @@ fn relativized_path(i: &(PathBuf, String)) -> (String, &String) {
     )
 }
 
-// pub fn read_rules_d(xs: Vec<TrustSourceEntry>) -> Result<DB, Error> {
-//     let lookup: Vec<(String, Entry)> = xs
-//         .iter()
-//         .map(relativized_path)
-//         .map(|(source, l)| (source, parse_trust_record(l)))
-//         .flat_map(|(source, r)| match r {
-//             Ok((t, rule)) => Some((source, rule)),
-//             Ok((_, _)) => None,
-//             Err(nom::Err::Error(LineError::CannotParse(i, why))) => {
-//                 Some((source, Malformed(i.to_string(), why)))
-//             }
-//             Err(nom::Err::Error(LineError::CannotParseSet(i, why))) => {
-//                 Some((source, MalformedSet(i.to_string(), why)))
-//             }
-//             Err(_) => None,
-//         })
-//         .filter_map(|(source, line)| match line {
-//             RuleDef(r) => Some((source, Entry::ValidRule(r))),
-//             SetDef(s) => Some((source, Entry::ValidSet(s))),
-//             Malformed(text, error) => Some((source, Entry::Invalid { text, error })),
-//             MalformedSet(text, error) => Some((source, Entry::InvalidSet { text, error })),
-//             Comment(text) => Some((source, Entry::Comment(text))),
-//             _ => None,
-//         })
-//         .collect();
-//
-//     Ok(lint_db(DB::from_sources(lookup)))
-// }
-
-pub fn parse_trust_record(s: &str) -> Result<Trust, Error> {
+pub(crate) fn parse_trust_record(s: &str) -> Result<Trust, Error> {
     let mut v: Vec<&str> = s.rsplitn(3, ' ').collect();
     v.reverse();
     match v.as_slice() {
@@ -77,14 +52,106 @@ pub fn parse_trust_record(s: &str) -> Result<Trust, Error> {
     }
 }
 
-pub fn check_trust_db(db: &DB) -> Result<DB, Error> {
-    let lookup: HashMap<String, Rec> = db
-        .lookup
-        .par_iter()
-        .flat_map(|(p, r)| Rec::status_check(r.clone()).map(|r| (p.clone(), r)))
+pub(crate) fn strtyped_trust_record(s: &str, t: &str) -> Result<(Trust, TrustSource), Error> {
+    match t {
+        "1" => parse_trust_record(s).map(|t| (t, System)),
+        "2" => parse_trust_record(s).map(|t| (t, Ancillary)),
+        v => Err(UnsupportedTrustType(v.to_string())),
+    }
+}
+
+pub fn from_file(from: &Path) -> Result<Vec<TrustSourceEntry>, io::Error> {
+    let r = BufReader::new(File::open(&from)?);
+    let lines: Result<Vec<String>, io::Error> = r.lines().collect();
+    Ok(lines?
+        .iter()
+        .map(|l| (PathBuf::from(from), l.clone()))
+        .collect())
+}
+
+// todo;; thiserr
+pub fn from_dir(from: &Path) -> Result<Vec<TrustSourceEntry>, io::Error> {
+    let d_files = read_sorted_d_files(from)?;
+
+    let d_files: Result<Vec<(PathBuf, File)>, io::Error> = d_files
+        .into_iter()
+        .map(|p| (p.clone(), File::open(&p)))
+        .map(|(p, r)| r.map(|f| (p, f)))
+        .collect();
+
+    let d_files = d_files?.into_iter().map(|(p, f)| (p, BufReader::new(f)));
+
+    // todo;; externalize result flattening via expect here
+    let d_files = d_files.into_iter().map(|(path, rdr)| {
+        (
+            path.clone(),
+            rdr.lines()
+                .collect::<Result<Vec<String>, io::Error>>()
+                .unwrap_or_else(|_| {
+                    panic!("failed to read lines from trust file, {}", path.display())
+                }),
+        )
+    });
+
+    let d_files: Vec<TrustSourceEntry> = d_files
+        .into_iter()
+        .flat_map(|(src, lines)| {
+            lines
+                .iter()
+                .map(|l| (src.clone(), l.clone()))
+                .collect::<Vec<TrustSourceEntry>>()
+        })
+        .collect();
+
+    Ok(d_files)
+}
+
+/// load the fapolicyd backend lmdb database
+/// parse the results into trust entries
+pub fn from_lmdb(lmdb: &Path) -> Result<DB, Error> {
+    let env = Environment::new().set_max_dbs(1).open(lmdb);
+    let env = match env {
+        Ok(e) => e,
+        Err(lmdb::Error::Other(2)) => return Err(LmdbNotFound(lmdb.display().to_string())),
+        Err(lmdb::Error::Other(13)) => {
+            return Err(LmdbPermissionDenied(lmdb.display().to_string()))
+        }
+        Err(e) => return Err(LmdbFailure(e)),
+    };
+
+    let lmdb = env.open_db(Some("trust.db"))?;
+    let tx = env.begin_ro_txn()?;
+    let mut c = tx.open_ro_cursor(lmdb)?;
+    let lookup: HashMap<String, Rec> = c
+        .iter()
+        .map(|i| i.map(|kv| TrustPair::new(kv).into()).unwrap())
         .collect();
 
     Ok(DB::from(lookup))
+}
+
+fn trust_file(path: PathBuf) -> Result<Vec<TrustSourceEntry>, io::Error> {
+    let reader = File::open(&path).map(BufReader::new)?;
+    let lines = reader
+        .lines()
+        .flatten()
+        .map(|s| (path.clone(), s))
+        .collect();
+    Ok(lines)
+}
+
+pub fn read_sorted_d_files(from: &Path) -> Result<Vec<PathBuf>, io::Error> {
+    let d_files: Result<Vec<PathBuf>, io::Error> =
+        fs::read_dir(from)?.map(|e| e.map(|e| e.path())).collect();
+
+    let mut d_files: Vec<PathBuf> = d_files?
+        .into_iter()
+        .filter(|p| p.is_file() && p.display().to_string().ends_with(".trust"))
+        .collect();
+
+    d_files.sort_by_key(|p| p.display().to_string());
+
+    Ok(d_files)
 }
 
 #[cfg(test)]

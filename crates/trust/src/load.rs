@@ -1,6 +1,6 @@
 use crate::db::{Rec, DB};
 use crate::error::Error;
-use crate::read::parse_trust_record;
+use crate::read::{from_dir, from_file, from_lmdb, parse_trust_record};
 use crate::{load, Trust};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
@@ -32,19 +32,14 @@ use thiserror::Error;
 //  -- can add diagnostic messages to the entries to flag if they overwrote a dupe
 // compare with lmdb, adding diagnostics for anything that is out of sync
 
-fn from_db() {}
-
 pub(crate) type TrustSourceEntry = (PathBuf, String);
 
+/// obtain a [DB]
+/// 1. load lmdb records
+/// 2. load file trust
+/// 3. stir
 pub fn trust_db(lmdb: &Path, trust_d: &Path, trust_file: Option<&Path>) -> Result<DB, Error> {
-    // let db = load::load_from_file(
-    //     &PathBuf::from(&cfg.system.trust_dir_path),
-    //     Some(&PathBuf::from(&cfg.system.trust_file_path)),
-    // )?;
-    //load_system_trust()
-
     let mut db = from_lmdb(lmdb)?;
-
     for (o, t) in file_trust(trust_d, trust_file)? {
         match db.get_mut(&t.path) {
             None => {}
@@ -53,7 +48,6 @@ pub fn trust_db(lmdb: &Path, trust_d: &Path, trust_file: Option<&Path>) -> Resul
             }
         }
     }
-
     Ok(db)
 }
 
@@ -89,103 +83,9 @@ pub fn rpm_trust(rpmdb: &Path) -> Result<Vec<Trust>, Error> {
         .map_err(RpmDumpFailed)?;
 
     match String::from_utf8(res.stdout) {
-        Ok(data) => Ok(parse(&data)),
+        Ok(data) => Ok(parse_rpm_db_entry(&data)),
         Err(_) => Err(ReadRpmDumpFailed.into()),
     }
-}
-
-pub fn from_file(from: &Path) -> Result<Vec<TrustSourceEntry>, io::Error> {
-    let r = BufReader::new(File::open(&from)?);
-    let lines: Result<Vec<String>, io::Error> = r.lines().collect();
-    Ok(lines?
-        .iter()
-        .map(|l| (PathBuf::from(from), l.clone()))
-        .collect())
-}
-
-// todo;; thiserr
-pub fn from_dir(from: &Path) -> Result<Vec<TrustSourceEntry>, io::Error> {
-    let d_files = read_sorted_d_files(from)?;
-
-    let d_files: Result<Vec<(PathBuf, File)>, io::Error> = d_files
-        .into_iter()
-        .map(|p| (p.clone(), File::open(&p)))
-        .map(|(p, r)| r.map(|f| (p, f)))
-        .collect();
-
-    let d_files = d_files?.into_iter().map(|(p, f)| (p, BufReader::new(f)));
-
-    // todo;; externalize result flattening via expect here
-    let d_files = d_files.into_iter().map(|(path, rdr)| {
-        (
-            path.clone(),
-            rdr.lines()
-                .collect::<Result<Vec<String>, io::Error>>()
-                .unwrap_or_else(|_| {
-                    panic!("failed to read lines from trust file, {}", path.display())
-                }),
-        )
-    });
-
-    let d_files: Vec<TrustSourceEntry> = d_files
-        .into_iter()
-        .flat_map(|(src, lines)| {
-            lines
-                .iter()
-                .map(|l| (src.clone(), l.clone()))
-                .collect::<Vec<TrustSourceEntry>>()
-        })
-        .collect();
-
-    Ok(d_files)
-}
-
-/// load the fapolicyd backend lmdb database
-/// parse the results into trust entries
-pub fn from_lmdb(lmdb: &Path) -> Result<DB, Error> {
-    let env = Environment::new().set_max_dbs(1).open(lmdb);
-    let env = match env {
-        Ok(e) => e,
-        Err(lmdb::Error::Other(2)) => return Err(LmdbNotFound(lmdb.display().to_string())),
-        Err(lmdb::Error::Other(13)) => {
-            return Err(LmdbPermissionDenied(lmdb.display().to_string()))
-        }
-        Err(e) => return Err(LmdbFailure(e)),
-    };
-
-    let lmdb = env.open_db(Some("trust.db"))?;
-    let tx = env.begin_ro_txn()?;
-    let mut c = tx.open_ro_cursor(lmdb)?;
-    let lookup: HashMap<String, Rec> = c
-        .iter()
-        .map(|i| i.map(|kv| TrustPair::new(kv).into()).unwrap())
-        .collect();
-
-    Ok(DB::from(lookup))
-}
-
-fn trust_file(path: PathBuf) -> Result<Vec<TrustSourceEntry>, io::Error> {
-    let reader = File::open(&path).map(BufReader::new)?;
-    let lines = reader
-        .lines()
-        .flatten()
-        .map(|s| (path.clone(), s))
-        .collect();
-    Ok(lines)
-}
-
-pub fn read_sorted_d_files(from: &Path) -> Result<Vec<PathBuf>, io::Error> {
-    let d_files: Result<Vec<PathBuf>, io::Error> =
-        fs::read_dir(from)?.map(|e| e.map(|e| e.path())).collect();
-
-    let mut d_files: Vec<PathBuf> = d_files?
-        .into_iter()
-        .filter(|p| p.is_file() && p.display().to_string().ends_with(".trust"))
-        .collect();
-
-    d_files.sort_by_key(|p| p.display().to_string());
-
-    Ok(d_files)
 }
 
 #[derive(Debug)]
@@ -199,7 +99,7 @@ fn contains_no_files(s: &str) -> nom::IResult<&str, Option<RpmDbEntry>> {
     delimited(tag("("), tag("contains no files"), tag(")"))(s).map(|x| (x.0, None))
 }
 
-fn parse(s: &str) -> Vec<Trust> {
+fn parse_rpm_db_entry(s: &str) -> Vec<Trust> {
     iterator(s, terminated(contains_no_files.or(parse_line), line_ending))
         .collect::<Vec<Option<RpmDbEntry>>>()
         .iter()
@@ -316,7 +216,7 @@ mod tests {
             "{}\n,{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n",
             NF, A, NF, B, NF, C, NF, D, NF
         );
-        let r = parse(&full);
+        let r = parse_rpm_db_entry(&full);
         assert_eq!(2, r.len());
     }
 
@@ -368,7 +268,7 @@ mod tests {
     #[test]
     fn parse_db() {
         let abc = format!("{}\n{}\n{}\n{}\n", A, B, C, D);
-        let files: Vec<Trust> = parse(&abc);
+        let files: Vec<Trust> = parse_rpm_db_entry(&abc);
         assert_eq!(files.len(), 2);
     }
 

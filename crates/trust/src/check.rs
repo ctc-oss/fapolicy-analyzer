@@ -1,23 +1,25 @@
 use crate::db::{Rec, DB};
 use crate::error::Error;
 use crate::error::Error::{LmdbFailure, LmdbNotFound, LmdbPermissionDenied, UnsupportedTrustType};
-use crate::read::parse_trust_record;
 use crate::source::TrustSource;
 use crate::source::TrustSource::{Ancillary, System};
-use crate::Trust;
+use crate::{read, Trust};
 use lmdb::{Cursor, Environment, Transaction};
+use rayon::iter::IntoParallelRefIterator;
 use std::collections::HashMap;
 use std::path::Path;
 
-// 1. checking disk for actual status
+use rayon::prelude::*;
 
-// 2. checking lmdb for sync status
-fn parse_strtyped_trust_record(s: &str, t: &str) -> Result<(Trust, TrustSource), Error> {
-    match t {
-        "1" => parse_trust_record(s).map(|t| (t, System)),
-        "2" => parse_trust_record(s).map(|t| (t, Ancillary)),
-        v => Err(UnsupportedTrustType(v.to_string())),
-    }
+// 1. checking disk for actual status
+pub fn disk_sync(db: &DB) -> Result<DB, Error> {
+    let lookup: HashMap<String, Rec> = db
+        .lookup
+        .par_iter()
+        .flat_map(|(p, r)| Rec::status_check(r.clone()).map(|r| (p.clone(), r)))
+        .collect();
+
+    Ok(DB::from(lookup))
 }
 
 pub(crate) struct TrustPair {
@@ -37,7 +39,7 @@ impl TrustPair {
 impl From<TrustPair> for (String, Rec) {
     fn from(kv: TrustPair) -> Self {
         let (tt, v) = kv.v.split_once(' ').unwrap();
-        let (t, s) = parse_strtyped_trust_record(format!("{} {}", kv.k, v).as_str(), tt)
+        let (t, s) = read::strtyped_trust_record(format!("{} {}", kv.k, v).as_str(), tt)
             .expect("failed to parse_strtyped_trust_record");
         (t.path.clone(), Rec::new_from(t, s))
     }

@@ -28,8 +28,7 @@ use thiserror::Error;
 use fapolicy_app::cfg;
 use fapolicy_daemon::fapolicyd::TRUST_LMDB_NAME;
 use fapolicy_trust::load::keep_entry;
-use fapolicy_trust::read::{check_trust_db, parse_trust_record};
-use fapolicy_trust::{load, read, Trust};
+use fapolicy_trust::{check, load, read, Trust};
 use fapolicy_util::sha::sha256_digest;
 
 use crate::Error::{DirTrustError, DpkgCommandFail, DpkgNotFound, TrustError};
@@ -271,7 +270,14 @@ fn init(opts: InitOpts, verbose: bool, cfg: &cfg::All, env: &Environment) -> Res
 }
 
 fn load(opts: LoadOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
-    let trust = load_ancillary_trust(&opts.path)?;
+    let source = match PathBuf::from(&opts.path) {
+        source if source.is_dir() => read::from_dir(&source)?,
+        source => read::from_file(&source)?,
+    };
+
+    need to parse the source entries out into Trust structs
+
+
     let db = env.open_db(Some(TRUST_LMDB_NAME))?;
     let mut tx = env.begin_rw_txn()?;
     for t in trust {
@@ -345,7 +351,7 @@ fn check(_: CheckDbOpts, cfg: &cfg::All) -> Result<(), Error> {
     )?;
 
     let t = SystemTime::now();
-    let count = check_trust_db(&db)?.iter().count();
+    let count = check::disk_sync(&db)?.iter().count();
 
     let duration = t.elapsed().expect("timer failure");
 
@@ -425,16 +431,16 @@ fn output_lines(out: Output) -> Result<Vec<String>, Error> {
         .map(String::from)
         .collect())
 }
-
-fn load_ancillary_trust(path: &str) -> Result<Vec<Trust>, Error> {
-    let f = File::open(path)?;
-    let r = BufReader::new(f);
-
-    let lines: Result<Vec<String>, io::Error> = r.lines().collect();
-    lines?
-        .iter()
-        .map(|s| s.trim_start())
-        .filter(|s| !s.is_empty() && !s.starts_with('#'))
-        .map(|l| parse_trust_record(l).map_err(TrustError))
-        .collect()
-}
+//
+// fn load_ancillary_trust(path: &str) -> Result<Vec<Trust>, Error> {
+//     let f = File::open(path)?;
+//     let r = BufReader::new(f);
+//
+//     let lines: Result<Vec<String>, io::Error> = r.lines().collect();
+//     lines?
+//         .iter()
+//         .map(|s| s.trim_start())
+//         .filter(|s| !s.is_empty() && !s.starts_with('#'))
+//         .map(|l| parse_trust_record(l).map_err(TrustError))
+//         .collect()
+// }

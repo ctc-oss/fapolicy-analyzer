@@ -17,9 +17,8 @@ use fapolicy_rules::db::DB as RulesDB;
 use fapolicy_rules::ops::Changeset as RuleChanges;
 use fapolicy_rules::read::load_rules_db;
 use fapolicy_trust::db::DB as TrustDB;
-use fapolicy_trust::load;
 use fapolicy_trust::ops::Changeset as TrustChanges;
-use fapolicy_trust::read::check_trust_db;
+use fapolicy_trust::{check, load};
 
 use crate::cfg::All;
 use crate::cfg::PROJECT_NAME;
@@ -68,7 +67,7 @@ impl State {
 
     pub fn load_checked(cfg: &All) -> Result<State, Error> {
         let state = State::load(cfg)?;
-        let trust_db = check_trust_db(&state.trust_db)?;
+        let trust_db = check::disk_sync(&state.trust_db)?;
         Ok(State { trust_db, ..state })
     }
 
