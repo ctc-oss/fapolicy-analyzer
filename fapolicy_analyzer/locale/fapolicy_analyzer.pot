@@ -7,16 +7,16 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: fapolicy-analyzer 0.5.0+90.g3741a95\n"
+"Project-Id-Version: fapolicy-analyzer 0.3.1+193.gd4e1328.dirty\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-11-17 17:49-0500\n"
+"POT-Creation-Date: 2022-11-29 15:57-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.10.1\n"
+"Generated-By: Babel 2.11.0\n"
 
 #: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:112
 #: fapolicy_analyzer/ui/system_trust_database_admin.py:107
@@ -56,7 +56,7 @@ msgstr ""
 msgid "Reverting to previous settings in {i+1} seconds"
 msgstr ""
 
-#: fapolicy_analyzer/ui/main_window.py:267
+#: fapolicy_analyzer/ui/main_window.py:276
 msgid ""
 "An error occurred trying to open the session file, "
 "{self.strSessionFilename}"
@@ -459,7 +459,7 @@ msgid "Scan System"
 msgstr ""
 
 #: fapolicy_analyzer/glade/analyzer_selection_dialog.glade:55
-#: fapolicy_analyzer/glade/main_window.glade:169
+#: fapolicy_analyzer/glade/main_window.glade:175
 msgid "Administer Trust Databases"
 msgstr ""
 
@@ -525,49 +525,53 @@ msgstr ""
 msgid "Visit our Wiki for more information"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:55
+#: fapolicy_analyzer/glade/main_window.glade:58
 #: fapolicy_analyzer/glade/splash_screen.glade:24
 msgid "File Access Policy Analyzer"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:79
+#: fapolicy_analyzer/glade/main_window.glade:85
 msgid "_File"
 msgstr ""
 
 #. Presents option to load prior sessions tmp file (if it exists.)
-#: fapolicy_analyzer/glade/main_window.glade:99
+#: fapolicy_analyzer/glade/main_window.glade:105
 msgid "Restore"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:142
+#: fapolicy_analyzer/glade/main_window.glade:148
 msgid "_Tool"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:152
+#: fapolicy_analyzer/glade/main_window.glade:158
 msgid "Analyze From Syslog"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:161
+#: fapolicy_analyzer/glade/main_window.glade:167
 msgid "Analyze From Audit Log"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:178
+#: fapolicy_analyzer/glade/main_window.glade:184
 msgid "Administer Rules"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:187
+#: fapolicy_analyzer/glade/main_window.glade:193
 msgid "Profile Executable"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:200
+#: fapolicy_analyzer/glade/main_window.glade:206
 msgid "System"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:233
+#: fapolicy_analyzer/glade/main_window.glade:239
 msgid "_Help"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:297
+#: fapolicy_analyzer/glade/main_window.glade:249
+msgid "User Guide"
+msgstr ""
+
+#: fapolicy_analyzer/glade/main_window.glade:312
 msgid "fapolicyd:"
 msgstr ""
 

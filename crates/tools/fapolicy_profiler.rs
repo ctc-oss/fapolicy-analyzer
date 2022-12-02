@@ -17,6 +17,7 @@ use clap::Clap;
 use fapolicy_daemon::profiler::Profiler;
 use fapolicy_rules::read::load_rules_db;
 use std::error::Error;
+use std::os::unix::prelude::CommandExt;
 use std::path::PathBuf;
 use std::process::Command;
 
@@ -30,6 +31,14 @@ struct Opts {
     /// out path for daemon stdout log
     #[clap(long)]
     stdout: Option<String>,
+
+    /// the profiling uid
+    #[clap(long)]
+    uid: Option<u32>,
+
+    /// the profiling gid
+    #[clap(long)]
+    gid: Option<u32>,
 
     /// the literal target to run, prefix by double hyphens
     /// faprofiler -- ls -al /tmp
@@ -60,7 +69,14 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     profiler.activate_with_rules(db.as_ref())?;
-    let out = Command::new(target).args(args).output()?;
+    let mut cmd = Command::new(target);
+    if let Some(uid) = opts.uid {
+        cmd.uid(uid);
+    }
+    if let Some(gid) = opts.gid {
+        cmd.gid(gid);
+    }
+    let out = cmd.args(args).output()?;
     println!("{}", String::from_utf8(out.stdout)?);
     profiler.deactivate()?;
 

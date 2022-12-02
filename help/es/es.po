@@ -1,0 +1,746 @@
+# Copyright Concurrent Technologies Corporation 2022
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# NOTE: This translation file is only here as an example for testing. It needs
+# some help before its production ready
+
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2022-11-22 07:40-0500\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. (itstool) path: head/title
+#. (itstool) path: body/h1
+#: help/C/User-Guide.html:5
+#: help/C/User-Guide.html:8
+msgid "File Access Policy Analyzer"
+msgstr "Analizador de políticas de acceso a archivos"
+
+#. (itstool) path: body/h1
+#: help/C/User-Guide.html:10
+msgid "Introduction"
+msgstr ""
+
+#. (itstool) path: body/h2
+#: help/C/User-Guide.html:12
+msgid "What is the File Access Policy Analyzer?"
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:14
+msgid "This application consists of several GUI tools that support configuration and management of fapolicyd."
+msgstr ""
+
+#. (itstool) path: ol/li
+#. (itstool) path: body/h1
+#: help/C/User-Guide.html:17
+#: help/C/User-Guide.html:25
+msgid "Trust Administration"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:18
+msgid "Rule Administration"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:19
+msgid "Policy Profiling"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:20
+msgid "Log Analysis"
+msgstr ""
+
+#. (itstool) path: body/h2
+#: help/C/User-Guide.html:27
+msgid "System Trust"
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:29
+msgid "System trust is sourced from the RPM database on the host machine. The file locations are checked for size and sha256 hash to check for trust status as fapolicyd would. The GUI highlights the untrusted files in red while trusted are in green."
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:31
+msgid "The intent here is to indicate in the GUI what the status of the file on disk is vs what fapolicyd has in the trust database. The trust database for system trust was derived from the rpm db, so a mismatch here indicates that the file on disk has changed from the originally installed file from the source rpm."
+msgstr ""
+
+#. (itstool) path: body/h3
+#: help/C/User-Guide.html:35
+#: help/C/User-Guide.html:66
+#: help/C/User-Guide.html:97
+#: help/C/User-Guide.html:114
+#: help/C/User-Guide.html:182
+#: help/C/User-Guide.html:240
+msgid "Available User Interactions"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:38
+#: help/C/User-Guide.html:69
+msgid "Sort entries based on their trusted status. T = Trusted, D = Discrepancy"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:39
+#: help/C/User-Guide.html:70
+msgid "Sort entries based on the file modified time."
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:40
+#: help/C/User-Guide.html:71
+msgid "Sort entries based on file name."
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:41
+#: help/C/User-Guide.html:72
+msgid "Search for entries using the search field."
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:42
+#: help/C/User-Guide.html:74
+msgid "Select entries and view the metadata displayed in the right hand columns a. Path, hash, size in the fapolicyd database b. Stat of actual file on disk c. File trusted status summary"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:46
+msgid "Select one or more files with discrepancies and click Add to trust database to create trust entries for them."
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:47
+#: help/C/User-Guide.html:80
+#: help/C/User-Guide.html:100
+#: help/C/User-Guide.html:117
+#: help/C/User-Guide.html:243
+msgid "Deploy changes to disk and apply to fapolicyd"
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:50
+msgid "After adding trust entries the deployment options on the toolbar become active. See the Deployment section for more details."
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:52
+msgid "Known issue: large RPM databases can take some time to load on single core machines. The system trust code does utilize additional cores so there will be a linear drop in loading time as more cores are available."
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:54
+msgid "From this view you are able to resolve trust issues by adding files with discrepancies to the ancillary trust."
+msgstr ""
+
+#. (itstool) path: body/h2
+#: help/C/User-Guide.html:56
+msgid "Ancillary Trust"
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:58
+msgid "In addition to the RPM database, fapolicyd can source trust from a text file or collection of text files. In the GUI we call this trust Ancillary trust."
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:60
+msgid "From this view you are able to add additional files or directories of files that will add to system trust when the files are not know, or override it if the file was already in the rpm db."
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:62
+msgid "A mismatch highlighted here indicates that the file that was originally trusted has changed in some way."
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:73
+msgid "Add trusted entries to the database using a file selection tool."
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:78
+msgid "Select one or more files with discrepancies and click Trust to trust database."
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:79
+msgid "Select one or more Trusted entries and click Untrust to remove from trust database."
+msgstr ""
+
+#. (itstool) path: body/h2
+#: help/C/User-Guide.html:83
+msgid "Trust.d support"
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:85
+msgid "Ancillary trust currently only supports the single file configuration. Near term improvements are planned to add support for the trust.d backend."
+msgstr ""
+
+#. (itstool) path: body/h1
+#: help/C/User-Guide.html:89
+msgid "Rules Administration"
+msgstr ""
+
+#. (itstool) path: body/h2
+#: help/C/User-Guide.html:91
+msgid "Rule Editor"
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:93
+msgid "The GUI contains a text based rule editor that provides text highlighting and rules.d flattening to improve the rule editing experience."
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:101
+#: help/C/User-Guide.html:118
+msgid "Validate and lint the current editor content, without saving it"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:102
+#: help/C/User-Guide.html:119
+msgid "Save the current editor content to the session, validates prior to saving"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:103
+msgid "Editor for text based rules, with syntax highlighting"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:104
+#: help/C/User-Guide.html:123
+msgid "Collapse / expand the Status Information tree that display messages from the rule parse"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:105
+msgid "File marker annotations allow manipulating file content from within the text editor"
+msgstr ""
+
+#. (itstool) path: body/h2
+#: help/C/User-Guide.html:108
+msgid "Rule Viewer"
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:110
+msgid "The tree view of rules bridges some gaps in rendering of rules within the text editor. The ability to provide the flattened rule id and perform mouse operations on specific rules is currently limited to this view."
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:120
+msgid "Search field to search for rules based on text content"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:121
+msgid "Collapse / expand the rules tree at the file level"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:122
+msgid "File marker annotations"
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:126
+msgid "This view is currently read-only."
+msgstr ""
+
+#. (itstool) path: body/h2
+#: help/C/User-Guide.html:128
+msgid "Flattening of rules.d"
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:130
+msgid "Within the rules.d directory there is a structure of one or more files that each may contain multiple rules. Determining the overall order of rules, as fapolicyd will interpret them, while editing can be tedious within the limited context of a single file. To ease this, the editor implements a flattening approach that displays all .d files within a single editor view. Transient delimiter annotations are inserted into the text view that identify file breaks. These annotations are editable which enables the user to rename, split, and merge file content by changing annotation content and location."
+msgstr ""
+
+#. (itstool) path: body/h2
+#: help/C/User-Guide.html:132
+msgid "File markers"
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:134
+msgid "The file delimeters in the editor are referred to as file markers. These annotate the content of the editor to inform it where to break files when writing to disk."
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:136
+msgid "File markers consist of the file name wrapped in square braces"
+msgstr ""
+
+#. (itstool) path: p/code
+#: help/C/User-Guide.html:138
+msgid "[01-my.rules]"
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:140
+msgid "File markers are inserted automatically when loading rules.d. While editing, markers may be added or removed to split or merge rules into the corresponding rules files."
+msgstr ""
+
+#. (itstool) path: body/h3
+#: help/C/User-Guide.html:142
+msgid "Examples"
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:144
+msgid "A rule set that contains three rules, originally sourced from a single file"
+msgstr ""
+
+#. (itstool) path: p/code
+#: help/C/User-Guide.html:146
+msgid "[single-file.rules] r1 r2 r3"
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:153
+msgid "Can be split into multiple rule files"
+msgstr ""
+
+#. (itstool) path: p/code
+#: help/C/User-Guide.html:155
+msgid "[00-my-rules.rules] r1 [01-my-rules.rules] r2 [02-my-rules.rules] r3"
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:164
+msgid "An then rules can merge into a single file by removing a marker"
+msgstr ""
+
+#. (itstool) path: p/code
+#: help/C/User-Guide.html:166
+msgid "[00-my-rules.rules] r1 [01-my-rules.rules] r2 r3"
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:174
+msgid "A root marker is required, if not specified it will be inserted by the application using a default file name."
+msgstr ""
+
+#. (itstool) path: body/h1
+#: help/C/User-Guide.html:178
+msgid "Policy Profiler"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:185
+msgid "Start Profiling"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:186
+msgid "Stop Profiling"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:187
+msgid "Load results in Policy Analyzer"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:188
+msgid "Clear Profiler launch configuration entry text fields"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:189
+msgid "Executable target path, relative or absolute (required)"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:190
+msgid "Arguments to pass to the executable target (optional)"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:191
+msgid "User to execute target as (optional: default root)"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:192
+msgid "Working directory to launch target from (optional)"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:193
+msgid "Environment variables to pass to target (optional)"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:194
+msgid "Keep profiling session active for more than one profiler run"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:195
+msgid "Display text output from stderr and stdout logs from both fapolicyd and target executable"
+msgstr ""
+
+#. (itstool) path: body/h2
+#: help/C/User-Guide.html:198
+msgid "How the Profiler works"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:201
+msgid "Take fapolicyd offline"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:202
+msgid "Restart fapolicyd service in debug mode, redirecting logs"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:203
+msgid "Execute an application"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:204
+msgid "Take profiling fapolicyd offline"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:205
+msgid "Restart standard fapolicyd service"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:206
+msgid "Send the logs to the Policy Analyzer"
+msgstr ""
+
+#. (itstool) path: body/h2
+#: help/C/User-Guide.html:209
+msgid "Configuring a profiler session"
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:211
+msgid "The profile execution is configured similarly to a launch profile in an IDE. Provide the target, args, working directory, and environment variables. Additionally we support the ability to run as a different user."
+msgstr ""
+
+#. (itstool) path: p/a
+#: help/C/User-Guide.html:213
+msgid "#664"
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:213
+msgid "Future: Allow specification of gid(s) for the target execution, <_:a-1/>."
+msgstr ""
+
+#. (itstool) path: body/h2
+#: help/C/User-Guide.html:215
+msgid "Profiling an application"
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:217
+msgid "Known issue: there is no feedback to indicate the status of the running application during profiling. This will be addressed in the future by displaying the log output of the target application."
+msgstr ""
+
+#. (itstool) path: body/h2
+#: help/C/User-Guide.html:219
+msgid "Analyzing after profiling"
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:221
+msgid "The analyzer can be accessed in two ways"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:224
+msgid "Load the fapolicyd log file from the profiling session using the tools load from debug log option."
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:225
+msgid "Click the analyze button on the toolbar once the profiler session has ended."
+msgstr ""
+
+#. (itstool) path: body/h1
+#: help/C/User-Guide.html:230
+msgid "Policy Analyzer"
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:232
+msgid "The analyzer tool displays a three column faceted view that allows for graphical browsing of a fapolicyd log. The three column configuration represents data from a log entry per line, with the columns representing the user/group, subject, object."
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:236
+msgid "The first two columns are reversible, allowing the user to use a starting perspective of either user/group or subject. The double arrow button within the first column header flips the perspective."
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:238
+msgid "Each column contains a search field to perform filtering of entries. There are also right click options available for entries that provide trust reconciliation."
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:244
+msgid "Refresh the data display based on the original source"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:245
+msgid "Filter the User / Group column based on text content"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:246
+msgid "Perspective switch between the User / Group and Subject"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:247
+msgid "Filter the Subject display based on text content"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:248
+msgid "Filter the Object display based on text content"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:249
+msgid "Metadata for selected User / Group"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:250
+msgid "Stat output for selected Subject"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:251
+msgid "Stat output for selected Object"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:252
+msgid "Right click operations a. Reconcile trust discrepancy b. Jump to rule view"
+msgstr ""
+
+#. (itstool) path: body/h2
+#: help/C/User-Guide.html:257
+msgid "Debug logs"
+msgstr ""
+
+#. (itstool) path: p/code
+#: help/C/User-Guide.html:259
+msgid "Tool &gt; Analyze from Debug log"
+msgstr ""
+
+#. (itstool) path: p/code
+#: help/C/User-Guide.html:259
+msgid "--debug"
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:259
+msgid "Entrypoint to the analyzer using the <_:code-1/> menu item will allow the user to pick a fapolicyd debug log that was generated by using the <_:code-2/> option on the daemon."
+msgstr ""
+
+#. (itstool) path: body/h2
+#: help/C/User-Guide.html:261
+msgid "Syslog"
+msgstr ""
+
+#. (itstool) path: p/code
+#: help/C/User-Guide.html:263
+msgid "Tool &gt; Analyze from Syslog"
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:263
+msgid "Entrypoint to the analyzer Using the <_:code-1/> menu item will load the systems current syslog journal into the analyzer."
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:265
+msgid "The required format for syslog entries must be added to the fapolicyd configuration."
+msgstr ""
+
+#. (itstool) path: p/code
+#: help/C/User-Guide.html:267
+msgid "syslog_format = rule,dec,perm,uid,gid,pid,exe,:,path,ftype,trust"
+msgstr ""
+
+#. (itstool) path: body/h2
+#: help/C/User-Guide.html:269
+msgid "Audit log"
+msgstr ""
+
+#. (itstool) path: p/a
+#: help/C/User-Guide.html:271
+msgid "issue #294"
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:271
+msgid "Future: Analyzing kernel audit log entries will be added to a future release, tracked in <_:a-1/>"
+msgstr ""
+
+#. (itstool) path: body/h2
+#: help/C/User-Guide.html:273
+msgid "Reconciling trust"
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:275
+msgid "When the analyzer shows that a file access was denied due to trust issue, the user can use a right click operation to reconcile the trust issue by updating the trust database with the content that matches the on-disk file."
+msgstr ""
+
+#. (itstool) path: body/h1
+#: help/C/User-Guide.html:279
+msgid "Deployment"
+msgstr ""
+
+#. (itstool) path: body/h2
+#: help/C/User-Guide.html:281
+msgid "What happens during deployment"
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:283
+msgid "Deployment involves applying the current state held within the GUI to disk and having fapolicyd apply it to its state."
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:285
+msgid "To accomplish this we do the following"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:288
+msgid "Stop fapolicyd service"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:289
+msgid "Write ancillary trust to disk"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:290
+msgid "Write rules.d to disk"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:291
+msgid "Start fapolicyd service"
+msgstr ""
+
+#. (itstool) path: body/h2
+#: help/C/User-Guide.html:294
+msgid "Rolling back a deployment"
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:296
+msgid "After deployment is completed the user will be presented with a dialog asking if they want to keep the applied settings. There is a 30 second count down during which time you may test the system for functionality. If the dialog does not confirm that the changes should be kept in place the changes made to the hist will rollback to the previous state."
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:301
+msgid "Status message indicating the deployment was successful"
+msgstr ""
+
+#. (itstool) path: ol/li
+#: help/C/User-Guide.html:302
+msgid "Modal dialog that allows selection up to when the timer expires"
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:305
+msgid "This is intended to be a fail safe in the case where a misconfiguration disables interaction with the host."
+msgstr ""
+
+#. (itstool) path: body/h1
+#: help/C/User-Guide.html:309
+msgid "Fapolicyd service control"
+msgstr ""
+
+#. (itstool) path: body/h2
+#: help/C/User-Guide.html:311
+msgid "Start and Stop"
+msgstr ""
+
+#. (itstool) path: body/h2
+#: help/C/User-Guide.html:315
+msgid "Fapolicyd-proof control"
+msgstr ""
+
+#. (itstool) path: p/code
+#: help/C/User-Guide.html:317
+msgid "systemctl"
+msgstr ""
+
+#. (itstool) path: p/code
+#: help/C/User-Guide.html:317
+msgid "deny perm=any all : all"
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:317
+msgid "Because fapolicyd has the ability to reject any disk accesses we must be very careful when considering the resiliency of control the application provides. If we were to rely on controlling the fapolicyd service using the <_:code-1/> utility there is a chance that deploying a stringent rule such as <_:code-2/> we could lose the ability to control the daemon."
+msgstr ""
+
+#. (itstool) path: body/p
+#: help/C/User-Guide.html:319
+msgid "To ensure resiliency we control fapolicyd using DBUS messages to signal system operations. This ensures we can start / stop the fapolicyd service even given stringent rules. This is used for both deployments and manual control (via the System menu), and gives the application resiliency that is hard to accomplish using existing command line tools."
+msgstr ""
+
+#. (itstool) path: body/h1
+#: help/C/User-Guide.html:323
+msgid "Session management"
+msgstr ""
+
+#. (itstool) path: body/h2
+#: help/C/User-Guide.html:325
+msgid "Saving edits that have not been deployed"
+msgstr ""
+
+#. (itstool) path: body/h2
+#: help/C/User-Guide.html:327
+msgid "Restoring edits saved to a file"
+msgstr ""
+

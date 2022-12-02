@@ -139,6 +139,10 @@ el-rpm:
 	podman build -t fapolicy-analyzer:el -f scripts/srpm/Containerfile.el .
 	podman run --rm -it --network=none -v /tmp:/v fapolicy-analyzer:el /v
 
+help-docs:
+	python3 help update
+	python3 help build
+
 # Display all Makefile targets
 list-all:
 	@echo

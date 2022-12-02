@@ -10,21 +10,24 @@ Source0:       fapolicy-analyzer.tar.gz
 # reference: https://bugzilla.redhat.com/show_bug.cgi?id=2124697#c5
 Source1:       vendor-rs.tar.gz
 
+# this tarball contains documentation used to generate help docs
+Source2:       vendor-docs.tar.gz
+
 # on copr the source containter is never el
 # we check for low fc version here to remedy that
 %if 0%{?rhel} || 0%{?fedora} < 37
-Source2:       %{pypi_source setuptools-rust 1.1.2}
-Source3:       %{pypi_source pip 21.3.1}
-Source4:       %{pypi_source setuptools 59.6.0}
-Source5:       %{pypi_source wheel 0.37.0}
-Source6:       %{pypi_source setuptools_scm 6.4.2}
-Source7:       %{pypi_source semantic_version 2.8.2}
-Source8:       %{pypi_source packaging 21.3}
-Source9:       %{pypi_source pyparsing 2.1.0}
-Source10:      %{pypi_source tomli 1.2.3}
-Source11:      %{pypi_source flit_core 3.7.1}
-Source12:      %{pypi_source typing_extensions 3.7.4.3}
-Source13:      https://files.pythonhosted.org/packages/source/p/pytz/pytz-2017.2.zip
+Source10:       %{pypi_source setuptools-rust 1.1.2}
+Source11:       %{pypi_source pip 21.3.1}
+Source12:       %{pypi_source setuptools 59.6.0}
+Source13:       %{pypi_source wheel 0.37.0}
+Source14:       %{pypi_source setuptools_scm 6.4.2}
+Source15:       %{pypi_source semantic_version 2.8.2}
+Source16:       %{pypi_source packaging 21.3}
+Source17:       %{pypi_source pyparsing 2.1.0}
+Source18:      %{pypi_source tomli 1.2.3}
+Source19:      %{pypi_source flit_core 3.7.1}
+Source20:      %{pypi_source typing_extensions 3.7.4.3}
+Source21:      https://files.pythonhosted.org/packages/source/p/pytz/pytz-2017.2.zip
 %endif
 
 BuildRequires: python3-devel
@@ -33,6 +36,8 @@ BuildRequires: python3dist(pip)
 BuildRequires: python3dist(wheel)
 BuildRequires: python3dist(babel)
 BuildRequires: dbus-devel
+BuildRequires: gettext
+BuildRequires: itstool
 
 %if 0%{?rhel}
 BuildRequires: rust-toolset
@@ -144,6 +149,11 @@ Requires:      gtk3
 Requires:      dbus-libs
 Requires:      gtksourceview3
 
+# for rendering our html user guide documentation
+# will be addressed with future upgrade of yelp
+Requires:      webkit2gtk3
+Requires:      mesa-dri-drivers
+
 %if 0%{?rhel}
 Requires:      python3-dataclasses
 Requires:      python3-importlib-resources
@@ -167,23 +177,23 @@ Tools to assist with the configuration and management of fapolicyd (File Access 
 python3 -m venv %{venv_dir}
 
 # the upgraded packages will not install with the older pip
-%{venv_install} %{SOURCE3}
+%{venv_install} %{SOURCE11}
 
 # there exists a circular dependency between setuptools <-> wheel
 # by calling setuptools/setup.py before pip'ing we can bypass that
 mkdir -p %{_builddir}/setuptools
-tar xzf %{SOURCE4} -C %{_builddir}/setuptools --strip-components=1
+tar xzf %{SOURCE12} -C %{_builddir}/setuptools --strip-components=1
 %{venv_py3} %{_builddir}/setuptools/setup.py -q install
 # now pip wheel, and setuptools again
-%{venv_install} %{SOURCE5}
-%{venv_install} %{SOURCE4}
+%{venv_install} %{SOURCE13}
+%{venv_install} %{SOURCE12}
 
 # now pip install setuptools-rust and direct dependencies
-%{venv_install} %{SOURCE2}
+%{venv_install} %{SOURCE10}
 
 # pip install other dependencies
-%{venv_install} %{SOURCE12}
-%{venv_install} %{SOURCE13}
+%{venv_install} %{SOURCE20}
+%{venv_install} %{SOURCE21}
 
 # babel can be linked from the system install
 ln -sf  %{python3_sitelib}/{Babel*,babel} %{venv_lib}
@@ -212,6 +222,7 @@ sed -i "s#%{cargo_registry}#${CARGO_REG_DIR}#g" .cargo/config
 %endif
 
 %autosetup -p0 -n %{name}
+tar xvzf %{SOURCE2}
 
 # throw out the checked-in lock
 # this build will use whatever is available in the writable registry
@@ -229,12 +240,18 @@ alias python3=%{venv_py3}
 %endif
 
 python3 setup.py compile_catalog -f
+python3 help build
 python3 setup.py bdist_wheel
 
 %install
 
-install bin/%{name} %{buildroot}%{_sbindir}/%{name} -D
 %{py3_install_wheel %{module}-%{version}*%{_arch}.whl}
+install bin/%{name} %{buildroot}%{_sbindir}/%{name} -D
+mkdir -p %{buildroot}/%{_datadir}/help/{C,es}/%{name}/media
+install -p -D build/help/C/%{name}/*.html   %{buildroot}/%{_datadir}/help/C/%{name}/
+install -p -D build/help/C/%{name}/media/*  %{buildroot}/%{_datadir}/help/C/%{name}/media/
+install -p -D build/help/es/%{name}/*.html  %{buildroot}/%{_datadir}/help/es/%{name}/
+install -p -D build/help/es/%{name}/media/* %{buildroot}/%{_datadir}/help/es/%{name}/media/
 
 %check
 
@@ -244,6 +261,8 @@ install bin/%{name} %{buildroot}%{_sbindir}/%{name} -D
 %{python3_sitearch}/%{module}
 %{python3_sitearch}/%{module}-%{version}*
 %attr(755,root,root) %{_sbindir}/fapolicy-analyzer
+%{_datadir}/help/C/fapolicy-analyzer
+%{_datadir}/help/es/fapolicy-analyzer
 
 %changelog
 * Fri Sep 09 2022 John Wass <jwass3@gmail.com> 0.6.1-1

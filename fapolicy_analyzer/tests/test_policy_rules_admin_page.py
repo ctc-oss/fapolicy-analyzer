@@ -193,11 +193,11 @@ def test_adds_object_tabs(widget):
 def test_switches_acl_subject_columns(widget, activeSwitcherButton):
     aclColumn = widget.get_object("userPanel")
     subjectColumn = widget.get_object("subjectPanel")
-    children = widget.get_ref().get_children()[0].get_children()
+    children = widget.get_ref().get_children()[0].get_children()[1].get_children()
     assert children[0] == aclColumn
     assert children[1] == subjectColumn
     activeSwitcherButton.clicked()
-    children = widget.get_ref().get_children()[0].get_children()
+    children = widget.get_ref().get_children()[0].get_children()[1].get_children()
     assert children[0] == subjectColumn
     assert children[1] == aclColumn
 
@@ -675,3 +675,33 @@ def test_groups_loading_w_exception(mock_system_features, states, mock_dispatch)
             payload=Attrs(type=NotificationType.ERROR, text=GET_GROUPS_LOG_ERROR_MSG),
         )
     )
+
+
+def test_time_not_displayed(mocker, widget):
+    time_display = widget.get_object("time_bar")
+    assert time_display.get_visible() is False
+    assert "time" not in widget.actions.keys()
+
+
+def test_time_select_button_clicked(mocker):
+    page = PolicyRulesAdminPage()
+    mockDialog = MagicMock()
+    mockDialog.run.return_value = 1
+    mockDialog.get_seconds.return_value = 3600
+    mocker.patch(
+        "fapolicy_analyzer.ui.time_select_dialog.TimeSelectDialog.get_ref",
+        return_value=mockDialog,
+    )
+
+    time_click = next(
+        iter(
+            [
+                a.signals["clicked"]
+                for a in page.actions["time"]
+                if a.name == "Time"
+            ]
+        )
+    )
+    time_click()
+    mockDialog.run.assert_called()
+    assert page._time_delay == 3600
