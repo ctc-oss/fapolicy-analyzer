@@ -1,12 +1,12 @@
 on:
   push:
     branches:
-      - 'master'
-      - 'release-*'
+      - "master"
+      - "release-*"
   pull_request:
     branches:
-      - 'master'
-      - 'release-*'
+      - "master"
+      - "release-*"
 
 name: Python CI
 
@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ '3.6', '3.9' ]
+        python-version: ["3.6", "3.9"]
     steps:
       - uses: actions/checkout@v2
       - name: Install requirements
@@ -70,7 +70,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ '3.6', '3.9' ]
+        python-version: ["3.6", "3.9"]
     steps:
       - uses: actions/checkout@v2
       - name: Install requirements
@@ -80,6 +80,7 @@ jobs:
           sudo apt-get install libgirepository1.0-dev
           sudo apt-get install xvfb
           sudo apt-get install libgtksourceview-3.0-dev
+          sudo apt-get install gir1.2-webkit2-4.0
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
