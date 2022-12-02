@@ -1,15 +1,19 @@
-.PHONY: clean idenfity prepfs dnf vendor vendor-app vendor-py vendor-rs dep srpm
+.PHONY: clean identify prepfs dnf vendor vendor-app vendor-py vendor-rs dep srpm
 .SILENT: clean
 
 OS_ID_FN = $(shell grep /etc/os-release -e "^ID=" | tr -d '"' | cut -d= -f2 | cut -d: -f1)
 OS_ID   ?= $(OS_ID_FN)
 
-idenfity:
+identify:
 	@echo "Platform $(OS_ID)"
 
-prepfs:
-	mkdir -p /tmp/rpmbuild/SOURCES
+prepfs: prep_outdir prep_rpmbuild_dir
+
+prep_outdir:
 	mkdir -p \$(outdir)
+
+prep_rpmbuild_dir:
+	mkdir -p /tmp/rpmbuild/SOURCES/
 
 clean:
 	rm -f fapolicy-analyzer.tar.gz
@@ -23,7 +27,7 @@ dnf: dnf-common
 endif
 
 dnf-common:
-	dnf install -y git openssl-devel dbus-devel python3-devel python3-pip python3-toml python3-beautifulsoup4 python3-requests python3-babel
+	dnf install -y git openssl-devel dbus-devel python3-devel python3-pip python3-toml python3-beautifulsoup4 python3-requests python3-babel python3-markdown2 itstool
 	dnf install -y rust-packaging || true
 	dnf install -y rust-toolset || true
 	cargo install cargo-vendor-filterer
@@ -33,9 +37,9 @@ dnf-rpmdev:
 	dnf install -y rpmdevtools
 
 ifeq ($(OS_ID),rhel)
-vendor: vendor-app vendor-rs vendor-py
+vendor: prep_rpmbuild_dir vendor-app vendor-doc vendor-rs vendor-py
 else
-vendor: vendor-app vendor-rs
+vendor: prep_rpmbuild_dir vendor-app vendor-doc vendor-rs
 endif
 
 vendor-app:
@@ -43,13 +47,18 @@ vendor-app:
 	cp fapolicy-analyzer.tar.gz /tmp/rpmbuild/SOURCES/
 
 vendor-py:
-	spectool -gf -C /tmp/rpmbuild/SOURCES \$(spec)
+	spectool -gf -C /tmp/rpmbuild/SOURCES/ \$(spec)
 
 vendor-rs:
 	cargo check
 	./scripts/srpm/vendor-rs.sh
-	cp vendor-rs.tar.gz /tmp/rpmbuild/SOURCES
+	cp vendor-rs.tar.gz /tmp/rpmbuild/SOURCES/
 
-srpm: idenfity prepfs dnf vendor
+vendor-doc:
+	python3 help update
+	tar --exclude=es --exclude=*.py --exclude=.gitignore -cvzf vendor-docs.tar.gz help
+	cp vendor-docs.tar.gz /tmp/rpmbuild/SOURCES/
+
+srpm: identify prepfs dnf vendor
 	rpmbuild -bs -D "_topdir /tmp/rpmbuild" \$(spec)
 	cp -v /tmp/rpmbuild/SRPMS/* \$(outdir)/

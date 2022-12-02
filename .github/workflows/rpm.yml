@@ -15,35 +15,35 @@ name: RPM
 
 jobs:
   build:
-    name: Build ${{ matrix.triple.name }}
+    name: Build ${{ matrix.props.name }}
     strategy:
       matrix:
-        triple:
+        props:
           - {
             name: 'fc37',
             spec: 'fapolicy-analyzer.spec',
             image: 'registry.fedoraproject.org/fedora:37',
+            platform: 'fedora',
           }
           - {
             name: 'fc38',
             spec: 'fapolicy-analyzer.spec',
             image: 'registry.fedoraproject.org/fedora:rawhide',
+            platform: 'fedora',
           }
           - {
             name: 'el8',
             spec: 'scripts/srpm/fapolicy-analyzer.spec',
-            image: 'registry.access.redhat.com/ubi8/ubi:8.6',
+            image: 'rockylinux:8.6',
+            platform: 'rhel',
           }
     runs-on: ubuntu-latest
-    container: ${{ matrix.triple.image }}
+    container: ${{ matrix.props.image }}
     steps:
-      - name: Enable Rocky AppStream and EPEL
-        if: startsWith(matrix.triple.name, 'el')
+      - name: Enable EPEL
+        if: startsWith(matrix.props.name, 'el')
         run: |
           dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
-          RELEASE=$(grep -oE "[0-9]+\.[0-9]+" /etc/redhat-release) \
-          && printf "[rocky-$RELEASE-appstream]\nname=Rocky Linux $RELEASE - AppStream\nbaseurl=http://dl.rockylinux.org/pub/rocky/$RELEASE/AppStream/x86_64/os/\ngpgcheck=1\nenabled=1\ngpgkey=https://dl.rockylinux.org/pub/rocky/$RELEASE/AppStream/x86_64/os/RPM-GPG-KEY-rockyofficial\nincludepkgs=rpmdevtools,dbus-devel\n" > /etc/yum.repos.d/Rocky-"$RELEASE"-AppStream.repo \
-          || true
 
       - name: RPM Building Dependencies
         run: |
@@ -75,26 +75,27 @@ jobs:
 
       - name: Build SRPM
         run: |
-          make -f .copr/Makefile srpm outdir=/tmp/archives spec=${{ matrix.triple.spec }}
+          make -f .copr/Makefile srpm outdir=/tmp/archives spec=${{ matrix.props.spec }} OS_ID=${{ matrix.props.platform }}
 
       - name: Rebuild SRPM
         run: |
-          dnf builddep -y ${{ matrix.triple.spec }}
+          dnf builddep -y ${{ matrix.props.spec }}
           rpmbuild --rebuild /tmp/archives/fapolicy-analyzer-*.src.rpm
 
       - name: Release Spec File
         # this only needs to be done once, and it needs done with the root spec file
-        if: startsWith(github.ref, 'refs/tags/v') && startsWith(matrix.triple.name, 'fc38')
+        if: startsWith(github.ref, 'refs/tags/v') && startsWith(matrix.props.name, 'fc38')
         run: |
           out=/tmp/archives/fapolicy-analyzer.spec
           base=https://github.com/$GITHUB_REPOSITORY/releases/download/${{ steps.tag_name.outputs.VERSION }}
           
-          cp ${{ matrix.triple.spec }} $out
+          cp ${{ matrix.props.spec }} $out
           sed -z -i -e "s#fapolicy-analyzer.tar.gz#$base/fapolicy-analyzer.tar.gz#" $out
+          sed -z -i -e "s#vendor-docs.tar.gz#$base/vendor-docs.tar.gz#" $out
           sed -z -i -e "s#vendor-rs.tar.gz#$base/vendor-rs.tar.gz#" $out
           sed    -i -e "s#vendor-rs.tar.gz#vendor-rs%{?dist}.tar.gz#" $out
         env:
-          PLATFORM: ${{ matrix.triple.name }}
+          PLATFORM: ${{ matrix.props.name }}
 
       - name: Export RPMs
         run: |
@@ -107,7 +108,7 @@ jobs:
           mv vendor-rs.tar.gz /tmp/archives/vendor-rs.$PLATFORM.tar.gz
           mv fapolicy-analyzer.tar.gz /tmp/archives
         env:
-          PLATFORM: ${{ matrix.triple.name }}
+          PLATFORM: ${{ matrix.props.name }}
 
       - name: Archive artifacts
         uses: actions/upload-artifact@v2
