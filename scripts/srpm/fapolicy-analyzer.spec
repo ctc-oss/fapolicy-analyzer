@@ -265,5 +265,5 @@ install -p -D build/help/es/%{name}/media/* %{buildroot}/%{_datadir}/help/es/%{n
 %{_datadir}/help/es/fapolicy-analyzer
 
 %changelog
-* Fri Sep 09 2022 John Wass <jwass3@gmail.com> 0.6.1-1
+* Fri Dec 02 2022 John Wass <wassj@ctc.com> 1.0.0~rc2-1
 - New release
