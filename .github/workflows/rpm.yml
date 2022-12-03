@@ -105,7 +105,8 @@ jobs:
       - name: Export tarballs
         run: |
           mkdir -p /tmp/archives
-          mv vendor-rs.tar.gz /tmp/archives/vendor-rs.$PLATFORM.tar.gz
+          mv vendor-rs.tar.gz         /tmp/archives/vendor-rs.$PLATFORM.tar.gz
+          mv vendor-docs.tar.gz       /tmp/archives
           mv fapolicy-analyzer.tar.gz /tmp/archives
         env:
           PLATFORM: ${{ matrix.props.name }}
