@@ -205,7 +205,7 @@ fn main() -> Result<(), Error> {
         Search(opts) => find(opts, &sys_conf, &env),
         Check(opts) => check(opts, &sys_conf),
         Count(opts) => count(opts, &sys_conf, &env),
-        Load(opts) => load(opts, &sys_conf, &env),
+        Load(opts) => load(opts, all_opts.verbose, &sys_conf, &env),
     }
 }
 
@@ -275,28 +275,27 @@ fn init(opts: InitOpts, verbose: bool, cfg: &cfg::All, env: &Environment) -> Res
     Ok(())
 }
 
-fn load(opts: LoadOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
+fn load(opts: LoadOpts, verbose: bool, _: &cfg::All, env: &Environment) -> Result<(), Error> {
     let source = match PathBuf::from(&opts.path) {
         source if source.is_dir() => read::from_dir(&source)?,
         source => read::from_file(&source)?,
     };
 
-    for (o, txt) in &source {
-        println!("{}", txt);
-    }
-
-    let source: Result<Vec<Trust>, fapolicy_trust::error::Error> = source
+    let source: Result<Vec<(String, Trust)>, fapolicy_trust::error::Error> = source
         .iter()
-        .map(|(_, r)| read::parse_trust_record(r))
+        .map(|(o, r)| read::parse_trust_record(r).map(|t| (o.display().to_string(), t)))
         .collect();
 
     //need to parse the source entries out into Trust structs
 
     let db = env.open_db(Some(TRUST_LMDB_NAME))?;
     let mut tx = env.begin_rw_txn()?;
-    for t in source? {
+    for (o, t) in source? {
         let v = format!("{} {} {}", 2, t.size, t.hash);
         tx.put(db, &t.path, &v, WriteFlags::APPEND_DUP)?;
+        if verbose {
+            println!("{} {} {} {}", o, t.path, t.size, t.hash);
+        }
     }
     tx.commit()?;
 
