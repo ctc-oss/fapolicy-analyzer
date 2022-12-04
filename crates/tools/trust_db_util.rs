@@ -246,12 +246,17 @@ fn init(opts: InitOpts, verbose: bool, cfg: &cfg::All, env: &Environment) -> Res
     };
 
     let mut tx = env.begin_rw_txn()?;
+    let mut skipped = 0;
     for trust in &sys {
         let v = format!("{} {} {}", 1, trust.size, trust.hash);
         match tx.put(db, &trust.path, &v, WriteFlags::APPEND_DUP) {
             Ok(_) => {}
-            Err(_) if verbose => println!("skipped {}", trust.path),
-            Err(_) => {}
+            Err(e) => {
+                skipped += 1;
+                if verbose {
+                    println!("skipped {} {:?}", trust.path, e);
+                }
+            }
         }
     }
     tx.commit()?;
@@ -260,9 +265,10 @@ fn init(opts: InitOpts, verbose: bool, cfg: &cfg::All, env: &Environment) -> Res
 
     if verbose {
         println!(
-            "initialized db with {} entries in {} seconds",
-            sys.len(),
-            duration.as_secs()
+            "initialized db with {} entries in {} seconds ({} skipped)",
+            sys.len() - skipped,
+            duration.as_secs(),
+            skipped
         );
     }
 
@@ -275,12 +281,20 @@ fn load(opts: LoadOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
         source => read::from_file(&source)?,
     };
 
-    need to parse the source entries out into Trust structs
+    for (o, txt) in &source {
+        println!("{}", txt);
+    }
 
+    let source: Result<Vec<Trust>, fapolicy_trust::error::Error> = source
+        .iter()
+        .map(|(_, r)| read::parse_trust_record(r))
+        .collect();
+
+    //need to parse the source entries out into Trust structs
 
     let db = env.open_db(Some(TRUST_LMDB_NAME))?;
     let mut tx = env.begin_rw_txn()?;
-    for t in trust {
+    for t in source? {
         let v = format!("{} {} {}", 2, t.size, t.hash);
         tx.put(db, &t.path, &v, WriteFlags::APPEND_DUP)?;
     }
