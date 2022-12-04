@@ -8,8 +8,10 @@
 
 use std::collections::hash_map::Iter;
 use std::collections::HashMap;
+use std::str::FromStr;
 
 use crate::error::Error;
+use crate::read::parse_trust_record;
 use crate::source::TrustSource;
 use crate::source::TrustSource::{Ancillary, System};
 use crate::stat::{check, Actual, Status};
@@ -150,6 +152,14 @@ impl Rec {
             status: Some(status),
             ..rec
         })
+    }
+}
+
+impl FromStr for Rec {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Rec::new(parse_trust_record(s)?))
     }
 }
 

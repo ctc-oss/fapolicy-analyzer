@@ -334,6 +334,7 @@ dependencies = [
  "nom",
  "rayon",
  "serde",
+ "tempfile",
  "thiserror",
 ]
 

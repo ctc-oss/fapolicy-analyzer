@@ -39,9 +39,10 @@ pub fn deploy_app_state(state: &State) -> Result<(), Error> {
     .map_err(WriteRulesFail)?;
 
     // write file trust db
-    fapolicy_trust::write::file_trust(
+    fapolicy_trust::write::db(
         &state.trust_db,
-        PathBuf::from(&state.config.system.trust_dir_path),
+        &PathBuf::from(&state.config.system.trust_dir_path),
+        Some(&PathBuf::from(&state.config.system.trust_file_path)),
     )
     .map_err(WriteAncillaryFail)?;
 

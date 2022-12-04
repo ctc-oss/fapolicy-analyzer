@@ -10,20 +10,36 @@ use crate::db::{Rec, DB};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::{Error, Write};
-use std::path::{Path, PathBuf};
+use std::io::Write;
+use std::path::Path;
 use std::{fs, io};
 
-pub fn trust_dir(db: &DB, dir: &Path) -> Result<(), io::Error> {
+pub fn db(db: &DB, trust_d: &Path, trust_file: Option<&Path>) -> Result<(), io::Error> {
+    dir(db, trust_d)?;
+    if let Some(trust_f) = trust_file {
+        file(db, trust_f)?;
+    }
+    Ok(())
+}
+
+fn dir(db: &DB, dir: &Path) -> Result<(), io::Error> {
     let mut files = HashMap::<&str, Vec<String>>::new();
-    for (k, Rec { trusted: t, .. }) in db.iter() {
-        let trust_string = format!("{} {} {}", t.path, t.size, t.hash);
-        match files.entry(k) {
-            Entry::Vacant(e) => {
-                e.insert(vec![trust_string]);
-            }
-            Entry::Occupied(mut e) => {
-                e.get_mut().push(trust_string);
+    for (
+        _,
+        Rec {
+            trusted: t, origin, ..
+        },
+    ) in db.iter().filter(|(_, r)| r.origin.is_some())
+    {
+        if origin.is_some() {
+            let trust_string = format!("{} {} {}", t.path, t.size, t.hash);
+            match files.entry(origin.as_ref().unwrap()) {
+                Entry::Vacant(e) => {
+                    e.insert(vec![trust_string]);
+                }
+                Entry::Occupied(mut e) => {
+                    e.get_mut().push(trust_string);
+                }
             }
         }
     }
@@ -47,15 +63,15 @@ pub fn trust_dir(db: &DB, dir: &Path) -> Result<(), io::Error> {
     Ok(())
 }
 
-pub fn file_trust(db: &DB, to: PathBuf) -> Result<PathBuf, Error> {
+fn file(db: &DB, to: &Path) -> Result<(), io::Error> {
     // write file trust db
     let mut tf = File::create(&to)?;
-    for (path, meta) in db.iter() {
+    for (path, meta) in db.iter().filter(|(_, r)| r.origin.is_none()) {
         if meta.is_ancillary() {
             tf.write_all(
                 format!("{} {} {}\n", path, meta.trusted.size, meta.trusted.hash).as_bytes(),
             )?;
         }
     }
-    Ok(to)
+    Ok(())
 }

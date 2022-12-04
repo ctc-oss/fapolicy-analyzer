@@ -17,12 +17,10 @@ use lmdb::{Cursor, Environment, Transaction};
 
 use crate::db::{Rec, DB};
 use crate::error::Error;
-use crate::error::Error::{
-    LmdbFailure, LmdbNotFound, LmdbPermissionDenied, MalformattedTrustEntry, UnsupportedTrustType,
-};
+use crate::error::Error::*;
 use crate::load::TrustSourceEntry;
 use crate::source::TrustSource;
-use crate::source::TrustSource::{Ancillary, System};
+use crate::source::TrustSource::*;
 use crate::Trust;
 
 pub fn parse_trust_record(s: &str) -> Result<Trust, Error> {
