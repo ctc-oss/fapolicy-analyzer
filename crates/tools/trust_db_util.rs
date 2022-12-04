@@ -178,7 +178,7 @@ fn main() -> Result<(), Error> {
     let all_opts: Opts = Opts::parse();
     let trust_db_path = match all_opts.dbdir {
         Some(ref p) => Path::new(p),
-        None => Path::new(&sys_conf.system.trust_dir_path),
+        None => Path::new(&sys_conf.system.trust_lmdb_path),
     };
 
     if !trust_db_path.exists() {
