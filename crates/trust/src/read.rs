@@ -26,19 +26,6 @@ use crate::source::TrustSource;
 use crate::source::TrustSource::{Ancillary, System};
 use crate::Trust;
 
-fn relativized_path(i: &(PathBuf, String)) -> (String, &String) {
-    (
-        // render and split off the filename from full path
-        i.0.display()
-            .to_string()
-            .rsplit_once('/')
-            .map(|(_, rhs)| rhs.to_string())
-            // if there was no / separator then use the full path
-            .unwrap_or_else(|| i.0.display().to_string()),
-        &i.1,
-    )
-}
-
 pub fn parse_trust_record(s: &str) -> Result<Trust, Error> {
     let mut v: Vec<&str> = s.rsplitn(3, ' ').collect();
     v.reverse();
