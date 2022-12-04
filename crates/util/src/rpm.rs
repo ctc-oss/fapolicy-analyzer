@@ -3,15 +3,6 @@ use std::io;
 use std::process::Command;
 use thiserror::Error;
 
-use nom::bytes::complete::tag;
-use nom::character::complete::alphanumeric1;
-use nom::character::complete::digit1;
-use nom::character::complete::line_ending;
-use nom::character::complete::space1;
-use nom::combinator::{iterator, opt};
-use nom::sequence::{delimited, preceded, terminated};
-use nom::{IResult, InputIter, Parser};
-
 #[derive(Error, Debug)]
 pub enum Error {
     #[error("rpm: command not found")]

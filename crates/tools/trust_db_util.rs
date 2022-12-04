@@ -15,7 +15,7 @@
 
 use std::fs::File;
 use std::io;
-use std::io::{BufRead, BufReader, Write};
+use std::io::{BufReader, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 use std::time::SystemTime;
@@ -31,7 +31,7 @@ use fapolicy_trust::load::keep_entry;
 use fapolicy_trust::{check, load, read, Trust};
 use fapolicy_util::sha::sha256_digest;
 
-use crate::Error::{DirTrustError, DpkgCommandFail, DpkgNotFound, TrustError};
+use crate::Error::{DirTrustError, DpkgCommandFail, DpkgNotFound};
 use crate::Subcommand::{Add, Check, Clear, Count, Del, Dump, Init, Load, Search};
 
 /// An Error that can occur in this app

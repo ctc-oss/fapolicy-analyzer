@@ -14,13 +14,13 @@ use std::io::{Error, Write};
 use std::path::{Path, PathBuf};
 use std::{fs, io};
 
-fn trust_dir(db: &DB, dir: &Path, compiled: &Path) -> Result<(), io::Error> {
+pub fn trust_dir(db: &DB, dir: &Path) -> Result<(), io::Error> {
     let mut files = HashMap::<&str, Vec<String>>::new();
     for (k, Rec { trusted: t, .. }) in db.iter() {
         let trust_string = format!("{} {} {}", t.path, t.size, t.hash);
         match files.entry(&k) {
             Entry::Vacant(e) => {
-                let mut vec = e.insert(vec![trust_string]);
+                e.insert(vec![trust_string]);
             }
             Entry::Occupied(mut e) => {
                 e.get_mut().push(trust_string);

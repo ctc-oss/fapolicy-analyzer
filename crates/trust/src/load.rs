@@ -1,19 +1,11 @@
-use crate::db::{Rec, DB};
+use crate::db::DB;
 use crate::error::Error;
 use crate::read::{from_dir, from_file, from_lmdb, parse_trust_record};
-use crate::{load, Trust};
-use std::collections::hash_map::Entry;
-use std::collections::HashMap;
-use std::fs::File;
-use std::io::{BufRead, BufReader};
+use crate::Trust;
 use std::path::{Path, PathBuf};
-use std::{fs, io};
 
-use lmdb::{Cursor, Environment, Transaction};
 use std::process::Command;
 
-use crate::check::TrustPair;
-use crate::error::Error::{LmdbFailure, LmdbNotFound, LmdbPermissionDenied};
 use fapolicy_util::rpm::ensure_rpm_exists;
 use fapolicy_util::rpm::Error::{ReadRpmDumpFailed, RpmDumpFailed};
 use nom::bytes::complete::tag;
@@ -21,10 +13,9 @@ use nom::character::complete::alphanumeric1;
 use nom::character::complete::digit1;
 use nom::character::complete::line_ending;
 use nom::character::complete::space1;
-use nom::combinator::{iterator, opt};
-use nom::sequence::{delimited, preceded, terminated};
-use nom::{IResult, InputIter, Parser};
-use thiserror::Error;
+use nom::combinator::iterator;
+use nom::sequence::{delimited, terminated};
+use nom::{InputIter, Parser};
 
 // load all trust files
 // load all entries from all files

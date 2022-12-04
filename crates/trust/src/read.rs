@@ -6,7 +6,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use rayon::prelude::*;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
@@ -16,7 +15,7 @@ use std::{fs, io};
 use crate::check::TrustPair;
 use lmdb::{Cursor, Environment, Transaction};
 
-use crate::db::{Entry, Rec, DB};
+use crate::db::{Rec, DB};
 use crate::error::Error;
 use crate::error::Error::{
     LmdbFailure, LmdbNotFound, LmdbPermissionDenied, MalformattedTrustEntry, UnsupportedTrustType,
@@ -90,16 +89,6 @@ pub fn from_lmdb(lmdb: &Path) -> Result<DB, Error> {
         .collect();
 
     Ok(DB::from(lookup))
-}
-
-fn trust_file(path: PathBuf) -> Result<Vec<TrustSourceEntry>, io::Error> {
-    let reader = File::open(&path).map(BufReader::new)?;
-    let lines = reader
-        .lines()
-        .flatten()
-        .map(|s| (path.clone(), s))
-        .collect();
-    Ok(lines)
 }
 
 pub fn read_sorted_d_files(from: &Path) -> Result<Vec<PathBuf>, io::Error> {

@@ -1,18 +1,13 @@
 use crate::fapolicyd;
 use crate::version::Error::MalformedVersionString;
-use std::io;
-use std::process::Command;
 use thiserror::Error;
 
 use fapolicy_util::rpm;
 use nom::bytes::complete::tag;
-use nom::character::complete::alphanumeric1;
 use nom::character::complete::digit1;
-use nom::character::complete::line_ending;
-use nom::character::complete::space1;
-use nom::combinator::{iterator, opt};
-use nom::sequence::{delimited, preceded, terminated};
-use nom::{IResult, InputIter, Parser};
+use nom::combinator::opt;
+use nom::sequence::{preceded, terminated};
+use nom::IResult;
 
 #[derive(Error, Debug)]
 pub enum Error {

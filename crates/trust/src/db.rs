@@ -157,7 +157,7 @@ impl Rec {
 mod tests {
     use std::iter::FromIterator;
 
-    use crate::source::TrustSource::{Ancillary, System};
+    use crate::source::TrustSource::System;
 
     use super::*;
 

@@ -1,13 +1,8 @@
 use crate::db::{Rec, DB};
 use crate::error::Error;
-use crate::error::Error::{LmdbFailure, LmdbNotFound, LmdbPermissionDenied, UnsupportedTrustType};
-use crate::source::TrustSource;
-use crate::source::TrustSource::{Ancillary, System};
-use crate::{read, Trust};
-use lmdb::{Cursor, Environment, Transaction};
+use crate::read;
 use rayon::iter::IntoParallelRefIterator;
 use std::collections::HashMap;
-use std::path::Path;
 
 use rayon::prelude::*;
 
