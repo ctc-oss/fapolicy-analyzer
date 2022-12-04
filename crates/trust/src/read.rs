@@ -31,9 +31,9 @@ pub fn parse_trust_record(s: &str) -> Result<Trust, Error> {
     v.reverse();
     match v.as_slice() {
         [f, sz, sha] => Ok(Trust {
-            path: f.to_string(),
-            size: sz.parse()?,
-            hash: sha.to_string(),
+            path: f.trim().to_string(),
+            size: sz.trim().parse()?,
+            hash: sha.trim().to_string(),
         }),
         _ => Err(MalformattedTrustEntry(s.to_string())),
     }
