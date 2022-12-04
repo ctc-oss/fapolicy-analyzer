@@ -39,7 +39,7 @@ fn relativized_path(i: &(PathBuf, String)) -> (String, &String) {
     )
 }
 
-pub(crate) fn parse_trust_record(s: &str) -> Result<Trust, Error> {
+pub fn parse_trust_record(s: &str) -> Result<Trust, Error> {
     let mut v: Vec<&str> = s.rsplitn(3, ' ').collect();
     v.reverse();
     match v.as_slice() {
@@ -65,45 +65,20 @@ pub fn from_file(from: &Path) -> Result<Vec<TrustSourceEntry>, io::Error> {
     let lines: Result<Vec<String>, io::Error> = r.lines().collect();
     Ok(lines?
         .iter()
+        .filter(|l| !l.is_empty())
+        .filter(|l| !l.trim_start().starts_with("#"))
         .map(|l| (PathBuf::from(from), l.clone()))
         .collect())
 }
 
-// todo;; thiserr
 pub fn from_dir(from: &Path) -> Result<Vec<TrustSourceEntry>, io::Error> {
     let d_files = read_sorted_d_files(from)?;
-
-    let d_files: Result<Vec<(PathBuf, File)>, io::Error> = d_files
-        .into_iter()
-        .map(|p| (p.clone(), File::open(&p)))
-        .map(|(p, r)| r.map(|f| (p, f)))
-        .collect();
-
-    let d_files = d_files?.into_iter().map(|(p, f)| (p, BufReader::new(f)));
-
-    // todo;; externalize result flattening via expect here
-    let d_files = d_files.into_iter().map(|(path, rdr)| {
-        (
-            path.clone(),
-            rdr.lines()
-                .collect::<Result<Vec<String>, io::Error>>()
-                .unwrap_or_else(|_| {
-                    panic!("failed to read lines from trust file, {}", path.display())
-                }),
-        )
-    });
-
-    let d_files: Vec<TrustSourceEntry> = d_files
-        .into_iter()
-        .flat_map(|(src, lines)| {
-            lines
-                .iter()
-                .map(|l| (src.clone(), l.clone()))
-                .collect::<Vec<TrustSourceEntry>>()
-        })
-        .collect();
-
-    Ok(d_files)
+    let mut res = vec![];
+    for p in d_files {
+        let mut xs = from_file(&p)?;
+        res.append(&mut xs);
+    }
+    Ok(res)
 }
 
 /// load the fapolicyd backend lmdb database
