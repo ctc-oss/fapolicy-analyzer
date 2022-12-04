@@ -18,7 +18,7 @@ pub fn trust_dir(db: &DB, dir: &Path) -> Result<(), io::Error> {
     let mut files = HashMap::<&str, Vec<String>>::new();
     for (k, Rec { trusted: t, .. }) in db.iter() {
         let trust_string = format!("{} {} {}", t.path, t.size, t.hash);
-        match files.entry(&k) {
+        match files.entry(k) {
             Entry::Vacant(e) => {
                 e.insert(vec![trust_string]);
             }

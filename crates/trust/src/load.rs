@@ -55,7 +55,7 @@ pub fn file_trust(d: &Path, o: Option<&Path>) -> Result<Vec<(String, Trust)>, Er
     Ok(d_entries
         .iter()
         // todo;; support comments elsewhere
-        .filter(|(_, txt)| !txt.is_empty() || txt.trim_start().starts_with("#"))
+        .filter(|(_, txt)| !txt.is_empty() || txt.trim_start().starts_with('#'))
         .map(|(p, txt)| (p.display().to_string(), parse_trust_record(txt.trim())))
         .filter(|(_, r)| r.is_ok())
         .map(|(p, r)| (p, r.unwrap()))

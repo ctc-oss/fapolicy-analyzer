@@ -52,7 +52,7 @@ pub fn from_file(from: &Path) -> Result<Vec<TrustSourceEntry>, io::Error> {
     Ok(lines?
         .iter()
         .filter(|l| !l.is_empty())
-        .filter(|l| !l.trim_start().starts_with("#"))
+        .filter(|l| !l.trim_start().starts_with('#'))
         .map(|l| (PathBuf::from(from), l.clone()))
         .collect())
 }
