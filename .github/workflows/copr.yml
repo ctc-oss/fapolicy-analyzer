@@ -41,7 +41,9 @@ jobs:
       - name: Install Config
         run: |
           mkdir -p ~/.config
-          echo "${{ secrets.COPR_CONFIG }}" > ~/.config/copr
+          echo "$COPR_CONF" > ~/.config/copr
+        env:
+          COPR_CONF: ${{ secrets.COPR_CONFIG }}
 
       # run on tag or PR
       # fapolicy-analyzer:custom:master
