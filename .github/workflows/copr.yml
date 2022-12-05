@@ -44,13 +44,7 @@ jobs:
       - name: Install Config
         run: |
           mkdir -p ~/.config
-          cat > ~/.config/copr <<EOF
-            [copr-cli]
-            login = foo
-            username = foo
-            token = foo
-            copr_url = https://copr.fedorainfracloud.org
-          EOF
+          echo "${{ secrets.COPR_CONFIG }}" > ~/.config/copr
 
       # run on tag or PR
       - name: Submit Build
