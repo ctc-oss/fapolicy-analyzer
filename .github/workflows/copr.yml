@@ -54,6 +54,5 @@ jobs:
           --commit ${{ github.sha }} \
           --spec scripts/srpm/fapolicy-analyzer.spec \
           --clone-url ${{ github.server_url }}/${{ github.repository }} \
-          
           fapolicy-analyzer:pr:${{ github.event.pull_request.number }}
-          fapolicy-analyzer:custom:${{ steps.tag_name.outputs.VERSION }}
+          #fapolicy-analyzer:custom:${{ steps.tag_name.outputs.VERSION }}
