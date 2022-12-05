@@ -1,0 +1,40 @@
+on:
+  push:
+    tags:
+      - 'v*'
+
+name: Copr Release
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    container: 'rockylinux:8.6'
+    steps:
+      - name: Enable EPEL
+        run: |
+          dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+
+      - name: Install Copr CLI
+        run: |
+          dnf install -y copr-cli
+
+      - name: Install Config
+        run: |
+          mkdir -p ~/.config
+          cat > ~/.config/copr <<EOF
+            [copr-cli]
+            login = foo
+            username = foo
+            token = foo
+            copr_url = https://copr.fedorainfracloud.org
+          EOF
+
+      - name: Submit Build
+        run: |
+          copr-cli buildscm \
+          --method make_srpm \
+          --commit ${{ github.sha }} \
+          --spec scripts/srpm/fapolicy-analyzer.spec \
+          --clone-url ${{ github.server_url }}/${{ github.repository }} \
+          fapolicy-analyzer:custom:test
