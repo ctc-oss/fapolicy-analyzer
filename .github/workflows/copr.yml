@@ -1,9 +1,17 @@
 on:
   push:
+    branches:
+      - 'master'
+      - 'release-*'
+      - 'rpm/test/*'
     tags:
       - 'v*'
+  pull_request:
+    branches:
+      - 'master'
+      - 'release-*'
 
-name: Copr Release
+name: Copr Build
 
 jobs:
   build:
@@ -14,6 +22,20 @@ jobs:
       - name: Enable EPEL
         run: |
           dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+
+      - name: Dnf
+        run: |
+          dnf install -y git
+
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: Strip ref to tag
+        id: tag_name
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d/ -f3)
 
       - name: Install Copr CLI
         run: |
@@ -30,6 +52,7 @@ jobs:
             copr_url = https://copr.fedorainfracloud.org
           EOF
 
+      # run on tag or PR
       - name: Submit Build
         run: |
           copr-cli buildscm \
@@ -37,4 +60,6 @@ jobs:
           --commit ${{ github.sha }} \
           --spec scripts/srpm/fapolicy-analyzer.spec \
           --clone-url ${{ github.server_url }}/${{ github.repository }} \
-          fapolicy-analyzer:custom:test
+          
+          fapolicy-analyzer:pr:${{ github.event.pull_request.number }}
+          fapolicy-analyzer:custom:${{ steps.tag_name.outputs.VERSION }}
