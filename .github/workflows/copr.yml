@@ -41,9 +41,16 @@ jobs:
       - name: Install Config
         run: |
           mkdir -p ~/.config
-          echo "$COPR_CONF" > ~/.config/copr
+          echo  > ~/.config/copr <<EOF
+            [copr-cli]
+            username = ctc-oss
+            login = ${COPR_API_LOGIN}
+            token = ${COPR_API_TOKEN}
+            copr_url = https://copr.fedorainfracloud.org
+          EOF
         env:
-          COPR_CONF: ${{ secrets.COPR_CONFIG }}
+          COPR_API_LOGIN: ${{ secrets.COPR_API_LOGIN }}
+          COPR_API_TOKEN: ${{ secrets.COPR_API_TOKEN }}
 
       # run on tag or PR
       # fapolicy-analyzer:custom:master
