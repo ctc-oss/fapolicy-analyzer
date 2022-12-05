@@ -47,6 +47,7 @@ jobs:
           echo "${{ secrets.COPR_CONFIG }}" > ~/.config/copr
 
       # run on tag or PR
+      # fapolicy-analyzer:custom:${{ steps.tag_name.outputs.VERSION }}
       - name: Submit Build
         run: |
           copr-cli buildscm \
@@ -55,4 +56,3 @@ jobs:
           --spec scripts/srpm/fapolicy-analyzer.spec \
           --clone-url ${{ github.server_url }}/${{ github.repository }} \
           fapolicy-analyzer:pr:${{ github.event.pull_request.number }}
-          #fapolicy-analyzer:custom:${{ steps.tag_name.outputs.VERSION }}
