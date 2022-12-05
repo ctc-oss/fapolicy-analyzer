@@ -50,6 +50,7 @@ jobs:
           COPR_LOGIN: ${{ secrets.COPR_API_LOGIN }}
           COPR_TOKEN: ${{ secrets.COPR_API_TOKEN }}
 
+
       # run on tag or PR
       # fapolicy-analyzer:custom:master
       # fapolicy-analyzer:pr:${{ github.event.pull_request.number }}
