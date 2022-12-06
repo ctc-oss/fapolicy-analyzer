@@ -14,7 +14,7 @@ use fapolicy_util::sha::sha256_digest;
 
 use crate::db::{Rec, DB};
 use crate::error::Error;
-use crate::ops::TrustOp::{Add, Del};
+use crate::ops::TrustOp::{Add, Del, Ins};
 use crate::source::TrustSource;
 use crate::Trust;
 
@@ -28,21 +28,21 @@ enum TrustOp {
 impl TrustOp {
     fn run(&self, trust: &mut HashMap<String, Rec>) -> Result<(), Error> {
         match self {
-            TrustOp::Add(path) => {
+            Add(path) => {
                 let t = new_trust_record(path)?;
                 let r = Rec::new_from(t, TrustSource::Ancillary);
                 let r = Rec::status_check(r)?;
                 trust.insert(r.trusted.path.clone(), r);
                 Ok(())
             }
-            TrustOp::Ins(path, size, hash) => {
+            Ins(path, size, hash) => {
                 let t = Trust::new(path, *size, hash);
                 let r = Rec::new_from(t, TrustSource::Ancillary);
                 let r = Rec::status_check(r)?;
                 trust.insert(r.trusted.path.clone(), r);
                 Ok(())
             }
-            TrustOp::Del(path) => {
+            Del(path) => {
                 trust.remove(path);
                 Ok(())
             }
@@ -52,9 +52,9 @@ impl TrustOp {
 
 fn to_pair(trust_op: &TrustOp) -> (String, String) {
     match trust_op {
-        TrustOp::Add(path) => (path.to_string(), "Add".to_string()),
-        TrustOp::Del(path) => (path.to_string(), "Del".to_string()),
-        TrustOp::Ins(path, _size, _hash) => (path.to_string(), "Ins".to_string()),
+        Add(path) => (path.to_string(), "Add".to_string()),
+        Del(path) => (path.to_string(), "Del".to_string()),
+        Ins(path, _size, _hash) => (path.to_string(), "Ins".to_string()),
     }
 }
 
@@ -119,7 +119,7 @@ trait InsChange {
 impl InsChange for Changeset {
     fn ins(&mut self, path: &str, size: u64, hash: &str) {
         self.changes
-            .push(TrustOp::Ins(path.to_string(), size, hash.to_string()))
+            .push(Ins(path.to_string(), size, hash.to_string()))
     }
 }
 

@@ -11,11 +11,10 @@ use std::collections::HashMap;
 use std::str::FromStr;
 
 use crate::error::Error;
-use crate::read::parse_trust_record;
 use crate::source::TrustSource;
 use crate::source::TrustSource::System;
 use crate::stat::{check, Actual, Status};
-use crate::Trust;
+use crate::{parse, Trust};
 
 #[derive(Clone, Debug)]
 pub enum DbEntry {
@@ -177,7 +176,7 @@ impl FromStr for Rec {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Rec::new(parse_trust_record(s)?))
+        Ok(Rec::new(parse::trust_record(s)?))
     }
 }
 

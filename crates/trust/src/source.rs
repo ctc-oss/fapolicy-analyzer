@@ -7,10 +7,15 @@
  */
 
 use std::fmt::{Display, Formatter};
+use std::path::PathBuf;
 
 use serde::Deserialize;
 use serde::Serialize;
 
+/// Internal structure used during parsing
+pub(crate) type TrustSourceEntry = (PathBuf, String);
+
+/// Identifies the origin of the trust entry
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum TrustSource {
     System,

@@ -1,6 +1,6 @@
 use crate::db::{Rec, DB};
 use crate::error::Error;
-use crate::read;
+use crate::parse;
 use rayon::iter::IntoParallelRefIterator;
 use std::collections::HashMap;
 
@@ -34,7 +34,7 @@ impl TrustPair {
 impl From<TrustPair> for (String, Rec) {
     fn from(kv: TrustPair) -> Self {
         let (tt, v) = kv.v.split_once(' ').unwrap();
-        let (t, s) = read::strtyped_trust_record(format!("{} {}", kv.k, v).as_str(), tt)
+        let (t, s) = parse::strtyped_trust_record(format!("{} {}", kv.k, v).as_str(), tt)
             .expect("failed to parse_strtyped_trust_record");
         (t.path.clone(), Rec::new_from(t, s))
     }

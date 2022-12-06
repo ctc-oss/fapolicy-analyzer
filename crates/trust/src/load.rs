@@ -1,8 +1,8 @@
 use crate::db::{Rec, DB};
 use crate::error::Error;
-use crate::read::{from_dir, from_file, parse_trust_record, system_from_lmdb};
-use crate::Trust;
-use std::path::{Path, PathBuf};
+use crate::read::{from_dir, from_file, system_from_lmdb};
+use crate::{parse, Trust};
+use std::path::Path;
 
 use std::process::Command;
 
@@ -19,18 +19,9 @@ use nom::combinator::iterator;
 use nom::sequence::{delimited, terminated};
 use nom::{InputIter, Parser};
 
-// load all trust files
-// load all entries from all files
-// write to mutable map with a single entry from each row
-//  -- can add diagnostic messages to the entries to flag if they overwrote a dupe
-// compare with lmdb, adding diagnostics for anything that is out of sync
-
-pub(crate) type TrustSourceEntry = (PathBuf, String);
-
-/// obtain a [DB]
-/// 1. load lmdb records
-/// 2. load file trust
-/// 3. stir
+/// Load a Trust DB
+/// System entries are sourced from lmdb
+/// File entries are sourced from trust.d and fapolicyd.trust
 pub fn trust_db(lmdb: &Path, trust_d: &Path, trust_file: Option<&Path>) -> Result<DB, Error> {
     let mut db = system_from_lmdb(lmdb)?;
     for (s, t) in file_trust(trust_d, trust_file)? {
@@ -39,8 +30,7 @@ pub fn trust_db(lmdb: &Path, trust_d: &Path, trust_file: Option<&Path>) -> Resul
     Ok(db)
 }
 
-// path to d dir (/etc/fapolicyd/trust.d), optional override file (eg /etc/fapolicyd/fapolicyd.trust
-pub fn file_trust(d: &Path, o: Option<&Path>) -> Result<Vec<(TrustSource, Trust)>, Error> {
+fn file_trust(d: &Path, o: Option<&Path>) -> Result<Vec<(TrustSource, Trust)>, Error> {
     let mut d_entries: Vec<(TrustSource, String)> = from_dir(d)?
         .into_iter()
         .map(|(o, e)| (DFile(o.display().to_string()), e))
@@ -62,7 +52,7 @@ pub fn file_trust(d: &Path, o: Option<&Path>) -> Result<Vec<(TrustSource, Trust)
         .iter()
         // todo;; support comments elsewhere
         .filter(|(_, txt)| !txt.is_empty() || txt.trim_start().starts_with('#'))
-        .map(|(p, txt)| (p.clone(), parse_trust_record(txt.trim())))
+        .map(|(p, txt)| (p.clone(), parse::trust_record(txt.trim())))
         .filter(|(_, r)| r.is_ok())
         .map(|(p, r)| (p, r.unwrap()))
         .collect())

@@ -35,19 +35,18 @@ fn dir(db: &DB, dir: &Path) -> Result<(), io::Error> {
     ) in db.iter()
     {
         if let Some(TrustSource::DFile(o)) = o {
-            let trust_string = format!("{} {} {}", t.path, t.size, t.hash);
             match files.entry(o) {
                 Entry::Vacant(e) => {
-                    e.insert(vec![trust_string]);
+                    e.insert(vec![t.to_string()]);
                 }
                 Entry::Occupied(mut e) => {
-                    e.get_mut().push(trust_string);
+                    e.get_mut().push(t.to_string());
                 }
             }
         }
     }
 
-    // clear existing rules.d files
+    // clear existing trust.d files
     for e in fs::read_dir(dir)? {
         let f = e?.path();
         if f.display().to_string().ends_with(".trust") {
@@ -69,12 +68,10 @@ fn dir(db: &DB, dir: &Path) -> Result<(), io::Error> {
 fn file(db: &DB, to: &Path) -> Result<(), io::Error> {
     // write file trust db
     let mut tf = File::create(&to)?;
-    for (path, rec) in db.iter() {
+    for (_, rec) in db.iter() {
         match rec.source {
             None | Some(TrustSource::Ancillary) => {
-                tf.write_all(
-                    format!("{} {} {}\n", path, rec.trusted.size, rec.trusted.hash).as_bytes(),
-                )?;
+                tf.write_all(format!("{}\n", rec.trusted).as_bytes())?;
             }
             _ => {}
         }

@@ -18,31 +18,7 @@ use lmdb::{Cursor, Environment, Transaction};
 use crate::db::{Rec, DB};
 use crate::error::Error;
 use crate::error::Error::*;
-use crate::load::TrustSourceEntry;
-use crate::source::TrustSource;
-use crate::source::TrustSource::*;
-use crate::Trust;
-
-pub fn parse_trust_record(s: &str) -> Result<Trust, Error> {
-    let mut v: Vec<&str> = s.rsplitn(3, ' ').collect();
-    v.reverse();
-    match v.as_slice() {
-        [f, sz, sha] => Ok(Trust {
-            path: f.trim().to_string(),
-            size: sz.trim().parse()?,
-            hash: sha.trim().to_string(),
-        }),
-        _ => Err(MalformattedTrustEntry(s.to_string())),
-    }
-}
-
-pub(crate) fn strtyped_trust_record(s: &str, t: &str) -> Result<(Trust, TrustSource), Error> {
-    match t {
-        "1" => parse_trust_record(s).map(|t| (t, System)),
-        "2" => parse_trust_record(s).map(|t| (t, Ancillary)),
-        v => Err(UnsupportedTrustType(v.to_string())),
-    }
-}
+use crate::source::TrustSourceEntry;
 
 pub fn from_file(from: &Path) -> Result<Vec<TrustSourceEntry>, io::Error> {
     let r = BufReader::new(File::open(&from)?);
@@ -111,13 +87,13 @@ pub fn read_sorted_d_files(from: &Path) -> Result<Vec<PathBuf>, io::Error> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::parse;
 
     #[test]
     fn parse_record() {
         let s =
             "/home/user/my-ls 157984 61a9960bf7d255a85811f4afcac51067b8f2e4c75e21cf4f2af95319d4ed1b87";
-        let e = parse_trust_record(s).unwrap();
+        let e = parse::trust_record(s).unwrap();
         assert_eq!(e.path, "/home/user/my-ls");
         assert_eq!(e.size, 157984);
         assert_eq!(
@@ -130,7 +106,7 @@ mod tests {
     fn parse_record_with_space() {
         let s =
             "/home/user/my ls 157984 61a9960bf7d255a85811f4afcac51067b8f2e4c75e21cf4f2af95319d4ed1b87";
-        let e = parse_trust_record(s).unwrap();
+        let e = parse::trust_record(s).unwrap();
         assert_eq!(e.path, "/home/user/my ls");
         assert_eq!(e.size, 157984);
         assert_eq!(

@@ -28,7 +28,7 @@ use thiserror::Error;
 use fapolicy_app::cfg;
 use fapolicy_daemon::fapolicyd::TRUST_LMDB_NAME;
 use fapolicy_trust::load::keep_entry;
-use fapolicy_trust::{check, load, read, Trust};
+use fapolicy_trust::{check, load, parse, read, Trust};
 use fapolicy_util::sha::sha256_digest;
 
 use crate::Error::{DirTrustError, DpkgCommandFail, DpkgNotFound};
@@ -283,7 +283,7 @@ fn load(opts: LoadOpts, verbose: bool, _: &cfg::All, env: &Environment) -> Resul
 
     let source: Result<Vec<(String, Trust)>, fapolicy_trust::error::Error> = source
         .iter()
-        .map(|(o, r)| read::parse_trust_record(r).map(|t| (o.display().to_string(), t)))
+        .map(|(o, r)| parse::trust_record(r).map(|t| (o.display().to_string(), t)))
         .collect();
 
     //need to parse the source entries out into Trust structs

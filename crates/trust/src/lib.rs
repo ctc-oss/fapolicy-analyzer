@@ -13,6 +13,7 @@ pub mod source;
 pub mod stat;
 mod trust;
 pub use trust::Trust;
+pub mod parse;
 
 pub mod check;
 pub mod load;

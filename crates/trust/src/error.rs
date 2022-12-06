@@ -16,14 +16,19 @@ use thiserror::Error;
 pub enum Error {
     #[error("lmdb db not found, {0}")]
     LmdbNotFound(String),
+
     #[error("{0}")]
     LmdbFailure(#[from] lmdb::Error),
+
     #[error("Permission denied, {0}")]
     LmdbPermissionDenied(String),
+
     #[error("Unsupported Trust type: {0}")]
     UnsupportedTrustType(String),
+
     #[error("Malformed Trust entry: {0}")]
     MalformattedTrustEntry(String),
+
     #[error("{0} file not found at {1}")]
     TrustSourceNotFound(String, String),
 
