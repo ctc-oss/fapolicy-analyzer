@@ -33,8 +33,8 @@ pub(crate) type TrustSourceEntry = (PathBuf, String);
 /// 3. stir
 pub fn trust_db(lmdb: &Path, trust_d: &Path, trust_file: Option<&Path>) -> Result<DB, Error> {
     let mut db = system_from_lmdb(lmdb)?;
-    for (_, t) in file_trust(trust_d, trust_file)? {
-        db.put(Rec::new(t));
+    for (s, t) in file_trust(trust_d, trust_file)? {
+        db.put(Rec::new_from_source(t, s));
     }
     Ok(db)
 }
@@ -54,9 +54,11 @@ pub fn file_trust(d: &Path, o: Option<&Path>) -> Result<Vec<(TrustSource, Trust)
     } else {
         vec![]
     };
-    d_entries.append(&mut o_entries);
+    let mut entries = vec![];
+    entries.append(&mut d_entries);
+    entries.append(&mut o_entries);
 
-    Ok(d_entries
+    Ok(entries
         .iter()
         // todo;; support comments elsewhere
         .filter(|(_, txt)| !txt.is_empty() || txt.trim_start().starts_with('#'))
