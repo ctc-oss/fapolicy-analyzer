@@ -414,6 +414,9 @@ class MainWindow(UIConnectedWidget):
         if self._fapd_status != ServiceStatus.UNKNOWN:
             self._fapd_mgr.stop()
 
+    def on_syncDatabases_activate(self):
+        pass
+
     def _enable_fapd_menu_items(self, status: ServiceStatus):
         if self._fapdControlPermitted and (status != ServiceStatus.UNKNOWN):
             # Convert ServiceStatus to bool
