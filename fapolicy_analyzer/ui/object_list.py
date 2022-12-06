@@ -13,9 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import fapolicy_analyzer.ui.strings as strings
 import gi
 from events import Events
+
+import fapolicy_analyzer.ui.strings as strings
 from fapolicy_analyzer.ui.configs import Colors
 from fapolicy_analyzer.ui.subject_list import SubjectList
 
@@ -35,12 +36,20 @@ class ObjectList(SubjectList, Events):
 
     def _columns(self):
         columns = super()._columns()
-        modeCell = Gtk.CellRendererText(background=Colors.LIGHT_GRAY, xalign=0.5)
-        modeColumn = Gtk.TreeViewColumn(
-            strings.FILE_LIST_MODE_HEADER, modeCell, markup=6
+
+        rule_cell = Gtk.CellRendererText(background=Colors.LIGHT_GRAY)
+        rule_column = Gtk.TreeViewColumn(
+            strings.FILE_LIST_RULE_ID_HEADER, rule_cell, markup=7
         )
-        modeColumn.set_sort_column_id(6)
-        columns.insert(1, modeColumn)
+        rule_column.set_sort_column_id(7)
+        columns.insert(0, rule_column)
+
+        mode_cell = Gtk.CellRendererText(background=Colors.LIGHT_GRAY, xalign=0.5)
+        mode_column = Gtk.TreeViewColumn(
+            strings.FILE_LIST_MODE_HEADER, mode_cell, markup=6
+        )
+        mode_column.set_sort_column_id(6)
+        columns.insert(2, mode_column)
         return columns
 
     def __markup(self, value, options, seperator=" / ", multiValue=False):
