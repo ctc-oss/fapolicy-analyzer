@@ -18,7 +18,7 @@ use crate::stat::{check, Actual, Status};
 use crate::Trust;
 
 #[derive(Clone, Debug)]
-pub enum Entry {
+pub enum DbEntry {
     Valid(Trust),
     WithWarning(Trust, String),
     Invalid { text: String, error: String },
@@ -87,6 +87,27 @@ impl DB {
     /// Get a record from the lookup table using the path to the trusted file
     pub fn get_mut(&mut self, k: &str) -> Option<&mut Rec> {
         self.lookup.get_mut(k)
+    }
+
+    pub fn filter<F>(&mut self, f: F) -> Vec<Rec>
+    where
+        F: Fn(&Rec) -> bool,
+    {
+        // https://github.com/rust-lang/rust/issues/59618
+        //self.lookup.drain_filter(f).collect()
+        let mut ks = vec![];
+        let mut rem = vec![];
+        for (k, rec) in self.lookup.iter() {
+            if !f(rec) {
+                ks.push(k.clone())
+            }
+        }
+        for k in ks {
+            if let Some(r) = self.lookup.remove(&k) {
+                rem.push(r);
+            }
+        }
+        rem
     }
 }
 

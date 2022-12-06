@@ -65,6 +65,12 @@ pub fn from_dir(from: &Path) -> Result<Vec<TrustSourceEntry>, io::Error> {
     Ok(res)
 }
 
+pub(crate) fn system_from_lmdb(lmdb: &Path) -> Result<DB, Error> {
+    let mut db = from_lmdb(lmdb)?;
+    db.filter(|e| e.is_system());
+    Ok(db)
+}
+
 /// load the fapolicyd backend lmdb database
 /// parse the results into trust entries
 pub fn from_lmdb(lmdb: &Path) -> Result<DB, Error> {

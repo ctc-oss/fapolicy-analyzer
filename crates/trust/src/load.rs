@@ -1,6 +1,6 @@
-use crate::db::DB;
+use crate::db::{Rec, DB};
 use crate::error::Error;
-use crate::read::{from_dir, from_file, from_lmdb, parse_trust_record};
+use crate::read::{from_dir, from_file, parse_trust_record, system_from_lmdb};
 use crate::Trust;
 use std::path::{Path, PathBuf};
 
@@ -30,14 +30,11 @@ pub(crate) type TrustSourceEntry = (PathBuf, String);
 /// 2. load file trust
 /// 3. stir
 pub fn trust_db(lmdb: &Path, trust_d: &Path, trust_file: Option<&Path>) -> Result<DB, Error> {
-    let mut db = from_lmdb(lmdb)?;
+    let mut db = system_from_lmdb(lmdb)?;
     for (o, t) in file_trust(trust_d, trust_file)? {
-        match db.get_mut(&t.path) {
-            None => {}
-            Some(rec) => {
-                rec.origin = Some(o.clone());
-            }
-        }
+        let mut rec = Rec::new(t);
+        rec.origin = Some(o.clone());
+        db.put(rec);
     }
     Ok(db)
 }
