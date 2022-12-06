@@ -28,6 +28,7 @@ use thiserror::Error;
 use fapolicy_app::cfg;
 use fapolicy_daemon::fapolicyd::TRUST_LMDB_NAME;
 use fapolicy_trust::load::keep_entry;
+use fapolicy_trust::read::rpm_trust;
 use fapolicy_trust::{check, load, parse, read, Trust};
 use fapolicy_util::sha::sha256_digest;
 
@@ -232,9 +233,9 @@ fn init(opts: InitOpts, verbose: bool, cfg: &cfg::All, env: &Environment) -> Res
 
     let t = SystemTime::now();
     let sys = if opts.dpkg {
-        load_dpkg_trust()?
+        dpkg_trust()?
     } else {
-        load::rpm_trust(&PathBuf::from(&cfg.system.system_trust_path))?
+        rpm_trust(&PathBuf::from(&cfg.system.system_trust_path))?
     };
 
     let sys = if let Some(c) = opts.count {
@@ -405,7 +406,7 @@ fn new_trust_record(path: &str) -> Result<Trust, Error> {
 // number of lines to eliminate the `dpkg-query -l` header
 const DPKG_QUERY_HEADER_LINES: usize = 6;
 const DPKG_QUERY: &str = "dpkg-query";
-fn load_dpkg_trust() -> Result<Vec<Trust>, Error> {
+fn dpkg_trust() -> Result<Vec<Trust>, Error> {
     // check that dpkg-query exists and can be called
     let _exists = Command::new(DPKG_QUERY)
         .arg("--version")

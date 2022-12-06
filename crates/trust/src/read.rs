@@ -6,19 +6,19 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
+use std::process::Command;
 use std::{fs, io};
 
-use crate::check::TrustPair;
-use lmdb::{Cursor, Environment, Transaction};
+use fapolicy_util::rpm::ensure_rpm_exists;
+use fapolicy_util::rpm::Error::{ReadRpmDumpFailed, RpmDumpFailed};
 
-use crate::db::{Rec, DB};
 use crate::error::Error;
-use crate::error::Error::*;
-use crate::source::TrustSourceEntry;
+use crate::source::TrustSource::{Ancillary, DFile};
+use crate::source::{TrustSource, TrustSourceEntry};
+use crate::{parse, Trust};
 
 pub fn from_file(from: &Path) -> Result<Vec<TrustSourceEntry>, io::Error> {
     let r = BufReader::new(File::open(&from)?);
@@ -41,34 +41,49 @@ pub fn from_dir(from: &Path) -> Result<Vec<TrustSourceEntry>, io::Error> {
     Ok(res)
 }
 
-pub(crate) fn system_from_lmdb(lmdb: &Path) -> Result<DB, Error> {
-    let mut db = from_lmdb(lmdb)?;
-    db.filter(|e| e.is_system());
-    Ok(db)
-}
-
-/// load the fapolicyd backend lmdb database
-/// parse the results into trust entries
-pub fn from_lmdb(lmdb: &Path) -> Result<DB, Error> {
-    let env = Environment::new().set_max_dbs(1).open(lmdb);
-    let env = match env {
-        Ok(e) => e,
-        Err(lmdb::Error::Other(2)) => return Err(LmdbNotFound(lmdb.display().to_string())),
-        Err(lmdb::Error::Other(13)) => {
-            return Err(LmdbPermissionDenied(lmdb.display().to_string()))
-        }
-        Err(e) => return Err(LmdbFailure(e)),
-    };
-
-    let lmdb = env.open_db(Some("trust.db"))?;
-    let tx = env.begin_ro_txn()?;
-    let mut c = tx.open_ro_cursor(lmdb)?;
-    let lookup: HashMap<String, Rec> = c
-        .iter()
-        .map(|i| i.map(|kv| TrustPair::new(kv).into()).unwrap())
+pub(crate) fn file_trust(d: &Path, o: Option<&Path>) -> Result<Vec<(TrustSource, Trust)>, Error> {
+    let mut d_entries: Vec<(TrustSource, String)> = from_dir(d)?
+        .into_iter()
+        .map(|(o, e)| (DFile(o.display().to_string()), e))
         .collect();
 
-    Ok(DB::from(lookup))
+    let mut o_entries: Vec<(TrustSource, String)> = if let Some(f) = o {
+        from_file(f)?
+            .iter()
+            .map(|(_, e)| (Ancillary, e.clone()))
+            .collect()
+    } else {
+        vec![]
+    };
+    let mut entries = vec![];
+    entries.append(&mut d_entries);
+    entries.append(&mut o_entries);
+
+    Ok(entries
+        .iter()
+        // todo;; support comments elsewhere
+        .filter(|(_, txt)| !txt.is_empty() || txt.trim_start().starts_with('#'))
+        .map(|(p, txt)| (p.clone(), parse::trust_record(txt.trim())))
+        .filter(|(_, r)| r.is_ok())
+        .map(|(p, r)| (p, r.unwrap()))
+        .collect())
+}
+
+/// directly load the rpm database
+/// used to analyze the fapolicyd trust db for out of sync issues
+pub fn rpm_trust(rpmdb: &Path) -> Result<Vec<Trust>, Error> {
+    ensure_rpm_exists()?;
+
+    let args = vec!["-qa", "--dump", "--dbpath", rpmdb.to_str().unwrap()];
+    let res = Command::new("rpm")
+        .args(args)
+        .output()
+        .map_err(RpmDumpFailed)?;
+
+    match String::from_utf8(res.stdout) {
+        Ok(data) => Ok(parse::rpm_db_entry(&data)),
+        Err(_) => Err(ReadRpmDumpFailed.into()),
+    }
 }
 
 pub fn read_sorted_d_files(from: &Path) -> Result<Vec<PathBuf>, io::Error> {
