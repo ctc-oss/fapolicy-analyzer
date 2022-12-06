@@ -11,7 +11,7 @@ use fapolicy_analyzer::events::db::DB as EventDB;
 use fapolicy_analyzer::events::event::{Event, Perspective};
 use fapolicy_rules::{Decision, Object, Permission, Subject};
 use fapolicy_trust::db::{Rec, DB as TrustDB};
-use fapolicy_trust::source::TrustSource::Ancillary;
+use fapolicy_trust::source::TrustSource::{Ancillary, System};
 use fapolicy_trust::Trust;
 
 const BASH_PATH: &str = "/bin/bash";
@@ -83,8 +83,8 @@ fn trust_status() {
     assert_eq!(a1.subject.trust, "U");
     assert_eq!(a1.object.trust, "U");
 
-    trust.put(Rec::new_from_system(make_trust("/bin/bash")));
-    trust.put(Rec::new_from_source(make_trust("/foo/bar"), Ancillary));
+    trust.put(Rec::from_source(make_trust("/bin/bash"), System));
+    trust.put(Rec::from_source(make_trust("/foo/bar"), Ancillary));
 
     let a2 = analyze_from_user(&log, uid, &trust);
     assert_eq!(a2.subject.trust, "ST");

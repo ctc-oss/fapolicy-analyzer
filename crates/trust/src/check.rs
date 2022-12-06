@@ -44,7 +44,7 @@ impl From<TrustPair> for (String, Rec) {
         let (tt, v) = kv.v.split_once(' ').unwrap();
         let (t, s) = parse::strtyped_trust_record(format!("{} {}", kv.k, v).as_str(), tt)
             .expect("failed to parse_strtyped_trust_record");
-        (t.path.clone(), Rec::new_from(t, s))
+        (t.path.clone(), Rec::from_source(t, s))
     }
 }
 

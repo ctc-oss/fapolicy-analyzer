@@ -30,14 +30,14 @@ impl TrustOp {
         match self {
             Add(path) => {
                 let t = new_trust_record(path)?;
-                let r = Rec::new_from(t, TrustSource::Ancillary);
+                let r = Rec::from_source(t, TrustSource::Ancillary);
                 let r = Rec::status_check(r)?;
                 trust.insert(r.trusted.path.clone(), r);
                 Ok(())
             }
             Ins(path, size, hash) => {
                 let t = Trust::new(path, *size, hash);
-                let r = Rec::new_from(t, TrustSource::Ancillary);
+                let r = Rec::from_source(t, TrustSource::Ancillary);
                 let r = Rec::status_check(r)?;
                 trust.insert(r.trusted.path.clone(), r);
                 Ok(())
@@ -183,7 +183,7 @@ mod tests {
         let mut source = HashMap::new();
         source.insert(
             "/foo/bar".to_string(),
-            Rec::new(make_default_trust_at("/foo/bar")),
+            Rec::without_source(make_default_trust_at("/foo/bar")),
         );
 
         let existing = DB::from(source);

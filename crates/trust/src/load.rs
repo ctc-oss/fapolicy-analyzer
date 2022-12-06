@@ -23,7 +23,7 @@ use crate::error::Error::{LmdbFailure, LmdbNotFound, LmdbPermissionDenied};
 pub fn trust_db(lmdb: &Path, trust_d: &Path, trust_file: Option<&Path>) -> Result<DB, Error> {
     let mut db = system_from_lmdb(lmdb)?;
     for (s, t) in read::file_trust(trust_d, trust_file)? {
-        db.put(Rec::new_from_source(t, s));
+        db.put(Rec::from_source(t, s));
     }
     Ok(db)
 }
