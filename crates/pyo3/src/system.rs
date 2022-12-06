@@ -19,9 +19,9 @@ use fapolicy_app::sys::deploy_app_state;
 use super::trust::PyTrust;
 use crate::acl::{PyGroup, PyUser};
 use crate::analysis::PyEventLog;
+use crate::rules;
 use crate::rules::PyRule;
 use crate::trust;
-use crate::{daemon, rules};
 
 #[pyclass(module = "app", name = "System")]
 #[derive(Clone)]

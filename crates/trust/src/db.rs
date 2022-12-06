@@ -13,7 +13,7 @@ use std::str::FromStr;
 use crate::error::Error;
 use crate::read::parse_trust_record;
 use crate::source::TrustSource;
-use crate::source::TrustSource::{Ancillary, System};
+use crate::source::TrustSource::System;
 use crate::stat::{check, Actual, Status};
 use crate::Trust;
 
@@ -118,9 +118,8 @@ pub struct Rec {
     pub trusted: Trust,
     pub status: Option<Status>,
     actual: Option<Actual>,
-    source: Option<TrustSource>,
+    pub source: Option<TrustSource>,
     pub msg: Option<String>,
-    pub origin: Option<String>,
 }
 
 impl Rec {
@@ -132,7 +131,6 @@ impl Rec {
             actual: None,
             source: None,
             msg: None,
-            origin: None,
         }
     }
 
@@ -140,8 +138,8 @@ impl Rec {
         Self::new_from(t, System)
     }
 
-    pub fn new_from_ancillary(t: Trust) -> Self {
-        Self::new_from(t, Ancillary)
+    pub fn new_from_source(t: Trust, s: TrustSource) -> Self {
+        Self::new_from(t, s)
     }
 
     /// Create a sourced record
@@ -152,7 +150,6 @@ impl Rec {
             status: None,
             source: Some(source),
             msg: None,
-            origin: None,
         }
     }
 

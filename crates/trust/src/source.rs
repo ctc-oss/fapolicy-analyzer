@@ -13,14 +13,16 @@ use serde::Serialize;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum TrustSource {
-    Ancillary,
     System,
+    Ancillary,
+    DFile(String),
 }
 
 impl Display for TrustSource {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         match *self {
             TrustSource::Ancillary => write!(f, "Ancillary"),
+            TrustSource::DFile(_) => write!(f, "Ancillary"),
             TrustSource::System => write!(f, "System"),
         }
     }

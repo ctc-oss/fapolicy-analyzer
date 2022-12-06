@@ -6,6 +6,8 @@ use std::path::{Path, PathBuf};
 
 use std::process::Command;
 
+use crate::source::TrustSource;
+use crate::source::TrustSource::{Ancillary, DFile};
 use fapolicy_util::rpm::ensure_rpm_exists;
 use fapolicy_util::rpm::Error::{ReadRpmDumpFailed, RpmDumpFailed};
 use nom::bytes::complete::tag;
@@ -31,19 +33,24 @@ pub(crate) type TrustSourceEntry = (PathBuf, String);
 /// 3. stir
 pub fn trust_db(lmdb: &Path, trust_d: &Path, trust_file: Option<&Path>) -> Result<DB, Error> {
     let mut db = system_from_lmdb(lmdb)?;
-    for (o, t) in file_trust(trust_d, trust_file)? {
-        let mut rec = Rec::new(t);
-        rec.origin = Some(o.clone());
-        db.put(rec);
+    for (_, t) in file_trust(trust_d, trust_file)? {
+        db.put(Rec::new(t));
     }
     Ok(db)
 }
 
 // path to d dir (/etc/fapolicyd/trust.d), optional override file (eg /etc/fapolicyd/fapolicyd.trust
-pub fn file_trust(d: &Path, o: Option<&Path>) -> Result<Vec<(String, Trust)>, Error> {
-    let mut d_entries = from_dir(d)?;
-    let mut o_entries = if let Some(f) = o {
+pub fn file_trust(d: &Path, o: Option<&Path>) -> Result<Vec<(TrustSource, Trust)>, Error> {
+    let mut d_entries: Vec<(TrustSource, String)> = from_dir(d)?
+        .into_iter()
+        .map(|(o, e)| (DFile(o.display().to_string()), e))
+        .collect();
+
+    let mut o_entries: Vec<(TrustSource, String)> = if let Some(f) = o {
         from_file(f)?
+            .iter()
+            .map(|(_, e)| (Ancillary, e.clone()))
+            .collect()
     } else {
         vec![]
     };
@@ -53,7 +60,7 @@ pub fn file_trust(d: &Path, o: Option<&Path>) -> Result<Vec<(String, Trust)>, Er
         .iter()
         // todo;; support comments elsewhere
         .filter(|(_, txt)| !txt.is_empty() || txt.trim_start().starts_with('#'))
-        .map(|(p, txt)| (p.display().to_string(), parse_trust_record(txt.trim())))
+        .map(|(p, txt)| (p.clone(), parse_trust_record(txt.trim())))
         .filter(|(_, r)| r.is_ok())
         .map(|(p, r)| (p, r.unwrap()))
         .collect())

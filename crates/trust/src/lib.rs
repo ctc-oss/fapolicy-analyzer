@@ -9,7 +9,7 @@
 pub mod db;
 pub mod error;
 pub mod ops;
-pub(crate) mod source;
+pub mod source;
 pub mod stat;
 mod trust;
 pub use trust::Trust;

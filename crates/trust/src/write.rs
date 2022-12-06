@@ -7,6 +7,7 @@
  */
 
 use crate::db::{Rec, DB};
+use crate::source::TrustSource;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::fs::File;
@@ -27,13 +28,15 @@ fn dir(db: &DB, dir: &Path) -> Result<(), io::Error> {
     for (
         _,
         Rec {
-            trusted: t, origin, ..
+            trusted: t,
+            source: o,
+            ..
         },
-    ) in db.iter().filter(|(_, r)| r.origin.is_some())
+    ) in db.iter()
     {
-        if origin.is_some() {
+        if let Some(TrustSource::DFile(o)) = o {
             let trust_string = format!("{} {} {}", t.path, t.size, t.hash);
-            match files.entry(origin.as_ref().unwrap()) {
+            match files.entry(o) {
                 Entry::Vacant(e) => {
                     e.insert(vec![trust_string]);
                 }
@@ -66,11 +69,14 @@ fn dir(db: &DB, dir: &Path) -> Result<(), io::Error> {
 fn file(db: &DB, to: &Path) -> Result<(), io::Error> {
     // write file trust db
     let mut tf = File::create(&to)?;
-    for (path, meta) in db.iter().filter(|(_, r)| r.origin.is_none()) {
-        if meta.is_ancillary() {
-            tf.write_all(
-                format!("{} {} {}\n", path, meta.trusted.size, meta.trusted.hash).as_bytes(),
-            )?;
+    for (path, rec) in db.iter() {
+        match rec.source {
+            None | Some(TrustSource::Ancillary) => {
+                tf.write_all(
+                    format!("{} {} {}\n", path, rec.trusted.size, rec.trusted.hash).as_bytes(),
+                )?;
+            }
+            _ => {}
         }
     }
     Ok(())
