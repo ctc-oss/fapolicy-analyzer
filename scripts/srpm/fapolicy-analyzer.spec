@@ -13,7 +13,7 @@ Source1:       vendor-rs.tar.gz
 # this tarball contains documentation used to generate help docs
 Source2:       vendor-docs.tar.gz
 
-# on copr the source containter is never el
+# we need to provide some updates to python on el8
 %if 0%{?rhel}
 Source10:      %{pypi_source setuptools-rust 1.1.2}
 Source11:      %{pypi_source pip 21.3.1}
@@ -47,7 +47,7 @@ BuildRequires: git
 BuildRequires: rust-packaging
 BuildRequires: python3dist(setuptools-rust)
 
-# crates
+# crates available for rawhide
 BuildRequires: rust-arrayvec0.5-devel
 BuildRequires: rust-atty-devel
 BuildRequires: rust-autocfg-devel
@@ -148,8 +148,7 @@ Requires:      gtk3
 Requires:      dbus-libs
 Requires:      gtksourceview3
 
-# for rendering our html user guide documentation
-# will be addressed with future upgrade of yelp
+# runtime required for rendering user guide documentation
 Requires:      webkit2gtk3
 Requires:      mesa-dri-drivers
 

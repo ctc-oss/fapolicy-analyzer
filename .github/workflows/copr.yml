@@ -8,11 +8,11 @@ on:
     branches:
       - 'master'
 
-name: Copr Build
+name: Copr
 
 jobs:
   build:
-    name: Copr ${{ matrix.props.name }} Build
+    name: Build ${{ matrix.props.name }}
     strategy:
       matrix:
         props:
@@ -87,13 +87,3 @@ jobs:
           --chroot ${{ matrix.props.chroot }} \
           fapolicy-analyzer:pr:${{ github.event.pull_request.number }} \
           /tmp/fapolicy-analyzer-*.${{ matrix.props.name }}.src.rpm
-
-
-#       - name: Submit Build
-#        run: |
-#          copr-cli buildscm \
-#          --method make_srpm \
-#          --commit ${{ github.event.pull_request.head.sha }} \
-#          --spec scripts/srpm/fapolicy-analyzer.spec \
-#          --clone-url ${{ github.server_url }}/${{ github.repository }} \
-#          fapolicy-analyzer:pr:${{ github.event.pull_request.number }}
