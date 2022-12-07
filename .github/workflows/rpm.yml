@@ -127,7 +127,7 @@ jobs:
       - name: Upload tarballs
         uses: actions/upload-artifact@v2
         with:
-          name: rpm-artifacts
+          name: tarball-artifacts
           path: |
             /tmp/archives/*.tar.gz
 
