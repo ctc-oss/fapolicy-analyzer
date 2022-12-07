@@ -38,6 +38,7 @@ jobs:
         id: download-artifact
         uses: dawidd6/action-download-artifact@v2
         with:
+          name: srpm-artifacts
           workflow: rpm.yml
           path: /tmp
 
