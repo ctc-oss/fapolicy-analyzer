@@ -7,6 +7,8 @@
  */
 
 use fapolicy_trust::db::DB as TrustDB;
+use std::collections::hash_map::Entry;
+use std::collections::HashMap;
 
 use crate::error::Error;
 use crate::error::Error::AnalyzerError;
@@ -41,6 +43,7 @@ pub struct ObjAnalysis {
 
 pub fn analyze(db: &EventDB, from: Perspective, trust: &TrustDB) -> Vec<Analysis> {
     let fit_events: Vec<Event> = db.events.iter().cloned().filter(|e| from.fit(e)).collect();
+    let mut access_map: HashMap<String, String> = HashMap::new();
 
     fit_events
         .iter()
@@ -53,13 +56,20 @@ pub fn analyze(db: &EventDB, from: Perspective, trust: &TrustDB) -> Vec<Analysis
                 Deny | DenyLog | DenySyslog | DenyAudit => "D".to_string(),
             };
 
-            let sa = match (
-                any_allows_for_subject(&sp, &fit_events),
-                any_denials_for_subject(&sp, &fit_events),
-            ) {
-                (true, false) => "A".to_string(),
-                (false, true) => "D".to_string(),
-                _ => "P".to_string(),
+            let sa = match access_map.entry(sp.clone()) {
+                Entry::Occupied(e) => e.get().clone(),
+                Entry::Vacant(e) => {
+                    let sa = match (
+                        any_allows_for_subject(&sp, &fit_events),
+                        any_denials_for_subject(&sp, &fit_events),
+                    ) {
+                        (true, false) => "A".to_string(),
+                        (false, true) => "D".to_string(),
+                        _ => "P".to_string(),
+                    };
+                    e.insert(sa.clone());
+                    sa
+                }
             };
 
             Analysis {
