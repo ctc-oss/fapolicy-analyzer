@@ -27,7 +27,11 @@ import fapolicy_analyzer.ui.strings as strings
 from fapolicy_analyzer import System
 from fapolicy_analyzer import __version__ as app_version
 from fapolicy_analyzer.ui.action_toolbar import ActionToolbar
-from fapolicy_analyzer.ui.actions import NotificationType, add_notification
+from fapolicy_analyzer.ui.actions import (
+    NotificationType,
+    add_notification,
+    signal_trust_reload,
+)
 from fapolicy_analyzer.ui.analyzer_selection_dialog import ANALYZER_SELECTION
 from fapolicy_analyzer.ui.changeset_wrapper import Changeset
 from fapolicy_analyzer.ui.configs import Sizing
@@ -445,7 +449,7 @@ class MainWindow(UIConnectedWidget):
             self._fapd_mgr.stop()
 
     def on_syncDatabases_activate(self):
-        pass
+        dispatch(signal_trust_reload)
 
     def _enable_fapd_menu_items(self, status: ServiceStatus):
         if self._fapdControlPermitted and (status != ServiceStatus.UNKNOWN):
