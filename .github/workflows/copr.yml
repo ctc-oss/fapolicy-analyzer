@@ -18,17 +18,14 @@ jobs:
         props:
           - {
             name: 'fc37',
-            spec: 'fapolicy-analyzer.spec',
             chroot: 'fedora-37-x86_64',
           }
           - {
             name: 'fc38',
-            spec: 'fapolicy-analyzer.spec',
             chroot: 'fedora-rawhide-x86_64',
           }
           - {
             name: 'el8',
-            spec: 'scripts/srpm/fapolicy-analyzer.spec',
             chroot: 'epel-8-x86_64',
           }
     runs-on: ubuntu-latest
