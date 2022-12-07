@@ -29,6 +29,7 @@ use fapolicy_app::cfg;
 use fapolicy_daemon::fapolicyd::TRUST_LMDB_NAME;
 use fapolicy_trust::load::keep_entry;
 use fapolicy_trust::read::rpm_trust;
+use fapolicy_trust::stat::Status::{Discrepancy, Missing, Trusted};
 use fapolicy_trust::{check, load, parse, read, Trust};
 use fapolicy_util::sha::sha256_digest;
 
@@ -365,10 +366,19 @@ fn check(_: CheckDbOpts, cfg: &cfg::All) -> Result<(), Error> {
     )?;
 
     let t = SystemTime::now();
-    let count = check::disk_sync(&db)?.iter().count();
-
+    let db = check::disk_sync(&db)?;
     let duration = t.elapsed().expect("timer failure");
 
+    for (_, v) in db.iter() {
+        match &v.status {
+            Some(Missing(t)) => println!("missing: {}", t.path),
+            Some(Discrepancy(t, _)) => println!("mismatch: {}", t.path),
+            Some(Trusted(_, _)) => {}
+            None => {}
+        }
+    }
+
+    let count = db.iter().count();
     println!(
         "checked {} entries in {} seconds",
         count,
