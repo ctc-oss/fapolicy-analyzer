@@ -110,12 +110,26 @@ jobs:
         env:
           PLATFORM: ${{ matrix.props.name }}
 
-      - name: Archive artifacts
+      - name: Upload SRPMs
         uses: actions/upload-artifact@v2
         with:
           name: srpm-artifacts
           path: |
-            /tmp/archives/*
+            /tmp/archives/*.src.rpm
+
+      - name: Upload RPMs
+        uses: actions/upload-artifact@v2
+        with:
+          name: rpm-artifacts
+          path: |
+            /tmp/archives/*.x86_64.rpm
+
+      - name: Upload tarballs
+        uses: actions/upload-artifact@v2
+        with:
+          name: tarball-artifacts
+          path: |
+            /tmp/archives/*.tar.gz
 
       - name: Release artifacts
         uses: softprops/action-gh-release@v1
