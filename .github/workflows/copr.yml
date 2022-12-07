@@ -34,6 +34,13 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d/ -f3)
 
+      - name: Download artifact
+        id: download-artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: rpm.yml
+          path: /tmp
+
       - name: Install Copr CLI
         run: |
           dnf install -y copr-cli
@@ -50,16 +57,19 @@ jobs:
           COPR_LOGIN: ${{ secrets.COPR_API_LOGIN }}
           COPR_TOKEN: ${{ secrets.COPR_API_TOKEN }}
 
+      - name: debug
+        run: |
+          ls /tmp
 
       # run on tag or PR
       # fapolicy-analyzer:custom:master
       # fapolicy-analyzer:pr:${{ github.event.pull_request.number }}
       # fapolicy-analyzer:custom:${{ steps.tag_name.outputs.VERSION }}
-      - name: Submit Build
-        run: |
-          copr-cli buildscm \
-          --method make_srpm \
-          --commit ${{ github.event.pull_request.head.sha }} \
-          --spec scripts/srpm/fapolicy-analyzer.spec \
-          --clone-url ${{ github.server_url }}/${{ github.repository }} \
-          fapolicy-analyzer:pr:${{ github.event.pull_request.number }}
+#      - name: Submit Build
+#        run: |
+#          copr-cli buildscm \
+#          --method make_srpm \
+#          --commit ${{ github.event.pull_request.head.sha }} \
+#          --spec scripts/srpm/fapolicy-analyzer.spec \
+#          --clone-url ${{ github.server_url }}/${{ github.repository }} \
+#          fapolicy-analyzer:pr:${{ github.event.pull_request.number }}

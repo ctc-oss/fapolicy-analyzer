@@ -2,11 +2,10 @@
 .SILENT: clean
 
 OS_PRETTY_NAME = $(shell grep /etc/os-release -e "^PRETTY_NAME=" | tr -d '"' | cut -d= -f2 | cut -d: -f1)
-OS_ID_FN = $(shell grep /etc/os-release -e "^ID=" | tr -d '"' | cut -d= -f2 | cut -d: -f1)
-OS_ID   ?= $(OS_ID_FN)
+OS_ID_FN =       $(shell grep /etc/os-release -e "^ID=" | tr -d '"' | cut -d= -f2 | cut -d: -f1)
+OS_ID   ?=       $(OS_ID_FN)
 
 identify:
-	env
 	@echo "Platform: $(OS_PRETTY_NAME) (id: $(OS_ID))"
 
 prepfs: prep_outdir prep_rpmbuild_dir
