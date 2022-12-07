@@ -14,14 +14,16 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+import os
 from locale import gettext as _
 from os import getenv, geteuid, path
 from threading import Thread
 from time import sleep
 from typing import Any, Sequence
 
-import fapolicy_analyzer.ui.strings as strings
 import gi
+
+import fapolicy_analyzer.ui.strings as strings
 from fapolicy_analyzer import System
 from fapolicy_analyzer import __version__ as app_version
 from fapolicy_analyzer.ui.action_toolbar import ActionToolbar
@@ -31,6 +33,7 @@ from fapolicy_analyzer.ui.changeset_wrapper import Changeset
 from fapolicy_analyzer.ui.configs import Sizing
 from fapolicy_analyzer.ui.database_admin_page import DatabaseAdminPage
 from fapolicy_analyzer.ui.fapd_manager import FapdManager, ServiceStatus
+from fapolicy_analyzer.ui.help_browser import HelpBrowser
 from fapolicy_analyzer.ui.notification import Notification
 from fapolicy_analyzer.ui.operations import DeployChangesetsOp
 from fapolicy_analyzer.ui.policy_rules_admin_page import PolicyRulesAdminPage
@@ -78,6 +81,7 @@ class MainWindow(UIConnectedWidget):
         self.__system: System
         self.__checkpoint: System
         self.__page = None
+        self.__help = None
 
         toaster = Notification(timer_duration=5)
         self.get_object("overlay").add_overlay(toaster.get_ref())
@@ -94,9 +98,11 @@ class MainWindow(UIConnectedWidget):
         self._fapdStopMenuItem.set_sensitive(False)
 
         # Enable profiler tool menu item if root user, env var, or magic file
-        prof_ui_enable = (self._fapdControlPermitted  # EUID == 0
-                          or getenv("PROF_UI_ENABLE", "false").lower() != "false"
-                          or path.exists("/tmp/prof_ui_enable"))
+        prof_ui_enable = (
+            self._fapdControlPermitted  # EUID == 0
+            or getenv("PROF_UI_ENABLE", "false").lower() != "false"
+            or path.exists("/tmp/prof_ui_enable")
+        )
         self.get_object("profileExecMenu").set_sensitive(prof_ui_enable)
 
         self.__add_toolbar()
@@ -224,6 +230,9 @@ class MainWindow(UIConnectedWidget):
         if not isinstance(obj, Gtk.Window) and self.__unapplied_changes():
             return True
 
+        if self.__help:
+            self.__help.destroy()
+
         Gtk.main_quit()
 
     def on_delete_event(self, *args):
@@ -337,6 +346,27 @@ class MainWindow(UIConnectedWidget):
         aboutDialog.set_version(f"v{app_version}")
         aboutDialog.run()
         aboutDialog.hide()
+
+    def on_helpMenu_activate(self, *args):
+        def handle_destroy(*args):
+            self.__help = None
+
+        if self.__help:
+            self.__help.present()
+        else:
+            if path.isfile("/usr/share/help/C/fapolicy-analyzer/User-Guide.html"):
+                uri = "help:fapolicy-analyzer/User-Guide.html"
+            elif path.isfile("help/C/User-Guide.html"):
+                # This should only happen in a development environment
+                uri = f"file://{os.getcwd()}/help/C/User-Guide.html"
+            else:
+                uri = f"file://{os.getcwd()}/help/unavailable.html"
+            self.__help = HelpBrowser(
+                uri=uri,
+                allow_navigation=False,
+            )
+            self.__help.connect("destroy", handle_destroy)
+        self.__help.show()
 
     def on_syslogMenu_activate(self, *args):
         page = router(ANALYZER_SELECTION.ANALYZE_SYSLOG)

@@ -2,13 +2,17 @@
 name = "fapolicy-trust"
 description = "Trust support for fapolicyd"
 license = "MPL-2.0"
-version = "0.4.0"
+version = "0.5.0"
 edition = "2018"
+
+[dev-dependencies]
+tempfile = "3.3"
 
 [dependencies]
 lmdb-rkv = "0.14.0"
 rayon = "1.5"
 serde = { version = "1.0", features = ["derive"] }
 thiserror = "1.0"
+nom = "6.1.0"
 
 fapolicy-util = { version = "*", path = "../util" }

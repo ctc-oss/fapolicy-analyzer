@@ -7,16 +7,16 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: fapolicy-analyzer 0.0.0+283.g7875e7d.dirty\n"
+"Project-Id-Version: fapolicy-analyzer 0.3.1+144.g00f7c10\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-09-16 12:14-0400\n"
+"POT-Creation-Date: 2022-12-06 16:15-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.10.1\n"
+"Generated-By: Babel 2.11.0\n"
 
 #: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:112
 #: fapolicy_analyzer/ui/system_trust_database_admin.py:107
@@ -56,7 +56,7 @@ msgstr ""
 msgid "Reverting to previous settings in {i+1} seconds"
 msgstr ""
 
-#: fapolicy_analyzer/ui/main_window.py:267
+#: fapolicy_analyzer/ui/main_window.py:276
 msgid ""
 "An error occurred trying to open the session file, "
 "{self.strSessionFilename}"
@@ -116,7 +116,7 @@ msgstr ""
 msgid "The current rule text has warnings. See Status Information for details."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:36
+#: fapolicy_analyzer/ui/strings.py:36 fapolicy_analyzer/ui/strings.py:78
 msgid "Rule"
 msgstr ""
 
@@ -210,111 +210,115 @@ msgstr ""
 msgid "Access"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:79
+#: fapolicy_analyzer/ui/strings.py:80
 msgid "Add"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:80
+#: fapolicy_analyzer/ui/strings.py:81
 msgid "Delete"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:81
+#: fapolicy_analyzer/ui/strings.py:82
 msgid "Add Trust"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:82
+#: fapolicy_analyzer/ui/strings.py:83
 msgid "Delete Trust"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:83
+#: fapolicy_analyzer/ui/strings.py:84
 msgid "Edit Rules"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:85
+#: fapolicy_analyzer/ui/strings.py:86
 msgid "Add File"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:86
+#: fapolicy_analyzer/ui/strings.py:87
 msgid "Open File"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:87
+#: fapolicy_analyzer/ui/strings.py:88
 msgid "Save As..."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:88
+#: fapolicy_analyzer/ui/strings.py:89
 msgid "FA Session files"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:89
+#: fapolicy_analyzer/ui/strings.py:90
 msgid "fapolicyd archive files"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:90
+#: fapolicy_analyzer/ui/strings.py:91
 msgid "Any files"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:92
+#: fapolicy_analyzer/ui/strings.py:93
 msgid "On-line fapolicyd start failed"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:93
+#: fapolicy_analyzer/ui/strings.py:94
 msgid "On-line fapolicyd stop failed"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:95
+#: fapolicy_analyzer/ui/strings.py:96
 msgid "Profiling target file chown failure"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:96
+#: fapolicy_analyzer/ui/strings.py:97
 msgid "Profiling target Popen failure"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:97
+#: fapolicy_analyzer/ui/strings.py:98
 msgid "Profiling target redirection failure"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:99
-msgid "Profiler Session arguments are valid."
-msgstr ""
-
 #: fapolicy_analyzer/ui/strings.py:100
-msgid "Executable field is empty"
+msgid "Profiler Session arguments are valid"
 msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:101
-msgid ": file does not exist."
+msgid "Executable field is empty"
 msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:102
-msgid ": file is not executable"
+msgid ": file does not exist"
 msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:103
-msgid ": user does not exist"
+msgid ": file is not executable"
 msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:104
-msgid ": working directory does not exist."
+msgid ": command not found"
 msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:105
-msgid ": working directory is not a directory."
+msgid ": user does not exist"
 msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:106
-msgid ": env vars not comma delimited K=V pairs"
+msgid ": working directory does not exist"
 msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:107
-msgid "Error: Unknown Profiler Session arguments"
+msgid ": working directory is not a directory"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:108
+msgid ": env vars not comma delimited K=V pairs"
 msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:109
+msgid "Error: Unknown Profiler Session arguments"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:111
 msgid "File path(s) contains embedded whitespace."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:110
+#: fapolicy_analyzer/ui/strings.py:112
 msgid ""
 "fapolicyd currently does not support paths containing spaces. The "
 "following paths will not be added to the Trusted Files List.\n"
@@ -322,7 +326,7 @@ msgid ""
 "\n"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:115
+#: fapolicy_analyzer/ui/strings.py:117
 msgid ""
 "\n"
 "        Restore your prior session now?\n"
@@ -339,57 +343,57 @@ msgid ""
 "        "
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:131
+#: fapolicy_analyzer/ui/strings.py:133
 msgid "An error occurred trying to restore a prior autosaved edit session"
 msgstr ""
 
-#: fapolicy_analyzer/glade/loader.glade:44 fapolicy_analyzer/ui/strings.py:135
+#: fapolicy_analyzer/glade/loader.glade:44 fapolicy_analyzer/ui/strings.py:137
 msgid "Loading..."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:137
+#: fapolicy_analyzer/ui/strings.py:139
 msgid "file"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:138
+#: fapolicy_analyzer/ui/strings.py:140
 msgid "files"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:139
+#: fapolicy_analyzer/ui/strings.py:141
 msgid "user"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:140
+#: fapolicy_analyzer/ui/strings.py:142
 msgid "users"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:141
+#: fapolicy_analyzer/ui/strings.py:143
 msgid "group"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:142
+#: fapolicy_analyzer/ui/strings.py:144
 msgid "groups"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:143
+#: fapolicy_analyzer/ui/strings.py:145
 msgid ""
 "An error occurred trying to parse the event log file. Please try again or"
 " select a different file."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:146
+#: fapolicy_analyzer/ui/strings.py:148
 msgid "An error occurred trying to retrieve the user list. Please try again."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:149
+#: fapolicy_analyzer/ui/strings.py:151
 msgid "An error occurred trying to retrieve the group list. Please try again."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:153
+#: fapolicy_analyzer/ui/strings.py:155
 msgid "Could not load application resources"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:154
+#: fapolicy_analyzer/ui/strings.py:156
 msgid ""
 "The required application resource files could not be loaded from disk.\n"
 "The fapolicy analyzer application cannot open.\n"
@@ -401,11 +405,11 @@ msgid ""
 "2. An incorrectly configured fapolicyd rule set."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:165
+#: fapolicy_analyzer/ui/strings.py:167
 msgid "Trust Database"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:166
+#: fapolicy_analyzer/ui/strings.py:168
 msgid ""
 "\n"
 "The fapolicyd trusted resources database\n"
@@ -430,7 +434,7 @@ msgid ""
 "    "
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:190
+#: fapolicy_analyzer/ui/strings.py:192
 msgid "Error applying changes"
 msgstr ""
 
@@ -455,7 +459,7 @@ msgid "Scan System"
 msgstr ""
 
 #: fapolicy_analyzer/glade/analyzer_selection_dialog.glade:55
-#: fapolicy_analyzer/glade/main_window.glade:169
+#: fapolicy_analyzer/glade/main_window.glade:175
 msgid "Administer Trust Databases"
 msgstr ""
 
@@ -485,6 +489,7 @@ msgid "No"
 msgstr ""
 
 #: fapolicy_analyzer/glade/confirm_change_dialog.glade:63
+#: fapolicy_analyzer/glade/time_select_dialog.glade:57
 #: fapolicy_analyzer/glade/trust_reconciliation_dialog.glade:67
 msgid "Cancel"
 msgstr ""
@@ -521,54 +526,62 @@ msgstr ""
 msgid "Visit our Wiki for more information"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:55
+#: fapolicy_analyzer/glade/main_window.glade:58
 #: fapolicy_analyzer/glade/splash_screen.glade:24
 msgid "File Access Policy Analyzer"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:79
+#: fapolicy_analyzer/glade/main_window.glade:85
 msgid "_File"
 msgstr ""
 
 #. Presents option to load prior sessions tmp file (if it exists.)
-#: fapolicy_analyzer/glade/main_window.glade:99
+#: fapolicy_analyzer/glade/main_window.glade:105
 msgid "Restore"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:142
+#: fapolicy_analyzer/glade/main_window.glade:148
 msgid "_Tool"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:152
+#: fapolicy_analyzer/glade/main_window.glade:158
 msgid "Analyze From Syslog"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:161
+#: fapolicy_analyzer/glade/main_window.glade:167
 msgid "Analyze From Audit Log"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:178
+#: fapolicy_analyzer/glade/main_window.glade:184
 msgid "Administer Rules"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:187
+#: fapolicy_analyzer/glade/main_window.glade:193
 msgid "Profile Executable"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:200
+#: fapolicy_analyzer/glade/main_window.glade:206
 msgid "System"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:233
+#: fapolicy_analyzer/glade/main_window.glade:239
 msgid "_Help"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:297
+#: fapolicy_analyzer/glade/main_window.glade:249
+msgid "User Guide"
+msgstr ""
+
+#: fapolicy_analyzer/glade/main_window.glade:312
 msgid "fapolicyd:"
 msgstr ""
 
 #: fapolicy_analyzer/glade/notification.glade:46
 msgid "x"
+msgstr ""
+
+#: fapolicy_analyzer/glade/policy_rules_admin_page.glade:53
+msgid "Showing events since "
 msgstr ""
 
 #: fapolicy_analyzer/glade/profiler_page.glade:94
@@ -625,6 +638,26 @@ msgstr ""
 
 #: fapolicy_analyzer/glade/system_trust_database_admin.glade:60
 msgid "Add To Ancillary Trust Database"
+msgstr ""
+
+#: fapolicy_analyzer/glade/time_select_dialog.glade:28
+msgid "Time Selection "
+msgstr ""
+
+#: fapolicy_analyzer/glade/time_select_dialog.glade:44
+msgid "Confirm"
+msgstr ""
+
+#: fapolicy_analyzer/glade/time_select_dialog.glade:98
+msgid "Minutes"
+msgstr ""
+
+#: fapolicy_analyzer/glade/time_select_dialog.glade:99
+msgid "Hours"
+msgstr ""
+
+#: fapolicy_analyzer/glade/time_select_dialog.glade:100
+msgid "Days"
 msgstr ""
 
 #: fapolicy_analyzer/glade/trust_file_details.glade:60

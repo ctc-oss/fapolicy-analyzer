@@ -10,12 +10,17 @@ Source0:       fapolicy-analyzer.tar.gz
 # reference: https://bugzilla.redhat.com/show_bug.cgi?id=2124697#c5
 Source1:       vendor-rs.tar.gz
 
+# this tarball contains documentation used to generate help docs
+Source2:       vendor-docs.tar.gz
+
 BuildRequires: python3-devel
 BuildRequires: python3dist(setuptools)
 BuildRequires: python3dist(pip)
 BuildRequires: python3dist(wheel)
 BuildRequires: python3dist(babel)
 BuildRequires: dbus-devel
+BuildRequires: gettext
+BuildRequires: itstool
 
 BuildRequires: rust-packaging
 BuildRequires: python3dist(setuptools-rust)
@@ -119,6 +124,11 @@ Requires:      gtk3
 Requires:      dbus-libs
 Requires:      gtksourceview3
 
+# for rendering our html user guide documentation
+# will be addressed with future upgrade of yelp
+Requires:      webkit2gtk3
+Requires:      mesa-dri-drivers
+
 %global module fapolicy_analyzer
 
 %description
@@ -143,6 +153,7 @@ tar xzf %{SOURCE1} -C ${CARGO_REG_DIR} --strip-components=2
 sed -i "s#%{cargo_registry}#${CARGO_REG_DIR}#g" .cargo/config
 
 %autosetup -p0 -n %{name}
+tar xvzf %{SOURCE2}
 
 # throw out the checked-in lock
 # this build will use what is available from the local registry
@@ -155,12 +166,18 @@ echo %{version} > VERSION
 %build
 
 python3 setup.py compile_catalog -f
+python3 help build
 python3 setup.py bdist_wheel
 
 %install
 
-install bin/%{name} %{buildroot}%{_sbindir}/%{name} -D
 %{py3_install_wheel %{module}-%{version}*%{_arch}.whl}
+install bin/%{name} %{buildroot}%{_sbindir}/%{name} -D
+mkdir -p %{buildroot}/%{_datadir}/help/{C,es}/%{name}/media
+install -p -D build/help/C/%{name}/*.html   %{buildroot}/%{_datadir}/help/C/%{name}/
+install -p -D build/help/C/%{name}/media/*  %{buildroot}/%{_datadir}/help/C/%{name}/media/
+install -p -D build/help/es/%{name}/*.html  %{buildroot}/%{_datadir}/help/es/%{name}/
+install -p -D build/help/es/%{name}/media/* %{buildroot}/%{_datadir}/help/es/%{name}/media/
 
 %check
 
@@ -170,6 +187,8 @@ install bin/%{name} %{buildroot}%{_sbindir}/%{name} -D
 %{python3_sitearch}/%{module}
 %{python3_sitearch}/%{module}-%{version}*
 %attr(755,root,root) %{_sbindir}/fapolicy-analyzer
+%{_datadir}/help/C/fapolicy-analyzer
+%{_datadir}/help/es/fapolicy-analyzer
 
 %changelog
 * Fri Sep 09 2022 John Wass <jwass3@gmail.com> 0.6.1-1

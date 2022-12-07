@@ -14,7 +14,9 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import pytest
+import glob
 import os
+import re
 from unittest.mock import MagicMock
 from fapolicy_analyzer.ui.faprofiler import (
     FaProfiler,
@@ -26,7 +28,7 @@ from fapolicy_analyzer.ui.faprofiler import (
 
 
 @pytest.fixture
-def faProfSession():
+def faProfSession(scope="session"):
     dictArgs = {
         "executeText": "/usr/bin/ls",
         "argText": "-ltr /tmp",
@@ -34,7 +36,12 @@ def faProfSession():
         "dirText": os.getenv("HOME"),
         "envText": 'FAPD_LOGPATH=/tmp/tgt_profiler, XX="xx"',
     }
-    return FaProfSession(dictArgs)
+    s = FaProfSession(dictArgs)
+    yield s
+
+    # Clean-up
+    os.remove(s.tgtStdout)
+    os.remove(s.tgtStderr)
 
 
 @pytest.fixture
@@ -44,38 +51,148 @@ def faProfiler():
 
 # Testing FaProfSession
 def test_faprofsession_init(faProfSession, mocker):
-    assert not faProfSession.tgtStdout
-    assert not faProfSession.tgtStderr
+    reStdout = re.compile(r"/tmp/tgt_profiling_\d{8}(_\d{6}){2}_.+_\d+\.stdout")
+    reStderr = re.compile(r"/tmp/tgt_profiling_\d{8}(_\d{6}){2}_.+_\d+\.stderr")
+    assert reStdout.match(faProfSession.tgtStdout)
+    assert reStderr.match(faProfSession.tgtStderr)
+
+
+@pytest.mark.parametrize(
+    "dictArgs", [
+        # Populate target dictionary w/unexpected keys
+        {
+            "executeText": "Now.sh",
+            "argBadText": "",
+            "userText": os.getenv("USER"),
+            "dirBadText": "/tmp",
+            "envText": "PATH=.:${PATH}",
+        },
+        # Populate target dictionary w/Missing keys
+        {
+            "executeText": "ls",
+            "userText": os.getenv("USER"),
+            "envText": "",
+        },
+    ]
+)
+def test_faprofsession_init_w_bad_keys(dictArgs):
+    with pytest.raises(KeyError) as e:
+        FaProfSession.validateArgs(dictArgs)
+    print(e)
+    with pytest.raises(KeyError) as e:
+        FaProfSession(dictArgs)
+    print(e)
+
+
+def test_faprofsession_fopen_exception(mocker):
+    # Emulate a file open() exception
+    mocker.patch("fapolicy_analyzer.ui.faprofiler.open",
+                 side_effect=Exception())
+    dictArgs = {
+        "executeText": "/usr/bin/ls",
+        "argText": "-ltr /tmp",
+        "userText": os.getenv("USER"),
+        "dirText": os.getenv("HOME"),
+        "envText": 'FAPD_LOGPATH=/tmp/tgt_profiler, XX="xx"',
+    }
+
+    s = FaProfSession(dictArgs)
+    assert s.fdTgtStdout is None
+    assert s.fdTgtStderr is None
+
+
+def test_faprofsession_getpwnam_exception(mocker):
+    # Emulate a getpwnam() exception
+    mocker.patch(
+        "fapolicy_analyzer.ui.faprofiler.pwd.getpwnam",
+        side_effect=Exception()
+    )
+
+    dictArgs = {
+        "executeText": "/usr/bin/ls",
+        "argText": "-ltr /tmp",
+        "userText": "ooo",
+        "dirText": os.getenv("HOME"),
+        "envText": 'FAPD_LOGPATH=/tmp/tgt_profiler, XX="xx"',
+    }
+
+    with pytest.raises(Exception):
+        FaProfSession(dictArgs)
+
+
+def test_faprofsession_path_env():
+    dictArgs = {
+        "executeText": "ls",
+        "argText": "-ltr /tmp",
+        "userText": os.getenv("USER"),
+        "dirText": os.getenv("HOME"),
+        "envText": 'PATH=/tmp:$PATH, XX="xx"',
+    }
+
+    s = FaProfSession(dictArgs)
+    assert s.fdTgtStdout
+    assert s.fdTgtStderr
+    assert os.path.basename(s.execPath) == dictArgs["executeText"]
+
+    # directory may differ on different platforms; we only care that it's > 0
+    assert os.path.dirname(s.execPath)
+
+
+def test_faprofsession_log_redirection(mocker):
+    os.environ["FAPD_LOGPATH"] = "/tmp/fapd_logpath_test_"
+    dictArgs = {
+        "executeText": "ls",
+        "argText": "-ltr /tmp",
+        "userText": os.getenv("USER"),
+        "dirText": os.getenv("HOME"),
+        "envText": 'PATH=/tmp:$PATH, XX="xx"',
+    }
+
+    s = FaProfSession(dictArgs)
+    assert s.fdTgtStdout
+    assert s.fdTgtStderr
 
 
 def test_startTarget(faProfSession, mocker):
     mockPopen = MagicMock()
     mocker.patch(
-        "fapolicy_analyzer.ui.faprofiler.subprocess.Popen", return_value=mockPopen
+        "fapolicy_analyzer.ui.faprofiler.subprocess.Popen",
+        return_value=mockPopen
     )
     mockPopen.returncode = 0
     assert not faProfSession.procTarget
-    faProfSession.startTarget(0)
+    faProfSession.startTarget()
     mockPopen.wait.assert_called()
     assert faProfSession.procTarget.returncode == 0
-    faProfSession.startTarget(0, block_until_termination=False)
+    faProfSession.startTarget(block_until_termination=False)
 
     # Although we aren't waiting on the process, it is short-lived and finished
     assert faProfSession.procTarget.returncode == 0
 
-    # Emulate a file open() exception
-    mocker.patch("fapolicy_analyzer.ui.faprofiler.open", side_effect=Exception())
-    faProfSession.startTarget(1)
-    assert faProfSession.fdTgtStdout is None
-    assert faProfSession.fdTgtStderr is None
 
-    # Emulate a getpwnam() exception
+def test_startTarget_w_exception(mocker):
     mocker.patch(
-        "fapolicy_analyzer.ui.faprofiler.pwd.getpwnam", side_effect=Exception()
+        "fapolicy_analyzer.ui.faprofiler.subprocess.Popen",
+        side_effect=OSError()
     )
-    faProfSession.startTarget(1)
-    assert faProfSession.fdTgtStdout is None
-    assert faProfSession.fdTgtStderr is None
+
+    mockDispatch = mocker.patch(
+        "fapolicy_analyzer.ui.faprofiler.dispatch",
+    )
+
+    dictArgs = {
+        "executeText": "ls",
+        "argText": "-ltr /tmp",
+        "userText": os.getenv("USER"),
+        "dirText": os.getenv("HOME"),
+        "envText": 'PATH=/tmp:$PATH, XX="xx"',
+    }
+
+    s = FaProfSession(dictArgs)
+
+    assert not s.procTarget
+    s.startTarget()
+    mockDispatch.assert_called()
 
 
 def test_stopTarget(faProfSession, mocker):
@@ -90,7 +207,7 @@ def test_stopTarget(faProfSession, mocker):
 
 def test_get_profsession_timestamp(faProfSession):
     faProfSession.faprofiler = MagicMock()
-    faProfSession.get_profiling_timestamp()
+    faProfSession._get_profiling_timestamp()
     faProfSession.faprofiler.get_profiling_timestamp.assert_called()
 
 
@@ -117,6 +234,12 @@ def test_start_prof_session(faProfiler, mocker):
     key = faProfiler.start_prof_session(dictArgs)
     assert faProfiler.instance != 0
     assert key in faProfiler.dictFaProfSession
+
+    # Clean up
+    for f in glob.glob("/tmp/tgt_profiling_*.stdout"):
+        os.remove(f)
+    for f in glob.glob("/tmp/tgt_profiling_*.stderr"):
+        os.remove(f)
 
 
 def test_start_prof_session_w_exception(faProfiler, mocker):
@@ -146,6 +269,12 @@ def test_start_prof_session_w_exception(faProfiler, mocker):
         faProfiler.start_prof_session(dictArgs)
     assert e_info.value.args[0] == "bad execution"
 
+    # Clean up
+    for f in glob.glob("/tmp/tgt_profiling_*.stdout"):
+        os.remove(f)
+    for f in glob.glob("/tmp/tgt_profiling_*.stderr"):
+        os.remove(f)
+
 
 def test_stop_prof_session(faProfiler, mocker):
     faProfiler.fapd_mgr = MagicMock()
@@ -165,6 +294,12 @@ def test_stop_prof_session(faProfiler, mocker):
     faProfiler.stop_prof_session()
     assert faProfiler.instance == 0
     assert not faProfiler.dictFaProfSession
+
+    # Clean up
+    for f in glob.glob("/tmp/tgt_profiling_*.stdout"):
+        os.remove(f)
+    for f in glob.glob("/tmp/tgt_profiling_*.stderr"):
+        os.remove(f)
 
 
 def test_status_prof_session(faProfiler, mocker):
@@ -209,7 +344,7 @@ def test_validateArgs():
     dictArgs["executeText"] = os.getenv("HOME") + "/.bashrc"
     dict_valid_args_return = FaProfSession.validateArgs(dictArgs)
     assert len(dict_valid_args_return) == 1
-    assert ProfSessionArgsStatus.EXEC_NOT_EXECUTABLE in dict_valid_args_return
+    assert ProfSessionArgsStatus.EXEC_NOT_EXEC in dict_valid_args_return
     dictArgs["executeText"] = "/usr/bin/ls"
 
     # Verify non-existent user is detected
@@ -241,8 +376,39 @@ def test_validateArgs():
     }
 
     dict_valid_args_return = FaProfSession.validateArgs(dictArgs)
-    print(dict_valid_args_return)
     assert len(dict_valid_args_return) == 3
     assert ProfSessionArgsStatus.USER_DOESNT_EXIST in dict_valid_args_return
     assert ProfSessionArgsStatus.EXEC_DOESNT_EXIST in dict_valid_args_return
     assert ProfSessionArgsStatus.PWD_DOESNT_EXIST in dict_valid_args_return
+
+
+@pytest.mark.parametrize(
+    "dictArgs, expected_status", [
+        (
+            # Verify non-existent relative exec path is detected
+            {
+                "executeText": "Now.sh",
+                "argText": "",
+                "userText": os.getenv("USER"),
+                "dirText": "/tmp",
+                "envText": "PATH=.:${PATH}",
+            },
+            ProfSessionArgsStatus.EXEC_NOT_FOUND,
+        ),
+        (
+            # Test w/good args; only OK key is in returned dict
+            {
+                "executeText": "ls",
+                "argText": "",
+                "userText": os.getenv("USER"),
+                "dirText": os.getenv("HOME"),
+                "envText": "",
+            },
+            ProfSessionArgsStatus.OK,
+        ),
+    ]
+)
+def test_validateArgs_relative_exec(dictArgs, expected_status):
+    dict_valid_args_return = FaProfSession.validateArgs(dictArgs)
+    assert len(dict_valid_args_return) == 1
+    assert expected_status in dict_valid_args_return

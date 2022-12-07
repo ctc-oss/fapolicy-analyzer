@@ -6,7 +6,9 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+use fapolicy_util::{rpm, sha};
 use std::io;
+use std::num::ParseIntError;
 use thiserror::Error;
 
 /// An Error that can occur in this crate
@@ -14,14 +16,19 @@ use thiserror::Error;
 pub enum Error {
     #[error("lmdb db not found, {0}")]
     LmdbNotFound(String),
+
     #[error("{0}")]
-    LmdbReadFail(lmdb::Error),
+    LmdbFailure(#[from] lmdb::Error),
+
     #[error("Permission denied, {0}")]
     LmdbPermissionDenied(String),
+
     #[error("Unsupported Trust type: {0}")]
     UnsupportedTrustType(String),
+
     #[error("Malformed Trust entry: {0}")]
     MalformattedTrustEntry(String),
+
     #[error("{0} file not found at {1}")]
     TrustSourceNotFound(String, String),
 
@@ -31,6 +38,12 @@ pub enum Error {
     #[error("Error reading metadata: {0}")]
     MetaError(String),
 
-    #[error("{0}")]
-    GeneralError(#[from] fapolicy_util::error::Error),
+    #[error("Failed to parse expected size")]
+    ParseSizeError(#[from] ParseIntError),
+
+    #[error("Error reading trust from RPM DB {0}")]
+    RpmError(#[from] rpm::Error),
+
+    #[error("Error hashing trust entry {0}")]
+    HashError(#[from] sha::Error),
 }

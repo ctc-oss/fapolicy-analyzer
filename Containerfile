@@ -1,4 +1,4 @@
-ARG image=fedora:rawhide
+ARG image=registry.fedoraproject.org/fedora:38
 FROM $image AS build-stage
 
 RUN dnf install -y rpm-build rpmdevtools dnf-plugins-core python3-pip nano
@@ -21,6 +21,7 @@ RUN spectool -gf -C SOURCES/ SPECS/fapolicy-analyzer.spec
 
 COPY --chown=10001:0 fapolicy-analyzer.tar.gz SOURCES/
 COPY --chown=10001:0 vendor-rs.tar.gz         SOURCES/
+COPY --chown=10001:0 vendor-docs.tar.gz       SOURCES/
 COPY --chown=10001:0 scripts/srpm/build.sh    ./build.sh
 
 WORKDIR /tmp/rpmbuild

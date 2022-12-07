@@ -52,7 +52,7 @@ setup(
             "fapolicy_analyzer.redux*",
             "fapolicy_analyzer.resources*",
             "fapolicy_analyzer.ui*",
-            "fapolicy_analyzer.util"
+            "fapolicy_analyzer.util",
         ],
     ),
     setup_requires=["setuptools", "setuptools_rust"],

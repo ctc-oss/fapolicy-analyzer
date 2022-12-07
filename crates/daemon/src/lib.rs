@@ -9,8 +9,8 @@
 pub mod error;
 pub mod fapolicyd;
 
-pub mod rpm;
-pub use rpm::fapolicyd_version as version;
+pub use version::fapolicyd_version as version;
 
 pub mod profiler;
 pub mod svc;
+pub mod version;
