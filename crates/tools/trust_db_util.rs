@@ -295,7 +295,7 @@ fn load(opts: LoadOpts, verbose: bool, _: &cfg::All, env: &Environment) -> Resul
         let v = format!("{} {} {}", 2, t.size, t.hash);
         tx.put(db, &t.path, &v, WriteFlags::APPEND_DUP)?;
         if verbose {
-            println!("{} {} {} {}", o, t.path, t.size, t.hash);
+            println!("{} {}", o, t);
         }
     }
     tx.commit()?;
@@ -342,14 +342,14 @@ fn dump(opts: DumpDbOpts, cfg: &cfg::All) -> Result<(), Error> {
     )?;
     match opts.outfile {
         None => {
-            for (k, v) in db.iter() {
-                println!("{} {} {}", k, v.trusted.size, v.trusted.hash)
+            for (_, v) in db.iter() {
+                println!("{}", v.trusted)
             }
         }
         Some(path) => {
             let mut f = File::create(&path)?;
-            for (k, v) in db.iter() {
-                f.write_all(format!("{} {} {}\n", k, v.trusted.size, v.trusted.hash).as_bytes())?;
+            for (_, v) in db.iter() {
+                f.write_all(format!("{}\n", v.trusted).as_bytes())?;
             }
         }
     };
@@ -445,16 +445,3 @@ fn output_lines(out: Output) -> Result<Vec<String>, Error> {
         .map(String::from)
         .collect())
 }
-//
-// fn load_ancillary_trust(path: &str) -> Result<Vec<Trust>, Error> {
-//     let f = File::open(path)?;
-//     let r = BufReader::new(f);
-//
-//     let lines: Result<Vec<String>, io::Error> = r.lines().collect();
-//     lines?
-//         .iter()
-//         .map(|s| s.trim_start())
-//         .filter(|s| !s.is_empty() && !s.starts_with('#'))
-//         .map(|l| parse_trust_record(l).map_err(TrustError))
-//         .collect()
-// }
