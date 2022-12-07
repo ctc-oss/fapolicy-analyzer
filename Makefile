@@ -110,6 +110,12 @@ cargo-fmt:
 lint: pylint clippy
 	@echo -e "${GRN}--- Source linting complete${NC}"
 
+# Ensure header exists on required files
+header-check:
+	grep -R -L --exclude-dir=vendor \
+        --include='*.py' --include='*.rs' --include='*.glade' --include='*.sh' \
+        'Copyright Concurrent Technologies Corporation' *
+
 # Perform linting on the Python source code
 pylint:
 	@echo -e "${GRN}-  |--- Python linting...${NC}"
@@ -121,7 +127,7 @@ clippy:
 	pipenv run cargo clippy --all
 
 # Perform pre- git push unit-testing, formating, and linting
-check: format lint test
+check: header-check format lint test
 	@echo -e "${GRN}--- Pre-Push checks complete${NC}"
 	git status
 
@@ -129,8 +135,8 @@ check: format lint test
 fc-rpm:
 	@echo -e "${GRN}--- Fedora RPM generation...${NC}"
 	make -f .copr/Makefile vendor
-	podman build -t fapolicy-analyzer:rawhide -f Containerfile .
-	podman run --rm -it --network=none -v /tmp:/v fapolicy-analyzer:rawhide /v
+	podman build -t fapolicy-analyzer:38 -f Containerfile .
+	podman run --rm -it --network=none -v /tmp:/v fapolicy-analyzer:38 /v
 
 # Generate RHEL rpms
 el-rpm:

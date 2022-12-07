@@ -257,7 +257,7 @@ dependencies = [
 
 [[package]]
 name = "fapolicy-app"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "confy",
  "directories",
@@ -272,11 +272,12 @@ dependencies = [
 
 [[package]]
 name = "fapolicy-daemon"
-version = "0.4.1"
+version = "0.5.0"
 dependencies = [
  "dbus",
  "fapolicy-rules",
  "fapolicy-trust",
+ "fapolicy-util",
  "nom",
  "tempfile",
  "thiserror",
@@ -284,7 +285,7 @@ dependencies = [
 
 [[package]]
 name = "fapolicy-pyo3"
-version = "0.4.1"
+version = "0.4.2"
 dependencies = [
  "chrono",
  "fapolicy-analyzer",
@@ -326,20 +327,23 @@ dependencies = [
 
 [[package]]
 name = "fapolicy-trust"
-version = "0.4.0"
+version = "0.5.0"
 dependencies = [
  "fapolicy-util",
  "lmdb-rkv",
+ "nom",
  "rayon",
  "serde",
+ "tempfile",
  "thiserror",
 ]
 
 [[package]]
 name = "fapolicy-util"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "data-encoding",
+ "nom",
  "ring",
  "thiserror",
 ]

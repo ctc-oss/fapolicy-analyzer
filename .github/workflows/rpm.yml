@@ -28,7 +28,7 @@ jobs:
           - {
             name: 'fc38',
             spec: 'fapolicy-analyzer.spec',
-            image: 'registry.fedoraproject.org/fedora:rawhide',
+            image: 'registry.fedoraproject.org/fedora:38',
             platform: 'fedora',
           }
           - {

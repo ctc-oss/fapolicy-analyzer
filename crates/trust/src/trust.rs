@@ -8,6 +8,7 @@
 
 use serde::Deserialize;
 use serde::Serialize;
+use std::fmt::{Display, Formatter};
 
 /// # The definition of Trust
 /// - Path to the file
@@ -27,5 +28,11 @@ impl Trust {
             size,
             hash: hash.to_string(),
         }
+    }
+}
+
+impl Display for Trust {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_fmt(format_args!("{} {} {}", self.path, self.size, self.hash))
     }
 }

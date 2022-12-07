@@ -6,8 +6,11 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+use pyo3::exceptions::PyRuntimeError;
 use std::collections::HashMap;
+use std::io::Write;
 
+use fapolicy_daemon::fapolicyd::FIFO_PIPE;
 use pyo3::prelude::*;
 
 use fapolicy_trust::ops::{get_path_action_map, Changeset};
@@ -158,9 +161,26 @@ impl PyChangeset {
     }
 }
 
+/// send signal to fapolicyd FIFO pipe to reload the trust database
+#[pyfunction]
+fn signal_trust_reload() -> PyResult<()> {
+    let mut fifo = std::fs::OpenOptions::new()
+        .write(true)
+        .read(false)
+        .open(FIFO_PIPE)
+        .map_err(|e| PyRuntimeError::new_err(format!("failed to open fifo pipe: {}", e)))?;
+
+    fifo.write_all("1".as_bytes()).map_err(|e| {
+        PyRuntimeError::new_err(format!("failed to write reload byte to pipe: {:?}", e))
+    })?;
+
+    Ok(())
+}
+
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyChangeset>()?;
     m.add_class::<PyTrust>()?;
     m.add_class::<PyActual>()?;
+    m.add_function(wrap_pyfunction!(signal_trust_reload, m)?)?;
     Ok(())
 }
