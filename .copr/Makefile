@@ -5,7 +5,7 @@ OS_ID_FN = $(shell grep /etc/os-release -e "^ID=" | tr -d '"' | cut -d= -f2 | cu
 OS_ID   ?= $(OS_ID_FN)
 
 identify:
-	@echo $(shell grep /etc/os-release -e "^PRETTY_NAME=" | tr -d '"' | cut -d= -f2 | cut -d: -f1)
+	@echo "Platform $(shell grep /etc/os-release -e '^PRETTY_NAME=' | cut -d= -f2 | cut -d: -f1)"
 	@echo "Platform ID: $(OS_ID)"
 
 prepfs: prep_outdir prep_rpmbuild_dir
