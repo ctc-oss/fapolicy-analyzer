@@ -13,17 +13,16 @@ Source1:       vendor-rs.tar.gz
 # this tarball contains documentation used to generate help docs
 Source2:       vendor-docs.tar.gz
 
-# on copr the source containter is never el
-# we check for low fc version here to remedy that
-%if 0%{?rhel} || 0%{?fedora} < 37
-Source10:       %{pypi_source setuptools-rust 1.1.2}
-Source11:       %{pypi_source pip 21.3.1}
-Source12:       %{pypi_source setuptools 59.6.0}
-Source13:       %{pypi_source wheel 0.37.0}
-Source14:       %{pypi_source setuptools_scm 6.4.2}
-Source15:       %{pypi_source semantic_version 2.8.2}
-Source16:       %{pypi_source packaging 21.3}
-Source17:       %{pypi_source pyparsing 2.1.0}
+# we need to provide some updates to python on el8
+%if 0%{?rhel}
+Source10:      %{pypi_source setuptools-rust 1.1.2}
+Source11:      %{pypi_source pip 21.3.1}
+Source12:      %{pypi_source setuptools 59.6.0}
+Source13:      %{pypi_source wheel 0.37.0}
+Source14:      %{pypi_source setuptools_scm 6.4.2}
+Source15:      %{pypi_source semantic_version 2.8.2}
+Source16:      %{pypi_source packaging 21.3}
+Source17:      %{pypi_source pyparsing 2.1.0}
 Source18:      %{pypi_source tomli 1.2.3}
 Source19:      %{pypi_source flit_core 3.7.1}
 Source20:      %{pypi_source typing_extensions 3.7.4.3}
@@ -48,7 +47,7 @@ BuildRequires: git
 BuildRequires: rust-packaging
 BuildRequires: python3dist(setuptools-rust)
 
-# crates
+# crates available for rawhide
 BuildRequires: rust-arrayvec0.5-devel
 BuildRequires: rust-atty-devel
 BuildRequires: rust-autocfg-devel
@@ -149,8 +148,7 @@ Requires:      gtk3
 Requires:      dbus-libs
 Requires:      gtksourceview3
 
-# for rendering our html user guide documentation
-# will be addressed with future upgrade of yelp
+# runtime required for rendering user guide documentation
 Requires:      webkit2gtk3
 Requires:      mesa-dri-drivers
 
