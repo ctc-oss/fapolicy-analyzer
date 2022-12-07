@@ -77,13 +77,17 @@ jobs:
         run: |
           ls /tmp
 
-      # run on tag or PR
-      # fapolicy-analyzer:custom:master
-      # fapolicy-analyzer:pr:${{ github.event.pull_request.number }}
-      # fapolicy-analyzer:custom:${{ steps.tag_name.outputs.VERSION }}
-      - name: Submit Build
+      - name: Copr Release Build
+        if: startsWith(github.ref, 'refs/tags/v')
         run: |
-          copr-cli build \
-          --chroot ${{ matrix.props.chroot }} \
-          fapolicy-analyzer:pr:${{ github.event.pull_request.number }} \
-          /tmp/fapolicy-analyzer-*.${{ matrix.props.name }}.src.rpm
+          copr-cli build --chroot ${{ matrix.props.chroot }} fapolicy-analyzer /tmp/fapolicy-analyzer-*.${{ matrix.props.name }}.src.rpm
+
+      - name: Copr Latest Build
+        if: github.ref == 'refs/heads/master'
+        run: |
+          copr-cli build --chroot ${{ matrix.props.chroot }} fapolicy-analyzer-latest /tmp/fapolicy-analyzer-*.${{ matrix.props.name }}.src.rpm
+
+      - name: Copr PR Build
+        if: github.event_name == 'pull_request'
+        run: |
+          copr-cli build --chroot ${{ matrix.props.chroot }} fapolicy-analyzer-latest:pr:${{ github.event.pull_request.number }} /tmp/fapolicy-analyzer-*.${{ matrix.props.name }}.src.rpm
