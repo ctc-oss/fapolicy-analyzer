@@ -135,8 +135,8 @@ check: header-check format lint test
 fc-rpm:
 	@echo -e "${GRN}--- Fedora RPM generation...${NC}"
 	make -f .copr/Makefile vendor
-	podman build -t fapolicy-analyzer:rawhide -f Containerfile .
-	podman run --rm -it --network=none -v /tmp:/v fapolicy-analyzer:rawhide /v
+	podman build -t fapolicy-analyzer:38 -f Containerfile .
+	podman run --rm -it --network=none -v /tmp:/v fapolicy-analyzer:38 /v
 
 # Generate RHEL rpms
 el-rpm:
