@@ -15,8 +15,8 @@
 
 use std::fs::File;
 use std::io;
-use std::io::{BufRead, BufReader, Write};
-use std::path::Path;
+use std::io::{BufReader, Write};
+use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 use std::time::SystemTime;
 
@@ -26,13 +26,14 @@ use rayon::prelude::*;
 use thiserror::Error;
 
 use fapolicy_app::cfg;
-use fapolicy_daemon::fapolicyd::TRUST_DB_NAME;
-use fapolicy_daemon::rpm::load_system_trust as load_rpm_trust;
-use fapolicy_trust::read::{check_trust_db, parse_trust_record};
-use fapolicy_trust::{read, Trust};
+use fapolicy_daemon::fapolicyd::TRUST_LMDB_NAME;
+use fapolicy_trust::load::keep_entry;
+use fapolicy_trust::read::rpm_trust;
+use fapolicy_trust::stat::Status::{Discrepancy, Missing, Trusted};
+use fapolicy_trust::{check, load, parse, read, Trust};
 use fapolicy_util::sha::sha256_digest;
 
-use crate::Error::{DirTrustError, DpkgCommandFail, DpkgNotFound, TrustError};
+use crate::Error::{DirTrustError, DpkgCommandFail, DpkgNotFound};
 use crate::Subcommand::{Add, Check, Clear, Count, Del, Dump, Init, Load, Search};
 
 /// An Error that can occur in this app
@@ -45,7 +46,7 @@ pub enum Error {
     DpkgCommandFail(io::Error),
 
     #[error("{0}")]
-    RpmError(#[from] fapolicy_daemon::rpm::Error),
+    RpmError(#[from] fapolicy_util::rpm::Error),
 
     #[error("{0}")]
     LmdbError(#[from] lmdb::Error),
@@ -63,7 +64,7 @@ pub enum Error {
     FileError(#[from] io::Error),
 
     #[error("file hashing error, {0}")]
-    HashError(#[from] fapolicy_util::error::Error),
+    HashError(#[from] fapolicy_util::sha::Error),
 
     #[error("error reading stdout")]
     ParseError(#[from] std::string::FromUtf8Error),
@@ -179,7 +180,7 @@ fn main() -> Result<(), Error> {
     let all_opts: Opts = Opts::parse();
     let trust_db_path = match all_opts.dbdir {
         Some(ref p) => Path::new(p),
-        None => Path::new(&sys_conf.system.trust_db_path),
+        None => Path::new(&sys_conf.system.trust_lmdb_path),
     };
 
     if !trust_db_path.exists() {
@@ -206,12 +207,12 @@ fn main() -> Result<(), Error> {
         Search(opts) => find(opts, &sys_conf, &env),
         Check(opts) => check(opts, &sys_conf),
         Count(opts) => count(opts, &sys_conf, &env),
-        Load(opts) => load(opts, &sys_conf, &env),
+        Load(opts) => load(opts, all_opts.verbose, &sys_conf, &env),
     }
 }
 
 fn clear(_: ClearOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
-    if let Ok(db) = env.open_db(Some(TRUST_DB_NAME)) {
+    if let Ok(db) = env.open_db(Some(TRUST_LMDB_NAME)) {
         let mut tx = env.begin_rw_txn()?;
         tx.clear_db(db)?;
         tx.commit()?;
@@ -225,7 +226,7 @@ fn init(opts: InitOpts, verbose: bool, cfg: &cfg::All, env: &Environment) -> Res
         clear(ClearOpts {}, cfg, env)?;
     }
 
-    let db = env.create_db(Some(TRUST_DB_NAME), DatabaseFlags::DUP_SORT)?;
+    let db = env.create_db(Some(TRUST_LMDB_NAME), DatabaseFlags::DUP_SORT)?;
 
     if opts.empty {
         return Ok(());
@@ -233,9 +234,9 @@ fn init(opts: InitOpts, verbose: bool, cfg: &cfg::All, env: &Environment) -> Res
 
     let t = SystemTime::now();
     let sys = if opts.dpkg {
-        load_dpkg_trust()?
+        dpkg_trust()?
     } else {
-        load_rpm_trust(&cfg.system.system_trust_path)?
+        rpm_trust(&PathBuf::from(&cfg.system.system_trust_path))?
     };
 
     let sys = if let Some(c) = opts.count {
@@ -247,12 +248,17 @@ fn init(opts: InitOpts, verbose: bool, cfg: &cfg::All, env: &Environment) -> Res
     };
 
     let mut tx = env.begin_rw_txn()?;
+    let mut skipped = 0;
     for trust in &sys {
         let v = format!("{} {} {}", 1, trust.size, trust.hash);
         match tx.put(db, &trust.path, &v, WriteFlags::APPEND_DUP) {
             Ok(_) => {}
-            Err(_) if verbose => println!("skipped {}", trust.path),
-            Err(_) => {}
+            Err(e) => {
+                skipped += 1;
+                if verbose {
+                    println!("skipped {} {:?}", trust.path, e);
+                }
+            }
         }
     }
     tx.commit()?;
@@ -261,22 +267,37 @@ fn init(opts: InitOpts, verbose: bool, cfg: &cfg::All, env: &Environment) -> Res
 
     if verbose {
         println!(
-            "initialized db with {} entries in {} seconds",
-            sys.len(),
-            duration.as_secs()
+            "initialized db with {} entries in {} seconds ({} skipped)",
+            sys.len() - skipped,
+            duration.as_secs(),
+            skipped
         );
     }
 
     Ok(())
 }
 
-fn load(opts: LoadOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
-    let trust = load_ancillary_trust(&opts.path)?;
-    let db = env.open_db(Some(TRUST_DB_NAME))?;
+fn load(opts: LoadOpts, verbose: bool, _: &cfg::All, env: &Environment) -> Result<(), Error> {
+    let source = match PathBuf::from(&opts.path) {
+        source if source.is_dir() => read::from_dir(&source)?,
+        source => read::from_file(&source)?,
+    };
+
+    let source: Result<Vec<(String, Trust)>, fapolicy_trust::error::Error> = source
+        .iter()
+        .map(|(o, r)| parse::trust_record(r).map(|t| (o.display().to_string(), t)))
+        .collect();
+
+    //need to parse the source entries out into Trust structs
+
+    let db = env.open_db(Some(TRUST_LMDB_NAME))?;
     let mut tx = env.begin_rw_txn()?;
-    for t in trust {
+    for (o, t) in source? {
         let v = format!("{} {} {}", 2, t.size, t.hash);
         tx.put(db, &t.path, &v, WriteFlags::APPEND_DUP)?;
+        if verbose {
+            println!("{} {}", o, t);
+        }
     }
     tx.commit()?;
 
@@ -285,7 +306,7 @@ fn load(opts: LoadOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
 
 fn add(opts: AddRecOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
     let trust = new_trust_record(&opts.path)?;
-    let db = env.open_db(Some(TRUST_DB_NAME))?;
+    let db = env.open_db(Some(TRUST_LMDB_NAME))?;
     let mut tx = env.begin_rw_txn()?;
     let v = format!("{} {} {}", 2, trust.size, trust.hash);
     tx.put(db, &trust.path, &v, WriteFlags::APPEND_DUP)?;
@@ -295,7 +316,7 @@ fn add(opts: AddRecOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
 }
 
 fn del(opts: DelRecOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
-    let db = env.open_db(Some(TRUST_DB_NAME))?;
+    let db = env.open_db(Some(TRUST_LMDB_NAME))?;
     let mut tx = env.begin_rw_txn()?;
     tx.del(db, &opts.path, None)?;
     tx.commit()?;
@@ -304,7 +325,7 @@ fn del(opts: DelRecOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
 }
 
 fn find(opts: SearchDbOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
-    let db = env.open_db(Some(TRUST_DB_NAME))?;
+    let db = env.open_db(Some(TRUST_LMDB_NAME))?;
     let tx = env.begin_ro_txn()?;
     match tx.get(db, &opts.key) {
         Ok(e) => println!("{}", String::from_utf8(Vec::from(e))?),
@@ -315,17 +336,21 @@ fn find(opts: SearchDbOpts, _: &cfg::All, env: &Environment) -> Result<(), Error
 }
 
 fn dump(opts: DumpDbOpts, cfg: &cfg::All) -> Result<(), Error> {
-    let db = read::load_trust_db(&cfg.system.trust_db_path)?;
+    let db = load::trust_db(
+        &PathBuf::from(&cfg.system.trust_lmdb_path),
+        &PathBuf::from(&cfg.system.trust_dir_path),
+        Some(&PathBuf::from(&cfg.system.trust_file_path)),
+    )?;
     match opts.outfile {
         None => {
-            for (k, v) in db.iter() {
-                println!("{} {} {}", k, v.trusted.size, v.trusted.hash)
+            for (_, v) in db.iter() {
+                println!("{}", v.trusted)
             }
         }
         Some(path) => {
             let mut f = File::create(&path)?;
-            for (k, v) in db.iter() {
-                f.write_all(format!("{} {} {}\n", k, v.trusted.size, v.trusted.hash).as_bytes())?;
+            for (_, v) in db.iter() {
+                f.write_all(format!("{}\n", v.trusted).as_bytes())?;
             }
         }
     };
@@ -334,15 +359,26 @@ fn dump(opts: DumpDbOpts, cfg: &cfg::All) -> Result<(), Error> {
 }
 
 fn check(_: CheckDbOpts, cfg: &cfg::All) -> Result<(), Error> {
-    let db = read::load_trust_db(&cfg.system.trust_db_path)?;
+    let db = load::trust_db(
+        &PathBuf::from(&cfg.system.trust_lmdb_path),
+        &PathBuf::from(&cfg.system.trust_dir_path),
+        Some(&PathBuf::from(&cfg.system.trust_file_path)),
+    )?;
 
     let t = SystemTime::now();
-    let count = check_trust_db(&db)?
-        .iter()
-        .filter(|(_, v)| v.status.is_some())
-        .count();
-
+    let db = check::disk_sync(&db)?;
     let duration = t.elapsed().expect("timer failure");
+
+    for (_, v) in db.iter() {
+        match &v.status {
+            Some(Missing(t)) => println!("missing: {}", t.path),
+            Some(Discrepancy(t, _)) => println!("mismatch: {}", t.path),
+            Some(Trusted(_, _)) => {}
+            None => {}
+        }
+    }
+
+    let count = db.iter().count();
     println!(
         "checked {} entries in {} seconds",
         count,
@@ -353,7 +389,7 @@ fn check(_: CheckDbOpts, cfg: &cfg::All) -> Result<(), Error> {
 }
 
 fn count(_: CountOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
-    let db = env.open_db(Some(TRUST_DB_NAME))?;
+    let db = env.open_db(Some(TRUST_LMDB_NAME))?;
     let tx = env.begin_ro_txn()?;
     let mut c = tx.open_ro_cursor(db)?;
     let cnt = c.iter().count();
@@ -380,7 +416,7 @@ fn new_trust_record(path: &str) -> Result<Trust, Error> {
 // number of lines to eliminate the `dpkg-query -l` header
 const DPKG_QUERY_HEADER_LINES: usize = 6;
 const DPKG_QUERY: &str = "dpkg-query";
-fn load_dpkg_trust() -> Result<Vec<Trust>, Error> {
+fn dpkg_trust() -> Result<Vec<Trust>, Error> {
     // check that dpkg-query exists and can be called
     let _exists = Command::new(DPKG_QUERY)
         .arg("--version")
@@ -405,7 +441,7 @@ fn load_dpkg_trust() -> Result<Vec<Trust>, Error> {
         .flat_map(output_lines)
         .flatten()
         // apply the rpm filter to limit results
-        .filter(|p| fapolicy_daemon::fapolicyd::keep_entry(p))
+        .filter(|p| keep_entry(p))
         .filter_map(|s| match new_trust_record(&s) {
             Ok(t) => Some(t),
             Err(_) => None,
@@ -418,17 +454,4 @@ fn output_lines(out: Output) -> Result<Vec<String>, Error> {
         .lines()
         .map(String::from)
         .collect())
-}
-
-fn load_ancillary_trust(path: &str) -> Result<Vec<Trust>, Error> {
-    let f = File::open(path)?;
-    let r = BufReader::new(f);
-
-    let lines: Result<Vec<String>, io::Error> = r.lines().collect();
-    lines?
-        .iter()
-        .map(|s| s.trim_start())
-        .filter(|s| !s.is_empty() && !s.starts_with('#'))
-        .map(|l| parse_trust_record(l).map_err(TrustError))
-        .collect()
 }

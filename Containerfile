@@ -1,4 +1,4 @@
-ARG image=fedora:rawhide
+ARG image=registry.fedoraproject.org/fedora:38
 FROM $image AS build-stage
 
 RUN dnf install -y rpm-build rpmdevtools dnf-plugins-core python3-pip nano

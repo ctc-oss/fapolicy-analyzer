@@ -6,113 +6,109 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use rayon::prelude::*;
-use std::collections::HashMap;
-use std::path::Path;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
+use std::path::{Path, PathBuf};
+use std::process::Command;
+use std::{fs, io};
 
-use lmdb::{Cursor, Environment, Transaction};
+use fapolicy_util::rpm::ensure_rpm_exists;
+use fapolicy_util::rpm::Error::{ReadRpmDumpFailed, RpmDumpFailed};
 
-use crate::db::{Rec, DB};
 use crate::error::Error;
-use crate::error::Error::{
-    LmdbNotFound, LmdbPermissionDenied, LmdbReadFail, MalformattedTrustEntry, UnsupportedTrustType,
-};
-use crate::source::TrustSource;
-use crate::source::TrustSource::{Ancillary, System};
-use crate::Trust;
+use crate::source::TrustSource::{Ancillary, DFile};
+use crate::source::{TrustSource, TrustSourceEntry};
+use crate::{parse, Trust};
 
-pub(crate) struct TrustPair {
-    pub k: String,
-    pub v: String,
+pub fn from_file(from: &Path) -> Result<Vec<TrustSourceEntry>, io::Error> {
+    let r = BufReader::new(File::open(&from)?);
+    let lines: Result<Vec<String>, io::Error> = r.lines().collect();
+    Ok(lines?
+        .iter()
+        .filter(|l| !l.is_empty())
+        .filter(|l| !l.trim_start().starts_with('#'))
+        .map(|l| (PathBuf::from(from), l.clone()))
+        .collect())
 }
 
-impl TrustPair {
-    fn new(b: (&[u8], &[u8])) -> TrustPair {
-        TrustPair {
-            k: String::from_utf8(Vec::from(b.0)).unwrap(),
-            v: String::from_utf8(Vec::from(b.1)).unwrap(),
-        }
+pub fn from_dir(from: &Path) -> Result<Vec<TrustSourceEntry>, io::Error> {
+    let d_files = read_sorted_d_files(from)?;
+    let mut res = vec![];
+    for p in d_files {
+        let mut xs = from_file(&p)?;
+        res.append(&mut xs);
     }
+    Ok(res)
 }
 
-impl From<TrustPair> for (String, Rec) {
-    fn from(kv: TrustPair) -> Self {
-        let (tt, v) = kv.v.split_once(' ').unwrap();
-        let (t, s) = parse_strtyped_trust_record(format!("{} {}", kv.k, v).as_str(), tt)
-            .expect("failed to parse_strtyped_trust_record");
-        (t.path.clone(), Rec::new_from(t, s))
-    }
-}
-
-/// load the fapolicyd backend lmdb database
-/// parse the results into trust entries
-pub fn load_trust_db(path: &str) -> Result<DB, Error> {
-    let env = Environment::new().set_max_dbs(1).open(Path::new(path));
-    let env = match env {
-        Ok(e) => e,
-        Err(lmdb::Error::Other(2)) => return Err(LmdbNotFound(path.to_string())),
-        Err(lmdb::Error::Other(13)) => return Err(LmdbPermissionDenied(path.to_string())),
-        Err(e) => return Err(LmdbReadFail(e)),
-    };
-
-    let db = env.open_db(Some("trust.db")).map_err(LmdbReadFail)?;
-    let lookup: HashMap<String, Rec> = env
-        .begin_ro_txn()
-        .map(|t| {
-            t.open_ro_cursor(db).map(|mut c| {
-                c.iter()
-                    .map(|c| c.unwrap())
-                    .map(|kv| TrustPair::new(kv).into())
-                    .collect()
-            })
-        })
-        .unwrap()
-        .map_err(LmdbReadFail)
-        .unwrap();
-
-    Ok(DB::from(lookup))
-}
-
-pub fn check_trust_db(db: &DB) -> Result<DB, Error> {
-    let lookup: HashMap<String, Rec> = db
-        .lookup
-        .par_iter()
-        .flat_map(|(p, r)| Rec::status_check(r.clone()).map(|r| (p.clone(), r)))
+pub(crate) fn file_trust(d: &Path, o: Option<&Path>) -> Result<Vec<(TrustSource, Trust)>, Error> {
+    let mut d_entries: Vec<(TrustSource, String)> = from_dir(d)?
+        .into_iter()
+        .map(|(o, e)| (DFile(o.display().to_string()), e))
         .collect();
 
-    Ok(DB::from(lookup))
+    let mut o_entries: Vec<(TrustSource, String)> = if let Some(f) = o {
+        from_file(f)?
+            .iter()
+            .map(|(_, e)| (Ancillary, e.clone()))
+            .collect()
+    } else {
+        vec![]
+    };
+    let mut entries = vec![];
+    entries.append(&mut d_entries);
+    entries.append(&mut o_entries);
+
+    Ok(entries
+        .iter()
+        // todo;; support comments elsewhere
+        .filter(|(_, txt)| !txt.is_empty() || txt.trim_start().starts_with('#'))
+        .map(|(p, txt)| (p.clone(), parse::trust_record(txt.trim())))
+        .filter(|(_, r)| r.is_ok())
+        .map(|(p, r)| (p, r.unwrap()))
+        .collect())
 }
 
-fn parse_strtyped_trust_record(s: &str, t: &str) -> Result<(Trust, TrustSource), Error> {
-    match t {
-        "1" => parse_trust_record(s).map(|t| (t, System)),
-        "2" => parse_trust_record(s).map(|t| (t, Ancillary)),
-        v => Err(UnsupportedTrustType(v.to_string())),
+/// directly load the rpm database
+/// used to analyze the fapolicyd trust db for out of sync issues
+pub fn rpm_trust(rpmdb: &Path) -> Result<Vec<Trust>, Error> {
+    ensure_rpm_exists()?;
+
+    let args = vec!["-qa", "--dump", "--dbpath", rpmdb.to_str().unwrap()];
+    let res = Command::new("rpm")
+        .args(args)
+        .output()
+        .map_err(RpmDumpFailed)?;
+
+    match String::from_utf8(res.stdout) {
+        Ok(data) => Ok(parse::rpm_db_entry(&data)),
+        Err(_) => Err(ReadRpmDumpFailed.into()),
     }
 }
 
-pub fn parse_trust_record(s: &str) -> Result<Trust, Error> {
-    let mut v: Vec<&str> = s.rsplitn(3, ' ').collect();
-    v.reverse();
-    match v.as_slice() {
-        [f, sz, sha] => Ok(Trust {
-            path: f.to_string(),
-            size: sz.parse().unwrap(),
-            hash: sha.to_string(),
-        }),
-        _ => Err(MalformattedTrustEntry(s.to_string())),
-    }
+pub fn read_sorted_d_files(from: &Path) -> Result<Vec<PathBuf>, io::Error> {
+    let d_files: Result<Vec<PathBuf>, io::Error> =
+        fs::read_dir(from)?.map(|e| e.map(|e| e.path())).collect();
+
+    let mut d_files: Vec<PathBuf> = d_files?
+        .into_iter()
+        .filter(|p| p.is_file() && p.display().to_string().ends_with(".trust"))
+        .collect();
+
+    d_files.sort_by_key(|p| p.display().to_string());
+
+    Ok(d_files)
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::parse;
 
     #[test]
     fn parse_record() {
         let s =
             "/home/user/my-ls 157984 61a9960bf7d255a85811f4afcac51067b8f2e4c75e21cf4f2af95319d4ed1b87";
-        let e = parse_trust_record(s).unwrap();
+        let e = parse::trust_record(s).unwrap();
         assert_eq!(e.path, "/home/user/my-ls");
         assert_eq!(e.size, 157984);
         assert_eq!(
@@ -125,28 +121,11 @@ mod tests {
     fn parse_record_with_space() {
         let s =
             "/home/user/my ls 157984 61a9960bf7d255a85811f4afcac51067b8f2e4c75e21cf4f2af95319d4ed1b87";
-        let e = parse_trust_record(s).unwrap();
+        let e = parse::trust_record(s).unwrap();
         assert_eq!(e.path, "/home/user/my ls");
         assert_eq!(e.size, 157984);
         assert_eq!(
             e.hash,
-            "61a9960bf7d255a85811f4afcac51067b8f2e4c75e21cf4f2af95319d4ed1b87"
-        );
-    }
-
-    #[test]
-    // todo;; additional coverage for type 2 and invalid type
-    fn parse_trust_pair() {
-        let tp = TrustPair::new((
-            "/home/user/my-ls".as_bytes(),
-            "1 157984 61a9960bf7d255a85811f4afcac51067b8f2e4c75e21cf4f2af95319d4ed1b87".as_bytes(),
-        ));
-        let (_, r) = tp.into();
-
-        assert_eq!(r.trusted.path, "/home/user/my-ls");
-        assert_eq!(r.trusted.size, 157984);
-        assert_eq!(
-            r.trusted.hash,
             "61a9960bf7d255a85811f4afcac51067b8f2e4c75e21cf4f2af95319d4ed1b87"
         );
     }

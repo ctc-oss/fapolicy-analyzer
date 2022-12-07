@@ -109,7 +109,7 @@ impl PyProfiler {
         let db = self
             .rules
             .as_ref()
-            .map(|p| load_rules_db(&p).expect("failed to load rules"));
+            .map(|p| load_rules_db(p).expect("failed to load rules"));
 
         let mut rs = Profiler::new();
         if let Some(path) = self.stdout.as_ref().map(PathBuf::from) {
@@ -142,7 +142,7 @@ impl PyProfiler {
 
 impl PyProfiler {
     fn exec(&self, args: &str) -> PyResult<()> {
-        let opts: Vec<&str> = args.split(" ").collect();
+        let opts: Vec<&str> = args.split(' ').collect();
         let target = opts.first().expect("target not specified");
         let args: Vec<&&str> = opts.iter().skip(1).collect();
 

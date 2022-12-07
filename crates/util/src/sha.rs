@@ -6,11 +6,19 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use crate::error::Error;
+use std::io;
 use std::io::Read;
+
+use thiserror::Error;
 
 use data_encoding::HEXLOWER;
 use ring::digest::{Context, SHA256};
+
+#[derive(Error, Debug)]
+pub enum Error {
+    #[error("error generating hash, {0}")]
+    HashingError(#[from] io::Error),
+}
 
 /// generate a sha256 hash as a string
 pub fn sha256_digest<R: Read>(mut reader: R) -> Result<String, Error> {
