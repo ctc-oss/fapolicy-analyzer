@@ -9,6 +9,7 @@
 use directories::ProjectDirs;
 use serde::Deserialize;
 use serde::Serialize;
+use std::path::PathBuf;
 
 use fapolicy_analyzer::users::{read_groups, read_users, Group, User};
 use fapolicy_daemon::fapolicyd::Version;
@@ -17,7 +18,7 @@ use fapolicy_rules::ops::Changeset as RuleChanges;
 use fapolicy_rules::read::load_rules_db;
 use fapolicy_trust::db::DB as TrustDB;
 use fapolicy_trust::ops::Changeset as TrustChanges;
-use fapolicy_trust::read::{check_trust_db, load_trust_db};
+use fapolicy_trust::{check, load};
 
 use crate::cfg::All;
 use crate::cfg::PROJECT_NAME;
@@ -48,7 +49,11 @@ impl State {
     }
 
     pub fn load(cfg: &All) -> Result<State, Error> {
-        let trust_db = load_trust_db(&cfg.system.trust_db_path)?;
+        let trust_db = load::trust_db(
+            &PathBuf::from(&cfg.system.trust_lmdb_path),
+            &PathBuf::from(&cfg.system.trust_dir_path),
+            Some(&PathBuf::from(&cfg.system.trust_file_path)),
+        )?;
         let rules_db = load_rules_db(&cfg.system.rules_file_path)?;
         Ok(State {
             config: cfg.clone(),
@@ -62,7 +67,7 @@ impl State {
 
     pub fn load_checked(cfg: &All) -> Result<State, Error> {
         let state = State::load(cfg)?;
-        let trust_db = check_trust_db(&state.trust_db)?;
+        let trust_db = check::disk_sync(&state.trust_db)?;
         Ok(State { trust_db, ..state })
     }
 

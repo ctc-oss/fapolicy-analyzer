@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Install requirements
+      - name: Check for required headers
         run: |
           ! grep -R -L --exclude-dir=vendor \
             --include='*.py' --include='*.rs' --include='*.glade' --include='*.sh' \

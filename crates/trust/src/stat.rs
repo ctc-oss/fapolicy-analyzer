@@ -16,7 +16,7 @@ use crate::error::Error;
 use crate::error::Error::{FileIoError, MetaError};
 use crate::Trust;
 
-/// Actual delivers metadata about the actual file that exists on the filesystem.
+/// Actual delivers metadata about the current file that exists on the filesystem.
 /// This is used to identify discrepancies between the trusted and the actual files.
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct Actual {

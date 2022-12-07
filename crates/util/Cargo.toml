@@ -2,10 +2,11 @@
 name = "fapolicy-util"
 description = "Utility crate for fapolicyd"
 license = "MPL-2.0"
-version = "0.4.0"
+version = "0.4.1"
 edition = "2018"
 
 [dependencies]
 data-encoding = "2.3.1"
 ring = "0.16.19"
 thiserror = "1.0"
+nom = "6.1.0"
