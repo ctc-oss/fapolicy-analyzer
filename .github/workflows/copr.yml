@@ -1,9 +1,7 @@
 on:
-  push:
-    branches:
-      - 'master'
-    tags:
-      - 'v*'
+  repository_dispatch:
+    types:
+      - srpms-available
 
 name: Copr
 
@@ -46,7 +44,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d/ -f3)
 
-      - name: Download artifact
+      - name: Download latest srpm artifacts
         id: download-artifact
         uses: dawidd6/action-download-artifact@v2
         with:

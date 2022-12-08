@@ -94,6 +94,18 @@ jobs:
         run: |
           make -f .copr/Makefile srpm outdir=/tmp/archives spec=${{ matrix.props.spec }} OS_ID=${{ matrix.props.platform }}
 
+      - name: Upload SRPMs
+        uses: actions/upload-artifact@v2
+        with:
+          name: srpm-artifacts
+          path: |
+            /tmp/archives/*.src.rpm
+
+      - name: Publish SRPM Availability
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          event-type: srpms-available
+
       - name: Rebuild SRPM
         run: |
           dnf builddep -y ${{ matrix.props.spec }}
@@ -127,13 +139,6 @@ jobs:
           mv fapolicy-analyzer.tar.gz /tmp/archives
         env:
           PLATFORM: ${{ matrix.props.name }}
-
-      - name: Upload SRPMs
-        uses: actions/upload-artifact@v2
-        with:
-          name: srpm-artifacts
-          path: |
-            /tmp/archives/*.src.rpm
 
       - name: Upload RPMs
         uses: actions/upload-artifact@v2
