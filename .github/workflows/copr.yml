@@ -1,7 +1,6 @@
 on:
   repository_dispatch:
-    types:
-      - srpms-available
+    types: [ srpms-available ]
 
 name: Copr
 
