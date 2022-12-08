@@ -17,5 +17,6 @@ jobs:
         with:
           build_language: python
           command: --no-command --fs-capture-search fapolicy_analyzer
+          project: ctc-oss/fapolicy-analyzer
           email: ${{ secrets.COVERITY_SCAN_EMAIL }}
           token: ${{ secrets.COVERITY_SCAN_TOKEN }}
