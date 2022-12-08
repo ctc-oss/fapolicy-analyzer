@@ -101,10 +101,11 @@ jobs:
           path: |
             /tmp/archives/*.src.rpm
 
-      - name: Publish SRPM Availability
+      - name: Dispatch SRPM Event
         uses: peter-evans/repository-dispatch@v2
         with:
           event-type: srpms-available
+          token: ${{ secrets.WF_PAT }}
 
       - name: Rebuild SRPM
         run: |
