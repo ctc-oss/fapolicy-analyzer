@@ -12,5 +12,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: vapier/coverity-scan-action@v1
         with:
+          build_language: python
+          command: --no-command --fs-capture-search fapolicy_analyzer
           email: ${{ secrets.COVERITY_SCAN_EMAIL }}
           token: ${{ secrets.COVERITY_SCAN_TOKEN }}
