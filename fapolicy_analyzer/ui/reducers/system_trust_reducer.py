@@ -50,8 +50,9 @@ def handle_error_system_trust(state: TrustState, action: Action) -> TrustState:
     return _create_state(state, error=payload, loading=False)
 
 
-def handle_signal_trust_reload(state: TrustState, action:Action) -> TrustState:
-    return _create_state(state, loading=True, error=None, signal_reload=True)    
+def handle_signal_trust_reload(state: TrustState, action: Action) -> TrustState:
+    return _create_state(state, loading=True, error=None, signal_reload=True)
+
 
 system_trust_reducer: Reducer = handle_actions(
     {

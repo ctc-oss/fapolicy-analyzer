@@ -449,7 +449,18 @@ class MainWindow(UIConnectedWidget):
             self._fapd_mgr.stop()
 
     def on_syncDatabases_activate(self):
-        dispatch(signal_trust_reload)
+        restartDialog = self.get_object("restartDialog")
+        restartDialog.set_transient_for(self.window)
+        resp = restartDialog.run()
+
+        if resp > 0:
+            dispatch(signal_trust_reload)
+
+        if abs(resp) > 0:
+            restartDialog.destroy()
+
+        if resp == 2:
+            self.get_ref().destroy()
 
     def _enable_fapd_menu_items(self, status: ServiceStatus):
         if self._fapdControlPermitted and (status != ServiceStatus.UNKNOWN):
