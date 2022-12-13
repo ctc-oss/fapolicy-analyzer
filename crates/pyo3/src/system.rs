@@ -51,7 +51,7 @@ impl PySystem {
         py.allow_threads(|| {
             let conf = cfg::All::load()
                 .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))?;
-            match State::load_checked(&conf) {
+            match State::load(&conf) {
                 Ok(state) => Ok(state.into()),
                 Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{:?}", e))),
             }
