@@ -67,6 +67,19 @@ impl PySystem {
         })
     }
 
+    fn merge(&mut self, trust: Vec<PyTrust>) {
+        for t in trust {
+            if let Some(e) = self.rs.trust_db.get_mut(&t.rs_trust.path) {
+                match (t.status.as_str(), t.rs_actual) {
+                    ("T", Some(a)) => e.status = Some(Trusted(t.rs_trust, a)),
+                    ("D", Some(a)) => e.status = Some(Discrepancy(t.rs_trust, a)),
+                    ("U", None) => e.status = Some(Missing(t.rs_trust)),
+                    _ => {}
+                }
+            }
+        }
+    }
+
     /// Obtain a list of trusted files sourced from the system trust database.
     /// The system trust is generated from the contents of the RPM database.
     /// This represents state in the current fapolicyd database, not necessarily
