@@ -20,7 +20,6 @@ from fapolicy_analyzer.ui.actions import (
     ERROR_SYSTEM_TRUST,
     RECEIVED_SYSTEM_TRUST,
     REQUEST_SYSTEM_TRUST,
-    SIGNAL_TRUST_RELOAD,
 )
 from fapolicy_analyzer.redux import Action, Reducer, handle_actions
 
@@ -29,7 +28,6 @@ class TrustState(NamedTuple):
     error: Optional[str]
     loading: bool
     trust: Sequence[Trust]
-    signal_reload: bool
 
 
 def _create_state(state: TrustState, **kwargs: Optional[Any]) -> TrustState:
@@ -50,16 +48,11 @@ def handle_error_system_trust(state: TrustState, action: Action) -> TrustState:
     return _create_state(state, error=payload, loading=False)
 
 
-def handle_signal_trust_reload(state: TrustState, action: Action) -> TrustState:
-    return _create_state(state, loading=True, error=None, signal_reload=True)
-
-
 system_trust_reducer: Reducer = handle_actions(
     {
         REQUEST_SYSTEM_TRUST: handle_request_system_trust,
         RECEIVED_SYSTEM_TRUST: handle_received_system_trust,
         ERROR_SYSTEM_TRUST: handle_error_system_trust,
-        SIGNAL_TRUST_RELOAD: handle_signal_trust_reload,
     },
-    TrustState(error=None, trust=[], loading=False, signal_reload=False),
+    TrustState(error=None, trust=[], loading=False),
 )

@@ -74,8 +74,6 @@ SET_PROFILER_OUTPUT = "SET_PROFILER_OUTPUT"
 SET_PROFILER_ANALYSIS_FILE = "SET_PROFILER_ANALYSIS_FILE"
 CLEAR_PROFILER_STATE = "CLEAR_PROFILER_STATE"
 
-SIGNAL_TRUST_RELOAD = "SIGNAL_TRUST_RELOAD"
-
 
 def _create_action(type: str, payload: Any = None) -> Action:
     return create_action(type)(payload)
@@ -259,7 +257,3 @@ def system_received(system: System) -> Action:
 
 def system_initialization_error(error: str) -> Action:
     return _create_action(ERROR_SYSTEM_INITIALIZATION, error)
-
-
-def signal_trust_reload() -> Action:
-    return _create_action(SIGNAL_TRUST_RELOAD)

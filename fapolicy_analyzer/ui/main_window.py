@@ -24,13 +24,12 @@ from typing import Any, Sequence
 import gi
 
 import fapolicy_analyzer.ui.strings as strings
-from fapolicy_analyzer import System
+from fapolicy_analyzer import System, signal_trust_reload
 from fapolicy_analyzer import __version__ as app_version
 from fapolicy_analyzer.ui.action_toolbar import ActionToolbar
 from fapolicy_analyzer.ui.actions import (
     NotificationType,
     add_notification,
-    signal_trust_reload,
 )
 from fapolicy_analyzer.ui.analyzer_selection_dialog import ANALYZER_SELECTION
 from fapolicy_analyzer.ui.changeset_wrapper import Changeset
@@ -448,16 +447,18 @@ class MainWindow(UIConnectedWidget):
         if self._fapd_status != ServiceStatus.UNKNOWN:
             self._fapd_mgr.stop()
 
-    def on_syncDatabases_activate(self):
+    def on_syncDatabases_activate(self, *args):
         restartDialog = self.get_object("restartDialog")
         restartDialog.set_transient_for(self.window)
         resp = restartDialog.run()
-
         if resp > 0:
-            dispatch(signal_trust_reload)
+            try:
+                signal_trust_reload()
+            except RuntimeError:
+                pass
 
-        if abs(resp) > 0:
-            restartDialog.destroy()
+        if abs(resp) == 1:
+            restartDialog.hide()
 
         if resp == 2:
             self.get_ref().destroy()
