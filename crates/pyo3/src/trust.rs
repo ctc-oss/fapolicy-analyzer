@@ -12,6 +12,7 @@ use std::io::Write;
 
 use fapolicy_daemon::fapolicyd::FIFO_PIPE;
 use pyo3::prelude::*;
+use pyo3::PyObjectProtocol;
 
 use fapolicy_trust::ops::{get_path_action_map, Changeset};
 use fapolicy_trust::stat::{Actual, Status};
@@ -69,6 +70,17 @@ impl PyTrust {
     #[getter]
     fn get_status(&self) -> &str {
         &self.status
+    }
+}
+
+#[pyproto]
+impl PyObjectProtocol for PyTrust {
+    fn __str__(&self) -> PyResult<String> {
+        Ok(format!("[{}]\t{}", self.status, self.rs_trust))
+    }
+
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(format!("[{}]\t{}", self.status, self.rs_trust))
     }
 }
 
