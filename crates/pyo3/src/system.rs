@@ -9,12 +9,16 @@
 use pyo3::prelude::*;
 use pyo3::{exceptions, PyResult};
 use similar::{ChangeTag, TextDiff};
+use std::sync::mpsc;
+use std::thread;
 
 use fapolicy_analyzer::events;
 use fapolicy_analyzer::events::db::DB as EventDB;
 use fapolicy_app::app::State;
 use fapolicy_app::cfg;
 use fapolicy_app::sys::deploy_app_state;
+use fapolicy_trust::stat::Status::*;
+use fapolicy_trust::stat::{check, Status};
 
 use super::trust::PyTrust;
 use crate::acl::{PyGroup, PyUser};
@@ -39,6 +43,11 @@ impl From<PySystem> for State {
     fn from(py: PySystem) -> Self {
         py.rs
     }
+}
+
+enum Update {
+    Items(Vec<Status>),
+    Done,
 }
 
 #[pymethods]
@@ -165,8 +174,79 @@ fn rules_difference(lhs: &PySystem, rhs: &PySystem) -> String {
     diff_lines.join("")
 }
 
+#[pyfunction]
+fn check_disk_trust(db: &PySystem, update: PyObject, done: PyObject) -> PyResult<()> {
+    let recs: Vec<_> = db
+        .rs
+        .trust_db
+        .values()
+        .into_iter()
+        .map(|r| r.clone())
+        .collect();
+
+    let (tx, rx) = mpsc::channel();
+
+    let chunks = recs.chunks(5);
+    let total_chunks = chunks.len();
+
+    let mut handles = vec![];
+    for chunk in chunks {
+        let ttx = tx.clone();
+        let recs = chunk.to_vec();
+        let t = thread::spawn(move || {
+            println!("spawned");
+            let updates = recs
+                .into_iter()
+                .flat_map(|r| check(&r.trusted))
+                .collect::<Vec<_>>();
+            ttx.send(Update::Items(updates));
+            println!("shutdown check thread");
+        });
+        handles.push(t);
+    }
+
+    let ttx = tx.clone();
+    thread::spawn(move || {
+        for handle in handles {
+            handle.join();
+        }
+        ttx.send(Update::Done);
+        println!("shutdown done thread");
+    });
+
+    thread::spawn(move || {
+        let mut cnt = 0;
+        loop {
+            if let Ok(u) = rx.recv() {
+                match u {
+                    Update::Items(i) => {
+                        cnt += 1;
+                        let r: Vec<_> = i.into_iter().map(PyTrust::from).collect();
+                        Python::with_gil(|py| {
+                            if update.call1(py, (r,)).is_err() {
+                                eprintln!("failed make 'update' callback");
+                            }
+                        });
+                    }
+                    Update::Done => break,
+                };
+            }
+        }
+
+        Python::with_gil(|py| {
+            if done.call0(py).is_err() {
+                eprintln!("failed to make 'done' callback");
+            }
+        });
+        println!("shutdown callback thread");
+    });
+
+    Ok(())
+}
+
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PySystem>()?;
     m.add_function(wrap_pyfunction!(rules_difference, m)?)?;
+    m.add_function(wrap_pyfunction!(check_disk_trust, m)?)?;
     Ok(())
 }
