@@ -23,16 +23,19 @@ jobs:
             name: 'fc37',
             spec: 'fapolicy-analyzer.spec',
             image: 'registry.fedoraproject.org/fedora:37',
+            platform: 'fedora',
           }
           - {
             name: 'fc38',
             spec: 'fapolicy-analyzer.spec',
             image: 'registry.fedoraproject.org/fedora:rawhide',
+            platform: 'fedora',
           }
           - {
             name: 'el8',
             spec: 'scripts/srpm/fapolicy-analyzer.spec',
-            image: 'registry.access.redhat.com/ubi8/ubi:8.6',
+            image: 'rockylinux:8.6',
+            platform: 'rhel',
           }
     runs-on: ubuntu-latest
     container: ${{ matrix.triple.image }}
@@ -41,9 +44,6 @@ jobs:
         if: startsWith(matrix.triple.name, 'el')
         run: |
           dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
-          RELEASE=$(grep -oE "[0-9]+\.[0-9]+" /etc/redhat-release) \
-          && printf "[rocky-$RELEASE-appstream]\nname=Rocky Linux $RELEASE - AppStream\nbaseurl=http://dl.rockylinux.org/pub/rocky/$RELEASE/AppStream/x86_64/os/\ngpgcheck=1\nenabled=1\ngpgkey=https://dl.rockylinux.org/pub/rocky/$RELEASE/AppStream/x86_64/os/RPM-GPG-KEY-rockyofficial\nincludepkgs=rpmdevtools,dbus-devel\n" > /etc/yum.repos.d/Rocky-"$RELEASE"-AppStream.repo \
-          || true
 
       - name: RPM Building Dependencies
         run: |
@@ -75,7 +75,7 @@ jobs:
 
       - name: Build SRPM
         run: |
-          make -f .copr/Makefile srpm outdir=/tmp/archives spec=${{ matrix.triple.spec }}
+          make -f .copr/Makefile srpm outdir=/tmp/archives spec=${{ matrix.triple.spec }} OS_ID=${{ matrix.triple.platform }}
 
       - name: Rebuild SRPM
         run: |

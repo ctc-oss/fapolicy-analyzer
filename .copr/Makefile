@@ -1,11 +1,12 @@
 .PHONY: clean idenfity prepfs dnf vendor vendor-app vendor-py vendor-rs dep srpm
 .SILENT: clean
 
-OS_ID_FN = $(shell grep /etc/os-release -e "^ID=" | tr -d '"' | cut -d= -f2 | cut -d: -f1)
-OS_ID   ?= $(OS_ID_FN)
+OS_PRETTY_NAME = $(shell grep /etc/os-release -e "^PRETTY_NAME=" | tr -d '"' | cut -d= -f2 | cut -d: -f1)
+OS_ID_FN =       $(shell grep /etc/os-release -e "^ID=" | tr -d '"' | cut -d= -f2 | cut -d: -f1)
+OS_ID   ?=       $(OS_ID_FN)
 
 idenfity:
-	@echo "Platform $(OS_ID)"
+	@echo "Platform: $(OS_PRETTY_NAME) (id: $(OS_ID))"
 
 prepfs:
 	mkdir -p /tmp/rpmbuild/SOURCES

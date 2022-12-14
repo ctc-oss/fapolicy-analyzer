@@ -10,9 +10,8 @@ Source0:       fapolicy-analyzer.tar.gz
 # reference: https://bugzilla.redhat.com/show_bug.cgi?id=2124697#c5
 Source1:       vendor-rs.tar.gz
 
-# on copr the source containter is never el
-# we check for low fc version here to remedy that
-%if 0%{?rhel} || 0%{?fedora} < 37
+# we need to provide some updates to python on el8
+%if 0%{?rhel}
 Source2:       %{pypi_source setuptools-rust 1.1.2}
 Source3:       %{pypi_source pip 21.3.1}
 Source4:       %{pypi_source setuptools 59.6.0}
@@ -156,7 +155,7 @@ Requires:      python3-importlib-resources
 %global venv_install %{venv_py3} -m pip install --find-links=%{_sourcedir} --no-index --quiet
 
 %description
-Tools to assist with the configuration and management of fapolicyd (File Access Policy Daemon).
+Tools to assist with the configuration and management of fapolicyd.
 
 %prep
 
