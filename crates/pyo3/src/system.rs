@@ -211,7 +211,9 @@ fn check_disk_trust(db: &PySystem, update: PyObject, done: PyObject) -> PyResult
                 .into_iter()
                 .flat_map(|r| check(&r.trusted))
                 .collect::<Vec<_>>();
-            ttx.send(Update::Items(updates));
+            if ttx.send(Update::Items(updates)).is_err() {
+                eprintln!("failed to send Items msg");
+            };
         });
         handles.push(t);
     }
@@ -219,9 +221,13 @@ fn check_disk_trust(db: &PySystem, update: PyObject, done: PyObject) -> PyResult
     let ttx = tx.clone();
     thread::spawn(move || {
         for handle in handles {
-            handle.join();
+            if handle.join().is_err() {
+                eprintln!("failed to join update handle");
+            };
         }
-        ttx.send(Update::Done);
+        if ttx.send(Update::Done).is_err() {
+            eprintln!("failed to send Done msg");
+        };
     });
 
     thread::spawn(move || {
