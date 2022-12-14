@@ -67,19 +67,6 @@ impl PySystem {
         })
     }
 
-    fn merge(&mut self, trust: Vec<PyTrust>) {
-        for t in trust {
-            if let Some(e) = self.rs.trust_db.get_mut(&t.rs_trust.path) {
-                match (t.status.as_str(), t.rs_actual) {
-                    ("T", Some(a)) => e.status = Some(Trusted(t.rs_trust, a)),
-                    ("D", Some(a)) => e.status = Some(Discrepancy(t.rs_trust, a)),
-                    ("U", None) => e.status = Some(Missing(t.rs_trust)),
-                    _ => {}
-                }
-            }
-        }
-    }
-
     /// Obtain a list of trusted files sourced from the system trust database.
     /// The system trust is generated from the contents of the RPM database.
     /// This represents state in the current fapolicyd database, not necessarily
@@ -167,6 +154,19 @@ impl PySystem {
     fn rules_text(&self) -> String {
         rules::to_text(&self.rs.rules_db)
     }
+
+    fn merge(&mut self, trust: Vec<PyTrust>) {
+        for t in trust {
+            if let Some(e) = self.rs.trust_db.get_mut(&t.rs_trust.path) {
+                match (t.status.as_str(), t.rs_actual) {
+                    ("T", Some(a)) => e.status = Some(Trusted(t.rs_trust, a)),
+                    ("D", Some(a)) => e.status = Some(Discrepancy(t.rs_trust, a)),
+                    ("U", None) => e.status = Some(Missing(t.rs_trust)),
+                    _ => {}
+                }
+            }
+        }
+    }
 }
 
 #[pyfunction]
@@ -197,23 +197,21 @@ fn check_disk_trust(db: &PySystem, update: PyObject, done: PyObject) -> PyResult
         .map(|r| r.clone())
         .collect();
 
+    let sz = recs.len() / 100;
+    let chunks = recs.chunks(sz + 1);
+
     let (tx, rx) = mpsc::channel();
-
-    let chunks = recs.chunks(5);
-    let total_chunks = chunks.len();
-
     let mut handles = vec![];
+
     for chunk in chunks {
         let ttx = tx.clone();
         let recs = chunk.to_vec();
         let t = thread::spawn(move || {
-            println!("spawned");
             let updates = recs
                 .into_iter()
                 .flat_map(|r| check(&r.trusted))
                 .collect::<Vec<_>>();
             ttx.send(Update::Items(updates));
-            println!("shutdown check thread");
         });
         handles.push(t);
     }
@@ -224,7 +222,6 @@ fn check_disk_trust(db: &PySystem, update: PyObject, done: PyObject) -> PyResult
             handle.join();
         }
         ttx.send(Update::Done);
-        println!("shutdown done thread");
     });
 
     thread::spawn(move || {
@@ -236,7 +233,7 @@ fn check_disk_trust(db: &PySystem, update: PyObject, done: PyObject) -> PyResult
                         cnt += 1;
                         let r: Vec<_> = i.into_iter().map(PyTrust::from).collect();
                         Python::with_gil(|py| {
-                            if update.call1(py, (r,)).is_err() {
+                            if update.call1(py, (r, cnt)).is_err() {
                                 eprintln!("failed make 'update' callback");
                             }
                         });
@@ -251,7 +248,6 @@ fn check_disk_trust(db: &PySystem, update: PyObject, done: PyObject) -> PyResult
                 eprintln!("failed to make 'done' callback");
             }
         });
-        println!("shutdown callback thread");
     });
 
     Ok(())
