@@ -12,7 +12,7 @@ enum Update {
 }
 
 #[pyfunction]
-fn check_disk_trust(db: &PySystem, update: PyObject, done: PyObject) -> PyResult<()> {
+fn check_disk_trust(db: &PySystem, update: PyObject, done: PyObject) -> PyResult<u32> {
     let recs: Vec<_> = db
         .rs
         .trust_db
@@ -23,6 +23,12 @@ fn check_disk_trust(db: &PySystem, update: PyObject, done: PyObject) -> PyResult
 
     let sz = recs.len() / 100;
     let chunks = recs.chunks(sz + 1);
+
+    todo;; next up is to generalize the progress incrementing
+           need to determine the minimum batch number / size
+           and then return the total number so that the python
+           side can calculate the percentage complete....
+
 
     let (tx, rx) = mpsc::channel();
     let mut handles = vec![];
@@ -80,7 +86,7 @@ fn check_disk_trust(db: &PySystem, update: PyObject, done: PyObject) -> PyResult
         });
     });
 
-    Ok(())
+    Ok(number_of_updates_to_expect)
 }
 
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
