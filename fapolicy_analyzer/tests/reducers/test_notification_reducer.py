@@ -13,9 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from unittest.mock import MagicMock
+import context  # noqa: F401 # isort: skip
 
-import context  # noqa: F401
+from unittest.mock import MagicMock
 
 from fapolicy_analyzer.ui.actions import Notification, NotificationType
 from fapolicy_analyzer.ui.reducers.notification_reducer import (
