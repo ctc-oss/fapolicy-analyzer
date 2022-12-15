@@ -60,12 +60,12 @@ def available(updates, pct):
     s1.merge(updates)
     # dispatch the system to the redux store
     store.dispatch(system_received(s1))
-    print(f"{pct:4}%")
+    print(f"progress {pct}%", end='\r')
     # print(f"{pct:4}% {len(checked_entries(s1))}")
 
 
 def completed():
-    print(f"done")
+    print(f"\ndone!")
     done.set()
 
 
