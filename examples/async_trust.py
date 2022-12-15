@@ -32,14 +32,23 @@ s1 = System()
 duration = time.time() - t
 print(f"system created in {duration} seconds")
 
+# check to ensure that merging trust does not change the original size of the trust db
+original_system_trust_size = len(s1.system_trust())
+print(f"system contains {original_system_trust_size} unchecked system trust entries")
+
 store.add_feature_module(create_system_feature(store.dispatch, s1))
 done = threading.Event()
 
 
+# this is very slow...
+def checked_entries(system):
+    return list(filter(lambda trust: trust.actual, system.system_trust()))
+
+
 def next_system(system_state):
     system = system_state.get('system').system
-    assert len(system.system_trust()) == len(s1.system_trust())
-    # print(f"next_system has {s1.system_trust()} system trust entries")
+    # assert len(system.system_trust()) == len(s1.system_trust())
+    # assert len(system.system_trust()) == original_system_trust_size
 
 
 def system_error(e):
@@ -49,8 +58,10 @@ def system_error(e):
 def available(updates, pct):
     # merge the updated trust into the system
     s1.merge(updates)
+    # dispatch the system to the redux store
     store.dispatch(system_received(s1))
-    print(f"{pct:4}% {len(s1.system_trust())}")
+    print(f"{pct:4}%")
+    # print(f"{pct:4}% {len(checked_entries(s1))}")
 
 
 def completed():
@@ -65,10 +76,15 @@ f.subscribe(
     on_completed=None,
 )
 
+t = time.time()
+
 # using the check_disk_trust binding we can set callbacks for when
 # 1. new data is available
 # 2. processing is completed
-check_disk_trust(s1, available, completed)
+expected_number_of_batches = check_disk_trust(s1, available, completed)
 
 # keep the example running until processing completed
 done.wait()
+
+duration = time.time() - t
+print(f"processed {original_system_trust_size} trust entries over {expected_number_of_batches} batches in {duration} seconds")
