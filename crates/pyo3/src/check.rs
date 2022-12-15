@@ -19,55 +19,15 @@ enum Update {
     Done,
 }
 
+// keeping an even 100 batches for simplicity in calculating completion percentages
+const FIXED_BATCH_COUNT: usize = 100;
+
 #[derive(Debug)]
 struct BatchConfig {
     thread_cnt: usize,
     thread_load: usize,
     batch_cnt: usize,
     batch_load: usize,
-}
-
-// (chunk_size, thread_count)
-fn calculate_batch_config(rec_sz: usize) -> BatchConfig {
-    let (batch_load, batch_cnt) = match (rec_sz / 100, rec_sz % 100) {
-        (0, _) => (rec_sz, 1),
-        (sz, 0) => (sz, rec_sz / sz),
-        (sz, rem) => match rem / (rec_sz / sz) {
-            0 => {
-                let sz = sz + 1;
-                (sz, rec_sz / sz + 1)
-            }
-            a => {
-                let sz = sz + a;
-                (sz, rec_sz / sz)
-            }
-        },
-    };
-
-    // thread count is adjusted based on batch size
-    // larger batches result in more threads
-    let thread_cnt = match (batch_cnt, batch_load) {
-        // one batch, one thread
-        (1, _) => 1,
-        // small batches get 4 threads
-        (_, s) if s <= 10 => 4,
-        // medium batches get 10 threads
-        (_, s) if s <= 100 => 10,
-        // large batches get 20 threads
-        (_, s) if s <= 200 => 10,
-        // xl batches get 25 threads
-        _ => 25,
-    };
-
-    // thread load is number of batches per thread
-    let thread_load = batch_cnt / thread_cnt;
-
-    BatchConfig {
-        thread_cnt,
-        thread_load,
-        batch_cnt,
-        batch_load,
-    }
 }
 
 #[pyfunction]
@@ -129,9 +89,10 @@ fn check_disk_trust(system: &PySystem, update: PyObject, done: PyObject) -> PyRe
         });
     });
 
-    let mut handles = vec![];
     // at this point data is organized into per-thread batches
     // spawn a thread for each of these and loop over the threads load
+    // keep track of the threads to observe when processing is complete
+    let mut handles = vec![];
     for thread_load in batches {
         let ttx = tx.clone();
         let t = thread::spawn(move || {
@@ -148,6 +109,7 @@ fn check_disk_trust(system: &PySystem, update: PyObject, done: PyObject) -> PyRe
         handles.push(t);
     }
 
+    // use the tracked threads to observe when processing is complete
     let ttx = tx.clone();
     thread::spawn(move || {
         for handle in handles {
@@ -161,6 +123,49 @@ fn check_disk_trust(system: &PySystem, update: PyObject, done: PyObject) -> PyRe
     });
 
     Ok(batch_cfg.batch_cnt)
+}
+
+// (chunk_size, thread_count)
+fn calculate_batch_config(rec_sz: usize) -> BatchConfig {
+    let (batch_load, batch_cnt) = match (rec_sz / FIXED_BATCH_COUNT, rec_sz % FIXED_BATCH_COUNT) {
+        (0, _) => (rec_sz, 1),
+        (sz, 0) => (sz, rec_sz / sz),
+        (sz, rem) => match rem / (rec_sz / sz) {
+            0 => {
+                let sz = sz + 1;
+                (sz, rec_sz / sz + 1)
+            }
+            a => {
+                let sz = sz + a;
+                (sz, rec_sz / sz)
+            }
+        },
+    };
+
+    // thread count is adjusted based on batch size
+    // larger batches result in more threads
+    let thread_cnt = match (batch_cnt, batch_load) {
+        // one batch, one thread
+        (1, _) => 1,
+        // small batches get 4 threads
+        (_, s) if s <= 10 => 4,
+        // medium batches get 10 threads
+        (_, s) if s <= 100 => 10,
+        // large batches get 20 threads
+        (_, s) if s <= 200 => 10,
+        // xl batches get 25 threads
+        _ => 25,
+    };
+
+    // thread load is number of batches per thread
+    let thread_load = batch_cnt / thread_cnt;
+
+    BatchConfig {
+        thread_cnt,
+        thread_load,
+        batch_cnt,
+        batch_load,
+    }
 }
 
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
