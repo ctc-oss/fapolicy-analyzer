@@ -13,7 +13,7 @@ name: Python CI
 jobs:
   py_build:
     name: Build Python Bindings for Python ${{ matrix.python-version }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         python-version: ["3.6", "3.9"]
@@ -50,7 +50,7 @@ jobs:
 
   ui_lint:
     name: UI Lint
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.6
@@ -67,7 +67,7 @@ jobs:
 
   ui_test:
     name: UI Test Suite for Python ${{ matrix.python-version }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         python-version: ["3.6", "3.9"]

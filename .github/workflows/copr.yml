@@ -28,7 +28,7 @@ jobs:
             name: 'el8',
             chroot: 'epel-8-x86_64',
           }
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     container: 'rockylinux:8.6'
     steps:
       - name: Enable EPEL
