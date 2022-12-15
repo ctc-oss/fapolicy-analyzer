@@ -119,7 +119,6 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         dispatch(request_rules_text())
 
     def __rules_unvalidated(self) -> bool:
-        print("check: rules_validated")
         return not self.__rules_validated
 
     def __rules_dirty(self) -> bool:
@@ -195,10 +194,12 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
             self.__status_info.render_rule_status(changeset.rules())
 
     def on_validate_clicked(self, *args):
-        print("validating")
         changeset, _ = self.__build_and_validate_changeset()
         self.__update_list_view(changeset)
         self.__status_info.render_rule_status(changeset.rules())
+
+        # dispatch to force toolbar refresh
+        dispatch(modify_rules_text(self.__rules_validated))
 
     def on_text_view_rules_changed(self, rules: str):
         self.__modified_rules_text = rules
