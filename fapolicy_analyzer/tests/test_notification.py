@@ -137,3 +137,35 @@ def test_notification_does_not_time_out(widget, mock_dispatch):
         InstanceOf(Action) & Attrs(type=REMOVE_NOTIFICATION)
     )
     assert widget.get_ref().get_child_revealed()
+
+
+@pytest.mark.parametrize(
+    "notifications",
+    [[Note(0, "foo", t, None)] for t in [NotificationType.WARN]],
+)
+def test_turns_off_timer(widget, mock_notifications_feature, mock_dispatch):
+    mock_notifications_feature.on_next(
+        [Note(1, "warning", NotificationType.ERROR, None)]
+    )
+    sleep(1.2)
+    mock_dispatch.assert_not_any_call(
+        InstanceOf(Action) & Attrs(type=REMOVE_NOTIFICATION)
+    )
+    assert widget.get_ref().get_child_revealed()
+
+
+@pytest.mark.parametrize(
+    "notifications",
+    [[Note(0, "foo", t, None)] for t in [NotificationType.ERROR]],
+)
+def test_changes_styles(widget, mock_notifications_feature):
+    container = widget.get_object("container")
+    style = container.get_style_context()
+    assert NotificationType.ERROR.value in style.list_classes()
+    assert NotificationType.WARN.value not in style.list_classes()
+
+    mock_notifications_feature.on_next(
+        [Note(1, "warning", NotificationType.WARN, None)]
+    )
+    assert NotificationType.ERROR.value not in style.list_classes()
+    assert NotificationType.WARN.value in style.list_classes()
