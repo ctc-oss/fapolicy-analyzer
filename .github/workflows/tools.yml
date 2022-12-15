@@ -15,7 +15,7 @@ name: Tools
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     # 28 has glibc-2.27, compatible >= el8, fc, ubuntu 18.04
     container: fedora:28
     steps:
