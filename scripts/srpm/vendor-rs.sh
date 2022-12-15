@@ -19,6 +19,7 @@ set -e
 
 # rust
 rm -rf vendor-rs
+# the dest path here needs to stay synced up with the path in lock2spec.py
 cargo vendor-filterer --platform=x86_64-unknown-linux-gnu vendor-rs/vendor &> /dev/null
 python3 scripts/srpm/lock2spec.py
 tar czf vendor-rs.tar.gz -C vendor-rs .
