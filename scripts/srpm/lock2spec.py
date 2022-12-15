@@ -79,7 +79,7 @@ if __name__ == '__main__':
         os_id, os_version = os.environ.get("TARGET_PLATFORM").split(":")
         print(f"overriding platform to {os_id}:{os_version}")
 
-    vendoring_all = False
+    vendoring_all = os_id != "fedora" or int(float(os_version)) < 37
     print(f"{os_id}:{os_version}")
     if vendoring_all:
         print("== vendoring all ==")
