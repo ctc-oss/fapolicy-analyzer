@@ -4,9 +4,6 @@ on:
       - 'master'
     tags:
       - 'v*'
-  pull_request:
-    branches:
-      - 'master'
 
 name: Copr
 
@@ -87,7 +84,7 @@ jobs:
         run: |
           copr-cli build --chroot ${{ matrix.props.chroot }} fapolicy-analyzer-latest /tmp/fapolicy-analyzer-*.${{ matrix.props.name }}.src.rpm
 
-      - name: Copr PR Build
-        if: github.event_name == 'pull_request'
-        run: |
-          copr-cli build --chroot ${{ matrix.props.chroot }} fapolicy-analyzer-latest:pr:${{ github.event.pull_request.number }} /tmp/fapolicy-analyzer-*.${{ matrix.props.name }}.src.rpm
+#      - name: Copr PR Build
+#        if: github.event_name == 'pull_request'
+#        run: |
+#          copr-cli build --chroot ${{ matrix.props.chroot }} fapolicy-analyzer-latest:pr:${{ github.event.pull_request.number }} /tmp/fapolicy-analyzer-*.${{ matrix.props.name }}.src.rpm
