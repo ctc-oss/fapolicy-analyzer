@@ -43,6 +43,17 @@ impl From<Status> for PyTrust {
     }
 }
 
+// from trust, with no actual check
+impl From<Trust> for PyTrust {
+    fn from(t: Trust) -> Self {
+        Self {
+            rs_trust: t,
+            rs_actual: None,
+            status: "U".to_string(),
+        }
+    }
+}
+
 #[pymethods]
 impl PyTrust {
     #[getter]
@@ -81,6 +92,15 @@ impl PyObjectProtocol for PyTrust {
 
     fn __repr__(&self) -> PyResult<String> {
         Ok(format!("[{}]\t{}", self.status, self.rs_trust))
+    }
+}
+
+impl PyTrust {
+    pub fn from_status_opt(o: Option<Status>, t: Trust) -> Self {
+        match o {
+            Some(status) => status.into(),
+            None => t.into(),
+        }
     }
 }
 

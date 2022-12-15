@@ -70,8 +70,7 @@ impl PySystem {
             .values()
             .iter()
             .filter(|r| r.is_system())
-            .filter_map(|r| r.status.clone())
-            .map(PyTrust::from)
+            .map(|r| PyTrust::from_status_opt(r.status.clone(), r.trusted.clone()))
             .collect()
     }
 
@@ -84,8 +83,7 @@ impl PySystem {
             .values()
             .iter()
             .filter(|r| r.is_ancillary())
-            .filter_map(|r| r.status.clone())
-            .map(PyTrust::from)
+            .map(|r| PyTrust::from_status_opt(r.status.clone(), r.trusted.clone()))
             .collect()
     }
 
