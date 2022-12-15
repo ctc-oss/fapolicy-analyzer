@@ -19,10 +19,10 @@ enum Update {
     Done,
 }
 
-// keeping an even 100 batches for simplicity in calculating completion percentages
+// keeping a max of 100 batches for now
 const FIXED_BATCH_COUNT: usize = 100;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 struct BatchConfig {
     thread_cnt: usize,
     thread_load: usize,
@@ -127,6 +127,10 @@ fn check_disk_trust(system: &PySystem, update: PyObject, done: PyObject) -> PyRe
 
 // (chunk_size, thread_count)
 fn calculate_batch_config(rec_sz: usize) -> BatchConfig {
+    if rec_sz == 0 {
+        return BatchConfig::default();
+    }
+
     let (batch_load, batch_cnt) = match (rec_sz / FIXED_BATCH_COUNT, rec_sz % FIXED_BATCH_COUNT) {
         (0, _) => (rec_sz, 1),
         (sz, 0) => (sz, rec_sz / sz),
@@ -178,30 +182,88 @@ mod tests {
     use super::*;
 
     #[test]
+    fn batch_load_0() {
+        let num = 0;
+        let cfg = calculate_batch_config(num);
+        assert_eq!(cfg.batch_cnt, 0);
+        assert_eq!(cfg.batch_load, 0);
+        assert_eq!(cfg.thread_cnt, 0);
+        assert_eq!(cfg.thread_load, 0);
+    }
+
+    #[test]
     fn batch_load_1() {
-        let cfg = calculate_batch_config(1);
+        let num = 1;
+        let cfg = calculate_batch_config(num);
         assert_eq!(cfg.batch_cnt, 1);
         assert_eq!(cfg.batch_load, 1);
         assert_eq!(cfg.thread_cnt, 1);
         assert_eq!(cfg.thread_load, 1);
+
+        // assert that we are within one batch of the total
+        assert_eq!(num, cfg.batch_cnt * cfg.batch_load);
+        assert!(num + cfg.batch_load > cfg.batch_cnt * cfg.batch_load);
+        assert_eq!(1, cfg.thread_load * cfg.thread_cnt);
     }
 
     #[test]
     fn batch_load_9() {
-        let cfg = calculate_batch_config(9);
+        let num = 9;
+        let cfg = calculate_batch_config(num);
         assert_eq!(cfg.batch_cnt, 1);
         assert_eq!(cfg.batch_load, 9);
         assert_eq!(cfg.thread_cnt, 1);
         assert_eq!(cfg.thread_load, 1);
+
+        // assert that we are within one batch of the total
+        assert_eq!(num, cfg.batch_cnt * cfg.batch_load);
+        assert!(num + cfg.batch_load > cfg.batch_cnt * cfg.batch_load);
+        assert_eq!(1, cfg.thread_load * cfg.thread_cnt);
+    }
+
+    #[test]
+    fn batch_load_42() {
+        let num = 42;
+        let cfg = calculate_batch_config(num);
+        assert_eq!(cfg.batch_cnt, 1);
+        assert_eq!(cfg.batch_load, 42);
+        assert_eq!(cfg.thread_cnt, 1);
+        assert_eq!(cfg.thread_load, 1);
+
+        // assert that we are within one batch of the total
+        assert_eq!(num, cfg.batch_cnt * cfg.batch_load);
+        assert!(num + cfg.batch_load > cfg.batch_cnt * cfg.batch_load);
+        assert_eq!(1, cfg.thread_load * cfg.thread_cnt);
     }
 
     #[test]
     fn batch_load_99() {
-        let cfg = calculate_batch_config(99);
+        let num = 99;
+        let cfg = calculate_batch_config(num);
         assert_eq!(cfg.batch_cnt, 1);
         assert_eq!(cfg.batch_load, 99);
         assert_eq!(cfg.thread_cnt, 1);
         assert_eq!(cfg.thread_load, 1);
+
+        // assert that we are within one batch of the total
+        assert_eq!(num, cfg.batch_cnt * cfg.batch_load);
+        assert!(num + cfg.batch_load > cfg.batch_cnt * cfg.batch_load);
+        assert_eq!(1, cfg.thread_load * cfg.thread_cnt);
+    }
+
+    #[test]
+    fn batch_load_501() {
+        let num = 501;
+        let cfg = calculate_batch_config(num);
+        assert_eq!(cfg.batch_cnt, 84);
+        assert_eq!(cfg.batch_load, 6);
+        assert_eq!(cfg.thread_cnt, 4);
+        assert_eq!(cfg.thread_load, 21);
+
+        // assert that we are within one batch of the total
+        assert!(num < cfg.batch_cnt * cfg.batch_load);
+        assert!(num + cfg.batch_load > cfg.batch_cnt * cfg.batch_load);
+        assert_eq!(100, cfg.thread_load * cfg.thread_cnt);
     }
 
     #[test]
