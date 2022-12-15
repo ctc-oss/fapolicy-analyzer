@@ -61,7 +61,8 @@ def available_packages():
 
 
 if __name__ == '__main__':
-    vendor_dir = "vendor-rs"
+    # this needs to stay synched up with the path in vendor-rs.sh
+    vendor_dir = "vendor-rs/vendor"
     os_id = None
     os_version = None
     with open("/etc/os-release") as file:
@@ -78,7 +79,7 @@ if __name__ == '__main__':
         os_id, os_version = os.environ.get("TARGET_PLATFORM").split(":")
         print(f"overriding platform to {os_id}:{os_version}")
 
-    vendoring_all = os_id != "fedora" or int(float(os_version)) < 37
+    vendoring_all = False
     print(f"{os_id}:{os_version}")
     if vendoring_all:
         print("== vendoring all ==")
@@ -129,6 +130,7 @@ if __name__ == '__main__':
 
         for c in unvendor:
             print(f"[unvendor] {c}")
-            shutil.rmtree(f"{vendor_dir}/{c}", ignore_errors=True)
+            shutil.rmtree(f"{vendor_dir}/{c}")
+
         print(f"Official {len(unvendor)}")
         print(f"Vendored {len(crates) - len(excluded_crates)}")
