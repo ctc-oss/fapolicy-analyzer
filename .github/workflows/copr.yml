@@ -4,9 +4,6 @@ on:
       - 'master'
     tags:
       - 'v*'
-  pull_request:
-    branches:
-      - 'master'
 
 name: Copr
 
@@ -28,7 +25,7 @@ jobs:
             name: 'el8',
             chroot: 'epel-8-x86_64',
           }
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     container: 'rockylinux:8.6'
     steps:
       - name: Enable EPEL
@@ -87,7 +84,7 @@ jobs:
         run: |
           copr-cli build --chroot ${{ matrix.props.chroot }} fapolicy-analyzer-latest /tmp/fapolicy-analyzer-*.${{ matrix.props.name }}.src.rpm
 
-      - name: Copr PR Build
-        if: github.event_name == 'pull_request'
-        run: |
-          copr-cli build --chroot ${{ matrix.props.chroot }} fapolicy-analyzer-latest:pr:${{ github.event.pull_request.number }} /tmp/fapolicy-analyzer-*.${{ matrix.props.name }}.src.rpm
+#      - name: Copr PR Build
+#        if: github.event_name == 'pull_request'
+#        run: |
+#          copr-cli build --chroot ${{ matrix.props.chroot }} fapolicy-analyzer-latest:pr:${{ github.event.pull_request.number }} /tmp/fapolicy-analyzer-*.${{ matrix.props.name }}.src.rpm
