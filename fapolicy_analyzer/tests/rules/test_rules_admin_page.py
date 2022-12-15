@@ -19,6 +19,9 @@ from unittest.mock import MagicMock
 import gi
 import pytest
 from callee import Attrs, InstanceOf
+from mocks import mock_rule, mock_System
+from rx.subject import Subject
+
 from fapolicy_analyzer.redux import Action
 from fapolicy_analyzer.ui.actions import (
     ADD_NOTIFICATION,
@@ -37,8 +40,6 @@ from fapolicy_analyzer.ui.strings import (
     RULES_VALIDATION_ERROR,
     RULES_VALIDATION_WARNING,
 )
-from mocks import mock_rule, mock_System
-from rx.subject import Subject
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
@@ -198,7 +199,7 @@ def test_validate_clicked_valid(widget, mock_dispatch):
 def test_validate_clicked_invalid(widget, mock_dispatch):
     widget._text_view.rules_changed("bar baz bah")
     widget.on_validate_clicked()
-    mock_dispatch.assert_called_with(
+    mock_dispatch.assert_any_call(
         InstanceOf(Action)
         & Attrs(
             type=ADD_NOTIFICATION,
@@ -210,7 +211,7 @@ def test_validate_clicked_invalid(widget, mock_dispatch):
 def test_validate_clicked_warning(widget, mock_dispatch):
     widget._text_view.rules_changed("allow perm=any exe=/foo : all")
     widget.on_validate_clicked()
-    mock_dispatch.assert_called_with(
+    mock_dispatch.assert_any_call(
         InstanceOf(Action)
         & Attrs(
             type=ADD_NOTIFICATION,
