@@ -229,12 +229,12 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkMenuItem" id="syncDatabases">
+                          <object class="GtkMenuItem" id="syncDatabaseMenu">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="label" translatable="yes">Syncronize Databases</property>
                             <property name="use_underline">True</property>
-                            <signal name="activate" handler="on_syncDatabases_activate" swapped="no"/>
+                            <signal name="activate" handler="on_syncDatabaseMenu_activate" swapped="no"/>
                           </object>
                         </child>
                       </object>

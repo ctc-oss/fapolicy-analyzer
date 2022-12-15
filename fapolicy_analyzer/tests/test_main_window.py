@@ -400,6 +400,17 @@ def test_on_saveMenu_activate(mainWindow, mocker):
     mockFunc.assert_called()
 
 
+def test_on_signal_trust_reload_menu_activate(mainWindow, mocker):
+    mainWindow.get_object("syncDatabaseMenu").activate()
+    mockDialog = MagicMock()
+    mockDialog.run.return_value = 1
+    mocker.patch(
+        "fapolicy_analyzer.ui.main_window.restartDialog.get_ref",
+        return_value=mockDialog,
+    )
+    mockDialog.run.assert_called()
+
+
 def test_on_saveMenu_activate_w_set_filename(mainWindow, mocker):
     mainWindow.strSessionFilename = "/tmp/save_w_filename_tmp.json"
     mocker.patch(

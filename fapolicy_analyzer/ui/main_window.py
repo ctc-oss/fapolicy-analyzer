@@ -429,6 +429,25 @@ class MainWindow(UIConnectedWidget):
         self.__pack_main_content(page)
         self.__set_trustDbMenu_sensitive(True)
 
+    def on_syncDatabaseMenu_activate(self, *args):
+        restartDialog = self.get_object("restartDialog")
+        restartDialog.set_transient_for(self.window)
+        resp = restartDialog.run()
+        restartDialog.hide()
+        if resp > 0:
+            try:
+                signal_trust_reload()
+            except RuntimeError:
+                dispatch(
+                    add_notification(
+                        "fifo pipe does not exist.\n Default: /run/fapolicyd/fapolicyd.fifo",
+                        NotificationType.ERROR,
+                    )
+                )
+
+        if resp == 2:
+            self.get_ref().destroy()
+
     def _refresh_toolbar(self):
         self.__toolbar.refresh_buttons_sensitivity()
 
@@ -446,22 +465,6 @@ class MainWindow(UIConnectedWidget):
         logging.debug("on_fapdStopMenu_activate() invoked.")
         if self._fapd_status != ServiceStatus.UNKNOWN:
             self._fapd_mgr.stop()
-
-    def on_syncDatabases_activate(self, *args):
-        restartDialog = self.get_object("restartDialog")
-        restartDialog.set_transient_for(self.window)
-        resp = restartDialog.run()
-        if resp > 0:
-            try:
-                signal_trust_reload()
-            except RuntimeError:
-                pass
-
-        if abs(resp) == 1:
-            restartDialog.hide()
-
-        if resp == 2:
-            self.get_ref().destroy()
 
     def _enable_fapd_menu_items(self, status: ServiceStatus):
         if self._fapdControlPermitted and (status != ServiceStatus.UNKNOWN):
