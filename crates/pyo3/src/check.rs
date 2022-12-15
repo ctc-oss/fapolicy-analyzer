@@ -32,19 +32,24 @@ fn calculate_batch_config(rec_sz: usize) -> BatchConfig {
     let (batch_load, batch_cnt) = match (rec_sz / 100, rec_sz % 100) {
         (0, _) => (rec_sz, 1),
         (sz, 0) => (sz, rec_sz / sz),
-        (sz, _) => (sz + 1, rec_sz / (sz + 1)),
+        (sz, rem) => match rem / (rec_sz / sz) {
+            0 => (sz + 1, rec_sz / sz),
+            a => (sz + a, rec_sz / sz),
+        },
     };
 
     // thread count is adjusted based on batch size
     // larger batches result in more threads
     let thread_cnt = match (batch_cnt, batch_load) {
-        // if one batch, one thread
+        // one batch, one thread
         (1, _) => 1,
         // small batches get 4 threads
-        (_, s) if s < 10 => 4,
+        (_, s) if s <= 10 => 4,
         // medium batches get 10 threads
-        (_, s) if s < 100 => 10,
-        // large batches get 25 threads
+        (_, s) if s <= 100 => 10,
+        // large batches get 20 threads
+        (_, s) if s <= 200 => 10,
+        // xl batches get 25 threads
         _ => 25,
     };
 
@@ -69,8 +74,8 @@ fn check_disk_trust(system: &PySystem, update: PyObject, done: PyObject) -> PyRe
         .map(|r| r.clone())
         .collect();
 
+    // determine batch model based on the total recs to be checked
     let batch_cfg = calculate_batch_config(recs.len());
-    dbg!(&batch_cfg);
 
     // 1. separate the total recs into sized batches
     // 2. separate batches into appropriate thread load
@@ -80,8 +85,15 @@ fn check_disk_trust(system: &PySystem, update: PyObject, done: PyObject) -> PyRe
         .map(Vec::from)
         .collect();
 
+    if batch_cfg.thread_cnt != batches.len() {
+        eprintln!(
+            "warning: thread_cnt {} does not match batch count {}",
+            batch_cfg.thread_cnt,
+            batches.len()
+        );
+    }
+
     let (tx, rx) = mpsc::channel();
-    let mut handles = vec![];
 
     // the on-data-available callback thread
     // this aggregates all batch threads back into the single callback
@@ -111,7 +123,7 @@ fn check_disk_trust(system: &PySystem, update: PyObject, done: PyObject) -> PyRe
         });
     });
 
-    println!("spawing {} batch threads", batches.len());
+    let mut handles = vec![];
     // at this point data is organized into per-thread batches
     // spawn a thread for each of these and loop over the threads load
     for thread_load in batches {
@@ -192,10 +204,29 @@ mod tests {
 
     #[test]
     fn batch_load_19999() {
-        let cfg = calculate_batch_config(19999);
+        let num = 19999;
+        let cfg = calculate_batch_config(num);
         assert_eq!(cfg.batch_cnt, 99);
         assert_eq!(cfg.batch_load, 200);
+        assert_eq!(cfg.thread_cnt, 20);
+        assert_eq!(cfg.thread_load, 4);
+    }
+
+    #[test]
+    fn batch_load_112020() {
+        let num = 112020;
+        let cfg = calculate_batch_config(num);
+
+        // assert the basic configuration
+        assert_eq!(cfg.batch_cnt, 100);
+        assert_eq!(cfg.batch_load, 1121);
         assert_eq!(cfg.thread_cnt, 25);
-        assert_eq!(cfg.thread_load, 3);
+        assert_eq!(cfg.thread_load, 4);
+
+        // assert that we are within one batch of the total
+        assert!(num < cfg.batch_cnt * cfg.batch_load);
+        assert!(num + cfg.batch_load > cfg.batch_cnt * cfg.batch_load);
+
+        assert_eq!(100, cfg.thread_load * cfg.thread_cnt);
     }
 }
