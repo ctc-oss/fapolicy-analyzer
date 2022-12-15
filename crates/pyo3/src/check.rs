@@ -33,8 +33,14 @@ fn calculate_batch_config(rec_sz: usize) -> BatchConfig {
         (0, _) => (rec_sz, 1),
         (sz, 0) => (sz, rec_sz / sz),
         (sz, rem) => match rem / (rec_sz / sz) {
-            0 => (sz + 1, rec_sz / sz),
-            a => (sz + a, rec_sz / sz),
+            0 => {
+                let sz = sz + 1;
+                (sz, rec_sz / sz + 1)
+            }
+            a => {
+                let sz = sz + a;
+                (sz, rec_sz / sz)
+            }
         },
     };
 
@@ -194,22 +200,57 @@ mod tests {
     }
 
     #[test]
-    fn batch_load_999() {
-        let cfg = calculate_batch_config(999);
-        assert_eq!(cfg.batch_cnt, 99);
+    fn batch_load_999ish() {
+        let num = 999;
+        let cfg = calculate_batch_config(num);
+        assert_eq!(cfg.batch_cnt, 100);
         assert_eq!(cfg.batch_load, 10);
-        assert_eq!(cfg.thread_cnt, 10);
-        assert_eq!(cfg.thread_load, 9);
+        assert_eq!(cfg.thread_cnt, 4);
+        assert_eq!(cfg.thread_load, 25);
+
+        // assert that we are within one batch of the total
+        assert!(num < cfg.batch_cnt * cfg.batch_load);
+        assert!(num + cfg.batch_load > cfg.batch_cnt * cfg.batch_load);
+        assert_eq!(100, cfg.thread_load * cfg.thread_cnt);
+
+        let num = 998;
+        let cfg = calculate_batch_config(num);
+        assert_eq!(cfg.batch_cnt, 100);
+        assert_eq!(cfg.batch_load, 10);
+        assert_eq!(cfg.thread_cnt, 4);
+        assert_eq!(cfg.thread_load, 25);
+
+        // assert that we are within one batch of the total
+        assert!(num < cfg.batch_cnt * cfg.batch_load);
+        assert!(num + cfg.batch_load > cfg.batch_cnt * cfg.batch_load);
+        assert_eq!(100, cfg.thread_load * cfg.thread_cnt);
+
+        let num = 1000;
+        let cfg = calculate_batch_config(num);
+        assert_eq!(cfg.batch_cnt, 100);
+        assert_eq!(cfg.batch_load, 10);
+        assert_eq!(cfg.thread_cnt, 4);
+        assert_eq!(cfg.thread_load, 25);
+
+        // assert that we are within one batch of the total
+        assert_eq!(num, cfg.batch_cnt * cfg.batch_load);
+        assert!(num + cfg.batch_load > cfg.batch_cnt * cfg.batch_load);
+        assert_eq!(100, cfg.thread_load * cfg.thread_cnt);
     }
 
     #[test]
     fn batch_load_19999() {
         let num = 19999;
         let cfg = calculate_batch_config(num);
-        assert_eq!(cfg.batch_cnt, 99);
+        assert_eq!(cfg.batch_cnt, 100);
         assert_eq!(cfg.batch_load, 200);
-        assert_eq!(cfg.thread_cnt, 20);
-        assert_eq!(cfg.thread_load, 4);
+        assert_eq!(cfg.thread_cnt, 10);
+        assert_eq!(cfg.thread_load, 10);
+
+        // assert that we are within one batch of the total
+        assert!(num < cfg.batch_cnt * cfg.batch_load);
+        assert!(num + cfg.batch_load > cfg.batch_cnt * cfg.batch_load);
+        assert_eq!(100, cfg.thread_load * cfg.thread_cnt);
     }
 
     #[test]
@@ -226,7 +267,6 @@ mod tests {
         // assert that we are within one batch of the total
         assert!(num < cfg.batch_cnt * cfg.batch_load);
         assert!(num + cfg.batch_load > cfg.batch_cnt * cfg.batch_load);
-
         assert_eq!(100, cfg.thread_load * cfg.thread_cnt);
     }
 }
