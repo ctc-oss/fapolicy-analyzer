@@ -27,6 +27,8 @@ from fapolicy_analyzer.ui.actions import (
     ADD_NOTIFICATION,
     APPLY_CHANGESETS,
     MODIFY_RULES_TEXT,
+    REMOVE_NOTIFICATION,
+    Notification,
     NotificationType,
 )
 from fapolicy_analyzer.ui.changeset_wrapper import RuleChangeset
@@ -69,13 +71,38 @@ def mock_system_feature(mocker):
 
 
 @pytest.fixture
-def widget(mock_dispatch, mock_system_feature):
+def mock_notifications_feature(mocker):
+    notifications_feature_mock = Subject()
+    mocker.patch(
+        "fapolicy_analyzer.ui.rules.rules_admin_page.get_notifications_feature",
+        return_value=notifications_feature_mock,
+    )
+    yield notifications_feature_mock
+    notifications_feature_mock.on_completed()
+
+
+@pytest.fixture
+def widget(mock_dispatch, mock_system_feature, mock_notifications_feature):
     init_store(mock_System())
     return RulesAdminPage()
 
 
 def test_creates_widget(widget):
     assert type(widget.get_ref()) is Gtk.Paned
+
+
+@pytest.mark.usefixtures("mock_system_feature")
+def test_disposes(mocker):
+    mockDispose = MagicMock()
+    mocker.patch(
+        "fapolicy_analyzer.ui.rules.rules_admin_page.get_notifications_feature",
+        return_value=MagicMock(
+            subscribe=MagicMock(return_value=MagicMock(dispose=mockDispose))
+        ),
+    )
+    widget = RulesAdminPage()
+    widget.dispose()
+    mockDispose.assert_called_once()
 
 
 def test_populates_guided_editor(widget, mock_system_feature, mocker):
@@ -216,6 +243,25 @@ def test_validate_clicked_warning(widget, mock_dispatch):
         & Attrs(
             type=ADD_NOTIFICATION,
             payload=Attrs(type=NotificationType.WARN, text=RULES_VALIDATION_WARNING),
+        )
+    )
+
+
+def test_clears_validation_notifications(
+    widget, mock_notifications_feature, mock_dispatch
+):
+    mock_notifications_feature.on_next(
+        [Notification(0, "error", NotificationType.ERROR, "invalid rules")]
+    )
+    # valid to clear notification
+    widget._text_view.rules_changed("allow perm=open all : all")
+    widget.on_validate_clicked()
+    print(mock_dispatch.call_args_list)
+    mock_dispatch.assert_any_call(
+        InstanceOf(Action)
+        & Attrs(
+            type=REMOVE_NOTIFICATION,
+            payload=Notification(id=0, text="", type=None, category=None),
         )
     )
 
