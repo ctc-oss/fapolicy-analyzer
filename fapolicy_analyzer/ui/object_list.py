@@ -60,15 +60,14 @@ class ObjectList(SubjectList, Events):
         matches = set(options).intersection(valueSet)
         return seperator.join([wrap(o) if o in matches else o for o in options])
 
-    def __colors(self, access, mode):
+    def __colors(self, access, status):
         green = (Colors.LIGHT_GREEN, Colors.BLACK)
         orange = (Colors.ORANGE, Colors.BLACK)
         red = (Colors.LIGHT_RED, Colors.WHITE)
         if access.upper() != "A":
             return red
 
-        numModes = len(set(mode.upper()).intersection({"R", "W", "X"}))
-        return green if numModes == 3 else orange if numModes > 0 else red
+        return green if status.lower() == "t" else orange
 
     def _build_reconcile_context_menu(self):
         menu = super()._build_reconcile_context_menu()
@@ -97,7 +96,7 @@ class ObjectList(SubjectList, Events):
                 multiValue=True,
             )
             access = self.__markup(o.access.upper(), ["A", "D"])
-            bg_color, txt_color = self.__colors(o.access, o.mode)
+            bg_color, txt_color = self.__colors(o.access, o.trust_status)
             store.append([status, access, o.file, o, bg_color, txt_color, mode, i])
 
         # call grandfather SearchableList's load_store method
