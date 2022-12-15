@@ -17,7 +17,4 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Check for required headers
-        run: |
-          ! grep -R -L --exclude-dir=vendor \
-            --include='*.py' --include='*.rs' --include='*.glade' --include='*.sh' \
-            'Copyright Concurrent Technologies Corporation' *
+        run: make header-check
