@@ -214,7 +214,7 @@ def test_path_color(widget):
     assert view.get_model()[0][5] == Colors.WHITE
     # Lowercase
     widget.load_store([{0: _mock_object(access="a", mode="rwx")}])
-    assert view.get_model()[0][4] == Colors.LIGHT_GREEN
+    assert view.get_model()[0][4] == Colors.ORANGE
     assert view.get_model()[0][5] == Colors.BLACK
 
 
