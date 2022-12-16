@@ -28,7 +28,14 @@ from fapolicy_analyzer.ui.features import SYSTEM_FEATURE, create_system_feature
 store = create_store()
 
 t = time.time()
-s1 = System()
+
+# to avoid breaking master there is an alternative
+# unchecked function to create a System. after the ui
+# integrates the callbacks this function will go away
+# and the main System ctor will load unchecked trust
+# s1 = System()
+s1 = unchecked_system()
+
 duration = time.time() - t
 print(f"system created in {duration} seconds")
 

@@ -53,7 +53,7 @@ impl PySystem {
         py.allow_threads(|| {
             let conf = cfg::All::load()
                 .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))?;
-            match State::load(&conf) {
+            match State::load_checked(&conf) {
                 Ok(state) => Ok(state.into()),
                 Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{:?}", e))),
             }
@@ -178,8 +178,23 @@ fn rules_difference(lhs: &PySystem, rhs: &PySystem) -> String {
     diff_lines.join("")
 }
 
+// todo;; this is temporary bridge while trust callbacks are being implemented
+//        it will be removed and the main ctor will switch to unchecked loading
+#[pyfunction]
+fn unchecked_system(py: Python) -> PyResult<PySystem> {
+    py.allow_threads(|| {
+        let conf = cfg::All::load()
+            .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))?;
+        match State::load(&conf) {
+            Ok(state) => Ok(state.into()),
+            Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{:?}", e))),
+        }
+    })
+}
+
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PySystem>()?;
     m.add_function(wrap_pyfunction!(rules_difference, m)?)?;
+    m.add_function(wrap_pyfunction!(unchecked_system, m)?)?;
     Ok(())
 }
