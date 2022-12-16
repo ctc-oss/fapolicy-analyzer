@@ -43,8 +43,8 @@ fn check_disk_trust(system: &PySystem, update: PyObject, done: PyObject) -> PyRe
     // determine batch model based on the total recs to be checked
     let batch_cfg = calculate_batch_config(recs.len());
 
-    // 1. separate the total recs into sized batches
-    // 2. separate batches into appropriate thread load
+    // 1. split the total recs into sized batches
+    // 2. split the batches into chunks based on thread load
     let batches: Vec<_> = recs.chunks(batch_cfg.batch_load).map(Vec::from).collect();
     let batches: Vec<_> = batches
         .chunks(batch_cfg.thread_load)
@@ -125,14 +125,13 @@ fn check_disk_trust(system: &PySystem, update: PyObject, done: PyObject) -> PyRe
     Ok(batch_cfg.batch_cnt)
 }
 
-// (chunk_size, thread_count)
 fn calculate_batch_config(rec_sz: usize) -> BatchConfig {
     if rec_sz == 0 {
         return BatchConfig::default();
     }
 
     let (batch_load, batch_cnt) = match (rec_sz / FIXED_BATCH_COUNT, rec_sz % FIXED_BATCH_COUNT) {
-        // less than one hundred batches of 1
+        // less than FIXED_BATCH_COUNT, use a single batch
         (0, rem) => (rem, 1),
         // batches are all even
         (sz, 0) => (sz, FIXED_BATCH_COUNT),
@@ -150,7 +149,7 @@ fn calculate_batch_config(rec_sz: usize) -> BatchConfig {
         // medium batches get 10 threads
         (_, s) if s <= 100 => 10,
         // large batches get 20 threads
-        (_, s) if s <= 200 => 10,
+        (_, s) if s <= 200 => 20,
         // xl batches get 25 threads
         _ => 25,
     };
@@ -302,8 +301,8 @@ mod tests {
         let cfg = calculate_batch_config(num);
         assert_eq!(cfg.batch_cnt, 100);
         assert_eq!(cfg.batch_load, 200);
-        assert_eq!(cfg.thread_cnt, 10);
-        assert_eq!(cfg.thread_load, 10);
+        assert_eq!(cfg.thread_cnt, 20);
+        assert_eq!(cfg.thread_load, 5);
 
         // assert that we are within one batch of the total
         assert!(num <= cfg.batch_cnt * cfg.batch_load);
