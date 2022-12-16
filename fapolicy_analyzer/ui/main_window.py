@@ -356,6 +356,7 @@ class MainWindow(UIConnectedWidget):
         else:
             if path.isfile("/usr/share/help/C/fapolicy-analyzer/User-Guide.html"):
                 uri = "help:fapolicy-analyzer/User-Guide.html"
+                logging.debug(f"loading help from {uri}")
             elif path.isfile("help/C/User-Guide.html"):
                 # This should only happen in a development environment
                 uri = f"file://{os.getcwd()}/help/C/User-Guide.html"
