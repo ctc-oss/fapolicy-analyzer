@@ -132,7 +132,7 @@ Requires:      mesa-dri-drivers
 %global module fapolicy_analyzer
 
 %description
-Tools to assist with the configuration and management of fapolicyd (File Access Policy Daemon).
+Tools to assist with the configuration and management of fapolicyd.
 
 %prep
 
