@@ -365,8 +365,6 @@
         <property name="can_focus">False</property>
         <property name="margin_left">20</property>
         <property name="margin_right">20</property>
-        <property name="margin_top">100</property>
-        <property name="margin_bottom">20</property>
         <property name="orientation">vertical</property>
         <property name="spacing">2</property>
         <child internal-child="action_area">
@@ -423,6 +421,8 @@
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="margin_top">50</property>
+            <property name="margin_bottom">50</property>
             <property name="label" translatable="yes">Restart to view database update?</property>
           </object>
           <packing>
