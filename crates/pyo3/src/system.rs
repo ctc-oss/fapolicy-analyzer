@@ -15,20 +15,22 @@ use fapolicy_analyzer::events::db::DB as EventDB;
 use fapolicy_app::app::State;
 use fapolicy_app::cfg;
 use fapolicy_app::sys::deploy_app_state;
+use fapolicy_trust::stat::Status::*;
 
-use super::trust::PyTrust;
 use crate::acl::{PyGroup, PyUser};
 use crate::analysis::PyEventLog;
 use crate::rules::PyRule;
 use crate::trust;
 use crate::{daemon, rules};
 
+use super::trust::PyTrust;
+
 #[pyclass(module = "app", name = "System")]
 #[derive(Clone)]
 /// An immutable view of host system state.
 /// This only a container for state, it has to be applied to the host system.
 pub struct PySystem {
-    rs: State,
+    pub(crate) rs: State,
 }
 impl From<State> for PySystem {
     fn from(rs: State) -> Self {
@@ -68,8 +70,7 @@ impl PySystem {
             .values()
             .iter()
             .filter(|r| r.is_system())
-            .filter_map(|r| r.status.clone())
-            .map(PyTrust::from)
+            .map(|r| PyTrust::from_status_opt(r.status.clone(), r.trusted.clone()))
             .collect()
     }
 
@@ -82,8 +83,7 @@ impl PySystem {
             .values()
             .iter()
             .filter(|r| r.is_ancillary())
-            .filter_map(|r| r.status.clone())
-            .map(PyTrust::from)
+            .map(|r| PyTrust::from_status_opt(r.status.clone(), r.trusted.clone()))
             .collect()
     }
 
@@ -145,6 +145,19 @@ impl PySystem {
     fn rules_text(&self) -> String {
         rules::to_text(&self.rs.rules_db)
     }
+
+    fn merge(&mut self, trust: Vec<PyTrust>) {
+        for t in trust {
+            if let Some(e) = self.rs.trust_db.get_mut(&t.rs_trust.path) {
+                match (t.status.as_str(), t.rs_actual) {
+                    ("T", Some(a)) => e.status = Some(Trusted(t.rs_trust, a)),
+                    ("D", Some(a)) => e.status = Some(Discrepancy(t.rs_trust, a)),
+                    ("U", None) => e.status = Some(Missing(t.rs_trust)),
+                    _ => {}
+                }
+            }
+        }
+    }
 }
 
 #[pyfunction]
@@ -165,8 +178,23 @@ fn rules_difference(lhs: &PySystem, rhs: &PySystem) -> String {
     diff_lines.join("")
 }
 
+// todo;; this is temporary bridge while trust callbacks are being implemented
+//        it will be removed and the main ctor will switch to unchecked loading
+#[pyfunction]
+fn unchecked_system(py: Python) -> PyResult<PySystem> {
+    py.allow_threads(|| {
+        let conf = cfg::All::load()
+            .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))?;
+        match State::load(&conf) {
+            Ok(state) => Ok(state.into()),
+            Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{:?}", e))),
+        }
+    })
+}
+
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PySystem>()?;
     m.add_function(wrap_pyfunction!(rules_difference, m)?)?;
+    m.add_function(wrap_pyfunction!(unchecked_system, m)?)?;
     Ok(())
 }
