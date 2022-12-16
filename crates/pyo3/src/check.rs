@@ -137,19 +137,7 @@ fn calculate_batch_config(rec_sz: usize) -> BatchConfig {
         // batches are all even
         (sz, 0) => (sz, FIXED_BATCH_COUNT),
         // batched out with remainder
-        (sz, _) => {
-            (sz + 1, FIXED_BATCH_COUNT)
-
-            // match rem / (rec_sz / sz) {
-            // 0 => {
-            //     let sz = sz + 1;
-            //     (sz, rec_sz / sz + 1)
-            // }
-            // a => {
-            //     let sz = sz + a;
-            //     (sz, rec_sz / sz)
-            // }
-        }
+        (sz, _) => (sz + 1, FIXED_BATCH_COUNT),
     };
 
     // thread count is adjusted based on batch size
