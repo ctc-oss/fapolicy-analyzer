@@ -15,6 +15,7 @@
 
 import logging
 import os
+import sys
 from locale import gettext as _
 from os import getenv, geteuid, path
 from threading import Thread
@@ -447,7 +448,7 @@ class MainWindow(UIConnectedWidget):
                 )
 
         if resp == 2:
-            self.get_ref().destroy()
+            os.execl(sys.executable, "python", *sys.argv)
 
     def _refresh_toolbar(self):
         self.__toolbar.refresh_buttons_sensitivity()
