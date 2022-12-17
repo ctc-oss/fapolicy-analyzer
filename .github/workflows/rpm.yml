@@ -2,14 +2,14 @@ on:
   push:
     branches:
       - 'master'
-      - 'release-*'
+      - 'release/*'
       - 'rpm/test/*'
     tags:
       - 'v*'
   pull_request:
     branches:
       - 'master'
-      - 'release-*'
+      - 'release/*'
 
 name: RPM
 
@@ -45,27 +45,44 @@ jobs:
         run: |
           dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
 
-      - name: RPM Building Dependencies
-        run: |
-          dnf install -y git rpm rpmdevtools dnf-plugins-core
+      - name: Install Git
+        run: dnf install -y git
 
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
 
-      - name: Copr Makefile Dependencies
-        run: |
-          dnf install -y make
-          make -f .copr/Makefile dnf
-
       - name: Strip ref to tag
         id: tag_name
         if: startsWith(github.ref, 'refs/tags/v')
         run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d/ -f3)
 
-      - name: Rust dependencies
+      - name: Ensure spec version matches tag
+        if: startsWith(github.ref, 'refs/tags/v')
         run: |
+          spec_version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
+          tag="${{ steps.tag_name.outputs.VERSION }}"
+          tag_version="${tag#v}"
+          echo "Got version $tag_version from git tag $tag"
+          
+          if [[ "$tag_version" == *-rc* ]] && [[ "$spec_version" != *~rc* ]]; then
+            echo "The spec version ($spec_version) prerelease tag does not agree with git ($tag_version)"
+            exit 1
+          fi
+          
+          normalized_spec_version=$(echo "$spec_version" | tr "~" "-")
+          if [[ ! "$tag_version" == "$normalized_spec_version" ]]; then
+            echo "The spec version ($normalized_spec_version) does not agree with git ($tag_version)"
+            exit 2
+          fi
+          
+          echo "The spec version $spec_version is correct based on git tag $tag"
+
+      - name: Install dependencies
+        run: |
+          dnf install -y make rpm rpmdevtools dnf-plugins-core
+          make -f .copr/Makefile dnf
           cargo install cargo-vendor-filterer
 
       # allows the git archive command to run within the repo
@@ -105,7 +122,8 @@ jobs:
       - name: Export tarballs
         run: |
           mkdir -p /tmp/archives
-          mv vendor-rs.tar.gz /tmp/archives/vendor-rs.$PLATFORM.tar.gz
+          mv vendor-rs.tar.gz         /tmp/archives/vendor-rs.$PLATFORM.tar.gz
+          mv vendor-docs.tar.gz       /tmp/archives
           mv fapolicy-analyzer.tar.gz /tmp/archives
         env:
           PLATFORM: ${{ matrix.props.name }}

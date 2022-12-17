@@ -1,6 +1,6 @@
 Summary:       File Access Policy Analyzer
 Name:          fapolicy-analyzer
-Version:       0.6.1
+Version:       1.0.0
 Release:       1%{?dist}
 License:       GPLv3+
 URL:           https://github.com/ctc-oss/fapolicy-analyzer
@@ -129,7 +129,8 @@ Requires:      gtksourceview3
 Requires:      webkit2gtk3
 Requires:      mesa-dri-drivers
 
-%global module fapolicy_analyzer
+%global module          fapolicy_analyzer
+%global module_version  %{lua:v = string.gsub(rpm.expand("%{?version}"), "~", ""); print(v)}
 
 %description
 Tools to assist with the configuration and management of fapolicyd.
@@ -161,7 +162,7 @@ rm Cargo.lock
 
 # our setup.py looks up the version from git describe
 # this overrides that check to the RPM version
-echo %{version} > VERSION
+echo %{module_version} > VERSION
 
 %build
 
@@ -171,7 +172,7 @@ python3 setup.py bdist_wheel
 
 %install
 
-%{py3_install_wheel %{module}-%{version}*%{_arch}.whl}
+%{py3_install_wheel %{module}-%{module_version}*%{_arch}.whl}
 install bin/%{name} %{buildroot}%{_sbindir}/%{name} -D
 mkdir -p %{buildroot}/%{_datadir}/help/{C,es}/%{name}/media
 install -p -D build/help/C/%{name}/*.html   %{buildroot}/%{_datadir}/help/C/%{name}/
@@ -185,11 +186,11 @@ install -p -D build/help/es/%{name}/media/* %{buildroot}/%{_datadir}/help/es/%{n
 %doc scripts/srpm/README
 %license LICENSE
 %{python3_sitearch}/%{module}
-%{python3_sitearch}/%{module}-%{version}*
+%{python3_sitearch}/%{module}-%{module_version}*
 %attr(755,root,root) %{_sbindir}/fapolicy-analyzer
 %{_datadir}/help/C/fapolicy-analyzer
 %{_datadir}/help/es/fapolicy-analyzer
 
 %changelog
-* Fri Sep 09 2022 John Wass <jwass3@gmail.com> 0.6.1-1
+* Fri Dec 16 2022 John Wass <jwass3@gmail.com> 1.0.0-1
 - New release
