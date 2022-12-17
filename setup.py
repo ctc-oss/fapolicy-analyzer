@@ -24,8 +24,7 @@ def get_version():
         return os.getenv("VERSION")
     if os.path.exists("VERSION"):
         with open("VERSION", "r") as version:
-            v = version.readline().strip().replace("~", "")
-            print(f"========================== {v} ======================")
+            v = version.readline().strip()
             if len(v):
                 return v
     try:
