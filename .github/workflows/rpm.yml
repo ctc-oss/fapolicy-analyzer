@@ -64,9 +64,16 @@ jobs:
           spec_version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
           tag="${{ steps.tag_name.outputs.VERSION }}"
           tag="${tag#v}"
+          
+          if [[ "$tag_version" == *-rc* ]] && [[ "$spec_version" != *~rc* ]]; then
+            echo "Spec file version ($spec_version) prerelease tag does not match Git tag ($tag)"
+            exit 1
+          fi
+          
+          spec_version=$(echo "$spec_version" | tr "~" "-")
           if [[ ! "$tag_version" == "$spec_version" ]]; then
             echo "Spec file version ($spec_version) does not match Git tag ($tag)"
-            exit 1
+            exit 2
           fi
 
       - name: Install dependencies
