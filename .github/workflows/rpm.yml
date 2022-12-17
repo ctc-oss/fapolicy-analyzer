@@ -61,9 +61,9 @@ jobs:
       - name: Ensure spec version matches tag
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
+          spec_version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
           tag="${{ steps.tag_name.outputs.VERSION }}"
           tag="${tag#v}"
-          spec_version=$(grep "Version:" fapolicy-analyzer.spec | tr -s ' ' | cut -d' ' -f2)
           if [[ ! "$tag_version" == "$spec_version" ]]; then
             echo "Spec file version ($spec_version) does not match Git tag ($tag)"
             exit 1
@@ -71,7 +71,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          dnf install -y git rpm rpmdevtools dnf-plugins-core
+          dnf install -y make rpm rpmdevtools dnf-plugins-core
           make -f .copr/Makefile dnf
           cargo install cargo-vendor-filterer
 
