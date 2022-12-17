@@ -58,12 +58,15 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d/ -f3)
 
-      - name: Ensure version matches tag
+      - name: Ensure spec version matches tag
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
-          expected_version="${${{ steps.tag_name.outputs.VERSION }}#v}"
-          actual_version=$(grep "Version:" fapolicy-analyzer.spec | tr -s ' ' | cut -d' ' -f2)
-          [[ "$expected_version" == "$actual_version" ]]
+          tag="${{ steps.tag_name.outputs.VERSION }}"
+          tag="${tag#v}"
+          spec_version=$(grep "Version:" fapolicy-analyzer.spec | tr -s ' ' | cut -d' ' -f2)
+          if [[ ! "$tag_version" == "$spec_version" ]]; then
+            echo "Spec file version $spec_version does not match the Git tag $tag_version
+          fi
 
       - name: Install dependencies
         run: |
