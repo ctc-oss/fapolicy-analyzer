@@ -65,7 +65,7 @@ jobs:
           tag="${tag#v}"
           spec_version=$(grep "Version:" fapolicy-analyzer.spec | tr -s ' ' | cut -d' ' -f2)
           if [[ ! "$tag_version" == "$spec_version" ]]; then
-            echo "Spec file version $spec_version does not match the Git tag $tag_version
+            echo "Spec file version $spec_version does not match the Git tag $tag_version"
           fi
 
       - name: Install dependencies
