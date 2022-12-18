@@ -1,6 +1,10 @@
 on:
-  repository_dispatch:
-    types: [ srpms-available ]
+  workflow_call:
+    inputs:
+      rpm_run_id:
+        description: The run-id source of the rpm artifacts.
+        type: number
+        required: true
 
 name: Copr
 
@@ -49,6 +53,7 @@ jobs:
         with:
           name: srpm-artifacts
           workflow: rpm.yml
+          run_id: ${{ inputs.rpm_run_id }}
           path: /tmp
 
       - name: Install Copr CLI

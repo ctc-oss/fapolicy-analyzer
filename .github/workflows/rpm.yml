@@ -101,17 +101,24 @@ jobs:
           path: |
             /tmp/archives/*.src.rpm
 
-      - name: Dispatch SRPM Event
-        uses: peter-evans/repository-dispatch@v2
-        with:
-          event-type: srpms-available
-          token: ${{ secrets.WF_PAT }}
+  copr:
+    needs: build
+    steps:
+      uses: .github/workflows/copr.yml
+      with:
+        rpm_run_id: ${{ github.run_id }}
 
+  rebuild:
+    needs: build
+    steps:
       - name: Rebuild SRPM
         run: |
           dnf builddep -y ${{ matrix.props.spec }}
           rpmbuild --rebuild /tmp/archives/fapolicy-analyzer-*.src.rpm
 
+  publish:
+    needs: rebuild
+    steps:
       - name: Release Spec File
         # this only needs to be done once, and it needs done with the root spec file
         if: startsWith(github.ref, 'refs/tags/v') && startsWith(matrix.props.name, 'fc38')
