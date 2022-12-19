@@ -150,7 +150,7 @@ class DeployChangesetsOp(UIOperation):
     def get_icon(self) -> str:
         return "system-software-update"
 
-    def run(self, changesets: Sequence[Changeset], system: System, checkpoint: System):
+    def run(self, changesets: Sequence[Changeset], system: System, checkpoint: System, rules=False):
         """
         Deploys the given changesets.
 
@@ -163,6 +163,10 @@ class DeployChangesetsOp(UIOperation):
         -------
         None
         """
+
+        if rules:
+            pass
+
         dlgDeployList = ConfirmDeploymentDialog(
             changesets, system, checkpoint, parent=self.__window
         )
