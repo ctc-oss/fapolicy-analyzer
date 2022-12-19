@@ -19,13 +19,14 @@ from time import sleep
 import gi
 import pytest
 from callee import Attrs, InstanceOf
+from rx.subject import Subject
+
 from fapolicy_analyzer.redux import Action
 from fapolicy_analyzer.ui.actions import REMOVE_NOTIFICATION
 from fapolicy_analyzer.ui.actions import Notification as Note
 from fapolicy_analyzer.ui.actions import NotificationType
 from fapolicy_analyzer.ui.notification import Notification
 from fapolicy_analyzer.ui.session_manager import sessionManager
-from rx.subject import Subject
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
@@ -67,7 +68,7 @@ def state():
 @pytest.mark.usefixtures("mock_notifications_feature")
 @pytest.mark.parametrize(
     "notifications, notification_type",
-    [([Note(0, "foo", t)], t) for t in list(NotificationType)],
+    [([Note(0, "foo", t, None)], t) for t in list(NotificationType)],
 )
 def test_shows_notification(widget, notification_type):
     assert widget.get_ref().get_child_revealed()
@@ -82,7 +83,7 @@ def test_shows_notification(widget, notification_type):
 @pytest.mark.usefixtures("mock_notifications_feature")
 @pytest.mark.parametrize(
     "notifications",
-    [[Note(0, "foo", t)] for t in list(NotificationType)],
+    [[Note(0, "foo", t, None)] for t in list(NotificationType)],
 )
 def test_closes_notification(widget, mock_dispatch, mock_notifications_feature):
     assert widget.get_ref().get_child_revealed()
@@ -97,7 +98,14 @@ def test_closes_notification(widget, mock_dispatch, mock_notifications_feature):
 @pytest.mark.usefixtures("mock_notifications_feature")
 @pytest.mark.parametrize(
     "notifications",
-    [[Note(0, "foo", t)] for t in [NotificationType.SUCCESS, NotificationType.INFO, NotificationType.WARN]],
+    [
+        [Note(0, "foo", t, None)]
+        for t in [
+            NotificationType.SUCCESS,
+            NotificationType.INFO,
+            NotificationType.WARN,
+        ]
+    ],
 )
 def test_notification_times_out(widget, mock_dispatch, mock_notifications_feature):
     assert widget.get_ref().get_child_revealed()
@@ -120,7 +128,7 @@ def test_notification_times_out(widget, mock_dispatch, mock_notifications_featur
 @pytest.mark.usefixtures("mock_notifications_feature")
 @pytest.mark.parametrize(
     "notifications",
-    [[Note(0, "foo", t)] for t in [NotificationType.ERROR]],
+    [[Note(0, "foo", t, None)] for t in [NotificationType.ERROR]],
 )
 def test_notification_does_not_time_out(widget, mock_dispatch):
     assert widget.get_ref().get_child_revealed()
@@ -129,3 +137,35 @@ def test_notification_does_not_time_out(widget, mock_dispatch):
         InstanceOf(Action) & Attrs(type=REMOVE_NOTIFICATION)
     )
     assert widget.get_ref().get_child_revealed()
+
+
+@pytest.mark.parametrize(
+    "notifications",
+    [[Note(0, "foo", t, None)] for t in [NotificationType.WARN]],
+)
+def test_turns_off_timer(widget, mock_notifications_feature, mock_dispatch):
+    mock_notifications_feature.on_next(
+        [Note(1, "warning", NotificationType.ERROR, None)]
+    )
+    sleep(1.2)
+    mock_dispatch.assert_not_any_call(
+        InstanceOf(Action) & Attrs(type=REMOVE_NOTIFICATION)
+    )
+    assert widget.get_ref().get_child_revealed()
+
+
+@pytest.mark.parametrize(
+    "notifications",
+    [[Note(0, "foo", t, None)] for t in [NotificationType.ERROR]],
+)
+def test_changes_styles(widget, mock_notifications_feature):
+    container = widget.get_object("container")
+    style = container.get_style_context()
+    assert NotificationType.ERROR.value in style.list_classes()
+    assert NotificationType.WARN.value not in style.list_classes()
+
+    mock_notifications_feature.on_next(
+        [Note(1, "warning", NotificationType.WARN, None)]
+    )
+    assert NotificationType.ERROR.value not in style.list_classes()
+    assert NotificationType.WARN.value in style.list_classes()
