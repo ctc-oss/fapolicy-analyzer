@@ -51,6 +51,11 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d/ -f3)
 
+      # allows the git archive command to run within the repo
+      - name: Add workspace as git safe directory
+        run: |
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+
       - name: Ensure spec version matches tag
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
@@ -87,11 +92,6 @@ jobs:
       - name: Install SRPM build dependencies
         run: |
           make -f .copr/Makefile dnf
-
-      # allows the git archive command to run within the repo
-      - name: Add workspace as git safe directory
-        run: |
-          git config --global --add safe.directory $GITHUB_WORKSPACE
 
       - name: Build SRPM
         run: |
