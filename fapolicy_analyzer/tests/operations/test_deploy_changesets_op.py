@@ -20,9 +20,13 @@ import gi
 import pytest
 from callee import InstanceOf
 from callee.attributes import Attrs
+from mocks import mock_System
+from rx.subject import Subject
+
 from fapolicy_analyzer.redux import Action
 from fapolicy_analyzer.ui.actions import (
     ADD_NOTIFICATION,
+    APPLY_CHANGESETS,
     CLEAR_CHANGESETS,
     DEPLOY_SYSTEM,
     RESTORE_SYSTEM_CHECKPOINT,
@@ -36,8 +40,6 @@ from fapolicy_analyzer.ui.strings import (
     DEPLOY_SYSTEM_SUCCESSFUL_MSG,
     REVERT_SYSTEM_SUCCESSFUL_MSG,
 )
-from mocks import mock_System
-from rx.subject import Subject
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
@@ -105,13 +107,13 @@ def test_deploy_w_exception(mock_dispatch, mocker):
     with DeployChangesetsOp(Gtk.Window()) as operation:
         system_features_mock.on_next(
             {
-                "changesets": [],
+                "changesets": MagicMock(),
                 "system": MagicMock(error=None, loading=False),
             }
         )
         operation.run([], None, None)
         system_features_mock.on_next(
-            {"changesets": [], "system": MagicMock(error="foo")}
+            {"changesets": MagicMock(), "system": MagicMock(error="foo")}
         )
     mock_dispatch.assert_any_call(
         InstanceOf(Action)
@@ -155,22 +157,23 @@ def test_on_revert_deployment(mock_dispatch, mocker):
     init_store(mock_System())
     with DeployChangesetsOp(Gtk.Window()) as operation:
         check_point = MagicMock()
+        changeset = MagicMock()
         system_features_mock.on_next(
             {
-                "changesets": [],
+                "changesets": MagicMock(),
                 "system": MagicMock(error=None),
             }
         )
         operation.run([], None, None)
         system_features_mock.on_next(
             {
-                "changesets": [],
+                "changesets": MagicMock(changesets=[changeset]),
                 "system": MagicMock(error=None),
             }
         )
         system_features_mock.on_next(
             {
-                "changesets": [],
+                "changesets": MagicMock(changesets=[changeset]),
                 "system": MagicMock(
                     error=None, system=check_point, checkpoint=check_point
                 ),
@@ -197,6 +200,10 @@ def test_on_revert_deployment(mock_dispatch, mocker):
             ),
         )
     )
+    mock_dispatch.assert_any_call(InstanceOf(Action) & Attrs(type=CLEAR_CHANGESETS))
+    mock_dispatch.assert_any_call(
+        InstanceOf(Action) & Attrs(type=APPLY_CHANGESETS, payload=(changeset,))
+    )
 
 
 @pytest.mark.parametrize("confirm_resp", [Gtk.ResponseType.YES])
@@ -212,14 +219,14 @@ def test_on_neg_revert_deployment(mock_dispatch, mocker):
     with DeployChangesetsOp(Gtk.Window()) as operation:
         system_features_mock.on_next(
             {
-                "changesets": [],
+                "changesets": MagicMock(),
                 "system": MagicMock(error=None),
             }
         )
         operation.run([], None, None)
         system_features_mock.on_next(
             {
-                "changesets": [],
+                "changesets": MagicMock(),
                 "system": MagicMock(error=None),
             }
         )
