@@ -117,13 +117,14 @@ jobs:
     uses: ./.github/workflows/copr.yml
     with:
       rpm_run_id: ${{ github.run_id }}
+      rpm_run_number: ${{ github.run_number }}
 
   rebuild:
-    runs-on: ubuntu-20.04
-    container: ${{ matrix.props.image }}
     needs: [ config, build ]
+    container: ${{ matrix.props.image }}
+    runs-on: ubuntu-20.04
     strategy:
-      matrix: ${{fromJson(needs.config.outputs.matrix)}}
+      matrix: ${{ fromJson(needs.config.outputs.matrix )}}
     steps:
       - uses: actions/checkout@v2
 
@@ -164,7 +165,7 @@ jobs:
     runs-on: ubuntu-20.04
     needs: [ config, rebuild ]
     strategy:
-      matrix: ${{fromJson(needs.config.outputs.matrix)}}
+      matrix: ${{ fromJson(needs.config.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v2
       - name: Release Spec File

@@ -5,6 +5,10 @@ on:
         description: The run-id source of the rpm artifacts.
         required: true
         type: string
+      rpm_run_number:
+        description: The run-number source of the rpm artifacts.
+        required: true
+        type: string
 
 name: Copr
 
@@ -51,8 +55,8 @@ jobs:
         uses: dawidd6/action-download-artifact@v2
         with:
           name: srpm-artifacts
-          workflow: rpm.yml
           run_id: ${{ inputs.rpm_run_id }}
+          run_number: ${{ inputs.rpm_run_number }}
           path: /tmp
 
       - name: Install Copr CLI
