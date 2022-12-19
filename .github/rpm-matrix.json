@@ -1,22 +1,25 @@
 {
   "props": [
     {
-      "name": "fc37",
+      "platform": "fedora",
+      "dist": "fc37",
       "spec": "fapolicy-analyzer.spec",
       "image": "registry.fedoraproject.org/fedora:37",
-      "platform": "fedora"
+      "chroot": "fedora-37-x86_64"
     },
     {
-      "name": "fc38",
+      "platform": "fedora",
+      "dist": "fc38",
       "spec": "fapolicy-analyzer.spec",
       "image": "registry.fedoraproject.org/fedora:38",
-      "platform": "fedora"
+      "chroot": "fedora-rawhide-x86_64"
     },
     {
-      "name": "el8",
+      "platform": "rhel",
+      "dist": "el8",
       "spec": "scripts/srpm/fapolicy-analyzer.spec",
       "image": "rockylinux:8.6",
-      "platform": "rhel"
+      "chroot": "epel-8-x86_64"
     }
   ]
 }

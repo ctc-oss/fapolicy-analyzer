@@ -27,14 +27,14 @@ jobs:
 
   srpm:
     needs: [ config ]
-    name: Build ${{ matrix.props.name }}
+    name: Build ${{ matrix.props.dist }}
     container: ${{ matrix.props.image }}
     runs-on: ubuntu-20.04
     strategy:
       matrix: ${{ fromJson(needs.config.outputs.matrix) }}
     steps:
       - name: Enable EPEL
-        if: startsWith(matrix.props.name, 'el')
+        if: startsWith(matrix.props.dist, 'el')
         run: |
           dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
 
@@ -96,7 +96,7 @@ jobs:
           mv vendor-docs.tar.gz       /tmp/archives
           mv fapolicy-analyzer.tar.gz /tmp/archives
         env:
-          PLATFORM: ${{ matrix.props.name }}
+          PLATFORM: ${{ matrix.props.dist }}
 
       - name: Upload tarballs
         uses: actions/upload-artifact@v2
@@ -114,7 +114,7 @@ jobs:
 
   copr:
     needs: [ config, srpm ]
-    name: Build ${{ matrix.props.name }}
+    name: Build ${{ matrix.props.dist }}
     container: 'rockylinux:8.6'
     runs-on: ubuntu-20.04
     strategy:
@@ -167,17 +167,17 @@ jobs:
       - name: Copr Release Build
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
-          copr-cli build --chroot ${{ matrix.props.chroot }} fapolicy-analyzer /tmp/fapolicy-analyzer-*.${{ matrix.props.name }}.src.rpm
+          copr-cli build --chroot ${{ matrix.props.chroot }} fapolicy-analyzer /tmp/fapolicy-analyzer-*.${{ matrix.props.dist }}.src.rpm
 
       - name: Copr Latest Build
         if: github.ref == 'refs/heads/master'
         run: |
-          copr-cli build --chroot ${{ matrix.props.chroot }} fapolicy-analyzer-latest /tmp/fapolicy-analyzer-*.${{ matrix.props.name }}.src.rpm
+          copr-cli build --chroot ${{ matrix.props.chroot }} fapolicy-analyzer-latest /tmp/fapolicy-analyzer-*.${{ matrix.props.dist }}.src.rpm
 
-  #      - name: Copr PR Build
-  #        if: github.event_name == 'pull_request'
-  #        run: |
-  #          copr-cli build --chroot ${{ matrix.props.chroot }} fapolicy-analyzer-latest:pr:${{ github.event.pull_request.number }} /tmp/fapolicy-analyzer-*.${{ matrix.props.name }}.src.rpm
+      - name: Copr PR Build
+        if: github.event_name == 'pull_request'
+        run: |
+          copr-cli build --chroot ${{ matrix.props.chroot }} fapolicy-analyzer-latest:pr:${{ github.event.pull_request.number }} /tmp/fapolicy-analyzer-*.${{ matrix.props.dist }}.src.rpm
 
   rpm:
     needs: [ config, srpm ]
@@ -195,7 +195,7 @@ jobs:
           path: /tmp/src/
 
       - name: Enable EPEL
-        if: startsWith(matrix.props.name, 'el')
+        if: startsWith(matrix.props.dist, 'el')
         run: |
           dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
 
@@ -206,7 +206,7 @@ jobs:
       - name: Rebuild SRPM
         run: |
           dnf builddep -y ${{ matrix.props.spec }}
-          rpmbuild --rebuild /tmp/src/fapolicy-analyzer-*.${{ matrix.props.name }}.src.rpm
+          rpmbuild --rebuild /tmp/src/fapolicy-analyzer-*.${{ matrix.props.dist }}.src.rpm
 
       - name: Export RPMs
         run: |
@@ -230,7 +230,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: Release Spec File
         # this only needs to be done once, and it needs done with the root spec file
-        if: startsWith(github.ref, 'refs/tags/v') && startsWith(matrix.props.name, 'fc38')
+        if: startsWith(github.ref, 'refs/tags/v') && startsWith(matrix.props.dist, 'fc38')
         run: |
           out=/tmp/archives/fapolicy-analyzer.spec
           base=https://github.com/$GITHUB_REPOSITORY/releases/download/${{ steps.tag_name.outputs.VERSION }}
@@ -241,7 +241,7 @@ jobs:
           sed -z -i -e "s#vendor-rs.tar.gz#$base/vendor-rs.tar.gz#" $out
           sed    -i -e "s#vendor-rs.tar.gz#vendor-rs%{?dist}.tar.gz#" $out
         env:
-          PLATFORM: ${{ matrix.props.name }}
+          PLATFORM: ${{ matrix.props.dist }}
 
       - name: Release artifacts
         uses: softprops/action-gh-release@v1
