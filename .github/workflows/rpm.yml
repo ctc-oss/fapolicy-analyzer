@@ -142,7 +142,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: srpm-artifacts
-          path: /tmp/archives/
+          path: /tmp/
 
       - name: Install Copr CLI
         run: |
