@@ -3,7 +3,6 @@ on:
     inputs:
       rpm_run_id:
         description: The run-id source of the rpm artifacts.
-        type: number
         required: true
 
 name: Copr
