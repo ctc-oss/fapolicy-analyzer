@@ -40,10 +40,18 @@ from fapolicy_analyzer.ui.strings import (
     REVERT_SYSTEM_SUCCESSFUL_MSG,
     SAVE_AS_FILE_LABEL,
 )
+from fapolicy_analyzer.ui.ui_widget import UIBuilderWidget
 from fapolicy_analyzer.util.fapd_dbase import fapd_dbase_snapshot
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
+
+
+class UnsavedRulesDialog(UIBuilderWidget):
+    def __init__(self, parent=None):
+        super().__init__(name="unsaved_rules_dialog")
+        if parent:
+            self.get_ref().set_transient_for(parent)
 
 
 class _FapdArchiveFileChooserDialog(Gtk.FileChooserDialog):
@@ -165,11 +173,10 @@ class DeployChangesetsOp(UIOperation):
         """
 
         if rules:
-            unsaved_rule_dialog = self.get_object("unsavedRulesDialog").get_ref()
-            unsaved_resp = unsaved_rule_dialog.run()
-            if unsaved_resp > 0:
-                unsaved_rule_dialog.hide()
-            else:
+            unsaved_rule_dialog = UnsavedRulesDialog()
+            unsaved_resp = unsaved_rule_dialog.get_ref().run()
+            unsaved_rule_dialog.get_ref().hide()
+            if unsaved_resp < 0:
                 return
 
         dlgDeployList = ConfirmDeploymentDialog(
