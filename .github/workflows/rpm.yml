@@ -103,10 +103,9 @@ jobs:
 
   copr:
     needs: build
-    steps:
-      uses: ./.github/workflows/copr.yml
-      with:
-        rpm_run_id: ${{ github.run_id }}
+    uses: ./.github/workflows/copr.yml
+    with:
+      rpm_run_id: ${{ github.run_id }}
 
   rebuild:
     needs: build
