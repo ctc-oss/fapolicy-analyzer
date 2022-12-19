@@ -122,10 +122,13 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         return not self.__rules_validated
 
     def __rules_dirty(self) -> bool:
-        return (
+        is_dirty = (
             bool(self.__modified_rules_text)
             and self.__modified_rules_text != self.__rules_text
         )
+        text = "*Rules Editor" if is_dirty else "Rules Editor"
+        self.get_object("editorView").set_text(text)
+        return is_dirty
 
     def __update_list_view(self, changeset: RuleChangeset):
         if self.__system:
