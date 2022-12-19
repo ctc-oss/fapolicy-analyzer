@@ -26,7 +26,7 @@ jobs:
           echo "::set-output name=matrix::$(cat .github/rpm-matrix.json | tr -d '\n' | tr -d ' ')"
 
   build:
-    needs: [config]
+    needs: [ config ]
     name: Build ${{ matrix.props.name }}
     container: ${{ matrix.props.image }}
     runs-on: ubuntu-20.04
@@ -113,7 +113,7 @@ jobs:
             /tmp/archives/*.src.rpm
 
   copr:
-    needs: [build]
+    needs: [ build ]
     uses: ./.github/workflows/copr.yml
     with:
       rpm_run_id: ${{ github.run_id }}
@@ -121,11 +121,17 @@ jobs:
   rebuild:
     runs-on: ubuntu-20.04
     container: ${{ matrix.props.image }}
-    needs: [config, build]
+    needs: [ config, build ]
     strategy:
       matrix: ${{fromJson(needs.config.outputs.matrix)}}
     steps:
       - uses: actions/checkout@v2
+
+      - name: Download srpm artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: srpm-artifacts
+          path: /tmp/archives/
 
       - name: Enable EPEL
         if: startsWith(matrix.props.name, 'el')
@@ -156,7 +162,7 @@ jobs:
 
   publish:
     runs-on: ubuntu-20.04
-    needs: [config, rebuild]
+    needs: [ config, rebuild ]
     strategy:
       matrix: ${{fromJson(needs.config.outputs.matrix)}}
     steps:
