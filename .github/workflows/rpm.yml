@@ -25,7 +25,7 @@ jobs:
         run: |
           echo "::set-output name=matrix::$(cat .github/rpm-matrix.json | tr -d '\n' | tr -d ' ')"
 
-  build:
+  srpm:
     needs: [ config ]
     name: Build ${{ matrix.props.name }}
     container: ${{ matrix.props.image }}
@@ -113,14 +113,74 @@ jobs:
             /tmp/archives/*.src.rpm
 
   copr:
-    needs: [ build ]
-    uses: ./.github/workflows/copr.yml
-    with:
-      rpm_run_id: ${{ github.run_id }}
-      rpm_run_number: ${{ github.run_number }}
+    needs: [ config, srpm ]
+    name: Build ${{ matrix.props.name }}
+    container: 'rockylinux:8.6'
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix: ${{ fromJson(needs.config.outputs.matrix) }}
+    steps:
+      - name: Enable EPEL
+        run: |
+          dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
 
-  rebuild:
-    needs: [ config, build ]
+      - name: Dnf
+        run: |
+          dnf install -y git
+
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: Strip ref to tag
+        id: tag_name
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d/ -f3)
+
+      - name: Download srpm artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: srpm-artifacts
+          path: /tmp/archives/
+
+      - name: Install Copr CLI
+        run: |
+          dnf install -y copr-cli
+
+      - name: Install Config
+        run: |
+          mkdir -p $HOME/.config
+          echo "[copr-cli]" > $HOME/.config/copr 
+          echo "username = ctc-oss" >> $HOME/.config/copr
+          echo "login = ${COPR_LOGIN}" >> $HOME/.config/copr
+          echo "token = ${COPR_TOKEN}" >> $HOME/.config/copr
+          echo "copr_url = https://copr.fedorainfracloud.org" >> $HOME/.config/copr
+        env:
+          COPR_LOGIN: ${{ secrets.COPR_API_LOGIN }}
+          COPR_TOKEN: ${{ secrets.COPR_API_TOKEN }}
+
+      - name: debug
+        run: |
+          ls /tmp
+
+      - name: Copr Release Build
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          copr-cli build --chroot ${{ matrix.props.chroot }} fapolicy-analyzer /tmp/fapolicy-analyzer-*.${{ matrix.props.name }}.src.rpm
+
+      - name: Copr Latest Build
+        if: github.ref == 'refs/heads/master'
+        run: |
+          copr-cli build --chroot ${{ matrix.props.chroot }} fapolicy-analyzer-latest /tmp/fapolicy-analyzer-*.${{ matrix.props.name }}.src.rpm
+
+  #      - name: Copr PR Build
+  #        if: github.event_name == 'pull_request'
+  #        run: |
+  #          copr-cli build --chroot ${{ matrix.props.chroot }} fapolicy-analyzer-latest:pr:${{ github.event.pull_request.number }} /tmp/fapolicy-analyzer-*.${{ matrix.props.name }}.src.rpm
+
+  rpm:
+    needs: [ config, srpm ]
     container: ${{ matrix.props.image }}
     runs-on: ubuntu-20.04
     strategy:
@@ -163,7 +223,7 @@ jobs:
 
   publish:
     runs-on: ubuntu-20.04
-    needs: [ config, rebuild ]
+    needs: [ config, srpm, rpm, copr ]
     strategy:
       matrix: ${{ fromJson(needs.config.outputs.matrix) }}
     steps:
