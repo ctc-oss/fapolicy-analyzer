@@ -175,7 +175,7 @@ class DeployChangesetsOp(UIOperation):
         if rules:
             unsaved_rule_dialog = UnsavedRulesDialog()
             unsaved_resp = unsaved_rule_dialog.get_ref().run()
-            unsaved_rule_dialog.get_ref().hide()
+            unsaved_rule_dialog.get_ref().destroy()
             if unsaved_resp < 0:
                 return
 
