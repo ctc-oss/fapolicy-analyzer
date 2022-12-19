@@ -174,10 +174,11 @@ jobs:
         run: |
           copr-cli build --chroot ${{ matrix.props.chroot }} fapolicy-analyzer-latest /tmp/fapolicy-analyzer-*.${{ matrix.props.dist }}.src.rpm
 
-      - name: Copr PR Build
-        if: github.event_name == 'pull_request'
-        run: |
-          copr-cli build --chroot ${{ matrix.props.chroot }} fapolicy-analyzer-latest:pr:${{ github.event.pull_request.number }} /tmp/fapolicy-analyzer-*.${{ matrix.props.dist }}.src.rpm
+#      todo;; cant build PRs due to secrets not populating forks in the expected way
+#      - name: Copr PR Build
+#        if: github.event_name == 'pull_request'
+#        run: |
+#          copr-cli build --chroot ${{ matrix.props.chroot }} fapolicy-analyzer-latest:pr:${{ github.event.pull_request.number }} /tmp/fapolicy-analyzer-*.${{ matrix.props.dist }}.src.rpm
 
   rpm:
     needs: [ config, srpm ]
@@ -225,29 +226,22 @@ jobs:
   publish:
     runs-on: ubuntu-20.04
     name: Publish ${{ matrix.props.dist }}
-    needs: [ config, srpm, rpm, copr ]
-    strategy:
-      matrix: ${{ fromJson(needs.config.outputs.matrix) }}
+    needs: [ srpm, rpm, copr ]
+    if: startsWith(github.ref, 'refs/tags/v')
     steps:
       - uses: actions/checkout@v2
       - name: Release Spec File
-        # this only needs to be done once, and it needs done with the root spec file
-        if: startsWith(github.ref, 'refs/tags/v') && startsWith(matrix.props.dist, 'fc38')
         run: |
           out=/tmp/archives/fapolicy-analyzer.spec
           base=https://github.com/$GITHUB_REPOSITORY/releases/download/${{ steps.tag_name.outputs.VERSION }}
-          
-          cp ${{ matrix.props.spec }} $out
+          cp fapolicy-analyzer.spec $out
           sed -z -i -e "s#fapolicy-analyzer.tar.gz#$base/fapolicy-analyzer.tar.gz#" $out
           sed -z -i -e "s#vendor-docs.tar.gz#$base/vendor-docs.tar.gz#" $out
           sed -z -i -e "s#vendor-rs.tar.gz#$base/vendor-rs.tar.gz#" $out
           sed    -i -e "s#vendor-rs.tar.gz#vendor-rs%{?dist}.tar.gz#" $out
-        env:
-          PLATFORM: ${{ matrix.props.dist }}
 
       - name: Release artifacts
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/v')
         with:
           tag_name: ${{ steps.tag_name.outputs.VERSION }}
           prerelease: ${{ startsWith(github.ref, 'refs/tags/v0') || contains(github.ref, 'rc') }}
