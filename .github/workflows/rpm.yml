@@ -192,7 +192,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: srpm-artifacts
-          path: /tmp/archives/
+          path: /tmp/src/
 
       - name: Enable EPEL
         if: startsWith(matrix.props.name, 'el')
@@ -206,7 +206,7 @@ jobs:
       - name: Rebuild SRPM
         run: |
           dnf builddep -y ${{ matrix.props.spec }}
-          rpmbuild --rebuild /tmp/archives/fapolicy-analyzer-*.src.rpm
+          rpmbuild --rebuild /tmp/src/fapolicy-analyzer-*.${{ matrix.props.name }}.src.rpm
 
       - name: Export RPMs
         run: |
