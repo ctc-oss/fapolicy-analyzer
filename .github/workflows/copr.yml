@@ -4,6 +4,7 @@ on:
       rpm_run_id:
         description: The run-id source of the rpm artifacts.
         required: true
+        type: string
 
 name: Copr
 
