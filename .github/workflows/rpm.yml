@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v2
       - id: set-matrix
         run: |
-          echo "::set-output name=matrix::$(cat .github/rpm-matrix.json)"
+          echo "::set-output name=matrix::$(cat .github/rpm-matrix.json | tr -d '\n' | tr -d ' ')"
 
   build:
     needs: [config]
@@ -31,7 +31,7 @@ jobs:
     container: ${{ matrix.props.image }}
     runs-on: ubuntu-20.04
     strategy:
-      matrix: ${{fromJson(needs.config.outputs.matrix)}}
+      matrix: ${{ fromJson(needs.config.outputs.matrix) }}
     steps:
       - name: Enable EPEL
         if: startsWith(matrix.props.name, 'el')
