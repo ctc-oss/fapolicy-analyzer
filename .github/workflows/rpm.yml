@@ -151,6 +151,8 @@ jobs:
             platform: 'rhel',
           }
     steps:
+      - uses: actions/checkout@v2
+
       - name: Install RPM build dependencies
         run: |
           dnf install -y make rpm rpmdevtools dnf-plugins-core
