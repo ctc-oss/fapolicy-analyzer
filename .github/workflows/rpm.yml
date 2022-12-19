@@ -153,6 +153,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Enable EPEL
+        if: startsWith(matrix.props.name, 'el')
+        run: |
+          dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+
       - name: Install RPM build dependencies
         run: |
           dnf install -y make rpm rpmdevtools dnf-plugins-core
