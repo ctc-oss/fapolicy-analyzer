@@ -27,7 +27,7 @@ jobs:
 
   srpm:
     needs: [ config ]
-    name: Build ${{ matrix.props.dist }}
+    name: SRPM Build ${{ matrix.props.dist }}
     container: ${{ matrix.props.image }}
     runs-on: ubuntu-20.04
     strategy:
@@ -114,7 +114,7 @@ jobs:
 
   copr:
     needs: [ config, srpm ]
-    name: Build ${{ matrix.props.dist }}
+    name: Copr Build ${{ matrix.props.dist }}
     container: 'rockylinux:8.6'
     runs-on: ubuntu-20.04
     strategy:
@@ -181,6 +181,7 @@ jobs:
 
   rpm:
     needs: [ config, srpm ]
+    name: RPM Build ${{ matrix.props.dist }}
     container: ${{ matrix.props.image }}
     runs-on: ubuntu-20.04
     strategy:
@@ -220,9 +221,9 @@ jobs:
           path: |
             /tmp/archives/*.x86_64.rpm
 
-
   publish:
     runs-on: ubuntu-20.04
+    name: Publish ${{ matrix.props.dist }}
     needs: [ config, srpm, rpm, copr ]
     strategy:
       matrix: ${{ fromJson(needs.config.outputs.matrix) }}
