@@ -9,25 +9,24 @@ on:
 name: Copr
 
 jobs:
-  build:
-    name: Build ${{ matrix.props.name }}
-    strategy:
-      matrix:
-        props:
-          - {
-            name: 'fc37',
-            chroot: 'fedora-37-x86_64',
-          }
-          - {
-            name: 'fc38',
-            chroot: 'fedora-rawhide-x86_64',
-          }
-          - {
-            name: 'el8',
-            chroot: 'epel-8-x86_64',
-          }
+  config:
+    name: Load config matrix
     runs-on: ubuntu-20.04
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v2
+      - id: set-matrix
+        run: |
+          echo "::set-output name=matrix::$(cat .github/rpm-matrix.json | tr -d '\n' | tr -d ' ')"
+
+  build:
+    needs: [ config ]
+    name: Build ${{ matrix.props.name }}
     container: 'rockylinux:8.6'
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix: ${{ fromJson(needs.config.outputs.matrix) }}
     steps:
       - name: Enable EPEL
         run: |
