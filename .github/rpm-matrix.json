@@ -1,0 +1,22 @@
+{
+  "props": [
+    {
+      "name": "fc37",
+      "spec": "fapolicy-analyzer.spec",
+      "image": "registry.fedoraproject.org/fedora:37",
+      "platform": "fedora"
+    },
+    {
+      "name": "fc38",
+      "spec": "fapolicy-analyzer.spec",
+      "image": "registry.fedoraproject.org/fedora:38",
+      "platform": "fedora"
+    },
+    {
+      "name": "el8",
+      "spec": "scripts/srpm/fapolicy-analyzer.spec",
+      "image": "rockylinux:8.6",
+      "platform": "rhel"
+    }
+  ]
+}

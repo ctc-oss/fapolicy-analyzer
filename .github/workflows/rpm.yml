@@ -14,31 +14,24 @@ on:
 name: RPM
 
 jobs:
+  config:
+    name: Load config matrix
+    runs-on: ubuntu-20.04
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      steps:
+        - uses: actions/checkout@v2
+        - id: set-matrix
+          run: |
+            echo "::set-output name=matrix::$(cat .github/rpm-matrix.json)"
+
   build:
+    needs: [config]
     name: Build ${{ matrix.props.name }}
     container: ${{ matrix.props.image }}
     runs-on: ubuntu-20.04
     strategy:
-      matrix:
-        props:
-          - {
-            name: 'fc37',
-            spec: 'fapolicy-analyzer.spec',
-            image: 'registry.fedoraproject.org/fedora:37',
-            platform: 'fedora',
-          }
-          - {
-            name: 'fc38',
-            spec: 'fapolicy-analyzer.spec',
-            image: 'registry.fedoraproject.org/fedora:38',
-            platform: 'fedora',
-          }
-          - {
-            name: 'el8',
-            spec: 'scripts/srpm/fapolicy-analyzer.spec',
-            image: 'rockylinux:8.6',
-            platform: 'rhel',
-          }
+      matrix: ${{fromJson(needs.config.outputs.matrix)}}
     steps:
       - name: Enable EPEL
         if: startsWith(matrix.props.name, 'el')
@@ -120,7 +113,7 @@ jobs:
             /tmp/archives/*.src.rpm
 
   copr:
-    needs: build
+    needs: [build]
     uses: ./.github/workflows/copr.yml
     with:
       rpm_run_id: ${{ github.run_id }}
@@ -128,28 +121,9 @@ jobs:
   rebuild:
     runs-on: ubuntu-20.04
     container: ${{ matrix.props.image }}
-    needs: build
+    needs: [config, build]
     strategy:
-      matrix:
-        props:
-          - {
-            name: 'fc37',
-            spec: 'fapolicy-analyzer.spec',
-            image: 'registry.fedoraproject.org/fedora:37',
-            platform: 'fedora',
-          }
-          - {
-            name: 'fc38',
-            spec: 'fapolicy-analyzer.spec',
-            image: 'registry.fedoraproject.org/fedora:38',
-            platform: 'fedora',
-          }
-          - {
-            name: 'el8',
-            spec: 'scripts/srpm/fapolicy-analyzer.spec',
-            image: 'rockylinux:8.6',
-            platform: 'rhel',
-          }
+      matrix: ${{fromJson(needs.config.outputs.matrix)}}
     steps:
       - uses: actions/checkout@v2
 
@@ -182,29 +156,11 @@ jobs:
 
   publish:
     runs-on: ubuntu-20.04
-    needs: rebuild
+    needs: [config, rebuild]
     strategy:
-      matrix:
-        props:
-          - {
-            name: 'fc37',
-            spec: 'fapolicy-analyzer.spec',
-            image: 'registry.fedoraproject.org/fedora:37',
-            platform: 'fedora',
-          }
-          - {
-            name: 'fc38',
-            spec: 'fapolicy-analyzer.spec',
-            image: 'registry.fedoraproject.org/fedora:38',
-            platform: 'fedora',
-          }
-          - {
-            name: 'el8',
-            spec: 'scripts/srpm/fapolicy-analyzer.spec',
-            image: 'rockylinux:8.6',
-            platform: 'rhel',
-          }
+      matrix: ${{fromJson(needs.config.outputs.matrix)}}
     steps:
+      - uses: actions/checkout@v2
       - name: Release Spec File
         # this only needs to be done once, and it needs done with the root spec file
         if: startsWith(github.ref, 'refs/tags/v') && startsWith(matrix.props.name, 'fc38')
