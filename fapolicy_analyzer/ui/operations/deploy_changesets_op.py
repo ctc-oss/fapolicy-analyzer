@@ -165,7 +165,12 @@ class DeployChangesetsOp(UIOperation):
         """
 
         if rules:
-            pass
+            unsaved_rule_dialog = self.get_object("unsavedRulesDialog").get_ref()
+            unsaved_resp = unsaved_rule_dialog.run()
+            if unsaved_resp > 0:
+                unsaved_rule_dialog.hide()
+            else:
+                return
 
         dlgDeployList = ConfirmDeploymentDialog(
             changesets, system, checkpoint, parent=self.__window
