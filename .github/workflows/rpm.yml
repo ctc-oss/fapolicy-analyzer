@@ -79,11 +79,13 @@ jobs:
           
           echo "The spec version $spec_version is correct based on git tag $tag"
 
-      - name: Install dependencies
+      - name: Install RPM build dependencies
         run: |
           dnf install -y make rpm rpmdevtools dnf-plugins-core
+
+      - name: Install SRPM build dependencies
+        run: |
           make -f .copr/Makefile dnf
-          cargo install cargo-vendor-filterer
 
       # allows the git archive command to run within the repo
       - name: Add workspace as git safe directory
@@ -93,6 +95,22 @@ jobs:
       - name: Build SRPM
         run: |
           make -f .copr/Makefile srpm outdir=/tmp/archives spec=${{ matrix.props.spec }} OS_ID=${{ matrix.props.platform }}
+
+      - name: Export tarballs
+        run: |
+          mkdir -p /tmp/archives
+          mv vendor-rs.tar.gz         /tmp/archives/vendor-rs.$PLATFORM.tar.gz
+          mv vendor-docs.tar.gz       /tmp/archives
+          mv fapolicy-analyzer.tar.gz /tmp/archives
+        env:
+          PLATFORM: ${{ matrix.props.name }}
+
+      - name: Upload tarballs
+        uses: actions/upload-artifact@v2
+        with:
+          name: tarball-artifacts
+          path: |
+            /tmp/archives/*.tar.gz
 
       - name: Upload SRPMs
         uses: actions/upload-artifact@v2
@@ -111,16 +129,74 @@ jobs:
     runs-on: ubuntu-20.04
     container: ${{ matrix.props.image }}
     needs: build
+    strategy:
+      matrix:
+        props:
+          - {
+            name: 'fc37',
+            spec: 'fapolicy-analyzer.spec',
+            image: 'registry.fedoraproject.org/fedora:37',
+            platform: 'fedora',
+          }
+          - {
+            name: 'fc38',
+            spec: 'fapolicy-analyzer.spec',
+            image: 'registry.fedoraproject.org/fedora:38',
+            platform: 'fedora',
+          }
+          - {
+            name: 'el8',
+            spec: 'scripts/srpm/fapolicy-analyzer.spec',
+            image: 'rockylinux:8.6',
+            platform: 'rhel',
+          }
     steps:
+      - name: Install RPM build dependencies
+        run: |
+          dnf install -y make rpm rpmdevtools dnf-plugins-core
+
       - name: Rebuild SRPM
         run: |
           dnf builddep -y ${{ matrix.props.spec }}
           rpmbuild --rebuild /tmp/archives/fapolicy-analyzer-*.src.rpm
 
+      - name: Export RPMs
+        run: |
+          ls | grep -v debug | xargs mv -t /tmp/archives
+        working-directory: /github/home/rpmbuild/RPMS/x86_64
+
+      - name: Upload RPMs
+        uses: actions/upload-artifact@v2
+        with:
+          name: rpm-artifacts
+          path: |
+            /tmp/archives/*.x86_64.rpm
+
+
   publish:
     runs-on: ubuntu-20.04
-    container: ${{ matrix.props.image }}
     needs: rebuild
+    strategy:
+      matrix:
+        props:
+          - {
+            name: 'fc37',
+            spec: 'fapolicy-analyzer.spec',
+            image: 'registry.fedoraproject.org/fedora:37',
+            platform: 'fedora',
+          }
+          - {
+            name: 'fc38',
+            spec: 'fapolicy-analyzer.spec',
+            image: 'registry.fedoraproject.org/fedora:38',
+            platform: 'fedora',
+          }
+          - {
+            name: 'el8',
+            spec: 'scripts/srpm/fapolicy-analyzer.spec',
+            image: 'rockylinux:8.6',
+            platform: 'rhel',
+          }
     steps:
       - name: Release Spec File
         # this only needs to be done once, and it needs done with the root spec file
@@ -136,34 +212,6 @@ jobs:
           sed    -i -e "s#vendor-rs.tar.gz#vendor-rs%{?dist}.tar.gz#" $out
         env:
           PLATFORM: ${{ matrix.props.name }}
-
-      - name: Export RPMs
-        run: |
-          ls | grep -v debug | xargs mv -t /tmp/archives
-        working-directory: /github/home/rpmbuild/RPMS/x86_64
-
-      - name: Export tarballs
-        run: |
-          mkdir -p /tmp/archives
-          mv vendor-rs.tar.gz         /tmp/archives/vendor-rs.$PLATFORM.tar.gz
-          mv vendor-docs.tar.gz       /tmp/archives
-          mv fapolicy-analyzer.tar.gz /tmp/archives
-        env:
-          PLATFORM: ${{ matrix.props.name }}
-
-      - name: Upload RPMs
-        uses: actions/upload-artifact@v2
-        with:
-          name: rpm-artifacts
-          path: |
-            /tmp/archives/*.x86_64.rpm
-
-      - name: Upload tarballs
-        uses: actions/upload-artifact@v2
-        with:
-          name: tarball-artifacts
-          path: |
-            /tmp/archives/*.tar.gz
 
       - name: Release artifacts
         uses: softprops/action-gh-release@v1
