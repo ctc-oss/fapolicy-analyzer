@@ -16,6 +16,8 @@ name: RPM
 jobs:
   build:
     name: Build ${{ matrix.props.name }}
+    container: ${{ matrix.props.image }}
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         props:
@@ -37,8 +39,6 @@ jobs:
             image: 'rockylinux:8.6',
             platform: 'rhel',
           }
-    runs-on: ubuntu-20.04
-    container: ${{ matrix.props.image }}
     steps:
       - name: Enable EPEL
         if: startsWith(matrix.props.name, 'el')
@@ -108,6 +108,8 @@ jobs:
       rpm_run_id: ${{ github.run_id }}
 
   rebuild:
+    runs-on: ubuntu-20.04
+    container: ${{ matrix.props.image }}
     needs: build
     steps:
       - name: Rebuild SRPM
@@ -116,6 +118,8 @@ jobs:
           rpmbuild --rebuild /tmp/archives/fapolicy-analyzer-*.src.rpm
 
   publish:
+    runs-on: ubuntu-20.04
+    container: ${{ matrix.props.image }}
     needs: rebuild
     steps:
       - name: Release Spec File
