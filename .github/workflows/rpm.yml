@@ -19,11 +19,11 @@ jobs:
     runs-on: ubuntu-20.04
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
-      steps:
-        - uses: actions/checkout@v2
-        - id: set-matrix
-          run: |
-            echo "::set-output name=matrix::$(cat .github/rpm-matrix.json)"
+    steps:
+      - uses: actions/checkout@v2
+      - id: set-matrix
+        run: |
+          echo "::set-output name=matrix::$(cat .github/rpm-matrix.json)"
 
   build:
     needs: [config]
