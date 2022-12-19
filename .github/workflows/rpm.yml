@@ -181,7 +181,7 @@ jobs:
 
   rpm:
     needs: [ config, srpm ]
-    name: RPM Build ${{ matrix.props.dist }}
+    name: Rebuild ${{ matrix.props.dist }}
     container: ${{ matrix.props.image }}
     runs-on: ubuntu-20.04
     strategy:
@@ -211,6 +211,7 @@ jobs:
 
       - name: Export RPMs
         run: |
+          mkdir -p /tmp/archives
           ls | grep -v debug | xargs mv -t /tmp/archives
         working-directory: /github/home/rpmbuild/RPMS/x86_64
 
