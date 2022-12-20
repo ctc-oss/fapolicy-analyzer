@@ -1,0 +1,18 @@
+on:
+  push:
+    branches:
+      - 'master'
+
+name: Coverity Scan
+
+jobs:
+  coverity:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: vapier/coverity-scan-action@v1
+        with:
+          command: --no-command --fs-capture-search fapolicy_analyzer
+          project: ctc-oss/fapolicy-analyzer
+          email: ${{ secrets.COVERITY_SCAN_EMAIL }}
+          token: ${{ secrets.COVERITY_SCAN_TOKEN }}
