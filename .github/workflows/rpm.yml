@@ -229,6 +229,7 @@ jobs:
           prerelease: ${{ startsWith(github.ref, 'refs/tags/v0') || contains(github.ref, 'rc') }}
           draft: true
           files: |
-            /tmp/archives/*.rpm
             /tmp/archives/*.spec
-            /tmp/archives/*.tar.gz
+            /tmp/archives/rpm-artifacts/*.rpm
+            /tmp/archives/srpm-artifacts/*.src.rpm
+            /tmp/archives/tarball-artifacts/*.tar.gz
