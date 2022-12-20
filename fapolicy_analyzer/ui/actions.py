@@ -92,15 +92,20 @@ class NotificationType(Enum):
 class Notification(NamedTuple):
     id: int
     text: str
-    type: Optional[NotificationType]
+    type: NotificationType
+    category: Optional[str]
 
 
-def add_notification(text: str, type: NotificationType) -> Action:
-    return _create_action(ADD_NOTIFICATION, (Notification(next(_ids), text, type)))
+def add_notification(
+    text: str, type: NotificationType = NotificationType.INFO, category: str = None
+) -> Action:
+    return _create_action(
+        ADD_NOTIFICATION, (Notification(next(_ids), text, type, category))
+    )
 
 
 def remove_notification(id: int) -> Action:
-    return _create_action(REMOVE_NOTIFICATION, (Notification(id, "", None)))
+    return _create_action(REMOVE_NOTIFICATION, (Notification(id, "", None, None)))
 
 
 def add_changesets(*changesets: Changeset) -> Action:
