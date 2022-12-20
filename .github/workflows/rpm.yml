@@ -130,33 +130,16 @@ jobs:
     strategy:
       matrix: ${{ fromJson(needs.config.outputs.matrix) }}
     steps:
-      - name: Enable EPEL
+      - name: Install Copr CLI
         run: |
           dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
-
-      - name: Dnf
-        run: |
-          dnf install -y git
-
-      - uses: actions/checkout@v2
-        with:
-          ref: ${{ github.ref }}
-          fetch-depth: 0
-
-      - name: Strip ref to tag
-        id: tag_name
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d/ -f3)
+          dnf install -y copr-cli
 
       - name: Download srpm artifacts
         uses: actions/download-artifact@v3
         with:
           name: srpm-artifacts
           path: /tmp/
-
-      - name: Install Copr CLI
-        run: |
-          dnf install -y copr-cli
 
       - name: Install Config
         run: |
@@ -170,25 +153,9 @@ jobs:
           COPR_LOGIN: ${{ secrets.COPR_API_LOGIN }}
           COPR_TOKEN: ${{ secrets.COPR_API_TOKEN }}
 
-      - name: debug
-        run: |
-          ls /tmp
-
-      - name: Copr Release Build
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: build
         run: |
           copr-cli build --chroot ${{ matrix.props.chroot }} fapolicy-analyzer /tmp/fapolicy-analyzer-*.${{ matrix.props.dist }}.src.rpm
-
-      - name: Copr Latest Build
-        if: endsWith(github.ref, '/master')
-        run: |
-          copr-cli build --chroot ${{ matrix.props.chroot }} fapolicy-analyzer-latest /tmp/fapolicy-analyzer-*.${{ matrix.props.dist }}.src.rpm
-
-#      todo;; cant build PRs due to secrets not populating forks in the expected way
-#      - name: Copr PR Build
-#        if: github.event_name == 'pull_request'
-#        run: |
-#          copr-cli build --chroot ${{ matrix.props.chroot }} fapolicy-analyzer-latest:pr:${{ github.event.pull_request.number }} /tmp/fapolicy-analyzer-*.${{ matrix.props.dist }}.src.rpm
 
   rpm:
     needs: [ config, srpm ]
