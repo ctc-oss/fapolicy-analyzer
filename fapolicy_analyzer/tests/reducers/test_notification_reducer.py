@@ -13,8 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import context  # noqa: F401
+import context  # noqa: F401 # isort: skip
+
 from unittest.mock import MagicMock
+
 from fapolicy_analyzer.ui.actions import Notification, NotificationType
 from fapolicy_analyzer.ui.reducers.notification_reducer import (
     handle_add_notification,
@@ -29,10 +31,11 @@ def test_handle_add_notification():
 
 def test_handle_remove_notification():
     state = [
-        Notification(id=99, text=None, type=NotificationType.ERROR),
-        Notification(id=100, text=None, type=NotificationType.ERROR),
+        Notification(id=99, text=None, type=NotificationType.ERROR, category=None),
+        Notification(id=100, text=None, type=NotificationType.ERROR, category=None),
     ]
     result = handle_remove_notification(
-        state, MagicMock(payload=Notification(id=99, text=None, type=None))
+        state,
+        MagicMock(payload=Notification(id=99, text=None, type=None, category=None)),
     )
     assert result == state[1:]

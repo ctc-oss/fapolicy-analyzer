@@ -18,10 +18,12 @@ from typing import Any, Optional, Sequence, Tuple
 
 from fapolicy_analyzer import Rule, System
 from fapolicy_analyzer.ui.actions import (
+    Notification,
     NotificationType,
     add_notification,
     apply_changesets,
     modify_rules_text,
+    remove_notification,
     request_rules,
     request_rules_text,
 )
@@ -29,7 +31,11 @@ from fapolicy_analyzer.ui.changeset_wrapper import Changeset, RuleChangeset
 from fapolicy_analyzer.ui.rules.rules_list_view import RulesListView
 from fapolicy_analyzer.ui.rules.rules_status_info import RulesStatusInfo
 from fapolicy_analyzer.ui.rules.rules_text_view import RulesTextView
-from fapolicy_analyzer.ui.store import dispatch, get_system_feature
+from fapolicy_analyzer.ui.store import (
+    dispatch,
+    get_notifications_feature,
+    get_system_feature,
+)
 from fapolicy_analyzer.ui.strings import (
     APPLY_CHANGESETS_ERROR_MESSAGE,
     RULES_CHANGESET_PARSE_ERROR,
@@ -41,12 +47,19 @@ from fapolicy_analyzer.ui.strings import (
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 
+VALIDATION_NOTE_CATEGORY = "invalid rules"
+
 
 class RulesAdminPage(UIConnectedWidget, UIPage):
     def __init__(self):
         UIConnectedWidget.__init__(
             self, get_system_feature(), on_next=self.on_next_system
         )
+
+        self.__notification_subscription = get_notifications_feature().subscribe(
+            on_next=self.on_next_notifications,
+        )
+
         actions = {
             "rules": [
                 UIAction(
@@ -54,7 +67,7 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
                     tooltip="Validate Rules",
                     icon="emblem-default",
                     signals={"clicked": self.on_validate_clicked},
-                    sensitivity_func=self.__rules_dirty,
+                    sensitivity_func=self.__rules_unvalidated,
                 ),
                 UIAction(
                     name="Save",
@@ -72,6 +85,7 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         self.__rules: Sequence[Rule] = []
         self.__modified_rules_text: str = ""
         self.__rules_text: str = ""
+        self.__rules_validated: bool = True
         self.__error_rules: Optional[str] = None
         self.__error_text: Optional[str] = None
         self.__loading_rules: bool = False
@@ -79,6 +93,7 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         self.__changesets: Sequence[Changeset] = []
         self.__saving: bool = False
         self.__system: System = None
+        self.__validation_notifications: Sequence[Notification] = []
 
         self.__load_rules()
 
@@ -103,6 +118,9 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         self.__loading_text = True
         dispatch(request_rules_text())
 
+    def __rules_unvalidated(self) -> bool:
+        return not self.__rules_validated
+
     def __rules_dirty(self) -> bool:
         return (
             bool(self.__modified_rules_text)
@@ -116,6 +134,10 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
                 self._list_view.render_rules(tmp_system.rules())
             except Exception:
                 logging.warning("Failed to parse validating changeset")
+
+    def __clear_validation_notifications(self):
+        for note in self.__validation_notifications:
+            dispatch(remove_notification(note.id))
 
     def __build_and_validate_changeset(self) -> Tuple[RuleChangeset, bool]:
         changeset = RuleChangeset()
@@ -133,6 +155,8 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
             )
             return changeset, False
 
+        self.__rules_validated = True
+        self.__clear_validation_notifications()
         rules = changeset.rules()
 
         if not all([r.is_valid for r in rules]):
@@ -140,6 +164,7 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
                 add_notification(
                     RULES_VALIDATION_ERROR,
                     NotificationType.ERROR,
+                    category=VALIDATION_NOTE_CATEGORY,
                 )
             )
             valid = False
@@ -149,9 +174,15 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
                 add_notification(
                     RULES_VALIDATION_WARNING,
                     NotificationType.WARN,
+                    category=VALIDATION_NOTE_CATEGORY,
                 )
             )
         return changeset, valid
+
+    def _dispose(self):
+        UIConnectedWidget._dispose(self)
+        if self.__notification_subscription:
+            self.__notification_subscription.dispose()
 
     def on_save_clicked(self, *args):
         changeset, valid = self.__build_and_validate_changeset()
@@ -167,8 +198,12 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         self.__update_list_view(changeset)
         self.__status_info.render_rule_status(changeset.rules())
 
+        # dispatch to force toolbar refresh
+        dispatch(modify_rules_text(self.__rules_validated))
+
     def on_text_view_rules_changed(self, rules: str):
         self.__modified_rules_text = rules
+        self.__rules_validated = False
         dispatch(modify_rules_text(rules))
 
     def highlight_row_from_data(self, data: Any):
@@ -227,3 +262,9 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
             self.__loading_text = False
             self.__rules_text = text_state.rules_text
             self._text_view.render_rules(self.__rules_text)
+            self.__rules_validated = True
+
+    def on_next_notifications(self, notifications: Sequence[Notification]):
+        self.__validation_notifications = [
+            n for n in notifications if n.category == VALIDATION_NOTE_CATEGORY
+        ]
