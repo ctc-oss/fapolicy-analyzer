@@ -376,10 +376,14 @@ class FaProfSession:
         if not dictReturn:
             logging.debug("FaProfSession::validateArgs() --> pwd verified")
 
-        # Convert comma delimited string of "EnvVar=Value" substrings to dict
+        # Validate, convert CSV  env string of "K=V" substrings to dict
         exec_env = FaProfSession._comma_delimited_kv_string_to_dict(
             dictProfTgt.get("envText", "")
         )
+
+        if not exec_env:
+            dictReturn[ProfSessionArgsStatus.UNKNOWN] = s.PROF_ARG_UNKNOWN
+        
 
         # exec empty?
         if not exec_path:
@@ -435,6 +439,11 @@ class FaProfSession:
         """Generates dictionary from comma separated string of k=v pairs"""
         if not string_in:
             return None
+
+        # Validate string is in K=V format
+        regexKvFormat = re.compile("((.+)=(.+))*")
+        mKvFormat = regexKvFormat.match(string_in)
+        
         return {
             k: v.strip('"')
             for k, v in dict(x.strip().split("=") for x in string_in.split(",")).items()
