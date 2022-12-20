@@ -210,11 +210,10 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
-          path: /tmp/src/
+          path: /tmp/archives/
 
       - name: Release Spec File
         run: |
-          mkdir -p /tmp/archives
           out=/tmp/archives/fapolicy-analyzer.spec
           base=https://github.com/$GITHUB_REPOSITORY/releases/download/${{ steps.tag_name.outputs.VERSION }}
           cp fapolicy-analyzer.spec $out
