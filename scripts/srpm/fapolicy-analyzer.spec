@@ -158,7 +158,7 @@ Requires:      python3-importlib-resources
 %endif
 
 %global module          fapolicy_analyzer
-%global module_version  %{lua:v = string.gsub(rpm.expand("%{?version}"), "~", ""); print(v)}
+%global module_version  %{lua:v = string.gsub(rpm.expand("%{?version}"), "~", "."); print(v)}
 %global venv_dir        %{_builddir}/vendor-py
 %global venv_py3        %{venv_dir}/bin/python3
 %global venv_lib        %{venv_dir}/lib/python3.6/site-packages
