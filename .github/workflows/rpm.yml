@@ -78,11 +78,11 @@ jobs:
           echo "The spec version $spec_version is correct based on git tag $tag"
 
       - name: Patch spec with prerelease version
-        if: endsWith(github.ref, '/master')
+        #if: endsWith(github.ref, '/master')
         run: |
           spec_version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
           commit_number=$(git rev-list HEAD --count)
-          patched_version="$spec_version~pre${commit_number}"
+          patched_version="$spec_version~dev${commit_number}"
           sed -i "s#Version:\s*${spec_version}#Version: ${patched_version}#" ${{ matrix.props.spec }}
           grep Version ${{ matrix.props.spec }}
 
