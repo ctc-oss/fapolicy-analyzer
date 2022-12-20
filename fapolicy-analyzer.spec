@@ -130,7 +130,7 @@ Requires:      webkit2gtk3
 Requires:      mesa-dri-drivers
 
 %global module          fapolicy_analyzer
-%global module_version  %{lua:v = string.gsub(rpm.expand("%{?version}"), "~", ""); print(v)}
+%global module_version  %{lua:v = string.gsub(rpm.expand("%{?version}"), "~", "."); print(v)}
 
 %description
 Tools to assist with the configuration and management of fapolicyd.
