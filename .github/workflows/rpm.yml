@@ -206,6 +206,12 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: /tmp/src/
+
       - name: Release Spec File
         run: |
           mkdir -p /tmp/archives
