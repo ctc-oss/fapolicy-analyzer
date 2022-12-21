@@ -21,6 +21,7 @@ BuildRequires: python3dist(babel)
 BuildRequires: dbus-devel
 BuildRequires: gettext
 BuildRequires: itstool
+BuildRequires: desktop-file-utils
 
 BuildRequires: rust-packaging
 BuildRequires: python3dist(setuptools-rust)
@@ -173,6 +174,7 @@ echo %{module_version} > VERSION
 
 %install
 
+%find_lang %{name} --with-man
 %{py3_install_wheel %{module}-%{module_version}*%{_arch}.whl}
 install bin/%{name} %{buildroot}%{_sbindir}/%{name} -D
 mkdir -p %{buildroot}/%{_datadir}/help/{C,es}/%{name}/media
@@ -180,7 +182,13 @@ install -p -D build/help/C/%{name}/*.html   %{buildroot}/%{_datadir}/help/C/%{na
 install -p -D build/help/C/%{name}/media/*  %{buildroot}/%{_datadir}/help/C/%{name}/media/
 install -p -D build/help/es/%{name}/*.html  %{buildroot}/%{_datadir}/help/es/%{name}/
 install -p -D build/help/es/%{name}/media/* %{buildroot}/%{_datadir}/help/es/%{name}/media/
-desktop-file-install data/fapolicy-analyzer.desktop
+desktop-file-install --add-category="Security"                  \
+                     --dir=%{buildroot}%{_datadir}/applications \
+                     --delete-original                          \
+                     data/fapolicy-analyzer.desktop
+
+%post
+update-desktop-database
 
 %check
 
