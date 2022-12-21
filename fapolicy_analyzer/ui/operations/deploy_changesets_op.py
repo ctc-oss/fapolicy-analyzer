@@ -129,7 +129,9 @@ class DeployChangesetsOp(UIOperation):
 
     def __on_next(self, system: Any):
         systemState = system.get("system")
-
+        text_state = system.get("rules_text")
+        self.__rules_text = text_state.rules_text
+        self.__modified_rules_text = text_state.modified_rules_text
         if systemState.error and self.__deploying:
             self.__deploying = False
             logging.error("%s: %s", DEPLOY_SYSTEM_ERROR_MSG, systemState.error)
@@ -158,7 +160,7 @@ class DeployChangesetsOp(UIOperation):
     def get_icon(self) -> str:
         return "system-software-update"
 
-    def run(self, changesets: Sequence[Changeset], system: System, checkpoint: System, rules=False):
+    def run(self, changesets: Sequence[Changeset], system: System, checkpoint: System):
         """
         Deploys the given changesets.
 
@@ -172,6 +174,10 @@ class DeployChangesetsOp(UIOperation):
         None
         """
 
+        rules = (
+            bool(self.__modified_rules_text)
+            and self.__modified_rules_text != self.__rules_text
+        )
         if rules:
             unsaved_rule_dialog = UnsavedRulesDialog()
             unsaved_resp = unsaved_rule_dialog.get_ref().run()

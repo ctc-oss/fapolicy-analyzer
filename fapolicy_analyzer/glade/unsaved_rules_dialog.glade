@@ -75,7 +75,7 @@
             <property name="can_focus">False</property>
             <property name="margin_top">20</property>
             <property name="margin_bottom">50</property>
-            <property name="label" translatable="yes">Unsaved rule changes found. Would you like to continue deploying?</property>
+            <property name="label" translatable="yes">You have unsaved changes to the rules. If you deploy, your changes will be lost. Would you like to continue deploying?</property>
           </object>
           <packing>
             <property name="expand">False</property>

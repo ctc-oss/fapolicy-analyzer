@@ -431,11 +431,8 @@ class MainWindow(UIConnectedWidget):
         self.__toolbar.refresh_buttons_sensitivity()
 
     def on_deployChanges_clicked(self, *args):
-        unsaved_rule = False
-        if isinstance(self.__page, RulesAdminPage):
-            unsaved_rule = self.__page.get_is_dirty()
         with DeployChangesetsOp(self.window) as op:
-            op.run(self.__changesets, self.__system, self.__checkpoint, rules=unsaved_rule)
+            op.run(self.__changesets, self.__system, self.__checkpoint)
 
     # ###################### fapolicyd interfacing ##########################
     def on_fapdStartMenu_activate(self, menuitem, data=None):
