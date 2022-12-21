@@ -377,13 +377,17 @@ class FaProfSession:
             logging.debug("FaProfSession::validateArgs() --> pwd verified")
 
         # Validate, convert CSV  env string of "K=V" substrings to dict
-        exec_env = FaProfSession._comma_delimited_kv_string_to_dict(
-            dictProfTgt.get("envText", "")
-        )
+        try:
+            exec_env = FaProfSession._comma_delimited_kv_string_to_dict(
+                dictProfTgt.get("envText", "")
+            )
 
-        if not exec_env:
-            dictReturn[ProfSessionArgsStatus.UNKNOWN] = s.PROF_ARG_UNKNOWN
-        
+        except RuntimeError as e:
+            exec_env = None
+            dictReturn[ProfSessionArgsStatus.ENV_VARS_FORMATING] = e
+        except Exception as e:
+            exec_env = None
+            dictReturn[ProfSessionArgsStatus.ENV_VARS_FORMATING] = s.PROF_ARG_ENV_VARS_FORMATING + f", {e}"
 
         # exec empty?
         if not exec_path:
@@ -440,14 +444,15 @@ class FaProfSession:
         if not string_in:
             return None
 
-        # Validate string is in K=V format
-        regexKvFormat = re.compile("((.+)=(.+))*")
-        mKvFormat = regexKvFormat.match(string_in)
-        
-        return {
+        dictReturn = {
             k: v.strip('"')
             for k, v in dict(x.strip().split("=") for x in string_in.split(",")).items()
         }
+        # Verify keys are only letters and underscores
+        for k in dictReturn.keys():
+            if not re.match("^[a-zA-Z_][a-zA-Z0-9_]*$", k):
+                raise RuntimeError(s.PROF_ARG_ENV_VARS_NAME_BAD + f": ' {k} '")
+        return dictReturn
 
 
 # ############################## Profiler ###############################
