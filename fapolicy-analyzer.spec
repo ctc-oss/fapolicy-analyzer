@@ -192,6 +192,7 @@ desktop-file-install data/fapolicy-analyzer.desktop
 %attr(755,root,root) %{_sbindir}/fapolicy-analyzer
 %{_datadir}/help/C/fapolicy-analyzer
 %{_datadir}/help/es/fapolicy-analyzer
+%attr(644,root,root) %{_mandir}/man8/*
 
 %changelog
 * Fri Dec 16 2022 John Wass <jwass3@gmail.com> 1.0.0-1
