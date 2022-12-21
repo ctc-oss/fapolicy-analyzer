@@ -1,11 +1,10 @@
 [Desktop Entry]
 Name=File Access Policy Analyzer
-GenericName=?
 Comment=Configuration and management of fapolicyd
 Keywords=fapolicyd;security;
 Exec=fapolicy-analyzer
 Terminal=false
 Type=Application
-Icon=org.xfce.settings.default-applications
+Icon=changes-prevent
 StartupNotify=true
-Categories=GTK;Security;
+Categories=GTK;System;Security;

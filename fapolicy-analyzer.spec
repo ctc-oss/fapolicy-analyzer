@@ -180,6 +180,7 @@ install -p -D build/help/C/%{name}/*.html   %{buildroot}/%{_datadir}/help/C/%{na
 install -p -D build/help/C/%{name}/media/*  %{buildroot}/%{_datadir}/help/C/%{name}/media/
 install -p -D build/help/es/%{name}/*.html  %{buildroot}/%{_datadir}/help/es/%{name}/
 install -p -D build/help/es/%{name}/media/* %{buildroot}/%{_datadir}/help/es/%{name}/media/
+desktop-file-install data/fapolicy-analyzer.desktop
 
 %check
 
