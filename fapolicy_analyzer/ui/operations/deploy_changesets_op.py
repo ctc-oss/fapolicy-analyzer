@@ -130,8 +130,8 @@ class DeployChangesetsOp(UIOperation):
     def __on_next(self, system: Any):
         systemState = system.get("system")
         text_state = system.get("rules_text")
-        self.__rules_text = text_state.rules_text
-        self.__modified_rules_text = text_state.modified_rules_text
+        self.__rules_text = text_state.rules_text if text_state else ""
+        self.__modified_rules_text = text_state.modified_rules_text if text_state else ""
         if systemState.error and self.__deploying:
             self.__deploying = False
             logging.error("%s: %s", DEPLOY_SYSTEM_ERROR_MSG, systemState.error)
