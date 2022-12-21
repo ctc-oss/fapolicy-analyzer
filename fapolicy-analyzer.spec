@@ -147,7 +147,7 @@ Tools to assist with the configuration and management of fapolicyd.
 CARGO_REG_DIR=%{_builddir}/vendor-rs
 mkdir -p ${CARGO_REG_DIR}
 for d in %{cargo_registry}/*; do ln -sf ${d} ${CARGO_REG_DIR}; done
-tar xzf %{SOURCE1} -C ${CARGO_REG_DIR} --strip-components=2
+tar -xzf %{SOURCE1} -C ${CARGO_REG_DIR} --strip-components=2
 
 %cargo_prep
 
