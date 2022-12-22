@@ -28,7 +28,7 @@ from urllib.parse import urlparse
 
 DEFAULT_HELP_FILES = ["User-Guide.md"]
 DEFAULT_REPO = "https://github.com/ctc-oss/fapolicy-analyzer.wiki.git"
-DEFAULT_OUTPUT_DIR = "share/help"
+DEFAULT_OUTPUT_DIR = "help/share/help"
 DEFAULT_MEDIA_URL = "https://user-images.githubusercontent.com/1545372"
 DEFAULT_BUILD_DIR = path.join("build", DEFAULT_OUTPUT_DIR)
 
