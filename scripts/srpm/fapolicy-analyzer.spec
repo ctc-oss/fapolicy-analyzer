@@ -158,11 +158,13 @@ Requires:      python3-importlib-resources
 %endif
 
 %global module          fapolicy_analyzer
-%global module_version  %{lua:v = string.gsub(rpm.expand("%{?version}"), "~", ""); print(v)}
 %global venv_dir        %{_builddir}/vendor-py
 %global venv_py3        %{venv_dir}/bin/python3
 %global venv_lib        %{venv_dir}/lib/python3.6/site-packages
 %global venv_install    %{venv_py3} -m pip install --find-links=%{_sourcedir} --no-index --quiet
+# pep440 versions handle dev and rc differently, so we call them out explicitly here
+%global module_version  %{lua: v = string.gsub(rpm.expand("%{?version}"), "~dev", ".dev"); \
+                               v = string.gsub(v, "~rc",  "rc"); print(v) }
 
 %description
 Tools to assist with the configuration and management of fapolicyd.
