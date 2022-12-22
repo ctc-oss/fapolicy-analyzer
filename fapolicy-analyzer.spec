@@ -172,6 +172,10 @@ echo %{module_version} > VERSION
 %{python3} help build
 %{python3} setup.py bdist_wheel
 
+mkdir -p %{_builddir}/share/help
+mv %{_builddir}/help/* %{_builddir}/share/help
+ls %{_builddir}/share/help
+
 %install
 
 %{py3_install_wheel %{module}-%{module_version}*%{_arch}.whl}
