@@ -174,18 +174,11 @@ echo %{module_version} > VERSION
 
 %install
 
-%find_lang %{name} --with-man
 %{py3_install_wheel %{module}-%{module_version}*%{_arch}.whl}
 install bin/%{name} %{buildroot}%{_sbindir}/%{name} -D
 mkdir -p %{buildroot}/%{_datadir}/help/{C,es}/%{name}/media
-install -p -D build/help/C/%{name}/*.html   %{buildroot}/%{_datadir}/help/C/%{name}/
-install -p -D build/help/C/%{name}/media/*  %{buildroot}/%{_datadir}/help/C/%{name}/media/
-install -p -D build/help/es/%{name}/*.html  %{buildroot}/%{_datadir}/help/es/%{name}/
-install -p -D build/help/es/%{name}/media/* %{buildroot}/%{_datadir}/help/es/%{name}/media/
-desktop-file-install --add-category="Security"                  \
-                     --dir=%{buildroot}%{_datadir}/applications \
-                     --delete-original                          \
-                     data/fapolicy-analyzer.desktop
+desktop-file-install --dir=%{buildroot}%{_datadir}/applications data/fapolicy-analyzer.desktop
+%find_lang %{name}
 
 %post
 update-desktop-database
@@ -198,8 +191,8 @@ update-desktop-database
 %{python3_sitearch}/%{module}
 %{python3_sitearch}/%{module}-%{module_version}*
 %attr(755,root,root) %{_sbindir}/fapolicy-analyzer
-%{_datadir}/help/C/fapolicy-analyzer
-%{_datadir}/help/es/fapolicy-analyzer
+%attr(644,root,root) %{_datadir}/help/C/fapolicy-analyzer
+%attr(644,root,root) %{_datadir}/help/es/fapolicy-analyzer
 %attr(644,root,root) %{_mandir}/man8/*
 
 %changelog
