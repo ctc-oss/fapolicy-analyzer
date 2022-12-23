@@ -230,7 +230,7 @@ def build_help(
 ):
     c_docs = glob(path.join(source, "C", "*.html"))
     name = "fapolicy-analyzer"
-    selected_languages = _get_languages()
+    selected_languages = _get_languages(source)
 
     for lang in selected_languages:
         source_path = path.join(source, lang)
