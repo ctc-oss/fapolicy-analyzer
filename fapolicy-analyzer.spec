@@ -175,24 +175,31 @@ echo %{module_version} > VERSION
 %install
 
 %{py3_install_wheel %{module}-%{module_version}*%{_arch}.whl}
+%{python3} help install --dest %{buildroot}/%{_datadir}/help
 install bin/%{name} %{buildroot}/%{_sbindir}/%{name} -D
 install data/fapolicy-analyzer.8 %{buildroot}/%{_mandir}/man8/* -D
 desktop-file-install data/fapolicy-analyzer.desktop
-%{python3} help install
 %find_lang %{name} --with-gnome
+
+# this combination demonstrates a working find_lang
+# mkdir -p %{buildroot}/%{_datadir}/help/es/%{name}
+# cp -R help/es/* %{buildroot}/%{_datadir}/help/es/%{name}
+# find_lang %{name} --with-gnome
 
 %post
 update-desktop-database
 
 %check
 
-%files -n %{name}
+%files -n %{name} -f %{name}.lang
+
 %doc scripts/srpm/README
 %license LICENSE
 %{python3_sitearch}/%{module}
 %{python3_sitearch}/%{module}-%{module_version}*
-%attr(755,root,root) %{_sbindir}/fapolicy-analyzer
-%attr(644,root,root) %{_mandir}/man8/*
+%{_sbindir}/fapolicy-analyzer
+%{_datadir}/applications/%{name}.desktop
+%{_mandir}/man8/*
 
 %changelog
 * Fri Dec 16 2022 John Wass <jwass3@gmail.com> 1.0.0-1
