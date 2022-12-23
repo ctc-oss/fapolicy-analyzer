@@ -172,17 +172,14 @@ echo %{module_version} > VERSION
 %{python3} help build
 %{python3} setup.py bdist_wheel
 
-mkdir -p %{_builddir}/share/help
-mv %{_builddir}/help/* %{_builddir}/share/help
-ls %{_builddir}/share/help
-
 %install
 
 %{py3_install_wheel %{module}-%{module_version}*%{_arch}.whl}
-install bin/%{name} %{buildroot}%{_sbindir}/%{name} -D
-mkdir -p %{buildroot}/%{_datadir}/help/{C,es}/%{name}/media
-desktop-file-install --dir=%{buildroot}%{_datadir}/applications data/fapolicy-analyzer.desktop
-%find_lang %{name}
+install bin/%{name} %{buildroot}/%{_sbindir}/%{name} -D
+install data/fapolicy-analyzer.8 %{buildroot}/%{_mandir}/man8/* -D
+desktop-file-install data/fapolicy-analyzer.desktop
+%{python3} help install
+%find_lang %{name} --with-gnome
 
 %post
 update-desktop-database
@@ -195,8 +192,6 @@ update-desktop-database
 %{python3_sitearch}/%{module}
 %{python3_sitearch}/%{module}-%{module_version}*
 %attr(755,root,root) %{_sbindir}/fapolicy-analyzer
-%attr(644,root,root) %{_datadir}/help/C/fapolicy-analyzer
-%attr(644,root,root) %{_datadir}/help/es/fapolicy-analyzer
 %attr(644,root,root) %{_mandir}/man8/*
 
 %changelog
