@@ -72,19 +72,6 @@ def confirm_dialog(confirm_resp, mocker):
 
 
 @pytest.fixture
-def unsaved_dialog(confirm_resp, mocker):
-    mock_unsaved_dialog = MagicMock(
-        run=MagicMock(return_value=confirm_resp),
-        hide=MagicMock(),
-    )
-    mocker.patch(
-        "fapolicy_analyzer.ui.operations.deploy_changesets_op.UnsavedRulesDialog.get_ref",
-        return_value=mock_unsaved_dialog,
-    )
-
-    return mock_unsaved_dialog
-
-@pytest.fixture
 def revert_dialog(revert_resp, mocker):
     mock_revert_dialog = MagicMock(
         run=MagicMock(return_value=revert_resp), hide=MagicMock()
@@ -298,21 +285,39 @@ def test_get_icon(operation):
     assert operation.get_icon() == "system-software-update"
 
 
-@pytest.mark.usefixtures("unsaved_dialog", "confirm_dialog", "revert_dialog")
-def test_test_unsaved_change_dialog():
+@pytest.mark.usefixtures("confirm_dialog")
+@pytest.mark.parametrize("confirm_resp", [Gtk.ResponseType.YES])
+def test_unsaved_change_dialog(operation, mocker, mock_dispatch):
     system_features_mock = Subject()
+    mocker.patch(
+        "fapolicy_analyzer.ui.operations.deploy_changesets_op.get_system_feature",
+        return_value=system_features_mock,
+    )
+    mock_unsaved_dialog = MagicMock(
+        run=MagicMock(return_value=1),
+    )
+    mocker.patch(
+        "fapolicy_analyzer.ui.operations.deploy_changesets_op.UnsavedRulesDialog.get_ref",
+        return_value=mock_unsaved_dialog,
+    )
+    init_store(mock_System())
     with DeployChangesetsOp(Gtk.Window()) as operation:
         system_features_mock.on_next(
             {
                 "changesets": [],
                 "system": MagicMock(
-                              error=None, 
+                              error=None,
                               loading=False,
-                              rules_text = {
-                                  rules_text : "foo",
-                                  modified_rules_text : "foo bar"
-                              },
+                              #rules_text = {
+                              #    rules_text : "foo",
+                              #    modified_rules_text : "foo bar"
+                              #},
                           ),
+                "rules_text": MagicMock(                      
+                        rules_text = "foo",
+                        modified_rules_text = "foo bar"
+                ),
             }
         )
         operation.run([], None, None)
+    mock_unsaved_dialog.run.assert_called()
