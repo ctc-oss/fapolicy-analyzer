@@ -306,16 +306,12 @@ def test_unsaved_change_dialog(operation, mocker, mock_dispatch):
             {
                 "changesets": [],
                 "system": MagicMock(
-                              error=None,
-                              loading=False,
-                              #rules_text = {
-                              #    rules_text : "foo",
-                              #    modified_rules_text : "foo bar"
-                              #},
-                          ),
-                "rules_text": MagicMock(                      
-                        rules_text = "foo",
-                        modified_rules_text = "foo bar"
+                    error=None,
+                    loading=False,
+                ),
+                "rules_text": MagicMock(
+                    rules_text="foo",
+                    modified_rules_text="foo bar"
                 ),
             }
         )
