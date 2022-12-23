@@ -181,11 +181,6 @@ install data/fapolicy-analyzer.8 %{buildroot}/%{_mandir}/man8/* -D
 desktop-file-install data/fapolicy-analyzer.desktop
 %find_lang %{name} --with-gnome
 
-# this combination demonstrates a working find_lang
-# mkdir -p %{buildroot}/%{_datadir}/help/es/%{name}
-# cp -R help/es/* %{buildroot}/%{_datadir}/help/es/%{name}
-# find_lang %{name} --with-gnome
-
 %post
 update-desktop-database
 
