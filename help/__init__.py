@@ -262,12 +262,13 @@ def install_help(
         source: str = DEFAULT_BUILD_DIR,
         dest: str = DEFAULT_INSTALL_DIR,
 ):
+    name = "fapolicy-analyzer"
     print(f"Installing langs to {dest}")
     selected_languages = _get_languages(source)
     for lang in selected_languages:
         print(f"\t{lang}")
         lang_source = path.join(source, lang)
-        lang_dest = path.join(dest, lang, "fapolicy-analyzer")
+        lang_dest = path.join(dest, lang, name)
         dir_util.copy_tree(lang_source, lang_dest)
 
 
