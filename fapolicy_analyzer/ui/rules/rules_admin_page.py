@@ -121,9 +121,6 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
     def __rules_unvalidated(self) -> bool:
         return not self.__rules_validated
 
-    def get_is_dirty(self):
-        return self.__rules_dirty()
-
     def __rules_dirty(self) -> bool:
         return (
             bool(self.__modified_rules_text)
