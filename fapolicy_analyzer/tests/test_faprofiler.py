@@ -459,6 +459,17 @@ def test_validateArgs_relative_exec(dictArgs, expected_status):
             },
             ProfSessionArgsStatus.ENV_VARS_FORMATING,
         ),
+        (
+            # Test w/bad env vars (empty key) ENV_VARS_FORMATING is returned
+            {
+                "executeText": "ls",
+                "argText": "",
+                "userText": os.getenv("USER"),
+                "dirText": os.getenv("HOME"),
+                "envText": "PATH=$PATH:.," "=1",
+            },
+            ProfSessionArgsStatus.ENV_VARS_FORMATING,
+        ),
     ]
 )
 def test_validateArgs_env_vars(dictArgs, expected_status):
