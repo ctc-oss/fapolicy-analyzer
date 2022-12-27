@@ -148,7 +148,7 @@ Requires:      gtk3
 Requires:      dbus-libs
 Requires:      gtksourceview3
 
-# runtime required for rendering user guide documentation
+# runtime required for rendering user guide
 Requires:      webkit2gtk3
 Requires:      mesa-dri-drivers
 
@@ -170,7 +170,6 @@ Requires:      python3-importlib-resources
 Tools to assist with the configuration and management of fapolicyd.
 
 %prep
-
 %if 0%{?rhel}
 # Python- on rhel we are missing setuptools-rust, and to get it requires
 # upgrades of pip, setuptools, and wheel along with several other dependencies
@@ -234,7 +233,6 @@ rm Cargo.lock
 echo %{module_version} > VERSION
 
 %build
-
 %if 0%{?rhel}
 # on rhel we want to use the prep'd venv
 alias python3=%{venv_py3}
@@ -245,25 +243,26 @@ python3 help build
 python3 setup.py bdist_wheel
 
 %install
-
 %{py3_install_wheel %{module}-%{module_version}*%{_arch}.whl}
-install bin/%{name} %{buildroot}%{_sbindir}/%{name} -D
-mkdir -p %{buildroot}/%{_datadir}/help/{C,es}/%{name}/media
-install -p -D build/help/C/%{name}/*.html   %{buildroot}/%{_datadir}/help/C/%{name}/
-install -p -D build/help/C/%{name}/media/*  %{buildroot}/%{_datadir}/help/C/%{name}/media/
-install -p -D build/help/es/%{name}/*.html  %{buildroot}/%{_datadir}/help/es/%{name}/
-install -p -D build/help/es/%{name}/media/* %{buildroot}/%{_datadir}/help/es/%{name}/media/
+%{python3} help install --dest %{buildroot}/%{_datadir}/help
+install bin/%{name} %{buildroot}/%{_sbindir}/%{name} -D
+install data/fapolicy-analyzer.8 %{buildroot}/%{_mandir}/man8/* -D
+desktop-file-install data/fapolicy-analyzer.desktop
+%find_lang %{name} --with-gnome
+
+%post
+update-desktop-database
 
 %check
 
-%files -n %{name}
+%files -n %{name} -f %{name}.lang
 %doc scripts/srpm/README
 %license LICENSE
 %{python3_sitearch}/%{module}
 %{python3_sitearch}/%{module}-%{module_version}*
 %attr(755,root,root) %{_sbindir}/fapolicy-analyzer
-%{_datadir}/help/C/fapolicy-analyzer
-%{_datadir}/help/es/fapolicy-analyzer
+%attr(755,root,root) %{_datadir}/applications/%{name}.desktop
+%attr(644,root,root) %{_mandir}/man8/*
 
 %changelog
 * Fri Dec 16 2022 John Wass <jwass3@gmail.com> 1.0.0-1

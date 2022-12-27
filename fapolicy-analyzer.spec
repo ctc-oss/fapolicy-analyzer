@@ -124,8 +124,7 @@ Requires:      python3-importlib-metadata
 Requires:      gtk3
 Requires:      gtksourceview3
 
-# for rendering our html user guide documentation
-# will be addressed with future upgrade of yelp
+# runtime required for rendering user guide
 Requires:      webkit2gtk3
 Requires:      mesa-dri-drivers
 
@@ -138,7 +137,6 @@ Requires:      mesa-dri-drivers
 Tools to assist with the configuration and management of fapolicyd.
 
 %prep
-
 # An issue with unpacking the vendored crates is that an unprivileged user
 # cannot write to the default registry at /usr/share/cargo/registry
 # To unblock this, we link the contents of the /usr/share/cargo/registry
@@ -167,13 +165,11 @@ rm Cargo.lock
 echo %{module_version} > VERSION
 
 %build
-
 %{python3} setup.py compile_catalog -f
 %{python3} help build
 %{python3} setup.py bdist_wheel
 
 %install
-
 %{py3_install_wheel %{module}-%{module_version}*%{_arch}.whl}
 %{python3} help install --dest %{buildroot}/%{_datadir}/help
 install bin/%{name} %{buildroot}/%{_sbindir}/%{name} -D
@@ -187,7 +183,6 @@ update-desktop-database
 %check
 
 %files -n %{name} -f %{name}.lang
-
 %doc scripts/srpm/README
 %license LICENSE
 %{python3_sitearch}/%{module}
