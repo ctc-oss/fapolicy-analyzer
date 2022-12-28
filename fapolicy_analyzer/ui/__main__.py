@@ -15,7 +15,11 @@
 
 import logging
 
-logging.basicConfig(level=logging.WARNING)
+gf_handler = logging.FileHandler("/tmp/fapolicy-analyzer.log", mode="w")
+gs_handler = logging.StreamHandler()
+logging.basicConfig(level=logging.DEBUG, handlers=[gf_handler, gs_handler])
+gs_handler.setLevel(logging.WARNING)
+
 import argparse
 
 import gi
@@ -52,7 +56,7 @@ def _parse_cmdline():
 
     # Set Verbosity Level
     if args.verbose:
-        logging.root.setLevel(logging.DEBUG)
+        gs_handler.setLevel(logging.DEBUG)
         logging.debug("Verbosity enabled.")
 
     # Enable edit session autosaves
