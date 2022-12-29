@@ -49,7 +49,6 @@ BuildRequires: python3dist(setuptools-rust)
 
 # crates available for rawhide
 BuildRequires: rust-arrayvec0.5-devel
-BuildRequires: rust-atty-devel
 BuildRequires: rust-autocfg-devel
 BuildRequires: rust-bitflags-devel
 BuildRequires: rust-bitvec-devel
@@ -58,8 +57,6 @@ BuildRequires: rust-byteorder-devel
 BuildRequires: rust-cc-devel
 BuildRequires: rust-cfg-if-devel
 BuildRequires: rust-chrono-devel
-BuildRequires: rust-clap-devel
-BuildRequires: rust-clap_derive-devel
 BuildRequires: rust-confy-devel
 BuildRequires: rust-crossbeam-channel-devel
 BuildRequires: rust-crossbeam-deque-devel
@@ -72,10 +69,7 @@ BuildRequires: rust-either-devel
 BuildRequires: rust-fastrand-devel
 BuildRequires: rust-funty-devel
 BuildRequires: rust-getrandom-devel
-BuildRequires: rust-hashbrown-devel
-BuildRequires: rust-heck-devel
 BuildRequires: rust-iana-time-zone-devel
-BuildRequires: rust-indexmap-devel
 BuildRequires: rust-instant-devel
 BuildRequires: rust-lazy_static-devel
 BuildRequires: rust-lexical-core-devel
@@ -92,8 +86,6 @@ BuildRequires: rust-once_cell-devel
 BuildRequires: rust-parking_lot-devel
 BuildRequires: rust-parking_lot_core-devel
 BuildRequires: rust-pkg-config-devel
-BuildRequires: rust-proc-macro-error-devel
-BuildRequires: rust-proc-macro-error-attr-devel
 BuildRequires: rust-proc-macro-hack-devel
 BuildRequires: rust-proc-macro2-devel
 BuildRequires: rust-pyo3-devel
@@ -114,25 +106,18 @@ BuildRequires: rust-similar-devel
 BuildRequires: rust-smallvec-devel
 BuildRequires: rust-spin-devel
 BuildRequires: rust-static_assertions-devel
-BuildRequires: rust-strsim-devel
 BuildRequires: rust-syn-devel
 BuildRequires: rust-tap-devel
 BuildRequires: rust-tempfile-devel
-BuildRequires: rust-termcolor-devel
-BuildRequires: rust-textwrap-devel
 BuildRequires: rust-thiserror-devel
 BuildRequires: rust-thiserror-impl-devel
 BuildRequires: rust-time0.1-devel
 BuildRequires: rust-toml-devel
-BuildRequires: rust-unicode-segmentation-devel
-BuildRequires: rust-unicode-width-devel
 BuildRequires: rust-unicode-xid-devel
 BuildRequires: rust-unindent-devel
 BuildRequires: rust-untrusted-devel
-BuildRequires: rust-vec_map-devel
 BuildRequires: rust-version_check-devel
 BuildRequires: rust-wyz-devel
-BuildRequires: rust-yansi-devel
 BuildRequires: rust-paste-devel
 BuildRequires: rust-indoc-devel
 %endif
@@ -227,6 +212,9 @@ tar xvzf %{SOURCE2}
 # throw out the checked-in lock
 # this build will use whatever is available in the writable registry
 rm Cargo.lock
+
+# disable dev-tools crate
+sed -i '/tools/d' Cargo.toml
 
 # our setup.py looks up the version from git describe
 # this overrides that check to the RPM version

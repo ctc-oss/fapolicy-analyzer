@@ -23,8 +23,8 @@ BuildRequires: gettext
 BuildRequires: itstool
 BuildRequires: desktop-file-utils
 
-BuildRequires: python3dist(setuptools-rust)
 BuildRequires: rust-packaging
+BuildRequires: python3dist(setuptools-rust)
 
 BuildRequires: rust-arrayvec0.5-devel
 BuildRequires: rust-autocfg-devel
