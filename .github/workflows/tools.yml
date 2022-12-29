@@ -48,7 +48,7 @@ jobs:
           mv target/release/faprofiler /tmp/tools/faprofiler
 
       - name: Archive Tools
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: fapolicy-analyzer-tools
           path: /tmp/tools/*
