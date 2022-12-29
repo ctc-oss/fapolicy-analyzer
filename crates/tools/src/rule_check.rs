@@ -19,7 +19,7 @@ use std::path::PathBuf;
 
 use ariadne::Source;
 use ariadne::{Report, ReportKind};
-use clap::Clap;
+use clap::Parser;
 
 use fapolicy_rules::parser::errat::{ErrorAt, StrErrorAt};
 use fapolicy_rules::parser::parse::StrTrace;
@@ -34,7 +34,7 @@ use std::fs::File;
 use std::io;
 use std::io::{BufRead, BufReader};
 
-#[derive(Clap)]
+#[derive(Parser)]
 #[clap(name = "Rule Checker", version = "v0.0.0")]
 struct Opts {
     /// path to *.rules or rules.d

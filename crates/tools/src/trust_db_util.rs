@@ -20,7 +20,7 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 use std::time::SystemTime;
 
-use clap::Clap;
+use clap::Parser;
 use lmdb::{Cursor, DatabaseFlags, Environment, Transaction, WriteFlags};
 use rayon::prelude::*;
 use thiserror::Error;
@@ -70,7 +70,7 @@ pub enum Error {
     ParseError(#[from] std::string::FromUtf8Error),
 }
 
-#[derive(Clap)]
+#[derive(Parser)]
 #[clap(name = "Trust DB Utils", version = "v0.1")]
 struct Opts {
     #[clap(subcommand)]
@@ -85,7 +85,7 @@ struct Opts {
     dbdir: Option<String>,
 }
 
-#[derive(Clap)]
+#[derive(Parser)]
 enum Subcommand {
     /// Clear the trust database of all entries
     Clear(ClearOpts),
@@ -107,10 +107,10 @@ enum Subcommand {
     Load(LoadOpts),
 }
 
-#[derive(Clap)]
+#[derive(Parser)]
 struct ClearOpts {}
 
-#[derive(Clap)]
+#[derive(Parser)]
 struct InitOpts {
     /// create an empty database
     #[clap(long)]
@@ -133,46 +133,46 @@ struct InitOpts {
     par: bool,
 }
 
-#[derive(Clap)]
+#[derive(Parser)]
 struct AddRecOpts {
     /// File to add
     path: String,
 }
 
-#[derive(Clap)]
+#[derive(Parser)]
 struct DelRecOpts {
     /// File to delete
     path: String,
 }
 
-#[derive(Clap)]
+#[derive(Parser)]
 struct DumpDbOpts {
     /// Optional file
     #[clap(short, long)]
     outfile: Option<String>,
 }
 
-#[derive(Clap)]
+#[derive(Parser)]
 struct SearchDbOpts {
     /// File to delete
     #[clap(long)]
     key: String,
 }
 
-#[derive(Clap)]
+#[derive(Parser)]
 struct CheckDbOpts {
     /// use par_iter
     #[clap(long)]
     par: bool,
 }
 
-#[derive(Clap)]
+#[derive(Parser)]
 struct LoadOpts {
     /// File trust source
     path: String,
 }
 
-#[derive(Clap)]
+#[derive(Parser)]
 struct CountOpts {}
 
 fn main() -> Result<(), Error> {
