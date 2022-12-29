@@ -136,8 +136,6 @@ tar -xzf %{SOURCE1} -C ${CARGO_REG_DIR} --strip-components=2
 
 %cargo_prep
 
-echo "============================================= ! ==============================================="
-
 # here the Cargo config is updated to point to the new registry dir
 sed -i "s#%{cargo_registry}#${CARGO_REG_DIR}#g" .cargo/config
 
