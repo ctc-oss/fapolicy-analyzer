@@ -146,6 +146,9 @@ tar xvzf %{SOURCE2}
 # this build will use what is available from the local registry
 rm Cargo.lock
 
+# disable dev-tools crate
+sed -i '/tools/d' Cargo.toml
+
 # our setup.py looks up the version from git describe
 # this overrides that check to the RPM version
 echo %{module_version} > VERSION
