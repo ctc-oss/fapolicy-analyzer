@@ -37,6 +37,7 @@ BuildRequires: python3dist(babel)
 BuildRequires: dbus-devel
 BuildRequires: gettext
 BuildRequires: itstool
+BuildRequires: desktop-file-utils
 
 %if 0%{?rhel}
 BuildRequires: rust-toolset
