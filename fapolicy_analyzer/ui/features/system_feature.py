@@ -18,6 +18,9 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import Callable
 
 import gi
+from rx import of, pipe
+from rx.operators import catch, map
+
 from fapolicy_analyzer import System, rollback_fapolicyd
 from fapolicy_analyzer.redux import (
     Action,
@@ -65,8 +68,6 @@ from fapolicy_analyzer.ui.actions import (
 from fapolicy_analyzer.ui.reducers import system_reducer
 from fapolicy_analyzer.ui.strings import SYSTEM_INITIALIZATION_ERROR
 from fapolicy_analyzer.util.fapd_dbase import fapd_dbase_snapshot
-from rx import of, pipe
-from rx.operators import catch, ignore_elements, map
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import GLib  # isort: skip
@@ -211,7 +212,7 @@ def create_system_feature(
     )
 
     set_system_checkpoint_epic = pipe(
-        of_type(SET_SYSTEM_CHECKPOINT), map(_set_checkpoint), ignore_elements()
+        of_type(SET_SYSTEM_CHECKPOINT), map(_set_checkpoint)
     )
 
     restore_system_checkpoint_epic = pipe(
