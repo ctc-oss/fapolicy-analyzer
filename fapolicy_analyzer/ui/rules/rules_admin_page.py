@@ -204,7 +204,7 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
     def on_text_view_rules_changed(self, rules: str):
         self.__modified_rules_text = rules
         self.__rules_validated = False
-        text = "*Rules Editor" if self.__rules_dirty() else "Rules Editor"
+        text = "Rules Editor *" if self.__rules_dirty() else "Rules Editor"
         self.get_object("editorView").set_text(text)
         dispatch(modify_rules_text(rules))
 
