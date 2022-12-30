@@ -1,26 +1,3 @@
-[package]
-name = "fapolicy-tools"
-description = "Tools to assist with the configuration and maintenance of fapolicyd"
-license = "GPL-3.0-or-later"
-version = "0.5.0"
-edition = "2018"
-
-[[bin]]
-name = "tdb"
-path = "crates/tools/trust_db_util.rs"
-
-[[bin]]
-name = "rulec"
-path = "crates/tools/rule_check.rs"
-
-[[bin]]
-name = "faprofiler"
-path = "crates/tools/fapolicy_profiler.rs"
-
-[[test]]
-name = "integration"
-path = "tests/tests.rs"
-
 [workspace]
 members = [
     "crates/analyzer",
@@ -28,23 +5,7 @@ members = [
     "crates/daemon",
     "crates/pyo3",
     "crates/rules",
+    "crates/tools",
     "crates/trust",
     "crates/util",
 ]
-
-[dev-dependencies]
-
-[dependencies]
-clap = "3.0.0-beta.2"
-lmdb-rkv = "0.14.0"
-nom = "6.1.0"
-rayon = "1.5"
-thiserror = "1.0"
-ariadne = "0.1"
-
-fapolicy-analyzer = { version = "*", path = "crates/analyzer" }
-fapolicy-app = { version = "*", path = "crates/app" }
-fapolicy-daemon = { version = "*", path = "crates/daemon" }
-fapolicy-rules = { version = "*", path = "crates/rules" }
-fapolicy-trust = { version = "*", path = "crates/trust" }
-fapolicy-util = { version = "*", path = "crates/util" }

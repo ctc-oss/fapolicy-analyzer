@@ -32,13 +32,7 @@ struct BatchConfig {
 
 #[pyfunction]
 fn check_disk_trust(system: &PySystem, update: PyObject, done: PyObject) -> PyResult<usize> {
-    let recs: Vec<_> = system
-        .rs
-        .trust_db
-        .values()
-        .into_iter()
-        .map(|r| r.clone())
-        .collect();
+    let recs: Vec<_> = system.rs.trust_db.values().into_iter().cloned().collect();
 
     // determine batch model based on the total recs to be checked
     let batch_cfg = calculate_batch_config(recs.len());
@@ -110,14 +104,13 @@ fn check_disk_trust(system: &PySystem, update: PyObject, done: PyObject) -> PyRe
     }
 
     // use the tracked threads to observe when processing is complete
-    let ttx = tx.clone();
     thread::spawn(move || {
         for handle in handles {
             if handle.join().is_err() {
                 eprintln!("failed to join update handle");
             };
         }
-        if ttx.send(Update::Done).is_err() {
+        if tx.send(Update::Done).is_err() {
             eprintln!("failed to send Done msg");
         };
     });

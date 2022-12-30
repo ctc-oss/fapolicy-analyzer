@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=File Access Policy Analyzer
+Comment=Configuration and management of fapolicyd
+Keywords=fapolicyd;security;
+Exec=fapolicy-analyzer
+Terminal=false
+Type=Application
+Icon=changes-prevent
+StartupNotify=true
+Categories=GTK;System;Security;

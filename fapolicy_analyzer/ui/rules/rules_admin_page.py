@@ -220,6 +220,7 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         if self.__system != system_state.system:
             self.__system = system_state.system
 
+        # Handle return from saving changeset
         if self.__saving and changesetState.error:
             self.__saving = False
             logging.error(
@@ -228,12 +229,14 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
             dispatch(
                 add_notification(APPLY_CHANGESETS_ERROR_MESSAGE, NotificationType.ERROR)
             )
-
         elif self.__changesets != changesetState.changesets:
             self.__saving = False
             self.__changesets = changesetState.changesets
+            self.__rules_text = ""
+            self.__rules = []
             self.__load_rules()
 
+        # Handle return from loading parsed rules object
         if not rules_state.loading and self.__error_rules != rules_state.error:
             self.__error_rules = rules_state.error
             self.__loading_rules = False
@@ -250,6 +253,7 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
             self._list_view.render_rules(self.__rules)
             self.__status_info.render_rule_status(self.__rules)
 
+        # Handle return from loading rule text
         if not text_state.loading and self.__error_text != text_state.error:
             self.__error_text = text_state.error
             self.__loading_text = False
