@@ -18,10 +18,12 @@ from locale import gettext as _
 from typing import Any, Sequence
 
 import gi
+
 from fapolicy_analyzer import System
 from fapolicy_analyzer.ui.actions import (
     NotificationType,
     add_notification,
+    apply_changesets,
     clear_changesets,
     deploy_system,
     restore_system_checkpoint,
@@ -108,7 +110,7 @@ class DeployChangesetsOp(UIOperation):
         fcd.destroy()
         return strFilename
 
-    def __display_deploy_revert_dialog(self):
+    def __display_deploy_revert_dialog(self, changesets: Sequence[Changeset]):
         deployConfirmDialog = DeployRevertDialog(self.__window).get_ref()
         revert_resp = deployConfirmDialog.run()
         deployConfirmDialog.hide()
@@ -118,9 +120,12 @@ class DeployChangesetsOp(UIOperation):
         else:
             self.__reverting = True
             dispatch(restore_system_checkpoint())
+            dispatch(clear_changesets())
+            dispatch(apply_changesets(*changesets))
 
     def __on_next(self, system: Any):
         systemState = system.get("system")
+        changesetState = system.get("changesets")
 
         if systemState.error and self.__deploying:
             self.__deploying = False
@@ -134,7 +139,7 @@ class DeployChangesetsOp(UIOperation):
                     NotificationType.SUCCESS,
                 )
             )
-            self.__display_deploy_revert_dialog()
+            self.__display_deploy_revert_dialog(changesetState.changesets)
         elif self.__reverting and systemState.system == systemState.checkpoint:
             self.__reverting = False
             dispatch(
