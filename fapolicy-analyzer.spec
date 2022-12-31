@@ -16,12 +16,14 @@ BuildRequires: python3dist(pip)
 BuildRequires: python3dist(wheel)
 BuildRequires: python3dist(babel)
 BuildRequires: dbus-devel
+BuildRequires: gettext
+BuildRequires: itstool
+BuildRequires: desktop-file-utils
 
 BuildRequires: rust-packaging
 BuildRequires: python3dist(setuptools-rust)
 
 BuildRequires: rust-arrayvec0.5-devel
-BuildRequires: rust-atty-devel
 BuildRequires: rust-autocfg-devel
 BuildRequires: rust-bitflags-devel
 BuildRequires: rust-bitvec-devel
@@ -30,8 +32,6 @@ BuildRequires: rust-byteorder-devel
 BuildRequires: rust-cc-devel
 BuildRequires: rust-cfg-if-devel
 BuildRequires: rust-chrono-devel
-BuildRequires: rust-clap-devel
-BuildRequires: rust-clap_derive-devel
 BuildRequires: rust-confy-devel
 BuildRequires: rust-crossbeam-channel-devel
 BuildRequires: rust-crossbeam-deque-devel
@@ -44,10 +44,7 @@ BuildRequires: rust-either-devel
 BuildRequires: rust-fastrand-devel
 BuildRequires: rust-funty-devel
 BuildRequires: rust-getrandom-devel
-BuildRequires: rust-hashbrown-devel
-BuildRequires: rust-heck-devel
 BuildRequires: rust-iana-time-zone-devel
-BuildRequires: rust-indexmap-devel
 BuildRequires: rust-instant-devel
 BuildRequires: rust-lazy_static-devel
 BuildRequires: rust-lexical-core-devel
@@ -64,8 +61,6 @@ BuildRequires: rust-once_cell-devel
 BuildRequires: rust-parking_lot-devel
 BuildRequires: rust-parking_lot_core-devel
 BuildRequires: rust-pkg-config-devel
-BuildRequires: rust-proc-macro-error-devel
-BuildRequires: rust-proc-macro-error-attr-devel
 BuildRequires: rust-proc-macro-hack-devel
 BuildRequires: rust-proc-macro2-devel
 BuildRequires: rust-pyo3-devel
@@ -86,27 +81,21 @@ BuildRequires: rust-similar-devel
 BuildRequires: rust-smallvec-devel
 BuildRequires: rust-spin-devel
 BuildRequires: rust-static_assertions-devel
-BuildRequires: rust-strsim-devel
 BuildRequires: rust-syn-devel
 BuildRequires: rust-tap-devel
 BuildRequires: rust-tempfile-devel
-BuildRequires: rust-termcolor-devel
-BuildRequires: rust-textwrap-devel
 BuildRequires: rust-thiserror-devel
 BuildRequires: rust-thiserror-impl-devel
 BuildRequires: rust-time0.1-devel
 BuildRequires: rust-toml-devel
-BuildRequires: rust-unicode-segmentation-devel
-BuildRequires: rust-unicode-width-devel
 BuildRequires: rust-unicode-xid-devel
 BuildRequires: rust-unindent-devel
 BuildRequires: rust-untrusted-devel
-BuildRequires: rust-vec_map-devel
 BuildRequires: rust-version_check-devel
 BuildRequires: rust-wyz-devel
-BuildRequires: rust-yansi-devel
 BuildRequires: rust-paste-devel
 BuildRequires: rust-indoc-devel
+
 
 Requires:      python3
 Requires:      python3-gobject
@@ -116,7 +105,6 @@ Requires:      python3-more-itertools
 Requires:      python3-rx
 Requires:      python3-importlib-metadata
 Requires:      gtk3
-Requires:      dbus-libs
 Requires:      gtksourceview3
 
 %global module fapolicy_analyzer
@@ -125,7 +113,6 @@ Requires:      gtksourceview3
 Tools to assist with the configuration and management of fapolicyd.
 
 %prep
-
 # An issue with unpacking the vendored crates is that an unprivileged user
 # cannot write to the default registry at /usr/share/cargo/registry
 # To unblock this, we link the contents of the /usr/share/cargo/registry
@@ -135,7 +122,7 @@ Tools to assist with the configuration and management of fapolicyd.
 CARGO_REG_DIR=%{_builddir}/vendor-rs
 mkdir -p ${CARGO_REG_DIR}
 for d in %{cargo_registry}/*; do ln -sf ${d} ${CARGO_REG_DIR}; done
-tar xzf %{SOURCE1} -C ${CARGO_REG_DIR} --strip-components=2
+tar -xzf %{SOURCE1} -C ${CARGO_REG_DIR} --strip-components=2
 
 %cargo_prep
 
@@ -148,28 +135,37 @@ sed -i "s#%{cargo_registry}#${CARGO_REG_DIR}#g" .cargo/config
 # this build will use what is available from the local registry
 rm Cargo.lock
 
+# disable dev-tools crate
+sed -i '/tools/d' Cargo.toml
+
 # our setup.py looks up the version from git describe
 # this overrides that check to the RPM version
 echo %{version} > VERSION
 
 %build
-
-python3 setup.py compile_catalog -f
-python3 setup.py bdist_wheel
+%{python3} setup.py compile_catalog -f
+%{python3} setup.py bdist_wheel
 
 %install
-
-install bin/%{name} %{buildroot}%{_sbindir}/%{name} -D
 %{py3_install_wheel %{module}-%{version}*%{_arch}.whl}
+install bin/%{name} %{buildroot}/%{_sbindir}/%{name} -D
+install data/fapolicy-analyzer.8 %{buildroot}/%{_mandir}/man8/* -D
+desktop-file-install data/fapolicy-analyzer.desktop
+%find_lang %{name} --with-gnome
+
+%post
+update-desktop-database
 
 %check
 
-%files -n %{name}
+%files -n %{name} -f %{name}.lang
 %doc scripts/srpm/README
 %license LICENSE
 %{python3_sitearch}/%{module}
 %{python3_sitearch}/%{module}-%{version}*
 %attr(755,root,root) %{_sbindir}/fapolicy-analyzer
+%attr(755,root,root) %{_datadir}/applications/%{name}.desktop
+%attr(644,root,root) %{_mandir}/man8/*
 
 %changelog
 * Fri Sep 09 2022 John Wass <jwass3@gmail.com> 0.6.1-1

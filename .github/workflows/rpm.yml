@@ -108,18 +108,22 @@ jobs:
           PLATFORM: ${{ matrix.props.dist }}
 
       - name: Upload tarballs
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: tarball-artifacts
           path: |
             /tmp/archives/*.tar.gz
 
       - name: Upload SRPMs
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: srpm-artifacts
           path: |
             /tmp/archives/*.src.rpm
+
+      - name: Checksum artifacts
+        run: |
+          sha256sum /tmp/archives/*
 
   copr:
     needs: [ config, srpm ]
@@ -140,6 +144,10 @@ jobs:
         with:
           name: srpm-artifacts
           path: /tmp/
+
+      - name: Checksum artifacts
+        run: |
+          sha256sum /tmp/*.src.rpm
 
       - name: Install Config
         run: |
@@ -173,6 +181,10 @@ jobs:
           name: srpm-artifacts
           path: /tmp/src/
 
+      - name: Checksum artifacts
+        run: |
+          sha256sum /tmp/src/*
+
       - name: Enable EPEL
         if: startsWith(matrix.props.dist, 'el')
         run: |
@@ -194,7 +206,7 @@ jobs:
         working-directory: /github/home/rpmbuild/RPMS/x86_64
 
       - name: Upload RPMs
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: rpm-artifacts
           path: |

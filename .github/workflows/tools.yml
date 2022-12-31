@@ -42,7 +42,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --release
+          args: --bins --release
 
       - name: Strip ref to tag
         id: tag_name
@@ -56,7 +56,7 @@ jobs:
           mv target/release/rulec /tmp/tools/rulec-${{ steps.tag_name.outputs.VERSION }}
 
       - name: Archive Tools
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: fapolicy-analyzer-tools
           path: /tmp/tools/*
