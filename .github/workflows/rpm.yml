@@ -14,34 +14,27 @@ on:
 name: RPM
 
 jobs:
-  build:
-    name: Build ${{ matrix.triple.name }}
-    strategy:
-      matrix:
-        triple:
-          - {
-            name: 'fc37',
-            spec: 'fapolicy-analyzer.spec',
-            image: 'registry.fedoraproject.org/fedora:37',
-            platform: 'fedora',
-          }
-          - {
-            name: 'fc38',
-            spec: 'fapolicy-analyzer.spec',
-            image: 'registry.fedoraproject.org/fedora:rawhide',
-            platform: 'fedora',
-          }
-          - {
-            name: 'el8',
-            spec: 'scripts/srpm/fapolicy-analyzer.spec',
-            image: 'rockylinux:8.6',
-            platform: 'rhel',
-          }
+  config:
+    name: Load config matrix
     runs-on: ubuntu-20.04
-    container: ${{ matrix.triple.image }}
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - name: Enable Rocky AppStream and EPEL
-        if: startsWith(matrix.triple.name, 'el')
+      - uses: actions/checkout@v2
+      - id: set-matrix
+        run: |
+          echo "::set-output name=matrix::$(cat .github/rpm-matrix.json | tr -d '\n' | tr -d ' ')"
+
+  srpm:
+    needs: [ config ]
+    name: SRPM Build ${{ matrix.props.dist }}
+    container: ${{ matrix.props.image }}
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix: ${{ fromJson(needs.config.outputs.matrix) }}
+    steps:
+      - name: Enable EPEL
+        if: startsWith(matrix.props.dist, 'el')
         run: |
           dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
 
@@ -57,6 +50,10 @@ jobs:
         id: tag_name
         if: startsWith(github.ref, 'refs/tags/v')
         run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d/ -f3)
+
+      - name: Workspace is git safe directory
+        run: |
+          git config --global --add safe.directory $GITHUB_WORKSPACE
 
       - name: Ensure spec version matches tag
         if: startsWith(github.ref, 'refs/tags/v')
@@ -79,44 +76,28 @@ jobs:
           
           echo "The spec version $spec_version is correct based on git tag $tag"
 
-      - name: Install dependencies
+      - name: Patch spec with prerelease version
+        if: endsWith(github.ref, '/master')
+        run: |
+          spec_version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
+          commit_number=$(git rev-list HEAD --count)
+          patched_version="$spec_version~dev${commit_number}"
+          sed -i "s#Version:\s*${spec_version}#Version: ${patched_version}#" ${{ matrix.props.spec }}
+          grep Version ${{ matrix.props.spec }}
+
+      - name: Install RPM build dependencies
         run: |
           dnf install -y make rpm rpmdevtools dnf-plugins-core
-          make -f .copr/Makefile dnf
-          cargo install cargo-vendor-filterer
 
-      # allows the git archive command to run within the repo
-      - name: Add workspace as git safe directory
+      - name: Install SRPM build dependencies
         run: |
-          git config --global --add safe.directory $GITHUB_WORKSPACE
+          make -f .copr/Makefile dnf
 
       - name: Build SRPM
         run: |
           make -f .copr/Makefile srpm outdir=/tmp/archives spec=${{ matrix.triple.spec }} OS_ID=${{ matrix.triple.platform }}
 
-      - name: Rebuild SRPM
-        run: |
-          dnf builddep -y ${{ matrix.triple.spec }}
-          rpmbuild --rebuild /tmp/archives/fapolicy-analyzer-*.src.rpm
-
-      - name: Release Spec File
-        # this only needs to be done once, and it needs done with the root spec file
-        if: startsWith(github.ref, 'refs/tags/v') && startsWith(matrix.triple.name, 'fc38')
-        run: |
-          out=/tmp/archives/fapolicy-analyzer.spec
-          base=https://github.com/$GITHUB_REPOSITORY/releases/download/${{ steps.tag_name.outputs.VERSION }}
-          
-          cp ${{ matrix.triple.spec }} $out
-          sed -z -i -e "s#fapolicy-analyzer.tar.gz#$base/fapolicy-analyzer.tar.gz#" $out
-          sed -z -i -e "s#vendor-rs.tar.gz#$base/vendor-rs.tar.gz#" $out
-          sed    -i -e "s#vendor-rs.tar.gz#vendor-rs%{?dist}.tar.gz#" $out
-        env:
-          PLATFORM: ${{ matrix.triple.name }}
-
-      - name: Export RPMs
-        run: |
-          ls | grep -v debug | xargs mv -t /tmp/archives
-        working-directory: /github/home/rpmbuild/RPMS/x86_64
+          make -f .copr/Makefile srpm outdir=/tmp/archives spec=${{ matrix.props.spec }} OS_ID=${{ matrix.props.platform }}
 
       - name: Export tarballs
         run: |
@@ -124,23 +105,132 @@ jobs:
           mv vendor-rs.tar.gz /tmp/archives/vendor-rs.$PLATFORM.tar.gz
           mv fapolicy-analyzer.tar.gz /tmp/archives
         env:
-          PLATFORM: ${{ matrix.triple.name }}
+          PLATFORM: ${{ matrix.props.dist }}
 
-      - name: Archive artifacts
+      - name: Upload tarballs
+        uses: actions/upload-artifact@v2
+        with:
+          name: tarball-artifacts
+          path: |
+            /tmp/archives/*.tar.gz
+
+      - name: Upload SRPMs
         uses: actions/upload-artifact@v2
         with:
           name: srpm-artifacts
           path: |
-            /tmp/archives/*
+            /tmp/archives/*.src.rpm
+
+  copr:
+    needs: [ config, srpm ]
+    name: Copr Build ${{ matrix.props.dist }}
+    if: startsWith(github.ref, 'refs/tags/v') || endsWith(github.ref, '/master')
+    container: 'rockylinux:8.6'
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix: ${{ fromJson(needs.config.outputs.matrix) }}
+    steps:
+      - name: Install Copr CLI
+        run: |
+          dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+          dnf install -y copr-cli
+
+      - name: Download srpm artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: srpm-artifacts
+          path: /tmp/
+
+      - name: Install Config
+        run: |
+          mkdir -p $HOME/.config
+          echo "[copr-cli]" > $HOME/.config/copr 
+          echo "username = ctc-oss" >> $HOME/.config/copr
+          echo "login = ${COPR_LOGIN}" >> $HOME/.config/copr
+          echo "token = ${COPR_TOKEN}" >> $HOME/.config/copr
+          echo "copr_url = https://copr.fedorainfracloud.org" >> $HOME/.config/copr
+        env:
+          COPR_LOGIN: ${{ secrets.COPR_API_LOGIN }}
+          COPR_TOKEN: ${{ secrets.COPR_API_TOKEN }}
+
+      - name: build
+        run: |
+          copr-cli build --chroot ${{ matrix.props.chroot }} fapolicy-analyzer /tmp/fapolicy-analyzer-*.${{ matrix.props.dist }}.src.rpm
+
+  rpm:
+    needs: [ config, srpm ]
+    name: Rebuild ${{ matrix.props.dist }}
+    container: ${{ matrix.props.image }}
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix: ${{ fromJson(needs.config.outputs.matrix )}}
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Download srpm artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: srpm-artifacts
+          path: /tmp/src/
+
+      - name: Enable EPEL
+        if: startsWith(matrix.props.dist, 'el')
+        run: |
+          dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+
+      - name: Install RPM build dependencies
+        run: |
+          dnf install -y make rpm rpmdevtools dnf-plugins-core
+
+      - name: Rebuild SRPM
+        run: |
+          dnf builddep -y ${{ matrix.props.spec }}
+          rpmbuild --rebuild /tmp/src/fapolicy-analyzer-*.${{ matrix.props.dist }}.src.rpm
+
+      - name: Export RPMs
+        run: |
+          mkdir -p /tmp/archives
+          ls | grep -v debug | xargs mv -t /tmp/archives
+        working-directory: /github/home/rpmbuild/RPMS/x86_64
+
+      - name: Upload RPMs
+        uses: actions/upload-artifact@v2
+        with:
+          name: rpm-artifacts
+          path: |
+            /tmp/archives/*.x86_64.rpm
+
+  publish:
+    needs: [ srpm, rpm, copr ]
+    name: Publish
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: /tmp/archives/
+
+      - name: Release Spec File
+        run: |
+          out=/tmp/archives/fapolicy-analyzer.spec
+          base=https://github.com/$GITHUB_REPOSITORY/releases/download/${{ steps.tag_name.outputs.VERSION }}
+          cp fapolicy-analyzer.spec $out
+          sed -z -i -e "s#fapolicy-analyzer.tar.gz#$base/fapolicy-analyzer.tar.gz#" $out
+          sed -z -i -e "s#vendor-docs.tar.gz#$base/vendor-docs.tar.gz#" $out
+          sed -z -i -e "s#vendor-rs.tar.gz#$base/vendor-rs.tar.gz#" $out
+          sed    -i -e "s#vendor-rs.tar.gz#vendor-rs%{?dist}.tar.gz#" $out
 
       - name: Release artifacts
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/v')
         with:
           tag_name: ${{ steps.tag_name.outputs.VERSION }}
           prerelease: ${{ startsWith(github.ref, 'refs/tags/v0') || contains(github.ref, 'rc') }}
           draft: true
           files: |
-            /tmp/archives/*.rpm
             /tmp/archives/*.spec
-            /tmp/archives/*.tar.gz
+            /tmp/archives/rpm-artifacts/*.rpm
+            /tmp/archives/srpm-artifacts/*.src.rpm
+            /tmp/archives/tarball-artifacts/*.tar.gz
