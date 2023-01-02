@@ -2,14 +2,14 @@ on:
   push:
     branches:
       - 'master'
-      - 'release-*'
+      - 'release/*'
       - 'rpm/test/*'
     tags:
       - 'v*'
   pull_request:
     branches:
       - 'master'
-      - 'release-*'
+      - 'release/*'
 
 name: RPM
 
@@ -95,8 +95,6 @@ jobs:
 
       - name: Build SRPM
         run: |
-          make -f .copr/Makefile srpm outdir=/tmp/archives spec=${{ matrix.triple.spec }} OS_ID=${{ matrix.triple.platform }}
-
           make -f .copr/Makefile srpm outdir=/tmp/archives spec=${{ matrix.props.spec }} OS_ID=${{ matrix.props.platform }}
 
       - name: Export tarballs

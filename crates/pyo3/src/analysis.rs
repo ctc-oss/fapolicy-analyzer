@@ -199,7 +199,7 @@ impl PyEventLog {
     fn by_subject(&self, path: String) -> Vec<PyEvent> {
         analyze(&self.rs, Perspective::Subject(path), &self.rs_trust)
             .iter()
-            .flat_map(|e| expand_on_gid(e))
+            .flat_map(expand_on_gid)
             .collect()
     }
 
