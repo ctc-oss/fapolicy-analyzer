@@ -29,6 +29,7 @@ from urllib.parse import urlparse
 DEFAULT_HELP_FILES = ["User-Guide.md"]
 DEFAULT_REPO = "https://github.com/ctc-oss/fapolicy-analyzer.wiki.git"
 DEFAULT_OUTPUT_DIR = "help"
+DEFAULT_INSTALL_DIR = "share"
 DEFAULT_MEDIA_URL = "https://user-images.githubusercontent.com/1545372"
 DEFAULT_BUILD_DIR = path.join("build", DEFAULT_OUTPUT_DIR)
 
@@ -214,21 +215,22 @@ def update_help(
     _generate_translation_template(c_files)
 
 
+def _get_languages(source: str):
+    lang_dirs = [
+        d
+        for d in os.listdir(source) if not d.startswith("_")
+        if path.isdir(path.join(source, d)) and d != "tmp"
+    ]
+    return list({"C", *lang_dirs})
+
+
 def build_help(
     source: str = DEFAULT_OUTPUT_DIR,
     build: str = DEFAULT_BUILD_DIR,
 ):
-    def _get_languages():
-        lang_dirs = [
-            d
-            for d in os.listdir(source) if not d.startswith("_")
-            if path.isdir(path.join(source, d)) and d != "tmp"
-        ]
-        return list(set(["C", *lang_dirs]))
-
     c_docs = glob(path.join(source, "C", "*.html"))
     name = "fapolicy-analyzer"
-    selected_languages = _get_languages()
+    selected_languages = _get_languages(source)
 
     for lang in selected_languages:
         source_path = path.join(source, lang)
@@ -254,6 +256,20 @@ def build_help(
             dir_util.copy_tree(source_media, build_media)
         else:
             dir_util.copy_tree(source_path, build_path)
+
+
+def install_help(
+        source: str = DEFAULT_BUILD_DIR,
+        dest: str = DEFAULT_INSTALL_DIR,
+):
+    name = "fapolicy-analyzer"
+    print(f"Installing langs to {dest}")
+    selected_languages = _get_languages(source)
+    for lang in selected_languages:
+        print(f"\t{lang}")
+        lang_source = path.join(source, lang)
+        lang_dest = path.join(dest, lang, name)
+        dir_util.copy_tree(lang_source, lang_dest)
 
 
 def _args():
@@ -299,6 +315,22 @@ def _args():
         "--build",
         help="Directory to output the build to",
         default=DEFAULT_BUILD_DIR,
+    )
+
+    parser_i = subpar.add_parser(
+        "install", help="Install help documentation"
+    )
+    parser_i.set_defaults(cmd=install_help)
+    parser_i.add_argument(
+        "--source",
+        help="The built documentation to install",
+        default=DEFAULT_OUTPUT_DIR,
+    )
+    parser_i.add_argument(
+        "-d",
+        "--dest",
+        help="Target installation directory",
+        default=DEFAULT_INSTALL_DIR
     )
 
     return parser.parse_args()
