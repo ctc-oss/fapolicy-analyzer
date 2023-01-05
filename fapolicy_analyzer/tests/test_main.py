@@ -107,7 +107,7 @@ def test_parse_args_all_options_w_xdg_env():
         os.environ["XDG_STATE_HOME"] = "/tmp"
         main()
 
-        assert logging.getLogger().level == logging.DEBUG
+        assert logging.getLogger().level == logging.WARNING
         assert sessionManager._SessionManager__bAutosaveEnabled
         assert sessionManager._SessionManager__iTmpFileCount == 3
         assert (
