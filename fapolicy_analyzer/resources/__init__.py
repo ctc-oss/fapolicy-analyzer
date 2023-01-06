@@ -12,3 +12,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+# todo;; this file will be removed from fapolicy_analyzer/resources after
+#        data files are refactored to top level location #726
