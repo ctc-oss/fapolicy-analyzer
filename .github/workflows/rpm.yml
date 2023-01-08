@@ -95,12 +95,12 @@ jobs:
 
       - name: Build SRPM
         run: |
-          make -f .copr/Makefile srpm outdir=/tmp/archives spec=${{ matrix.props.spec }} OS_ID=${{ matrix.props.platform }}
+          make -f .copr/Makefile srpm outdir=/tmp/archives spec=${{ matrix.props.spec }} OS_ID=${{ matrix.props.platform }} DIST=".${{ matrix.props.dist }}"
 
       - name: Export tarballs
         run: |
           mkdir -p /tmp/archives
-          mv vendor-rs.tar.gz /tmp/archives/vendor-rs.$PLATFORM.tar.gz
+          mv vendor-rs.$PLATFORM.tar.gz /tmp/archives
           mv fapolicy-analyzer.tar.gz /tmp/archives
         env:
           PLATFORM: ${{ matrix.props.dist }}
@@ -223,16 +223,6 @@ jobs:
         with:
           path: /tmp/archives/
 
-      - name: Release Spec File
-        run: |
-          out=/tmp/archives/fapolicy-analyzer.spec
-          base=https://github.com/$GITHUB_REPOSITORY/releases/download/${{ steps.tag_name.outputs.VERSION }}
-          cp fapolicy-analyzer.spec $out
-          sed -z -i -e "s#fapolicy-analyzer.tar.gz#$base/fapolicy-analyzer.tar.gz#" $out
-          sed -z -i -e "s#vendor-docs.tar.gz#$base/vendor-docs.tar.gz#" $out
-          sed -z -i -e "s#vendor-rs.tar.gz#$base/vendor-rs.tar.gz#" $out
-          sed    -i -e "s#vendor-rs.tar.gz#vendor-rs%{?dist}.tar.gz#" $out
-
       - name: Release artifacts
         uses: softprops/action-gh-release@v1
         with:
@@ -240,7 +230,7 @@ jobs:
           prerelease: ${{ startsWith(github.ref, 'refs/tags/v0') || contains(github.ref, 'rc') }}
           draft: true
           files: |
-            /tmp/archives/*.spec
+            fapolicy-analyzer.spec
             /tmp/archives/rpm-artifacts/*.rpm
             /tmp/archives/srpm-artifacts/*.src.rpm
             /tmp/archives/tarball-artifacts/*.tar.gz

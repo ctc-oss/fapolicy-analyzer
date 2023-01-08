@@ -4,11 +4,11 @@ Version:       0.6.4
 Release:       1%{?dist}
 License:       GPLv3+
 URL:           https://github.com/ctc-oss/fapolicy-analyzer
-Source0:       fapolicy-analyzer.tar.gz
+Source0:       %{url}/releases/download/v%{version}/fapolicy-analyzer.tar.gz
 
 # this tarball contains bundled crates not available in Fedora
 # reference: https://bugzilla.redhat.com/show_bug.cgi?id=2124697#c5
-Source1:       vendor-rs.tar.gz
+Source1:       %{url}/releases/download/v%{version}/vendor-rs%{?dist}.tar.gz
 
 # we need to provide some updates to python on el8
 %if 0%{?rhel}
@@ -240,5 +240,5 @@ update-desktop-database
 %attr(644,root,root) %{_mandir}/man8/*
 
 %changelog
-* Sat Dec 31 2022 John Wass <jwass3@gmail.com> 0.6.4-1
+* Fri Jan 06 2023 John Wass <jwass3@gmail.com> 0.6.4-1
 - New release
