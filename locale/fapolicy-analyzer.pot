@@ -7,9 +7,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: fapolicy-analyzer 0.0.0+319.g1d7d99b.dirty\n"
+"Project-Id-Version: fapolicy-analyzer 0.0.0+326.g5ae9bea\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-01-09 09:16-0800\n"
+"POT-Creation-Date: 2023-01-09 11:00-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -442,7 +442,7 @@ msgstr ""
 msgid "Error applying changes"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:193
+#: fapolicy_analyzer/ui/strings.py:194
 msgid ""
 "\n"
 "You have unsaved changes to the rules. If you deploy, your changes will "
@@ -451,7 +451,7 @@ msgid ""
 "    "
 msgstr ""
 
-#: fapolicy_analyzer/ui/operations/deploy_changesets_op.py:151
+#: fapolicy_analyzer/ui/operations/deploy_changesets_op.py:156
 msgid "Deploy Changes"
 msgstr ""
 
