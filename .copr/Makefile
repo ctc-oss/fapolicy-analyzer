@@ -38,9 +38,10 @@ dnf-rpmdev:
 	dnf install -y rpmdevtools
 
 ifeq ($(OS_ID),rhel)
+# we only need to vendor rust and python on rhel
 vendor: prep_rpmbuild_dir vendor-app vendor-doc vendor-rs vendor-py
 else
-vendor: prep_rpmbuild_dir vendor-app vendor-doc vendor-rs
+vendor: prep_rpmbuild_dir vendor-app vendor-doc
 endif
 
 vendor-app:
