@@ -4,14 +4,14 @@ Version:       1.0.0
 Release:       1%{?dist}
 License:       GPLv3+
 URL:           https://github.com/ctc-oss/fapolicy-analyzer
-Source0:       fapolicy-analyzer.tar.gz
+Source0:       %{url}/releases/download/v%{version}/fapolicy-analyzer.tar.gz
 
 # this tarball contains bundled crates not available in Fedora
 # reference: https://bugzilla.redhat.com/show_bug.cgi?id=2124697#c5
-Source1:       vendor-rs.tar.gz
+Source1:       %{url}/releases/download/v%{version}/vendor-rs.tar.gz
 
 # this tarball contains documentation used to generate help docs
-Source2:       vendor-docs.tar.gz
+Source2:       %{url}/releases/download/v%{version}/vendor-docs.tar.gz
 
 # we need to provide some updates to python on el8
 %if 0%{?rhel}
