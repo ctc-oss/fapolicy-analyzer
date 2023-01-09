@@ -24,7 +24,7 @@ pub struct All {
 
 impl All {
     pub fn load() -> Result<All, Error> {
-        confy::load(PROJECT_NAME).map_err(ConfigError)
+        confy::load(PROJECT_NAME, None).map_err(ConfigError)
     }
 
     pub fn data_dir(&self) -> &str {
