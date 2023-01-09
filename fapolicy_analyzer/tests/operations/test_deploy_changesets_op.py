@@ -318,7 +318,7 @@ def test_unsaved_change_dialog(operation, mocker, mock_dispatch):
         "fapolicy_analyzer.ui.operations.deploy_changesets_op.Gtk.MessageDialog.run",
         return_value=Gtk.ResponseType.OK,
     )
-    init_store(mock_System())    
+    init_store(mock_System())
     with DeployChangesetsOp(Gtk.Window()) as operation:
         system_features_mock.on_next(
             {
