@@ -8,7 +8,7 @@ Source0:       %{url}/releases/download/v%{version}/fapolicy-analyzer.tar.gz
 
 # this tarball contains bundled crates not available in Fedora
 # reference: https://bugzilla.redhat.com/show_bug.cgi?id=2124697#c5
-Source1:       %{url}/releases/download/v%{version}/vendor-rs%{?dist}.tar.gz
+Source1:       %{url}/releases/download/v%{version}/vendor-rs.tar.gz
 
 # we need to provide some updates to python on el8
 %if 0%{?rhel}

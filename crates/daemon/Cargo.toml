@@ -6,7 +6,7 @@ version = "0.4.0"
 edition = "2018"
 
 [dependencies]
-nom = "6.1.0"
+nom = "7.1"
 thiserror = "1.0"
 fapolicy-trust = { version = "*", path = "../trust" }
 dbus = "0.9"

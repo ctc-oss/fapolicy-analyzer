@@ -37,7 +37,7 @@ dnf-rpmdev:
 ifeq ($(OS_ID),rhel)
 vendor: vendor-app vendor-rs vendor-py
 else
-vendor: vendor-app vendor-rs
+vendor: vendor-app
 endif
 
 vendor-app:

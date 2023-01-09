@@ -59,12 +59,8 @@ pub fn load_trust_db(path: &str) -> Result<DB, Error> {
     let lookup: HashMap<String, Rec> = env
         .begin_ro_txn()
         .map(|t| {
-            t.open_ro_cursor(db).map(|mut c| {
-                c.iter()
-                    .map(|c| c.unwrap())
-                    .map(|kv| TrustPair::new(kv).into())
-                    .collect()
-            })
+            t.open_ro_cursor(db)
+                .map(|mut c| c.iter().map(|kv| TrustPair::new(kv).into()).collect())
         })
         .unwrap()
         .map_err(LmdbReadFail)

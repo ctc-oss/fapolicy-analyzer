@@ -20,12 +20,7 @@ WORKDIR /tmp/rpmbuild
 RUN spectool -gf -C SOURCES/ SPECS/fapolicy-analyzer.spec
 
 COPY --chown=10001:0 fapolicy-analyzer.tar.gz SOURCES/
-COPY --chown=10001:0 vendor-rs.tar.gz         SOURCES/
 COPY --chown=10001:0 scripts/srpm/build.sh    ./build.sh
-
-WORKDIR /tmp/rpmbuild/SOURCES
-RUN dist=$(rpm --eval "%{?dist}") \
- && mv vendor-rs.tar.gz vendor-rs${dist}.tar.gz
 
 WORKDIR /tmp/rpmbuild
 
