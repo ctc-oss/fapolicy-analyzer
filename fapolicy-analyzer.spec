@@ -26,10 +26,8 @@ BuildRequires: desktop-file-utils
 BuildRequires: rust-packaging
 BuildRequires: python3dist(setuptools-rust)
 
-BuildRequires: rust-arrayvec0.5-devel
 BuildRequires: rust-autocfg-devel
 BuildRequires: rust-bitflags-devel
-BuildRequires: rust-bitvec-devel
 BuildRequires: rust-bumpalo-devel
 BuildRequires: rust-byteorder-devel
 BuildRequires: rust-cc-devel
@@ -42,21 +40,22 @@ BuildRequires: rust-crossbeam-epoch-devel
 BuildRequires: rust-crossbeam-utils-devel
 BuildRequires: rust-data-encoding-devel
 BuildRequires: rust-dbus-devel
+BuildRequires: rust-directories-devel
 BuildRequires: rust-dirs-sys-devel
 BuildRequires: rust-either-devel
 BuildRequires: rust-fastrand-devel
-BuildRequires: rust-funty-devel
 BuildRequires: rust-getrandom-devel
 BuildRequires: rust-iana-time-zone-devel
 BuildRequires: rust-instant-devel
 BuildRequires: rust-lazy_static-devel
-BuildRequires: rust-lexical-core-devel
 BuildRequires: rust-libc-devel
 BuildRequires: rust-libdbus-sys-devel
 BuildRequires: rust-lock_api-devel
 BuildRequires: rust-log-devel
 BuildRequires: rust-memchr-devel
 BuildRequires: rust-memoffset-devel
+BuildRequires: rust-minimal-lexical-devel
+BuildRequires: rust-nom-devel
 BuildRequires: rust-num-integer-devel
 BuildRequires: rust-num-traits-devel
 BuildRequires: rust-num_cpus-devel
@@ -71,21 +70,17 @@ BuildRequires: rust-pyo3-build-config-devel
 BuildRequires: rust-pyo3-macros-devel
 BuildRequires: rust-pyo3-macros-backend-devel
 BuildRequires: rust-quote-devel
-BuildRequires: rust-radium-devel
 BuildRequires: rust-rayon-devel
 BuildRequires: rust-rayon-core-devel
 BuildRequires: rust-remove_dir_all-devel
 BuildRequires: rust-ring-devel
-BuildRequires: rust-ryu-devel
 BuildRequires: rust-scopeguard-devel
 BuildRequires: rust-serde-devel
 BuildRequires: rust-serde_derive-devel
 BuildRequires: rust-similar-devel
 BuildRequires: rust-smallvec-devel
 BuildRequires: rust-spin-devel
-BuildRequires: rust-static_assertions-devel
 BuildRequires: rust-syn-devel
-BuildRequires: rust-tap-devel
 BuildRequires: rust-tempfile-devel
 BuildRequires: rust-thiserror-devel
 BuildRequires: rust-thiserror-impl-devel
@@ -94,8 +89,6 @@ BuildRequires: rust-toml-devel
 BuildRequires: rust-unicode-xid-devel
 BuildRequires: rust-unindent-devel
 BuildRequires: rust-untrusted-devel
-BuildRequires: rust-version_check-devel
-BuildRequires: rust-wyz-devel
 BuildRequires: rust-paste-devel
 BuildRequires: rust-indoc-devel
 
