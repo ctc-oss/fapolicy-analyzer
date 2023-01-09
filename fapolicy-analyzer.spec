@@ -5,9 +5,7 @@ Release:       1%{?dist}
 License:       GPLv3+
 URL:           https://github.com/ctc-oss/fapolicy-analyzer
 Source0:       fapolicy-analyzer.tar.gz
-
-# this tarball contains documentation used to generate help docs
-Source2:       vendor-docs.tar.gz
+Source1:       vendor-docs.tar.gz
 
 BuildRequires: python3-devel
 BuildRequires: python3dist(setuptools)
@@ -89,7 +87,6 @@ BuildRequires: rust-untrusted-devel
 BuildRequires: rust-paste-devel
 BuildRequires: rust-indoc-devel
 
-
 Requires:      python3
 Requires:      python3-gobject
 Requires:      python3-events
@@ -116,7 +113,6 @@ Tools to assist with the configuration and management of fapolicyd.
 %cargo_prep
 
 %autosetup -p0 -n %{name}
-tar xvzf %{SOURCE2}
 
 # throw out the checked-in lock
 # this build will use what is available from the local registry
@@ -124,6 +120,9 @@ rm Cargo.lock
 
 # disable dev-tools crate
 sed -i '/tools/d' Cargo.toml
+
+# extract our doc sourcs
+tar xvzf %{SOURCE1}
 
 # our setup.py looks up the version from git describe
 # this overrides that check to the RPM version
