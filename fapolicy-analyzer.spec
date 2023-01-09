@@ -50,6 +50,7 @@ BuildRequires: rust-instant-devel
 BuildRequires: rust-lazy_static-devel
 BuildRequires: rust-libc-devel
 BuildRequires: rust-libdbus-sys-devel
+BuildRequires: rust-lmdb-devel
 BuildRequires: rust-lock_api-devel
 BuildRequires: rust-log-devel
 BuildRequires: rust-memchr-devel

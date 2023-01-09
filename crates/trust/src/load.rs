@@ -50,10 +50,7 @@ pub fn from_lmdb(lmdb: &Path) -> Result<DB, Error> {
     let lmdb = env.open_db(Some("trust.db"))?;
     let tx = env.begin_ro_txn()?;
     let mut c = tx.open_ro_cursor(lmdb)?;
-    let lookup: HashMap<String, Rec> = c
-        .iter()
-        .map(|i| i.map(|kv| TrustPair::new(kv).into()).unwrap())
-        .collect();
+    let lookup: HashMap<String, Rec> = c.iter().map(|kv| TrustPair::new(kv).into()).collect();
 
     Ok(DB::from(lookup))
 }
