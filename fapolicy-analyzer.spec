@@ -116,6 +116,7 @@ Tools to assist with the configuration and management of fapolicyd.
 %cargo_prep
 
 %autosetup -p0 -n %{name}
+tar xvzf %{SOURCE2}
 
 # throw out the checked-in lock
 # this build will use what is available from the local registry
