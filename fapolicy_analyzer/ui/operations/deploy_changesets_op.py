@@ -39,19 +39,12 @@ from fapolicy_analyzer.ui.strings import (
     FA_ARCHIVE_FILES_FILTER_LABEL,
     REVERT_SYSTEM_SUCCESSFUL_MSG,
     SAVE_AS_FILE_LABEL,
+    UNSAVED_DIALOG_MSG,
 )
-from fapolicy_analyzer.ui.ui_widget import UIBuilderWidget
 from fapolicy_analyzer.util.fapd_dbase import fapd_dbase_snapshot
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
-
-
-class UnsavedRulesDialog(UIBuilderWidget):
-    def __init__(self, parent=None):
-        super().__init__(name="unsaved_rules_dialog")
-        if parent:
-            self.get_ref().set_transient_for(parent)
 
 
 class _FapdArchiveFileChooserDialog(Gtk.FileChooserDialog):
@@ -179,10 +172,14 @@ class DeployChangesetsOp(UIOperation):
             and self.__modified_rules_text != self.__rules_text
         )
         if rules:
-            unsaved_rule_dialog = UnsavedRulesDialog()
-            unsaved_resp = unsaved_rule_dialog.get_ref().run()
-            unsaved_rule_dialog.get_ref().destroy()
-            if unsaved_resp < 0:
+            unsaved_rule_dialog = Gtk.MessageDialog(
+                message_type=Gtk.MessageType.INFO,
+                buttons=Gtk.ButtonsType.OK_CANCEL,
+                text=UNSAVED_DIALOG_MSG,
+            )
+            unsaved_resp = unsaved_rule_dialog.run()
+            unsaved_rule_dialog.destroy()
+            if unsaved_resp == Gtk.ResponseType.CANCEL:
                 return
 
         dlgDeployList = ConfirmDeploymentDialog(

@@ -1,22 +1,22 @@
 # Translations template for fapolicy-analyzer.
-# Copyright (C) 2022 ORGANIZATION
+# Copyright (C) 2023 ORGANIZATION
 # This file is distributed under the same license as the fapolicy-analyzer
 # project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2023.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: fapolicy-analyzer 0.3.1+144.g00f7c10\n"
+"Project-Id-Version: fapolicy-analyzer 0.0.0+319.g1d7d99b.dirty\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-12-06 16:15-0500\n"
+"POT-Creation-Date: 2023-01-09 09:16-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.11.0\n"
+"Generated-By: Babel 2.10.1\n"
 
 #: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:112
 #: fapolicy_analyzer/ui/system_trust_database_admin.py:107
@@ -438,7 +438,16 @@ msgstr ""
 msgid "Error applying changes"
 msgstr ""
 
-#: fapolicy_analyzer/ui/operations/deploy_changesets_op.py:148
+#: fapolicy_analyzer/ui/strings.py:193
+msgid ""
+"\n"
+"You have unsaved changes to the rules. If you deploy, your changes will "
+"be lost.\n"
+"Would you like to continue deploying?\n"
+"    "
+msgstr ""
+
+#: fapolicy_analyzer/ui/operations/deploy_changesets_op.py:151
 msgid "Deploy Changes"
 msgstr ""
 
