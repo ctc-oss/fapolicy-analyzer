@@ -307,18 +307,22 @@ msgid ": working directory is not a directory"
 msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:108
-msgid ": env vars not comma delimited K=V pairs"
+msgid ": env vars not formatted as CSV K=V pairs"
 msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:109
+msgid "Unsupprted env variable name"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:110
 msgid "Error: Unknown Profiler Session arguments"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:111
+#: fapolicy_analyzer/ui/strings.py:112
 msgid "File path(s) contains embedded whitespace."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:112
+#: fapolicy_analyzer/ui/strings.py:113
 msgid ""
 "fapolicyd currently does not support paths containing spaces. The "
 "following paths will not be added to the Trusted Files List.\n"
@@ -326,7 +330,7 @@ msgid ""
 "\n"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:117
+#: fapolicy_analyzer/ui/strings.py:118
 msgid ""
 "\n"
 "        Restore your prior session now?\n"
@@ -343,57 +347,57 @@ msgid ""
 "        "
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:133
+#: fapolicy_analyzer/ui/strings.py:134
 msgid "An error occurred trying to restore a prior autosaved edit session"
 msgstr ""
 
-#: fapolicy_analyzer/glade/loader.glade:44 fapolicy_analyzer/ui/strings.py:137
+#: fapolicy_analyzer/glade/loader.glade:44 fapolicy_analyzer/ui/strings.py:138
 msgid "Loading..."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:139
+#: fapolicy_analyzer/ui/strings.py:140
 msgid "file"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:140
+#: fapolicy_analyzer/ui/strings.py:141
 msgid "files"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:141
+#: fapolicy_analyzer/ui/strings.py:142
 msgid "user"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:142
+#: fapolicy_analyzer/ui/strings.py:143
 msgid "users"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:143
+#: fapolicy_analyzer/ui/strings.py:144
 msgid "group"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:144
+#: fapolicy_analyzer/ui/strings.py:145
 msgid "groups"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:145
+#: fapolicy_analyzer/ui/strings.py:146
 msgid ""
 "An error occurred trying to parse the event log file. Please try again or"
 " select a different file."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:148
+#: fapolicy_analyzer/ui/strings.py:149
 msgid "An error occurred trying to retrieve the user list. Please try again."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:151
+#: fapolicy_analyzer/ui/strings.py:152
 msgid "An error occurred trying to retrieve the group list. Please try again."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:155
+#: fapolicy_analyzer/ui/strings.py:156
 msgid "Could not load application resources"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:156
+#: fapolicy_analyzer/ui/strings.py:157
 msgid ""
 "The required application resource files could not be loaded from disk.\n"
 "The fapolicy analyzer application cannot open.\n"
@@ -405,11 +409,11 @@ msgid ""
 "2. An incorrectly configured fapolicyd rule set."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:167
+#: fapolicy_analyzer/ui/strings.py:168
 msgid "Trust Database"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:168
+#: fapolicy_analyzer/ui/strings.py:169
 msgid ""
 "\n"
 "The fapolicyd trusted resources database\n"
@@ -434,7 +438,7 @@ msgid ""
 "    "
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:192
+#: fapolicy_analyzer/ui/strings.py:193
 msgid "Error applying changes"
 msgstr ""
 

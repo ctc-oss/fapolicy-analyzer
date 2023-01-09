@@ -76,12 +76,11 @@ def test_faprofsession_init(faProfSession, mocker):
     ]
 )
 def test_faprofsession_init_w_bad_keys(dictArgs):
-    with pytest.raises(KeyError) as e:
+    with pytest.raises(KeyError):
         FaProfSession.validateArgs(dictArgs)
-    print(e)
-    with pytest.raises(KeyError) as e:
+
+    with pytest.raises(KeyError):
         FaProfSession(dictArgs)
-    print(e)
 
 
 def test_faprofsession_fopen_exception(mocker):
@@ -409,6 +408,71 @@ def test_validateArgs():
     ]
 )
 def test_validateArgs_relative_exec(dictArgs, expected_status):
+    dict_valid_args_return = FaProfSession.validateArgs(dictArgs)
+    assert len(dict_valid_args_return) == 1
+    assert expected_status in dict_valid_args_return
+
+
+@pytest.mark.parametrize(
+    "dictArgs, expected_status", [
+        (
+            # Test w/good env var string; only OK key is in returned dict
+            {
+                "executeText": "ls",
+                "argText": "",
+                "userText": os.getenv("USER"),
+                "dirText": os.getenv("HOME"),
+                "envText": "PATH=$PATH:.,A=a",
+            },
+            ProfSessionArgsStatus.OK,
+        ),
+        (
+            # Test w/bad env vars (not KV pair) ENV_VARS_FORMATING is returned
+            {
+                "executeText": "ls",
+                "argText": "",
+                "userText": os.getenv("USER"),
+                "dirText": os.getenv("HOME"),
+                "envText": "PATH=$PATH:.,A",
+            },
+            ProfSessionArgsStatus.ENV_VARS_FORMATING,
+        ),
+        (
+            # Test w/bad env vars (key name) ENV_VARS_FORMATING is returned
+            {
+                "executeText": "ls",
+                "argText": "",
+                "userText": os.getenv("USER"),
+                "dirText": os.getenv("HOME"),
+                "envText": "PATH=$PATH:.,A-B=1",
+            },
+            ProfSessionArgsStatus.ENV_VARS_FORMATING,
+        ),
+        (
+            # Test w/bad env vars (missing key) ENV_VARS_FORMATING is returned
+            {
+                "executeText": "ls",
+                "argText": "",
+                "userText": os.getenv("USER"),
+                "dirText": os.getenv("HOME"),
+                "envText": "PATH=$PATH:.,=1",
+            },
+            ProfSessionArgsStatus.ENV_VARS_FORMATING,
+        ),
+        (
+            # Test w/bad env vars (empty key) ENV_VARS_FORMATING is returned
+            {
+                "executeText": "ls",
+                "argText": "",
+                "userText": os.getenv("USER"),
+                "dirText": os.getenv("HOME"),
+                "envText": "PATH=$PATH:.," "=1",
+            },
+            ProfSessionArgsStatus.ENV_VARS_FORMATING,
+        ),
+    ]
+)
+def test_validateArgs_env_vars(dictArgs, expected_status):
     dict_valid_args_return = FaProfSession.validateArgs(dictArgs)
     assert len(dict_valid_args_return) == 1
     assert expected_status in dict_valid_args_return
