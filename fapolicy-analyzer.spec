@@ -6,10 +6,6 @@ License:       GPLv3+
 URL:           https://github.com/ctc-oss/fapolicy-analyzer
 Source0:       fapolicy-analyzer.tar.gz
 
-# this tarball contains bundled crates not available in Fedora
-# reference: https://bugzilla.redhat.com/show_bug.cgi?id=2124697#c5
-Source1:       vendor-rs.tar.gz
-
 # this tarball contains documentation used to generate help docs
 Source2:       vendor-docs.tar.gz
 
@@ -117,24 +113,9 @@ Requires:      mesa-dri-drivers
 Tools to assist with the configuration and management of fapolicyd.
 
 %prep
-# An issue with unpacking the vendored crates is that an unprivileged user
-# cannot write to the default registry at /usr/share/cargo/registry
-# To unblock this, we link the contents of the /usr/share/cargo/registry
-# into a new writable registry location, and then extract the contents of the
-# vendor tarball to this new writable dir.
-# Later the Cargo config will be updated to point to this new registry dir
-CARGO_REG_DIR=%{_builddir}/vendor-rs
-mkdir -p ${CARGO_REG_DIR}
-for d in %{cargo_registry}/*; do ln -sf ${d} ${CARGO_REG_DIR}; done
-tar -xzf %{SOURCE1} -C ${CARGO_REG_DIR} --strip-components=2
-
 %cargo_prep
 
-# here the Cargo config is updated to point to the new registry dir
-sed -i "s#%{cargo_registry}#${CARGO_REG_DIR}#g" .cargo/config
-
 %autosetup -p0 -n %{name}
-tar xvzf %{SOURCE2}
 
 # throw out the checked-in lock
 # this build will use what is available from the local registry
