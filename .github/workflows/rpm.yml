@@ -108,7 +108,7 @@ jobs:
       - name: Export Rust vendor tarball
         if: startsWith(matrix.props.dist, 'el')
         run: |
-          mv vendor-rs.tar.gz         /tmp/archives/vendor-rs.$PLATFORM.tar.gz
+          mv vendor-rs.tar.gz /tmp/archives/vendor-rs.tar.gz
         env:
           PLATFORM: ${{ matrix.props.dist }}
 

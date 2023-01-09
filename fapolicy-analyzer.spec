@@ -4,8 +4,8 @@ Version:       1.0.0
 Release:       1%{?dist}
 License:       GPLv3+
 URL:           https://github.com/ctc-oss/fapolicy-analyzer
-Source0:       fapolicy-analyzer.tar.gz
-Source1:       vendor-docs.tar.gz
+Source0:       %{url}/releases/download/v%{version}/fapolicy-analyzer.tar.gz
+Source1:       %{url}/releases/download/v%{version}/vendor-docs.tar.gz
 
 BuildRequires: python3-devel
 BuildRequires: python3dist(setuptools)
