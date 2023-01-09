@@ -21,7 +21,12 @@ import gi
 from rx import of, pipe
 from rx.operators import catch, map
 
-from fapolicy_analyzer import System, rollback_fapolicyd
+from fapolicy_analyzer import (
+    System,
+    check_disk_trust,
+    rollback_fapolicyd,
+    unchecked_system,
+)
 from fapolicy_analyzer.redux import (
     Action,
     ReduxFeatureModule,
@@ -58,12 +63,13 @@ from fapolicy_analyzer.ui.actions import (
     received_groups,
     received_rules,
     received_rules_text,
-    received_system_trust,
+    received_system_trust_update,
     received_users,
     system_checkpoint_set,
     system_deployed,
     system_initialization_error,
     system_received,
+    system_trust_load_complete,
 )
 from fapolicy_analyzer.ui.reducers import system_reducer
 from fapolicy_analyzer.ui.strings import SYSTEM_INITIALIZATION_ERROR
@@ -92,7 +98,7 @@ def create_system_feature(
     def _init_system() -> Action:
         def execute_system():
             try:
-                system = System()
+                system = unchecked_system()
                 GLib.idle_add(finish, system)
             except RuntimeError:
                 logging.exception(SYSTEM_INITIALIZATION_ERROR)
@@ -133,9 +139,22 @@ def create_system_feature(
         trust = _system.ancillary_trust()
         return received_ancillary_trust(trust)
 
-    def _get_system_trust(_: Action) -> Action:
-        trust = _system.system_trust()
-        return received_system_trust(trust)
+    def _get_system_trust(action: Action) -> Action:
+        def available(updates, pct):
+            # merge the updated trust into the system
+            _system.merge(updates)
+            # dispatch the update
+            trust_update = (_system.system_trust(), pct)
+            GLib.idle_add(dispatch, received_system_trust_update(trust_update))
+            print(f"progress {pct}%", end="\r")
+
+        def completed():
+            GLib.idle_add(dispatch, system_trust_load_complete())
+            print("done!")
+
+        check_disk_trust(_system, available, completed)
+        initial_trust = (_system.system_trust(), 0)
+        return received_system_trust_update(initial_trust)
 
     def _deploy_system(_: Action) -> Action:
         if not fapd_dbase_snapshot():

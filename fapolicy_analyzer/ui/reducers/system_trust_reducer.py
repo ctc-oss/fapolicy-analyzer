@@ -16,17 +16,19 @@
 from typing import Any, NamedTuple, Optional, Sequence, cast
 
 from fapolicy_analyzer import Trust
+from fapolicy_analyzer.redux import Action, Reducer, handle_actions
 from fapolicy_analyzer.ui.actions import (
     ERROR_SYSTEM_TRUST,
-    RECEIVED_SYSTEM_TRUST,
+    RECEIVED_SYSTEM_TRUST_UPDATE,
     REQUEST_SYSTEM_TRUST,
+    SYSTEM_TRUST_LOAD_COMPLETE,
 )
-from fapolicy_analyzer.redux import Action, Reducer, handle_actions
 
 
 class TrustState(NamedTuple):
     error: Optional[str]
     loading: bool
+    check_percentage: int
     trust: Sequence[Trust]
 
 
@@ -34,13 +36,21 @@ def _create_state(state: TrustState, **kwargs: Optional[Any]) -> TrustState:
     return TrustState(**{**state._asdict(), **kwargs})
 
 
-def handle_request_system_trust(state: TrustState, action: Action) -> TrustState:
-    return _create_state(state, loading=True, error=None)
+def handle_request_system_trust(state: TrustState, _: Action) -> TrustState:
+    return _create_state(state, loading=True, error=None, check_percentage=0)
 
 
-def handle_received_system_trust(state: TrustState, action: Action) -> TrustState:
-    payload = cast(Sequence[Trust], action.payload)
-    return _create_state(state, trust=payload, error=None, loading=False)
+def handle_received_system_trust_update(
+    state: TrustState, action: Action
+) -> TrustState:
+    trust, check_percentage = cast((Sequence[Trust], int), action.payload)
+    return _create_state(
+        state, loading=False, trust=trust, check_percentage=check_percentage, error=None
+    )
+
+
+def handle_system_trust_load_complete(state: TrustState, _: Action) -> TrustState:
+    return _create_state(state, error=None, loading=False, check_percentage=100)
 
 
 def handle_error_system_trust(state: TrustState, action: Action) -> TrustState:
@@ -51,8 +61,9 @@ def handle_error_system_trust(state: TrustState, action: Action) -> TrustState:
 system_trust_reducer: Reducer = handle_actions(
     {
         REQUEST_SYSTEM_TRUST: handle_request_system_trust,
-        RECEIVED_SYSTEM_TRUST: handle_received_system_trust,
+        RECEIVED_SYSTEM_TRUST_UPDATE: handle_received_system_trust_update,
+        SYSTEM_TRUST_LOAD_COMPLETE: handle_system_trust_load_complete,
         ERROR_SYSTEM_TRUST: handle_error_system_trust,
     },
-    TrustState(error=None, trust=[], loading=False),
+    TrustState(error=None, trust=[], loading=False, check_percentage=100),
 )

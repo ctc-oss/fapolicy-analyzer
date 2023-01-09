@@ -16,11 +16,9 @@
 import logging
 from locale import gettext as _
 
-import fapolicy_analyzer.ui.strings as strings
 from events import Events
-from fapolicy_analyzer.util import fs  # noqa: F401
-from fapolicy_analyzer.util.format import f
 
+import fapolicy_analyzer.ui.strings as strings
 from fapolicy_analyzer.ui.actions import (
     NotificationType,
     add_notification,
@@ -31,6 +29,8 @@ from fapolicy_analyzer.ui.store import dispatch, get_system_feature
 from fapolicy_analyzer.ui.trust_file_details import TrustFileDetails
 from fapolicy_analyzer.ui.trust_file_list import TrustFileList
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
+from fapolicy_analyzer.util import fs  # noqa: F401
+from fapolicy_analyzer.util.format import f
 
 
 class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):

@@ -15,7 +15,7 @@
 
 from enum import Enum
 from itertools import count
-from typing import Any, Dict, Iterator, NamedTuple, Optional, Sequence
+from typing import Any, Dict, Iterator, NamedTuple, Optional, Sequence, Tuple
 
 from fapolicy_analyzer import Changeset, Event, Group, Rule, System, Trust, User
 from fapolicy_analyzer.redux import Action, create_action
@@ -41,7 +41,8 @@ RECEIVED_ANCILLARY_TRUST = "RECEIVED_ANCILLARY_TRUST"
 ERROR_ANCILLARY_TRUST = "ERROR_ANCILLARY_TRUST"
 
 REQUEST_SYSTEM_TRUST = "REQUEST_SYSTEM_TRUST"
-RECEIVED_SYSTEM_TRUST = "RECEIVED_SYSTEM_TRUST"
+RECEIVED_SYSTEM_TRUST_UPDATE = "RECEIVED_SYSTEM_TRUST_UPDATE"
+SYSTEM_TRUST_LOAD_COMPLETE = "SYSTEM_TRUST_LOAD_COMPLETE"
 ERROR_SYSTEM_TRUST = "ERROR_SYSTEM_TRUST"
 
 DEPLOY_SYSTEM = "DEPLOY_SYSTEM"
@@ -140,8 +141,12 @@ def request_system_trust() -> Action:
     return _create_action(REQUEST_SYSTEM_TRUST)
 
 
-def received_system_trust(trust: Sequence[Trust]) -> Action:
-    return _create_action(RECEIVED_SYSTEM_TRUST, trust)
+def received_system_trust_update(update: Tuple[Sequence[Trust], int]) -> Action:
+    return _create_action(RECEIVED_SYSTEM_TRUST_UPDATE, update)
+
+
+def system_trust_load_complete() -> Action:
+    return _create_action(SYSTEM_TRUST_LOAD_COMPLETE)
 
 
 def error_system_trust(error: str) -> Action:
