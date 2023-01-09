@@ -249,7 +249,6 @@ dependencies = [
  "fapolicy-daemon",
  "fapolicy-rules",
  "fapolicy-trust",
- "lmdb-rkv",
  "serde",
  "thiserror",
 ]
