@@ -139,6 +139,7 @@ echo %{module_version} > VERSION
 install -D bin/%{name} %{buildroot}/%{_sbindir}/%{name}
 install -D data/fapolicy-analyzer.8 -t %{buildroot}/%{_mandir}/man8/
 desktop-file-install data/fapolicy-analyzer.desktop
+find locale -name %{name}.mo -exec cp --parents -rv {} %{buildroot}/%{_datadir} \;
 %find_lang %{name} --with-gnome
 
 %check
