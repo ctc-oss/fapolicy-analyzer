@@ -3,7 +3,7 @@
 .SH NAME
 fapolicy-analyzer \- Configuration and management of fapolicyd
 .SH SYNOPSIS
-This application consists of several GUI components:
+This application consists of several GUI components that assist with the configuration and management of fapolicyd:
 .P
   1. Trust Administration
 .br
@@ -12,14 +12,28 @@ This application consists of several GUI components:
   3. Policy Profiling
 .br
   4. Log Analysis
+
 .SH DESCRIPTION
 File Access Policy Analyzer is a GUI tool to assist with the configuration and management of fapolicyd.
+
+.SH NOTES
+The configuration is located ~/.config/fapolicy-analyzer/config.toml.
+.br
+The startup script will use polkit to escalate privileges if sudo is not used.
+.br
+
 .SH OPTIONS
 .TP
 .B \-v, \-\-verbose
 Enable verbose mode to increase logging output.
+
+.SH FILES
+.B ~/.config/fapolicy-analyzer/fapolicy-analyzer.toml
+- application configuration
+.P
+
 .SH SEE ALSO
-fapolicyd(8), fapolicyd.rules(5), fapolicyd.trust(5), fapolicyd-cli(1)
+fapolicyd(8), fapolicyd.rules(5), fapolicyd.trust(5)
+
 .SH BUGS
 No known bugs.
-
