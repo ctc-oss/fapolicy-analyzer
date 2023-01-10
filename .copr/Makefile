@@ -4,7 +4,6 @@
 OS_PRETTY_NAME = $(shell grep /etc/os-release -e "^PRETTY_NAME=" | tr -d '"' | cut -d= -f2 | cut -d: -f1)
 OS_ID_FN =       $(shell grep /etc/os-release -e "^ID=" | tr -d '"' | cut -d= -f2 | cut -d: -f1)
 OS_ID   ?=       $(OS_ID_FN)
-DIST    ?=       $(shell rpm --eval "%{?dist}")
 
 idenfity:
 	@echo "Platform: $(OS_PRETTY_NAME) (id: $(OS_ID))"
@@ -50,8 +49,7 @@ vendor-py:
 vendor-rs:
 	cargo check
 	./scripts/srpm/vendor-rs.sh
-	cp vendor-rs.tar.gz "/tmp/rpmbuild/SOURCES/vendor-rs$(DIST).tar.gz"
-	if [[ x$(DIST) != x ]]; then mv vendor-rs.tar.gz "vendor-rs$(DIST).tar.gz"; fi
+	cp vendor-rs.tar.gz /tmp/rpmbuild/SOURCES/
 
 srpm: idenfity prepfs dnf vendor
 	rpmbuild -bs -D "_topdir /tmp/rpmbuild" \$(spec)
