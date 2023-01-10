@@ -28,7 +28,7 @@ dnf: dnf-common
 endif
 
 dnf-common:
-	dnf install -y git openssl-devel dbus-devel python3-devel python3-pip python3-toml python3-beautifulsoup4 python3-requests python3-babel python3-markdown2 itstool
+	dnf install -y git which openssl-devel dbus-devel python3-devel python3-pip python3-toml python3-beautifulsoup4 python3-requests python3-babel python3-markdown2 itstool
 	dnf install -y rust-packaging || true
 	dnf install -y rust-toolset || true
 	cargo install cargo-vendor-filterer
@@ -49,7 +49,7 @@ vendor-app:
 	cp fapolicy-analyzer.tar.gz /tmp/rpmbuild/SOURCES/
 
 vendor-py:
-	spectool -gf -C /tmp/rpmbuild/SOURCES/ \$(spec)
+	which spectool && spectool -gf -C /tmp/rpmbuild/SOURCES/ \$(spec) || true
 
 vendor-rs:
 	cargo check

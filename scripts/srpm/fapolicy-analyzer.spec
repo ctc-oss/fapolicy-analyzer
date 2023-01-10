@@ -237,6 +237,7 @@ python3 setup.py bdist_wheel
 install bin/%{name} %{buildroot}/%{_sbindir}/%{name} -D
 install data/fapolicy-analyzer.8 %{buildroot}/%{_mandir}/man8/* -D
 desktop-file-install data/fapolicy-analyzer.desktop
+find locale -name %{name}.mo -exec cp --parents -rv {} %{buildroot}/%{_datadir} \;
 %find_lang %{name} --with-gnome
 
 %post
