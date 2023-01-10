@@ -1,6 +1,6 @@
 Summary:       File Access Policy Analyzer
 Name:          fapolicy-analyzer
-Version:       0.6.5
+Version:       0.6.6
 Release:       1%{?dist}
 License:       GPLv3+
 URL:           https://github.com/ctc-oss/fapolicy-analyzer
@@ -142,5 +142,5 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
 %attr(755,root,root) %{_datadir}/applications/%{name}.desktop
 
 %changelog
-* Fri Jan 06 2023 John Wass <jwass3@gmail.com> 0.6.5-1
+* Tue Jan 10 2023 John Wass <jwass3@gmail.com> 0.6.6-1
 - New release
