@@ -89,7 +89,7 @@ def test_parse_args_all_options():
     with patch.object(sys, "argv", testargs):
         main()
 
-        assert logging.getLogger().level == logging.DEBUG
+        assert logging.getLogger().level == logging.WARNING
         assert sessionManager._SessionManager__bAutosaveEnabled
         assert sessionManager._SessionManager__iTmpFileCount == 3
         assert (
@@ -154,7 +154,7 @@ def test_main_all_options(mocker):
         mockStore = mocker.patch("fapolicy_analyzer.ui.__main__.init_store")
         main()
 
-        assert logging.getLogger().level == logging.DEBUG
+        assert logging.getLogger().level == logging.WARNING
         assert sessionManager._SessionManager__bAutosaveEnabled
         assert sessionManager._SessionManager__iTmpFileCount == 3
         assert (

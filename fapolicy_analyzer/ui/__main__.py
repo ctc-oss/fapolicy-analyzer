@@ -14,21 +14,25 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+from fapolicy_analyzer.util.xdg_utils import (
+    xdg_state_dir_prefix,
+    xdg_data_dir_prefix,
+)
 
-gf_handler = logging.FileHandler("/tmp/fapolicy-analyzer.log", mode="w")
+gf_handler = logging.FileHandler(xdg_data_dir_prefix("fapolicy-analyzer.log"),
+                                 mode="w")
 gs_handler = logging.StreamHandler()
 logging.basicConfig(level=logging.DEBUG, handlers=[gf_handler, gs_handler])
-gs_handler.setLevel(logging.WARNING)
+gs_handler.setLevel(logging.WARN)
+gf_handler.setLevel(logging.WARN)
 
 import argparse
-
 import gi
 from fapolicy_analyzer import __version__ as app_version
 from fapolicy_analyzer.ui import load_resources
 from fapolicy_analyzer.ui.session_manager import sessionManager
 from fapolicy_analyzer.ui.splash_screen import SplashScreen
 from fapolicy_analyzer.ui.store import init_store
-from fapolicy_analyzer.util.xdg_utils import xdg_state_dir_prefix
 
 gi.require_version("Gtk", "3.0")
 gi.require_version("GtkSource", "3.0")
@@ -52,11 +56,16 @@ def _parse_cmdline():
     parser.add_argument(
         "-c", "--count", help="Specify the max number of session tmp files"
     )
+    parser.add_argument(
+        "-l", "--loglevel",
+        choices=["CRITICAL", "ERROR", "WARN", "INFO", "DEBUG"],
+        help="Specify the log file leve. Default: WARN"
+    )
     args = parser.parse_args()
 
-    # Set Verbosity Level
+    # Enable verbosity
     if args.verbose:
-        gs_handler.setLevel(logging.DEBUG)
+        gs_handler.setLevel(logging.INFO)
         logging.debug("Verbosity enabled.")
 
     # Enable edit session autosaves
@@ -66,6 +75,18 @@ def _parse_cmdline():
     # Enable edit session max autosave file count
     if args.count:
         sessionManager.set_autosave_filecount(int(args.count))
+
+    # Enable edit session max autosave file count
+    if args.loglevel:
+        dictOption2LogLevel = {"CRITICAL": logging.CRITICAL,
+                               "ERROR": logging.ERROR,
+                               "WARN": logging.WARN,
+                               "INFO": logging.INFO,
+                               "DEBUG": logging.DEBUG
+                               }
+
+        print(f"args.loglevel = {args.loglevel}")
+        gf_handler.setLevel(dictOption2LogLevel[args.loglevel])
 
     # Set Edit Session Tmp File
     if args.session:
