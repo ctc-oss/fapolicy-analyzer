@@ -104,7 +104,7 @@ Tools to assist with the configuration and management of fapolicyd.
 %prep
 %cargo_prep
 
-%autosetup -p0 -n %{name}
+%autosetup -n %{name}
 
 # throw out the checked-in lock
 # this build will use what is available from the local registry
@@ -123,23 +123,23 @@ echo %{version} > VERSION
 
 %install
 %{py3_install_wheel %{module}-%{version}*%{_arch}.whl}
-install bin/%{name} %{buildroot}/%{_sbindir}/%{name} -D
-install data/fapolicy-analyzer.8 %{buildroot}/%{_mandir}/man8/* -D
+install -D bin/%{name} %{buildroot}/%{_sbindir}/%{name}
+install -D data/fapolicy-analyzer.8 -t %{buildroot}/%{_mandir}/man8/
 desktop-file-install data/fapolicy-analyzer.desktop
-
-%post
-update-desktop-database
+find locale -name %{name}.mo -exec cp --parents -rv {} %{buildroot}/%{_datadir} \;
+%find_lang %{name}
 
 %check
+desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
 
-%files -n %{name}
+%files -n %{name} -f %{name}.lang
 %doc scripts/srpm/README
 %license LICENSE
 %{python3_sitearch}/%{module}
 %{python3_sitearch}/%{module}-%{version}*
 %attr(755,root,root) %{_sbindir}/fapolicy-analyzer
+%attr(644,root,root) %{_mandir}/man8/fapolicy-analyzer.8*
 %attr(755,root,root) %{_datadir}/applications/%{name}.desktop
-%attr(644,root,root) %{_mandir}/man8/*
 
 %changelog
 * Fri Jan 06 2023 John Wass <jwass3@gmail.com> 0.6.5-1

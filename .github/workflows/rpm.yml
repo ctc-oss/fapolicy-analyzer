@@ -216,8 +216,42 @@ jobs:
           path: |
             /tmp/archives/*.x86_64.rpm
 
+  install:
+    needs: [ config, srpm, rpm ]
+    name: Install ${{ matrix.props.dist }}
+    container: ${{ matrix.props.image }}
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix: ${{ fromJson(needs.config.outputs.matrix )}}
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Download rpm artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: rpm-artifacts
+          path: /tmp/src/
+
+      - name: Checksum artifacts
+        run: |
+          sha256sum /tmp/src/*
+
+      - name: Enable EPEL
+        if: startsWith(matrix.props.dist, 'el')
+        run: |
+          dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+
+      - name: Install RPM
+        run: |
+          dnf install -y /tmp/src/fapolicy-analyzer-*.${{ matrix.props.dist }}.x86_64.rpm
+
+      - name: Check RPM
+        run: |
+          rpm -qa --dump fapolicy-analyzer
+          rpm -q fapolicy-analyzer
+
   publish:
-    needs: [ srpm, rpm, copr ]
+    needs: [ srpm, rpm, install, copr ]
     name: Publish
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-20.04

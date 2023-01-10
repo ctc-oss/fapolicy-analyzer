@@ -126,12 +126,15 @@ check: format lint test
 	git status
 
 fc-rpm:
-	make -f .copr/Makefile vendor
-	podman build -t fapolicy-analyzer:rawhide -f Containerfile .
-	podman run --rm -it --network=none -v /tmp:/v fapolicy-analyzer:rawhide /v
+	@echo -e "${GRN}--- Fedora RPM generation...${NC}"
+	make -f .copr/Makefile vendor OS_ID=fedora
+	podman build -t fapolicy-analyzer:38 -f Containerfile .
+	podman run --rm -it --network=none -v /tmp:/v fapolicy-analyzer:38 /v
+
 
 el-rpm:
-	make -f .copr/Makefile vendor
+	@echo -e "${GRN}--- Rhel RPM generation...${NC}"
+	make -f .copr/Makefile vendor OS_ID=rhel
 	podman build -t fapolicy-analyzer:el -f scripts/srpm/Containerfile.el .
 	podman run --rm -it --network=none -v /tmp:/v fapolicy-analyzer:el /v
 
