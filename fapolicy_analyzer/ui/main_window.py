@@ -45,6 +45,7 @@ from fapolicy_analyzer.ui.profiler_page import ProfilerPage
 from fapolicy_analyzer.ui.rules import RulesAdminPage
 from fapolicy_analyzer.ui.session_manager import sessionManager
 from fapolicy_analyzer.ui.store import dispatch, get_system_feature
+from fapolicy_analyzer.ui.strings import SYNC_FIFO_ERROR_MESSAGE
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 from fapolicy_analyzer.ui.unapplied_changes_dialog import UnappliedChangesDialog
@@ -442,7 +443,7 @@ class MainWindow(UIConnectedWidget):
             except RuntimeError:
                 dispatch(
                     add_notification(
-                        "fifo pipe does not exist.\n Default: /run/fapolicyd/fapolicyd.fifo",
+                        SYNC_FIFO_ERROR_MESSAGE,
                         NotificationType.ERROR,
                     )
                 )

@@ -1,22 +1,22 @@
 # Translations template for fapolicy-analyzer.
-# Copyright (C) 2022 ORGANIZATION
+# Copyright (C) 2023 ORGANIZATION
 # This file is distributed under the same license as the fapolicy-analyzer
 # project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2023.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: fapolicy-analyzer 0.3.1+144.g00f7c10\n"
+"Project-Id-Version: fapolicy-analyzer 0.0.0+324.gd6666ce.dirty\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-12-06 16:15-0500\n"
+"POT-Creation-Date: 2023-01-10 09:37-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.11.0\n"
+"Generated-By: Babel 2.10.1\n"
 
 #: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:112
 #: fapolicy_analyzer/ui/system_trust_database_admin.py:107
@@ -56,7 +56,7 @@ msgstr ""
 msgid "Reverting to previous settings in {i+1} seconds"
 msgstr ""
 
-#: fapolicy_analyzer/ui/main_window.py:276
+#: fapolicy_analyzer/ui/main_window.py:281
 msgid ""
 "An error occurred trying to open the session file, "
 "{self.strSessionFilename}"
@@ -438,6 +438,12 @@ msgstr ""
 msgid "Error applying changes"
 msgstr ""
 
+#: fapolicy_analyzer/ui/strings.py:194
+msgid ""
+"fifo pipe does not exist.\n"
+" Default: /run/fapolicyd/fapolicyd.fifo"
+msgstr ""
+
 #: fapolicy_analyzer/ui/operations/deploy_changesets_op.py:148
 msgid "Deploy Changes"
 msgstr ""
@@ -489,6 +495,7 @@ msgid "No"
 msgstr ""
 
 #: fapolicy_analyzer/glade/confirm_change_dialog.glade:63
+#: fapolicy_analyzer/glade/main_window.glade:402
 #: fapolicy_analyzer/glade/time_select_dialog.glade:57
 #: fapolicy_analyzer/glade/trust_reconciliation_dialog.glade:67
 msgid "Cancel"
@@ -564,16 +571,36 @@ msgstr ""
 msgid "System"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:239
+#: fapolicy_analyzer/glade/main_window.glade:235
+msgid "Syncronize Databases"
+msgstr ""
+
+#: fapolicy_analyzer/glade/main_window.glade:248
 msgid "_Help"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:249
+#: fapolicy_analyzer/glade/main_window.glade:258
 msgid "User Guide"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:312
+#: fapolicy_analyzer/glade/main_window.glade:321
 msgid "fapolicyd:"
+msgstr ""
+
+#: fapolicy_analyzer/glade/main_window.glade:358
+msgid "Sync Trust Databases"
+msgstr ""
+
+#: fapolicy_analyzer/glade/main_window.glade:376
+msgid "Restart"
+msgstr ""
+
+#: fapolicy_analyzer/glade/main_window.glade:389
+msgid "Later"
+msgstr ""
+
+#: fapolicy_analyzer/glade/main_window.glade:426
+msgid "Restart to view database update?"
 msgstr ""
 
 #: fapolicy_analyzer/glade/notification.glade:46
