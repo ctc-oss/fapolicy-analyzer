@@ -62,7 +62,7 @@ def expand_path(colon_separated_str, cwd="."):
     variable, leading colon, terminating colon, or an intermediate double colon.
     These final three colon notations map to the user supplied working dir.
     """
-    logging.debug(f"expand_path({colon_separated_str}, {cwd})")
+    logging.info(f"expand_path({colon_separated_str}, {cwd})")
 
     # Expand native PATH env var if in user provided PATH env var string
     expanded_path = re.sub(r"\$\{?PATH\}?",
@@ -94,7 +94,7 @@ class ProfSessionException(RuntimeError):
 # ########################## Profiler Session ###########################
 class FaProfSession:
     def __init__(self, dictProfTgt, instance=0, faprofiler=None):
-        logging.debug(f"faProfSession::__init__({dictProfTgt}, {faprofiler})")
+        logging.info(f"faProfSession::__init__({dictProfTgt}, {faprofiler})")
         self.throwOnInvalidSessionArgs(dictProfTgt)
         self.timeStamp = None
 
@@ -177,15 +177,15 @@ class FaProfSession:
                 pw_record = pwd.getpwnam(self.user)
                 self.uid = pw_record.pw_uid
                 self.gid = pw_record.pw_gid
-                logging.debug(f"The uid/gid of the profiling tgt: {self.uid}/{self.gid}")
+                logging.info(f"The uid/gid of the profiling tgt: {self.uid}/{self.gid}")
 
                 # Change the ownership of profiling tgt's stdout and stderr
-                logging.debug(
+                logging.info(
                     f"Changing ownership of fds: {self.fdTgtStdout},{self.fdTgtStderr}"
                 )
                 os.fchown(self.fdTgtStdout.fileno(), self.uid, self.gid)
                 os.fchown(self.fdTgtStderr.fileno(), self.uid, self.gid)
-                logging.debug(
+                logging.info(
                     f"Changed the profiling tgt stdout/err ownership {self.uid},{self.gid}"
                 )
                 self.u_valid = True
@@ -211,7 +211,7 @@ class FaProfSession:
             self.gid = os.getgid()
 
     def startTarget(self, block_until_termination=True):
-        logging.debug("FaProfSession::startTarget()")
+        logging.info("FaProfSession::startTarget()")
 
         # Capture process object
         try:
@@ -277,7 +277,7 @@ class FaProfSession:
         return self.timeStamp
 
     def get_status(self):
-        logging.debug("FaProfSession::get_status()")
+        logging.info("FaProfSession::get_status()")
 
         # Poll the Popen object if it exists, poll() returns None if running
         if self.procTarget:
@@ -290,7 +290,7 @@ class FaProfSession:
         return self.status
 
     def clean_all(self):
-        logging.debug("FaProfSession::clean_all()")
+        logging.info("FaProfSession::clean_all()")
         # Delete all log file artifacts
 
     @staticmethod
@@ -315,7 +315,7 @@ class FaProfSession:
         discovered_exec_path = shutil.which(relative_exec, path=search_path)
         if discovered_exec_path and not os.path.isabs(discovered_exec_path):
             discovered_exec_path = os.path.abspath(discovered_exec_path)
-        logging.debug(f"_rel_tgt_which() - return value:{discovered_exec_path}")
+        logging.info(f"_rel_tgt_which() - return value:{discovered_exec_path}")
         return discovered_exec_path
 
     @staticmethod
@@ -350,7 +350,7 @@ class FaProfSession:
             raise KeyError(f"Missing {delta_keys} key(s) from Profiler Page")
 
         dictReturn = {}
-        logging.debug(f"validateProfArgs({dictProfTgt}")
+        logging.info(f"validateArgs({dictProfTgt}")
         exec_path = dictProfTgt.get("executeText", "")
         exec_user = dictProfTgt.get("userText", "")
         exec_pwd = dictProfTgt.get("dirText", "")
@@ -458,7 +458,7 @@ class FaProfSession:
 # ############################## Profiler ###############################
 class FaProfiler:
     def __init__(self, fapd_mgr=None, fapd_persistance=True):
-        logging.debug("FaProfiler::__init__()")
+        logging.info("FaProfiler::__init__()")
         self.fapd_mgr = fapd_mgr
         self.fapd_persistance = fapd_persistance
         self.fapd_pid = None
@@ -476,7 +476,7 @@ class FaProfiler:
         self.dictFaProfSession is a dict of current tgt profiling sessions
         associated with a single fapd profiling instance
         """
-        logging.debug(f"FaProfiler::start_prof_session('{dictArgs}')")
+        logging.info(f"FaProfiler::start_prof_session('{dictArgs}')")
         self.fapd_mgr.start(FapdMode.PROFILING)
         if self.fapd_mgr.procProfile:
             self.fapd_pid = self.fapd_mgr.procProfile.pid
@@ -505,11 +505,11 @@ class FaProfiler:
         return key
 
     def status_prof_session(self, sessionName=None):
-        logging.debug("FaProfiler::status_prof_session()")
+        logging.info("FaProfiler::status_prof_session()")
         return self.dictFaProfSession.get(sessionName).get_status()
 
     def stop_prof_session(self, sessionName=None):
-        logging.debug("FaProfiler::stop_prof_session()")
+        logging.info("FaProfiler::stop_prof_session()")
 
         # Stop profiling targets first then stop fapd profiling instance
         if sessionName:

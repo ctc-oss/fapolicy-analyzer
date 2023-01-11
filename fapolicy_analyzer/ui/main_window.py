@@ -191,7 +191,7 @@ class MainWindow(UIConnectedWidget):
         return len(self.__changesets) > 0
 
     def on_start(self, *args):
-        logging.debug(f"MainWindow::on_start({args})")
+        logging.info(f"MainWindow::on_start({args})")
         self.__pack_main_content(router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN))
 
         # On startup check for the existing of a tmp session file
@@ -248,7 +248,7 @@ class MainWindow(UIConnectedWidget):
         self.__toolbar.refresh_buttons_sensitivity()
 
     def on_openMenu_activate(self, menuitem, data=None):
-        logging.debug("Callback entered: MainWindow::on_openMenu_activate()")
+        logging.info("Callback entered: MainWindow::on_openMenu_activate()")
         # Display file chooser dialog
         fcd = Gtk.FileChooserDialog(
             strings.OPEN_FILE_LABEL,
@@ -284,7 +284,7 @@ class MainWindow(UIConnectedWidget):
         fcd.destroy()
 
     def on_restoreMenu_activate(self, menuitem, data=None):
-        logging.debug("Callback entered: MainWindow::on_restoreMenu_activate()")
+        logging.info("Callback entered: MainWindow::on_restoreMenu_activate()")
         try:
             if not sessionManager.restore_previous_session():
                 dispatch(
@@ -301,7 +301,7 @@ class MainWindow(UIConnectedWidget):
         self.get_object("restoreMenu").set_sensitive(False)
 
     def on_saveMenu_activate(self, menuitem, data=None):
-        logging.debug("Callback entered: MainWindow::on_saveMenu_activate()")
+        logging.info("Callback entered: MainWindow::on_saveMenu_activate()")
         if not self.strSessionFilename:
             self.on_saveAsMenu_activate(menuitem, None)
         else:
@@ -311,7 +311,7 @@ class MainWindow(UIConnectedWidget):
             )
 
     def on_saveAsMenu_activate(self, menuitem, data=None):
-        logging.debug("Callback entered: MainWindow::on_saveAsMenu_activate()")
+        logging.info("Callback entered: MainWindow::on_saveAsMenu_activate()")
         # Display file chooser dialog
         fcd = Gtk.FileChooserDialog(
             strings.SAVE_AS_FILE_LABEL,
@@ -436,12 +436,12 @@ class MainWindow(UIConnectedWidget):
 
     # ###################### fapolicyd interfacing ##########################
     def on_fapdStartMenu_activate(self, menuitem, data=None):
-        logging.debug("on_fapdStartMenu_activate() invoked.")
+        logging.info("on_fapdStartMenu_activate() invoked.")
         if self._fapd_status != ServiceStatus.UNKNOWN:
             self._fapd_mgr.start()
 
     def on_fapdStopMenu_activate(self, menuitem, data=None):
-        logging.debug("on_fapdStopMenu_activate() invoked.")
+        logging.info("on_fapdStopMenu_activate() invoked.")
         if self._fapd_status != ServiceStatus.UNKNOWN:
             self._fapd_mgr.stop()
 
@@ -459,7 +459,7 @@ class MainWindow(UIConnectedWidget):
             self._fapdStopMenuItem.set_sensitive(False)
 
     def _update_fapd_status(self, status: ServiceStatus):
-        logging.debug(f"_update_fapd_status({status})")
+        logging.info(f"_update_fapd_status({status})")
 
         # Enable/Disable fapd menu items
         self._enable_fapd_menu_items(status)
@@ -475,12 +475,12 @@ class MainWindow(UIConnectedWidget):
         self.on_update_daemon_status(self._fapd_status)
 
     def on_update_daemon_status(self, status: ServiceStatus):
-        logging.debug(f"on_update_daemon_status({status})")
+        logging.info(f"on_update_daemon_status({status})")
         self._fapd_status = status
         GLib.idle_add(self._update_fapd_status, status)
 
     def _monitor_daemon(self, timeout=5):
-        logging.debug("_monitor_daemon() executing")
+        logging.info("_monitor_daemon() executing")
         while True:
             try:
                 bStatus = self._fapd_mgr.status()
@@ -492,10 +492,10 @@ class MainWindow(UIConnectedWidget):
             sleep(timeout)
 
     def _start_daemon_monitor(self):
-        logging.debug(f"start_daemon_monitor(): {self._fapd_status}")
+        logging.info(f"start_daemon_monitor(): {self._fapd_status}")
         # Only start monitoring thread if fapolicyd is installed
         if self._fapd_status is not ServiceStatus.UNKNOWN:
-            logging.debug("Spawning monitor thread...")
+            logging.info("Spawning monitor thread...")
             thread = Thread(target=self._monitor_daemon)
             thread.daemon = True
             thread.start()

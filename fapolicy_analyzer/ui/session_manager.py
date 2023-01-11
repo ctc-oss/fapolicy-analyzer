@@ -57,7 +57,7 @@ class SessionManager:
         """Deletes all current autosaved session files. These files were
         created during the current editing session, and are deleted after a deploy,
         or a session file open/restore operation."""
-        logging.debug("SessionManager::__cleanup_autosave_sessions()")
+        logging.info("SessionManager::__cleanup_autosave_sessions()")
         logging.debug(self.__listAutosavedFilenames)
         for names in self.__listAutosavedFilenames:
             os.remove(names)
@@ -65,7 +65,7 @@ class SessionManager:
 
     def __force_cleanup_autosave_sessions(self):
         """Brute force collection and deletion of all detected autosave files"""
-        logging.debug("SessionManager::__force_cleanup_autosave_sessions()")
+        logging.info("SessionManager::__force_cleanup_autosave_sessions()")
         strSearchPattern = self.__tmpFileBasename + "_*.json"
         logging.debug("Search Pattern: {}".format(strSearchPattern))
         listTmpFiles = glob.glob(strSearchPattern)
@@ -83,7 +83,7 @@ class SessionManager:
     def cleanup(self):
         """SessionManager singleton / global object clean-up
         effectively the SessionManager's destructor."""
-        logging.debug("SessionManager::cleanup()")
+        logging.info("SessionManager::cleanup()")
         self.__force_cleanup_autosave_sessions()
 
     def on_next_system(self, system):
@@ -99,17 +99,17 @@ class SessionManager:
 
     # ####################### Accessors Functions ####################
     def set_autosave_enable(self, bEnable):
-        logging.debug("SessionManager::set_autosave_enable: {}".format(bEnable))
+        logging.info("SessionManager::set_autosave_enable: {}".format(bEnable))
         self.__bAutosaveEnabled = bEnable
 
     def set_autosave_filename(self, strFileBasename):
-        logging.debug(
+        logging.info(
             "SessionManager::set_autosave_filename: {}".format(strFileBasename)
         )
         self.__tmpFileBasename = strFileBasename
 
     def set_autosave_filecount(self, iFilecount):
-        logging.debug("SessionManager::set_autosave_filecount: {}".format(iFilecount))
+        logging.info("SessionManager::set_autosave_filecount: {}".format(iFilecount))
         self.__iTmpFileCount = iFilecount
 
     # ######################## Edit Session Mgmt ############################
@@ -120,12 +120,12 @@ class SessionManager:
         logging.debug("Path/Action Dict: {}".format(dictPA))
 
         # Save the pending changeset queue to the specified json file
-        logging.debug("SessionManager::save_edit_session({})".format(strJsonFile))
+        logging.info("SessionManager::save_edit_session({})".format(strJsonFile))
         with open(strJsonFile, "w") as fp:
             json.dump(dictPA, fp, sort_keys=True, indent=4)
 
     def open_edit_session(self, strJsonFile: str) -> bool:
-        logging.debug(
+        logging.info(
             "Entered SessionManager::open_edit_session({})".format(strJsonFile)
         )
         with open(strJsonFile, "r") as fp:
@@ -154,7 +154,7 @@ class SessionManager:
 
     def detect_previous_session(self):
         """Searches for preexisting tmp files; Returns bool"""
-        logging.debug("SessionManager::detect_previous_session()")
+        logging.info("SessionManager::detect_previous_session()")
         strSearchPattern = self.__tmpFileBasename + "_*.json"
         logging.debug("Search Pattern: {}".format(strSearchPattern))
         listTmpFiles = glob.glob(strSearchPattern)
@@ -169,7 +169,7 @@ class SessionManager:
 
     def restore_previous_session(self):
         """Restore latest prior session"""
-        logging.debug("SessionManager::restore_previous_session()")
+        logging.info("SessionManager::restore_previous_session()")
 
         # Determine file to load, in newest to oldest order
         strSearchPattern = self.__tmpFileBasename + "_*.json"
@@ -199,7 +199,7 @@ class SessionManager:
     def autosave_edit_session(self, data: Sequence[Changeset]):
         """Constructs a new tmp session filename w/timestamp, populates it with
         the current session state, saves it, and deletes the oldest tmp session file"""
-        logging.debug("SessionManager::__autosave_edit_session()")
+        logging.info("SessionManager::autosave_edit_session()")
 
         # Bypass if autosave is not enabled
         if not self.__bAutosaveEnabled:

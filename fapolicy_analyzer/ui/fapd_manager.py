@@ -51,7 +51,7 @@ def _promote():
 
 class FapdManager():
     def __init__(self, fapd_control_enabled=True):
-        logging.debug(f"FapdManager::__init__({fapd_control_enabled})")
+        logging.info(f"FapdManager::__init__({fapd_control_enabled})")
 
         # What fapd instances are available (if any)
         self._current_instance = FapdMode.DISABLED
@@ -120,7 +120,7 @@ class FapdManager():
         return self._status()
 
     def _start(self, instance=FapdMode.ONLINE):
-        logging.debug("FapdManager::_start()")
+        logging.info("FapdManager::_start()")
 
         # Generate timestamp for any new fapd session whether it's used or not
         timeNow = DT.fromtimestamp(time())
@@ -189,7 +189,7 @@ class FapdManager():
             return self.procProfile
 
     def _stop(self, instance=FapdMode.ONLINE):
-        logging.debug(f"FapdManager::_stop({instance})")
+        logging.info(f"FapdManager::_stop({instance})")
         if self.mode == FapdMode.DISABLED:
             logging.warning("fapd is currently DISABLED")
             return False
@@ -258,7 +258,7 @@ class FapdManager():
         logging.debug(f"prior_online_state = {self._fapd_prior_online_state}")
 
     def revert_online_state(self):
-        logging.debug("revert_online_state()")
+        logging.info("revert_online_state()")
         logging.debug(f"Reverting to {self._fapd_prior_online_state}")
         if self._fapd_prior_online_state == ServiceStatus.TRUE:
             self._start(FapdMode.ONLINE)
