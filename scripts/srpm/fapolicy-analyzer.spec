@@ -4,7 +4,7 @@ Version:       0.6.6
 Release:       1%{?dist}
 License:       GPLv3+
 URL:           https://github.com/ctc-oss/fapolicy-analyzer
-Source0:       %{url}/releases/download/v%{version}/fapolicy-analyzer.tar.gz
+Source0:       %{url}/releases/download/v%{version}/%{name}.tar.gz
 
 # this tarball contains bundled crates not available in Fedora
 # reference: https://bugzilla.redhat.com/show_bug.cgi?id=2124697#c5
@@ -222,8 +222,8 @@ python3 setup.py bdist_wheel
 %install
 %{py3_install_wheel %{module}-%{version}*%{_arch}.whl}
 install -D bin/%{name} %{buildroot}/%{_sbindir}/%{name}
-install -D data/fapolicy-analyzer.8 -t %{buildroot}/%{_mandir}/man8/
-desktop-file-install data/fapolicy-analyzer.desktop
+install -D data/%{name}.8 -t %{buildroot}/%{_mandir}/man8/
+desktop-file-install data/%{name}.desktop
 find locale -name %{name}.mo -exec cp --parents -rv {} %{buildroot}/%{_datadir} \;
 %find_lang %{name}
 
@@ -235,8 +235,8 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
 %license LICENSE
 %{python3_sitearch}/%{module}
 %{python3_sitearch}/%{module}-%{version}*
-%attr(755,root,root) %{_sbindir}/fapolicy-analyzer
-%attr(644,root,root) %{_mandir}/man8/fapolicy-analyzer.8*
+%attr(755,root,root) %{_sbindir}/%{name}
+%attr(644,root,root) %{_mandir}/man8/%{name}.8*
 %attr(755,root,root) %{_datadir}/applications/%{name}.desktop
 
 %changelog
