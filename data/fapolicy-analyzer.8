@@ -1,25 +1,27 @@
 .\" Manpage for fapolicy-analyzer.
-.TH man 8 "20 Dec 2022" "1.0" "nuseradd man page"
+.TH man 8 "10 Jan 2023" "0.6" "fapolicy-analyzer man page"
 .SH NAME
-fapolicy-analyzer \- Configuration and management of fapolicyd
+fapolicy-analyzer \- Configuration and log analysis for fapolicyd
 .SH SYNOPSIS
-This application consists of several GUI components that assist with the configuration and management of fapolicyd:
+Provides GTK+3 tools to assist with the configuration and management of fapolicyd.
 .P
-  1. Trust Administration
+There are four tools provided with the application:
+.P
+  1. Trust Administration - View and edit the fapolicyd trust database, including discrepancies between disk and trust.
 .br
-  2. Rule Administration
+  2. Rule Administration - Author fapolicyd rules in a graphical editor with syntax highlighting and linting.
 .br
-  3. Policy Profiling
+  3. Policy Profiling - Execute applications in passive mode, capturing the logging output for analysis.
 .br
-  4. Log Analysis
+  4. Log Analysis - View fapolicyd log data in graphical components that enable resolution of trust discrepancies.
 
 .SH DESCRIPTION
 File Access Policy Analyzer is a GUI tool to assist with the configuration and management of fapolicyd.
 
 .SH NOTES
-The configuration is located ~/.config/fapolicy-analyzer/config.toml.
+The application configuration is located ~/.config/fapolicy-analyzer/config.toml.
 .br
-The startup script will use polkit to escalate privileges if sudo is not used.
+The application entrypoint will use polkit to escalate privileges if sudo is not used.
 .br
 
 .SH OPTIONS
@@ -28,8 +30,8 @@ The startup script will use polkit to escalate privileges if sudo is not used.
 Enable verbose mode to increase logging output.
 
 .SH FILES
-.B ~/.config/fapolicy-analyzer/fapolicy-analyzer.toml
-- application configuration
+.B ~/.config/fapolicy-analyzer/config.toml
+- application configuration toml
 .P
 
 .SH SEE ALSO
