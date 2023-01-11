@@ -93,8 +93,10 @@ Requires:      python3-configargparse
 Requires:      python3-more-itertools
 Requires:      python3-rx
 Requires:      python3-importlib-metadata
+
 Requires:      gtk3
 Requires:      gtksourceview3
+Requires:      gnome-icon-theme
 
 %global module fapolicy_analyzer
 
