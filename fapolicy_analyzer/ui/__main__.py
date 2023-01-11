@@ -85,7 +85,6 @@ def _parse_cmdline():
                                "DEBUG": logging.DEBUG
                                }
 
-        print(f"args.loglevel = {args.loglevel}")
         gf_handler.setLevel(dictOption2LogLevel[args.loglevel])
 
     # Set Edit Session Tmp File
