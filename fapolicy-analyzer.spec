@@ -4,14 +4,8 @@ Version:       1.0.0
 Release:       1%{?dist}
 License:       GPLv3+
 URL:           https://github.com/ctc-oss/fapolicy-analyzer
-Source0:       fapolicy-analyzer.tar.gz
-
-# this tarball contains bundled crates not available in Fedora
-# reference: https://bugzilla.redhat.com/show_bug.cgi?id=2124697#c5
-Source1:       vendor-rs.tar.gz
-
-# this tarball contains documentation used to generate help docs
-Source2:       vendor-docs.tar.gz
+Source0:       %{url}/releases/download/v%{version}/fapolicy-analyzer.tar.gz
+Source1:       %{url}/releases/download/v%{version}/vendor-docs.tar.gz
 
 BuildRequires: python3-devel
 BuildRequires: python3dist(setuptools)
@@ -26,10 +20,8 @@ BuildRequires: desktop-file-utils
 BuildRequires: rust-packaging
 BuildRequires: python3dist(setuptools-rust)
 
-BuildRequires: rust-arrayvec0.5-devel
 BuildRequires: rust-autocfg-devel
 BuildRequires: rust-bitflags-devel
-BuildRequires: rust-bitvec-devel
 BuildRequires: rust-bumpalo-devel
 BuildRequires: rust-byteorder-devel
 BuildRequires: rust-cc-devel
@@ -42,21 +34,23 @@ BuildRequires: rust-crossbeam-epoch-devel
 BuildRequires: rust-crossbeam-utils-devel
 BuildRequires: rust-data-encoding-devel
 BuildRequires: rust-dbus-devel
+BuildRequires: rust-directories-devel
 BuildRequires: rust-dirs-sys-devel
 BuildRequires: rust-either-devel
 BuildRequires: rust-fastrand-devel
-BuildRequires: rust-funty-devel
 BuildRequires: rust-getrandom-devel
 BuildRequires: rust-iana-time-zone-devel
 BuildRequires: rust-instant-devel
 BuildRequires: rust-lazy_static-devel
-BuildRequires: rust-lexical-core-devel
 BuildRequires: rust-libc-devel
 BuildRequires: rust-libdbus-sys-devel
+BuildRequires: rust-lmdb-devel
 BuildRequires: rust-lock_api-devel
 BuildRequires: rust-log-devel
 BuildRequires: rust-memchr-devel
 BuildRequires: rust-memoffset-devel
+BuildRequires: rust-minimal-lexical-devel
+BuildRequires: rust-nom-devel
 BuildRequires: rust-num-integer-devel
 BuildRequires: rust-num-traits-devel
 BuildRequires: rust-num_cpus-devel
@@ -71,21 +65,17 @@ BuildRequires: rust-pyo3-build-config-devel
 BuildRequires: rust-pyo3-macros-devel
 BuildRequires: rust-pyo3-macros-backend-devel
 BuildRequires: rust-quote-devel
-BuildRequires: rust-radium-devel
 BuildRequires: rust-rayon-devel
 BuildRequires: rust-rayon-core-devel
 BuildRequires: rust-remove_dir_all-devel
 BuildRequires: rust-ring-devel
-BuildRequires: rust-ryu-devel
 BuildRequires: rust-scopeguard-devel
 BuildRequires: rust-serde-devel
 BuildRequires: rust-serde_derive-devel
 BuildRequires: rust-similar-devel
 BuildRequires: rust-smallvec-devel
 BuildRequires: rust-spin-devel
-BuildRequires: rust-static_assertions-devel
 BuildRequires: rust-syn-devel
-BuildRequires: rust-tap-devel
 BuildRequires: rust-tempfile-devel
 BuildRequires: rust-thiserror-devel
 BuildRequires: rust-thiserror-impl-devel
@@ -94,11 +84,8 @@ BuildRequires: rust-toml-devel
 BuildRequires: rust-unicode-xid-devel
 BuildRequires: rust-unindent-devel
 BuildRequires: rust-untrusted-devel
-BuildRequires: rust-version_check-devel
-BuildRequires: rust-wyz-devel
 BuildRequires: rust-paste-devel
 BuildRequires: rust-indoc-devel
-
 
 Requires:      python3
 Requires:      python3-gobject
@@ -123,24 +110,9 @@ Requires:      mesa-dri-drivers
 Tools to assist with the configuration and management of fapolicyd.
 
 %prep
-# An issue with unpacking the vendored crates is that an unprivileged user
-# cannot write to the default registry at /usr/share/cargo/registry
-# To unblock this, we link the contents of the /usr/share/cargo/registry
-# into a new writable registry location, and then extract the contents of the
-# vendor tarball to this new writable dir.
-# Later the Cargo config will be updated to point to this new registry dir
-CARGO_REG_DIR=%{_builddir}/vendor-rs
-mkdir -p ${CARGO_REG_DIR}
-for d in %{cargo_registry}/*; do ln -sf ${d} ${CARGO_REG_DIR}; done
-tar -xzf %{SOURCE1} -C ${CARGO_REG_DIR} --strip-components=2
-
 %cargo_prep
 
-# here the Cargo config is updated to point to the new registry dir
-sed -i "s#%{cargo_registry}#${CARGO_REG_DIR}#g" .cargo/config
-
-%autosetup -p0 -n %{name}
-tar xvzf %{SOURCE2}
+%autosetup -n %{name}
 
 # throw out the checked-in lock
 # this build will use what is available from the local registry
@@ -148,6 +120,9 @@ rm Cargo.lock
 
 # disable dev-tools crate
 sed -i '/tools/d' Cargo.toml
+
+# extract our doc sourcs
+tar xvzf %{SOURCE1}
 
 # our setup.py looks up the version from git describe
 # this overrides that check to the RPM version
@@ -161,15 +136,14 @@ echo %{module_version} > VERSION
 %install
 %{py3_install_wheel %{module}-%{module_version}*%{_arch}.whl}
 %{python3} help install --dest %{buildroot}/%{_datadir}/help
-install bin/%{name} %{buildroot}/%{_sbindir}/%{name} -D
-install data/fapolicy-analyzer.8 %{buildroot}/%{_mandir}/man8/* -D
+install -D bin/%{name} %{buildroot}/%{_sbindir}/%{name}
+install -D data/fapolicy-analyzer.8 -t %{buildroot}/%{_mandir}/man8/
 desktop-file-install data/fapolicy-analyzer.desktop
+find locale -name %{name}.mo -exec cp --parents -rv {} %{buildroot}/%{_datadir} \;
 %find_lang %{name} --with-gnome
 
-%post
-update-desktop-database
-
 %check
+desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
 
 %files -n %{name} -f %{name}.lang
 %doc scripts/srpm/README
@@ -177,8 +151,8 @@ update-desktop-database
 %{python3_sitearch}/%{module}
 %{python3_sitearch}/%{module}-%{module_version}*
 %attr(755,root,root) %{_sbindir}/fapolicy-analyzer
+%attr(644,root,root) %{_mandir}/man8/fapolicy-analyzer.8*
 %attr(755,root,root) %{_datadir}/applications/%{name}.desktop
-%attr(644,root,root) %{_mandir}/man8/*
 
 %changelog
 * Fri Dec 16 2022 John Wass <jwass3@gmail.com> 1.0.0-1

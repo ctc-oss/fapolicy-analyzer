@@ -134,14 +134,14 @@ check: header-check format lint test
 # Generate Fedora rawhide rpms
 fc-rpm:
 	@echo -e "${GRN}--- Fedora RPM generation...${NC}"
-	make -f .copr/Makefile vendor
+	make -f .copr/Makefile vendor OS_ID=fedora
 	podman build -t fapolicy-analyzer:38 -f Containerfile .
 	podman run --rm -it --network=none -v /tmp:/v fapolicy-analyzer:38 /v
 
 # Generate RHEL rpms
 el-rpm:
 	@echo -e "${GRN}--- Rhel RPM generation...${NC}"
-	make -f .copr/Makefile vendor
+	make -f .copr/Makefile vendor OS_ID=rhel
 	podman build -t fapolicy-analyzer:el -f scripts/srpm/Containerfile.el .
 	podman run --rm -it --network=none -v /tmp:/v fapolicy-analyzer:el /v
 
