@@ -25,8 +25,40 @@ jobs:
         run: |
           echo "::set-output name=matrix::$(cat .github/rpm-matrix.json | tr -d '\n' | tr -d ' ')"
 
+  source0:
+    name: Vendor Source0
+    runs-on: ubuntu-20.04
+    container: registry.fedoraproject.org/fedora:rawhide
+    steps:
+      - name: Install deps
+        run: dnf install -y git make
+
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: Mark as git safe
+        run: |
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+
+      - name: Vendor
+        run: |
+          make -f .copr/Makefile vendor-app
+
+      - name: Upload
+        uses: actions/upload-artifact@v3
+        with:
+          name: source0
+          path: |
+            fapolicy-analyzer.tar.gz
+
+      - name: Checksum
+        run: |
+          sha256sum fapolicy-analyzer.tar.gz
+
   srpm:
-    needs: [ config ]
+    needs: [ config, source0 ]
     name: SRPM Build ${{ matrix.props.dist }}
     container: ${{ matrix.props.image }}
     runs-on: ubuntu-20.04
@@ -50,10 +82,6 @@ jobs:
         id: tag_name
         if: startsWith(github.ref, 'refs/tags/v')
         run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d/ -f3)
-
-      - name: Workspace is git safe directory
-        run: |
-          git config --global --add safe.directory $GITHUB_WORKSPACE
 
       - name: Ensure spec version matches tag
         if: startsWith(github.ref, 'refs/tags/v')
@@ -91,27 +119,40 @@ jobs:
 
       - name: Install SRPM build dependencies
         run: |
-          make -f .copr/Makefile dnf
+          make -f .copr/Makefile dnf OS_ID=${{ matrix.props.platform }}
+
+      - name: Fetch Source0 tarball
+        uses: actions/download-artifact@v3
+        with:
+          name: source0
+          path: /tmp/rpmbuild/SOURCES/
+
+      - name: Mark as git safe
+        run: |
+          git config --global --add safe.directory $GITHUB_WORKSPACE
 
       - name: Build SRPM
         run: |
-          make -f .copr/Makefile srpm outdir=/tmp/archives spec=${{ matrix.props.spec }} OS_ID=${{ matrix.props.platform }} DIST=".${{ matrix.props.dist }}"
+          make -f .copr/Makefile             \
+               vendor build export           \
+               outdir=/tmp/archives          \
+               spec=${{ matrix.props.spec }} \
+               OS_ID=${{ matrix.props.platform }}
 
-      - name: Export tarballs
+      - name: Export common tarballs
         run: |
           mkdir -p /tmp/archives
-          mv fapolicy-analyzer.tar.gz /tmp/archives
         env:
           PLATFORM: ${{ matrix.props.dist }}
 
-      - name: Export Rust vendor tarball
+      - name: Export el tarballs
         if: startsWith(matrix.props.dist, 'el')
         run: |
           mv vendor-rs.tar.gz /tmp/archives/vendor-rs.tar.gz
         env:
           PLATFORM: ${{ matrix.props.dist }}
 
-      - name: Upload tarballs
+      - name: Upload SourceX
         uses: actions/upload-artifact@v3
         with:
           name: tarball-artifacts
@@ -127,7 +168,7 @@ jobs:
 
       - name: Checksum artifacts
         run: |
-          sha256sum /tmp/archives/*
+          sha256sum /tmp/archives/* || true
 
   copr:
     needs: [ config, srpm ]
@@ -271,6 +312,7 @@ jobs:
           draft: true
           files: |
             fapolicy-analyzer.spec
+            /tmp/archives/source0/*.tar.gz
             /tmp/archives/rpm-artifacts/*.rpm
             /tmp/archives/srpm-artifacts/*.src.rpm
             /tmp/archives/tarball-artifacts/*.tar.gz
