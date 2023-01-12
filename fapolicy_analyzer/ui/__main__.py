@@ -23,8 +23,8 @@ gf_handler = logging.FileHandler(xdg_data_dir_prefix("fapolicy-analyzer.log"),
                                  mode="w")
 gs_handler = logging.StreamHandler()
 logging.basicConfig(level=logging.DEBUG, handlers=[gf_handler, gs_handler])
-gs_handler.setLevel(logging.WARN)
-gf_handler.setLevel(logging.WARN)
+gs_handler.setLevel(logging.WARNING)
+gf_handler.setLevel(logging.WARNING)
 
 import argparse
 import gi
@@ -58,8 +58,8 @@ def _parse_cmdline():
     )
     parser.add_argument(
         "-l", "--loglevel",
-        choices=["CRITICAL", "ERROR", "WARN", "INFO", "DEBUG"],
-        help="Specify the log file leve. Default: WARN"
+        choices=["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"],
+        help="Specify the log file leve. Default: WARNING"
     )
     args = parser.parse_args()
 
@@ -80,7 +80,7 @@ def _parse_cmdline():
     if args.loglevel:
         dictOption2LogLevel = {"CRITICAL": logging.CRITICAL,
                                "ERROR": logging.ERROR,
-                               "WARN": logging.WARN,
+                               "WARNING": logging.WARNING,
                                "INFO": logging.INFO,
                                "DEBUG": logging.DEBUG
                                }
