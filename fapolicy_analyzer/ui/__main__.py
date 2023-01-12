@@ -42,7 +42,10 @@ from gi.repository import Gtk, GtkSource, GObject  # isort: skip
 def _parse_cmdline():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-v", "--verbose", action="store_true", help="Enable verbose mode"
+        "-v", "--verbose", action="count", default=0,
+        help="""
+        Enable verbose mode. A single `v` options will set the loglevel
+        to INFO. Multiple 'v' options will set the level to DEBUG. """
     )
     parser.add_argument(
         "-a",
@@ -59,14 +62,20 @@ def _parse_cmdline():
     parser.add_argument(
         "-l", "--loglevel",
         choices=["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"],
-        help="Specify the log file leve. Default: WARNING"
+        help="Specify the log level. Default: WARNING"
     )
     args = parser.parse_args()
 
     # Enable verbosity
     if args.verbose:
-        gs_handler.setLevel(logging.INFO)
-        logging.debug("Verbosity enabled.")
+        if args.verbose == 1:
+            gf_handler.setLevel(logging.INFO)
+            gs_handler.setLevel(logging.INFO)
+            logging.debug("Verbosity enabled: INFO")
+        else:
+            gf_handler.setLevel(logging.DEBUG)
+            gs_handler.setLevel(logging.DEBUG)
+            logging.debug("Verbosity enabled: DEBUG")
 
     # Enable edit session autosaves
     if args.autosave:
@@ -86,6 +95,7 @@ def _parse_cmdline():
                                }
 
         gf_handler.setLevel(dictOption2LogLevel[args.loglevel])
+        gs_handler.setLevel(dictOption2LogLevel[args.loglevel])
 
     # Set Edit Session Tmp File
     if args.session:
