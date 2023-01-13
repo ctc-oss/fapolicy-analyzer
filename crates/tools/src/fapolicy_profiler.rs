@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use clap::Clap;
+use clap::Parser;
 use fapolicy_daemon::profiler::Profiler;
 use fapolicy_rules::read::load_rules_db;
 use std::error::Error;
@@ -21,7 +21,7 @@ use std::os::unix::prelude::CommandExt;
 use std::path::PathBuf;
 use std::process::Command;
 
-#[derive(Clap)]
+#[derive(Parser)]
 #[clap(name = "File Access Policy Profiler", version = "v0.0.0")]
 struct Opts {
     /// path to *.rules or rules.d

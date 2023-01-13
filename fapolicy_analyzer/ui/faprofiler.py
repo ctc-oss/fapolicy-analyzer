@@ -376,10 +376,18 @@ class FaProfSession:
         if not dictReturn:
             logging.debug("FaProfSession::validateArgs() --> pwd verified")
 
-        # Convert comma delimited string of "EnvVar=Value" substrings to dict
-        exec_env = FaProfSession._comma_delimited_kv_string_to_dict(
-            dictProfTgt.get("envText", "")
-        )
+        # Validate, convert CSV  env string of "K=V" substrings to dict
+        try:
+            exec_env = FaProfSession._comma_delimited_kv_string_to_dict(
+                dictProfTgt.get("envText", "")
+            )
+
+        except RuntimeError as e:
+            exec_env = None
+            dictReturn[ProfSessionArgsStatus.ENV_VARS_FORMATING] = e
+        except Exception as e:
+            exec_env = None
+            dictReturn[ProfSessionArgsStatus.ENV_VARS_FORMATING] = s.PROF_ARG_ENV_VARS_FORMATING + f", {e}"
 
         # exec empty?
         if not exec_path:
@@ -435,10 +443,16 @@ class FaProfSession:
         """Generates dictionary from comma separated string of k=v pairs"""
         if not string_in:
             return None
-        return {
+
+        dictReturn = {
             k: v.strip('"')
             for k, v in dict(x.strip().split("=") for x in string_in.split(",")).items()
         }
+        # Verify keys are only letters and underscores
+        for k in dictReturn.keys():
+            if not re.match("^[a-zA-Z_][a-zA-Z0-9_]*$", k):
+                raise RuntimeError(s.PROF_ARG_ENV_VARS_NAME_BAD + f": ' {k} '")
+        return dictReturn
 
 
 # ############################## Profiler ###############################
