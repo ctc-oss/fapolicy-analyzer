@@ -152,6 +152,13 @@ class SearchableList(UIBuilderWidget, Events):
         data = [model[i] for i in treeiter] if model and treeiter else []
         self.selection_changed(data)
 
-    def on_search_changed(self, search):
+    def on_search_icon_press(self, *args):
+        self.get_object("search").set_text("")
         self.treeViewFilter.refilter()
         self._update_tree_count(self.__get_tree_count())
+
+    def on_search_key_press_event(self, _, key):
+        if key.keyval == Gdk.keyval_from_name("Enter"):
+            print("asdf")
+            self.treeViewFilter.refilter()
+            self._update_tree_count(self.__get_tree_count())

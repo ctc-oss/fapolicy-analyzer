@@ -25,7 +25,7 @@ from fapolicy_analyzer.ui.searchable_list import SearchableList
 from helpers import refresh_gui
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk  # isort: skip
+from gi.repository import Gtk, Gdk # isort: skip
 
 
 @pytest.fixture()
@@ -97,6 +97,19 @@ def test_filtering(widget):
     view = widget.get_object("treeView")
     viewFilter = widget.get_object("search")
     viewFilter.set_text("foo")
+    window = Gtk.Window()
+    display = Gdk.Display.get_default()
+    window.set_screen(display.get_screen(0))
+    widget.get_ref().set_parent(window)
+    window.present()
+    window.show()
+    event = Gdk.EventKey()
+    event.window = window
+    event.type = Gdk.EventType.KEY_PRESS
+    event.send_event = True
+    event.time = Gdk.CURRENT_TIME
+    event.keyval = Gdk.keyval_from_name("Enter")
+    event.put()
     refresh_gui(delay=0.3)
     paths = [x[0] for x in view.get_model()]
     assert "foo" in paths
