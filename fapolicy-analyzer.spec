@@ -5,6 +5,8 @@ Release:       1%{?dist}
 License:       GPLv3+
 URL:           https://github.com/ctc-oss/fapolicy-analyzer
 Source0:       %{url}/releases/download/v%{version}/%{name}.tar.gz
+
+# this tarball contains documentation used to generate help docs
 Source1:       %{url}/releases/download/v%{version}/vendor-docs.tar.gz
 
 BuildRequires: python3-devel
