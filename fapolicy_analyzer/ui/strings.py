@@ -193,7 +193,7 @@ $(HOME)/.config/fapolicy-analyzer/fapolicy-analyzer.toml
 APPLY_CHANGESETS_ERROR_MESSAGE = _("Error applying changes")
 UNSAVED_DIALOG_TITLE = _("Unsaved Rules Changes")
 UNSAVED_DIALOG_TEXT = _(
-    """You have unsaved changes to the rules. If you deploy, your changes will be lost. 
+    """You have unsaved changes to the rules. If you deploy, your changes will be lost.
 
 Would you like to continue deploying?"""
 )
