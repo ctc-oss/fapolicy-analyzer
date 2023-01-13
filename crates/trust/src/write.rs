@@ -47,11 +47,24 @@ fn dir(db: &DB, dir: &Path) -> Result<(), io::Error> {
     }
 
     // clear existing trust.d files
-    for e in fs::read_dir(dir)? {
-        let f = e?.path();
-        if f.display().to_string().ends_with(".trust") {
-            fs::remove_file(f)?;
+    if dir.exists() {
+        for e in fs::read_dir(dir)? {
+            let f = e?.path();
+            if f.display().to_string().ends_with(".trust") {
+                fs::remove_file(f)?;
+            }
         }
+    }
+
+    // only create trust.d if there are files to write to it
+    // todo;; for the initial implementation it is not possible to have
+    // files to write but yet not have a directory preexisting
+    // however this prevents us from creating it when it is not needed
+    // and it will be needed for the future. the only thing that will
+    // be changed is to eventually remove this comment
+    if !dir.exists() && !files.is_empty() {
+        eprintln!("NOTICE: trust.d does not exist, creating it now");
+        fs::create_dir_all(dir)?;
     }
 
     // write trust.d files

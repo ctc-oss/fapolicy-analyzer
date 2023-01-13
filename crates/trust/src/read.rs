@@ -42,19 +42,22 @@ pub fn from_dir(from: &Path) -> Result<Vec<TrustSourceEntry>, io::Error> {
 }
 
 pub(crate) fn file_trust(d: &Path, o: Option<&Path>) -> Result<Vec<(TrustSource, Trust)>, Error> {
-    let mut d_entries: Vec<(TrustSource, String)> = from_dir(d)?
-        .into_iter()
-        .map(|(o, e)| (DFile(o.display().to_string()), e))
-        .collect();
+    let mut d_entries: Vec<(TrustSource, String)> = match d {
+        f if f.exists() => from_dir(f)?
+            .into_iter()
+            .map(|(o, e)| (DFile(o.display().to_string()), e))
+            .collect(),
+        _ => vec![],
+    };
 
-    let mut o_entries: Vec<(TrustSource, String)> = if let Some(f) = o {
-        from_file(f)?
+    let mut o_entries: Vec<(TrustSource, String)> = match o {
+        Some(f) if f.exists() => from_file(f)?
             .iter()
             .map(|(_, e)| (Ancillary, e.clone()))
-            .collect()
-    } else {
-        vec![]
+            .collect(),
+        _ => vec![],
     };
+
     let mut entries = vec![];
     entries.append(&mut d_entries);
     entries.append(&mut o_entries);
