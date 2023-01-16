@@ -4,7 +4,7 @@ Version:       1.0.0
 Release:       1%{?dist}
 License:       GPLv3+
 URL:           https://github.com/ctc-oss/fapolicy-analyzer
-Source0:       %{url}/releases/download/v%{version}/fapolicy-analyzer.tar.gz
+Source0:       %{url}/releases/download/v%{version}/%{name}.tar.gz
 
 # this tarball contains bundled crates not available in Fedora
 # reference: https://bugzilla.redhat.com/show_bug.cgi?id=2124697#c5
@@ -234,25 +234,23 @@ python3 setup.py bdist_wheel
 %install
 %{py3_install_wheel %{module}-%{module_version}*%{_arch}.whl}
 %{python3} help install --dest %{buildroot}/%{_datadir}/help
-install bin/%{name} %{buildroot}/%{_sbindir}/%{name} -D
-install data/fapolicy-analyzer.8 %{buildroot}/%{_mandir}/man8/* -D
-desktop-file-install data/fapolicy-analyzer.desktop
+install -D bin/%{name} %{buildroot}/%{_sbindir}/%{name}
+install -D data/%{name}.8 -t %{buildroot}/%{_mandir}/man8/
+desktop-file-install data/%{name}.desktop
 find locale -name %{name}.mo -exec cp --parents -rv {} %{buildroot}/%{_datadir} \;
 %find_lang %{name} --with-gnome
 
-%post
-update-desktop-database
-
 %check
+desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
 
 %files -n %{name} -f %{name}.lang
 %doc scripts/srpm/README
 %license LICENSE
 %{python3_sitearch}/%{module}
 %{python3_sitearch}/%{module}-%{module_version}*
-%attr(755,root,root) %{_sbindir}/fapolicy-analyzer
+%attr(755,root,root) %{_sbindir}/%{name}
+%attr(644,root,root) %{_mandir}/man8/%{name}.8*
 %attr(755,root,root) %{_datadir}/applications/%{name}.desktop
-%attr(644,root,root) %{_mandir}/man8/*
 
 %changelog
 * Fri Dec 16 2022 John Wass <jwass3@gmail.com> 1.0.0-1
