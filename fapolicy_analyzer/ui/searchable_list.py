@@ -19,7 +19,7 @@ import gi
 
 gi.require_version("Gtk", "3.0")
 from events import Events
-from gi.repository import Gtk
+from gi.repository import Gtk, Gdk
 
 from fapolicy_analyzer.ui.loader import Loader
 from fapolicy_analyzer.ui.ui_widget import UIBuilderWidget
