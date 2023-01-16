@@ -251,7 +251,6 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
 %attr(755,root,root) %{_sbindir}/%{name}
 %attr(644,root,root) %{_mandir}/man8/%{name}.8*
 %attr(755,root,root) %{_datadir}/applications/%{name}.desktop
-%attr(644,root,root) %{_mandir}/man8/*
 
 %changelog
 * Fri Dec 16 2022 John Wass <jwass3@gmail.com> 1.0.0-1
