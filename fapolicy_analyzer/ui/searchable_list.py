@@ -159,6 +159,5 @@ class SearchableList(UIBuilderWidget, Events):
 
     def on_search_key_press_event(self, _, key):
         if key.keyval == Gdk.keyval_from_name("Enter"):
-            print("asdf")
             self.treeViewFilter.refilter()
             self._update_tree_count(self.__get_tree_count())
