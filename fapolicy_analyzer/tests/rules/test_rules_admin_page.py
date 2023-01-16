@@ -48,7 +48,7 @@ from gi.repository import Gtk  # isort: skip
 
 initial_system = {
     "rules": MagicMock(error=None, rules=[], loading=False),
-    "rules_text": MagicMock(),
+    "rules_text": MagicMock(error=None, loading=False, rules_text=""),
     "changesets": MagicMock(),
     "system": MagicMock(),
 }
@@ -359,3 +359,46 @@ def test_apply_changeset_error(mock_dispatch, mocker):
             ),
         )
     )
+
+
+def test_forces_rule_text_update_after_save(widget, mock_dispatch, mock_system_feature):
+    def assert_text(expected):
+        assert (
+            buffer.get_text(buffer.get_start_iter(), buffer.get_end_iter(), True)
+            == expected
+        )
+
+    text_view = widget._text_view
+    buffer = text_view.get_object("textView").get_buffer()
+    original_text = "allow perm=any all : all"
+
+    mock_system_feature.on_next(
+        {
+            **initial_system,
+            "rules_text": MagicMock(
+                error=None, loading=False, rules_text=original_text
+            ),
+        }
+    )
+
+    assert_text(original_text)
+
+    # insert single trailing space
+    buffer.insert(buffer.get_end_iter(), " ", 1)
+    assert_text(original_text + " ")
+
+    widget.on_save_clicked()
+
+    # when the rules text is retrieved again from rust the trailing space will be stripped
+    mock_system_feature.on_next(
+        {
+            **initial_system,
+            "changesets": MagicMock(
+                spec=RuleChangeset, changesets=[MagicMock()], error=None
+            ),
+            "rules_text": MagicMock(
+                error=None, loading=False, rules_text=original_text
+            ),
+        }
+    )
+    assert_text(original_text)

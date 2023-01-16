@@ -25,8 +25,40 @@ jobs:
         run: |
           echo "::set-output name=matrix::$(cat .github/rpm-matrix.json | tr -d '\n' | tr -d ' ')"
 
+  source0:
+    name: Vendor Source0
+    runs-on: ubuntu-20.04
+    container: registry.fedoraproject.org/fedora:rawhide
+    steps:
+      - name: Install deps
+        run: dnf install -y git make
+
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: Mark as git safe
+        run: |
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+
+      - name: Vendor
+        run: |
+          make -f .copr/Makefile vendor-app
+
+      - name: Upload
+        uses: actions/upload-artifact@v3
+        with:
+          name: source0
+          path: |
+            fapolicy-analyzer.tar.gz
+
+      - name: Checksum
+        run: |
+          sha256sum fapolicy-analyzer.tar.gz
+
   srpm:
-    needs: [ config ]
+    needs: [ config, source0 ]
     name: SRPM Build ${{ matrix.props.dist }}
     container: ${{ matrix.props.image }}
     runs-on: ubuntu-20.04
@@ -51,7 +83,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d/ -f3)
 
-      - name: Workspace is git safe directory
+      - name: Mark as git safe
         run: |
           git config --global --add safe.directory $GITHUB_WORKSPACE
 
@@ -91,22 +123,41 @@ jobs:
 
       - name: Install SRPM build dependencies
         run: |
-          make -f .copr/Makefile dnf
+          make -f .copr/Makefile dnf OS_ID=${{ matrix.props.platform }}
+
+      - name: Fetch Source0 tarball
+        uses: actions/download-artifact@v3
+        with:
+          name: source0
+          path: /tmp/rpmbuild/SOURCES/
+
+      - name: Mark as git safe
+        run: |
+          git config --global --add safe.directory $GITHUB_WORKSPACE
 
       - name: Build SRPM
         run: |
-          make -f .copr/Makefile srpm outdir=/tmp/archives spec=${{ matrix.props.spec }} OS_ID=${{ matrix.props.platform }}
+          make -f .copr/Makefile             \
+               vendor build export           \
+               outdir=/tmp/archives          \
+               spec=${{ matrix.props.spec }} \
+               OS_ID=${{ matrix.props.platform }}
 
-      - name: Export tarballs
+      - name: Export common tarballs
         run: |
           mkdir -p /tmp/archives
-          mv vendor-rs.tar.gz         /tmp/archives/vendor-rs.$PLATFORM.tar.gz
-          mv vendor-docs.tar.gz       /tmp/archives
-          mv fapolicy-analyzer.tar.gz /tmp/archives
+          mv vendor-docs.tar.gz /tmp/archives
         env:
           PLATFORM: ${{ matrix.props.dist }}
 
-      - name: Upload tarballs
+      - name: Export el tarballs
+        if: startsWith(matrix.props.dist, 'el')
+        run: |
+          mv vendor-rs.tar.gz /tmp/archives/vendor-rs.tar.gz
+        env:
+          PLATFORM: ${{ matrix.props.dist }}
+
+      - name: Upload SourceX
         uses: actions/upload-artifact@v3
         with:
           name: tarball-artifacts
@@ -122,7 +173,7 @@ jobs:
 
       - name: Checksum artifacts
         run: |
-          sha256sum /tmp/archives/*
+          sha256sum /tmp/archives/* || true
 
   copr:
     needs: [ config, srpm ]
@@ -211,8 +262,42 @@ jobs:
           path: |
             /tmp/archives/*.x86_64.rpm
 
+  install:
+    needs: [ config, srpm, rpm ]
+    name: Install ${{ matrix.props.dist }}
+    container: ${{ matrix.props.image }}
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix: ${{ fromJson(needs.config.outputs.matrix )}}
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Download rpm artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: rpm-artifacts
+          path: /tmp/src/
+
+      - name: Checksum artifacts
+        run: |
+          sha256sum /tmp/src/*
+
+      - name: Enable EPEL
+        if: startsWith(matrix.props.dist, 'el')
+        run: |
+          dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+
+      - name: Install RPM
+        run: |
+          dnf install -y /tmp/src/fapolicy-analyzer-*.${{ matrix.props.dist }}.x86_64.rpm
+
+      - name: Check RPM
+        run: |
+          rpm -qa --dump fapolicy-analyzer
+          rpm -q fapolicy-analyzer
+
   publish:
-    needs: [ srpm, rpm, copr ]
+    needs: [ srpm, rpm, install, copr ]
     name: Publish
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-20.04
@@ -224,16 +309,6 @@ jobs:
         with:
           path: /tmp/archives/
 
-      - name: Release Spec File
-        run: |
-          out=/tmp/archives/fapolicy-analyzer.spec
-          base=https://github.com/$GITHUB_REPOSITORY/releases/download/${{ steps.tag_name.outputs.VERSION }}
-          cp fapolicy-analyzer.spec $out
-          sed -z -i -e "s#fapolicy-analyzer.tar.gz#$base/fapolicy-analyzer.tar.gz#" $out
-          sed -z -i -e "s#vendor-docs.tar.gz#$base/vendor-docs.tar.gz#" $out
-          sed -z -i -e "s#vendor-rs.tar.gz#$base/vendor-rs.tar.gz#" $out
-          sed    -i -e "s#vendor-rs.tar.gz#vendor-rs%{?dist}.tar.gz#" $out
-
       - name: Release artifacts
         uses: softprops/action-gh-release@v1
         with:
@@ -241,7 +316,8 @@ jobs:
           prerelease: ${{ startsWith(github.ref, 'refs/tags/v0') || contains(github.ref, 'rc') }}
           draft: true
           files: |
-            /tmp/archives/*.spec
+            fapolicy-analyzer.spec
+            /tmp/archives/source0/*.tar.gz
             /tmp/archives/rpm-artifacts/*.rpm
             /tmp/archives/srpm-artifacts/*.src.rpm
             /tmp/archives/tarball-artifacts/*.tar.gz

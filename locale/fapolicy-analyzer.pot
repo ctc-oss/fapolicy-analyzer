@@ -1,15 +1,15 @@
 # Translations template for fapolicy-analyzer.
-# Copyright (C) 2022 ORGANIZATION
+# Copyright (C) 2023 ORGANIZATION
 # This file is distributed under the same license as the fapolicy-analyzer
 # project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2023.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: fapolicy-analyzer 0.5.0+101.g75e2a66.dirty\n"
+"Project-Id-Version: fapolicy-analyzer 0.3.1+184.g68d1c84\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-12-21 13:58-0500\n"
+"POT-Creation-Date: 2023-01-11 09:35-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -442,7 +442,19 @@ msgstr ""
 msgid "Error applying changes"
 msgstr ""
 
-#: fapolicy_analyzer/ui/operations/deploy_changesets_op.py:148
+#: fapolicy_analyzer/ui/strings.py:194
+msgid "Unsaved Rules Changes"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:195
+msgid ""
+"You have unsaved changes to the rules. If you deploy, your changes will "
+"be lost. \n"
+"\n"
+"Would you like to continue deploying?"
+msgstr ""
+
+#: fapolicy_analyzer/ui/operations/deploy_changesets_op.py:159
 msgid "Deploy Changes"
 msgstr ""
 
