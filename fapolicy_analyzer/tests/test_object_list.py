@@ -29,26 +29,26 @@ from fapolicy_analyzer.ui.object_list import ObjectList
 from fapolicy_analyzer.ui.strings import FILE_LABEL, FILES_LABEL
 
 
-def _mock_object(trust="", mode="", access="", file="", trust_status=""):
+def _mock_object(trust="", perm="", access="", file="", trust_status=""):
     return MagicMock(
-        trust=trust, mode=mode, access=access, file=file, trust_status=trust_status
+        trust=trust, perm=perm, access=access, file=file, trust_status=trust_status
     )
 
 
 _objects = [
     {
         0: _mock_object(
-            trust="ST", mode="R", access="A", file="/tmp/foo", trust_status="U"
+            trust="ST", perm="any / open / access", access="A", file="/tmp/foo", trust_status="U"
         )
     },
     {
         1: _mock_object(
-            trust="AT", mode="W", access="A", file="/tmp/baz", trust_status="U"
+            trust="AT", perm="any / open / access", access="A", file="/tmp/baz", trust_status="U"
         )
     },
     {
         2: _mock_object(
-            trust="U", mode="X", access="D", file="/tmp/bar", trust_status="U"
+            trust="U", perm="any / open / access", access="D", file="/tmp/bar", trust_status="U"
         )
     },
 ]
@@ -79,8 +79,8 @@ def test_loads_store(widget):
     assert [next(iter(t.values())).file for t in sortedObjects] == [
         x[2] for x in view.get_model()
     ]
-    assert [next(iter(t.values())).mode for t in sortedObjects] == [
-        strip_markup(x[6]) for x in view.get_model()
+    assert [next(iter(t.values())).perm for t in sortedObjects] == [
+        x[6] for x in view.get_model()
     ]
 
 
@@ -130,38 +130,11 @@ def test_status_markup(widget):
     assert eq_status("ST", at_green, "U")
 
 
-def test_mode_markup(widget):
+def test_perm_markup(widget):
     view = widget.get_object("treeView")
     # Read
-    widget.load_store([{0: _mock_object(mode="R")}])
-    assert view.get_model()[0][6] == "<u><b>R</b></u>WX"
-    # Write
-    widget.load_store([{0: _mock_object(mode="W")}])
-    assert view.get_model()[0][6] == "R<u><b>W</b></u>X"
-    # Execute
-    widget.load_store([{0: _mock_object(mode="X")}])
-    assert view.get_model()[0][6] == "RW<u><b>X</b></u>"
-    # Read/Write
-    widget.load_store([{0: _mock_object(mode="RW")}])
-    assert view.get_model()[0][6] == "<u><b>R</b></u><u><b>W</b></u>X"
-    # Read/Execute
-    widget.load_store([{0: _mock_object(mode="RX")}])
-    assert view.get_model()[0][6] == "<u><b>R</b></u>W<u><b>X</b></u>"
-    # Write/Execute
-    widget.load_store([{0: _mock_object(mode="WX")}])
-    assert view.get_model()[0][6] == "R<u><b>W</b></u><u><b>X</b></u>"
-    # Full Access
-    widget.load_store([{0: _mock_object(mode="RWX")}])
-    assert view.get_model()[0][6] == "<u><b>R</b></u><u><b>W</b></u><u><b>X</b></u>"
-    # Bad data
-    widget.load_store([{0: _mock_object(mode="foo")}])
-    assert view.get_model()[0][6] == "RWX"
-    # Empty data
-    widget.load_store([{0: _mock_object()}])
-    assert view.get_model()[0][6] == "RWX"
-    # Lowercase
-    widget.load_store([{0: _mock_object(mode="r")}])
-    assert view.get_model()[0][6] == "<u><b>R</b></u>WX"
+    widget.load_store([{0: _mock_object(perm="any / open / access")}])
+    assert view.get_model()[0][6] == "any / open / access"
 
 
 def test_access_markup(widget):
@@ -193,15 +166,15 @@ def test_path_color(widget):
     view = widget.get_object("treeView")
 
     # Denied
-    widget.load_store([{0: _mock_object(access="D", mode="RWX")}])
+    widget.load_store([{0: _mock_object(access="D", perm="any / open / access")}])
     assert view.get_model()[0][4] == Colors.LIGHT_RED
     assert view.get_model()[0][5] == Colors.WHITE
     # Full Access
-    widget.load_store([{0: _mock_object(access="A", mode="RWX")}])
+    widget.load_store([{0: _mock_object(access="A", perm="any / open / access")}])
     assert view.get_model()[0][4] == Colors.ORANGE
     assert view.get_model()[0][5] == Colors.BLACK
     # Partical Access
-    widget.load_store([{0: _mock_object(access="A", mode="R")}])
+    widget.load_store([{0: _mock_object(access="A", perm="any / open / access")}])
     assert view.get_model()[0][4] == Colors.ORANGE
     assert view.get_model()[0][5] == Colors.BLACK
     # Bad data
@@ -213,7 +186,7 @@ def test_path_color(widget):
     assert view.get_model()[0][4] == Colors.LIGHT_RED
     assert view.get_model()[0][5] == Colors.WHITE
     # Lowercase
-    widget.load_store([{0: _mock_object(access="a", mode="rwx")}])
+    widget.load_store([{0: _mock_object(access="a", perm="any / open / access")}])
     assert view.get_model()[0][4] == Colors.ORANGE
     assert view.get_model()[0][5] == Colors.BLACK
 
