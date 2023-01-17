@@ -44,12 +44,12 @@ class ObjectList(SubjectList, Events):
         rule_column.set_sort_column_id(7)
         columns.insert(0, rule_column)
 
-        mode_cell = Gtk.CellRendererText(background=Colors.LIGHT_GRAY, xalign=0.5)
-        mode_column = Gtk.TreeViewColumn(
-            strings.FILE_LIST_MODE_HEADER, mode_cell, markup=6
+        perm_cell = Gtk.CellRendererText(background=Colors.LIGHT_GRAY, xalign=0.5)
+        perm_column = Gtk.TreeViewColumn(
+            strings.FILE_LIST_PERM_HEADER, perm_cell, markup=6
         )
-        mode_column.set_sort_column_id(6)
-        columns.insert(2, mode_column)
+        perm_column.set_sort_column_id(6)
+        columns.insert(2, perm_column)
         return columns
 
     def __markup(self, value, options, seperator=" / ", multiValue=False):
@@ -91,15 +91,14 @@ class ObjectList(SubjectList, Events):
         for ob in objects:
             i, o = next(iter(ob.items()))
             status = self._trust_markup(o)
-            mode = self.__markup(
-                o.mode.upper(),
-                ["R", "W", "X"],
-                seperator="",
+            perm = self.__markup(
+                "",
+                ["any", "open", "access"],
                 multiValue=True,
             )
             access = self.__markup(o.access.upper(), ["A", "D"])
             bg_color, txt_color = self.__colors(o.access, o.trust_status, o.trust)
-            store.append([status, access, o.file, o, bg_color, txt_color, mode, i])
+            store.append([status, access, o.file, o, bg_color, txt_color, perm, i])
 
         # call grandfather SearchableList's load_store method
         super(SubjectList, self).load_store(store)
