@@ -41,6 +41,8 @@ from fapolicy_analyzer.ui.strings import (
     FA_ARCHIVE_FILES_FILTER_LABEL,
     REVERT_SYSTEM_SUCCESSFUL_MSG,
     SAVE_AS_FILE_LABEL,
+    UNSAVED_DIALOG_TEXT,
+    UNSAVED_DIALOG_TITLE,
 )
 from fapolicy_analyzer.util.fapd_dbase import fapd_dbase_snapshot
 
@@ -125,8 +127,12 @@ class DeployChangesetsOp(UIOperation):
 
     def __on_next(self, system: Any):
         systemState = system.get("system")
+        text_state = system.get("rules_text")
         changesetState = system.get("changesets")
-
+        self.__rules_text = text_state.rules_text if text_state else ""
+        self.__modified_rules_text = (
+            text_state.modified_rules_text if text_state else ""
+        )
         if systemState.error and self.__deploying:
             self.__deploying = False
             logging.error("%s: %s", DEPLOY_SYSTEM_ERROR_MSG, systemState.error)
@@ -168,6 +174,25 @@ class DeployChangesetsOp(UIOperation):
         -------
         None
         """
+
+        rules = (
+            bool(self.__modified_rules_text)
+            and self.__modified_rules_text != self.__rules_text
+        )
+        if rules:
+            unsaved_rule_dialog = Gtk.MessageDialog(
+                transient_for=self.__window,
+                message_type=Gtk.MessageType.INFO,
+                buttons=Gtk.ButtonsType.OK_CANCEL,
+                title=UNSAVED_DIALOG_TITLE,
+                text=UNSAVED_DIALOG_TEXT,
+            )
+
+            unsaved_resp = unsaved_rule_dialog.run()
+            unsaved_rule_dialog.destroy()
+            if unsaved_resp == Gtk.ResponseType.CANCEL:
+                return
+
         dlgDeployList = ConfirmDeploymentDialog(
             changesets, system, checkpoint, parent=self.__window
         )

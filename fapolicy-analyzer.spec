@@ -4,7 +4,9 @@ Version:       1.0.0
 Release:       1%{?dist}
 License:       GPLv3+
 URL:           https://github.com/ctc-oss/fapolicy-analyzer
-Source0:       %{url}/releases/download/v%{version}/fapolicy-analyzer.tar.gz
+Source0:       %{url}/releases/download/v%{version}/%{name}.tar.gz
+
+# this tarball contains documentation used to generate help docs
 Source1:       %{url}/releases/download/v%{version}/vendor-docs.tar.gz
 
 BuildRequires: python3-devel
@@ -94,8 +96,10 @@ Requires:      python3-configargparse
 Requires:      python3-more-itertools
 Requires:      python3-rx
 Requires:      python3-importlib-metadata
+
 Requires:      gtk3
 Requires:      gtksourceview3
+Requires:      gnome-icon-theme
 
 # runtime required for rendering user guide
 Requires:      webkit2gtk3
@@ -137,8 +141,8 @@ echo %{module_version} > VERSION
 %{py3_install_wheel %{module}-%{module_version}*%{_arch}.whl}
 %{python3} help install --dest %{buildroot}/%{_datadir}/help
 install -D bin/%{name} %{buildroot}/%{_sbindir}/%{name}
-install -D data/fapolicy-analyzer.8 -t %{buildroot}/%{_mandir}/man8/
-desktop-file-install data/fapolicy-analyzer.desktop
+install -D data/%{name}.8 -t %{buildroot}/%{_mandir}/man8/
+desktop-file-install data/%{name}.desktop
 find locale -name %{name}.mo -exec cp --parents -rv {} %{buildroot}/%{_datadir} \;
 %find_lang %{name} --with-gnome
 
@@ -150,8 +154,8 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
 %license LICENSE
 %{python3_sitearch}/%{module}
 %{python3_sitearch}/%{module}-%{module_version}*
-%attr(755,root,root) %{_sbindir}/fapolicy-analyzer
-%attr(644,root,root) %{_mandir}/man8/fapolicy-analyzer.8*
+%attr(755,root,root) %{_sbindir}/%{name}
+%attr(644,root,root) %{_mandir}/man8/%{name}.8*
 %attr(755,root,root) %{_datadir}/applications/%{name}.desktop
 
 %changelog
