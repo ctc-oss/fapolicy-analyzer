@@ -181,7 +181,7 @@ class FaProfSession:
 
                 # Change the ownership of profiling tgt's stdout and stderr
                 logging.info(
-                    f"Changing ownership of fds: {self.fdTgtStdout},{self.fdTgtStderr}"
+                    f"Chown: {self.fdTgtStdout.name}, {self.fdTgtStderr.name}"
                 )
                 os.fchown(self.fdTgtStdout.fileno(), self.uid, self.gid)
                 os.fchown(self.fdTgtStderr.fileno(), self.uid, self.gid)
