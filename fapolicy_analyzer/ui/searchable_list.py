@@ -158,7 +158,3 @@ class SearchableList(UIBuilderWidget, Events):
 
     def on_search_activate(self, *args):
         self.__refilter()
-
-    def on_search_icon_release(self, *args):
-        self.search.set_text("")
-        self.__refilter()

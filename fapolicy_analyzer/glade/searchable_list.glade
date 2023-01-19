@@ -30,13 +30,12 @@
         <property name="can-focus">False</property>
         <property name="spacing">2</property>
         <child>
-          <object class="GtkSearchEntry" id="search">
+          <object class="GtkEntry" id="search">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="primary-icon-name">edit-find-symbolic</property>
             <property name="primary-icon-activatable">False</property>
             <property name="primary-icon-sensitive">False</property>
-            <signal name="icon-release" handler="on_search_icon_release" swapped="no"/>
             <signal name="activate" handler="on_search_activate" swapped="no"/>
           </object>
           <packing>
