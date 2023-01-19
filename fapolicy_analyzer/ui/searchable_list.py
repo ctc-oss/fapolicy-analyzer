@@ -157,7 +157,8 @@ class SearchableList(UIBuilderWidget, Events):
         self._update_tree_count(self.__get_tree_count())
 
     def on_search_activate(self, *args):
+        self.__refilter()   
+ 
+    def on_search_icon_release(self, *args):
+        self.search.set_text("")
         self.__refilter()
-
-    def on_search_changed(self, search):
-        self.search.set_icon_from_pixbuf(Gtk.EntryIconPosition.SECONDARY, None)
