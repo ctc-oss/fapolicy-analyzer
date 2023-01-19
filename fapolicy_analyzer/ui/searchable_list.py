@@ -19,7 +19,7 @@ import gi
 
 gi.require_version("Gtk", "3.0")
 from events import Events
-from gi.repository import Gtk, Gdk
+from gi.repository import Gtk
 
 from fapolicy_analyzer.ui.loader import Loader
 from fapolicy_analyzer.ui.ui_widget import UIBuilderWidget
@@ -157,8 +157,8 @@ class SearchableList(UIBuilderWidget, Events):
         self._update_tree_count(self.__get_tree_count())
 
     def on_search_activate(self, *args):
-        self.__refilter()   
- 
+        self.__refilter()
+
     def on_search_icon_release(self, *args):
         self.search.set_text("")
         self.__refilter()
