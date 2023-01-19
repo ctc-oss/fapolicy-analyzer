@@ -28,8 +28,9 @@ from fapolicy_analyzer.ui.actions import (
 class TrustState(NamedTuple):
     error: Optional[str]
     loading: bool
-    check_percentage: int
+    percent_complete: int
     trust: Sequence[Trust]
+    last_set_completed: Optional[Sequence[Trust]]
 
 
 def _create_state(state: TrustState, **kwargs: Optional[Any]) -> TrustState:
@@ -37,20 +38,27 @@ def _create_state(state: TrustState, **kwargs: Optional[Any]) -> TrustState:
 
 
 def handle_request_system_trust(state: TrustState, _: Action) -> TrustState:
-    return _create_state(state, loading=True, error=None, check_percentage=0)
+    return _create_state(state, loading=True, percent_complete=0, error=None)
 
 
 def handle_received_system_trust_update(
     state: TrustState, action: Action
 ) -> TrustState:
-    trust, check_percentage = cast((Sequence[Trust], int), action.payload)
+    update, percent_complete = cast((Sequence[Trust], int), action.payload)
     return _create_state(
-        state, loading=False, trust=trust, check_percentage=check_percentage, error=None
+        state,
+        loading=True,
+        percent_complete=percent_complete,
+        trust=[*state.trust, *update],
+        last_set_completed=update,
+        error=None,
     )
 
 
 def handle_system_trust_load_complete(state: TrustState, _: Action) -> TrustState:
-    return _create_state(state, error=None, loading=False, check_percentage=100)
+    return _create_state(
+        state, error=None, loading=False, percent_complete=100, last_set_completed=None
+    )
 
 
 def handle_error_system_trust(state: TrustState, action: Action) -> TrustState:
@@ -65,5 +73,11 @@ system_trust_reducer: Reducer = handle_actions(
         SYSTEM_TRUST_LOAD_COMPLETE: handle_system_trust_load_complete,
         ERROR_SYSTEM_TRUST: handle_error_system_trust,
     },
-    TrustState(error=None, trust=[], loading=False, check_percentage=100),
+    TrustState(
+        error=None,
+        trust=[],
+        loading=False,
+        percent_complete=100,
+        last_set_completed=None,
+    ),
 )

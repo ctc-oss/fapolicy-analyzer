@@ -14,11 +14,12 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from concurrent.futures import ThreadPoolExecutor
+from threading import Event
 from time import localtime, mktime, strftime, strptime
 
-import fapolicy_analyzer.ui.strings as strings
 import gi
 
+import fapolicy_analyzer.ui.strings as strings
 from fapolicy_analyzer.ui.configs import Colors
 from fapolicy_analyzer.ui.searchable_list import SearchableList
 from fapolicy_analyzer.ui.strings import FILE_LABEL, FILES_LABEL
@@ -28,7 +29,7 @@ from gi.repository import GLib, Gtk  # isort: skip
 
 # global variable used for stopping the running executor from call for UI
 # updates if the widget was destroyed
-_executorCanceled = False
+# _executorCanceled = False
 
 
 def epoch_to_string(secsEpoch):
@@ -48,7 +49,7 @@ def epoch_to_string(secsEpoch):
 
 class TrustFileList(SearchableList):
     def __init__(self, trust_func, markup_func=None, *args):
-        global _executorCanceled
+        # global _executorCanceled
 
         self.__events__ = [
             *super().__events__,
@@ -66,8 +67,9 @@ class TrustFileList(SearchableList):
         )
         self.trust_func = trust_func
         self.markup_func = markup_func
-        self.__executor = ThreadPoolExecutor(max_workers=1)
-        _executorCanceled = False
+        self.__executor = ThreadPoolExecutor(max_workers=100)
+        self.__event = Event()
+        # _executorCanceled = False
         self.refresh()
         self.selection_changed += self.__handle_selection_changed
         self.get_ref().connect("destroy", self.on_destroy)
@@ -128,7 +130,8 @@ class TrustFileList(SearchableList):
 
     def on_destroy(self, *args):
         global _executorCanceled
-        _executorCanceled = True
+        # _executorCanceled = True
+        self.__event.set()
         self.__executor.shutdown()
         return False
 
@@ -137,17 +140,43 @@ class TrustFileList(SearchableList):
 
     def load_trust(self, trust):
         def process():
-            global _executorCanceled
+            # global _executorCanceled
             store = Gtk.ListStore(str, str, str, object, str, str)
             for i, data in enumerate(trust):
                 status, bg_color, txt_color, date_time = self._base_row_data(data)
                 store.append([status, date_time, data.path, data, bg_color, txt_color])
 
-                if _executorCanceled:
+                # if _executorCanceled:
+                if self.__event.is_set():
                     return
 
-            if not _executorCanceled:
+            # if not _executorCanceled:
+            if not self.__event.is_set():
                 GLib.idle_add(self.load_store, store)
 
         self.set_loading(True)
         self.__executor.submit(process)
+
+    def append_trust(self, trust):
+        def append(row):
+            store = self.treeViewFilter.get_model()
+            store.insert_with_valuesv(-1, list(range(len(row))), row)
+            self._update_tree_count(store.iter_n_children(None))
+
+        def process(trust):
+            # global _executorCanceled
+
+            rows = []
+            for _, data in enumerate(trust):
+                status, bg_color, txt_color, date_time = self._base_row_data(data)
+                rows.append([status, date_time, data.path, data, bg_color, txt_color])
+
+            for r in rows:
+                if self.__event.is_set():
+                    return
+                GLib.idle_add(append, r)
+
+            # if _executorCanceled:
+            #     return
+
+        self.__executor.submit(process, trust)

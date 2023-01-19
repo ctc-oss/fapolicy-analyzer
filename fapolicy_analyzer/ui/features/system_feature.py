@@ -144,7 +144,7 @@ def create_system_feature(
             # merge the updated trust into the system
             _system.merge(updates)
             # dispatch the update
-            trust_update = (_system.system_trust(), pct)
+            trust_update = (updates, pct)
             GLib.idle_add(dispatch, received_system_trust_update(trust_update))
             print(f"progress {pct}%", end="\r")
 
@@ -153,7 +153,7 @@ def create_system_feature(
             print("done!")
 
         check_disk_trust(_system, available, completed)
-        initial_trust = (_system.system_trust(), 0)
+        initial_trust = ([], 0)  # empty trust and 0% complete
         return received_system_trust_update(initial_trust)
 
     def _deploy_system(_: Action) -> Action:
