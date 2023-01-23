@@ -93,7 +93,7 @@ class ObjectList(SubjectList, Events):
             status = self._trust_markup(o)
             perm = self.__markup(
                 "",
-                ["any", "open", "access"],
+                [o.perm],
                 multiValue=True,
             )
             access = self.__markup(o.access.upper(), ["A", "D"])
