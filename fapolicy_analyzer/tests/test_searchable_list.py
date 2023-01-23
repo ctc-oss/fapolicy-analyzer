@@ -25,7 +25,7 @@ from fapolicy_analyzer.ui.searchable_list import SearchableList
 from helpers import refresh_gui
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, Gdk  # isort: skip
+from gi.repository import Gtk  # isort: skip
 
 
 @pytest.fixture()
