@@ -47,19 +47,19 @@ def mock_events():
             uid=0,
             gid=0,
             subject=MagicMock(file="fooSubject", trust="ST", access="A"),
-            object=MagicMock(file="fooObject", trust="ST", access="A", mode="R"),
+            object=MagicMock(file="fooObject", trust="ST", access="A", perm="any"),
         ),
         MagicMock(
             uid=0,
             gid=0,
             subject=MagicMock(file="barSubject", trust="AT", access="A"),
-            object=MagicMock(file="barObject", trust="AT", access="A", mode="R"),
+            object=MagicMock(file="barObject", trust="AT", access="A", perm="any"),
         ),
         MagicMock(
             uid=1,
             gid=100,
             subject=MagicMock(file="otherSubject", trust="ST", access="A"),
-            object=MagicMock(file="otherObject", trust="ST", access="A", mode="R"),
+            object=MagicMock(file="otherObject", trust="ST", access="A", perm="any"),
         ),
     ]
 
