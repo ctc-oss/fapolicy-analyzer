@@ -94,7 +94,6 @@ class ObjectList(SubjectList, Events):
             perm = self.__markup(
                 "",
                 [o.perm],
-                multiValue=True,
             )
             access = self.__markup(o.access.upper(), ["A", "D"])
             bg_color, txt_color = self.__colors(o.access, o.trust_status, o.trust)
