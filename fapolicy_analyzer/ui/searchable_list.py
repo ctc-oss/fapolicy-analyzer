@@ -61,6 +61,7 @@ class SearchableList(UIBuilderWidget, Events):
         self.set_action_buttons(*actionButtons)
 
     def __filter_view(self, model, iter, data):
+        print("filtering")
         filter = self.get_object("search").get_text()
         return True if not filter else filter in model[iter][self.searchColumnIndex]
 

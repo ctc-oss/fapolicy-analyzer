@@ -15,7 +15,7 @@
 
 from concurrent.futures import ThreadPoolExecutor
 from threading import Event
-from time import localtime, mktime, strftime, strptime
+from time import localtime, mktime, strftime, strptime, time
 
 import gi
 
@@ -26,10 +26,6 @@ from fapolicy_analyzer.ui.strings import FILE_LABEL, FILES_LABEL
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import GLib, Gtk  # isort: skip
-
-# global variable used for stopping the running executor from call for UI
-# updates if the widget was destroyed
-# _executorCanceled = False
 
 
 def epoch_to_string(secsEpoch):
@@ -49,7 +45,6 @@ def epoch_to_string(secsEpoch):
 
 class TrustFileList(SearchableList):
     def __init__(self, trust_func, markup_func=None, *args):
-        # global _executorCanceled
 
         self.__events__ = [
             *super().__events__,
@@ -63,13 +58,14 @@ class TrustFileList(SearchableList):
             *args,
             searchColumnIndex=2,
             defaultSortIndex=2,
+            defaultSortDirection=Gtk.SortType.ASCENDING,
             selection_type="multi",
         )
         self.trust_func = trust_func
         self.markup_func = markup_func
         self.__executor = ThreadPoolExecutor(max_workers=100)
         self.__event = Event()
-        # _executorCanceled = False
+        self.__time = None
         self.refresh()
         self.selection_changed += self.__handle_selection_changed
         self.get_ref().connect("destroy", self.on_destroy)
@@ -129,8 +125,6 @@ class TrustFileList(SearchableList):
         return status, bg_color, txt_color, date_time
 
     def on_destroy(self, *args):
-        global _executorCanceled
-        # _executorCanceled = True
         self.__event.set()
         self.__executor.shutdown()
         return False
@@ -140,43 +134,65 @@ class TrustFileList(SearchableList):
 
     def load_trust(self, trust):
         def process():
-            # global _executorCanceled
             store = Gtk.ListStore(str, str, str, object, str, str)
             for i, data in enumerate(trust):
                 status, bg_color, txt_color, date_time = self._base_row_data(data)
                 store.append([status, date_time, data.path, data, bg_color, txt_color])
 
-                # if _executorCanceled:
                 if self.__event.is_set():
                     return
 
-            # if not _executorCanceled:
             if not self.__event.is_set():
+                print(f"store created in {time()-self.__time}")
                 GLib.idle_add(self.load_store, store)
 
         self.set_loading(True)
+        self.__time = time()
         self.__executor.submit(process)
 
     def append_trust(self, trust):
-        def append(row):
-            store = self.treeViewFilter.get_model()
-            store.insert_with_valuesv(-1, list(range(len(row))), row)
+        def append(rows):
+            store = self.treeViewFilter  # .get_model()
+            for r in rows:
+                store.append(r)
+            print(f"rows appended in {time()-self.__time}")
             self._update_tree_count(store.iter_n_children(None))
 
         def process(trust):
-            # global _executorCanceled
 
             rows = []
             for _, data in enumerate(trust):
                 status, bg_color, txt_color, date_time = self._base_row_data(data)
                 rows.append([status, date_time, data.path, data, bg_color, txt_color])
 
-            for r in rows:
-                if self.__event.is_set():
-                    return
-                GLib.idle_add(append, r)
-
-            # if _executorCanceled:
-            #     return
+            if not self.__event.is_set():
+                print(f"rows processed in {time()-self.__time}")
+                GLib.idle_add(append, rows)
 
         self.__executor.submit(process, trust)
+
+    def load_store(self, store, **kwargs):
+        # def apply_prev_sort(model):
+        #     currentModel = self.treeView.get_model()
+        #     currentSort = (
+        #         currentModel.get_sort_column_id()
+        #         if currentModel
+        #         else (self.defaultSortIndex, 0)
+        #     )
+        #     model.set_sort_column_id(*currentSort)
+        #     return model
+
+        # self.treeViewFilter = store.filter_new()
+        # self.treeViewFilter.set_visible_func(self.__filter_view)
+
+        # sortableModel = apply_prev_sort(Gtk.TreeModelSort(model=self.treeViewFilter))
+        store.set_sort_column_id(self.defaultSortIndex, self.defaultSortDirection)
+        self.treeViewFilter = store
+        self.treeView.set_model(store)
+        if self.treeView.get_selection():
+            self.treeView.get_selection().connect(
+                "changed", self.on_view_selection_changed
+            )
+        print(f"model loaded in {time()-self.__time}")
+        self._update_tree_count(store.iter_n_children(None))
+        self.set_loading(False)
