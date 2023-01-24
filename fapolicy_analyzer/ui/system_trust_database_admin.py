@@ -45,7 +45,7 @@ class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
         self._trust = []
         self._error = None
         self._loading = False
-        self.__loading_percent = 100
+        self.__loading_percent = -1
 
         self.trustFileList = TrustFileList(
             trust_func=self.__load_trust, markup_func=self.__status_markup
@@ -83,7 +83,12 @@ class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
                     strings.SYSTEM_TRUST_LOAD_ERROR, NotificationType.ERROR
                 )
             )
-        elif self._loading and trustState.loading and trustState.percent_complete == 0:
+        elif (
+            self._loading
+            and trustState.loading
+            and trustState.percent_complete == 0
+            and self.__loading_percent != trustState.percent_complete
+        ):
             self._error = None
             self.__loading_percent = 0
             self._trust = trustState.trust

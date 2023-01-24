@@ -60,8 +60,7 @@ class SearchableList(UIBuilderWidget, Events):
         self.viewSwitcher.add_named(Loader().get_ref(), "loader")
         self.set_action_buttons(*actionButtons)
 
-    def __filter_view(self, model, iter, data):
-        print("filtering")
+    def _filter_view(self, model, iter, data):
         filter = self.get_object("search").get_text()
         return True if not filter else filter in model[iter][self.searchColumnIndex]
 
@@ -86,7 +85,7 @@ class SearchableList(UIBuilderWidget, Events):
             return model
 
         self.treeViewFilter = store.filter_new()
-        self.treeViewFilter.set_visible_func(self.__filter_view)
+        self.treeViewFilter.set_visible_func(self._filter_view)
 
         sortableModel = apply_prev_sort(Gtk.TreeModelSort(model=self.treeViewFilter))
         self.treeView.set_model(sortableModel)

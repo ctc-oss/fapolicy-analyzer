@@ -13,9 +13,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import math
 from concurrent.futures import ThreadPoolExecutor
+from queue import Queue
 from threading import Event
-from time import localtime, mktime, strftime, strptime, time
+from time import localtime, mktime, strftime, strptime
 
 import gi
 
@@ -133,70 +135,48 @@ class TrustFileList(SearchableList):
         self.trust_func()
 
     def load_trust(self, trust):
-        def process():
-            store = Gtk.ListStore(str, str, str, object, str, str)
-            for i, data in enumerate(trust):
-                status, bg_color, txt_color, date_time = self._base_row_data(data)
-                store.append([status, date_time, data.path, data, bg_color, txt_color])
+        def process_rows(queue):
+            store = self.treeViewFilter
+            columns = range(6)
+            for i in range(200):
+                if not queue.empty():
+                    row = queue.get()
+                    store.insert_with_valuesv(-1, columns, row)
 
-                if self.__event.is_set():
-                    return
+            count = self._get_tree_count()
+            if count < 61000:
+                pct = math.ceil((count / 61000) * 100)
+                self._update_tree_status(f"Loading trust {pct}% complete...")
+                return True
+            else:
+                self.treeViewFilter = store.filter_new()
+                self.treeViewFilter.set_visible_func(self._filter_view)
+                self.treeView.set_model(self.treeViewFilter)
+                self._update_file_count(self._get_tree_count())
+                return False
 
-            if not self.__event.is_set():
-                # print(f"store created in {time()-self.__time}")
-                GLib.idle_add(self.load_store, store)
-
-        self.set_loading(True)
-        self.__time = time()
-        self.__executor.submit(process)
+        store = Gtk.ListStore(str, str, str, object, str, str)
+        self.load_store(store)
+        self.__queue = Queue()
+        GLib.timeout_add(100, process_rows, self.__queue)
 
     def append_trust(self, trust, percent):
-        def append(rows, pct):
-            store = self.treeViewFilter.get_model()
-            for r in rows:
-                store.append(r)
-            # print(f"rows appended in {time()-self.__time}")
-            # print(f"appending {pct}%")
-            if pct == 100:
-                self._update_file_count(self._get_tree_count())
-            else:
-                self._update_tree_status(f"Loading trust {pct}% complete...")
-
-        def process(trust):
-
-            rows = []
-            for _, data in enumerate(trust):
+        def process_trust(trust):
+            for data in trust:
                 status, bg_color, txt_color, date_time = self._base_row_data(data)
-                rows.append([status, date_time, data.path, data, bg_color, txt_color])
+                self.__queue.put(
+                    [status, date_time, data.path, data, bg_color, txt_color]
+                )
 
-            if not self.__event.is_set():
-                # print(f"rows processed in {time()-self.__time}")
-                GLib.idle_add(append, rows, percent)
-
-        self.__executor.submit(process, trust)
+        self.__executor.submit(process_trust, trust)
 
     def load_store(self, store, **kwargs):
-        # def apply_prev_sort(model):
-        #     currentModel = self.treeView.get_model()
-        #     currentSort = (
-        #         currentModel.get_sort_column_id()
-        #         if currentModel
-        #         else (self.defaultSortIndex, 0)
-        #     )
-        #     model.set_sort_column_id(*currentSort)
-        #     return model
-
-        self.treeViewFilter = store.filter_new()
-        # self.treeViewFilter.set_visible_func(self.__filter_view)
-
-        # sortableModel = apply_prev_sort(Gtk.TreeModelSort(model=self.treeViewFilter))
         store.set_sort_column_id(self.defaultSortIndex, self.defaultSortDirection)
-        # self.treeViewFilter = store
+        self.treeViewFilter = store
         self.treeView.set_model(self.treeViewFilter)
         if self.treeView.get_selection():
             self.treeView.get_selection().connect(
                 "changed", self.on_view_selection_changed
             )
-        # print(f"model loaded in {time()-self.__time}")
         self._update_tree_status("Loading trust 0% complete...")
         self.set_loading(False)
