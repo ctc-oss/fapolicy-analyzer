@@ -74,6 +74,19 @@ def confirm_dialog(confirm_resp, mocker):
 
 
 @pytest.fixture
+def unsave_dialog(unsave_resp, mocker):
+    mock_unsave_dialog = MagicMock(
+        run=MagicMock(return_value=unsave_resp),
+    )
+    mocker.patch(
+        "fapolicy_analyzer.ui.operations.deploy_changesets_op.Gtk.MessageDialog",
+        return_value=mock_unsave_dialog,
+    )
+
+    return mock_unsave_dialog
+
+
+@pytest.fixture
 def revert_dialog(revert_resp, mocker):
     mock_revert_dialog = MagicMock(
         run=MagicMock(return_value=revert_resp), hide=MagicMock()
@@ -290,3 +303,35 @@ def test_get_text(operation):
 
 def test_get_icon(operation):
     assert operation.get_icon() == "system-software-update"
+
+
+@pytest.mark.parametrize("confirm_resp", [Gtk.ResponseType.YES])
+@pytest.mark.parametrize("unsave_resp", [Gtk.ResponseType.OK])
+@pytest.mark.usefixtures("confirm_dialog", "unsave_dialog")
+def test_unsaved_change_dialog(operation, mocker, mock_dispatch):
+    system_features_mock = Subject()
+    mocker.patch(
+        "fapolicy_analyzer.ui.operations.deploy_changesets_op.get_system_feature",
+        return_value=system_features_mock,
+    )
+    mockRun = mocker.patch(
+        "fapolicy_analyzer.ui.operations.deploy_changesets_op.Gtk.MessageDialog.run",
+        return_value=Gtk.ResponseType.OK,
+    )
+    init_store(mock_System())
+    with DeployChangesetsOp(Gtk.Window()) as operation:
+        system_features_mock.on_next(
+            {
+                "changesets": [],
+                "system": MagicMock(
+                    error=None,
+                    loading=False,
+                ),
+                "rules_text": MagicMock(
+                    rules_text="foo",
+                    modified_rules_text="foo bar"
+                ),
+            }
+        )
+        operation.run([], None, None)
+    assert mockRun.return_value == Gtk.ResponseType.OK

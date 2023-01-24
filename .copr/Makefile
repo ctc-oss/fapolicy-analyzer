@@ -22,20 +22,21 @@ clean:
 	rm -f vendor-py.tar.gz
 
 ifeq ($(OS_ID),rhel)
-dnf: dnf-common dnf-rpmdev
+dnf: dnf-common dnf-el
 else
-dnf: dnf-common
+dnf: dnf-common dnf-fc
 endif
 
 dnf-common:
 	dnf install -y git which openssl-devel dbus-devel python3-devel python3-pip python3-toml python3-beautifulsoup4 python3-requests python3-babel python3-markdown2 itstool
-	dnf install -y rust-packaging || true
-	dnf install -y rust-toolset || true
-	cargo install cargo-vendor-filterer
 
-dnf-rpmdev:
-	# only dependent for spectool in python-py
+dnf-fc:
+	dnf install -y rust-packaging
+
+dnf-el:
 	dnf install -y rpmdevtools
+	dnf install -y rust-toolset
+	cargo install cargo-vendor-filterer
 
 ifeq ($(OS_ID),rhel)
 # we only need to vendor rust and python on rhel
@@ -46,7 +47,6 @@ endif
 
 vendor-app:
 	git archive HEAD -o fapolicy-analyzer.tar.gz --prefix=fapolicy-analyzer/
-	cp fapolicy-analyzer.tar.gz /tmp/rpmbuild/SOURCES/
 
 vendor-py:
 	which spectool && spectool -gf -C /tmp/rpmbuild/SOURCES/ \$(spec) || true
@@ -56,11 +56,20 @@ vendor-rs:
 	./scripts/srpm/vendor-rs.sh
 	cp vendor-rs.tar.gz /tmp/rpmbuild/SOURCES/
 
+move-sources: prepfs
+	cp fapolicy-analyzer.tar.gz /tmp/rpmbuild/SOURCES/
+
 vendor-doc:
 	python3 help update
 	tar --exclude=es --exclude=*.py --exclude=.gitignore -cvzf vendor-docs.tar.gz help
 	cp vendor-docs.tar.gz /tmp/rpmbuild/SOURCES/
 
-srpm: identify prepfs dnf vendor
+build:
 	rpmbuild -bs -D "_topdir /tmp/rpmbuild" \$(spec)
+
+export:
+	mkdir -p \$(outdir)/
 	cp -v /tmp/rpmbuild/SRPMS/* \$(outdir)/
+
+# the copr entrypoint
+srpm: idenfity dnf vendor move-sources build export

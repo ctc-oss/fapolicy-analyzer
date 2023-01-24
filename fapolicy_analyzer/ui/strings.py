@@ -193,3 +193,10 @@ $(HOME)/.config/fapolicy-analyzer/fapolicy-analyzer.toml
 APPLY_CHANGESETS_ERROR_MESSAGE = _("Error applying changes")
 
 SYNC_FIFO_ERROR_MESSAGE = _("fifo pipe does not exist.\n Default: /run/fapolicyd/fapolicyd.fifo")
+
+UNSAVED_DIALOG_TITLE = _("Unsaved Rules Changes")
+UNSAVED_DIALOG_TEXT = _(
+    """You have unsaved changes to the rules. If you deploy, your changes will be lost.
+
+Would you like to continue deploying?"""
+)

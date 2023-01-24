@@ -7,9 +7,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: fapolicy-analyzer 0.0.0+324.gd6666ce.dirty\n"
+"Project-Id-Version: fapolicy-analyzer 0.0.0+334.g2e71124.dirty\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-01-10 09:37-0800\n"
+"POT-Creation-Date: 2023-01-24 10:10-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -442,13 +442,25 @@ msgstr ""
 msgid "Error applying changes"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:194
+#: fapolicy_analyzer/ui/strings.py:195
 msgid ""
 "fifo pipe does not exist.\n"
 " Default: /run/fapolicyd/fapolicyd.fifo"
 msgstr ""
 
-#: fapolicy_analyzer/ui/operations/deploy_changesets_op.py:148
+#: fapolicy_analyzer/ui/strings.py:197
+msgid "Unsaved Rules Changes"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:198
+msgid ""
+"You have unsaved changes to the rules. If you deploy, your changes will "
+"be lost.\n"
+"\n"
+"Would you like to continue deploying?"
+msgstr ""
+
+#: fapolicy_analyzer/ui/operations/deploy_changesets_op.py:159
 msgid "Deploy Changes"
 msgstr ""
 
