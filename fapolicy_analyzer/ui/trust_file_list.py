@@ -110,7 +110,7 @@ class TrustFileList(SearchableList):
         fileColumn.set_sort_column_id(2)
         return [trustColumn, mtimeColumn, fileColumn]
 
-    def _update_tree_count(self, count):
+    def _update_file_count(self, count):
         label = FILE_LABEL if count == 1 else FILES_LABEL
         self.treeCount.set_text(" ".join([str(count), label]))
 
@@ -143,20 +143,24 @@ class TrustFileList(SearchableList):
                     return
 
             if not self.__event.is_set():
-                print(f"store created in {time()-self.__time}")
+                # print(f"store created in {time()-self.__time}")
                 GLib.idle_add(self.load_store, store)
 
         self.set_loading(True)
         self.__time = time()
         self.__executor.submit(process)
 
-    def append_trust(self, trust):
-        def append(rows):
-            store = self.treeViewFilter  # .get_model()
+    def append_trust(self, trust, percent):
+        def append(rows, pct):
+            store = self.treeViewFilter.get_model()
             for r in rows:
                 store.append(r)
-            print(f"rows appended in {time()-self.__time}")
-            self._update_tree_count(store.iter_n_children(None))
+            # print(f"rows appended in {time()-self.__time}")
+            # print(f"appending {pct}%")
+            if pct == 100:
+                self._update_file_count(self._get_tree_count())
+            else:
+                self._update_tree_status(f"Loading trust {pct}% complete...")
 
         def process(trust):
 
@@ -166,8 +170,8 @@ class TrustFileList(SearchableList):
                 rows.append([status, date_time, data.path, data, bg_color, txt_color])
 
             if not self.__event.is_set():
-                print(f"rows processed in {time()-self.__time}")
-                GLib.idle_add(append, rows)
+                # print(f"rows processed in {time()-self.__time}")
+                GLib.idle_add(append, rows, percent)
 
         self.__executor.submit(process, trust)
 
@@ -182,17 +186,17 @@ class TrustFileList(SearchableList):
         #     model.set_sort_column_id(*currentSort)
         #     return model
 
-        # self.treeViewFilter = store.filter_new()
+        self.treeViewFilter = store.filter_new()
         # self.treeViewFilter.set_visible_func(self.__filter_view)
 
         # sortableModel = apply_prev_sort(Gtk.TreeModelSort(model=self.treeViewFilter))
         store.set_sort_column_id(self.defaultSortIndex, self.defaultSortDirection)
-        self.treeViewFilter = store
-        self.treeView.set_model(store)
+        # self.treeViewFilter = store
+        self.treeView.set_model(self.treeViewFilter)
         if self.treeView.get_selection():
             self.treeView.get_selection().connect(
                 "changed", self.on_view_selection_changed
             )
-        print(f"model loaded in {time()-self.__time}")
-        self._update_tree_count(store.iter_n_children(None))
+        # print(f"model loaded in {time()-self.__time}")
+        self._update_tree_status("Loading trust 0% complete...")
         self.set_loading(False)

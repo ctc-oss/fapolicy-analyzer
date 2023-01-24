@@ -146,7 +146,7 @@ def create_system_feature(
             # dispatch the update
             trust_update = (updates, pct)
             GLib.idle_add(dispatch, received_system_trust_update(trust_update))
-            print(f"progress {pct}%", end="\r")
+            print(f"progress {pct}%")  # , end="\r")
 
         def completed():
             GLib.idle_add(dispatch, system_trust_load_complete())

@@ -97,10 +97,14 @@ class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
             self._error = None
             self.__loading_percent = trustState.percent_complete
             self._trust = trustState.trust
-            self.trustFileList.append_trust(trustState.last_set_completed)
+            self.trustFileList.append_trust(
+                trustState.last_set_completed, trustState.percent_complete
+            )
 
-        if self._loading and not trustState.loading:
+        if self._loading and not trustState.loading and self.__loading_percent < 100:
             self._loading = False
+            self.__loading_percent = 100
+            self.trustFileList.append_trust([], 100)
 
     def on_trust_selection_changed(self, trusts):
         self.selectedFiles = trusts

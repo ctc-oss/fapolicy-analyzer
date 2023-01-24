@@ -65,14 +65,14 @@ class SearchableList(UIBuilderWidget, Events):
         filter = self.get_object("search").get_text()
         return True if not filter else filter in model[iter][self.searchColumnIndex]
 
-    def __get_tree_count(self):
-        return self.treeViewFilter.iter_n_children(None)
-
     def _load_data(self):
         pass
 
-    def _update_tree_count(self, count):
-        self.treeCount.set_text(str(count))
+    def _get_tree_count(self):
+        return self.treeViewFilter.iter_n_children(None)
+
+    def _update_tree_status(self, status):
+        self.treeCount.set_text(str(status))
 
     def load_store(self, store, **kwargs):
         def apply_prev_sort(model):
@@ -94,7 +94,7 @@ class SearchableList(UIBuilderWidget, Events):
             self.treeView.get_selection().connect(
                 "changed", self.on_view_selection_changed
             )
-        self._update_tree_count(self.__get_tree_count())
+        self._update_tree_status(self._get_tree_count())
         self.set_loading(False)
 
     def set_loading(self, loading):
@@ -155,4 +155,4 @@ class SearchableList(UIBuilderWidget, Events):
 
     def on_search_changed(self, search):
         self.treeViewFilter.refilter()
-        self._update_tree_count(self.__get_tree_count())
+        self._update_tree_status(self._get_tree_count())
