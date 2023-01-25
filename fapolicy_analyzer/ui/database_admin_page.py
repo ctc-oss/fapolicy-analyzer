@@ -15,7 +15,7 @@
 
 import fapolicy_analyzer.ui.strings as strings
 import gi
-from fapolicy_analyzer.ui.ui_page import UIPage
+from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
@@ -31,7 +31,17 @@ class DatabaseAdminPage(UIWidget, UIPage):
     def __init__(self):
         notebook = Gtk.Notebook()
         UIWidget.__init__(self, notebook)
-        UIPage.__init__(self)
+        actions = {
+            "toggle": [
+                UIAction(
+                    name="Toggle",
+                    tooltip="Toggle Displaying Trusted Entries",
+                    icon="system-software-update",
+                    signals={"clicked": self.on_trust_toggle_clicked},
+                )
+            ],
+        }
+        UIPage.__init__(self, actions)
 
         self.ancillaryTrustDbAdmin = AncillaryTrustDatabaseAdmin()
         self.systemTrustDbAdmin = SystemTrustDatabaseAdmin()
@@ -53,6 +63,9 @@ class DatabaseAdminPage(UIWidget, UIPage):
 
     def on_added_to_ancillary_trust(self, *files):
         self.ancillaryTrustDbAdmin.add_trusted_files(*files)
+
+    def on_trust_toggle_clicked(self):
+        self.systemTrustDbAdmin.trustFileList.load_trust(self.systemTrustDbAdmin._trust, show_trusted=True)
 
     def _dispose(self):
         self.ancillaryTrustDbAdmin.dispose()

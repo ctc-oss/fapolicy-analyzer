@@ -135,13 +135,14 @@ class TrustFileList(SearchableList):
     def refresh(self):
         self.trust_func()
 
-    def load_trust(self, trust):
+    def load_trust(self, trust, show_trusted=False):
         def process():
             global _executorCanceled
             store = Gtk.ListStore(str, str, str, object, str, str)
             for i, data in enumerate(trust):
                 status, bg_color, txt_color, date_time = self._base_row_data(data)
-                store.append([status, date_time, data.path, data, bg_color, txt_color])
+                if not data.status == "T" or show_trusted:
+                    store.append([status, date_time, data.path, data, bg_color, txt_color])
 
                 if _executorCanceled:
                     return
