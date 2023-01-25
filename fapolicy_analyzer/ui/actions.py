@@ -41,6 +41,7 @@ RECEIVED_ANCILLARY_TRUST = "RECEIVED_ANCILLARY_TRUST"
 ERROR_ANCILLARY_TRUST = "ERROR_ANCILLARY_TRUST"
 
 REQUEST_SYSTEM_TRUST = "REQUEST_SYSTEM_TRUST"
+SYSTEM_TRUST_LOAD_STARTED = "SYSTEM_TRUST_LOAD_STARTED"
 RECEIVED_SYSTEM_TRUST_UPDATE = "RECEIVED_SYSTEM_TRUST_UPDATE"
 SYSTEM_TRUST_LOAD_COMPLETE = "SYSTEM_TRUST_LOAD_COMPLETE"
 ERROR_SYSTEM_TRUST = "ERROR_SYSTEM_TRUST"
@@ -139,6 +140,10 @@ def error_ancillary_trust(error: str) -> Action:
 
 def request_system_trust() -> Action:
     return _create_action(REQUEST_SYSTEM_TRUST)
+
+
+def system_trust_load_started(count: int) -> Action:
+    return _create_action(SYSTEM_TRUST_LOAD_STARTED, count)
 
 
 def received_system_trust_update(update: Tuple[Sequence[Trust], int]) -> Action:

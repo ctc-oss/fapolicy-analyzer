@@ -92,7 +92,7 @@ class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
             self._error = None
             self.__loading_percent = 0
             self._trust = trustState.trust
-            self.trustFileList.load_trust(self._trust)
+            self.trustFileList.load_trust(trustState.trust_count)
         elif (
             self._loading
             and trustState.loading

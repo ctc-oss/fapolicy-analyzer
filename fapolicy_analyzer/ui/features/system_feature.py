@@ -70,6 +70,7 @@ from fapolicy_analyzer.ui.actions import (
     system_initialization_error,
     system_received,
     system_trust_load_complete,
+    system_trust_load_started,
 )
 from fapolicy_analyzer.ui.reducers import system_reducer
 from fapolicy_analyzer.ui.strings import SYSTEM_INITIALIZATION_ERROR
@@ -146,15 +147,25 @@ def create_system_feature(
             # dispatch the update
             trust_update = (updates, pct)
             GLib.idle_add(dispatch, received_system_trust_update(trust_update))
+            # ups.append(updates)
             # print(f"progress {pct}%")  # , end="\r")
 
         def completed():
             GLib.idle_add(dispatch, system_trust_load_complete())
-            # print("done!")
+            print("done!")
+            # try:
+            #     updated = [t.path for u in ups for t in u]
+            #     print(f"original len = {len(original)}, updated len = {len(updated)}")
+            #     print(f"diffs = {set(original) - set(updated)}")
+            #     print(f"diffs = {len(set(original) - set(updated))}")
+            # except Exception as e:
+            #     print(e)
 
+        # traceback.print_stack()
+        # ups = []
+        # original = [t.path for t in _system.system_trust()]
         check_disk_trust(_system, available, completed)
-        initial_trust = ([], 0)  # empty trust and 0% complete
-        return received_system_trust_update(initial_trust)
+        return system_trust_load_started(len(_system.system_trust()))
 
     def _deploy_system(_: Action) -> Action:
         if not fapd_dbase_snapshot():

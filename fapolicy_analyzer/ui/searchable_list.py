@@ -41,23 +41,32 @@ class SearchableList(UIBuilderWidget, Events):
         UIBuilderWidget.__init__(self, "searchable_list")
         Events.__init__(self)
 
+        def init_tree_view():
+            tree_view = self.get_object("treeView")
+            tree_selection = self.get_object("treeSelection")
+            tree_view.set_headers_visible(view_headers_visible)
+            for column in columns:
+                tree_view.append_column(column)
+
+            if selection_type == "multi":
+                tree_selection.set_mode(Gtk.SelectionMode.MULTIPLE)
+                tree_view.set_rubber_banding(True)
+
+            return tree_view, tree_selection
+
         self.searchColumnIndex = searchColumnIndex
         self.defaultSortIndex = defaultSortIndex
         self.defaultSortDirection = defaultSortDirection
         self.treeCount = self.get_object("treeCount")
-        self.treeView = self.get_object("treeView")
-        self.treeView.set_headers_visible(view_headers_visible)
-        for column in columns:
-            self.treeView.append_column(column)
-
-        if selection_type == "multi":
-            self.treeSelection = self.get_object("treeSelection")
-            self.treeSelection.set_mode(Gtk.SelectionMode.MULTIPLE)
-            self.treeView.set_rubber_banding(True)
-
+        self.treeView, self.treeSelection = init_tree_view()
         self.search = self.get_object("search")
         self.viewSwitcher = self.get_object("viewStack")
         self.viewSwitcher.add_named(Loader().get_ref(), "loader")
+        self.view_container = self.get_object("viewContainer")
+        self.progress_bar = self.get_object("progressBar")
+        self.view_container.remove(
+            self.progress_bar
+        )  # progress bar only show when needed
         self.set_action_buttons(*actionButtons)
 
     def _filter_view(self, model, iter, data):
@@ -72,6 +81,23 @@ class SearchableList(UIBuilderWidget, Events):
 
     def _update_list_status(self, status):
         self.treeCount.set_text(str(status))
+
+    def _update_progress(self, progress_pct):
+        def visible():
+            return self.progress_bar in self.view_container.get_children()
+
+        if progress_pct >= 100 or progress_pct < 0:
+            if visible():
+                self.view_container.remove(self.progress_bar)
+            return
+
+        if not visible():
+            print("showing bar")
+            self.view_container.pack_start(self.progress_bar, False, True, 0)
+            self.view_container.reorder_child(self.progress_bar, 1)
+            self.view_container.show_all()
+
+        self.progress_bar.set_fraction(progress_pct / 100)
 
     def load_store(self, store, **kwargs):
         def apply_prev_sort(model):

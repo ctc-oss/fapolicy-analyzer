@@ -130,15 +130,14 @@ class TrustFileList(SearchableList):
 
     def on_destroy(self, *args):
         self.__event.set()
-        print("event set")
         self.__executor.shutdown()
         return False
 
     def refresh(self):
         self.trust_func()
 
-    def load_trust(self, trust):
-        def process_rows(queue):
+    def load_trust(self, count_of_trust_entries):
+        def process_rows(queue, total):
             store = self.treeViewFilter
             columns = range(6)
             for i in range(200):
@@ -150,21 +149,25 @@ class TrustFileList(SearchableList):
                 return False
 
             count = self._get_tree_count()
-            if count < 61000:
-                pct = math.ceil((count / 61000) * 100)
+            total = 61000
+            # print(f"count = {count}, total = {total}")
+            if count < total:
+                pct = math.ceil((count / total) * 100)
                 self._update_loading_status(f"Loading trust {pct}% complete...")
+                self._update_progress(pct)
                 return True
             else:
                 self.treeViewFilter = store.filter_new()
                 self.treeViewFilter.set_visible_func(self._filter_view)
                 self.treeView.set_model(self.treeViewFilter)
                 self._update_list_status(self._get_tree_count())
+                self._update_progress(100)
                 return False
 
         store = Gtk.ListStore(str, str, str, object, str, str)
         self.__load_store(store)
         self.__queue = Queue()
-        GLib.timeout_add(200, process_rows, self.__queue)
+        GLib.timeout_add(200, process_rows, self.__queue, count_of_trust_entries)
 
     def append_trust(self, trust, percent):
         def process_trust(trust):

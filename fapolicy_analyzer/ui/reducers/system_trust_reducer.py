@@ -22,6 +22,7 @@ from fapolicy_analyzer.ui.actions import (
     RECEIVED_SYSTEM_TRUST_UPDATE,
     REQUEST_SYSTEM_TRUST,
     SYSTEM_TRUST_LOAD_COMPLETE,
+    SYSTEM_TRUST_LOAD_STARTED,
 )
 
 
@@ -30,6 +31,7 @@ class TrustState(NamedTuple):
     loading: bool
     percent_complete: int
     trust: Sequence[Trust]
+    trust_count: int
     last_set_completed: Optional[Sequence[Trust]]
 
 
@@ -39,6 +41,19 @@ def _create_state(state: TrustState, **kwargs: Optional[Any]) -> TrustState:
 
 def handle_request_system_trust(state: TrustState, _: Action) -> TrustState:
     return _create_state(state, loading=True, percent_complete=0, error=None)
+
+
+def handle_system_trust_load_started(state: TrustState, action: Action) -> TrustState:
+    count = cast(int, action.payload)
+    return _create_state(
+        state,
+        loading=True,
+        percent_complete=0,
+        trust=[],
+        last_set_completed=None,
+        error=None,
+        trust_count=count,
+    )
 
 
 def handle_received_system_trust_update(
@@ -69,6 +84,7 @@ def handle_error_system_trust(state: TrustState, action: Action) -> TrustState:
 system_trust_reducer: Reducer = handle_actions(
     {
         REQUEST_SYSTEM_TRUST: handle_request_system_trust,
+        SYSTEM_TRUST_LOAD_STARTED: handle_system_trust_load_started,
         RECEIVED_SYSTEM_TRUST_UPDATE: handle_received_system_trust_update,
         SYSTEM_TRUST_LOAD_COMPLETE: handle_system_trust_load_complete,
         ERROR_SYSTEM_TRUST: handle_error_system_trust,
@@ -79,5 +95,6 @@ system_trust_reducer: Reducer = handle_actions(
         loading=False,
         percent_complete=100,
         last_set_completed=None,
+        trust_count=0,
     ),
 )
