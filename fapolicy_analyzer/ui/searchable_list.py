@@ -17,6 +17,8 @@ from typing import Any
 
 import gi
 
+from fapolicy_analyzer.ui.strings import FILTERING_DISABLED_DURING_LOADING_MESSAGE
+
 gi.require_version("Gtk", "3.0")
 from events import Events
 from gi.repository import Gtk
@@ -125,6 +127,7 @@ class SearchableList(UIBuilderWidget, Events):
         if loading:
             self.viewSwitcher.set_visible_child_name("loader")
             self.search.set_sensitive(False)
+            self.search.set_tooltip_text(FILTERING_DISABLED_DURING_LOADING_MESSAGE)
         else:
             self.viewSwitcher.set_visible_child_name("treeView")
             self.search.set_sensitive(True)
