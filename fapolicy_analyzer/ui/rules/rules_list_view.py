@@ -134,7 +134,7 @@ class RulesListView(SearchableList):
             self.treeView.expand_row(store.get_path(iter), False)
             iter = store.iter_next(iter)
 
-    def _update_tree_status(self, count):
+    def _update_list_status(self, count):
         label = RULE_LABEL if count == 1 else RULES_LABEL
         self.treeCount.set_text(" ".join([str(count), label]))
 

@@ -67,7 +67,6 @@ class TrustFileList(SearchableList):
         self.markup_func = markup_func
         self.__executor = ThreadPoolExecutor(max_workers=100)
         self.__event = Event()
-        self.__time = None
         self.refresh()
         self.selection_changed += self.__handle_selection_changed
         self.get_ref().connect("destroy", self.on_destroy)
@@ -112,9 +111,12 @@ class TrustFileList(SearchableList):
         fileColumn.set_sort_column_id(2)
         return [trustColumn, mtimeColumn, fileColumn]
 
-    def _update_file_count(self, count):
+    def _update_list_status(self, count):
         label = FILE_LABEL if count == 1 else FILES_LABEL
-        self.treeCount.set_text(" ".join([str(count), label]))
+        super()._update_list_status(" ".join([str(count), label]))
+
+    def _update_loading_status(self, status):
+        super()._update_list_status(status)
 
     def _base_row_data(self, data):
         status, *rest = (
@@ -128,6 +130,7 @@ class TrustFileList(SearchableList):
 
     def on_destroy(self, *args):
         self.__event.set()
+        print("event set")
         self.__executor.shutdown()
         return False
 
@@ -139,38 +142,45 @@ class TrustFileList(SearchableList):
             store = self.treeViewFilter
             columns = range(6)
             for i in range(200):
-                if not queue.empty():
+                if not queue.empty() and not self.__event.is_set():
                     row = queue.get()
                     store.insert_with_valuesv(-1, columns, row)
+
+            if self.__event.is_set():
+                return False
 
             count = self._get_tree_count()
             if count < 61000:
                 pct = math.ceil((count / 61000) * 100)
-                self._update_tree_status(f"Loading trust {pct}% complete...")
+                self._update_loading_status(f"Loading trust {pct}% complete...")
                 return True
             else:
                 self.treeViewFilter = store.filter_new()
                 self.treeViewFilter.set_visible_func(self._filter_view)
                 self.treeView.set_model(self.treeViewFilter)
-                self._update_file_count(self._get_tree_count())
+                self._update_list_status(self._get_tree_count())
                 return False
 
         store = Gtk.ListStore(str, str, str, object, str, str)
-        self.load_store(store)
+        self.__load_store(store)
         self.__queue = Queue()
-        GLib.timeout_add(100, process_rows, self.__queue)
+        GLib.timeout_add(200, process_rows, self.__queue)
 
     def append_trust(self, trust, percent):
         def process_trust(trust):
             for data in trust:
+                if self.__event.is_set():
+                    return
+
                 status, bg_color, txt_color, date_time = self._base_row_data(data)
                 self.__queue.put(
                     [status, date_time, data.path, data, bg_color, txt_color]
                 )
 
-        self.__executor.submit(process_trust, trust)
+        if not self.__event.is_set():
+            self.__executor.submit(process_trust, trust)
 
-    def load_store(self, store, **kwargs):
+    def __load_store(self, store, **kwargs):
         store.set_sort_column_id(self.defaultSortIndex, self.defaultSortDirection)
         self.treeViewFilter = store
         self.treeView.set_model(self.treeViewFilter)
@@ -178,5 +188,5 @@ class TrustFileList(SearchableList):
             self.treeView.get_selection().connect(
                 "changed", self.on_view_selection_changed
             )
-        self._update_tree_status("Loading trust 0% complete...")
+        self._update_loading_status("Loading trust 0% complete...")
         self.set_loading(False)

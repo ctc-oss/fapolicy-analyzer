@@ -212,7 +212,7 @@ class SubjectList(SearchableList):
         if confirm == Gtk.ResponseType.YES:
             dispatch(apply_changesets(changeset))
 
-    def _update_tree_status(self, count):
+    def _update_list_status(self, count):
         label = FILE_LABEL if count == 1 else FILES_LABEL
         self.treeCount.set_text(" ".join([str(count), label]))
 
