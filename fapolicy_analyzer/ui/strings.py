@@ -197,3 +197,7 @@ UNSAVED_DIALOG_TEXT = _(
 
 Would you like to continue deploying?"""
 )
+
+FILTERING_DISABLED_DURING_LOADING_MESSAGE = _(
+    "Filtering is disabled during trust loading"
+)

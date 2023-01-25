@@ -92,7 +92,6 @@ class SearchableList(UIBuilderWidget, Events):
             return
 
         if not visible():
-            print("showing bar")
             self.view_container.pack_start(self.progress_bar, False, True, 0)
             self.view_container.reorder_child(self.progress_bar, 1)
             self.view_container.show_all()

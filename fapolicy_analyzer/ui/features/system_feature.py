@@ -152,7 +152,7 @@ def create_system_feature(
 
         def completed():
             GLib.idle_add(dispatch, system_trust_load_complete())
-            print("done!")
+            # print("done!")
             # try:
             #     updated = [t.path for u in ups for t in u]
             #     print(f"original len = {len(original)}, updated len = {len(updated)}")

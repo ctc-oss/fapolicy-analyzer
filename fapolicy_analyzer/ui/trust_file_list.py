@@ -24,7 +24,11 @@ import gi
 import fapolicy_analyzer.ui.strings as strings
 from fapolicy_analyzer.ui.configs import Colors
 from fapolicy_analyzer.ui.searchable_list import SearchableList
-from fapolicy_analyzer.ui.strings import FILE_LABEL, FILES_LABEL
+from fapolicy_analyzer.ui.strings import (
+    FILE_LABEL,
+    FILES_LABEL,
+    FILTERING_DISABLED_DURING_LOADING_MESSAGE,
+)
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import GLib, Gtk  # isort: skip
@@ -162,10 +166,14 @@ class TrustFileList(SearchableList):
                 self.treeView.set_model(self.treeViewFilter)
                 self._update_list_status(self._get_tree_count())
                 self._update_progress(100)
+                self.search.set_sensitive(True)
+                self.search.set_tooltip_text(None)
                 return False
 
         store = Gtk.ListStore(str, str, str, object, str, str)
         self.__load_store(store)
+        self.search.set_sensitive(False)
+        self.search.set_tooltip_text(FILTERING_DISABLED_DURING_LOADING_MESSAGE)
         self.__queue = Queue()
         GLib.timeout_add(200, process_rows, self.__queue, count_of_trust_entries)
 
