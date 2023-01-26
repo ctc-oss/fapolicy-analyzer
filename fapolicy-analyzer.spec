@@ -62,10 +62,10 @@ BuildRequires: rust-parking_lot_core-devel
 BuildRequires: rust-pkg-config-devel
 BuildRequires: rust-proc-macro-hack-devel
 BuildRequires: rust-proc-macro2-devel
-BuildRequires: rust-pyo3_0.15-devel
-BuildRequires: rust-pyo3-build-config0.15-devel
-BuildRequires: rust-pyo3-macros0.15-devel
-BuildRequires: rust-pyo3-macros-backend0.15-devel
+BuildRequires: (crate(pyo3/default) >= 0.15.0 with crate(pyo3/default) < 0.16.0)
+BuildRequires: (crate(pyo3-macros/default) >= 0.15.0 with crate(pyo3-macros/default) < 0.16.0)
+BuildRequires: (crate(pyo3-build-config/default) >= 0.15.0 with crate(pyo3-build-config/default) < 0.16.0)
+BuildRequires: (crate(pyo3-macros-backend/default) >= 0.15.0 with crate(pyo3-macros-backend/default) < 0.16.0)
 BuildRequires: rust-quote-devel
 BuildRequires: rust-rayon-devel
 BuildRequires: rust-rayon-core-devel
