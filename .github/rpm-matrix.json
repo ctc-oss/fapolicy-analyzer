@@ -8,6 +8,13 @@
       "chroot": "fedora-rawhide-x86_64"
     },
     {
+      "platform": "fedora",
+      "dist": "fc37",
+      "spec": "fapolicy-analyzer.spec",
+      "image": "registry.fedoraproject.org/fedora:37",
+      "chroot": "fedora-37-x86_64"
+    },
+    {
       "platform": "rhel",
       "dist": "el8",
       "spec": "scripts/srpm/fapolicy-analyzer.spec",
