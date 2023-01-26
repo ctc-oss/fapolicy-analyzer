@@ -65,7 +65,7 @@ class SessionManager:
 
     def __force_cleanup_autosave_sessions(self):
         """Brute force collection and deletion of all detected autosave files"""
-        logging.info("SessionManager::__force_cleanup_autosave_sessions()")
+        logging.debug("SessionManager::__force_cleanup_autosave_sessions()")
         strSearchPattern = self.__tmpFileBasename + "_*.json"
         logging.debug("Search Pattern: {}".format(strSearchPattern))
         listTmpFiles = glob.glob(strSearchPattern)
@@ -154,7 +154,7 @@ class SessionManager:
 
     def detect_previous_session(self):
         """Searches for preexisting tmp files; Returns bool"""
-        logging.info("SessionManager::detect_previous_session()")
+        logging.info("SessionManager searching for previous session")
         strSearchPattern = self.__tmpFileBasename + "_*.json"
         logging.debug("Search Pattern: {}".format(strSearchPattern))
         listTmpFiles = glob.glob(strSearchPattern)

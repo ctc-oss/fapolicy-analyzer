@@ -62,7 +62,7 @@ def expand_path(colon_separated_str, cwd="."):
     variable, leading colon, terminating colon, or an intermediate double colon.
     These final three colon notations map to the user supplied working dir.
     """
-    logging.info(f"expand_path({colon_separated_str}, {cwd})")
+    logging.debug(f"expand_path({colon_separated_str}, {cwd})")
 
     # Expand native PATH env var if in user provided PATH env var string
     expanded_path = re.sub(r"\$\{?PATH\}?",
@@ -94,7 +94,8 @@ class ProfSessionException(RuntimeError):
 # ########################## Profiler Session ###########################
 class FaProfSession:
     def __init__(self, dictProfTgt, instance=0, faprofiler=None):
-        logging.info(f"faProfSession::__init__({dictProfTgt}, {faprofiler})")
+        logging.info("FaProfSession constructed")
+        logging.debug(f"FaProfSession::__init__({dictProfTgt}, {faprofiler})")
         self.throwOnInvalidSessionArgs(dictProfTgt)
         self.timeStamp = None
 
@@ -338,7 +339,7 @@ class FaProfSession:
         Validates the Profiler Session object's user, target, pwd parameters.
         Returns a dictionary mapping enums to error msgs.
         """
-
+        logging.info("validateArgs()")
         # Verify all keys are in dictProfTgt; delta_keys should be empty.
         expected_keys = set(["executeText",
                              "argText",
@@ -350,7 +351,7 @@ class FaProfSession:
             raise KeyError(f"Missing {delta_keys} key(s) from Profiler Page")
 
         dictReturn = {}
-        logging.info(f"validateArgs({dictProfTgt}")
+        logging.debug(f"validateArgs({dictProfTgt}")
         exec_path = dictProfTgt.get("executeText", "")
         exec_user = dictProfTgt.get("userText", "")
         exec_pwd = dictProfTgt.get("dirText", "")
@@ -458,7 +459,7 @@ class FaProfSession:
 # ############################## Profiler ###############################
 class FaProfiler:
     def __init__(self, fapd_mgr=None, fapd_persistance=True):
-        logging.info("FaProfiler::__init__()")
+        logging.info("FaProfiler constructor")
         self.fapd_mgr = fapd_mgr
         self.fapd_persistance = fapd_persistance
         self.fapd_pid = None
@@ -476,7 +477,8 @@ class FaProfiler:
         self.dictFaProfSession is a dict of current tgt profiling sessions
         associated with a single fapd profiling instance
         """
-        logging.info(f"FaProfiler::start_prof_session('{dictArgs}')")
+        logging.info("FaProfiler::start_prof_session(}")
+        logging.debug(f"FaProfiler::start_prof_session('{dictArgs}')")
         self.fapd_mgr.start(FapdMode.PROFILING)
         if self.fapd_mgr.procProfile:
             self.fapd_pid = self.fapd_mgr.procProfile.pid

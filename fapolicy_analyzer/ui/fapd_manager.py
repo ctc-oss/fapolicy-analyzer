@@ -51,7 +51,7 @@ def _promote():
 
 class FapdManager():
     def __init__(self, fapd_control_enabled=True):
-        logging.info(f"FapdManager::__init__({fapd_control_enabled})")
+        logging.info(f"FapdManager constructed, control:{fapd_control_enabled}")
 
         # What fapd instances are available (if any)
         self._current_instance = FapdMode.DISABLED

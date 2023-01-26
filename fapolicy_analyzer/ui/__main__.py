@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import sys
 import logging
 from fapolicy_analyzer.util.xdg_utils import (
     xdg_state_dir_prefix,
@@ -24,7 +25,7 @@ gf_handler = logging.FileHandler(xdg_data_dir_prefix("fapolicy-analyzer.log"),
 gs_handler = logging.StreamHandler()
 logging.basicConfig(level=logging.DEBUG, handlers=[gf_handler, gs_handler])
 gs_handler.setLevel(logging.WARNING)
-gf_handler.setLevel(logging.WARNING)
+gf_handler.setLevel(logging.INFO)
 
 import argparse
 import gi
@@ -44,8 +45,10 @@ def _parse_cmdline():
     parser.add_argument(
         "-v", "--verbose", action="count", default=0,
         help="""
-        Enable verbose mode. A single `v` options will set the loglevel
-        to INFO. Multiple 'v' options will set the level to DEBUG. """
+        Enable verbose output to stderr. A single `v` option will set the 
+        loglevel to INFO. Multiple 'v' options will set the level to DEBUG. 
+        Note that the '--loglevel' option overrides the default verbose levels
+        """
     )
     parser.add_argument(
         "-a",
@@ -62,20 +65,21 @@ def _parse_cmdline():
     parser.add_argument(
         "-l", "--loglevel",
         choices=["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"],
-        help="Specify the log level. Default: WARNING"
+        help="""Specify the log level. [Default: WARNING.]
+        This option overrides the loglevels associated with the '-v' and '-vv'
+        options"""
     )
     args = parser.parse_args()
 
-    # Enable verbosity
+    # Enable verbosity to stderr. The effective level may get set by --loglevel
     if args.verbose:
         if args.verbose == 1:
             gf_handler.setLevel(logging.INFO)
             gs_handler.setLevel(logging.INFO)
-            logging.debug("Verbosity enabled: INFO")
         else:
             gf_handler.setLevel(logging.DEBUG)
             gs_handler.setLevel(logging.DEBUG)
-            logging.debug("Verbosity enabled: DEBUG")
+        print("Verbosity enabled", file=sys.stderr)
 
     # Enable edit session autosaves
     if args.autosave:
@@ -95,7 +99,10 @@ def _parse_cmdline():
                                }
 
         gf_handler.setLevel(dictOption2LogLevel[args.loglevel])
-        gs_handler.setLevel(dictOption2LogLevel[args.loglevel])
+
+        # Only modify log level of stderr if in verbose mode.
+        if args.verbose:
+            gs_handler.setLevel(dictOption2LogLevel[args.loglevel])
 
     # Set Edit Session Tmp File
     if args.session:
