@@ -45,8 +45,8 @@ def _parse_cmdline():
     parser.add_argument(
         "-v", "--verbose", action="count", default=0,
         help="""
-        Enable verbose output to stderr. A single `v` option will set the 
-        loglevel to INFO. Multiple 'v' options will set the level to DEBUG. 
+        Enable verbose output to stderr. A single `v` option will set the
+        loglevel to INFO. Multiple 'v' options will set the level to DEBUG.
         Note that the '--loglevel' option overrides the default verbose levels
         """
     )
