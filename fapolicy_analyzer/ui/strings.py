@@ -197,3 +197,11 @@ UNSAVED_DIALOG_TEXT = _(
 
 Would you like to continue deploying?"""
 )
+UNTRUSTED_ANCILLARY_TOOLTIP = "File is untrusted in the Ancillary Trust Database"
+UNTRUSTED_SYSTEM_TOOLTIP = "File is untrusted in the System Trust Database"
+TRUSTED_ANCILLARY_TOOLTIP = "File is trusted in the Ancillary Trust Database"
+TRUSTED_SYSTEM_TOOLTIP = "File is trusted in the System Trust Database"
+UNKNOWN_TOOLTIP = "File trust is unknown"
+ACCESS_ALLOWED_TOOLTIP = "File access fully allowed"
+ACCESS_PARTIAL_TOOLTIP = "File access partially allowed"
+ACCESS_DENIED_TOOLTIP = "File access denied"
