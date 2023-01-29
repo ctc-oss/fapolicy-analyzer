@@ -105,6 +105,10 @@ Requires:      gnome-icon-theme
 Requires:      webkit2gtk3
 Requires:      mesa-dri-drivers
 
+# rust-ring-devel does not support s390x and ppc64le:
+# https://bugzilla.redhat.com/show_bug.cgi?id=1869980
+ExcludeArch:   s390x %{power64}
+
 %global module          fapolicy_analyzer
 # pep440 versions handle dev and rc differently, so we call them out explicitly here
 %global module_version  %{lua: v = string.gsub(rpm.expand("%{?version}"), "~dev", ".dev"); \
@@ -138,7 +142,7 @@ echo %{module_version} > VERSION
 %{python3} setup.py bdist_wheel
 
 %install
-%{py3_install_wheel %{module}-%{module_version}*%{_arch}.whl}
+%{py3_install_wheel %{module}-%{module_version}*%{_target_cpu}.whl}
 %{python3} help install --dest %{buildroot}/%{_datadir}/help
 install -D bin/%{name} %{buildroot}/%{_sbindir}/%{name}
 install -D data/%{name}.8 -t %{buildroot}/%{_mandir}/man8/
