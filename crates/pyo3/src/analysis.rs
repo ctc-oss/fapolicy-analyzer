@@ -177,10 +177,10 @@ impl PyObject {
         self.rs.access.clone()
     }
 
-    /// Mode of the log event object
+    /// Perm flag from logged event
     #[getter]
-    fn mode(&self) -> String {
-        self.rs.mode.clone()
+    fn perm(&self) -> String {
+        self.rs.perm.clone()
     }
 }
 
