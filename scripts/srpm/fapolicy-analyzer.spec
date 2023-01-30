@@ -138,6 +138,10 @@ Requires:      gtksourceview3
 Requires:      webkit2gtk3
 Requires:      mesa-dri-drivers
 
+# rust-ring-devel does not support s390x and ppc64le:
+# https://bugzilla.redhat.com/show_bug.cgi?id=1869980
+ExcludeArch:   s390x %{power64}
+
 %if 0%{?rhel}
 Requires:      python3-dataclasses
 Requires:      python3-importlib-resources
@@ -232,7 +236,7 @@ python3 help build
 python3 setup.py bdist_wheel
 
 %install
-%{py3_install_wheel %{module}-%{module_version}*%{_arch}.whl}
+%{py3_install_wheel %{module}-%{module_version}*%{_target_cpu}.whl}
 %{python3} help install --dest %{buildroot}/%{_datadir}/help
 install -D bin/%{name} %{buildroot}/%{_sbindir}/%{name}
 install -D data/%{name}.8 -t %{buildroot}/%{_mandir}/man8/

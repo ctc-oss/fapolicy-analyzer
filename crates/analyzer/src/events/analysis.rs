@@ -15,6 +15,7 @@ use crate::error::Error::AnalyzerError;
 use crate::events::db::DB as EventDB;
 use crate::events::event::{Event, Perspective};
 use fapolicy_rules::Decision::*;
+use fapolicy_rules::Permission;
 use fapolicy_trust::stat::Status::{Discrepancy, Missing, Trusted};
 
 #[derive(Clone, Debug)]
@@ -38,7 +39,7 @@ pub struct ObjAnalysis {
     pub trust: String,
     pub status: String,
     pub access: String,
-    pub mode: String,
+    pub perm: String,
 }
 
 pub fn analyze(db: &EventDB, from: Perspective, trust: &TrustDB) -> Vec<Analysis> {
@@ -84,12 +85,17 @@ pub fn analyze(db: &EventDB, from: Perspective, trust: &TrustDB) -> Vec<Analysis
                     trust: trust_source(&op, trust).unwrap(),
                     status: trust_status(&op, trust).unwrap(),
                     access: ed,
-                    mode: "R".to_string(),
+                    perm: perm_to_display(&e.perm),
                     file: op,
                 },
             }
         })
         .collect()
+}
+
+const PERM_SPLIT: usize = "perm=".len();
+fn perm_to_display(p: &Permission) -> String {
+    p.to_string().split_at(PERM_SPLIT).1.to_string()
 }
 
 fn trust_source(path: &str, db: &TrustDB) -> Result<String, Error> {
