@@ -62,10 +62,10 @@ BuildRequires: rust-parking_lot_core-devel
 BuildRequires: rust-pkg-config-devel
 BuildRequires: rust-proc-macro-hack-devel
 BuildRequires: rust-proc-macro2-devel
-BuildRequires: rust-pyo3-devel
-BuildRequires: rust-pyo3-build-config-devel
-BuildRequires: rust-pyo3-macros-devel
-BuildRequires: rust-pyo3-macros-backend-devel
+BuildRequires: (crate(pyo3/default) >= 0.15.0 with crate(pyo3/default) < 0.16.0)
+BuildRequires: (crate(pyo3-macros/default) >= 0.15.0 with crate(pyo3-macros/default) < 0.16.0)
+BuildRequires: (crate(pyo3-build-config/default) >= 0.15.0 with crate(pyo3-build-config/default) < 0.16.0)
+BuildRequires: (crate(pyo3-macros-backend/default) >= 0.15.0 with crate(pyo3-macros-backend/default) < 0.16.0)
 BuildRequires: rust-quote-devel
 BuildRequires: rust-rayon-devel
 BuildRequires: rust-rayon-core-devel
@@ -105,6 +105,10 @@ Requires:      gnome-icon-theme
 Requires:      webkit2gtk3
 Requires:      mesa-dri-drivers
 
+# rust-ring-devel does not support s390x and ppc64le:
+# https://bugzilla.redhat.com/show_bug.cgi?id=1869980
+ExcludeArch:   s390x %{power64}
+
 %global module          fapolicy_analyzer
 # pep440 versions handle dev and rc differently, so we call them out explicitly here
 %global module_version  %{lua: v = string.gsub(rpm.expand("%{?version}"), "~dev", ".dev"); \
@@ -138,7 +142,7 @@ echo %{module_version} > VERSION
 %{python3} setup.py bdist_wheel
 
 %install
-%{py3_install_wheel %{module}-%{module_version}*%{_arch}.whl}
+%{py3_install_wheel %{module}-%{module_version}*%{_target_cpu}.whl}
 %{python3} help install --dest %{buildroot}/%{_datadir}/help
 install -D bin/%{name} %{buildroot}/%{_sbindir}/%{name}
 install -D data/%{name}.8 -t %{buildroot}/%{_mandir}/man8/
