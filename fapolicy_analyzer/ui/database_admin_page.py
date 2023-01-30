@@ -61,11 +61,14 @@ class DatabaseAdminPage(UIWidget, UIPage):
         notebook.set_current_page(1)
         notebook.show_all()
 
+        self.show_trust = False
+
     def on_added_to_ancillary_trust(self, *files):
         self.ancillaryTrustDbAdmin.add_trusted_files(*files)
 
-    def on_trust_toggle_clicked(self):
-        self.systemTrustDbAdmin.trustFileList.load_trust(self.systemTrustDbAdmin._trust, show_trusted=True)
+    def on_trust_toggle_clicked(self, *args):
+        self.show_trust = not self.show_trust
+        self.systemTrustDbAdmin.trustFileList.load_trust(self.systemTrustDbAdmin._trust, show_trusted=self.show_trust)
 
     def _dispose(self):
         self.ancillaryTrustDbAdmin.dispose()
