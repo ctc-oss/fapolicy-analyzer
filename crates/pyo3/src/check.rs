@@ -36,6 +36,10 @@ fn check_disk_trust(system: &PySystem, update: PyObject, done: PyObject) -> PyRe
 
     // determine batch model based on the total recs to be checked
     let batch_cfg = calculate_batch_config(recs.len());
+    eprintln!(
+        "BatchConf: tc:{}, tl{}, bc:{}, bl:{}",
+        batch_cfg.thread_cnt, batch_cfg.thread_load, batch_cfg.batch_cnt, batch_cfg.batch_load
+    );
 
     // 1. split the total recs into sized batches
     // 2. split the batches into chunks based on thread load
@@ -63,7 +67,7 @@ fn check_disk_trust(system: &PySystem, update: PyObject, done: PyObject) -> PyRe
             if let Ok(u) = rx.recv() {
                 match u {
                     Update::Items(i) => {
-                        cnt += 1;
+                        cnt += i.len();
                         let r: Vec<_> = i.into_iter().map(PyTrust::from).collect();
                         Python::with_gil(|py| {
                             if update.call1(py, (r, cnt)).is_err() {
@@ -115,7 +119,7 @@ fn check_disk_trust(system: &PySystem, update: PyObject, done: PyObject) -> PyRe
         };
     });
 
-    Ok(batch_cfg.batch_cnt)
+    Ok(recs.len())
 }
 
 fn calculate_batch_config(rec_sz: usize) -> BatchConfig {
