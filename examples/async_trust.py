@@ -62,12 +62,12 @@ def system_error(e):
     print(f"error: {e}")
 
 
-def available(updates, pct):
+def available(updates, count):
     # merge the updated trust into the system
     s1.merge(updates)
     # dispatch the system to the redux store
     store.dispatch(system_received(s1))
-    print(f"progress {pct}%", end='\r')
+    print(f"progress {int(count / original_system_trust_size * 100)}%", end='\r')
     # print(f"{pct:4}% {len(checked_entries(s1))}")
 
 
@@ -88,10 +88,10 @@ t = time.time()
 # using the check_disk_trust binding we can set callbacks for when
 # 1. new data is available
 # 2. processing is completed
-expected_number_of_batches = check_disk_trust(s1, available, completed)
+total_records_to_process = check_all_trust(s1, available, completed)
 
 # keep the example running until processing completed
 done.wait()
 
 duration = time.time() - t
-print(f"processed {original_system_trust_size} trust entries over {expected_number_of_batches} batches in {duration} seconds")
+print(f"processed {total_records_to_process} trust entries in {duration} seconds")
