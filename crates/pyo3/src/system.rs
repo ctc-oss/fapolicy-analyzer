@@ -146,6 +146,7 @@ impl PySystem {
         rules::to_text(&self.rs.rules_db)
     }
 
+    // we rely on the gil to keep this synced up
     fn merge(&mut self, trust: Vec<PyTrust>) {
         for t in trust {
             if let Some(e) = self.rs.trust_db.get_mut(&t.rs_trust.path) {

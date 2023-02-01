@@ -60,7 +60,7 @@ fn check_disk_trust(recs: Vec<Rec>, update: PyObject, done: PyObject) -> PyResul
     // determine batch model based on the total recs to be checked
     let batch_cfg = calculate_batch_config(recs.len());
     eprintln!(
-        "BatchConf: tc:{}, tl{}, bc:{}, bl:{}",
+        "BatchConf: tc:{}, tl:{}, bc:{}, bl:{}",
         batch_cfg.thread_cnt, batch_cfg.thread_load, batch_cfg.batch_cnt, batch_cfg.batch_load
     );
 
