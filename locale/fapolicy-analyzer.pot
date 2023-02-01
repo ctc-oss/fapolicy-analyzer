@@ -7,9 +7,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: fapolicy-analyzer 0.0.0+315.g5b70a96\n"
+"Project-Id-Version: fapolicy-analyzer 0.0.0+320.gcf0214e.dirty\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-01-17 13:57-0800\n"
+"POT-Creation-Date: 2023-01-31 17:58-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -452,6 +452,12 @@ msgid ""
 "be lost.\n"
 "\n"
 "Would you like to continue deploying?"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:200
+msgid ""
+"No discrepancies found within the System Trust Database. \n"
+"Click the toggle button on the action bar above to show all trusted files."
 msgstr ""
 
 #: fapolicy_analyzer/ui/operations/deploy_changesets_op.py:159

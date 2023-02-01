@@ -197,3 +197,4 @@ UNSAVED_DIALOG_TEXT = _(
 
 Would you like to continue deploying?"""
 )
+SYSTEM_TRUST_NO_DISCREPANCIES = _("No discrepancies found within the System Trust Database. \nClick the toggle button on the action bar above to show all trusted files.")

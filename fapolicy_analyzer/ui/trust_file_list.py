@@ -146,6 +146,13 @@ class TrustFileList(SearchableList):
 
                 if _executorCanceled:
                     return
+            print(len(store))
+            if len(store) < 1:
+                label = Gtk.Label(label=strings.SYSTEM_TRUST_NO_DISCREPANCIES)
+                label.set_justify(Gtk.Justification.CENTER)
+                self.get_object("treeScrolledWindow").remove(self.treeView)
+                self.get_object("treeScrolledWindow").add(label)
+                self.get_object("treeScrolledWindow").show_all()
 
             if not _executorCanceled:
                 GLib.idle_add(self.load_store, store)
