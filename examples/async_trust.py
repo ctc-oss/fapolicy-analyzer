@@ -15,6 +15,7 @@
 
 import threading
 import time
+import argparse
 
 from rx import operators
 
@@ -24,6 +25,13 @@ from fapolicy_analyzer.redux import (
 )
 from fapolicy_analyzer.ui.actions import system_received
 from fapolicy_analyzer.ui.features import SYSTEM_FEATURE, create_system_feature
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument("trust_type", default="all", choices=["all", "system", "file"], nargs='?', help="trust type to show")
+args = parser.parse_args()
+
+print(f"checking {args.trust_type} trust")
 
 store = create_store()
 
@@ -40,8 +48,18 @@ duration = time.time() - t
 print(f"system created in {duration} seconds")
 
 # check to ensure that merging trust does not change the original size of the trust db
-original_system_trust_size = len(s1.system_trust())
-print(f"system contains {original_system_trust_size} unchecked system trust entries")
+if args.trust_type == "file":
+    check_fn = check_ancillary_trust
+    original_trust_size = len(s1.ancillary_trust())
+elif args.trust_type == "system":
+    check_fn = check_system_trust
+    original_trust_size = len(s1.system_trust())
+else:
+    check_fn = check_all_trust
+    original_trust_size = len(s1.ancillary_trust()) + len(s1.system_trust())
+
+
+print(f"system contains {original_trust_size} unchecked system trust entries")
 
 store.add_feature_module(create_system_feature(store.dispatch, s1))
 done = threading.Event()
@@ -55,7 +73,7 @@ def checked_entries(system):
 def next_system(system_state):
     system = system_state.get('system').system
     # assert len(system.system_trust()) == len(s1.system_trust())
-    # assert len(system.system_trust()) == original_system_trust_size
+    # assert len(system.system_trust()) == original_trust_size
 
 
 def system_error(e):
@@ -67,7 +85,7 @@ def available(updates, count):
     s1.merge(updates)
     # dispatch the system to the redux store
     store.dispatch(system_received(s1))
-    print(f"progress {int(count / original_system_trust_size * 100)}%", end='\r')
+    print(f"progress {int(count / original_trust_size * 100)}%", end='\r')
     # print(f"{pct:4}% {len(checked_entries(s1))}")
 
 
@@ -88,7 +106,7 @@ t = time.time()
 # using the check_disk_trust binding we can set callbacks for when
 # 1. new data is available
 # 2. processing is completed
-total_records_to_process = check_all_trust(s1, available, completed)
+total_records_to_process = check_fn(s1, available, completed)
 
 # keep the example running until processing completed
 done.wait()
