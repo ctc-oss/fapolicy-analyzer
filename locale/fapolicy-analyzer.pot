@@ -7,16 +7,16 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: fapolicy-analyzer 0.0.0+315.g5b70a96\n"
+"Project-Id-Version: fapolicy-analyzer 0.3.1+178.g7bb70dd.dirty\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-01-17 13:57-0800\n"
+"POT-Creation-Date: 2023-02-02 14:24-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.10.1\n"
+"Generated-By: Babel 2.11.0\n"
 
 #: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:112
 #: fapolicy_analyzer/ui/system_trust_database_admin.py:107
@@ -452,6 +452,38 @@ msgid ""
 "be lost.\n"
 "\n"
 "Would you like to continue deploying?"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:200
+msgid "File is untrusted in the Ancillary Trust Database"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:201
+msgid "File is untrusted in the System Trust Database"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:202
+msgid "File is trusted in the Ancillary Trust Database"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:203
+msgid "File is trusted in the System Trust Database"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:204
+msgid "File trust is unknown"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:205
+msgid "File access fully allowed"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:206
+msgid "File access partially allowed"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:207
+msgid "File access denied"
 msgstr ""
 
 #: fapolicy_analyzer/ui/operations/deploy_changesets_op.py:159
