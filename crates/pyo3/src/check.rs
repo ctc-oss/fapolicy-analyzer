@@ -13,6 +13,7 @@ use std::sync::mpsc;
 use std::thread;
 
 use crate::trust::PyTrust;
+use fapolicy_trust::stat::Status::Missing;
 use fapolicy_trust::stat::{check, Status};
 
 enum Update {
@@ -121,7 +122,7 @@ fn check_disk_trust(recs: Vec<Rec>, update: PyObject, done: PyObject) -> PyResul
             for batch in thread_load {
                 let updates = batch
                     .into_iter()
-                    .flat_map(|r| check(&r.trusted))
+                    .map(|r| check(&r.trusted).unwrap_or(Missing(r.trusted)))
                     .collect::<Vec<_>>();
                 if ttx.send(Update::Items(updates)).is_err() {
                     eprintln!("failed to send Items msg");
