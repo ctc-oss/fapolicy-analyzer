@@ -152,17 +152,15 @@ class TrustFileList(SearchableList):
                     break
                 row = queue.get()
                 store.insert_with_valuesv(-1, columns, row)
+                queue.task_done()
 
             if self.__event.is_set():
                 return False
 
             count = self._get_tree_count()
-            # print(f"tree count: {count}")
             if count < total:
                 pct = int(count / total * 100)
-                self._update_loading_status(
-                    f"Loading trust {pct}% complete... ({count} of {total})"
-                )
+                self._update_loading_status(f"Loading trust {pct}% complete...")
                 self._update_progress(pct)
                 return True
             else:
@@ -181,17 +179,12 @@ class TrustFileList(SearchableList):
         self.__queue = Queue()
         GLib.timeout_add(200, process_rows, self.__queue, count_of_trust_entries)
 
-    running_count = 0
-
     def append_trust(self, trust, pct):
         def process_trust(trust):
             for data in trust:
                 if self.__event.is_set():
                     return
-                self.running_count += 1
                 self.__queue.put(self._row_data(data))
-
-            # print(f"running count: {self.running_count}")
 
         if not self.__event.is_set():
             self.__executor.submit(process_trust, trust)

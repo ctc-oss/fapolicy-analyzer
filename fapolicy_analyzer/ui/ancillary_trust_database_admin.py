@@ -26,7 +26,6 @@ from fapolicy_analyzer.ui.actions import (
     NotificationType,
     add_notification,
     apply_changesets,
-    request_ancillary_trust,
 )
 from fapolicy_analyzer.ui.ancillary_trust_file_list import AncillaryTrustFileList
 from fapolicy_analyzer.ui.changeset_wrapper import Changeset, TrustChangeset
@@ -61,7 +60,7 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
 
     def __load_trust(self):
         self._loading = True
-        dispatch(request_ancillary_trust())
+        # dispatch(request_ancillary_trust())
 
     def __apply_changeset(self, changeset):
         dispatch(apply_changesets(changeset))

@@ -93,7 +93,6 @@ fn check_disk_trust(recs: Vec<Rec>, update: PyObject, done: PyObject) -> PyResul
                     Update::Items(i) => {
                         cnt += i.len();
                         let r: Vec<_> = i.into_iter().map(PyTrust::from).collect();
-                        eprintln!("returning count {}", cnt);
                         Python::with_gil(|py| {
                             if update.call1(py, (r, cnt)).is_err() {
                                 eprintln!("failed make 'update' callback");

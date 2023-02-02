@@ -65,8 +65,7 @@ def handle_received_trust_update(state: TrustState, action: Action) -> TrustStat
     update, running_count = cast(Tuple[Sequence[Trust], int], action.payload)
     return _create_state(
         state,
-        loading=True,
-        percent_complete=int(running_count / state.trust_count * 100),
+        percent_complete=running_count / state.trust_count * 100,
         trust=[*state.trust, *update],
         last_set_completed=update,
         error=None,
@@ -74,9 +73,7 @@ def handle_received_trust_update(state: TrustState, action: Action) -> TrustStat
 
 
 def handle_trust_load_complete(state: TrustState, _: Action) -> TrustState:
-    return _create_state(
-        state, error=None, loading=False, percent_complete=100, last_set_completed=None
-    )
+    return _create_state(state, error=None, loading=False, last_set_completed=None)
 
 
 def handle_error_trust(state: TrustState, action: Action) -> TrustState:

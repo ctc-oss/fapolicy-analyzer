@@ -110,7 +110,6 @@ def create_system_feature(
         def execute_system():
             try:
                 system = unchecked_system()
-                print("got unchecked system")
                 GLib.idle_add(finish, system)
             except RuntimeError:
                 logging.exception(SYSTEM_INITIALIZATION_ERROR)
@@ -159,7 +158,6 @@ def create_system_feature(
         _system.merge(updates)
         # dispatch the update
         trust_update = (updates, count)
-        print(f"update count {count}")
         _idle_dispatch(action_fn(trust_update))
 
     def _check_disk_trust_complete(
@@ -211,7 +209,6 @@ def create_system_feature(
             flag_fn=checking_finished,
         )
         total_to_check = check_system_trust(_system, update, done)
-        print(f"total to check: {total_to_check}")
         return system_trust_load_started(total_to_check)
 
     def _deploy_system(_: Action) -> Action:
