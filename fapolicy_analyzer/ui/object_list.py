@@ -18,7 +18,7 @@ from events import Events
 
 from fapolicy_analyzer.ui.strings import (
     FILE_LIST_RULE_ID_HEADER,
-    FILE_LIST_MODE_HEADER,
+    FILE_LIST_PERM_HEADER,
     ACCESS_ALLOWED_TOOLTIP,
     ACCESS_DENIED_TOOLTIP,
 )
@@ -52,7 +52,7 @@ class ObjectList(SubjectList, Events):
 
         perm_cell = Gtk.CellRendererText(background=Colors.LIGHT_GRAY, xalign=0.5)
         perm_column = Gtk.TreeViewColumn(
-            strings.FILE_LIST_PERM_HEADER, perm_cell, markup=6
+            FILE_LIST_PERM_HEADER, perm_cell, markup=6
         )
         perm_column.set_sort_column_id(6)
         columns.insert(2, perm_column)
@@ -105,7 +105,6 @@ class ObjectList(SubjectList, Events):
             bg_color, txt_color, access_tooltip = self.__colors(o.access, o.trust_status, o.trust)
             tooltip = status_tooltip + "\n" + access_tooltip
             store.append([status, access, o.file, o, bg_color, txt_color, perm, i, tooltip])
-
 
         # call grandfather SearchableList's load_store method
         super(SubjectList, self).load_store(store)
