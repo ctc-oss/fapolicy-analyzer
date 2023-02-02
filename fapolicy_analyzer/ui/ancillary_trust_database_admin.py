@@ -18,13 +18,10 @@ import os.path
 from locale import gettext as _
 from typing import Sequence
 
-import fapolicy_analyzer.ui.strings as strings
-from fapolicy_analyzer import Trust
-from fapolicy_analyzer.ui.changeset_wrapper import Changeset, TrustChangeset
-from fapolicy_analyzer.util import fs  # noqa: F401
-from fapolicy_analyzer.util.format import f
 from gi.repository import Gtk
 
+import fapolicy_analyzer.ui.strings as strings
+from fapolicy_analyzer import Trust
 from fapolicy_analyzer.ui.actions import (
     NotificationType,
     add_notification,
@@ -32,10 +29,13 @@ from fapolicy_analyzer.ui.actions import (
     request_ancillary_trust,
 )
 from fapolicy_analyzer.ui.ancillary_trust_file_list import AncillaryTrustFileList
+from fapolicy_analyzer.ui.changeset_wrapper import Changeset, TrustChangeset
 from fapolicy_analyzer.ui.remove_deleted_dialog import RemoveDeletedDialog
 from fapolicy_analyzer.ui.store import dispatch, get_system_feature
 from fapolicy_analyzer.ui.trust_file_details import TrustFileDetails
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
+from fapolicy_analyzer.util import fs  # noqa: F401
+from fapolicy_analyzer.util.format import f
 
 
 class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
@@ -185,4 +185,4 @@ SHA256: {fs.sha(trust.path)}"""
         if self._loading and not trustState.loading and self._trust != trustState.trust:
             self._loading = False
             self._trust = trustState.trust
-            self.trustFileList.load_trust(self._trust)
+            # self.trustFileList.load_trust(self._trust)

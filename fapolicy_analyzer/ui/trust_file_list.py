@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math
 from concurrent.futures import ThreadPoolExecutor
 from queue import Queue
 from threading import Event
@@ -122,7 +121,7 @@ class TrustFileList(SearchableList):
     def _update_loading_status(self, status):
         super()._update_list_status(status)
 
-    def _base_row_data(self, data):
+    def _row_data(self, data):
         status, *rest = (
             self.markup_func(data.status) if self.markup_func else (data.status,)
         )
@@ -130,7 +129,7 @@ class TrustFileList(SearchableList):
         txt_color, *rest = rest if rest else (Colors.BLACK,)
         secs_epoch = data.actual.last_modified if data.actual else None
         date_time = epoch_to_string(secs_epoch)
-        return status, bg_color, txt_color, date_time
+        return status, date_time, data.path, data, bg_color, txt_color
 
     def on_destroy(self, *args):
         self.__event.set()
@@ -140,24 +139,30 @@ class TrustFileList(SearchableList):
     def refresh(self):
         self.trust_func()
 
-    def load_trust(self, count_of_trust_entries):
+    def init_list(self, count_of_trust_entries):
+        store = Gtk.ListStore(str, str, str, object, str, str)
+        self._load_store(count_of_trust_entries, store)
+
+    def _load_store(self, count_of_trust_entries, store):
         def process_rows(queue, total):
             store = self.treeViewFilter
-            columns = range(6)
-            for i in range(200):
-                if not queue.empty() and not self.__event.is_set():
-                    row = queue.get()
-                    store.insert_with_valuesv(-1, columns, row)
+            columns = range(store.get_n_columns())
+            for _ in range(200):
+                if queue.empty() or self.__event.is_set():
+                    break
+                row = queue.get()
+                store.insert_with_valuesv(-1, columns, row)
 
             if self.__event.is_set():
                 return False
 
             count = self._get_tree_count()
-            total = 61000
-            # print(f"count = {count}, total = {total}")
+            # print(f"tree count: {count}")
             if count < total:
-                pct = math.ceil((count / total) * 100)
-                self._update_loading_status(f"Loading trust {pct}% complete...")
+                pct = int(count / total * 100)
+                self._update_loading_status(
+                    f"Loading trust {pct}% complete... ({count} of {total})"
+                )
                 self._update_progress(pct)
                 return True
             else:
@@ -170,28 +175,28 @@ class TrustFileList(SearchableList):
                 self.search.set_tooltip_text(None)
                 return False
 
-        store = Gtk.ListStore(str, str, str, object, str, str)
-        self.__load_store(store)
+        self.__load_tree(store)
         self.search.set_sensitive(False)
         self.search.set_tooltip_text(FILTERING_DISABLED_DURING_LOADING_MESSAGE)
         self.__queue = Queue()
         GLib.timeout_add(200, process_rows, self.__queue, count_of_trust_entries)
 
-    def append_trust(self, trust, percent):
+    running_count = 0
+
+    def append_trust(self, trust, pct):
         def process_trust(trust):
             for data in trust:
                 if self.__event.is_set():
                     return
+                self.running_count += 1
+                self.__queue.put(self._row_data(data))
 
-                status, bg_color, txt_color, date_time = self._base_row_data(data)
-                self.__queue.put(
-                    [status, date_time, data.path, data, bg_color, txt_color]
-                )
+            # print(f"running count: {self.running_count}")
 
         if not self.__event.is_set():
             self.__executor.submit(process_trust, trust)
 
-    def __load_store(self, store, **kwargs):
+    def __load_tree(self, store, **kwargs):
         store.set_sort_column_id(self.defaultSortIndex, self.defaultSortDirection)
         self.treeViewFilter = store
         self.treeView.set_model(self.treeViewFilter)

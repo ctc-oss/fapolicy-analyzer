@@ -17,11 +17,11 @@ import os.path
 from functools import reduce
 from types import SimpleNamespace
 
-import fapolicy_analyzer.ui.strings as strings
 import gi
-from fapolicy_analyzer.ui.changeset_wrapper import TrustChangeset
 
+import fapolicy_analyzer.ui.strings as strings
 from fapolicy_analyzer.ui.add_file_button import AddFileButton
+from fapolicy_analyzer.ui.changeset_wrapper import TrustChangeset
 from fapolicy_analyzer.ui.configs import Colors
 from fapolicy_analyzer.ui.trust_file_list import TrustFileList, epoch_to_string
 
@@ -33,7 +33,7 @@ class AncillaryTrustFileList(TrustFileList):
     def __init__(self, trust_func):
         addBtn = AddFileButton()
         addBtn.files_added += self.on_addBtn_files_added
-        self._changesColumn = None
+        self._changesColumn: Gtk.TreeViewColumn = None
         self._changesetMap = self._changesets_to_map([])
 
         super().__init__(trust_func, self.__status_markup, addBtn.get_ref())
@@ -78,23 +78,15 @@ class AncillaryTrustFileList(TrustFileList):
     def set_changesets(self, changesets):
         self._changesetMap = self._changesets_to_map(changesets)
 
-    def load_trust(self, trust):
+    def init_list(self, count_of_trust_entries):
+        store = Gtk.ListStore(str, str, str, object, str, str, str)
+        self._load_trust(count_of_trust_entries, store)
+
+    def _load_store(self, count_of_trust_entries, store):
         # Hide changes column if there are no changes
         self._changesColumn.set_visible(
             self._changesetMap["Add"] or self._changesetMap["Del"]
         )
-
-        store = Gtk.ListStore(str, str, str, object, str, str, str)
-        for _, data in enumerate(trust):
-            status, bg_color, txt_color, date_time = self._base_row_data(data)
-            changes = (
-                strings.CHANGESET_ACTION_ADD
-                if data.path in self._changesetMap["Add"]
-                else ""
-            )
-            store.append(
-                [status, date_time, data.path, data, bg_color, txt_color, changes]
-            )
 
         for pth in self._changesetMap["Del"]:
             file_exists = os.path.isfile(pth)
@@ -114,7 +106,7 @@ class AncillaryTrustFileList(TrustFileList):
                 ]
             )
 
-        self.load_store(store)
+        super()._load_trust(count_of_trust_entries, store)
 
     def on_addBtn_files_added(self, files):
         if files:

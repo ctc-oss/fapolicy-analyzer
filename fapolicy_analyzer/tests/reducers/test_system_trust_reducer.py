@@ -13,14 +13,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from unittest.mock import MagicMock
+
 import context  # noqa: F401
 import pytest
-from unittest.mock import MagicMock
-from fapolicy_analyzer.ui.reducers.system_trust_reducer import (
+
+from fapolicy_analyzer.ui.reducers.trust_reducer import (
     TrustState,
-    handle_error_system_trust,
+    handle_error_trust,
     handle_received_system_trust,
-    handle_request_system_trust,
+    handle_request_trust,
 )
 
 
@@ -30,7 +32,7 @@ def initial_state():
 
 
 def test_handle_request_system_trust(initial_state):
-    result = handle_request_system_trust(initial_state, MagicMock())
+    result = handle_request_trust(initial_state, MagicMock())
     assert result == TrustState(error=None, trust=[], loading=True)
 
 
@@ -40,5 +42,5 @@ def test_handle_received_system_trust(initial_state):
 
 
 def test_handle_error_system_trust(initial_state):
-    result = handle_error_system_trust(initial_state, MagicMock(payload="foo"))
+    result = handle_error_trust(initial_state, MagicMock(payload="foo"))
     assert result == TrustState(error="foo", trust=[], loading=False)

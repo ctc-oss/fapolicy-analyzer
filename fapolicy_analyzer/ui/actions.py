@@ -37,7 +37,9 @@ ERROR_APPLY_CHANGESETS = "ERROR_APPLY_CHANGESETS"
 CLEAR_CHANGESETS = "CLEAR_CHANGESET"
 
 REQUEST_ANCILLARY_TRUST = "REQUEST_ANCILLARY_TRUST"
-RECEIVED_ANCILLARY_TRUST = "RECEIVED_ANCILLARY_TRUST"
+ANCILLARY_TRUST_LOAD_STARTED = "ANCILLARY_TRUST_LOAD_STARTED"
+RECEIVED_ANCILLARY_TRUST_UPDATE = "RECEIVED_ANCILLARY_TRUST_UPDATE"
+ANCILLARY_TRUST_LOAD_COMPLETE = "ANCILLARY_TRUST_LOAD_COMPLETE"
 ERROR_ANCILLARY_TRUST = "ERROR_ANCILLARY_TRUST"
 
 REQUEST_SYSTEM_TRUST = "REQUEST_SYSTEM_TRUST"
@@ -130,8 +132,16 @@ def request_ancillary_trust() -> Action:
     return _create_action(REQUEST_ANCILLARY_TRUST)
 
 
-def received_ancillary_trust(trust: Sequence[Trust]) -> Action:
-    return _create_action(RECEIVED_ANCILLARY_TRUST, trust)
+def ancillary_trust_load_started(count: int) -> Action:
+    return _create_action(ANCILLARY_TRUST_LOAD_STARTED, count)
+
+
+def received_ancillary_trust_update(update: Tuple[Sequence[Trust], int]) -> Action:
+    return _create_action(RECEIVED_ANCILLARY_TRUST_UPDATE, update)
+
+
+def ancillary_trust_load_complete() -> Action:
+    return _create_action(ANCILLARY_TRUST_LOAD_COMPLETE)
 
 
 def error_ancillary_trust(error: str) -> Action:

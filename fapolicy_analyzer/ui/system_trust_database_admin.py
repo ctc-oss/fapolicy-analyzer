@@ -42,7 +42,6 @@ class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
             self, get_system_feature(), on_next=self.on_next_system
         )
         Events.__init__(self)
-        self._trust = []
         self._error = None
         self._loading = False
         self.__loading_percent = -1
@@ -72,6 +71,25 @@ class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
         dispatch(request_system_trust())
 
     def on_next_system(self, system):
+        def started_loading(state):
+            return (
+                self._loading
+                and state.loading
+                and state.percent_complete == 0
+                and self.__loading_percent != state.percent_complete
+            )
+
+        def still_loading(state):
+            return (
+                self._loading
+                and state.loading
+                and state.percent_complete > 0
+                and self.__loading_percent != state.percent_complete
+            )
+
+        def done_loading(state):
+            return self._loading and not state.loading and self.__loading_percent == 100
+
         trustState = system.get("system_trust")
 
         if not trustState.loading and self._error != trustState.error:
@@ -83,33 +101,24 @@ class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
                     strings.SYSTEM_TRUST_LOAD_ERROR, NotificationType.ERROR
                 )
             )
-        elif (
-            self._loading
-            and trustState.loading
-            and trustState.percent_complete == 0
-            and self.__loading_percent != trustState.percent_complete
-        ):
+        elif started_loading(trustState):
             self._error = None
             self.__loading_percent = 0
-            self._trust = trustState.trust
             self.trustFileList.set_loading(True)
-            self.trustFileList.load_trust(trustState.trust_count)
-        elif (
-            self._loading
-            and trustState.loading
-            and trustState.percent_complete > 0
-            and self.__loading_percent != trustState.percent_complete
-        ):
+            # print(f"total count: {trustState.trust_count}")
+            self.trustFileList.init_list(trustState.trust_count)
+        elif still_loading(trustState):
             self._error = None
             self.__loading_percent = trustState.percent_complete
-            self._trust = trustState.trust
+            # print(f"appending pct: {trustState.percent_complete}")
             self.trustFileList.append_trust(
                 trustState.last_set_completed, trustState.percent_complete
             )
-
-        if self._loading and not trustState.loading and self.__loading_percent < 100:
+        elif done_loading(trustState):
+            self._error = None
             self._loading = False
             self.__loading_percent = 100
+            # print(f"done loading")
             self.trustFileList.append_trust([], 100)
 
     def on_trust_selection_changed(self, trusts):
