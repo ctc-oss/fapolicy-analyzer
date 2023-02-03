@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-20.04
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
-      is-copr-enabled: ${{ steps.my-key.outputs.defined }}
+      is-copr-enabled: ${{ steps.is-copr-enabled.outputs.defined }}
     steps:
       - uses: actions/checkout@v2
 
