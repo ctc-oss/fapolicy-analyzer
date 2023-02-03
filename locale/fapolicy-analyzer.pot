@@ -7,9 +7,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: fapolicy-analyzer 0.3.1+179.ge512876.dirty\n"
+"Project-Id-Version: fapolicy-analyzer 0.3.1+184.g9005a3c.dirty\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-02-01 13:44-0500\n"
+"POT-Creation-Date: 2023-02-03 07:42-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,16 +18,16 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.11.0\n"
 
-#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:112
-#: fapolicy_analyzer/ui/system_trust_database_admin.py:128
+#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:114
+#: fapolicy_analyzer/ui/system_trust_database_admin.py:139
 msgid ""
 "File: {trust.path}\n"
 "Size: {trust.size}\n"
 "SHA256: {trust.hash}"
 msgstr ""
 
-#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:122
-#: fapolicy_analyzer/ui/system_trust_database_admin.py:137
+#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:124
+#: fapolicy_analyzer/ui/system_trust_database_admin.py:148
 msgid ""
 "{fs.stat(trust.path)}\n"
 "SHA256: {fs.sha(trust.path)}"
@@ -456,6 +456,11 @@ msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:201
 msgid "Filtering is disabled during trust loading"
+msgstr ""
+
+#: fapolicy_analyzer/ui/trust_file_list.py:164
+#, python-format
+msgid "Loading trust {pct}% complete..."
 msgstr ""
 
 #: fapolicy_analyzer/ui/operations/deploy_changesets_op.py:159

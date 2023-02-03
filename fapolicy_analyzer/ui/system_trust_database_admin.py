@@ -42,16 +42,16 @@ class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
             self, get_system_feature(), on_next=self.on_next_system
         )
         Events.__init__(self)
-        self._error = None
-        self._loading = False
+        self.__error = None
+        self.__loading = False
         self.__loading_percent = -1
 
-        self.trustFileList = TrustFileList(
+        self.trust_file_list = TrustFileList(
             trust_func=self.__load_trust, markup_func=self.__status_markup
         )
-        self.trustFileList.trust_selection_changed += self.on_trust_selection_changed
+        self.trust_file_list.trust_selection_changed += self.on_trust_selection_changed
         self.get_object("leftBox").pack_start(
-            self.trustFileList.get_ref(), True, True, 0
+            self.trust_file_list.get_ref(), True, True, 0
         )
 
         self.trustFileDetails = TrustFileDetails()
@@ -67,13 +67,13 @@ class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
         )
 
     def __load_trust(self):
-        self._loading = True
+        self.__loading = True
         dispatch(request_system_trust())
 
     def on_next_system(self, system):
         def started_loading(state):
             return (
-                self._loading
+                self.__loading
                 and state.loading
                 and state.percent_complete == 0
                 and self.__loading_percent != state.percent_complete
@@ -81,7 +81,7 @@ class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
 
         def still_loading(state):
             return (
-                self._loading
+                self.__loading
                 and state.loading
                 and state.percent_complete > 0
                 and self.__loading_percent != state.percent_complete
@@ -89,37 +89,37 @@ class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
 
         def done_loading(state):
             return (
-                self._loading
+                self.__loading
                 and not state.loading
                 and state.percent_complete >= 100
                 and self.__loading_percent != state.percent_complete
             )
 
-        trustState = system.get("system_trust")
+        trust_state = system.get("system_trust")
 
-        if not trustState.loading and self._error != trustState.error:
-            self._error = trustState.error
-            self._loading = False
-            logging.error("%s: %s", strings.SYSTEM_TRUST_LOAD_ERROR, self._error)
+        if not trust_state.loading and self.__error != trust_state.error:
+            self.__error = trust_state.error
+            self.__loading = False
+            logging.error("%s: %s", strings.SYSTEM_TRUST_LOAD_ERROR, self.__error)
             dispatch(
                 add_notification(
                     strings.SYSTEM_TRUST_LOAD_ERROR, NotificationType.ERROR
                 )
             )
-        elif started_loading(trustState):
-            self._error = None
+        elif started_loading(trust_state):
+            self.__error = None
             self.__loading_percent = 0
-            self.trustFileList.set_loading(True)
-            self.trustFileList.init_list(trustState.trust_count)
-        elif still_loading(trustState):
-            self._error = None
-            self.__loading_percent = trustState.percent_complete
-            self.trustFileList.append_trust(
-                trustState.last_set_completed, trustState.percent_complete
+            self.trust_file_list.set_loading(True)
+            self.trust_file_list.init_list(trust_state.trust_count)
+        elif still_loading(trust_state):
+            self.__error = None
+            self.__loading_percent = trust_state.percent_complete
+            self.trust_file_list.append_trust(
+                trust_state.last_set_completed, trust_state.percent_complete
             )
-        elif done_loading(trustState):
-            self._error = None
-            self._loading = False
+        elif done_loading(trust_state):
+            self.__error = None
+            self.__loading = False
             self.__loading_percent = 100
 
     def on_trust_selection_changed(self, trusts):

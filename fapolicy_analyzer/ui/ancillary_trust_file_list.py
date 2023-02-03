@@ -80,7 +80,7 @@ class AncillaryTrustFileList(TrustFileList):
 
     def init_list(self, count_of_trust_entries):
         store = Gtk.ListStore(str, str, str, object, str, str, str)
-        self._load_trust(count_of_trust_entries, store)
+        self._load_store(count_of_trust_entries, store)
 
     def _load_store(self, count_of_trust_entries, store):
         # Hide changes column if there are no changes
@@ -106,7 +106,7 @@ class AncillaryTrustFileList(TrustFileList):
                 ]
             )
 
-        super()._load_trust(count_of_trust_entries, store)
+        super()._load_store(count_of_trust_entries, store)
 
     def on_addBtn_files_added(self, files):
         if files:

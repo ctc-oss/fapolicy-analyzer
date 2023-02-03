@@ -14,6 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from concurrent.futures import ThreadPoolExecutor
+from locale import gettext as _  # skip
 from queue import Queue
 from threading import Event
 from time import localtime, mktime, strftime, strptime
@@ -28,6 +29,7 @@ from fapolicy_analyzer.ui.strings import (
     FILES_LABEL,
     FILTERING_DISABLED_DURING_LOADING_MESSAGE,
 )
+from fapolicy_analyzer.util.format import f
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import GLib, Gtk  # isort: skip
@@ -147,7 +149,7 @@ class TrustFileList(SearchableList):
         def process_rows(queue, total):
             store = self.treeViewFilter
             columns = range(store.get_n_columns())
-            for _ in range(200):
+            for i in range(200):
                 if queue.empty() or self.__event.is_set():
                     break
                 row = queue.get()
@@ -160,7 +162,7 @@ class TrustFileList(SearchableList):
             count = self._get_tree_count()
             if count < total:
                 pct = int(count / total * 100)
-                self._update_loading_status(f"Loading trust {pct}% complete...")
+                self._update_loading_status(f(_("Loading trust {pct}% complete...")))
                 self._update_progress(pct)
                 return True
             else:
