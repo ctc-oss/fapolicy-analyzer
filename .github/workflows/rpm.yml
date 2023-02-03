@@ -187,7 +187,7 @@ jobs:
   copr:
     needs: [ config, srpm ]
     name: Copr Build ${{ matrix.props.dist }}
-    if: env.COPR_LOGIN != ''
+    if: ${{ env.COPR_LOGIN != '' }}
     container: 'rockylinux:8.6'
     runs-on: ubuntu-20.04
     strategy:
