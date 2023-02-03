@@ -19,11 +19,18 @@ jobs:
     runs-on: ubuntu-20.04
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
+      is-copr-enabled: ${{ steps.my-key.outputs.defined }}
     steps:
       - uses: actions/checkout@v2
       - id: set-matrix
         run: |
           echo "::set-output name=matrix::$(cat .github/rpm-matrix.json | tr -d '\n' | tr -d ' ')"
+      - id: is-copr-enabled
+        env:
+          COPR_KEY: ${{ secrets.COPR_LOGIN }}
+        if: "${{ env.COPR_KEY != '' }}"
+        run: echo "::set-output name=defined::true"
+
 
   source0:
     name: Vendor Source0
@@ -187,7 +194,7 @@ jobs:
   copr:
     needs: [ config, srpm ]
     name: Copr Build ${{ matrix.props.dist }}
-    if: ${{ env.COPR_LOGIN != '' }}
+    if: needs.config.outputs.is-copr-enabled == 'true'
     container: 'rockylinux:8.6'
     runs-on: ubuntu-20.04
     strategy:
