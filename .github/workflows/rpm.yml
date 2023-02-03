@@ -13,6 +13,7 @@ on:
 
 name: RPM
 
+
 jobs:
   config:
     name: Load configuration
