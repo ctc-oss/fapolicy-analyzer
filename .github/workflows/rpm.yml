@@ -129,7 +129,7 @@ jobs:
           grep Version ${{ matrix.props.spec }}
 
       - name: Patch spec with pull request version
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request_target'
         run: |
           spec_version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
           pr_number=${{ github.event.pull_request.number }}
