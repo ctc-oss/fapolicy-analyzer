@@ -23,11 +23,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - id: set-matrix
+      - name: Load config matrix
+        id: set-matrix
         run: |
           echo "::set-output name=matrix::$(cat .github/rpm-matrix.json | tr -d '\n' | tr -d ' ')"
 
-      - id: is-copr-enabled
+      - name: Copr token discovery
+        id: is-copr-enabled
         if: "${{ env.COPR_KEY != '' }}"
         run: echo "::set-output name=defined::true"
         env:
