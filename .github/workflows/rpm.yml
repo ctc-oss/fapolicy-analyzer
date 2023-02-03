@@ -117,6 +117,15 @@ jobs:
           sed -i "s#Version:\s*${spec_version}#Version: ${patched_version}#" ${{ matrix.props.spec }}
           grep Version ${{ matrix.props.spec }}
 
+      - name: Patch spec with pull request version
+        if: github.event_name == 'pull_request'
+        run: |
+          spec_version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
+          pr_number=${{ github.event.pull_request.number }}
+          patched_version="0.0.${pr_number}"
+          sed -i "s#Version:\s*${spec_version}#Version: ${patched_version}#" ${{ matrix.props.spec }}
+          grep Version ${{ matrix.props.spec }}
+
       - name: Install RPM build dependencies
         run: |
           dnf install -y make rpm rpmdevtools dnf-plugins-core
