@@ -15,7 +15,7 @@ name: RPM
 
 jobs:
   config:
-    name: Load config matrix
+    name: Load configuration
     runs-on: ubuntu-20.04
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
