@@ -120,7 +120,7 @@ jobs:
           echo "The spec version $spec_version is correct based on git tag $tag"
 
       - name: Patch spec with prerelease version
-        if: endsWith(github.ref, '/master')
+        if: endsWith(github.ref, '/master') && github.event_name != 'pull_request_target'
         run: |
           spec_version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
           commit_number=$(git rev-list HEAD --count)
