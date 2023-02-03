@@ -27,7 +27,7 @@ jobs:
           echo "::set-output name=matrix::$(cat .github/rpm-matrix.json | tr -d '\n' | tr -d ' ')"
       - id: is-copr-enabled
         env:
-          COPR_KEY: ${{ secrets.COPR_LOGIN }}
+          COPR_KEY: ${{ secrets.COPR_API_LOGIN }}
         if: "${{ env.COPR_KEY != '' }}"
         run: echo "::set-output name=defined::true"
 
