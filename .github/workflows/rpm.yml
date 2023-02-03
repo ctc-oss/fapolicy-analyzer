@@ -13,7 +13,6 @@ on:
 
 name: RPM
 
-
 jobs:
   config:
     name: Load configuration
@@ -23,14 +22,16 @@ jobs:
       is-copr-enabled: ${{ steps.my-key.outputs.defined }}
     steps:
       - uses: actions/checkout@v2
+
       - id: set-matrix
         run: |
           echo "::set-output name=matrix::$(cat .github/rpm-matrix.json | tr -d '\n' | tr -d ' ')"
+
       - id: is-copr-enabled
-        env:
-          COPR_KEY: ${{ secrets.COPR_API_LOGIN }}
         if: "${{ env.COPR_KEY != '' }}"
         run: echo "::set-output name=defined::true"
+        env:
+          COPR_KEY: ${{ secrets.COPR_API_LOGIN }}
 
 
   source0:
