@@ -22,7 +22,18 @@ from fapolicy_analyzer.ui.configs import Colors
 from fapolicy_analyzer.ui.confirm_change_dialog import ConfirmChangeDialog
 from fapolicy_analyzer.ui.searchable_list import SearchableList
 from fapolicy_analyzer.ui.store import dispatch
-from fapolicy_analyzer.ui.strings import FILE_LABEL, FILES_LABEL
+from fapolicy_analyzer.ui.strings import (
+    FILE_LABEL,
+    FILES_LABEL,
+    UNTRUSTED_ANCILLARY_TOOLTIP,
+    UNTRUSTED_SYSTEM_TOOLTIP,
+    TRUSTED_ANCILLARY_TOOLTIP,
+    TRUSTED_SYSTEM_TOOLTIP,
+    UNKNOWN_TOOLTIP,
+    ACCESS_ALLOWED_TOOLTIP,
+    ACCESS_PARTIAL_TOOLTIP,
+    ACCESS_DENIED_TOOLTIP,
+)
 from fapolicy_analyzer.ui.trust_reconciliation_dialog import TrustReconciliationDialog
 from more_itertools import first_true
 
@@ -62,6 +73,7 @@ class SubjectList(SearchableList):
         self.get_object("treeView").connect(
             "button-press-event", self.on_view_button_press_event
         )
+        self.get_object("treeView").set_tooltip_column(6)
         self.selection = []
 
     def _build_reconcile_context_menu(self):
@@ -114,35 +126,36 @@ class SubjectList(SearchableList):
         status = subject.trust_status.lower()
         trust = subject.trust.lower()
         if not status == "t":
-            at_str = (
-                f'<span color="{Colors.RED}"><b>AT</b></span>'
+            at_str, at_tooltip = (
+                (f'<span color="{Colors.RED}"><b>AT</b></span>', UNTRUSTED_ANCILLARY_TOOLTIP)
                 if trust == "at"
-                else "AT"
+                else ("AT", "")
             )
-            st_str = (
-                f'<span color="{Colors.RED}"><b>ST</b></span>'
+            st_str, st_tooltip = (
+                (f'<span color="{Colors.RED}"><b>ST</b></span>', UNTRUSTED_SYSTEM_TOOLTIP)
                 if trust == "st"
-                else "ST"
+                else ("ST", "")
             )
-            u_str = (
-                f'<span color="{Colors.GREEN}"><u><b>U</b></u></span>'
+            u_str, u_tooltip = (
+                (f'<span color="{Colors.GREEN}"><u><b>U</b></u></span>', UNKNOWN_TOOLTIP)
                 if trust == "u"
-                else "U"
+                else ("U", "")
             )
         else:
-            at_str = (
-                f'<span color="{Colors.GREEN}"><u><b>AT</b></u></span>'
+            at_str, at_tooltip = (
+                (f'<span color="{Colors.GREEN}"><u><b>AT</b></u></span>', TRUSTED_ANCILLARY_TOOLTIP)
                 if trust == "at"
-                else "AT"
+                else ("AT", "")
             )
-            st_str = (
-                f'<span color="{Colors.GREEN}"><u><b>ST</b></u></span>'
+            st_str, st_tooltip = (
+                (f'<span color="{Colors.GREEN}"><u><b>ST</b></u></span>', TRUSTED_SYSTEM_TOOLTIP)
                 if trust == "st"
-                else "ST"
+                else ("ST", "")
             )
-            u_str = "U"
+            u_str, u_tooltip = "U", ""
 
-        return " / ".join([st_str, at_str, u_str])
+        tooltips = [at_tooltip, st_tooltip, u_tooltip]
+        return " / ".join([st_str, at_str, u_str]), "\n".join([t for t in tooltips if not t == ""])
 
     def __markup(self, value, options):
 
@@ -154,11 +167,11 @@ class SubjectList(SearchableList):
     def __colors(self, access):
         a = access.upper()
         return (
-            (Colors.LIGHT_GREEN, Colors.BLACK)
+            (Colors.LIGHT_GREEN, Colors.BLACK, ACCESS_ALLOWED_TOOLTIP)
             if a == "A"
-            else (Colors.ORANGE, Colors.BLACK)
+            else (Colors.ORANGE, Colors.BLACK, ACCESS_PARTIAL_TOOLTIP)
             if a == "P"
-            else (Colors.LIGHT_RED, Colors.WHITE)
+            else (Colors.LIGHT_RED, Colors.WHITE, ACCESS_DENIED_TOOLTIP)
         )
 
     def __handle_selection_changed(self, data):
@@ -218,12 +231,13 @@ class SubjectList(SearchableList):
     def load_store(self, subjects, **kwargs):
         self._systemTrust = kwargs.get("systemTrust", [])
         self._ancillaryTrust = kwargs.get("ancillaryTrust", [])
-        store = Gtk.ListStore(str, str, str, object, str, str)
+        store = Gtk.ListStore(str, str, str, object, str, str, str)
         for s in subjects:
-            status = self._trust_markup(s)
+            status, status_tooltip = self._trust_markup(s)
             access = self.__markup(s.access.upper(), ["A", "P", "D"])
-            bg_color, txt_color = self.__colors(s.access)
-            store.append([status, access, s.file, s, bg_color, txt_color])
+            bg_color, txt_color, access_tooltip = self.__colors(s.access)
+            tooltip = status_tooltip + "\n" + access_tooltip
+            store.append([status, access, s.file, s, bg_color, txt_color, tooltip])
         super().load_store(store)
 
     def get_selected_row_by_file(self, file: str) -> Gtk.TreePath:
