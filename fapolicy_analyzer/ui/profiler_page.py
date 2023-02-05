@@ -169,7 +169,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
     def on_test_activate(self, *args):
         profiling_args = self.get_entry_dict()
         if not FaProfSession.validSessionArgs(profiling_args):
-            logging.debug("Invalid Profiler arguments")
+            logging.info("Invalid Profiler arguments")
             dictInvalidEnums = FaProfSession.validateArgs(profiling_args)
             strStatusEnums = "\n  " + EnumErrorPairs2Str(dictInvalidEnums)
             dispatch(
