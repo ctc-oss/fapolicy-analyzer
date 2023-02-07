@@ -135,8 +135,8 @@ class TrustFileList(SearchableList):
     def refresh(self):
         self.trust_func()
 
-    def swap_overlay(self, db="system"):
-        label = Gtk.Label(label=strings.SYSTEM_TRUST_NO_DISCREPANCIES if db == "system" else strings.ANCILLARY_TRUST_NO_ENTRIES)
+    def swap_overlay(self, sysdb=True):
+        label = Gtk.Label(label=strings.SYSTEM_TRUST_NO_DISCREPANCIES if sysdb else strings.ANCILLARY_TRUST_NO_ENTRIES)
         scrolled_window = self.get_object("viewScrolledWindow")
         children = scrolled_window.get_children()
         if isinstance(next(iter(children)), Gtk.TreeView):
@@ -145,7 +145,7 @@ class TrustFileList(SearchableList):
         elif isinstance(next(iter(children)), Gtk.Label):
             scrolled_window.remove(next(iter(children)))
             scrolled_window.add(self.treeView)
-        scrolled_window.show_all()            
+        scrolled_window.show_all()
 
     def load_trust(self, trust, show_trusted=False):
         def process():

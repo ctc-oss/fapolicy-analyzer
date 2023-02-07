@@ -59,6 +59,7 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
             self.trustFileDetails.get_ref(), True, True, 0
         )
         self.trustFileList.load_trust(self._trust)
+
     def __load_trust(self):
         self._loading = True
         dispatch(request_ancillary_trust())

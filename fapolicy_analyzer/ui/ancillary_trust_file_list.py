@@ -96,6 +96,9 @@ class AncillaryTrustFileList(TrustFileList):
                 [status, date_time, data.path, data, bg_color, txt_color, changes]
             )
 
+        if len(store) < 1:
+            self.swap_overlay(sysdb=False)
+
         for pth in self._changesetMap["Del"]:
             file_exists = os.path.isfile(pth)
             status = "d" if file_exists else "u"
