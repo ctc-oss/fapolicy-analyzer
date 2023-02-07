@@ -114,7 +114,7 @@ class AncillaryTrustFileList(TrustFileList):
                 ]
             )
 
-        self.load_store(store)
+        self.load_store(store, show_trusted=True, sysdb=False)
 
     def on_addBtn_files_added(self, files):
         if files:

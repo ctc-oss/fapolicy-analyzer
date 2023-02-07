@@ -135,13 +135,17 @@ class TrustFileList(SearchableList):
     def refresh(self):
         self.trust_func()
 
-    def swap_to_label(self, db="system"):
-        label = Gtk.Label(label = strings.SYSTEM_TRUST_NO_DISCREPANCIES if db == "system" else strings.ANCILLARY_TRUST_NO_ENTRIES)
-        label.set_justify(Gtk.Justification.CENTER)
-        scrolled_window = self.get_object("treeScrolledWindow")
-        scrolled_window.hide(self.treeView)
-        scrolled_window.add(label)
-        scrolled_window.show_all()
+    def swap_overlay(self, db="system"):
+        label = Gtk.Label(label=strings.SYSTEM_TRUST_NO_DISCREPANCIES if db == "system" else strings.ANCILLARY_TRUST_NO_ENTRIES)
+        scrolled_window = self.get_object("viewScrolledWindow")
+        children = scrolled_window.get_children()
+        if isinstance(next(iter(children)), Gtk.TreeView):
+            scrolled_window.remove(self.treeView)
+            scrolled_window.add(label)
+        elif isinstance(next(iter(children)), Gtk.Label):
+            scrolled_window.remove(next(iter(children)))
+            scrolled_window.add(self.treeView)
+        scrolled_window.show_all()            
 
     def load_trust(self, trust, show_trusted=False):
         def process():
@@ -154,11 +158,12 @@ class TrustFileList(SearchableList):
 
                 if _executorCanceled:
                     return
-            if len(store) > 1:
-                self.swap_to_label()
 
             if not _executorCanceled:
                 GLib.idle_add(self.load_store, store)
+
+            if len(store) < 1:
+                self.swap_overlay()
 
         self.set_loading(True)
         self.__executor.submit(process)

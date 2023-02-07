@@ -47,6 +47,7 @@ class SearchableList(UIBuilderWidget, Events):
         self.treeCount = self.get_object("treeCount")
         self.treeView = self.get_object("treeView")
         self.treeView.set_headers_visible(view_headers_visible)
+        self.get_object("viewScrolledWindow").add(self.treeView)
         for column in columns:
             self.treeView.append_column(column)
 
