@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 from fapolicy_analyzer import System
 from fapolicy_analyzer.ui.features import (
     NOTIFICATIONS_FEATURE,
@@ -40,6 +41,7 @@ def init_store(system: System = None):
 
 
 def dispatch(action: Action) -> None:
+    logging.debug(f"dispatch( {action.type} )")
     store.dispatch(action)
 
 

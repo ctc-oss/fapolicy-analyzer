@@ -13,18 +13,27 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import sys
 import logging
+from fapolicy_analyzer.util.xdg_utils import (
+    xdg_state_dir_prefix,
+    xdg_data_dir_prefix,
+)
 
-logging.basicConfig(level=logging.WARNING)
+gf_handler = logging.FileHandler(xdg_data_dir_prefix("fapolicy-analyzer.log"),
+                                 mode="w")
+gs_handler = logging.StreamHandler()
+logging.basicConfig(level=logging.DEBUG, handlers=[gf_handler, gs_handler])
+gs_handler.setLevel(logging.WARNING)
+gf_handler.setLevel(logging.INFO)
+
 import argparse
-
 import gi
 from fapolicy_analyzer import __version__ as app_version
 from fapolicy_analyzer.ui import load_resources
 from fapolicy_analyzer.ui.session_manager import sessionManager
 from fapolicy_analyzer.ui.splash_screen import SplashScreen
 from fapolicy_analyzer.ui.store import init_store
-from fapolicy_analyzer.util.xdg_utils import xdg_state_dir_prefix
 
 gi.require_version("Gtk", "3.0")
 gi.require_version("GtkSource", "3.0")
@@ -34,7 +43,12 @@ from gi.repository import Gtk, GtkSource, GObject  # isort: skip
 def _parse_cmdline():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-v", "--verbose", action="store_true", help="Enable verbose mode"
+        "-v", "--verbose", action="count", default=0,
+        help="""
+        Enable verbose output to stderr. A single `v` option will set the
+        loglevel to INFO. Multiple 'v' options will set the level to DEBUG.
+        Note that the '--loglevel' option overrides the default verbose levels
+        """
     )
     parser.add_argument(
         "-a",
@@ -48,12 +62,24 @@ def _parse_cmdline():
     parser.add_argument(
         "-c", "--count", help="Specify the max number of session tmp files"
     )
+    parser.add_argument(
+        "-l", "--loglevel",
+        choices=["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"],
+        help="""Specify the log level. [Default: WARNING.]
+        This option overrides the loglevels associated with the '-v' and '-vv'
+        options"""
+    )
     args = parser.parse_args()
 
-    # Set Verbosity Level
+    # Enable verbosity to stderr. The effective level may get set by --loglevel
     if args.verbose:
-        logging.root.setLevel(logging.DEBUG)
-        logging.debug("Verbosity enabled.")
+        if args.verbose == 1:
+            gf_handler.setLevel(logging.INFO)
+            gs_handler.setLevel(logging.INFO)
+        else:
+            gf_handler.setLevel(logging.DEBUG)
+            gs_handler.setLevel(logging.DEBUG)
+        print("Verbosity enabled", file=sys.stderr)
 
     # Enable edit session autosaves
     if args.autosave:
@@ -62,6 +88,21 @@ def _parse_cmdline():
     # Enable edit session max autosave file count
     if args.count:
         sessionManager.set_autosave_filecount(int(args.count))
+
+    # Enable edit session max autosave file count
+    if args.loglevel:
+        dictOption2LogLevel = {"CRITICAL": logging.CRITICAL,
+                               "ERROR": logging.ERROR,
+                               "WARNING": logging.WARNING,
+                               "INFO": logging.INFO,
+                               "DEBUG": logging.DEBUG
+                               }
+
+        gf_handler.setLevel(dictOption2LogLevel[args.loglevel])
+
+        # Only modify log level of stderr if in verbose mode.
+        if args.verbose:
+            gs_handler.setLevel(dictOption2LogLevel[args.loglevel])
 
     # Set Edit Session Tmp File
     if args.session:

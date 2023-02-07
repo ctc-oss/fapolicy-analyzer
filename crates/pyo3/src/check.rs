@@ -7,6 +7,7 @@
  */
 
 use crate::system::PySystem;
+use fapolicy_trust::db::{Rec, DB};
 use pyo3::prelude::*;
 use std::sync::mpsc;
 use std::thread;
@@ -30,12 +31,38 @@ struct BatchConfig {
     batch_load: usize,
 }
 
-#[pyfunction]
-fn check_disk_trust(system: &PySystem, update: PyObject, done: PyObject) -> PyResult<usize> {
-    let recs: Vec<_> = system.rs.trust_db.values().into_iter().cloned().collect();
+pub fn filter_db<F>(db: &DB, f: F) -> Vec<Rec>
+where
+    F: FnMut(&&Rec) -> bool,
+{
+    db.values().into_iter().filter(f).cloned().collect()
+}
 
+#[pyfunction]
+fn check_ancillary_trust(system: &PySystem, update: PyObject, done: PyObject) -> PyResult<usize> {
+    let recs = filter_db(&system.rs.trust_db, |r| r.is_ancillary());
+    check_disk_trust(recs, update, done)
+}
+
+#[pyfunction]
+fn check_system_trust(system: &PySystem, update: PyObject, done: PyObject) -> PyResult<usize> {
+    let recs = filter_db(&system.rs.trust_db, |r| r.is_system());
+    check_disk_trust(recs, update, done)
+}
+
+#[pyfunction]
+fn check_all_trust(system: &PySystem, update: PyObject, done: PyObject) -> PyResult<usize> {
+    let recs: Vec<_> = system.rs.trust_db.values().into_iter().cloned().collect();
+    check_disk_trust(recs, update, done)
+}
+
+fn check_disk_trust(recs: Vec<Rec>, update: PyObject, done: PyObject) -> PyResult<usize> {
     // determine batch model based on the total recs to be checked
     let batch_cfg = calculate_batch_config(recs.len());
+    eprintln!(
+        "BatchConf: tc:{}, tl:{}, bc:{}, bl:{}",
+        batch_cfg.thread_cnt, batch_cfg.thread_load, batch_cfg.batch_cnt, batch_cfg.batch_load
+    );
 
     // 1. split the total recs into sized batches
     // 2. split the batches into chunks based on thread load
@@ -63,7 +90,7 @@ fn check_disk_trust(system: &PySystem, update: PyObject, done: PyObject) -> PyRe
             if let Ok(u) = rx.recv() {
                 match u {
                     Update::Items(i) => {
-                        cnt += 1;
+                        cnt += i.len();
                         let r: Vec<_> = i.into_iter().map(PyTrust::from).collect();
                         Python::with_gil(|py| {
                             if update.call1(py, (r, cnt)).is_err() {
@@ -115,7 +142,7 @@ fn check_disk_trust(system: &PySystem, update: PyObject, done: PyObject) -> PyRe
         };
     });
 
-    Ok(batch_cfg.batch_cnt)
+    Ok(recs.len())
 }
 
 fn calculate_batch_config(rec_sz: usize) -> BatchConfig {
@@ -159,7 +186,9 @@ fn calculate_batch_config(rec_sz: usize) -> BatchConfig {
 }
 
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add_function(wrap_pyfunction!(check_disk_trust, m)?)?;
+    m.add_function(wrap_pyfunction!(check_system_trust, m)?)?;
+    m.add_function(wrap_pyfunction!(check_ancillary_trust, m)?)?;
+    m.add_function(wrap_pyfunction!(check_all_trust, m)?)?;
     Ok(())
 }
 

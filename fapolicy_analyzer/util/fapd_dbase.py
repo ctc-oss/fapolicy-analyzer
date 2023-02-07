@@ -32,7 +32,7 @@ gstrBackupBasename = "Fapolicyd_Backup"
 def fapd_dbase_cleanup_snapshots(strBackupBasename):
     """Delete oldest fapolicyd dbase backup file in default location,
     if greater than giBackupFileMaxCount."""
-    logging.debug("fapd_dbase_cleanup_snapshots()")
+    logging.info("fapd_dbase_cleanup_snapshots()")
     if not strBackupBasename:
         return False
 
@@ -63,7 +63,7 @@ def fapd_dbase_snapshot(strArchiveFile=None, strListFile=None):
     If archive filename is specified, will not perform cleanup of prior
     autosaved archive files, as this is a user invoked operation.
     """
-    logging.debug("fapd_dbase::fapd_dbase_snapshot()")
+    logging.info("fapd_dbase::fapd_dbase_snapshot()")
 
     # Set the backup archive's name, if not specified, set to the default
     if not strArchiveFile:
