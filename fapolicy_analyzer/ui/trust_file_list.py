@@ -143,11 +143,11 @@ class TrustFileList(SearchableList):
 
     def init_list(self, count_of_trust_entries):
         store = Gtk.ListStore(str, str, str, object, str, str)
-        self._load_store(count_of_trust_entries, store)
+        self.load_store(count_of_trust_entries, store)
 
-    def _load_store(self, count_of_trust_entries, store):
+    def load_store(self, count_of_trust_entries, store):
         def process_rows(queue, total):
-            store = self.treeViewFilter
+            store = self._store
             columns = range(store.get_n_columns())
             for i in range(200):
                 if queue.empty() or self.__event.is_set():
@@ -166,22 +166,21 @@ class TrustFileList(SearchableList):
                 self._update_progress(pct)
                 return True
             else:
-                self.treeViewFilter = store.filter_new()
-                self.treeViewFilter.set_visible_func(self._filter_view)
-                self.treeView.set_model(self.treeViewFilter)
-                self._update_list_status(self._get_tree_count())
+                super(TrustFileList, self).load_store(self._store)
                 self._update_progress(100)
                 self.search.set_sensitive(True)
                 self.search.set_tooltip_text(None)
                 return False
 
-        self.__load_tree(store)
+        super().load_store(store, filterable=False)
+        self._update_loading_status("Loading trust 0% complete...")
+        self.set_loading(False)
         self.search.set_sensitive(False)
         self.search.set_tooltip_text(FILTERING_DISABLED_DURING_LOADING_MESSAGE)
         self.__queue = Queue()
         GLib.timeout_add(200, process_rows, self.__queue, count_of_trust_entries)
 
-    def append_trust(self, trust, pct):
+    def append_trust(self, trust):
         def process_trust(trust):
             for data in trust:
                 if self.__event.is_set():
@@ -190,14 +189,3 @@ class TrustFileList(SearchableList):
 
         if not self.__event.is_set():
             self.__executor.submit(process_trust, trust)
-
-    def __load_tree(self, store, **kwargs):
-        store.set_sort_column_id(self.defaultSortIndex, self.defaultSortDirection)
-        self.treeViewFilter = store
-        self.treeView.set_model(self.treeViewFilter)
-        if self.treeView.get_selection():
-            self.treeView.get_selection().connect(
-                "changed", self.on_view_selection_changed
-            )
-        self._update_loading_status("Loading trust 0% complete...")
-        self.set_loading(False)

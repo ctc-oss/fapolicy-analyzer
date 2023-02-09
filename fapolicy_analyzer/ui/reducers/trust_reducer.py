@@ -45,7 +45,7 @@ def _create_state(state: TrustState, **kwargs: Optional[Any]) -> TrustState:
 
 
 def handle_request_trust(state: TrustState, _: Action) -> TrustState:
-    return _create_state(state, loading=True, percent_complete=0, error=None)
+    return _create_state(state, loading=True, percent_complete=-1, error=None)
 
 
 def handle_trust_load_started(state: TrustState, action: Action) -> TrustState:
@@ -93,7 +93,7 @@ system_trust_reducer: Reducer = handle_actions(
         error=None,
         trust=[],
         loading=False,
-        percent_complete=100,
+        percent_complete=-1,
         last_set_completed=None,
         trust_count=0,
     ),
@@ -111,7 +111,7 @@ ancillary_trust_reducer: Reducer = handle_actions(
         error=None,
         trust=[],
         loading=False,
-        percent_complete=100,
+        percent_complete=-1,
         last_set_completed=None,
         trust_count=0,
     ),

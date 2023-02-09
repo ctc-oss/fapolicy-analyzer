@@ -45,7 +45,6 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
     def __init__(self):
         super().__init__(get_system_feature(), on_next=self.on_next_system)
         self._changesets: Sequence[Changeset] = []
-        self.__trust = []
         self.__loading = False
         self.__loading_percent = -1
         self.selectedFiles = None
@@ -65,6 +64,7 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
 
     def __load_trust(self):
         self.__loading = True
+        self.__loading_percent = -1
         dispatch(request_ancillary_trust())
 
     def __apply_changeset(self, changeset):
@@ -185,7 +185,7 @@ SHA256: {fs.sha(trust.path)}"""
                 self.__loading
                 and not state.loading
                 and state.percent_complete >= 100
-                and self.__loading_percent != state.percent_complete
+                and self.__loading_percent >= 100
             )
 
         changeset_state = system.get("changesets")
@@ -214,9 +214,7 @@ SHA256: {fs.sha(trust.path)}"""
             self.trust_file_list.init_list(trust_state.trust_count)
         elif still_loading(trust_state):
             self.__loading_percent = trust_state.percent_complete
-            self.trust_file_list.append_trust(
-                trust_state.last_set_completed, trust_state.percent_complete
-            )
+            self.trust_file_list.append_trust(trust_state.last_set_completed)
         elif done_loading(trust_state):
             self.__loading = False
             self.__loading_percent = 100

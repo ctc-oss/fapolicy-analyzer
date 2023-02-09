@@ -31,10 +31,10 @@ from gi.repository import Gtk  # isort: skip
 
 class AncillaryTrustFileList(TrustFileList):
     def __init__(self, trust_func):
+        self.__changes_column: Gtk.TreeViewColumn = None
+        self.__changeset_map = self._changesets_to_map([])
         addBtn = AddFileButton()
         addBtn.files_added += self.on_addBtn_files_added
-        self._changesColumn: Gtk.TreeViewColumn = None
-        self._changesetMap = self._changesets_to_map([])
 
         super().__init__(trust_func, self.__status_markup, addBtn.get_ref())
 
@@ -67,28 +67,40 @@ class AncillaryTrustFileList(TrustFileList):
         )
 
     def _columns(self):
-        self._changesColumn = Gtk.TreeViewColumn(
+        self.__changes_column = Gtk.TreeViewColumn(
             strings.FILE_LIST_CHANGES_HEADER,
             Gtk.CellRendererText(background=Colors.LIGHT_GRAY),
             text=6,
         )
-        self._changesColumn.set_sort_column_id(6)
-        return [self._changesColumn, *super()._columns()]
+        self.__changes_column.set_sort_column_id(6)
+        return [self.__changes_column, *super()._columns()]
+
+    def _row_data(self, data):
+        try:
+            base_data = super()._row_data(data)
+            changes = (
+                strings.CHANGESET_ACTION_ADD
+                if data.path in self.__changeset_map["Add"]
+                else ""
+            )
+            return [*base_data, changes]
+        except Exception as e:
+            print(e)
 
     def set_changesets(self, changesets):
-        self._changesetMap = self._changesets_to_map(changesets)
+        self.__changeset_map = self._changesets_to_map(changesets)
 
     def init_list(self, count_of_trust_entries):
         store = Gtk.ListStore(str, str, str, object, str, str, str)
-        self._load_store(count_of_trust_entries, store)
+        self.load_store(count_of_trust_entries, store)
 
-    def _load_store(self, count_of_trust_entries, store):
+    def load_store(self, count_of_trust_entries, store):
         # Hide changes column if there are no changes
-        self._changesColumn.set_visible(
-            self._changesetMap["Add"] or self._changesetMap["Del"]
+        self.__changes_column.set_visible(
+            self.__changeset_map["Add"] or self.__changeset_map["Del"]
         )
 
-        for pth in self._changesetMap["Del"]:
+        for pth in self.__changeset_map["Del"]:
             file_exists = os.path.isfile(pth)
             status = "d" if file_exists else "u"
             data = SimpleNamespace(path=pth, status=status)
@@ -106,7 +118,7 @@ class AncillaryTrustFileList(TrustFileList):
                 ]
             )
 
-        super()._load_store(count_of_trust_entries, store)
+        super().load_store(count_of_trust_entries, store)
 
     def on_addBtn_files_added(self, files):
         if files:

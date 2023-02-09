@@ -79,7 +79,7 @@ class SearchableList(UIBuilderWidget, Events):
         pass
 
     def _get_tree_count(self):
-        return self.treeViewFilter.iter_n_children(None)
+        return self._store.iter_n_children(None)
 
     def _update_list_status(self, status):
         self.treeCount.set_text(str(status))
@@ -100,22 +100,26 @@ class SearchableList(UIBuilderWidget, Events):
 
         self.progress_bar.set_fraction(progress_pct / 100)
 
-    def load_store(self, store, **kwargs):
+    def load_store(self, store, filterable=True, **kwargs):
         def apply_prev_sort(model):
             currentModel = self.treeView.get_model()
             currentSort = (
                 currentModel.get_sort_column_id()
-                if currentModel
-                else (self.defaultSortIndex, 0)
+                if currentModel and currentModel[0] and currentModel[1]
+                else (self.defaultSortIndex, self.defaultSortDirection)
             )
             model.set_sort_column_id(*currentSort)
             return model
 
-        self.treeViewFilter = store.filter_new()
-        self.treeViewFilter.set_visible_func(self._filter_view)
+        if filterable:
+            self._store = store.filter_new()
+            self._store.set_visible_func(self._filter_view)
+            model = apply_prev_sort(Gtk.TreeModelSort(model=self._store))
+        else:
+            self._store = store
+            model = apply_prev_sort(store)
 
-        sortableModel = apply_prev_sort(Gtk.TreeModelSort(model=self.treeViewFilter))
-        self.treeView.set_model(sortableModel)
+        self.treeView.set_model(model)
         if self.treeView.get_selection():
             self.treeView.get_selection().connect(
                 "changed", self.on_view_selection_changed
@@ -181,5 +185,5 @@ class SearchableList(UIBuilderWidget, Events):
         self.selection_changed(data)
 
     def on_search_changed(self, search):
-        self.treeViewFilter.refilter()
+        self._store.refilter()
         self._update_list_status(self._get_tree_count())

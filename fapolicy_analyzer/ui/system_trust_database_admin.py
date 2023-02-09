@@ -68,6 +68,7 @@ class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
 
     def __load_trust(self):
         self.__loading = True
+        self.__loading_percent = -1
         dispatch(request_system_trust())
 
     def on_next_system(self, system):
@@ -89,10 +90,7 @@ class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
 
         def done_loading(state):
             return (
-                self.__loading
-                and not state.loading
-                and state.percent_complete >= 100
-                and self.__loading_percent != state.percent_complete
+                self.__loading and not state.loading and state.percent_complete >= 100
             )
 
         trust_state = system.get("system_trust")
@@ -114,9 +112,7 @@ class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
         elif still_loading(trust_state):
             self.__error = None
             self.__loading_percent = trust_state.percent_complete
-            self.trust_file_list.append_trust(
-                trust_state.last_set_completed, trust_state.percent_complete
-            )
+            self.trust_file_list.append_trust(trust_state.last_set_completed)
         elif done_loading(trust_state):
             self.__error = None
             self.__loading = False
