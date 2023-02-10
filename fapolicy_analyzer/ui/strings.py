@@ -210,4 +210,3 @@ UNKNOWN_TOOLTIP = _("File trust is unknown")
 ACCESS_ALLOWED_TOOLTIP = _("File access fully allowed")
 ACCESS_PARTIAL_TOOLTIP = _("File access partially allowed")
 ACCESS_DENIED_TOOLTIP = _("File access denied")
-

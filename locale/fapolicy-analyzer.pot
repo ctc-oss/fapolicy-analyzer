@@ -7,9 +7,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: fapolicy-analyzer 0.3.1+192.gd313da0\n"
+"Project-Id-Version: fapolicy-analyzer 0.3.1+194.gcab6f62.dirty\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-02-10 08:54-0500\n"
+"POT-Creation-Date: 2023-02-10 15:49-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
