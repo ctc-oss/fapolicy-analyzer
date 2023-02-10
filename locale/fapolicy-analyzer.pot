@@ -7,9 +7,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: fapolicy-analyzer 0.3.1+184.g9005a3c.dirty\n"
+"Project-Id-Version: fapolicy-analyzer 0.3.1+178.g7bb70dd.dirty\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-02-03 07:42-0500\n"
+"POT-Creation-Date: 2023-02-02 14:24-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -461,6 +461,37 @@ msgstr ""
 #: fapolicy_analyzer/ui/trust_file_list.py:164
 #, python-format
 msgid "Loading trust {pct}% complete..."
+
+#: fapolicy_analyzer/ui/strings.py:200
+msgid "File is untrusted in the Ancillary Trust Database"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:201
+msgid "File is untrusted in the System Trust Database"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:202
+msgid "File is trusted in the Ancillary Trust Database"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:203
+msgid "File is trusted in the System Trust Database"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:204
+msgid "File trust is unknown"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:205
+msgid "File access fully allowed"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:206
+msgid "File access partially allowed"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:207
+msgid "File access denied"
 msgstr ""
 
 #: fapolicy_analyzer/ui/operations/deploy_changesets_op.py:159
