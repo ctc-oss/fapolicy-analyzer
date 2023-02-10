@@ -17,10 +17,13 @@ import context  # noqa: F401 # isort: skip
 from unittest.mock import MagicMock
 
 import pytest
+
 from fapolicy_analyzer.redux import Action
 from fapolicy_analyzer.ui.actions import (
     ADD_CHANGESETS,
     ADD_NOTIFICATION,
+    ANCILLARY_TRUST_LOAD_COMPLETE,
+    ANCILLARY_TRUST_LOAD_STARTED,
     APPLY_CHANGESETS,
     CLEAR_CHANGESETS,
     CLEAR_PROFILER_STATE,
@@ -37,12 +40,12 @@ from fapolicy_analyzer.ui.actions import (
     ERROR_USERS,
     INIT_SYSTEM,
     MODIFY_RULES_TEXT,
-    RECEIVED_ANCILLARY_TRUST,
+    RECEIVED_ANCILLARY_TRUST_UPDATE,
     RECEIVED_EVENTS,
     RECEIVED_GROUPS,
     RECEIVED_RULES,
     RECEIVED_RULES_TEXT,
-    RECEIVED_SYSTEM_TRUST,
+    RECEIVED_SYSTEM_TRUST_UPDATE,
     RECEIVED_USERS,
     REMOVE_NOTIFICATION,
     REQUEST_ANCILLARY_TRUST,
@@ -58,10 +61,14 @@ from fapolicy_analyzer.ui.actions import (
     SYSTEM_CHECKPOINT_SET,
     SYSTEM_DEPLOYED,
     SYSTEM_RECEIVED,
+    SYSTEM_TRUST_LOAD_COMPLETE,
+    SYSTEM_TRUST_LOAD_STARTED,
     Notification,
     NotificationType,
     add_changesets,
     add_notification,
+    ancillary_trust_load_complete,
+    ancillary_trust_load_started,
     apply_changesets,
     clear_changesets,
     clear_profiler_state,
@@ -77,12 +84,12 @@ from fapolicy_analyzer.ui.actions import (
     error_users,
     init_system,
     modify_rules_text,
-    received_ancillary_trust,
+    received_ancillary_trust_update,
     received_events,
     received_groups,
     received_rules,
     received_rules_text,
-    received_system_trust,
+    received_system_trust_update,
     received_users,
     remove_notification,
     request_ancillary_trust,
@@ -99,6 +106,8 @@ from fapolicy_analyzer.ui.actions import (
     system_deployed,
     system_initialization_error,
     system_received,
+    system_trust_load_complete,
+    system_trust_load_started,
 )
 
 
@@ -160,12 +169,25 @@ def test_request_ancillary_trust():
     assert not action.payload
 
 
-def test_received_ancillary_trust():
-    trust = [MagicMock()]
-    action = received_ancillary_trust(trust)
+def test_ancillary_trust_load_started():
+    action = ancillary_trust_load_started(1)
     assert type(action) is Action
-    assert action.type == RECEIVED_ANCILLARY_TRUST
-    assert action.payload == trust
+    assert action.type == ANCILLARY_TRUST_LOAD_STARTED
+    assert action.payload == 1
+
+
+def test_received_ancillary_trust_update():
+    trust = [MagicMock()]
+    action = received_ancillary_trust_update((trust, 1))
+    assert type(action) is Action
+    assert action.type == RECEIVED_ANCILLARY_TRUST_UPDATE
+    assert action.payload == (trust, 1)
+
+
+def test_ancillary_trust_load_complete():
+    action = ancillary_trust_load_complete()
+    assert type(action) is Action
+    assert action.type == ANCILLARY_TRUST_LOAD_COMPLETE
 
 
 def test_error_ancillary_trust():
@@ -182,12 +204,25 @@ def test_request_system_trust():
     assert not action.payload
 
 
-def test_received_system_trust():
-    trust = [MagicMock()]
-    action = received_system_trust(trust)
+def test_system_trust_load_started():
+    action = system_trust_load_started(1)
     assert type(action) is Action
-    assert action.type == RECEIVED_SYSTEM_TRUST
-    assert action.payload == trust
+    assert action.type == SYSTEM_TRUST_LOAD_STARTED
+    assert action.payload == 1
+
+
+def test_received_system_trust_update():
+    trust = [MagicMock()]
+    action = received_system_trust_update((trust, 1))
+    assert type(action) is Action
+    assert action.type == RECEIVED_SYSTEM_TRUST_UPDATE
+    assert action.payload == (trust, 1)
+
+
+def test_system_trust_load_complete():
+    action = system_trust_load_complete()
+    assert type(action) is Action
+    assert action.type == SYSTEM_TRUST_LOAD_COMPLETE
 
 
 def test_error_system_trust():

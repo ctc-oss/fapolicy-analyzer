@@ -18,6 +18,8 @@ from unittest.mock import MagicMock
 
 import gi
 import pytest
+
+from fapolicy_analyzer.tests.helpers import refresh_gui
 from fapolicy_analyzer.ui.ancillary_trust_file_list import AncillaryTrustFileList
 from fapolicy_analyzer.ui.changeset_wrapper import TrustChangeset
 from fapolicy_analyzer.ui.configs import Colors
@@ -67,7 +69,9 @@ def test_uses_custom_trust_func():
 
 def test_uses_custom_markup_func():
     widget = AncillaryTrustFileList(trust_func=MagicMock())
-    widget.load_trust(_trust)
+    widget.init_list(len(_trust))
+    widget.append_trust(_trust)
+    refresh_gui(delay=0.5)
     view = widget.get_object("treeView")
     assert ["T / <b><u>D</u></b>", "<b><u>T</u></b> / D", "T / D"] == [
         x[0] for x in view.get_model()
@@ -89,7 +93,8 @@ def test_fires_files_added(widget, mocker):
 
 def test_hides_changes_column(widget):
     changesColumn = _get_column(widget, FILE_LIST_CHANGES_HEADER)
-    widget.load_trust(_trust)
+    widget.init_list(len(_trust))
+    widget.append_trust(_trust)
     assert not changesColumn.get_visible()
 
 
@@ -98,7 +103,8 @@ def test_shows_changes_column(widget):
         spec=TrustChangeset, serialize=MagicMock(return_value=({"/tmp/foo": "Add"}))
     )
     widget.set_changesets([mockChangeset])
-    widget.load_trust(_trust)
+    widget.init_list(len(_trust))
+    widget.append_trust(_trust)
     changesColumn = _get_column(widget, FILE_LIST_CHANGES_HEADER)
     assert changesColumn.get_visible()
 
@@ -108,7 +114,9 @@ def test_trust_add_actions_in_view(widget):
         spec=TrustChangeset, serialize=MagicMock(return_value=({"/tmp/1": "Add"}))
     )
     widget.set_changesets([mockChangeset])
-    widget.load_trust(_trust)
+    widget.init_list(len(_trust))
+    widget.append_trust(_trust)
+    refresh_gui(delay=0.5)
     model = widget.get_object("treeView").get_model()
     row = next(iter([x for x in model if x[2] == "/tmp/1"]))
     assert CHANGESET_ACTION_ADD == row[6]
@@ -119,7 +127,8 @@ def test_trust_delete_actions_in_view(widget):
         spec=TrustChangeset, serialize=MagicMock(return_value=({"/tmp/foz": "Del"}))
     )
     widget.set_changesets([mockChangeset])
-    widget.load_trust(_trust)
+    widget.init_list(len(_trust))
+    widget.append_trust(_trust)
     model = widget.get_object("treeView").get_model()
     row = next(iter([x for x in model if x[2] == "/tmp/foz"]))
     assert CHANGESET_ACTION_DEL == row[6]
