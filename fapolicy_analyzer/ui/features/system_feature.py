@@ -21,7 +21,7 @@ from typing import Callable, Sequence, Tuple
 import gi
 from rx import of
 from rx.core.pipe import pipe
-from rx.operators import catch, map
+from rx.operators import catch, filter, map
 
 from fapolicy_analyzer import (
     System,
@@ -269,12 +269,14 @@ def create_system_feature(
     request_ancillary_trust_epic = pipe(
         of_type(REQUEST_ANCILLARY_TRUST),
         map(_get_ancillary_trust),
+        filter(lambda a: a.type != REQUEST_ANCILLARY_TRUST),
         catch(lambda ex, source: of(error_ancillary_trust(str(ex)))),
     )
 
     request_system_trust_epic = pipe(
         of_type(REQUEST_SYSTEM_TRUST),
         map(_get_system_trust),
+        filter(lambda a: a.type != REQUEST_SYSTEM_TRUST),
         catch(lambda ex, source: of(error_system_trust(str(ex)))),
     )
 

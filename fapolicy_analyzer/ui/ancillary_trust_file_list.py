@@ -76,16 +76,13 @@ class AncillaryTrustFileList(TrustFileList):
         return [self.__changes_column, *super()._columns()]
 
     def _row_data(self, data):
-        try:
-            base_data = super()._row_data(data)
-            changes = (
-                strings.CHANGESET_ACTION_ADD
-                if data.path in self.__changeset_map["Add"]
-                else ""
-            )
-            return [*base_data, changes]
-        except Exception as e:
-            print(e)
+        base_data = super()._row_data(data)
+        changes = (
+            strings.CHANGESET_ACTION_ADD
+            if data.path in self.__changeset_map["Add"]
+            else ""
+        )
+        return [*base_data, changes]
 
     def set_changesets(self, changesets):
         self.__changeset_map = self._changesets_to_map(changesets)

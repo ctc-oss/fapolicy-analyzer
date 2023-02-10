@@ -36,7 +36,7 @@ class SearchableList(UIBuilderWidget, Events):
         *actionButtons,
         searchColumnIndex=0,
         defaultSortIndex=0,
-        defaultSortDirection=Gtk.SortType.DESCENDING,
+        defaultSortDirection=Gtk.SortType.ASCENDING,
         view_headers_visible=True,
         selection_type="single",
     ):
@@ -105,7 +105,7 @@ class SearchableList(UIBuilderWidget, Events):
             currentModel = self.treeView.get_model()
             currentSort = (
                 currentModel.get_sort_column_id()
-                if currentModel and currentModel[0] and currentModel[1]
+                if currentModel and all(currentModel)
                 else (self.defaultSortIndex, self.defaultSortDirection)
             )
             model.set_sort_column_id(*currentSort)
