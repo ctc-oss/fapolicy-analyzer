@@ -13,8 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import fapolicy_analyzer.ui.strings as strings
 import gi
+from more_itertools import first_true
+
+import fapolicy_analyzer.ui.strings as strings
 from fapolicy_analyzer.ui.actions import apply_changesets
 from fapolicy_analyzer.ui.add_file_button import AddFileButton
 from fapolicy_analyzer.ui.changeset_wrapper import TrustChangeset
@@ -35,7 +37,6 @@ from fapolicy_analyzer.ui.strings import (
     ACCESS_DENIED_TOOLTIP,
 )
 from fapolicy_analyzer.ui.trust_reconciliation_dialog import TrustReconciliationDialog
-from more_itertools import first_true
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gdk, Gtk  # isort: skip
@@ -224,7 +225,7 @@ class SubjectList(SearchableList):
         if confirm == Gtk.ResponseType.YES:
             dispatch(apply_changesets(changeset))
 
-    def _update_tree_count(self, count):
+    def _update_list_status(self, count):
         label = FILE_LABEL if count == 1 else FILES_LABEL
         self.treeCount.set_text(" ".join([str(count), label]))
 

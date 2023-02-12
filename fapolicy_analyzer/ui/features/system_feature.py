@@ -15,13 +15,22 @@
 
 import logging
 from concurrent.futures import ThreadPoolExecutor
-from typing import Callable
+from functools import partial
+from typing import Callable, Sequence, Tuple
 
 import gi
-from rx import of, pipe
-from rx.operators import catch, map
+from rx import of
+from rx.core.pipe import pipe
+from rx.operators import catch, filter, map
 
-from fapolicy_analyzer import System, rollback_fapolicyd
+from fapolicy_analyzer import (
+    System,
+    Trust,
+    check_ancillary_trust,
+    check_system_trust,
+    rollback_fapolicyd,
+    unchecked_system,
+)
 from fapolicy_analyzer.redux import (
     Action,
     ReduxFeatureModule,
@@ -43,6 +52,8 @@ from fapolicy_analyzer.ui.actions import (
     RESTORE_SYSTEM_CHECKPOINT,
     SET_SYSTEM_CHECKPOINT,
     add_changesets,
+    ancillary_trust_load_complete,
+    ancillary_trust_load_started,
     error_ancillary_trust,
     error_apply_changesets,
     error_deploying_system,
@@ -53,17 +64,19 @@ from fapolicy_analyzer.ui.actions import (
     error_system_trust,
     error_users,
     init_system,
-    received_ancillary_trust,
+    received_ancillary_trust_update,
     received_events,
     received_groups,
     received_rules,
     received_rules_text,
-    received_system_trust,
+    received_system_trust_update,
     received_users,
     system_checkpoint_set,
     system_deployed,
     system_initialization_error,
     system_received,
+    system_trust_load_complete,
+    system_trust_load_started,
 )
 from fapolicy_analyzer.ui.reducers import system_reducer
 from fapolicy_analyzer.ui.strings import SYSTEM_INITIALIZATION_ERROR
@@ -71,6 +84,7 @@ from fapolicy_analyzer.util.fapd_dbase import fapd_dbase_snapshot
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import GLib  # isort: skip
+
 
 SYSTEM_FEATURE = "system"
 _system: System
@@ -89,10 +103,13 @@ def create_system_feature(
               a new System object will be initialized.  Used for testing purposes only.
     """
 
+    checking_system_trust: bool = False
+    checking_ancillary_trust: bool = False
+
     def _init_system() -> Action:
         def execute_system():
             try:
-                system = System()
+                system = unchecked_system()
                 GLib.idle_add(finish, system)
             except RuntimeError:
                 logging.exception(SYSTEM_INITIALIZATION_ERROR)
@@ -121,6 +138,9 @@ def create_system_feature(
             executor.submit(execute_system)
         return init_system()
 
+    def _idle_dispatch(action: Action):
+        GLib.idle_add(dispatch, action)
+
     def _apply_changesets(action: Action) -> Action:
         global _system
         changesets = action.payload
@@ -129,13 +149,67 @@ def create_system_feature(
         dispatch(system_received(_system))
         return add_changesets(changesets)
 
-    def _get_ancillary_trust(_: Action) -> Action:
-        trust = _system.ancillary_trust()
-        return received_ancillary_trust(trust)
+    def _check_disk_trust_update(
+        updates: Sequence[Trust],
+        count: int,
+        action_fn: Callable[[Tuple[Sequence[Trust], int]], Action],
+    ):
+        # merge the updated trust into the system
+        _system.merge(updates)
+        # dispatch the update
+        trust_update = (updates, count)
+        _idle_dispatch(action_fn(trust_update))
 
-    def _get_system_trust(_: Action) -> Action:
-        trust = _system.system_trust()
-        return received_system_trust(trust)
+    def _check_disk_trust_complete(
+        action_fn: Callable[[], Action], flag_fn: Callable[[], None]
+    ):
+        _idle_dispatch(action_fn())
+        flag_fn()
+
+    def _get_ancillary_trust(action: Action) -> Action:
+        nonlocal checking_ancillary_trust
+
+        def checking_finished():
+            nonlocal checking_ancillary_trust
+            checking_ancillary_trust = False
+
+        if checking_ancillary_trust:
+            return action
+
+        checking_ancillary_trust = True
+        update = partial(
+            _check_disk_trust_update, action_fn=received_ancillary_trust_update
+        )
+        done = partial(
+            _check_disk_trust_complete,
+            action_fn=ancillary_trust_load_complete,
+            flag_fn=checking_finished,
+        )
+        print(check_ancillary_trust)
+        total_to_check = check_ancillary_trust(_system, update, done)
+        return ancillary_trust_load_started(total_to_check)
+
+    def _get_system_trust(action: Action) -> Action:
+        nonlocal checking_system_trust
+
+        def checking_finished():
+            nonlocal checking_system_trust
+            checking_system_trust = False
+
+        if checking_system_trust:
+            return action
+
+        checking_system_trust = True
+        update = partial(
+            _check_disk_trust_update, action_fn=received_system_trust_update
+        )
+        done = partial(
+            _check_disk_trust_complete,
+            action_fn=system_trust_load_complete,
+            flag_fn=checking_finished,
+        )
+        total_to_check = check_system_trust(_system, update, done)
+        return system_trust_load_started(total_to_check)
 
     def _deploy_system(_: Action) -> Action:
         if not fapd_dbase_snapshot():
@@ -196,12 +270,14 @@ def create_system_feature(
     request_ancillary_trust_epic = pipe(
         of_type(REQUEST_ANCILLARY_TRUST),
         map(_get_ancillary_trust),
+        filter(lambda a: a.type != REQUEST_ANCILLARY_TRUST),
         catch(lambda ex, source: of(error_ancillary_trust(str(ex)))),
     )
 
     request_system_trust_epic = pipe(
         of_type(REQUEST_SYSTEM_TRUST),
         map(_get_system_trust),
+        filter(lambda a: a.type != REQUEST_SYSTEM_TRUST),
         catch(lambda ex, source: of(error_system_trust(str(ex)))),
     )
 

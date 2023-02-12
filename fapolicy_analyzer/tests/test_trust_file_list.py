@@ -13,20 +13,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import fapolicy_analyzer.ui.trust_file_list as trust_file_list
+import context  # noqa: F401
 import gi
 import pytest
-
-import context  # noqa: F401
 
 gi.require_version("Gtk", "3.0")
 from time import localtime, mktime, strftime
 from unittest.mock import MagicMock
 
-from fapolicy_analyzer.ui.trust_file_list import TrustFileList, epoch_to_string
 from gi.repository import Gtk
-
 from helpers import refresh_gui
+
+from fapolicy_analyzer.ui.trust_file_list import TrustFileList, epoch_to_string
 
 _trust = [
     MagicMock(status="u", path="/tmp/bar", actual=MagicMock(last_modified=123456789)),
@@ -53,11 +51,12 @@ def test_uses_custom_trust_func():
 def test_uses_custom_markup_func(mocker):
     mocker.patch(
         "fapolicy_analyzer.ui.trust_file_list.ThreadPoolExecutor",
-        return_value=MagicMock(submit=lambda x: x()),
+        return_value=MagicMock(submit=lambda x, *args: x(*args)),
     )
     markup_func = MagicMock(return_value="t")
     widget = TrustFileList(trust_func=MagicMock(), markup_func=markup_func)
-    widget.load_trust(_trust)
+    widget.init_list(2)
+    widget.append_trust(_trust)
     markup_func.assert_called_with("t")
 
 
@@ -70,8 +69,9 @@ def test_loads_trust_store(widget, mocker):
         "fapolicy_analyzer.ui.trust_file_list.GLib.idle_add",
         side_effect=lambda x, args: x(args),
     )
-    widget.load_trust(_trust)
-    refresh_gui()
+    widget.init_list(2)
+    widget.append_trust(_trust)
+    refresh_gui(delay=0.5)
     view = widget.get_object("treeView")
     assert [t.status for t in _trust] == [x[0] for x in view.get_model()]
     assert [t.path for t in _trust] == [x[2] for x in view.get_model()]
@@ -83,16 +83,19 @@ def test_cancels_load_trust_store(widget, mocker):
         return_value=MagicMock(submit=lambda x: x()),
     )
     mockIdleAdd = mocker.patch("fapolicy_analyzer.ui.trust_file_list.GLib.idle_add")
-    trust_file_list._executorCanceled = True
-    widget.load_trust(_trust)
-    refresh_gui()
+    widget.init_list(2)
+    # trust_file_list._executorCanceled = True
+    widget.on_destroy()
+
+    widget.append_trust(_trust)
+    refresh_gui(delay=0.5)
     mockIdleAdd.assert_not_called()
 
 
 def test_fires_trust_selection_changed(widget):
     store = Gtk.ListStore(str, str, str, object, str)
     store.append(["f", "o", "o", _trust[0], "baz"])
-    widget.load_store(store)
+    widget.load_store(1, store)
     mockHandler = MagicMock()
     widget.trust_selection_changed += mockHandler
     view = widget.get_object("treeView")

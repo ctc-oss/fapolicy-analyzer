@@ -22,7 +22,11 @@ import pytest
 from callee import InstanceOf
 from callee.attributes import Attrs
 from callee.collections import Sequence
+from mocks import mock_System
+from rx.subject import Subject
+
 from fapolicy_analyzer import Trust
+from fapolicy_analyzer.redux import Action
 from fapolicy_analyzer.ui.actions import (
     ADD_NOTIFICATION,
     APPLY_CHANGESETS,
@@ -39,10 +43,6 @@ from fapolicy_analyzer.ui.strings import (
     ANCILLARY_TRUSTED_FILE_MESSAGE,
     ANCILLARY_UNKNOWN_FILE_MESSAGE,
 )
-from fapolicy_analyzer.redux import Action
-from rx.subject import Subject
-
-from mocks import mock_System
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
@@ -289,13 +289,16 @@ def test_reloads_trust_w_changeset_change(mock_dispatch, mocker):
     init_store(mock_System())
     widget = AncillaryTrustDatabaseAdmin()
     mockTrustListSetChangeset = mocker.patch.object(
-        widget.trustFileList, "set_changesets"
+        widget.trust_file_list, "set_changesets"
     )
 
     changesets = [MagicMock()]
     changesets_state = mock_changesets_state(changesets)
     mockSystemFeature.on_next(
-        {"changesets": changesets_state, "ancillary_trust": MagicMock(error=None)}
+        {
+            "changesets": changesets_state,
+            "ancillary_trust": MagicMock(error=None, percent_complete=100),
+        }
     )
     mockTrustListSetChangeset.assert_called_with(changesets)
     mock_dispatch.assert_called_with(
@@ -312,21 +315,52 @@ def test_load_trust(mocker):
     )
     init_store(mock_System())
     widget = AncillaryTrustDatabaseAdmin()
-    mockLoadList = mocker.patch.object(widget.trustFileList, "load_trust")
+    mockAppendTrust = mocker.patch.object(widget.trust_file_list, "append_trust")
+    mockInitList = mocker.patch.object(widget.trust_file_list, "init_list")
     mockSystemFeature.on_next(
         {
             "changesets": mock_changesets_state([mockChangeset]),
-            "ancillary_trust": MagicMock(error=False),
+            "ancillary_trust": MagicMock(error=False, percent_complete=-1),
         }
     )
+    mockSystemFeature.on_next(
+        {
+            "changesets": mock_changesets_state([mockChangeset]),
+            "ancillary_trust": MagicMock(
+                error=False, loading=True, percent_complete=0, trust_count=1
+            ),
+        }
+    )
+
+    mockInitList.assert_called_once_with(1)
 
     mockSystemFeature.on_next(
         {
             "changesets": mock_changesets_state([mockChangeset]),
-            "ancillary_trust": MagicMock(error=False, loading=False, trust="foo"),
+            "ancillary_trust": MagicMock(
+                error=False,
+                loading=True,
+                percent_complete=100,
+                last_set_completed="trust",
+                trust_count=1,
+            ),
         }
     )
-    mockLoadList.assert_called_once_with("foo")
+
+    mockAppendTrust.assert_called_once_with("trust")
+
+    mockSystemFeature.on_next(
+        {
+            "changesets": mock_changesets_state([mockChangeset]),
+            "ancillary_trust": MagicMock(
+                error=False,
+                loading=False,
+                percent_complete=100,
+                last_set_completed="trust",
+                trust_count=1,
+            ),
+        }
+    )
 
 
 def test_load_trust_w_exception(mock_dispatch, mocker):
