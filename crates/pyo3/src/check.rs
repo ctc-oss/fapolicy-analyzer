@@ -120,7 +120,7 @@ fn check_disk_trust(recs: Vec<Rec>, update: PyObject, done: PyObject) -> PyResul
             for batch in thread_load {
                 let updates = batch
                     .into_iter()
-                    .flat_map(|r| check(&r.trusted))
+                    .map(|r| check(&r.trusted).unwrap_or(Status::Missing(r.trusted)))
                     .collect::<Vec<_>>();
                 if ttx.send(Update::Items(updates)).is_err() {
                     eprintln!("failed to send Items msg");
