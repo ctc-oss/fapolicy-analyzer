@@ -17,6 +17,7 @@ from itertools import groupby
 from typing import Any, Sequence, Tuple
 
 import gi
+
 from fapolicy_analyzer import Rule
 from fapolicy_analyzer.ui.configs import Colors, FontWeights
 from fapolicy_analyzer.ui.searchable_list import SearchableList
@@ -121,7 +122,9 @@ class RulesListView(SearchableList):
         row = self.find_selected_row_by_data(data, 1)
         if row:
             selection = self.treeView.get_selection()
-            selection.set_select_function(lambda *_: True if _[2] == row else False, row)
+            selection.set_select_function(
+                lambda *_: True if _[2] == row else False, row
+            )
             selection.select_path(row)
             self.treeView.scroll_to_cell(row, use_align=True, row_align=0.0)
 
@@ -131,7 +134,7 @@ class RulesListView(SearchableList):
             self.treeView.expand_row(store.get_path(iter), False)
             iter = store.iter_next(iter)
 
-    def _update_tree_count(self, count):
+    def _update_list_status(self, count):
         label = RULE_LABEL if count == 1 else RULES_LABEL
         self.treeCount.set_text(" ".join([str(count), label]))
 

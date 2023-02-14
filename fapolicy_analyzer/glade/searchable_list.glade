@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.38.2 -->
+<!-- Generated with glade 3.22.2 -->
 <!--
   Copyright Concurrent Technologies Corporation 2021
 
@@ -20,23 +20,23 @@
   <requires lib="gtk+" version="3.22"/>
   <object class="GtkBox" id="searchableList">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="margin-end">5</property>
+    <property name="can_focus">False</property>
+    <property name="margin_end">5</property>
     <property name="hexpand">False</property>
     <property name="orientation">vertical</property>
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
+        <property name="can_focus">False</property>
         <property name="spacing">2</property>
         <child>
-          <object class="GtkEntry" id="search">
+          <object class="GtkSearchEntry" id="search">
             <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="primary-icon-name">edit-find-symbolic</property>
-            <property name="primary-icon-activatable">False</property>
-            <property name="primary-icon-sensitive">False</property>
-            <signal name="activate" handler="on_search_activate" swapped="no"/>
+            <property name="can_focus">True</property>
+            <property name="primary_icon_name">edit-find-symbolic</property>
+            <property name="primary_icon_activatable">False</property>
+            <property name="primary_icon_sensitive">False</property>
+            <signal name="search-changed" handler="on_search_changed" swapped="no"/>
           </object>
           <packing>
             <property name="expand">True</property>
@@ -47,7 +47,7 @@
         <child>
           <object class="GtkBox" id="actionButtons">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
+            <property name="can_focus">False</property>
             <child>
               <placeholder/>
             </child>
@@ -68,21 +68,21 @@
     <child>
       <object class="GtkStack" id="viewStack">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
+        <property name="can_focus">False</property>
         <child>
-          <object class="GtkBox">
+          <object class="GtkBox" id="viewContainer">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
+            <property name="can_focus">False</property>
             <property name="orientation">vertical</property>
             <child>
               <object class="GtkScrolledWindow">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="shadow-type">in</property>
+                <property name="can_focus">True</property>
+                <property name="shadow_type">in</property>
                 <child>
                   <object class="GtkTreeView" id="treeView">
                     <property name="visible">True</property>
-                    <property name="can-focus">True</property>
+                    <property name="can_focus">True</property>
                     <child internal-child="selection">
                       <object class="GtkTreeSelection" id="treeSelection"/>
                     </child>
@@ -96,28 +96,36 @@
               </packing>
             </child>
             <child>
+              <object class="GtkProgressBar" id="progressBar">
+                <property name="name">progressBar</property>
+                <property name="can_focus">False</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
               <object class="GtkFrame">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
+                <property name="can_focus">False</property>
                 <property name="vexpand">False</property>
-                <property name="label-xalign">0</property>
-                <property name="label-yalign">0</property>
-                <property name="shadow-type">in</property>
+                <property name="label_xalign">0</property>
+                <property name="label_yalign">0</property>
+                <property name="shadow_type">in</property>
                 <child>
                   <object class="GtkLabel" id="treeCount">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
+                    <property name="can_focus">False</property>
                     <property name="xalign">0.019999999552965164</property>
                   </object>
-                </child>
-                <child type="label-item">
-                  <placeholder/>
                 </child>
               </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
-                <property name="position">1</property>
+                <property name="position">2</property>
               </packing>
             </child>
           </object>
