@@ -13,7 +13,10 @@ use pyo3::{PyResult, Python};
 use std::collections::HashMap;
 use std::os::unix::prelude::CommandExt;
 use std::path::PathBuf;
-use std::process::Command;
+use std::process::{Child, Command, Output, Stdio};
+use std::thread;
+use std::thread::sleep;
+use std::time::Duration;
 
 use fapolicy_daemon::profiler::Profiler;
 use fapolicy_rules::read::load_rules_db;
@@ -89,11 +92,12 @@ impl PyProfiler {
         self.stdout = Some(path.to_string())
     }
 
-    fn profile(&self, target: &str) -> PyResult<()> {
-        self.profile_all(vec![target])
+    fn profile(&self, target: &str, done: PyObject) -> PyResult<()> {
+        let res = self.profile_all(vec![target])?;
     }
 
-    fn profile_all(&self, targets: Vec<&str>) -> PyResult<()> {
+    // accept callback
+    fn profile_all(&self, targets: Vec<&str>, done: PyObject) -> PyResult<()> {
         // the working dir must exist prior to execution
         if let Some(pwd) = self.pwd.as_ref() {
             // todo;; stable in 1.63
@@ -123,30 +127,91 @@ impl PyProfiler {
             rs.stdout_log = Some(path);
         }
 
-        rs.activate_with_rules(db.as_ref())
-            .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))?;
+        thread::spawn(move || {
+            rs.activate_with_rules(db.as_ref())
+                .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
+                .expect("deactivate daemon");
 
-        // todo;; the deactivate call must run even if this fails
-        //        perhaps, rather than propogating the errors here,
-        //        log the results to a dict that is returned in err
-        for target in targets {
-            self.exec(target)?;
-        }
+            // todo;; the deactivate call must run even if this fails
+            //        perhaps, rather than propogating the errors here,
+            //        log the results to a dict that is returned in err
+            for target in targets {
+                self.exec(target).unwrap();
+            }
 
-        rs.deactivate()
-            .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))?;
+            rs.deactivate()
+                .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
+                .expect("reactivate daemon");
+        });
 
         Ok(())
     }
 }
 
+#[pyclass(module = "daemon", name = "Execd")]
+struct Execd {
+    proc: Option<Child>,
+    output: Option<Output>,
+}
+
+impl Execd {
+    fn new(proc: Child) -> Execd {
+        Execd {
+            proc: Some(proc),
+            output: None,
+        }
+    }
+
+    /// get the process id (pid) if currently active
+    fn pid(&self) -> PyResult<u32> {
+        match self.proc.as_ref() {
+            Some(c) => Ok(c.id()),
+            None => Err(PyRuntimeError::new_err("No process")),
+        }
+    }
+
+    /// check to see if the process is still running
+    fn running(&mut self) -> PyResult<bool> {
+        match self.proc.as_mut().unwrap().try_wait() {
+            Ok(Some(_)) => Ok(true),
+            Ok(None) => Ok(false),
+            Err(e) => Err(PyRuntimeError::new_err(format!("{:?}", e))),
+        }
+    }
+
+    /// cancel the process, without blocking, no output will be available
+    fn kill(&mut self) -> PyResult<()> {
+        self.proc
+            .as_mut()
+            .unwrap()
+            .kill()
+            .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
+    }
+
+    /// cancel the process, blocking until it ends, output is available
+    fn abort(&mut self) -> PyResult<()> {
+        self.kill()?;
+        let output = self
+            .proc
+            .take()
+            .unwrap()
+            .wait_with_output()
+            .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))?;
+        self.output = Some(output);
+        Ok(())
+    }
+}
+
 impl PyProfiler {
-    fn exec(&self, args: &str) -> PyResult<()> {
+    fn exec(&self, args: &str) -> PyResult<Execd> {
         let opts: Vec<&str> = args.split(' ').collect();
         let target = opts.first().expect("target not specified");
         let args: Vec<&&str> = opts.iter().skip(1).collect();
 
         let mut cmd = Command::new(target);
+        cmd.stdout(Stdio::piped());
+        cmd.stderr(Stdio::piped());
+
         if let Some(uid) = self.uid {
             cmd.uid(uid);
         }
@@ -159,13 +224,14 @@ impl PyProfiler {
         if let Some(envs) = self.env.as_ref() {
             cmd.envs(envs);
         }
-        let out = cmd.args(args).output()?;
+        let mut child = cmd.args(args).spawn()?;
+        let execd = Execd::new(child);
 
         // todo;; externalize the output destination for target stderr/stdout
-        println!("{}", String::from_utf8(out.stdout)?);
-        println!("{}", String::from_utf8(out.stderr)?);
+        // println!("{}", String::from_utf8(out.stdout)?);
+        // println!("{}", String::from_utf8(out.stderr)?);
 
-        Ok(())
+        Ok(execd)
     }
 }
 
