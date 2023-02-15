@@ -26,16 +26,16 @@ from fapolicy_analyzer.ui.actions import (
     SYSTEM_DEPLOYED,
     SYSTEM_RECEIVED,
 )
-from fapolicy_analyzer.ui.reducers.ancillary_trust_reducer import (
-    ancillary_trust_reducer,
-)
 from fapolicy_analyzer.ui.reducers.changeset_reducer import changeset_reducer
 from fapolicy_analyzer.ui.reducers.event_reducer import event_reducer
 from fapolicy_analyzer.ui.reducers.group_reducer import group_reducer
 from fapolicy_analyzer.ui.reducers.profiler_reducer import profiler_reducer
 from fapolicy_analyzer.ui.reducers.rule_reducer import rule_reducer
 from fapolicy_analyzer.ui.reducers.rules_text_reducer import rules_text_reducer
-from fapolicy_analyzer.ui.reducers.system_trust_reducer import system_trust_reducer
+from fapolicy_analyzer.ui.reducers.trust_reducer import (
+    ancillary_trust_reducer,
+    system_trust_reducer,
+)
 from fapolicy_analyzer.ui.reducers.user_reducer import user_reducer
 
 

@@ -33,7 +33,7 @@ class ACLList(SearchableList):
     def __columns(self):
         return [Gtk.TreeViewColumn("", Gtk.CellRendererText(), text=0)]
 
-    def _update_tree_count(self, count):
+    def _update_list_status(self, count):
         lbl = self.label if count == 1 else self.label_plural
         self.treeCount.set_text(" ".join([str(count), lbl or ""]).strip())
 

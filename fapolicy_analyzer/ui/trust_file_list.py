@@ -14,21 +14,25 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from concurrent.futures import ThreadPoolExecutor
+from locale import gettext as _  # skip
+from queue import Queue
+from threading import Event
 from time import localtime, mktime, strftime, strptime
 
-import fapolicy_analyzer.ui.strings as strings
 import gi
 
+import fapolicy_analyzer.ui.strings as strings
 from fapolicy_analyzer.ui.configs import Colors
 from fapolicy_analyzer.ui.searchable_list import SearchableList
-from fapolicy_analyzer.ui.strings import FILE_LABEL, FILES_LABEL
+from fapolicy_analyzer.ui.strings import (
+    FILE_LABEL,
+    FILES_LABEL,
+    FILTERING_DISABLED_DURING_LOADING_MESSAGE,
+)
+from fapolicy_analyzer.util.format import f
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import GLib, Gtk  # isort: skip
-
-# global variable used for stopping the running executor from call for UI
-# updates if the widget was destroyed
-_executorCanceled = False
 
 
 def epoch_to_string(secsEpoch):
@@ -48,7 +52,6 @@ def epoch_to_string(secsEpoch):
 
 class TrustFileList(SearchableList):
     def __init__(self, trust_func, markup_func=None, *args):
-        global _executorCanceled
 
         self.__events__ = [
             *super().__events__,
@@ -62,12 +65,13 @@ class TrustFileList(SearchableList):
             *args,
             searchColumnIndex=2,
             defaultSortIndex=2,
+            defaultSortDirection=Gtk.SortType.ASCENDING,
             selection_type="multi",
         )
         self.trust_func = trust_func
         self.markup_func = markup_func
-        self.__executor = ThreadPoolExecutor(max_workers=1)
-        _executorCanceled = False
+        self.__executor = ThreadPoolExecutor(max_workers=100)
+        self.__event = Event()
         self.refresh()
         self.selection_changed += self.__handle_selection_changed
         self.get_ref().connect("destroy", self.on_destroy)
@@ -112,11 +116,14 @@ class TrustFileList(SearchableList):
         fileColumn.set_sort_column_id(2)
         return [trustColumn, mtimeColumn, fileColumn]
 
-    def _update_tree_count(self, count):
+    def _update_list_status(self, count):
         label = FILE_LABEL if count == 1 else FILES_LABEL
-        self.treeCount.set_text(" ".join([str(count), label]))
+        super()._update_list_status(" ".join([str(count), label]))
 
-    def _base_row_data(self, data):
+    def _update_loading_status(self, status):
+        super()._update_list_status(status)
+
+    def _row_data(self, data):
         status, *rest = (
             self.markup_func(data.status) if self.markup_func else (data.status,)
         )
@@ -124,17 +131,17 @@ class TrustFileList(SearchableList):
         txt_color, *rest = rest if rest else (Colors.BLACK,)
         secs_epoch = data.actual.last_modified if data.actual else None
         date_time = epoch_to_string(secs_epoch)
-        return status, bg_color, txt_color, date_time
+        return status, date_time, data.path, data, bg_color, txt_color
 
     def on_destroy(self, *args):
-        global _executorCanceled
-        _executorCanceled = True
+        self.__event.set()
         self.__executor.shutdown()
         return False
 
     def refresh(self):
         self.trust_func()
 
+    '''
     def swap_overlay(self, sysdb=True):
         label = Gtk.Label(label=strings.SYSTEM_TRUST_NO_DISCREPANCIES if sysdb else strings.ANCILLARY_TRUST_NO_ENTRIES)
         scrolled_window = self.get_object("viewScrolledWindow")
@@ -157,13 +164,52 @@ class TrustFileList(SearchableList):
                     store.append([status, date_time, data.path, data, bg_color, txt_color])
 
                 if _executorCanceled:
+    '''
+    def init_list(self, count_of_trust_entries):
+        store = Gtk.ListStore(str, str, str, object, str, str)
+        self.load_store(count_of_trust_entries, store)
+
+    def load_store(self, count_of_trust_entries, store):
+        def process_rows(queue, total):
+            store = self._store
+            columns = range(store.get_n_columns())
+            for i in range(200):
+                if queue.empty() or self.__event.is_set():
+                    break
+                row = queue.get()
+                store.insert_with_valuesv(-1, columns, row)
+                queue.task_done()
+
+            if self.__event.is_set():
+                return False
+
+            count = self._get_tree_count()
+            if count < total:
+                pct = int(count / total * 100)
+                self._update_loading_status(f(_("Loading trust {pct}% complete...")))
+                self._update_progress(pct)
+                return True
+            else:
+                super(TrustFileList, self).load_store(self._store)
+                self._update_progress(100)
+                self.search.set_sensitive(True)
+                self.search.set_tooltip_text(None)
+                return False
+
+        super().load_store(store, filterable=False)
+        self._update_loading_status("Loading trust 0% complete...")
+        self.set_loading(False)
+        self.search.set_sensitive(False)
+        self.search.set_tooltip_text(FILTERING_DISABLED_DURING_LOADING_MESSAGE)
+        self.__queue = Queue()
+        GLib.timeout_add(200, process_rows, self.__queue, count_of_trust_entries)
+
+    def append_trust(self, trust):
+        def process_trust(trust):
+            for data in trust:
+                if self.__event.is_set():
                     return
+                self.__queue.put(self._row_data(data))
 
-            if not _executorCanceled:
-                GLib.idle_add(self.load_store, store)
-
-            if len(store) < 1:
-                self.swap_overlay()
-
-        self.set_loading(True)
-        self.__executor.submit(process)
+        if not self.__event.is_set():
+            self.__executor.submit(process_trust, trust)

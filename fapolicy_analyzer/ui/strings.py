@@ -197,6 +197,11 @@ UNSAVED_DIALOG_TEXT = _(
 
 Would you like to continue deploying?"""
 )
+
+FILTERING_DISABLED_DURING_LOADING_MESSAGE = _(
+    "Filtering is disabled during trust loading"
+)
+
 UNTRUSTED_ANCILLARY_TOOLTIP = _("File is untrusted in the Ancillary Trust Database")
 UNTRUSTED_SYSTEM_TOOLTIP = _("File is untrusted in the System Trust Database")
 TRUSTED_ANCILLARY_TOOLTIP = _("File is trusted in the Ancillary Trust Database")

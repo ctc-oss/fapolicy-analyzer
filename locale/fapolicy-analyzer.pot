@@ -7,9 +7,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: fapolicy-analyzer 0.0.0+324.g13f794f.dirty\n"
+"Project-Id-Version: fapolicy-analyzer 0.0.0+330.gbf69114.dirty\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-02-07 11:12-0800\n"
+"POT-Creation-Date: 2023-02-15 06:40-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,16 +18,16 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.10.1\n"
 
-#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:113
-#: fapolicy_analyzer/ui/system_trust_database_admin.py:107
+#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:117
+#: fapolicy_analyzer/ui/system_trust_database_admin.py:135
 msgid ""
 "File: {trust.path}\n"
 "Size: {trust.size}\n"
 "SHA256: {trust.hash}"
 msgstr ""
 
-#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:123
-#: fapolicy_analyzer/ui/system_trust_database_admin.py:116
+#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:127
+#: fapolicy_analyzer/ui/system_trust_database_admin.py:144
 msgid ""
 "{fs.stat(trust.path)}\n"
 "SHA256: {fs.sha(trust.path)}"
@@ -454,39 +454,43 @@ msgid ""
 "Would you like to continue deploying?"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:200
-msgid "File is untrusted in the Ancillary Trust Database"
-msgstr ""
-
 #: fapolicy_analyzer/ui/strings.py:201
-msgid "File is untrusted in the System Trust Database"
-msgstr ""
-
-#: fapolicy_analyzer/ui/strings.py:202
-msgid "File is trusted in the Ancillary Trust Database"
-msgstr ""
-
-#: fapolicy_analyzer/ui/strings.py:203
-msgid "File is trusted in the System Trust Database"
-msgstr ""
-
-#: fapolicy_analyzer/ui/strings.py:204
-msgid "File trust is unknown"
+msgid "Filtering is disabled during trust loading"
 msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:205
-msgid "File access fully allowed"
+msgid "File is untrusted in the Ancillary Trust Database"
 msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:206
-msgid "File access partially allowed"
+msgid "File is untrusted in the System Trust Database"
 msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:207
-msgid "File access denied"
+msgid "File is trusted in the Ancillary Trust Database"
 msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:208
+msgid "File is trusted in the System Trust Database"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:209
+msgid "File trust is unknown"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:210
+msgid "File access fully allowed"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:211
+msgid "File access partially allowed"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:212
+msgid "File access denied"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:213
 msgid ""
 "\n"
 "No discrepancies found within the System Trust Database.\n"
@@ -495,13 +499,18 @@ msgid ""
 "    "
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:214
+#: fapolicy_analyzer/ui/strings.py:219
 msgid ""
 "\n"
 "No entries found in the Ancillary Trust Database.\n"
 "Use the search bar or add untrusted files from the System Trust Database "
 "tab.\n"
 "    "
+msgstr ""
+
+#: fapolicy_analyzer/ui/trust_file_list.py:189
+#, python-format
+msgid "Loading trust {pct}% complete..."
 msgstr ""
 
 #: fapolicy_analyzer/ui/operations/deploy_changesets_op.py:159
@@ -694,7 +703,7 @@ msgstr ""
 msgid "Status Information"
 msgstr ""
 
-#: fapolicy_analyzer/glade/searchable_list.glade:125
+#: fapolicy_analyzer/glade/searchable_list.glade:133
 msgid "page0"
 msgstr ""
 

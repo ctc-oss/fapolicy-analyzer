@@ -18,13 +18,10 @@ import os.path
 from locale import gettext as _
 from typing import Sequence
 
+import gi
+
 import fapolicy_analyzer.ui.strings as strings
 from fapolicy_analyzer import Trust
-from fapolicy_analyzer.ui.changeset_wrapper import Changeset, TrustChangeset
-from fapolicy_analyzer.util import fs  # noqa: F401
-from fapolicy_analyzer.util.format import f
-from gi.repository import Gtk
-
 from fapolicy_analyzer.ui.actions import (
     NotificationType,
     add_notification,
@@ -32,26 +29,32 @@ from fapolicy_analyzer.ui.actions import (
     request_ancillary_trust,
 )
 from fapolicy_analyzer.ui.ancillary_trust_file_list import AncillaryTrustFileList
+from fapolicy_analyzer.ui.changeset_wrapper import Changeset, TrustChangeset
 from fapolicy_analyzer.ui.remove_deleted_dialog import RemoveDeletedDialog
 from fapolicy_analyzer.ui.store import dispatch, get_system_feature
 from fapolicy_analyzer.ui.trust_file_details import TrustFileDetails
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
+from fapolicy_analyzer.util import fs  # noqa: F401
+from fapolicy_analyzer.util.format import f
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk  # isort: skip
 
 
 class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
     def __init__(self):
         super().__init__(get_system_feature(), on_next=self.on_next_system)
         self._changesets: Sequence[Changeset] = []
-        self._trust = []
-        self._loading = False
+        self.__loading = False
+        self.__loading_percent = -1
         self.selectedFiles = None
 
-        self.trustFileList = AncillaryTrustFileList(trust_func=self.__load_trust)
-        self.trustFileList.trust_selection_changed += self.on_trust_selection_changed
-        self.trustFileList.files_added += self.on_files_added
-        self.trustFileList.files_deleted += self.on_files_deleted
+        self.trust_file_list = AncillaryTrustFileList(trust_func=self.__load_trust)
+        self.trust_file_list.trust_selection_changed += self.on_trust_selection_changed
+        self.trust_file_list.files_added += self.on_files_added
+        self.trust_file_list.files_deleted += self.on_files_deleted
         self.get_object("leftBox").pack_start(
-            self.trustFileList.get_ref(), True, True, 0
+            self.trust_file_list.get_ref(), True, True, 0
         )
 
         self.trustFileDetails = TrustFileDetails()
@@ -61,7 +64,8 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
         self.trustFileList.load_trust(self._trust)
 
     def __load_trust(self):
-        self._loading = True
+        self.__loading = True
+        self.__loading_percent = -1
         dispatch(request_ancillary_trust())
 
     def __apply_changeset(self, changeset):
@@ -161,29 +165,57 @@ SHA256: {fs.sha(trust.path)}"""
             self.delete_trusted_files(*self.selectedFiles)
 
     def on_next_system(self, system):
-        changesetState = system.get("changesets")
-        trustState = system.get("ancillary_trust")
+        def started_loading(state):
+            return (
+                self.__loading
+                and state.loading
+                and state.percent_complete == 0
+                and self.__loading_percent != state.percent_complete
+            )
+
+        def still_loading(state):
+            return (
+                self.__loading
+                and state.loading
+                and state.percent_complete > 0
+                and self.__loading_percent != state.percent_complete
+            )
+
+        def done_loading(state):
+            return (
+                self.__loading
+                and not state.loading
+                and state.percent_complete >= 100
+                and self.__loading_percent >= 100
+            )
+
+        changeset_state = system.get("changesets")
+        trust_state = system.get("ancillary_trust")
 
         # if changesets have changes request a new ancillary trust
-        if self._changesets != changesetState.changesets:
-            self._changesets = changesetState.changesets
-            self.trustFileList.set_changesets(self._changesets)
+        if self._changesets != changeset_state.changesets:
+            self._changesets = changeset_state.changesets
+            self.trust_file_list.set_changesets(self._changesets)
             self.__load_trust()
 
         # if there was an error loading show appropriate notification
-        if trustState.error and self._loading:
-            self._loading = False
+        if trust_state.error and self.__loading:
+            self.__loading = False
             logging.error(
-                "%s: %s", strings.ANCILLARY_TRUST_LOAD_ERROR, trustState.error
+                "%s: %s", strings.ANCILLARY_TRUST_LOAD_ERROR, trust_state.error
             )
             dispatch(
                 add_notification(
                     strings.ANCILLARY_TRUST_LOAD_ERROR, NotificationType.ERROR
                 )
             )
-
-        # if not loading and the trust changes reload the view
-        if self._loading and not trustState.loading and self._trust != trustState.trust:
-            self._loading = False
-            self._trust = trustState.trust
-            self.trustFileList.load_trust(self._trust)
+        elif started_loading(trust_state):
+            self.__loading_percent = 0
+            self.trust_file_list.set_loading(True)
+            self.trust_file_list.init_list(trust_state.trust_count)
+        elif still_loading(trust_state):
+            self.__loading_percent = trust_state.percent_complete
+            self.trust_file_list.append_trust(trust_state.last_set_completed)
+        elif done_loading(trust_state):
+            self.__loading = False
+            self.__loading_percent = 100

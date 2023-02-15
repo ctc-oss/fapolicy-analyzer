@@ -17,6 +17,8 @@ from typing import Any
 
 import gi
 
+from fapolicy_analyzer.ui.strings import FILTERING_DISABLED_DURING_LOADING_MESSAGE
+
 gi.require_version("Gtk", "3.0")
 from events import Events
 from gi.repository import Gtk
@@ -34,73 +36,102 @@ class SearchableList(UIBuilderWidget, Events):
         *actionButtons,
         searchColumnIndex=0,
         defaultSortIndex=0,
-        defaultSortDirection=Gtk.SortType.DESCENDING,
+        defaultSortDirection=Gtk.SortType.ASCENDING,
         view_headers_visible=True,
         selection_type="single",
     ):
         UIBuilderWidget.__init__(self, "searchable_list")
         Events.__init__(self)
 
+        def init_tree_view():
+            tree_view = self.get_object("treeView")
+            tree_selection = self.get_object("treeSelection")
+            tree_view.set_headers_visible(view_headers_visible)
+            for column in columns:
+                tree_view.append_column(column)
+
+            if selection_type == "multi":
+                tree_selection.set_mode(Gtk.SelectionMode.MULTIPLE)
+                tree_view.set_rubber_banding(True)
+
+            return tree_view, tree_selection
+
         self.searchColumnIndex = searchColumnIndex
         self.defaultSortIndex = defaultSortIndex
         self.defaultSortDirection = defaultSortDirection
         self.treeCount = self.get_object("treeCount")
-        self.treeView = self.get_object("treeView")
-        self.treeView.set_headers_visible(view_headers_visible)
-        self.get_object("viewScrolledWindow").add(self.treeView)
-        for column in columns:
-            self.treeView.append_column(column)
-
-        if selection_type == "multi":
-            self.treeSelection = self.get_object("treeSelection")
-            self.treeSelection.set_mode(Gtk.SelectionMode.MULTIPLE)
-            self.treeView.set_rubber_banding(True)
-
+        self.treeView, self.treeSelection = init_tree_view()
         self.search = self.get_object("search")
         self.viewSwitcher = self.get_object("viewStack")
         self.viewSwitcher.add_named(Loader().get_ref(), "loader")
+        self.view_container = self.get_object("viewContainer")
+        self.progress_bar = self.get_object("progressBar")
+        self.view_container.remove(
+            self.progress_bar
+        )  # progress bar only show when needed
         self.set_action_buttons(*actionButtons)
 
-    def __filter_view(self, model, iter, data):
+    def _filter_view(self, model, iter, data):
         filter = self.get_object("search").get_text()
         return True if not filter else filter in model[iter][self.searchColumnIndex]
-
-    def __get_tree_count(self):
-        return self.treeViewFilter.iter_n_children(None)
 
     def _load_data(self):
         pass
 
-    def _update_tree_count(self, count):
-        self.treeCount.set_text(str(count))
+    def _get_tree_count(self):
+        return self._store.iter_n_children(None)
 
-    def load_store(self, store, **kwargs):
+    def _update_list_status(self, status):
+        self.treeCount.set_text(str(status))
+
+    def _update_progress(self, progress_pct):
+        def visible():
+            return self.progress_bar in self.view_container.get_children()
+
+        if progress_pct >= 100 or progress_pct < 0:
+            if visible():
+                self.view_container.remove(self.progress_bar)
+            return
+
+        if not visible():
+            self.view_container.pack_start(self.progress_bar, False, True, 0)
+            self.view_container.reorder_child(self.progress_bar, 1)
+            self.view_container.show_all()
+
+        self.progress_bar.set_fraction(progress_pct / 100)
+
+    def load_store(self, store, filterable=True, **kwargs):
         def apply_prev_sort(model):
             currentModel = self.treeView.get_model()
             currentSort = (
                 currentModel.get_sort_column_id()
-                if currentModel
-                else (self.defaultSortIndex, 0)
+                if currentModel and all(currentModel)
+                else (self.defaultSortIndex, self.defaultSortDirection)
             )
             model.set_sort_column_id(*currentSort)
             return model
 
-        self.treeViewFilter = store.filter_new()
-        self.treeViewFilter.set_visible_func(self.__filter_view)
+        if filterable:
+            self._store = store.filter_new()
+            self._store.set_visible_func(self._filter_view)
+            model = apply_prev_sort(Gtk.TreeModelSort(model=self._store))
+        else:
+            self._store = store
+            model = apply_prev_sort(store)
 
-        sortableModel = apply_prev_sort(Gtk.TreeModelSort(model=self.treeViewFilter))
-        self.treeView.set_model(sortableModel)
+        self.treeView.set_model(model)
         if self.treeView.get_selection():
             self.treeView.get_selection().connect(
                 "changed", self.on_view_selection_changed
             )
-        self._update_tree_count(self.__get_tree_count())
+        self._update_list_status(self._get_tree_count())
         self.set_loading(False)
 
     def set_loading(self, loading):
         if loading:
             self.viewSwitcher.set_visible_child_name("loader")
             self.search.set_sensitive(False)
+            self.search.set_tooltip_text(FILTERING_DISABLED_DURING_LOADING_MESSAGE)
         else:
             self.viewSwitcher.set_visible_child_name("treeView")
             self.search.set_sensitive(True)
@@ -154,5 +185,5 @@ class SearchableList(UIBuilderWidget, Events):
         self.selection_changed(data)
 
     def on_search_changed(self, search):
-        self.treeViewFilter.refilter()
-        self._update_tree_count(self.__get_tree_count())
+        self._store.refilter()
+        self._update_list_status(self._get_tree_count())
