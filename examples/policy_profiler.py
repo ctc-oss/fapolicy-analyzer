@@ -14,6 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import sys
+import threading
 import argparse
 import fapolicy_analyzer
 from fapolicy_analyzer import *
@@ -39,6 +40,22 @@ def main(*argv):
     print(args.target)
 
     profiler = Profiler()
+    wait_for_done = threading.Event()
+
+    def execd(h):
+        print(f"[python] execd {h.pid}")
+
+    def ping(h):
+        print("[python] ping")
+        h.kill()
+
+    def done():
+        print("[python] done")
+        wait_for_done.set()
+
+    profiler.exec_callback = execd
+    profiler.ping_callback = ping
+    profiler.done_callback = done
 
     if args.uid:
         profiler.uid = args.uid
@@ -63,6 +80,9 @@ def main(*argv):
 
     # profile multiple targets in same session
     #profiler.profile_all(["whoami", "id", "pwd", "ls /tmp"])
+
+    # keep the example running until processing completed
+    wait_for_done.wait()
 
 
 if __name__ == "__main__":

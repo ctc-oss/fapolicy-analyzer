@@ -14,14 +14,17 @@ use std::collections::HashMap;
 use std::os::unix::prelude::CommandExt;
 use std::path::PathBuf;
 use std::process::{Child, Command, Output, Stdio};
-use std::thread;
+use std::sync::mpsc;
+use std::sync::mpsc::Sender;
 use std::thread::sleep;
 use std::time::Duration;
+use std::{io, thread};
 
 use fapolicy_daemon::profiler::Profiler;
 use fapolicy_rules::read::load_rules_db;
 
 type EnvVars = HashMap<String, String>;
+type CmdArgs = (Command, String);
 
 #[derive(Default)]
 #[pyclass(module = "daemon", name = "Profiler")]
@@ -32,6 +35,9 @@ pub struct PyProfiler {
     env: Option<EnvVars>,
     rules: Option<String>,
     stdout: Option<String>,
+    cb_done: Option<PyObject>,
+    cb_exec: Option<PyObject>,
+    cb_ping: Option<PyObject>,
 }
 
 #[pymethods]
@@ -89,15 +95,30 @@ impl PyProfiler {
 
     #[setter]
     fn set_stdout(&mut self, path: &str) {
-        self.stdout = Some(path.to_string())
+        self.stdout = Some(path.to_string());
     }
 
-    fn profile(&self, target: &str, done: PyObject) -> PyResult<()> {
-        let res = self.profile_all(vec![target])?;
+    #[setter]
+    fn set_done_callback(&mut self, f: PyObject) {
+        self.cb_done = Some(f);
     }
 
-    // accept callback
-    fn profile_all(&self, targets: Vec<&str>, done: PyObject) -> PyResult<()> {
+    #[setter]
+    fn set_exec_callback(&mut self, f: PyObject) {
+        self.cb_exec = Some(f);
+    }
+
+    #[setter]
+    fn set_ping_callback(&mut self, f: PyObject) {
+        self.cb_ping = Some(f);
+    }
+
+    fn profile(&self, target: &str) -> PyResult<()> {
+        self.profile_all(vec![target])
+    }
+
+    // accept callback for exec control (eg kill), and done notification
+    fn profile_all(&self, targets: Vec<&str>) -> PyResult<()> {
         // the working dir must exist prior to execution
         if let Some(pwd) = self.pwd.as_ref() {
             // todo;; stable in 1.63
@@ -127,28 +148,110 @@ impl PyProfiler {
             rs.stdout_log = Some(path);
         }
 
+        // build the target commands
+        let targets: Vec<_> = targets.iter().map(|t| self.build(t)).collect();
+
+        // channel for async communication with py
+        let (tx, rx) = mpsc::channel();
+
+        // cloned handles to move into the exec thread
+        let cb_exec = self.cb_exec.clone();
+        let cb_ping = self.cb_ping.clone();
+        let cb_done = self.cb_done.clone();
+
+        // exec thread is responsible for daemon control and target execution
         thread::spawn(move || {
             rs.activate_with_rules(db.as_ref())
                 .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
-                .expect("deactivate daemon");
+                .expect("activate profiler");
 
             // todo;; the deactivate call must run even if this fails
             //        perhaps, rather than propogating the errors here,
             //        log the results to a dict that is returned in err
-            for target in targets {
-                self.exec(target).unwrap();
+            for (mut cmd, args) in targets {
+                println!("============= exec `{args}` =================");
+                let mut execd = Execd::new(cmd.spawn().unwrap());
+                let handle = ExecHandle::new(execd.pid().unwrap(), tx.clone());
+
+                if let Some(cb) = cb_exec.as_ref() {
+                    Python::with_gil(|py| {
+                        if cb.call1(py, (handle.clone(),)).is_err() {
+                            eprintln!("failed make 'exec' callback");
+                        }
+                    });
+                }
+
+                while let Ok(true) = execd.running() {
+                    println!("in while running loop");
+                    match rx.try_recv() {
+                        Ok(ExecCtrl::Kill) => {
+                            execd.kill().expect("kill fail");
+                            break;
+                        }
+                        Ok(ExecCtrl::Abort) => {
+                            execd.abort().expect("abort fail");
+                            break;
+                        }
+                        _ => sleep(Duration::from_secs(1)),
+                    };
+
+                    if let Some(cb) = cb_ping.as_ref() {
+                        Python::with_gil(|py| {
+                            if cb.call1(py, (handle.clone(),)).is_err() {
+                                eprintln!("failed make 'ping' callback");
+                            }
+                        });
+                    }
+                }
+            }
+
+            if let Some(cb) = cb_done.as_ref() {
+                Python::with_gil(|py| {
+                    if cb.call0(py).is_err() {
+                        eprintln!("failed make 'done' callback");
+                    }
+                });
             }
 
             rs.deactivate()
                 .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
-                .expect("reactivate daemon");
+                .expect("deactivate profiler");
         });
 
         Ok(())
     }
 }
 
-#[pyclass(module = "daemon", name = "Execd")]
+enum ExecCtrl {
+    Kill,
+    Abort,
+}
+
+#[derive(Debug, Clone)]
+#[pyclass(module = "daemon", name = "ExecHandle")]
+struct ExecHandle {
+    pid: u32,
+    tx: Sender<ExecCtrl>,
+}
+
+impl ExecHandle {
+    fn new(pid: u32, tx: Sender<ExecCtrl>) -> Self {
+        ExecHandle { pid, tx }
+    }
+}
+
+#[pymethods]
+impl ExecHandle {
+    #[getter]
+    fn pid(&self) -> u32 {
+        self.pid
+    }
+
+    fn kill(&self) {
+        self.tx.send(ExecCtrl::Kill).unwrap();
+    }
+}
+
 struct Execd {
     proc: Option<Child>,
     output: Option<Output>,
@@ -173,14 +276,15 @@ impl Execd {
     /// check to see if the process is still running
     fn running(&mut self) -> PyResult<bool> {
         match self.proc.as_mut().unwrap().try_wait() {
-            Ok(Some(_)) => Ok(true),
-            Ok(None) => Ok(false),
+            Ok(Some(_)) => Ok(false),
+            Ok(None) => Ok(true),
             Err(e) => Err(PyRuntimeError::new_err(format!("{:?}", e))),
         }
     }
 
     /// cancel the process, without blocking, no output will be available
     fn kill(&mut self) -> PyResult<()> {
+        println!("killed");
         self.proc
             .as_mut()
             .unwrap()
@@ -203,10 +307,9 @@ impl Execd {
 }
 
 impl PyProfiler {
-    fn exec(&self, args: &str) -> PyResult<Execd> {
+    fn build(&self, args: &str) -> CmdArgs {
         let opts: Vec<&str> = args.split(' ').collect();
-        let target = opts.first().expect("target not specified");
-        let args: Vec<&&str> = opts.iter().skip(1).collect();
+        let (target, opts) = opts.split_first().expect("invalid cmd string");
 
         let mut cmd = Command::new(target);
         cmd.stdout(Stdio::piped());
@@ -224,18 +327,18 @@ impl PyProfiler {
         if let Some(envs) = self.env.as_ref() {
             cmd.envs(envs);
         }
-        let mut child = cmd.args(args).spawn()?;
-        let execd = Execd::new(child);
+
+        cmd.args(opts);
+        (cmd, args.to_string())
 
         // todo;; externalize the output destination for target stderr/stdout
         // println!("{}", String::from_utf8(out.stdout)?);
         // println!("{}", String::from_utf8(out.stderr)?);
-
-        Ok(execd)
     }
 }
 
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyProfiler>()?;
+    m.add_class::<ExecHandle>()?;
     Ok(())
 }
