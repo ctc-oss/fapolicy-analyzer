@@ -47,15 +47,11 @@ def main(*argv):
     def execd(h):
         print(f"[python] executing {h.cmd} ({h.pid})")
 
-    def ping(h):
-        print(f"[python] ping {h.pid}")
-
     def done():
         print("[python] all done")
         wait_for_done.set()
 
     profiler.exec_callback = execd
-    profiler.ping_callback = ping
     profiler.done_callback = done
 
     if args.uid:

@@ -36,7 +36,6 @@ pub struct PyProfiler {
     stdout: Option<String>,
     cb_done: Option<PyObject>,
     cb_exec: Option<PyObject>,
-    cb_ping: Option<PyObject>,
 }
 
 #[pymethods]
@@ -107,11 +106,6 @@ impl PyProfiler {
         self.cb_exec = Some(f);
     }
 
-    #[setter]
-    fn set_ping_callback(&mut self, f: PyObject) {
-        self.cb_ping = Some(f);
-    }
-
     fn profile(&self, target: &str) -> PyResult<ProcHandle> {
         self.profile_all(vec![target])
     }
@@ -152,7 +146,6 @@ impl PyProfiler {
 
         // cloned handles to move into the exec thread
         let cb_exec = self.cb_exec.clone();
-        let cb_ping = self.cb_ping.clone();
         let cb_done = self.cb_done.clone();
 
         // python accessible kill flag from proc handle
@@ -184,20 +177,12 @@ impl PyProfiler {
                         });
                     }
 
-                    // loop on completion status of the target, providing opportunity to interrupt
+                    // loop on target completion status, providing opportunity to interrupt
                     while let Ok(true) = execd.running() {
                         thread::sleep(Duration::from_secs(1));
-
                         if term.load(Ordering::Relaxed) {
                             execd.kill().expect("kill fail (term)");
                             break;
-                        }
-                        if let Some(cb) = cb_ping.as_ref() {
-                            Python::with_gil(|py| {
-                                if cb.call1(py, (handle.clone(),)).is_err() {
-                                    eprintln!("failed make 'ping' callback");
-                                }
-                            });
                         }
                     }
 
