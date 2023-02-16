@@ -38,6 +38,7 @@ from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
+from gi.repository import GLib  # isort: skip
 
 
 class ProfilerPage(UIConnectedWidget, UIPage, Events):
@@ -127,7 +128,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         dispatch(clear_profiler_state())
 
     def stop_button_sensitivity(self):
-        return True
+        return self.running
 
     def start_button_sensitivity(self):
         return not self.running
@@ -166,15 +167,17 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
                 logging.error(f"There was an issue reading from {run_file}.", ex)
         dispatch(set_profiler_output(markup))
 
-    def execd(self, h):
-        print("=============================ahhhh")
-        #logging.debug(f"Start prof session {h.cmd} {h.pid}")
+    def on_execd(self, h):
+        self.running = True
+        logging.debug(f"Start prof session {h.cmd} {h.pid}")
+        GLib.idle_add(self.refresh_toolbar)
 
-    def done(self):
+    def on_done(self):
+        self.running = False
         fapd_prof_stderr = self._fapd_profiler.fapd_prof_stderr
         dispatch(set_profiler_analysis_file(fapd_prof_stderr))
-        # self.running = False
-        # self.display_log_output()
+        GLib.idle_add(self.display_log_output)
+        GLib.idle_add(self.refresh_toolbar)
 
     def on_stop_clicked(self, *args):
         self._fapd_profiler.stop_prof_session()
@@ -194,13 +197,12 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
             return
 
         logging.debug(f"Entry text = {profiling_args}")
-        self.running = True
         self._fapd_profiler.fapd_persistance = self.get_object(
             "persistentCheckbox"
         ).get_active()
 
         try:
-            self._fapd_profiler.start_prof_session(profiling_args, self.execd, self.done)
+            self._fapd_profiler.start_prof_session(profiling_args, self.on_execd, self.on_done)
 
         except ProfSessionException as e:
             # Profiler Session creation failed because of bad args
