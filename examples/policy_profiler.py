@@ -45,13 +45,13 @@ def main(*argv):
     wait_for_done = threading.Event()
 
     def execd(h):
-        print(f"[python] execd {h.pid}")
+        print(f"[python] executing {h.cmd} ({h.pid})")
 
     def ping(h):
-        print("[python] ping")
+        print(f"[python] ping {h.pid}")
 
     def done():
-        print("[python] done")
+        print("[python] all done")
         wait_for_done.set()
 
     profiler.exec_callback = execd

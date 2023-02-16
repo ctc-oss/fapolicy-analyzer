@@ -167,18 +167,14 @@ impl PyProfiler {
 
             // inner thread is responsible for target execution
             let inner = thread::spawn(move || {
-                // todo;; the deactivate call must run even if this fails
-                //        perhaps, rather than propogating the errors here,
-                //        log the results to a dict that is returned in err
                 for (mut cmd, args) in targets {
                     if term.load(Ordering::Relaxed) {
                         println!("Profiling terminated");
                         break;
                     }
 
-                    println!("============= exec `{args}` =================");
                     let mut execd = Execd::new(cmd.spawn().unwrap());
-                    let handle = ExecHandle::new(execd.pid().unwrap(), term.clone());
+                    let handle = ExecHandle::new(execd.pid().unwrap(), args, term.clone());
 
                     if let Some(cb) = cb_exec.as_ref() {
                         Python::with_gil(|py| {
@@ -251,12 +247,17 @@ impl ProcHandle {
 #[pyclass(module = "daemon", name = "ExecHandle")]
 struct ExecHandle {
     pid: u32,
+    command: String,
     kill_flag: Arc<AtomicBool>,
 }
 
 impl ExecHandle {
-    fn new(pid: u32, kill_flag: Arc<AtomicBool>) -> Self {
-        ExecHandle { pid, kill_flag }
+    fn new(pid: u32, command: String, kill_flag: Arc<AtomicBool>) -> Self {
+        ExecHandle {
+            pid,
+            command,
+            kill_flag,
+        }
     }
 }
 
@@ -265,6 +266,11 @@ impl ExecHandle {
     #[getter]
     fn pid(&self) -> u32 {
         self.pid
+    }
+
+    #[getter]
+    fn cmd(&self) -> &str {
+        &self.command
     }
 
     fn kill(&self) {
