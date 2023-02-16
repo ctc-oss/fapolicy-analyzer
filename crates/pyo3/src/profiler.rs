@@ -17,8 +17,8 @@ use std::process::{Child, Command, Output, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::Sender;
 use std::sync::{mpsc, Arc};
-use std::thread;
 use std::time::Duration;
+use std::{io, thread};
 
 use fapolicy_daemon::profiler::Profiler;
 use fapolicy_rules::read::load_rules_db;
@@ -163,61 +163,77 @@ impl PyProfiler {
         let proc_handle = ProcHandle::default();
         let term = proc_handle.kill_flag.clone();
 
-        // exec thread is responsible for daemon control and target execution
+        // outer thread is responsible for daemon control
         thread::spawn(move || {
             rs.activate_with_rules(db.as_ref())
                 .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
                 .expect("activate profiler");
 
-            // todo;; the deactivate call must run even if this fails
-            //        perhaps, rather than propogating the errors here,
-            //        log the results to a dict that is returned in err
-            for (mut cmd, args) in targets {
-                if term.load(Ordering::Relaxed) {
-                    println!("Profiling terminated");
-                    break;
-                }
-
-                println!("============= exec `{args}` =================");
-                let mut execd = Execd::new(cmd.spawn().unwrap());
-                let handle = ExecHandle::new(execd.pid().unwrap(), tx.clone());
-
-                if let Some(cb) = cb_exec.as_ref() {
-                    Python::with_gil(|py| {
-                        if cb.call1(py, (handle.clone(),)).is_err() {
-                            eprintln!("failed make 'exec' callback");
-                        }
-                    });
-                }
-
-                while let Ok(true) = execd.running() {
+            // inner thread is responsible for target execution
+            let proc_t = thread::spawn(move || {
+                // todo;; the deactivate call must run even if this fails
+                //        perhaps, rather than propogating the errors here,
+                //        log the results to a dict that is returned in err
+                for (mut cmd, args) in targets {
                     if term.load(Ordering::Relaxed) {
-                        execd.kill().expect("kill fail (term)");
+                        println!("Profiling terminated");
                         break;
                     }
 
-                    match rx.try_recv() {
-                        Ok(ExecCtrl::Kill) => {
-                            execd.kill().expect("kill fail");
-                            break;
-                        }
-                        Ok(ExecCtrl::Abort) => {
-                            execd.abort().expect("abort fail");
-                            break;
-                        }
-                        _ => thread::sleep(Duration::from_secs(1)),
-                    };
+                    println!("============= exec `{args}` =================");
+                    let mut execd = Execd::new(cmd.spawn().unwrap());
+                    let handle = ExecHandle::new(execd.pid().unwrap(), tx.clone());
 
-                    if let Some(cb) = cb_ping.as_ref() {
+                    if let Some(cb) = cb_exec.as_ref() {
                         Python::with_gil(|py| {
                             if cb.call1(py, (handle.clone(),)).is_err() {
-                                eprintln!("failed make 'ping' callback");
+                                eprintln!("failed make 'exec' callback");
                             }
                         });
                     }
-                }
-            }
 
+                    // loop on completion status of the target, providing opportunity to interrupt
+                    while let Ok(true) = execd.running() {
+                        if term.load(Ordering::Relaxed) {
+                            execd.kill().expect("kill fail (term)");
+                            break;
+                        }
+
+                        match rx.try_recv() {
+                            Ok(ExecCtrl::Kill) => {
+                                execd.kill().expect("kill fail");
+                                break;
+                            }
+                            Ok(ExecCtrl::Abort) => {
+                                execd.abort().expect("abort fail");
+                                break;
+                            }
+                            _ => thread::sleep(Duration::from_secs(1)),
+                        };
+
+                        if let Some(cb) = cb_ping.as_ref() {
+                            Python::with_gil(|py| {
+                                if cb.call1(py, (handle.clone(),)).is_err() {
+                                    eprintln!("failed make 'ping' callback");
+                                }
+                            });
+                        }
+                    }
+
+                    // todo;; externalize the output destination for target stderr/stdout
+                    let out = execd.output().unwrap();
+                    println!("{}", String::from_utf8(out.stdout).unwrap());
+                    println!("{}", String::from_utf8(out.stderr).unwrap());
+                }
+            });
+
+            println!("joining");
+            if proc_t.join().is_err() {
+                eprintln!("proc thread panic");
+            }
+            println!("joined");
+
+            // callback when all targets are completed / cancelled / failed
             if let Some(cb) = cb_done.as_ref() {
                 Python::with_gil(|py| {
                     if cb.call0(py).is_err() {
@@ -308,6 +324,10 @@ impl Execd {
         }
     }
 
+    fn output(&mut self) -> io::Result<Output> {
+        self.proc.take().unwrap().wait_with_output()
+    }
+
     /// cancel the process, without blocking, no output will be available
     fn kill(&mut self) -> PyResult<()> {
         println!("killed");
@@ -333,6 +353,8 @@ impl Execd {
 }
 
 impl PyProfiler {
+    /// Creates a [Command] and configures it according to the [PyProfiler]
+    /// Returns a tuple [CmdArgs] type to preserve the target command string
     fn build(&self, args: &str) -> CmdArgs {
         let opts: Vec<&str> = args.split(' ').collect();
         let (target, opts) = opts.split_first().expect("invalid cmd string");
@@ -356,10 +378,6 @@ impl PyProfiler {
 
         cmd.args(opts);
         (cmd, args.to_string())
-
-        // todo;; externalize the output destination for target stderr/stdout
-        // println!("{}", String::from_utf8(out.stdout)?);
-        // println!("{}", String::from_utf8(out.stderr)?);
     }
 }
 
