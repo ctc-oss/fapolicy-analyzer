@@ -15,8 +15,7 @@ use std::os::unix::prelude::CommandExt;
 use std::path::PathBuf;
 use std::process::{Child, Command, Output, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::mpsc::Sender;
-use std::sync::{mpsc, Arc};
+use std::sync::Arc;
 use std::time::Duration;
 use std::{io, thread};
 
@@ -151,9 +150,6 @@ impl PyProfiler {
         // build the target commands
         let targets: Vec<_> = targets.iter().map(|t| self.build(t)).collect();
 
-        // channel for async communication with py
-        let (tx, rx) = mpsc::channel();
-
         // cloned handles to move into the exec thread
         let cb_exec = self.cb_exec.clone();
         let cb_ping = self.cb_ping.clone();
@@ -170,7 +166,7 @@ impl PyProfiler {
                 .expect("activate profiler");
 
             // inner thread is responsible for target execution
-            let proc_t = thread::spawn(move || {
+            let inner = thread::spawn(move || {
                 // todo;; the deactivate call must run even if this fails
                 //        perhaps, rather than propogating the errors here,
                 //        log the results to a dict that is returned in err
@@ -182,7 +178,7 @@ impl PyProfiler {
 
                     println!("============= exec `{args}` =================");
                     let mut execd = Execd::new(cmd.spawn().unwrap());
-                    let handle = ExecHandle::new(execd.pid().unwrap(), tx.clone());
+                    let handle = ExecHandle::new(execd.pid().unwrap(), term.clone());
 
                     if let Some(cb) = cb_exec.as_ref() {
                         Python::with_gil(|py| {
@@ -194,23 +190,12 @@ impl PyProfiler {
 
                     // loop on completion status of the target, providing opportunity to interrupt
                     while let Ok(true) = execd.running() {
+                        thread::sleep(Duration::from_secs(1));
+
                         if term.load(Ordering::Relaxed) {
                             execd.kill().expect("kill fail (term)");
                             break;
                         }
-
-                        match rx.try_recv() {
-                            Ok(ExecCtrl::Kill) => {
-                                execd.kill().expect("kill fail");
-                                break;
-                            }
-                            Ok(ExecCtrl::Abort) => {
-                                execd.abort().expect("abort fail");
-                                break;
-                            }
-                            _ => thread::sleep(Duration::from_secs(1)),
-                        };
-
                         if let Some(cb) = cb_ping.as_ref() {
                             Python::with_gil(|py| {
                                 if cb.call1(py, (handle.clone(),)).is_err() {
@@ -227,11 +212,9 @@ impl PyProfiler {
                 }
             });
 
-            println!("joining");
-            if proc_t.join().is_err() {
+            if inner.join().is_err() {
                 eprintln!("proc thread panic");
             }
-            println!("joined");
 
             // callback when all targets are completed / cancelled / failed
             if let Some(cb) = cb_done.as_ref() {
@@ -264,21 +247,16 @@ impl ProcHandle {
     }
 }
 
-enum ExecCtrl {
-    Kill,
-    Abort,
-}
-
 #[derive(Debug, Clone)]
 #[pyclass(module = "daemon", name = "ExecHandle")]
 struct ExecHandle {
     pid: u32,
-    tx: Sender<ExecCtrl>,
+    kill_flag: Arc<AtomicBool>,
 }
 
 impl ExecHandle {
-    fn new(pid: u32, tx: Sender<ExecCtrl>) -> Self {
-        ExecHandle { pid, tx }
+    fn new(pid: u32, kill_flag: Arc<AtomicBool>) -> Self {
+        ExecHandle { pid, kill_flag }
     }
 }
 
@@ -290,7 +268,7 @@ impl ExecHandle {
     }
 
     fn kill(&self) {
-        self.tx.send(ExecCtrl::Kill).unwrap();
+        self.kill_flag.store(true, Ordering::Relaxed);
     }
 }
 
