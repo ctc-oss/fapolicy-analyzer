@@ -35,11 +35,11 @@ pub struct PyProfiler {
     pwd: Option<PathBuf>,
     env: Option<EnvVars>,
     rules: Option<String>,
-    d_stdout: Option<String>,
-    t_stdout: Option<String>,
-    t_stderr: Option<String>,
-    cb_done: Option<PyObject>,
-    cb_exec: Option<PyObject>,
+    daemon_stdout: Option<String>,
+    target_stdout: Option<String>,
+    target_stderr: Option<String>,
+    callback_done: Option<PyObject>,
+    callback_exec: Option<PyObject>,
 }
 
 #[pymethods]
@@ -97,27 +97,32 @@ impl PyProfiler {
 
     #[setter]
     fn set_daemon_stdout(&mut self, path: &str) {
-        self.d_stdout = Some(path.to_string());
+        self.daemon_stdout = Some(path.to_string());
+    }
+
+    #[getter]
+    fn get_target_stdout(&self) -> Option<&String> {
+        self.target_stdout.as_ref()
     }
 
     #[setter]
     fn set_target_stdout(&mut self, path: &str) {
-        self.t_stdout = Some(path.to_string());
+        self.target_stdout = Some(path.to_string());
     }
 
     #[setter]
     fn set_target_stderr(&mut self, path: &str) {
-        self.t_stderr = Some(path.to_string());
+        self.target_stderr = Some(path.to_string());
     }
 
     #[setter]
     fn set_done_callback(&mut self, f: PyObject) {
-        self.cb_done = Some(f);
+        self.callback_done = Some(f);
     }
 
     #[setter]
     fn set_exec_callback(&mut self, f: PyObject) {
-        self.cb_exec = Some(f);
+        self.callback_exec = Some(f);
     }
 
     fn profile(&self, target: &str) -> PyResult<ProcHandle> {
@@ -146,16 +151,16 @@ impl PyProfiler {
         let mut rs = Profiler::new();
 
         // configure the daemon and target logging outputs
-        rs.stdout_log = check_log_dest(self.d_stdout.as_ref());
-        let stdout_log = create_log_dest(self.t_stdout.as_ref());
-        let stderr_log = create_log_dest(self.t_stderr.as_ref());
+        rs.stdout_log = check_log_dest(self.daemon_stdout.as_ref());
+        let stdout_log = create_log_dest(self.target_stdout.as_ref());
+        let stderr_log = create_log_dest(self.target_stderr.as_ref());
 
         // build the target commands
         let targets: Vec<_> = targets.iter().map(|t| self.build(t)).collect();
 
         // cloned handles to move into the exec thread
-        let cb_exec = self.cb_exec.clone();
-        let cb_done = self.cb_done.clone();
+        let cb_exec = self.callback_exec.clone();
+        let cb_done = self.callback_done.clone();
 
         // python accessible kill flag from proc handle
         let proc_handle = ProcHandle::default();
