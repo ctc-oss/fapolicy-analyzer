@@ -16,6 +16,8 @@
 import sys
 import threading
 import argparse
+import time
+
 import fapolicy_analyzer
 from fapolicy_analyzer import *
 
@@ -47,7 +49,6 @@ def main(*argv):
 
     def ping(h):
         print("[python] ping")
-        h.kill()
 
     def done():
         print("[python] done")
@@ -76,7 +77,11 @@ def main(*argv):
         profiler.pwd = args.dir
 
     # profile a single target in a session
-    profiler.profile(" ".join(args.target))
+    proc_target = profiler.profile(" ".join(args.target))
+
+    time.sleep(5)
+
+    proc_target.kill()
 
     # profile multiple targets in same session
     #profiler.profile_all(["whoami", "id", "pwd", "ls /tmp"])

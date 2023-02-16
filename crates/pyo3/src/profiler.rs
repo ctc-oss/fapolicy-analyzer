@@ -14,11 +14,11 @@ use std::collections::HashMap;
 use std::os::unix::prelude::CommandExt;
 use std::path::PathBuf;
 use std::process::{Child, Command, Output, Stdio};
-use std::sync::mpsc;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::Sender;
-use std::thread::sleep;
+use std::sync::{mpsc, Arc};
+use std::thread;
 use std::time::Duration;
-use std::{io, thread};
 
 use fapolicy_daemon::profiler::Profiler;
 use fapolicy_rules::read::load_rules_db;
@@ -113,12 +113,12 @@ impl PyProfiler {
         self.cb_ping = Some(f);
     }
 
-    fn profile(&self, target: &str) -> PyResult<()> {
+    fn profile(&self, target: &str) -> PyResult<ProcHandle> {
         self.profile_all(vec![target])
     }
 
     // accept callback for exec control (eg kill), and done notification
-    fn profile_all(&self, targets: Vec<&str>) -> PyResult<()> {
+    fn profile_all(&self, targets: Vec<&str>) -> PyResult<ProcHandle> {
         // the working dir must exist prior to execution
         if let Some(pwd) = self.pwd.as_ref() {
             // todo;; stable in 1.63
@@ -159,6 +159,10 @@ impl PyProfiler {
         let cb_ping = self.cb_ping.clone();
         let cb_done = self.cb_done.clone();
 
+        // python accessible kill flag from proc handle
+        let proc_handle = ProcHandle::default();
+        let term = proc_handle.kill_flag.clone();
+
         // exec thread is responsible for daemon control and target execution
         thread::spawn(move || {
             rs.activate_with_rules(db.as_ref())
@@ -169,6 +173,11 @@ impl PyProfiler {
             //        perhaps, rather than propogating the errors here,
             //        log the results to a dict that is returned in err
             for (mut cmd, args) in targets {
+                if term.load(Ordering::Relaxed) {
+                    println!("Profiling terminated");
+                    break;
+                }
+
                 println!("============= exec `{args}` =================");
                 let mut execd = Execd::new(cmd.spawn().unwrap());
                 let handle = ExecHandle::new(execd.pid().unwrap(), tx.clone());
@@ -182,7 +191,11 @@ impl PyProfiler {
                 }
 
                 while let Ok(true) = execd.running() {
-                    println!("in while running loop");
+                    if term.load(Ordering::Relaxed) {
+                        execd.kill().expect("kill fail (term)");
+                        break;
+                    }
+
                     match rx.try_recv() {
                         Ok(ExecCtrl::Kill) => {
                             execd.kill().expect("kill fail");
@@ -192,7 +205,7 @@ impl PyProfiler {
                             execd.abort().expect("abort fail");
                             break;
                         }
-                        _ => sleep(Duration::from_secs(1)),
+                        _ => thread::sleep(Duration::from_secs(1)),
                     };
 
                     if let Some(cb) = cb_ping.as_ref() {
@@ -218,7 +231,20 @@ impl PyProfiler {
                 .expect("deactivate profiler");
         });
 
-        Ok(())
+        Ok(proc_handle)
+    }
+}
+
+#[derive(Default, Debug, Clone)]
+#[pyclass(module = "daemon", name = "ProcHandle")]
+struct ProcHandle {
+    kill_flag: Arc<AtomicBool>,
+}
+
+#[pymethods]
+impl ProcHandle {
+    fn kill(&self) {
+        self.kill_flag.store(true, Ordering::Relaxed);
     }
 }
 
@@ -339,6 +365,7 @@ impl PyProfiler {
 
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyProfiler>()?;
+    m.add_class::<ProcHandle>()?;
     m.add_class::<ExecHandle>()?;
     Ok(())
 }
