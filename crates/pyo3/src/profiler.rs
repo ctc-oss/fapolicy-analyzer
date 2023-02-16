@@ -225,18 +225,18 @@ impl PyProfiler {
 fn check_log_dest(path: Option<&String>) -> Option<PathBuf> {
     let path = path.as_ref().map(PathBuf::from);
     if let Some(path) = path.as_ref() {
-        if path.exists() {
-            eprintln!(
-                "warning: deleting existing log file from {}",
-                path.display()
-            );
-            if std::fs::remove_file(&path).is_err() {
-                eprintln!(
-                    "warning: failed to delete existing log file from {}",
-                    path.display()
-                )
-            };
-        }
+        // if path.exists() {
+        //     eprintln!(
+        //         "warning: deleting existing log file from {}",
+        //         path.display()
+        //     );
+        //     if std::fs::remove_file(&path).is_err() {
+        //         eprintln!(
+        //             "warning: failed to delete existing log file from {}",
+        //             path.display()
+        //         )
+        //     };
+        // }
     }
     path
 }
