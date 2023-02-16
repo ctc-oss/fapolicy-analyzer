@@ -28,6 +28,8 @@ from datetime import datetime as DT
 from enum import Enum
 
 import fapolicy_analyzer.ui.strings as s
+from fapolicy_analyzer import *
+
 
 
 class ProfSessionStatus(Enum):
@@ -181,14 +183,14 @@ class FaProfSession:
                 logging.info(f"The uid/gid of the profiling tgt: {self.uid}/{self.gid}")
 
                 # Change the ownership of profiling tgt's stdout and stderr
-                logging.info(
-                    f"Chown: {self.fdTgtStdout.name}, {self.fdTgtStderr.name}"
-                )
-                os.fchown(self.fdTgtStdout.fileno(), self.uid, self.gid)
-                os.fchown(self.fdTgtStderr.fileno(), self.uid, self.gid)
-                logging.info(
-                    f"Changed the profiling tgt stdout/err ownership {self.uid},{self.gid}"
-                )
+                # logging.info(
+                #     f"Chown: {self.fdTgtStdout.name}, {self.fdTgtStderr.name}"
+                # )
+                # os.fchown(self.fdTgtStdout.fileno(), self.uid, self.gid)
+                # os.fchown(self.fdTgtStderr.fileno(), self.uid, self.gid)
+                # logging.info(
+                #     f"Changed the profiling tgt stdout/err ownership {self.uid},{self.gid}"
+                # )
                 self.u_valid = True
             else:
                 # In production, the following will be the superuser defaults
@@ -214,28 +216,42 @@ class FaProfSession:
     def startTarget(self, block_until_termination=True):
         logging.info("FaProfSession::startTarget()")
 
+        profiler = Profiler()
+        profiler.uid = self.uid
+        profiler.gid = self.gid
+        profiler.daemon_stdout = self.tgtStdout
+        profiler.target_stdout = self.tgtStderr
+        #profiler.rules = args.rules
+        profiler.pwd = self.pwd
+
+
         # Capture process object
         try:
             logging.debug(f"Starting {self.listCmdLine} as {self.uid}/{self.gid}")
             logging.debug(f"in {self.pwd} with env: {self.env}")
-            self.procTarget = subprocess.Popen(
-                self.listCmdLine,
-                stdout=self.fdTgtStdout,
-                stderr=self.fdTgtStderr,
-                cwd=self.pwd,
-                env=self.env,
-                preexec_fn=FaProfSession._demote(self.u_valid,
-                                                 self.uid,
-                                                 self.gid)
-            )
-            logging.debug(self.procTarget.pid)
+
+            args = " ".join(self.listCmdLine)
+            self.procTarget = profiler.profile(args)
+            #     subprocess.Popen(
+            #     self.listCmdLine,
+            #     stdout=self.fdTgtStdout,
+            #     stderr=self.fdTgtStderr,
+            #     cwd=self.pwd,
+            #     env=self.env,
+            #     preexec_fn=FaProfSession._demote(self.u_valid,
+            #                                      self.uid,
+            #                                      self.gid)
+            # )
+            # logging.debug(self.procTarget.pid)
             self.status = ProfSessionStatus.INPROGRESS
 
             # Block until process terminates
-            if block_until_termination:
-                logging.debug("Waiting for profiling target to terminate...")
-                self.procTarget.wait()
-                self.status = ProfSessionStatus.COMPLETED
+            # if block_until_termination:
+            #     logging.debug("Waiting for profiling target to terminate...")
+            #     self.procTarget.wait()
+
+            # todo;; set this in callback
+            #     self.status = ProfSessionStatus.COMPLETED
 
         except Exception as e:
             logging.error(f"Profiling target Popen failure: {e}")
@@ -253,15 +269,14 @@ class FaProfSession:
         Terminate the profiling target and the associated profiling session
         """
         if self.procTarget:
-            self.procTarget.terminate()
-            self.procTarget.wait()
+            self.procTarget.kill()
             self.status = ProfSessionStatus.COMPLETED
 
-        if self.fdTgtStdout:
-            self.fdTgtStdout.close()
-
-        if self.fdTgtStderr:
-            self.fdTgtStderr.close()
+        # if self.fdTgtStdout:
+        #     self.fdTgtStdout.close()
+        #
+        # if self.fdTgtStderr:
+        #     self.fdTgtStderr.close()
 
     def _get_profiling_timestamp(self):
         """
@@ -479,7 +494,7 @@ class FaProfiler:
         """
         logging.info("FaProfiler::start_prof_session(}")
         logging.debug(f"FaProfiler::start_prof_session('{dictArgs}')")
-        self.fapd_mgr.start(FapdMode.PROFILING)
+        # self.fapd_mgr.start(FapdMode.PROFILING)
         if self.fapd_mgr.procProfile:
             self.fapd_pid = self.fapd_mgr.procProfile.pid
             self.fapd_prof_stdout = self.fapd_mgr.fapd_profiling_stdout
@@ -523,7 +538,7 @@ class FaProfiler:
                 self.dictFaProfSession[k].stopTarget()
                 del self.dictFaProfSession[k]
         self.instance = 0
-        self.fapd_mgr.stop(FapdMode.PROFILING)
+        # self.fapd_mgr.stop(FapdMode.PROFILING)
 
     def get_profiling_timestamp(self):
         # Use FapdManager's start timestamp if available
