@@ -95,11 +95,14 @@ class ProfSessionException(RuntimeError):
 
 # ########################## Profiler Session ###########################
 class FaProfSession:
-    def __init__(self, dictProfTgt, instance=0, faprofiler=None):
+    def __init__(self, dictProfTgt, execd, done, instance=0, faprofiler=None):
         logging.info("FaProfSession constructed")
         logging.debug(f"FaProfSession::__init__({dictProfTgt}, {faprofiler})")
         self.throwOnInvalidSessionArgs(dictProfTgt)
         self.timeStamp = None
+
+        self.execd = execd
+        self.done = done
 
         # euid, working directory and environment variables
         self.user = dictProfTgt.get("userText", "")
@@ -213,17 +216,19 @@ class FaProfSession:
             self.uid = os.getuid()  # Place holder args to _demote()
             self.gid = os.getgid()
 
-    def startTarget(self, block_until_termination=True):
+    def startTarget(self):
         logging.info("FaProfSession::startTarget()")
 
         profiler = Profiler()
         profiler.uid = self.uid
         profiler.gid = self.gid
-        profiler.daemon_stdout = self.tgtStdout
-        profiler.target_stdout = self.tgtStderr
+        profiler.target_stdout = self.tgtStdout
+        profiler.target_stderr = self.tgtStderr
         #profiler.rules = args.rules
         profiler.pwd = self.pwd
 
+        profiler.exec_callback = self.execd
+        profiler.done_callback = self.done
 
         # Capture process object
         try:
@@ -268,6 +273,7 @@ class FaProfSession:
         """
         Terminate the profiling target and the associated profiling session
         """
+        print("=========================== stopTarget ============================")
         if self.procTarget:
             self.procTarget.kill()
             self.status = ProfSessionStatus.COMPLETED
@@ -448,12 +454,12 @@ class FaProfSession:
 
         return dictReturn or {ProfSessionArgsStatus.OK: s.PROF_ARG_OK}
 
-    def _demote(enable, user_uid, user_gid):
-        def result():
-            os.setgid(user_gid)
-            os.setuid(user_uid)
-
-        return result if enable else None
+    # def _demote(enable, user_uid, user_gid):
+    #     def result():
+    #         os.setgid(user_gid)
+    #         os.setuid(user_uid)
+    #
+    #     return result if enable else None
 
     def _comma_delimited_kv_string_to_dict(string_in):
         """Generates dictionary from comma separated string of k=v pairs"""
@@ -486,7 +492,7 @@ class FaProfiler:
         self.dictFaProfSession = dict()  # dict of current / completed sessions
         self.instance = 0
 
-    def start_prof_session(self, dictArgs, block_until_term=True):
+    def start_prof_session(self, dictArgs, execd, done):
         """
         Invoke target executable.
         self.dictFaProfSession is a dict of current tgt profiling sessions
@@ -501,7 +507,7 @@ class FaProfiler:
             self.fapd_prof_stderr = self.fapd_mgr.fapd_profiling_stderr
 
         try:
-            self.faprofSession = FaProfSession(dictArgs, self.instance, self)
+            self.faprofSession = FaProfSession(dictArgs, execd, done, self.instance, self)
         except ProfSessionException as e:
             logging.error(e)
             raise e
@@ -509,16 +515,16 @@ class FaProfiler:
         key = dictArgs.get("executeText", "") + "-" + str(self.instance)
         self.dictFaProfSession[key] = self.faprofSession
         try:
-            self.faprofSession.startTarget(block_until_term)
+            self.faprofSession.startTarget()
         except Exception as e:
             logging.error(e)
             raise e
 
-        if not self.fapd_persistance:
-            self.fapd_mgr.stop(FapdMode.PROFILING)
-            self.fapd_pid = None
-        else:
-            self.instance += 1
+        # if not self.fapd_persistance:
+        #     self.fapd_mgr.stop(FapdMode.PROFILING)
+        #     self.fapd_pid = None
+        # else:
+        #     self.instance += 1
         return key
 
     def status_prof_session(self, sessionName=None):

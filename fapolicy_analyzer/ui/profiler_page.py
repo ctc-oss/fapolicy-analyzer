@@ -65,7 +65,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
                     "Stop",
                     "Stop Test",
                     "media-playback-stop",
-                    {},
+                    {"clicked": self.on_stop_clicked},
                     sensitivity_func=self.stop_button_sensitivity,
                 )
             ],
@@ -127,7 +127,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         dispatch(clear_profiler_state())
 
     def stop_button_sensitivity(self):
-        return self.running
+        return True
 
     def start_button_sensitivity(self):
         return not self.running
@@ -166,6 +166,19 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
                 logging.error(f"There was an issue reading from {run_file}.", ex)
         dispatch(set_profiler_output(markup))
 
+    def execd(self, h):
+        print("=============================ahhhh")
+        #logging.debug(f"Start prof session {h.cmd} {h.pid}")
+
+    def done(self):
+        fapd_prof_stderr = self._fapd_profiler.fapd_prof_stderr
+        dispatch(set_profiler_analysis_file(fapd_prof_stderr))
+        # self.running = False
+        # self.display_log_output()
+
+    def on_stop_clicked(self, *args):
+        self._fapd_profiler.stop_prof_session()
+
     def on_test_activate(self, *args):
         profiling_args = self.get_entry_dict()
         if not FaProfSession.validSessionArgs(profiling_args):
@@ -185,16 +198,10 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         self._fapd_profiler.fapd_persistance = self.get_object(
             "persistentCheckbox"
         ).get_active()
-        try:
-            self._fapd_profiler.start_prof_session(profiling_args)
-            fapd_prof_stderr = self._fapd_profiler.fapd_prof_stderr
-            logging.debug(f"Start prof session: stderr={fapd_prof_stderr}")
 
-            sleep(4)
-            self._fapd_profiler.stop_prof_session()
-            dispatch(set_profiler_analysis_file(fapd_prof_stderr))
-            self.running = False
-            self.display_log_output()
+        try:
+            self._fapd_profiler.start_prof_session(profiling_args, self.execd, self.done)
+
         except ProfSessionException as e:
             # Profiler Session creation failed because of bad args
             logging.debug(f"{e.error_msg}, {e.error_enum}")
