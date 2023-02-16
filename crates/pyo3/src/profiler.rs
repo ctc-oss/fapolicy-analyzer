@@ -11,6 +11,8 @@ use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
 use pyo3::{PyResult, Python};
 use std::collections::HashMap;
+use std::fs::File;
+use std::io::Write;
 use std::os::unix::prelude::CommandExt;
 use std::path::PathBuf;
 use std::process::{Child, Command, Output, Stdio};
@@ -33,7 +35,9 @@ pub struct PyProfiler {
     pwd: Option<PathBuf>,
     env: Option<EnvVars>,
     rules: Option<String>,
-    stdout: Option<String>,
+    d_stdout: Option<String>,
+    t_stdout: Option<String>,
+    t_stderr: Option<String>,
     cb_done: Option<PyObject>,
     cb_exec: Option<PyObject>,
 }
@@ -92,8 +96,18 @@ impl PyProfiler {
     }
 
     #[setter]
-    fn set_stdout(&mut self, path: &str) {
-        self.stdout = Some(path.to_string());
+    fn set_daemon_stdout(&mut self, path: &str) {
+        self.d_stdout = Some(path.to_string());
+    }
+
+    #[setter]
+    fn set_target_stdout(&mut self, path: &str) {
+        self.t_stdout = Some(path.to_string());
+    }
+
+    #[setter]
+    fn set_target_stderr(&mut self, path: &str) {
+        self.t_stderr = Some(path.to_string());
     }
 
     #[setter]
@@ -130,16 +144,11 @@ impl PyProfiler {
             .map(|p| load_rules_db(p).expect("failed to load rules"));
 
         let mut rs = Profiler::new();
-        if let Some(path) = self.stdout.as_ref().map(PathBuf::from) {
-            if path.exists() {
-                eprintln!(
-                    "warning: deleting existing log file from {}",
-                    path.display()
-                );
-                std::fs::remove_file(&path)?;
-            }
-            rs.stdout_log = Some(path);
-        }
+
+        // configure the daemon and target logging outputs
+        rs.stdout_log = check_log_dest(self.d_stdout.as_ref());
+        let stdout_log = create_log_dest(self.t_stdout.as_ref());
+        let stderr_log = create_log_dest(self.t_stderr.as_ref());
 
         // build the target commands
         let targets: Vec<_> = targets.iter().map(|t| self.build(t)).collect();
@@ -184,10 +193,14 @@ impl PyProfiler {
                         }
                     }
 
-                    // todo;; externalize the output destination for target stderr/stdout
-                    let out = execd.output().unwrap();
-                    println!("{}", String::from_utf8(out.stdout).unwrap());
-                    println!("{}", String::from_utf8(out.stderr).unwrap());
+                    // write the target stdout/stderr if configured
+                    let output = execd.output().unwrap();
+                    if let Some(mut f) = stdout_log.as_ref() {
+                        f.write_all(&output.stdout).unwrap();
+                    }
+                    if let Some(mut f) = stderr_log.as_ref() {
+                        f.write_all(&output.stderr).unwrap();
+                    }
                 }
             });
 
@@ -206,6 +219,36 @@ impl PyProfiler {
         });
 
         Ok(proc_handle)
+    }
+}
+
+fn check_log_dest(path: Option<&String>) -> Option<PathBuf> {
+    let path = path.as_ref().map(PathBuf::from);
+    if let Some(path) = path.as_ref() {
+        if path.exists() {
+            eprintln!(
+                "warning: deleting existing log file from {}",
+                path.display()
+            );
+            if std::fs::remove_file(&path).is_err() {
+                eprintln!(
+                    "warning: failed to delete existing log file from {}",
+                    path.display()
+                )
+            };
+        }
+    }
+    path
+}
+
+fn create_log_dest(path: Option<&String>) -> Option<File> {
+    if let Some(path) = check_log_dest(path) {
+        match File::create(path) {
+            Ok(f) => Some(f),
+            Err(_) => None,
+        }
+    } else {
+        None
     }
 }
 

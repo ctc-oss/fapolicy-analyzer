@@ -30,7 +30,8 @@ def main(*argv):
 
     parser.add_argument("-r", "--rules", type=str, required=False, help="path to rules")
     parser.add_argument("-d", "--dir", type=str, required=False, help="path to working dir")
-    parser.add_argument("--stdout", type=str, required=False, help="path to stdout log")
+    parser.add_argument("--dout", type=str, required=False, help="path to daemon stdout log")
+    parser.add_argument("--tout", type=str, required=False, help="path to target(s) stdout log")
 
     user_opts = parser.add_mutually_exclusive_group(required=False)
     user_opts.add_argument("-u", "--username", type=str, required=False, help="username")
@@ -63,8 +64,11 @@ def main(*argv):
     if args.gid:
         profiler.gid = args.gid
 
-    if args.stdout:
-        profiler.stdout = args.stdout
+    if args.dout:
+        profiler.daemon_stdout = args.dout
+
+    if args.tout:
+        profiler.target_stdout = args.tout
 
     if args.rules:
         profiler.rules = args.rules
