@@ -155,14 +155,12 @@ impl PyProfiler {
         // outer thread is responsible for daemon control
         thread::spawn(move || {
             rs.activate_with_rules(db.as_ref())
-                .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
                 .expect("activate profiler");
 
             // inner thread is responsible for target execution
             let inner = thread::spawn(move || {
                 for (mut cmd, args) in targets {
                     if term.load(Ordering::Relaxed) {
-                        println!("Profiling terminated");
                         break;
                     }
 
@@ -198,17 +196,13 @@ impl PyProfiler {
             }
 
             // callback when all targets are completed / cancelled / failed
+            // callback failure here is considered fatal due to the
+            // transactional completion nature of this call
             if let Some(cb) = cb_done.as_ref() {
-                Python::with_gil(|py| {
-                    if cb.call0(py).is_err() {
-                        eprintln!("failed make 'done' callback");
-                    }
-                });
+                Python::with_gil(|py| cb.call0(py).expect("done callback failed"));
             }
 
-            rs.deactivate()
-                .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
-                .expect("deactivate profiler");
+            rs.deactivate().expect("deactivate profiler");
         });
 
         Ok(proc_handle)
