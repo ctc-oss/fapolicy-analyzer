@@ -15,7 +15,6 @@
 
 import html
 import logging
-from time import sleep
 
 import gi
 from events import Events

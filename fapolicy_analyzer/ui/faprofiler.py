@@ -18,18 +18,15 @@ import os
 import pathlib
 import pwd
 import re
-import subprocess
 import shutil
 import time
 from fapolicy_analyzer.ui.actions import NotificationType, add_notification
-from fapolicy_analyzer.ui.fapd_manager import FapdMode
 from fapolicy_analyzer.ui.store import dispatch
 from datetime import datetime as DT
 from enum import Enum
 
 import fapolicy_analyzer.ui.strings as s
-from fapolicy_analyzer import *
-
+from fapolicy_analyzer import Profiler
 
 
 class ProfSessionStatus(Enum):
@@ -224,7 +221,7 @@ class FaProfSession:
         profiler.gid = self.gid
         profiler.target_stdout = self.tgtStdout
         profiler.target_stderr = self.tgtStderr
-        #profiler.rules = args.rules
+        # profiler.rules = args.rules
         profiler.pwd = self.pwd
 
         profiler.exec_callback = self.execd
