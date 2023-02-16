@@ -168,8 +168,9 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
 
     def on_execd(self, h):
         self.running = True
-        logging.debug(f"Start prof session {h.cmd} {h.pid}")
         GLib.idle_add(self.refresh_toolbar)
+        dispatch(set_profiler_output(f"<b>{h.pid}: Executing {h.cmd}</b>"))
+        logging.debug(f"Start prof session {h.cmd} {h.pid}")
 
     def on_done(self):
         self.running = False
