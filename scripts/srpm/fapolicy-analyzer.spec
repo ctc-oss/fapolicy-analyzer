@@ -193,6 +193,7 @@ ln -sf  %{python3_sitelib}/{Babel*,babel} %{venv_lib}
 rm -rf %{venv_lib}/pip*
 cp -r  %{python3_sitelib}/pip* %{venv_lib}
 
+%autosetup -n %{name}
 # Rust- on rhel we vendor everything
 %cargo_prep -V1
 %else
@@ -205,7 +206,7 @@ mkdir -p ${CARGO_REG_DIR}
 for d in %{cargo_registry}/*; do ln -sf ${d} ${CARGO_REG_DIR}; done
 tar xzf %{SOURCE1} -C ${CARGO_REG_DIR} --strip-components=2
 
-%autosetup -p0 -n %{name}
+%autosetup -n %{name}
 %cargo_prep
 
 # remap the registry location in the .cargo/config to the writable registry
@@ -226,9 +227,6 @@ echo %{module_version} > VERSION
 # on rhel we want to use the prep'd venv
 alias python3=%{venv_py3}
 %endif
-
-# ensure standard Rust compiler flags are set
-export RUSTFLAGS="%{build_rustflags}"
 
 python3 setup.py compile_catalog -f
 python3 help build
