@@ -477,7 +477,7 @@ class FaProfSession:
 class FaProfiler:
     def __init__(self, fapd_mgr=None, fapd_persistance=True):
         logging.info("FaProfiler constructor")
-        self.fapd_mgr = fapd_mgr
+        # self.fapd_mgr = fapd_mgr
         self.fapd_persistance = fapd_persistance
         self.fapd_pid = None
         self.fapd_prof_stdout = None
@@ -497,10 +497,10 @@ class FaProfiler:
         logging.info("FaProfiler::start_prof_session(}")
         logging.debug(f"FaProfiler::start_prof_session('{dictArgs}')")
         # self.fapd_mgr.start(FapdMode.PROFILING)
-        if self.fapd_mgr.procProfile:
-            self.fapd_pid = self.fapd_mgr.procProfile.pid
-            self.fapd_prof_stdout = self.fapd_mgr.fapd_profiling_stdout
-            self.fapd_prof_stderr = self.fapd_mgr.fapd_profiling_stderr
+        # if self.fapd_mgr.procProfile:
+        #     self.fapd_pid = self.fapd_mgr.procProfile.pid
+        #     self.fapd_prof_stdout = self.fapd_mgr.fapd_profiling_stdout
+        #     self.fapd_prof_stderr = self.fapd_mgr.fapd_profiling_stderr
 
         try:
             self.faprofSession = FaProfSession(dictArgs, execd, done, self.instance, self)
@@ -544,6 +544,6 @@ class FaProfiler:
 
     def get_profiling_timestamp(self):
         # Use FapdManager's start timestamp if available
-        if self.fapd_mgr:
-            self.strTimestamp = self.fapd_mgr._fapd_profiling_timestamp
+        # if self.fapd_mgr:
+        #     self.strTimestamp = self.fapd_mgr._fapd_profiling_timestamp
         return self.strTimestamp
