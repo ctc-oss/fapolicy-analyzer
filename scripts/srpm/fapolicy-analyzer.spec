@@ -205,18 +205,14 @@ mkdir -p ${CARGO_REG_DIR}
 for d in %{cargo_registry}/*; do ln -sf ${d} ${CARGO_REG_DIR}; done
 tar xzf %{SOURCE1} -C ${CARGO_REG_DIR} --strip-components=2
 
+%autosetup -p0 -n %{name}
 %cargo_prep
 
 # remap the registry location in the .cargo/config to the writable registry
 sed -i "s#%{cargo_registry}#${CARGO_REG_DIR}#g" .cargo/config
 %endif
 
-%autosetup -p0 -n %{name}
 tar xvzf %{SOURCE2}
-
-# throw out the checked-in lock
-# this build will use whatever is available in the writable registry
-rm Cargo.lock
 
 # disable dev-tools crate
 sed -i '/tools/d' Cargo.toml
