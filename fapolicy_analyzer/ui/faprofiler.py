@@ -157,20 +157,20 @@ class FaProfSession:
             self.tgtStderr = f"{self.abs_baselogname}_{instance}.stderr"
 
         # File descriptors are state variables; closed in stopTarget()
-        self.fdTgtStdout = None
-        self.fdTgtStderr = None
+        # self.fdTgtStdout = None
+        # self.fdTgtStderr = None
 
-        try:
-            self.fdTgtStdout = open(self.tgtStdout, "w")
-            self.fdTgtStderr = open(self.tgtStderr, "w")
-        except Exception as e:
-            logging.warning(f"{s.FAPROFILER_TGT_REDIRECTION_ERROR_MSG}: {e}")
-            dispatch(
-                add_notification(
-                    s.FAPROFILER_TGT_REDIRECTION_ERROR_MSG + f": {e}",
-                    NotificationType.ERROR,
-                )
-            )
+        # try:
+        #     self.fdTgtStdout = open(self.tgtStdout, "w")
+        #     self.fdTgtStderr = open(self.tgtStderr, "w")
+        # except Exception as e:
+        #     logging.warning(f"{s.FAPROFILER_TGT_REDIRECTION_ERROR_MSG}: {e}")
+        #     dispatch(
+        #         add_notification(
+        #             s.FAPROFILER_TGT_REDIRECTION_ERROR_MSG + f": {e}",
+        #             NotificationType.ERROR,
+        #         )
+        #     )
 
         # Convert username to uid/gid
         self.u_valid = False
@@ -270,7 +270,6 @@ class FaProfSession:
         """
         Terminate the profiling target and the associated profiling session
         """
-        print("=========================== stopTarget ============================")
         if self.procTarget:
             self.procTarget.kill()
             self.status = ProfSessionStatus.COMPLETED
