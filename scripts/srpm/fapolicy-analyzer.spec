@@ -231,6 +231,9 @@ echo %{module_version} > VERSION
 alias python3=%{venv_py3}
 %endif
 
+# ensure standard Rust compiler flags are set
+export RUSTFLAGS="%{build_rustflags}"
+
 python3 setup.py compile_catalog -f
 python3 help build
 python3 setup.py bdist_wheel
