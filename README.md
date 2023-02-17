@@ -93,9 +93,9 @@ syslog_format = rule,dec,perm,uid,gid,pid,exe,:,path,ftype,trust
 
 ## Getting Help
 
-- See the [Wiki](https://github.com/ctc-oss/fapolicy-analyzer/wiki)
 - Start a [Discussion](https://github.com/ctc-oss/fapolicy-analyzer/discussions)
-- Create an [Issue](https://github.com/ctc-oss/fapolicy-analyzer/issues)
+- Open an [Issue](https://github.com/ctc-oss/fapolicy-analyzer/issues)
+- See the [Wiki](https://github.com/ctc-oss/fapolicy-analyzer/wiki)
 
 ## License
 
