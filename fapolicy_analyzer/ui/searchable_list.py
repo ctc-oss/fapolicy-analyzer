@@ -184,6 +184,6 @@ class SearchableList(UIBuilderWidget, Events):
         data = [model[i] for i in treeiter] if model and treeiter else []
         self.selection_changed(data)
 
-    def on_search_activate(self, search):
+    def on_search_activate(self, *args):
         self._store.refilter()
         self._update_list_status(self._get_tree_count())
