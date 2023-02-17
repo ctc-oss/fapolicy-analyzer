@@ -11,17 +11,72 @@ Tools to assist with the configuration and management of [fapolicyd](https://git
 
 ## Install
 
-- Using Copr
+You can install the Policy Analyzer in one of the following ways
 
-    ```text
-    dnf install -y dnf-plugins-core
-    dnf copr enable -y ctc-oss/fapolicy-analyzer
-    dnf install -y fapolicy-analyzer
-    ```
-- Or RPM install from a GitHub release [:point_right:](https://github.com/ctc-oss/fapolicy-analyzer/releases/latest)
-- Or `make fc-rpm` to build a Rawhide RPM from a Podman container
-- Or `make el-rpm` to build a RHEL 8 RPM from a Podman container
-- Or `make run` to run from a local development environment
+<details>
+
+  <summary>Using Official Fedora Packages</summary>
+
+This installation method is currently available for Fedora 37 and greater, including Rawhide.
+
+EPEL releases are planned but are not yet available.
+
+```sh
+dnf install fapolicy-analyzer
+```
+
+</details>
+
+<details>
+
+  <summary>From GitHub releases&ensp;<img alt="" src="https://img.shields.io/github/downloads/ctc-oss/fapolicy-analyzer/total?color=success&logo=github"/></summary>
+
+You can install the Policy Analyzer through the installers available in the [latest release](https://github.com/ctc-oss/fapolicy-analyzer/releases). <br>
+Choose an RPM from the latest Fedora stable, Rawhide, and EPEL builds. <br>
+
+</details>
+
+<details>
+
+  <summary>Using Fedora Copr</summary>
+
+Follow this method only if you want prerelease test builds. If so, the package can be installed with
+
+```sh
+dnf install -y dnf-plugins-core
+dnf copr enable -y ctc-oss/fapolicy-analyzer
+dnf install -y fapolicy-analyzer
+```
+
+</details>
+
+<details>
+
+  <summary>From a containerized build environment</summary>
+
+Follow this method only if you have cloned the repository and have Podman installed
+
+- `make fc-rpm` to build a Rawhide RPM
+- `make el-rpm` to build a RHEL 8 RPM
+
+When successful the container will copy the RPMs into the host `/tmp` directory.
+
+</details>
+
+
+<details>
+
+  <summary>From a local development environment</summary>
+
+Follow this method only if you want to install the full suite of development and build tools
+
+`make run`
+
+This requires Pip + Pipenv + Python 3.6 or greater, and Rust 1.58.1 or greater.
+
+Dependencies of each will be automatically installed during the build process.
+
+</details>
 
 ## Requirements
 
@@ -38,8 +93,9 @@ syslog_format = rule,dec,perm,uid,gid,pid,exe,:,path,ftype,trust
 
 ## Getting Help
 
-- Start a [Discussion](https://github.com/ctc-oss/fapolicy-analyzer/discussions) with the team
-- See the [Wiki](https://github.com/ctc-oss/fapolicy-analyzer/wiki) for more resources
+- See the [Wiki](https://github.com/ctc-oss/fapolicy-analyzer/wiki)
+- Start a [Discussion](https://github.com/ctc-oss/fapolicy-analyzer/discussions)
+- Create an [Issue](https://github.com/ctc-oss/fapolicy-analyzer/issues)
 
 ## License
 
