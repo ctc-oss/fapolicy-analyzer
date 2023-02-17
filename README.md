@@ -83,7 +83,7 @@ Dependencies of each will be automatically installed during the build process.
 
 ## fapolicyd
 
-We aim to be compatible back to v1.0, however the latest version will work the best.
+We aim to be compatible back to v1.0, but newer versions will likely work best.
 
 To analyze from syslog we require the following `syslog_format` in fapolicyd.conf
 
