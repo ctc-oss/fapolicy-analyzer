@@ -3,10 +3,11 @@ File Access Policy Analyzer
 
 Tools to assist with the configuration and management of [fapolicyd](https://github.com/linux-application-whitelisting/fapolicyd).
 
-[![Release](https://shields.io/github/v/release/ctc-oss/fapolicy-analyzer?color=blue&display_name=tag&sort=semver&label=Release)](https://github.com/ctc-oss/fapolicy-analyzer/releases)
-![GitHub checks status](https://img.shields.io/github/checks-status/ctc-oss/fapolicy-analyzer/master?label=CI)
+[![Fedora package](https://img.shields.io/fedora/v/fapolicy-analyzer?logo=fedora&label=Fedora)](https://src.fedoraproject.org/rpms/fapolicy-analzyer)
+[![GitHub release](https://shields.io/github/v/release/ctc-oss/fapolicy-analyzer?color=blue&display_name=tag&sort=semver&label=GitHub)](https://github.com/ctc-oss/fapolicy-analyzer/releases)
 [![Copr build status](https://img.shields.io/badge/dynamic/json?color=B87333&label=Copr&query=builds.latest.state&url=https%3A%2F%2Fcopr.fedorainfracloud.org%2Fapi_3%2Fpackage%3Fownername%3Dctc-oss%26projectname%3Dfapolicy-analyzer%26packagename%3Dfapolicy-analyzer%26with_latest_build%3DTrue)](https://copr.fedorainfracloud.org/coprs/ctc-oss/fapolicy-analyzer/package/fapolicy-analyzer/)
 [![Coverity Scan](https://img.shields.io/coverity/scan/26261?label=Coverity)](https://scan.coverity.com/projects/ctc-oss-fapolicy-analyzer)
+![GitHub checks status](https://img.shields.io/github/checks-status/ctc-oss/fapolicy-analyzer/master?label=CI)
 ![GitHub](https://img.shields.io/github/license/ctc-oss/fapolicy-analyzer?color=red&label=License)
 
 ## Install
@@ -29,7 +30,9 @@ dnf install fapolicy-analyzer
 
 <details>
 
-  <summary>From GitHub releases&ensp;<img alt="" src="https://img.shields.io/github/downloads/ctc-oss/fapolicy-analyzer/total?color=success&logo=github"/></summary>
+  <summary>From GitHub releases</summary>
+
+![GitHub download counter](https://img.shields.io/github/downloads/ctc-oss/fapolicy-analyzer/total?color=success&logo=github)
 
 You can install the Policy Analyzer through the installers available in the [latest release](https://github.com/ctc-oss/fapolicy-analyzer/releases). <br>
 Choose an RPM from the latest Fedora stable, Rawhide, and EPEL builds. <br>
