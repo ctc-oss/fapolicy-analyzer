@@ -61,7 +61,6 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
         self.get_object("rightBox").pack_start(
             self.trustFileDetails.get_ref(), True, True, 0
         )
-        self.trustFileList.load_trust(self._trust)
 
     def __load_trust(self):
         self.__loading = True
