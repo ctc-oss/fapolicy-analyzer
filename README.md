@@ -81,13 +81,9 @@ Dependencies of each will be automatically installed during the build process.
 
 </details>
 
-## Requirements
+### fapolicyd
 
-- Python 3.6
-- Rust 1.58.1
-- fapolicyd 1.x
-
-### fapolicyd configuration
+We aim to be backwards compatible to v1.0, however the latest version will work the best.
 
 To analyze from syslog we require the following `syslog_format` in fapolicyd.conf
 ```
