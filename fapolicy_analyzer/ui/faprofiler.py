@@ -147,14 +147,16 @@ class FaProfSession:
         self.status = ProfSessionStatus.QUEUED
         self.procTarget = None
 
-        # Temp demo workaround for setting target log file paths
-        log_dir = os.environ.get("FAPD_LOGPATH")
-        if log_dir:
-            self.tgtStdout = f"{log_dir}_{self.name}.stdout"
-            self.tgtStderr = f"{log_dir}_{self.name}.stderr"
-        else:
-            self.tgtStdout = f"{self.abs_baselogname}_{instance}.stdout"
-            self.tgtStderr = f"{self.abs_baselogname}_{instance}.stderr"
+        # # Temp demo workaround for setting target log file paths
+        # log_dir = os.environ.get("FAPD_LOGPATH")
+        # if log_dir:
+        #     self.dStdout = f"{log_dir}_{self.name}.d.stdout"
+        #     self.tgtStdout = f"{log_dir}_{self.name}.t.stdout"
+        #     self.tgtStderr = f"{log_dir}_{self.name}.t.stderr"
+        # else:
+        self.dStdout = f"{self.abs_baselogname}_{instance}.d.stdout"
+        self.tgtStdout = f"{self.abs_baselogname}_{instance}.t.stdout"
+        self.tgtStderr = f"{self.abs_baselogname}_{instance}.t.stderr"
 
         # File descriptors are state variables; closed in stopTarget()
         # self.fdTgtStdout = None
@@ -219,6 +221,7 @@ class FaProfSession:
         profiler = Profiler()
         profiler.uid = self.uid
         profiler.gid = self.gid
+        profiler.daemon_stdout = self.dStdout
         profiler.target_stdout = self.tgtStdout
         profiler.target_stderr = self.tgtStderr
         # profiler.rules = args.rules

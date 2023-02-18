@@ -146,8 +146,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
     def display_log_output(self):
         markup = ""
         files = [
-            self._fapd_profiler.fapd_prof_stderr,
-            self._fapd_profiler.fapd_prof_stdout,
+            self._fapd_profiler.faprofSession.dStdout,
             self._fapd_profiler.faprofSession.tgtStderr,
             self._fapd_profiler.faprofSession.tgtStdout,
         ]
