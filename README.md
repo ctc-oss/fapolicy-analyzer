@@ -20,7 +20,7 @@ You can install the Policy Analyzer in one of the following ways
 
 This installation method is currently available for Fedora 37 and greater, including Rawhide.
 
-EPEL releases are planned but are not yet available.
+Official EPEL releases are coming, but are not yet available.  See the Copr releases for EPEL 8.
 
 ```sh
 dnf install fapolicy-analyzer
@@ -43,13 +43,48 @@ Choose an RPM from the latest Fedora stable, Rawhide, and EPEL builds. <br>
 
   <summary>Using Fedora Copr</summary>
 
-Follow this method only if you want prerelease test builds. If so, the package can be installed with
+Follow this method to install EPEL 8 and prerelease packages.
+
+### Add Copr repository
+
+Install the ctc-oss repo with
 
 ```sh
-dnf install -y dnf-plugins-core
-dnf copr enable -y ctc-oss/fapolicy-analyzer
-dnf install -y fapolicy-analyzer
+dnf install dnf-plugins-core
+dnf copr enable ctc-oss/fapolicy-analyzer
 ```
+
+### Copr EPEL builds
+
+EPEL releases are available from Copr and can be installed with the normal process
+
+`dnf install fapolicy-analyzer`
+
+### Copr test builds
+
+There are two types of test builds available
+
+#### Master dev builds
+
+These are considered to be prerelease versions of the next major or minor release.
+
+Use the `dev` tag + the commit number from the `master` branch, for example
+
+`dnf install fapolicy-analyzer-1.0.0~dev308`
+
+will install the prerelease 1.0.0 version at the 308th commit on the master branch.
+
+#### Double-aught PR builds
+
+Pull requests are available for testing through a version pattern called double-aught builds.
+
+The version number consists of `0.0.` + the PR number.
+
+So for PR number 770 you would install with
+
+`dnf install fapolicy-analyzer-0.0.770`
+
+PR builds expire after they are merged or closed.
 
 </details>
 
