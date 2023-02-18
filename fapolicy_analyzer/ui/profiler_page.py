@@ -174,9 +174,10 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
     def on_done(self):
         self.running = False
         fapd_prof_stderr = self._fapd_profiler.fapd_prof_stderr
+        # these calls may cause xcb crash (X11)
+        GLib.idle_add(self.refresh_toolbar)
         dispatch(set_profiler_analysis_file(fapd_prof_stderr))
         GLib.idle_add(self.display_log_output)
-        GLib.idle_add(self.refresh_toolbar)
 
     def on_stop_clicked(self, *args):
         self._fapd_profiler.stop_prof_session()
