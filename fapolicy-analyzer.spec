@@ -118,13 +118,8 @@ ExcludeArch:   s390x %{power64}
 Tools to assist with the configuration and management of fapolicyd.
 
 %prep
-%cargo_prep
-
 %autosetup -n %{name}
-
-# throw out the checked-in lock
-# this build will use what is available from the local registry
-rm Cargo.lock
+%cargo_prep
 
 # disable dev-tools crate
 sed -i '/tools/d' Cargo.toml
@@ -133,10 +128,13 @@ sed -i '/tools/d' Cargo.toml
 tar xvzf %{SOURCE1}
 
 # our setup.py looks up the version from git describe
-# this overrides that check to the RPM version
+# this overrides that check to use the RPM version
 echo %{module_version} > VERSION
 
 %build
+# ensure standard Rust compiler flags are set
+export RUSTFLAGS="%{build_rustflags}"
+
 %{python3} setup.py compile_catalog -f
 %{python3} help build
 %{python3} setup.py bdist_wheel
