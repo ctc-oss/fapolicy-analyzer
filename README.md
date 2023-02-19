@@ -4,7 +4,7 @@ File Access Policy Analyzer
 Tools to assist with the configuration and management of [fapolicyd](https://github.com/linux-application-whitelisting/fapolicyd).
 
 [![Fedora package](https://img.shields.io/fedora/v/fapolicy-analyzer?logo=fedora&label=Fedora)](https://packages.fedoraproject.org/pkgs/fapolicy-analyzer/fapolicy-analyzer/)
-[![GitHub release](https://shields.io/github/v/release/ctc-oss/fapolicy-analyzer?color=blue&display_name=tag&sort=semver&label=GitHub)](https://github.com/ctc-oss/fapolicy-analyzer/releases)
+[![GitHub release](https://shields.io/github/v/release/ctc-oss/fapolicy-analyzer?color=blue&display_name=tag&sort=semver&label=GitHub)](https://github.com/ctc-oss/fapolicy-analyzer/releases/latest)
 [![Copr build status](https://img.shields.io/badge/dynamic/json?color=B87333&label=Copr&query=builds.latest.state&url=https%3A%2F%2Fcopr.fedorainfracloud.org%2Fapi_3%2Fpackage%3Fownername%3Dctc-oss%26projectname%3Dfapolicy-analyzer%26packagename%3Dfapolicy-analyzer%26with_latest_build%3DTrue)](https://copr.fedorainfracloud.org/coprs/ctc-oss/fapolicy-analyzer/)
 [![Coverity Scan](https://img.shields.io/coverity/scan/26261?label=Coverity)](https://scan.coverity.com/projects/ctc-oss-fapolicy-analyzer)
 ![GitHub checks status](https://img.shields.io/github/checks-status/ctc-oss/fapolicy-analyzer/master?label=CI)
@@ -56,13 +56,13 @@ dnf copr enable ctc-oss/fapolicy-analyzer
 
 ### Copr EPEL builds
 
-EPEL releases are available from Copr and can be installed with the normal process
+EPEL releases of the Policy Analyzer are available from Copr and can be installed with the normal process
 
 `dnf install fapolicy-analyzer`
 
-### Copr test builds
+### Copr pre-release builds
 
-Pre-release packages are created using the latest commit to master.
+Pre-release packages of the Policy Analyzer for all targets are created using the latest commit to master.
 
 Use the `dev` tag + the commit number from the `master` branch, for example
 
@@ -70,16 +70,18 @@ Use the `dev` tag + the commit number from the `master` branch, for example
 
 will install the prerelease 1.0.0 version at the 308th commit on the master branch.
 
+</details>
+
 <details>
 
   <summary>From a containerized build environment</summary>
 
-Follow this method only if you have cloned the repository and have Podman installed
+Follow this method only if you have cloned the GitHub repository and have Podman installed
 
 - `make fc-rpm` to build a Rawhide RPM
 - `make el-rpm` to build a RHEL 8 RPM
 
-When successful the container will copy the RPMs into the host `/tmp` directory.
+After a successful build the container will copy the RPMs into the host `/tmp` directory.
 
 </details>
 
@@ -88,13 +90,13 @@ When successful the container will copy the RPMs into the host `/tmp` directory.
 
   <summary>From a local development environment</summary>
 
-Follow this method only if you want to install the full suite of development and build tools
+Follow this method only if you have installed all required build tools
 
 `make run`
 
 This requires Pip + Pipenv + Python 3.6 or greater, and Rust 1.58.1 or greater.
 
-Dependencies of each will be automatically installed during the build process.
+Python and Rust dependencies will be installed during the build process.
 
 </details>
 
