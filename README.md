@@ -3,7 +3,7 @@ File Access Policy Analyzer
 
 Tools to assist with the configuration and management of [fapolicyd](https://github.com/linux-application-whitelisting/fapolicyd).
 
-[![Fedora package](https://img.shields.io/fedora/v/fapolicy-analyzer?logo=fedora&label=Fedora)](https://src.fedoraproject.org/rpms/fapolicy-analyzer)
+[![Fedora package](https://img.shields.io/fedora/v/fapolicy-analyzer?logo=fedora&label=Fedora)](https://packages.fedoraproject.org/pkgs/fapolicy-analyzer/fapolicy-analyzer/)
 [![GitHub release](https://shields.io/github/v/release/ctc-oss/fapolicy-analyzer?color=blue&display_name=tag&sort=semver&label=GitHub)](https://github.com/ctc-oss/fapolicy-analyzer/releases)
 [![Copr build status](https://img.shields.io/badge/dynamic/json?color=B87333&label=Copr&query=builds.latest.state&url=https%3A%2F%2Fcopr.fedorainfracloud.org%2Fapi_3%2Fpackage%3Fownername%3Dctc-oss%26projectname%3Dfapolicy-analyzer%26packagename%3Dfapolicy-analyzer%26with_latest_build%3DTrue)](https://copr.fedorainfracloud.org/coprs/ctc-oss/fapolicy-analyzer/)
 [![Coverity Scan](https://img.shields.io/coverity/scan/26261?label=Coverity)](https://scan.coverity.com/projects/ctc-oss-fapolicy-analyzer)
@@ -62,31 +62,13 @@ EPEL releases are available from Copr and can be installed with the normal proce
 
 ### Copr test builds
 
-There are two types of test builds available
-
-#### Master dev builds
-
-These are considered to be prerelease versions of the next major or minor release.
+Pre-release packages are created using the latest commit to master.
 
 Use the `dev` tag + the commit number from the `master` branch, for example
 
 `dnf install fapolicy-analyzer-1.0.0~dev308`
 
 will install the prerelease 1.0.0 version at the 308th commit on the master branch.
-
-#### Double-aught PR builds
-
-Pull requests are available for testing through a version pattern called double-aught builds.
-
-The version number consists of `0.0.` + the PR number.
-
-So for PR number 770 you would install with
-
-`dnf install fapolicy-analyzer-0.0.770`
-
-PR builds expire after they are merged or closed.
-
-</details>
 
 <details>
 
