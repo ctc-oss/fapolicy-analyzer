@@ -6,7 +6,7 @@ on:
       - 'rpm/test/*'
     tags:
       - 'v*'
-  pull_request_target:
+  pull_request:
     branches:
       - 'master'
       - 'release/*'
@@ -22,6 +22,8 @@ jobs:
       is-copr-enabled: ${{ steps.is-copr-enabled.outputs.defined }}
     steps:
       - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
 
       - name: Load config matrix
         id: set-matrix
@@ -223,11 +225,12 @@ jobs:
         run: |
           mkdir -p $HOME/.config
           echo "[copr-cli]" > $HOME/.config/copr 
-          echo "username = ctc-oss" >> $HOME/.config/copr
+          echo "username = ${COPR_USER}" >> $HOME/.config/copr
           echo "login = ${COPR_LOGIN}" >> $HOME/.config/copr
           echo "token = ${COPR_TOKEN}" >> $HOME/.config/copr
           echo "copr_url = https://copr.fedorainfracloud.org" >> $HOME/.config/copr
         env:
+          COPR_USER:  ${{ secrets.COPR_API_USER }}
           COPR_LOGIN: ${{ secrets.COPR_API_LOGIN }}
           COPR_TOKEN: ${{ secrets.COPR_API_TOKEN }}
 
@@ -244,6 +247,8 @@ jobs:
       matrix: ${{ fromJson(needs.config.outputs.matrix )}}
     steps:
       - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
 
       - name: Download srpm artifacts
         uses: actions/download-artifact@v3
@@ -291,6 +296,8 @@ jobs:
       matrix: ${{ fromJson(needs.config.outputs.matrix )}}
     steps:
       - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
 
       - name: Download rpm artifacts
         uses: actions/download-artifact@v3
@@ -323,6 +330,8 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
 
       - name: Download artifacts
         uses: actions/download-artifact@v3
