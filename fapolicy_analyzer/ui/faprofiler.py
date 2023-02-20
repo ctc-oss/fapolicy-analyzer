@@ -92,7 +92,7 @@ class ProfSessionException(RuntimeError):
 
 # ########################## Profiler Session ###########################
 class FaProfSession:
-    def __init__(self, dictProfTgt, execd, done, instance=0, faprofiler=None):
+    def __init__(self, dictProfTgt, execd=None, done=None, instance=0, faprofiler=None):
         logging.info("FaProfSession constructed")
         logging.debug(f"FaProfSession::__init__({dictProfTgt}, {faprofiler})")
         self.throwOnInvalidSessionArgs(dictProfTgt)

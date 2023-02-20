@@ -36,7 +36,7 @@ def faProfSession(scope="session"):
         "dirText": os.getenv("HOME"),
         "envText": 'FAPD_LOGPATH=/tmp/tgt_profiler, XX="xx"',
     }
-    s = FaProfSession(dictArgs, None, None)
+    s = FaProfSession(dictArgs)
     yield s
 
     # Clean-up
@@ -80,7 +80,7 @@ def test_faprofsession_init_w_bad_keys(dictArgs):
         FaProfSession.validateArgs(dictArgs)
 
     with pytest.raises(KeyError):
-        FaProfSession(dictArgs, None, None)
+        FaProfSession(dictArgs)
 
 
 def test_faprofsession_fopen_exception(mocker):
@@ -95,7 +95,7 @@ def test_faprofsession_fopen_exception(mocker):
         "envText": 'FAPD_LOGPATH=/tmp/tgt_profiler, XX="xx"',
     }
 
-    s = FaProfSession(dictArgs, None, None)
+    s = FaProfSession(dictArgs)
     assert s.fdTgtStdout is None
     assert s.fdTgtStderr is None
 
@@ -128,7 +128,7 @@ def test_faprofsession_path_env():
         "envText": 'PATH=/tmp:$PATH, XX="xx"',
     }
 
-    s = FaProfSession(dictArgs, None, None)
+    s = FaProfSession(dictArgs)
     assert s.fdTgtStdout
     assert s.fdTgtStderr
     assert os.path.basename(s.execPath) == dictArgs["executeText"]
@@ -147,7 +147,7 @@ def test_faprofsession_log_redirection(mocker):
         "envText": 'PATH=/tmp:$PATH, XX="xx"',
     }
 
-    s = FaProfSession(dictArgs, None, None)
+    s = FaProfSession(dictArgs)
     assert s.fdTgtStdout
     assert s.fdTgtStderr
 
@@ -187,7 +187,7 @@ def test_faprofsession_log_redirection(mocker):
 #         "envText": 'PATH=/tmp:$PATH, XX="xx"',
 #     }
 #
-#     s = FaProfSession(dictArgs, None, None)
+#     s = FaProfSession(dictArgs)
 #
 #     assert not s.procTarget
 #     s.startTarget()
@@ -229,7 +229,7 @@ def test_get_status(faProfSession, mocker):
 #         "envText": "FAPD_LOGPATH=/tmp/tgt_profiler,XYZ=123",
 #     }
 #
-#     key = faProfiler.start_prof_session(dictArgs, None, None)
+#     key = faProfiler.start_prof_session(dictArgs)
 #     assert faProfiler.instance != 0
 #     assert key in faProfiler.dictFaProfSession
 #
@@ -258,13 +258,13 @@ def test_start_prof_session_w_exception(faProfiler, mocker):
 
     # Invalid argument will cause prof session object __init__() to throw
     with pytest.raises(ProfSessionException) as e_info:
-        faProfiler.start_prof_session(dictArgs, None, None)
+        faProfiler.start_prof_session(dictArgs)
     assert e_info.value.error_enum == ProfSessionArgsStatus.EXEC_DOESNT_EXIST
 
     # Mocked FaProfSession.startTarget() will throw a RuntimeError exception
     dictArgs["executeText"] = "/usr/bin/ls"
     with pytest.raises(RuntimeError) as e_info:
-        faProfiler.start_prof_session(dictArgs, None, None)
+        faProfiler.start_prof_session(dictArgs)
     assert e_info.value.args[0] == "bad execution"
 
     # Clean up
@@ -284,11 +284,11 @@ def test_start_prof_session_w_exception(faProfiler, mocker):
 #         "envText": "FAPD_LOGPATH=/tmp/tgt_profiler,XYZ=123",
 #     }
 #
-#     session_name = faProfiler.start_prof_session(dictArgs, None, None)
+#     session_name = faProfiler.start_prof_session(dictArgs)
 #     assert faProfiler.instance != 0
 #     faProfiler.stop_prof_session(session_name)
 #     assert faProfiler.instance == 0
-#     session_name = faProfiler.start_prof_session(dictArgs, None, None)
+#     session_name = faProfiler.start_prof_session(dictArgs)
 #     faProfiler.stop_prof_session()
 #     assert faProfiler.instance == 0
 #     assert not faProfiler.dictFaProfSession
