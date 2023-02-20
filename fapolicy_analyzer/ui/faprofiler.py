@@ -248,7 +248,7 @@ class FaProfSession:
             #                                      self.gid)
             # )
             # logging.debug(self.procTarget.pid)
-            self.status = ProfSessionStatus.INPROGRESS
+            # self.status = ProfSessionStatus.INPROGRESS
 
             # Block until process terminates
             # if block_until_termination:
@@ -275,7 +275,7 @@ class FaProfSession:
         """
         if self.procTarget:
             self.procTarget.kill()
-            self.status = ProfSessionStatus.COMPLETED
+        #    self.status = ProfSessionStatus.COMPLETED
 
         # if self.fdTgtStdout:
         #     self.fdTgtStdout.close()
@@ -301,13 +301,13 @@ class FaProfSession:
         logging.info("FaProfSession::get_status()")
 
         # Poll the Popen object if it exists, poll() returns None if running
-        if self.procTarget:
-            if self.procTarget.poll() is None:
-                self.status = ProfSessionStatus.INPROGRESS
-            else:
-                self.status = ProfSessionStatus.COMPLETED
-        else:
-            self.status = ProfSessionStatus.QUEUED
+        # if self.procTarget:
+        #     if self.procTarget.poll() is None:
+        #         self.status = ProfSessionStatus.INPROGRESS
+        #     else:
+        #         self.status = ProfSessionStatus.COMPLETED
+        # else:
+        #     self.status = ProfSessionStatus.QUEUED
         return self.status
 
     def clean_all(self):
