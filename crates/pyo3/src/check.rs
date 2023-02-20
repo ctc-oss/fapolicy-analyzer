@@ -56,7 +56,22 @@ fn check_all_trust(system: &PySystem, update: PyObject, done: PyObject) -> PyRes
     check_disk_trust(recs, update, done)
 }
 
+fn callback_on_done(done: PyObject) {
+    Python::with_gil(|py| {
+        if done.call0(py).is_err() {
+            eprintln!("failed to make 'done' callback");
+        }
+    })
+}
+
 fn check_disk_trust(recs: Vec<Rec>, update: PyObject, done: PyObject) -> PyResult<usize> {
+    if recs.is_empty() {
+        thread::spawn(move || {
+            callback_on_done(done);
+        });
+        return Ok(0);
+    }
+
     // determine batch model based on the total recs to be checked
     let batch_cfg = calculate_batch_config(recs.len());
     eprintln!(
@@ -103,11 +118,7 @@ fn check_disk_trust(recs: Vec<Rec>, update: PyObject, done: PyObject) -> PyResul
             }
         }
 
-        Python::with_gil(|py| {
-            if done.call0(py).is_err() {
-                eprintln!("failed to make 'done' callback");
-            }
-        });
+        callback_on_done(done);
     });
 
     // at this point data is organized into per-thread batches
