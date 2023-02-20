@@ -72,7 +72,7 @@ class DatabaseAdminPage(UIWidget, UIPage):
 
     def on_trust_toggle_clicked(self, *args):
         self.show_trust = not self.show_trust
-        self.systemTrustDbAdmin.trustFileList.load_trust(self.systemTrustDbAdmin._trust, show_trusted=self.show_trust)
+        self.systemTrustDbAdmin.trust_file_list.load_trust(self.systemTrustDbAdmin._trust, show_trusted=self.show_trust)
 
     def _dispose(self):
         self.ancillaryTrustDbAdmin.dispose()

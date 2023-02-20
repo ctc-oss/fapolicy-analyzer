@@ -96,22 +96,6 @@ class AncillaryTrustFileList(TrustFileList):
         self.__changes_column.set_visible(
             self.__changeset_map["Add"] or self.__changeset_map["Del"]
         )
-
-        store = Gtk.ListStore(str, str, str, object, str, str, str)
-        for _, data in enumerate(trust):
-            status, bg_color, txt_color, date_time = self._base_row_data(data)
-            changes = (
-                strings.CHANGESET_ACTION_ADD
-                if data.path in self._changesetMap["Add"]
-                else ""
-            )
-            store.append(
-                [status, date_time, data.path, data, bg_color, txt_color, changes]
-            )
-
-        if len(store) < 1:
-            self.swap_overlay(sysdb=False)
-
         for pth in self.__changeset_map["Del"]:
             file_exists = os.path.isfile(pth)
             status = "d" if file_exists else "u"

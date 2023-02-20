@@ -141,7 +141,6 @@ class TrustFileList(SearchableList):
     def refresh(self):
         self.trust_func()
 
-    '''
     def swap_overlay(self, sysdb=True):
         label = Gtk.Label(label=strings.SYSTEM_TRUST_NO_DISCREPANCIES if sysdb else strings.ANCILLARY_TRUST_NO_ENTRIES)
         scrolled_window = self.get_object("viewScrolledWindow")
@@ -154,22 +153,13 @@ class TrustFileList(SearchableList):
             scrolled_window.add(self.treeView)
         scrolled_window.show_all()
 
-    def load_trust(self, trust, show_trusted=False):
-        def process():
-            global _executorCanceled
-            store = Gtk.ListStore(str, str, str, object, str, str)
-            for i, data in enumerate(trust):
-                status, bg_color, txt_color, date_time = self._base_row_data(data)
-                if not data.status == "T" or show_trusted:
-                    store.append([status, date_time, data.path, data, bg_color, txt_color])
 
-                if _executorCanceled:
-    '''
     def init_list(self, count_of_trust_entries):
         store = Gtk.ListStore(str, str, str, object, str, str)
         self.load_store(count_of_trust_entries, store)
 
     def load_store(self, count_of_trust_entries, store):
+        print(store)
         def process_rows(queue, total):
             store = self._store
             columns = range(store.get_n_columns())
@@ -177,7 +167,10 @@ class TrustFileList(SearchableList):
                 if queue.empty() or self.__event.is_set():
                     break
                 row = queue.get()
-                store.insert_with_valuesv(-1, columns, row)
+                if isinstance(store, Gtk.TreeModelFilter):
+                    store.get_model().insert_with_valuesv(-1, columns, row)
+                else:
+                    store.insert_with_valuesv(-1, columns, row)
                 queue.task_done()
 
             if self.__event.is_set():
@@ -196,7 +189,7 @@ class TrustFileList(SearchableList):
                 self.search.set_tooltip_text(None)
                 return False
 
-        super().load_store(store, filterable=False)
+        super().load_store(store, filterable=True)
         self._update_loading_status("Loading trust 0% complete...")
         self.set_loading(False)
         self.search.set_sensitive(False)
