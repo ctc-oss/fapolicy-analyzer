@@ -90,7 +90,8 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
 
         UIPage.__init__(self, actions)
         self._fapd_profiler = FaProfiler(fapd_manager)
-        self.running = False
+        self.can_start = True
+        self.can_stop = False
         self.inputDict = {}
         self.markup = ""
         self.analysis_available = False
@@ -127,10 +128,10 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         dispatch(clear_profiler_state())
 
     def stop_button_sensitivity(self):
-        return self.running
+        return self.can_stop
 
     def start_button_sensitivity(self):
-        return not self.running
+        return self.can_start
 
     def get_entry_dict(self):
         self.inputDict = {
@@ -166,23 +167,24 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         dispatch(set_profiler_output(markup))
 
     def on_execd(self, h):
-        self.running = True
-        GLib.idle_add(self.refresh_toolbar)
+        self.can_stop = True
         dispatch(set_profiler_output(f"<b>{h.pid}: Executing {h.cmd}</b>"))
-        logging.debug(f"Start prof session {h.cmd} {h.pid}")
+        GLib.idle_add(self.refresh_toolbar)
+        # logging.debug(f"Start prof session {h.cmd} {h.pid}")
 
     def on_done(self):
-        self.running = False
-        fapd_prof_stderr = self._fapd_profiler.fapd_prof_stderr
-        # these calls may cause xcb crash (X11)
+        self.can_start = True
+        self.display_log_output()
         GLib.idle_add(self.refresh_toolbar)
-        dispatch(set_profiler_analysis_file(fapd_prof_stderr))
-        GLib.idle_add(self.display_log_output)
 
     def on_stop_clicked(self, *args):
+        self.can_stop = False
+        GLib.idle_add(self.refresh_toolbar)
         self._fapd_profiler.stop_prof_session()
 
     def on_test_activate(self, *args):
+        self.can_start = False
+        self.refresh_toolbar()
         profiling_args = self.get_entry_dict()
         if not FaProfSession.validSessionArgs(profiling_args):
             logging.info("Invalid Profiler arguments")
