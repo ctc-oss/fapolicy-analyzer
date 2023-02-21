@@ -28,7 +28,6 @@ from fapolicy_analyzer import System
 from fapolicy_analyzer import __version__ as app_version
 from fapolicy_analyzer.ui.action_toolbar import ActionToolbar
 from fapolicy_analyzer.ui.actions import NotificationType, add_notification
-from fapolicy_analyzer.ui.analyzer_selection_dialog import ANALYZER_SELECTION
 from fapolicy_analyzer.ui.changeset_wrapper import Changeset
 from fapolicy_analyzer.ui.configs import Sizing
 from fapolicy_analyzer.ui.database_admin_page import DatabaseAdminPage
@@ -48,6 +47,14 @@ from fapolicy_analyzer.util.format import f
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, GLib  # isort: skip
+
+
+class ANALYZER_SELECTION(Enum):
+    TRUST_DATABASE_ADMIN = 0
+    RULES_ADMIN = 1
+    ANALYZE_FROM_AUDIT = 2
+    ANALYZE_SYSLOG = 3
+    PROFILER = 4
 
 
 def router(selection: ANALYZER_SELECTION, data: Any = None) -> UIPage:
