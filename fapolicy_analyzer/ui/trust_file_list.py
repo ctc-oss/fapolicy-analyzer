@@ -159,7 +159,6 @@ class TrustFileList(SearchableList):
         self.load_store(count_of_trust_entries, store)
 
     def load_store(self, count_of_trust_entries, store):
-        print(store)
         def process_rows(queue, total):
             store = self._store
             columns = range(store.get_n_columns())
@@ -167,10 +166,7 @@ class TrustFileList(SearchableList):
                 if queue.empty() or self.__event.is_set():
                     break
                 row = queue.get()
-                if isinstance(store, Gtk.TreeModelFilter):
-                    store.get_model().insert_with_valuesv(-1, columns, row)
-                else:
-                    store.insert_with_valuesv(-1, columns, row)
+                store.insert_with_valuesv(-1, columns, row)
                 queue.task_done()
 
             if self.__event.is_set():
@@ -189,7 +185,7 @@ class TrustFileList(SearchableList):
                 self.search.set_tooltip_text(None)
                 return False
 
-        super().load_store(store, filterable=True)
+        super().load_store(store, filterable=False)
         self._update_loading_status("Loading trust 0% complete...")
         self.set_loading(False)
         self.search.set_sensitive(False)
@@ -202,7 +198,8 @@ class TrustFileList(SearchableList):
             for data in trust:
                 if self.__event.is_set():
                     return
-                self.__queue.put(self._row_data(data))
+                if data.status.lower() == "u":
+                    self.__queue.put(self._row_data(data))
 
         if not self.__event.is_set():
             self.__executor.submit(process_trust, trust)

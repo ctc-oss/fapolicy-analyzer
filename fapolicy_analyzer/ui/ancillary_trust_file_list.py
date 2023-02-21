@@ -96,6 +96,7 @@ class AncillaryTrustFileList(TrustFileList):
         self.__changes_column.set_visible(
             self.__changeset_map["Add"] or self.__changeset_map["Del"]
         )
+
         for pth in self.__changeset_map["Del"]:
             file_exists = os.path.isfile(pth)
             status = "d" if file_exists else "u"
