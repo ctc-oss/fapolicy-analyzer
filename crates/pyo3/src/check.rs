@@ -75,8 +75,12 @@ fn check_disk_trust(recs: Vec<Rec>, update: PyObject, done: PyObject) -> PyResul
     // determine batch model based on the total recs to be checked
     let batch_cfg = calculate_batch_config(recs.len());
     eprintln!(
-        "BatchConf: tc:{}, tl:{}, bc:{}, bl:{}",
-        batch_cfg.thread_cnt, batch_cfg.thread_load, batch_cfg.batch_cnt, batch_cfg.batch_load
+        "BatchConf: recs: {}, tc:{}, tl:{}, bc:{}, bl:{}",
+        recs.len(),
+        batch_cfg.thread_cnt,
+        batch_cfg.thread_load,
+        batch_cfg.batch_cnt,
+        batch_cfg.batch_load
     );
 
     // 1. split the total recs into sized batches
@@ -175,14 +179,10 @@ fn calculate_batch_config(rec_sz: usize) -> BatchConfig {
     let thread_cnt = match (batch_cnt, batch_load) {
         // one batch, one thread
         (1, _) => 1,
-        // small batches get 4 threads
-        (_, s) if s <= 10 => 4,
-        // medium batches get 10 threads
-        (_, s) if s <= 100 => 10,
-        // large batches get 20 threads
-        (_, s) if s <= 200 => 20,
-        // xl batches get 25 threads
-        _ => 25,
+        // small batches get 5 threads
+        (_, s) if s <= 1000 => 5,
+        // large batches get 10 threads
+        _ => 10,
     };
 
     // thread load is number of batches per thread
@@ -280,8 +280,8 @@ mod tests {
         let cfg = calculate_batch_config(num);
         assert_eq!(cfg.batch_cnt, 100);
         assert_eq!(cfg.batch_load, 6);
-        assert_eq!(cfg.thread_cnt, 4);
-        assert_eq!(cfg.thread_load, 25);
+        assert_eq!(cfg.thread_cnt, 5);
+        assert_eq!(cfg.thread_load, 20);
 
         // assert that we are within one batch of the total
         assert!(num <= cfg.batch_cnt * cfg.batch_load);
@@ -295,8 +295,8 @@ mod tests {
         let cfg = calculate_batch_config(num);
         assert_eq!(cfg.batch_cnt, 100);
         assert_eq!(cfg.batch_load, 10);
-        assert_eq!(cfg.thread_cnt, 4);
-        assert_eq!(cfg.thread_load, 25);
+        assert_eq!(cfg.thread_cnt, 5);
+        assert_eq!(cfg.thread_load, 20);
 
         // assert that we are within one batch of the total
         assert!(num <= cfg.batch_cnt * cfg.batch_load);
@@ -307,8 +307,8 @@ mod tests {
         let cfg = calculate_batch_config(num);
         assert_eq!(cfg.batch_cnt, 100);
         assert_eq!(cfg.batch_load, 10);
-        assert_eq!(cfg.thread_cnt, 4);
-        assert_eq!(cfg.thread_load, 25);
+        assert_eq!(cfg.thread_cnt, 5);
+        assert_eq!(cfg.thread_load, 20);
 
         // assert that we are within one batch of the total
         assert!(num <= cfg.batch_cnt * cfg.batch_load);
@@ -319,8 +319,8 @@ mod tests {
         let cfg = calculate_batch_config(num);
         assert_eq!(cfg.batch_cnt, 100);
         assert_eq!(cfg.batch_load, 10);
-        assert_eq!(cfg.thread_cnt, 4);
-        assert_eq!(cfg.thread_load, 25);
+        assert_eq!(cfg.thread_cnt, 5);
+        assert_eq!(cfg.thread_load, 20);
 
         // assert that we are within one batch of the total
         assert!(num <= cfg.batch_cnt * cfg.batch_load);
@@ -334,8 +334,25 @@ mod tests {
         let cfg = calculate_batch_config(num);
         assert_eq!(cfg.batch_cnt, 100);
         assert_eq!(cfg.batch_load, 200);
-        assert_eq!(cfg.thread_cnt, 20);
-        assert_eq!(cfg.thread_load, 5);
+        assert_eq!(cfg.thread_cnt, 5);
+        assert_eq!(cfg.thread_load, 20);
+
+        // assert that we are within one batch of the total
+        assert!(num <= cfg.batch_cnt * cfg.batch_load);
+        assert!(num / cfg.batch_cnt <= cfg.batch_load);
+        assert_eq!(100, cfg.thread_load * cfg.thread_cnt);
+    }
+
+    #[test]
+    fn batch_load_60000() {
+        let num = 60000;
+        let cfg = calculate_batch_config(num);
+
+        // assert the basic configuration
+        assert_eq!(cfg.batch_cnt, 100);
+        assert_eq!(cfg.batch_load, 600);
+        assert_eq!(cfg.thread_cnt, 5);
+        assert_eq!(cfg.thread_load, 20);
 
         // assert that we are within one batch of the total
         assert!(num <= cfg.batch_cnt * cfg.batch_load);
@@ -351,8 +368,8 @@ mod tests {
         // assert the basic configuration
         assert_eq!(cfg.batch_cnt, 100);
         assert_eq!(cfg.batch_load, 1121);
-        assert_eq!(cfg.thread_cnt, 25);
-        assert_eq!(cfg.thread_load, 4);
+        assert_eq!(cfg.thread_cnt, 10);
+        assert_eq!(cfg.thread_load, 10);
 
         // assert that we are within one batch of the total
         assert!(num <= cfg.batch_cnt * cfg.batch_load);
