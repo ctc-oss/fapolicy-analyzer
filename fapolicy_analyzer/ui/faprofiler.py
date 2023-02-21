@@ -147,35 +147,12 @@ class FaProfSession:
         self.status = ProfSessionStatus.QUEUED
         self.procTarget = None
 
-        # # Temp demo workaround for setting target log file paths
-        # log_dir = os.environ.get("FAPD_LOGPATH")
-        # if log_dir:
-        #     self.dStdout = f"{log_dir}_{self.name}.d.stdout"
-        #     self.tgtStdout = f"{log_dir}_{self.name}.t.stdout"
-        #     self.tgtStderr = f"{log_dir}_{self.name}.t.stderr"
-        # else:
         self.dStdout = f"{self.abs_baselogname}_{instance}.d.stdout"
         self.tgtStdout = f"{self.abs_baselogname}_{instance}.t.stdout"
         self.tgtStderr = f"{self.abs_baselogname}_{instance}.t.stderr"
 
-        # File descriptors are state variables; closed in stopTarget()
-        # self.fdTgtStdout = None
-        # self.fdTgtStderr = None
-
-        # try:
-        #     self.fdTgtStdout = open(self.tgtStdout, "w")
-        #     self.fdTgtStderr = open(self.tgtStderr, "w")
-        # except Exception as e:
-        #     logging.warning(f"{s.FAPROFILER_TGT_REDIRECTION_ERROR_MSG}: {e}")
-        #     dispatch(
-        #         add_notification(
-        #             s.FAPROFILER_TGT_REDIRECTION_ERROR_MSG + f": {e}",
-        #             NotificationType.ERROR,
-        #         )
-        #     )
-
         # Convert username to uid/gid
-        self.u_valid = False
+        # todo;; the profiler backend does this, may absorb
         try:
             if self.user:
                 # Get uid/gid of new user and the associated default group
@@ -184,26 +161,7 @@ class FaProfSession:
                 self.gid = pw_record.pw_gid
                 logging.info(f"The uid/gid of the profiling tgt: {self.uid}/{self.gid}")
 
-                # Change the ownership of profiling tgt's stdout and stderr
-                # logging.info(
-                #     f"Chown: {self.fdTgtStdout.name}, {self.fdTgtStderr.name}"
-                # )
-                # os.fchown(self.fdTgtStdout.fileno(), self.uid, self.gid)
-                # os.fchown(self.fdTgtStderr.fileno(), self.uid, self.gid)
-                # logging.info(
-                #     f"Changed the profiling tgt stdout/err ownership {self.uid},{self.gid}"
-                # )
-                self.u_valid = True
-            else:
-                # In production, the following will be the superuser defaults
-                self.uid = os.getuid()
-                self.gid = os.getgid()
-
         except Exception as e:
-            # Use current uid/gid if getpwnam() or chown throws an exception by
-            # setting prexec_fn = None
-            # Typically will only occur in debug/development runs
-
             logging.error(f"{s.FAPROFILER_TGT_EUID_CHOWN_ERROR_MSG}: {e}")
             dispatch(
                 add_notification(
@@ -211,9 +169,6 @@ class FaProfSession:
                     NotificationType.ERROR,
                 )
             )
-
-            self.uid = os.getuid()  # Place holder args to _demote()
-            self.gid = os.getgid()
 
     def startTarget(self):
         logging.info("FaProfSession::startTarget()")
@@ -224,8 +179,10 @@ class FaProfSession:
         profiler.daemon_stdout = self.dStdout
         profiler.target_stdout = self.tgtStdout
         profiler.target_stderr = self.tgtStderr
-        # profiler.rules = args.rules
         profiler.pwd = self.pwd
+
+        # todo;; future- profiler accepts arbitrary path to rules, needs supported here
+        # profiler.rules = args.rules
 
         profiler.exec_callback = self.execd
         profiler.done_callback = self.done
@@ -237,26 +194,10 @@ class FaProfSession:
 
             args = " ".join(self.listCmdLine)
             self.procTarget = profiler.profile(args)
-            #     subprocess.Popen(
-            #     self.listCmdLine,
-            #     stdout=self.fdTgtStdout,
-            #     stderr=self.fdTgtStderr,
-            #     cwd=self.pwd,
-            #     env=self.env,
-            #     preexec_fn=FaProfSession._demote(self.u_valid,
-            #                                      self.uid,
-            #                                      self.gid)
-            # )
-            # logging.debug(self.procTarget.pid)
-            # self.status = ProfSessionStatus.INPROGRESS
 
-            # Block until process terminates
-            # if block_until_termination:
-            #     logging.debug("Waiting for profiling target to terminate...")
-            #     self.procTarget.wait()
-
-            # todo;; set this in callback
-            #     self.status = ProfSessionStatus.COMPLETED
+            # todo;; update the status from callback
+            #        may need to decorate callback from ui view to do so
+            # self.status = ProfSessionStatus.COMPLETED
 
         except Exception as e:
             logging.error(f"Profiling target Popen failure: {e}")
@@ -277,12 +218,6 @@ class FaProfSession:
             self.procTarget.kill()
         #    self.status = ProfSessionStatus.COMPLETED
 
-        # if self.fdTgtStdout:
-        #     self.fdTgtStdout.close()
-        #
-        # if self.fdTgtStderr:
-        #     self.fdTgtStderr.close()
-
     def _get_profiling_timestamp(self):
         """
         Timestamp used in session logfile names is associated with the
@@ -299,15 +234,6 @@ class FaProfSession:
 
     def get_status(self):
         logging.info("FaProfSession::get_status()")
-
-        # Poll the Popen object if it exists, poll() returns None if running
-        # if self.procTarget:
-        #     if self.procTarget.poll() is None:
-        #         self.status = ProfSessionStatus.INPROGRESS
-        #     else:
-        #         self.status = ProfSessionStatus.COMPLETED
-        # else:
-        #     self.status = ProfSessionStatus.QUEUED
         return self.status
 
     def clean_all(self):
@@ -453,13 +379,6 @@ class FaProfSession:
 
         return dictReturn or {ProfSessionArgsStatus.OK: s.PROF_ARG_OK}
 
-    # def _demote(enable, user_uid, user_gid):
-    #     def result():
-    #         os.setgid(user_gid)
-    #         os.setuid(user_uid)
-    #
-    #     return result if enable else None
-
     def _comma_delimited_kv_string_to_dict(string_in):
         """Generates dictionary from comma separated string of k=v pairs"""
         if not string_in:
@@ -481,6 +400,7 @@ class FaProfiler:
     def __init__(self, fapd_mgr=None, fapd_persistance=True):
         logging.info("FaProfiler constructor")
         # self.fapd_mgr = fapd_mgr
+        self.faprofSession = None
         self.fapd_persistance = fapd_persistance
         self.fapd_pid = None
         self.fapd_prof_stdout = None
@@ -499,11 +419,6 @@ class FaProfiler:
         """
         logging.info("FaProfiler::start_prof_session(}")
         logging.debug(f"FaProfiler::start_prof_session('{dictArgs}')")
-        # self.fapd_mgr.start(FapdMode.PROFILING)
-        # if self.fapd_mgr.procProfile:
-        #     self.fapd_pid = self.fapd_mgr.procProfile.pid
-        #     self.fapd_prof_stdout = self.fapd_mgr.fapd_profiling_stdout
-        #     self.fapd_prof_stderr = self.fapd_mgr.fapd_profiling_stderr
 
         try:
             self.faprofSession = FaProfSession(dictArgs, execd, done, self.instance, self)
@@ -519,11 +434,6 @@ class FaProfiler:
             logging.error(e)
             raise e
 
-        # if not self.fapd_persistance:
-        #     self.fapd_mgr.stop(FapdMode.PROFILING)
-        #     self.fapd_pid = None
-        # else:
-        #     self.instance += 1
         return key
 
     def status_prof_session(self, sessionName=None):
@@ -543,10 +453,6 @@ class FaProfiler:
                 self.dictFaProfSession[k].stopTarget()
                 del self.dictFaProfSession[k]
         self.instance = 0
-        # self.fapd_mgr.stop(FapdMode.PROFILING)
 
     def get_profiling_timestamp(self):
-        # Use FapdManager's start timestamp if available
-        # if self.fapd_mgr:
-        #     self.strTimestamp = self.fapd_mgr._fapd_profiling_timestamp
         return self.strTimestamp
