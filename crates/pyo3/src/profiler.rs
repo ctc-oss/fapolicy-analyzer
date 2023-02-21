@@ -165,6 +165,7 @@ impl PyProfiler {
         // python accessible kill flag from proc handle
         let proc_handle = ProcHandle::default();
         let term = proc_handle.kill_flag.clone();
+        let alive = proc_handle.alive_flag.clone();
 
         // outer thread is responsible for daemon control
         thread::spawn(move || {
@@ -180,6 +181,8 @@ impl PyProfiler {
 
                     let mut execd = Execd::new(cmd.spawn().unwrap());
                     let handle = ExecHandle::new(execd.pid().unwrap(), args, term.clone());
+
+                    alive.store(true, Ordering::Relaxed);
 
                     if let Some(cb) = cb_exec.as_ref() {
                         Python::with_gil(|py| {
@@ -197,6 +200,8 @@ impl PyProfiler {
                             break;
                         }
                     }
+
+                    alive.store(false, Ordering::Relaxed);
 
                     // write the target stdout/stderr if configured
                     let output = execd.output().unwrap();
@@ -257,14 +262,21 @@ fn create_log_dest(path: Option<&String>) -> Option<File> {
     }
 }
 
+/// Terminable process handle returned to python after starting profiling
 #[derive(Default, Debug, Clone)]
 #[pyclass(module = "daemon", name = "ProcHandle")]
 struct ProcHandle {
     kill_flag: Arc<AtomicBool>,
+    alive_flag: Arc<AtomicBool>,
 }
 
 #[pymethods]
 impl ProcHandle {
+    #[getter]
+    fn running(&self) -> bool {
+        self.alive_flag.load(Ordering::Relaxed)
+    }
+
     fn kill(&self) {
         self.kill_flag.store(true, Ordering::Relaxed);
     }
@@ -305,6 +317,7 @@ impl ExecHandle {
     }
 }
 
+/// Internal struct used to inspect a running process
 struct Execd {
     proc: Option<Child>,
     output: Option<Output>,
