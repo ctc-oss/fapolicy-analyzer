@@ -53,16 +53,16 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
             "start": [
                 UIAction(
                     "Start",
-                    "Start Test",
+                    "Start Profiling",
                     "media-playback-start",
-                    {"clicked": self.on_test_activate},
+                    {"clicked": self.on_start_clicked},
                     sensitivity_func=self.start_button_sensitivity,
                 )
             ],
             "stop": [
                 UIAction(
                     "Stop",
-                    "Stop Test",
+                    "Stop Profiling",
                     "media-playback-stop",
                     {"clicked": self.on_stop_clicked},
                     sensitivity_func=self.stop_button_sensitivity,
@@ -71,7 +71,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
             "analyze": [
                 UIAction(
                     "Analyze",
-                    "Analyze Target",
+                    "Analyze Output",
                     "applications-science",
                     {"clicked": self.on_analyzerButton_clicked},
                     sensitivity_func=self.analyze_button_sensitivity,
@@ -169,7 +169,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         self.can_stop = True
         dispatch(set_profiler_output(f"<b>{h.pid}: Executing {h.cmd}</b>"))
         GLib.idle_add(self.refresh_toolbar)
-        # logging.debug(f"Start prof session {h.cmd} {h.pid}")
+        logging.debug(f"profiling started {h.pid}: {h.cmd}")
 
     def on_done(self):
         self.can_start = True
@@ -181,7 +181,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         GLib.idle_add(self.refresh_toolbar)
         self._fapd_profiler.stop_prof_session()
 
-    def on_test_activate(self, *args):
+    def on_start_clicked(self, *args):
         self.can_start = False
         self.refresh_toolbar()
         profiling_args = self.get_entry_dict()
