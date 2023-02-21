@@ -16,12 +16,10 @@
 import pytest
 import glob
 import os
-import re
 from unittest.mock import MagicMock
 from fapolicy_analyzer.ui.faprofiler import (
     FaProfiler,
     FaProfSession,
-    ProfSessionStatus,
     ProfSessionArgsStatus,
     ProfSessionException,
 )
@@ -93,10 +91,10 @@ def test_faprofsession_fopen_exception(mocker):
         "argText": "-ltr /tmp",
         "userText": os.getenv("USER"),
         "dirText": os.getenv("HOME"),
-        "envText": 'FAPD_LOGPATH=/tmp/tgt_profiler, XX="xx"',
+        "envText": 'XX="xx"',
     }
 
-    s = FaProfSession(dictArgs)
+    FaProfSession(dictArgs)
 
 
 def test_faprofsession_getpwnam_exception(mocker):
@@ -111,7 +109,7 @@ def test_faprofsession_getpwnam_exception(mocker):
         "argText": "-ltr /tmp",
         "userText": "ooo",
         "dirText": os.getenv("HOME"),
-        "envText": 'FAPD_LOGPATH=/tmp/tgt_profiler, XX="xx"',
+        "envText": 'XX="xx"',
     }
 
     with pytest.raises(Exception):
@@ -144,7 +142,7 @@ def test_faprofsession_log_redirection(mocker):
         "envText": 'PATH=/tmp:$PATH, XX="xx"',
     }
 
-    s = FaProfSession(dictArgs)
+    FaProfSession(dictArgs)
 
 
 # def test_startTarget(faProfSession, mocker):
@@ -239,7 +237,7 @@ def test_start_prof_session_w_exception(faProfiler, mocker):
         "argText": "-ltr /tmp",
         "userText": os.getenv("USER"),
         "dirText": os.getenv("HOME"),
-        "envText": "FAPD_LOGPATH=/tmp/tgt_profiler,XYZ=123",
+        "envText": "XYZ=123",
     }
 
     # Invalid argument will cause prof session object __init__() to throw
@@ -304,7 +302,7 @@ def test_validateArgs():
         "argText": "-ltr /tmp",
         "userText": os.getenv("USER"),
         "dirText": os.getenv("HOME"),
-        "envText": "FAPD_LOGPATH=/tmp/tgt_profiler,XYZ=123",
+        "envText": "XYZ=123",
     }
 
     # Test w/good args; only OK key is in returned dict
@@ -356,7 +354,7 @@ def test_validateArgs():
         "argText": "-ltr /tmp",
         "userText": "ooo",
         "dirText": os.getenv("HOME") + "/ng/",
-        "envText": "FAPD_LOGPATH=/tmp/tgt_profiler,XYZ=123",
+        "envText": "XYZ=123",
     }
 
     dict_valid_args_return = FaProfSession.validateArgs(dictArgs)

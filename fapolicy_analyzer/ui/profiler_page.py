@@ -21,7 +21,6 @@ from events import Events
 from fapolicy_analyzer.ui.actions import (
     clear_profiler_state,
     set_profiler_output,
-    set_profiler_analysis_file,
     set_profiler_state,
 )
 from fapolicy_analyzer.ui.actions import NotificationType, add_notification
