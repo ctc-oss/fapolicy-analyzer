@@ -144,6 +144,7 @@ def test_faprofsession_log_redirection(mocker):
 
     FaProfSession(dictArgs)
 
+
 def test_startTarget(faProfSession, mocker):
     handle = MagicMock()
     mocker.patch(
