@@ -18,8 +18,8 @@ use std::path::PathBuf;
 use std::process::{Child, Command, Output, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
+use std::thread;
 use std::time::Duration;
-use std::{io, thread};
 
 use fapolicy_daemon::profiler::Profiler;
 use fapolicy_rules::read::load_rules_db;
@@ -179,10 +179,14 @@ impl PyProfiler {
                         break;
                     }
 
+                    // start the process, wrapping in the execd helper
                     let mut execd = Execd::new(cmd.spawn().unwrap());
-                    let handle = ExecHandle::new(execd.pid().unwrap(), args, term.clone());
 
+                    // the process is now alive
                     alive.store(true, Ordering::Relaxed);
+
+                    let pid = execd.pid().expect("pid");
+                    let handle = ExecHandle::new(pid, args, term.clone());
 
                     if let Some(cb) = cb_exec.as_ref() {
                         Python::with_gil(|py| {
@@ -201,10 +205,22 @@ impl PyProfiler {
                         }
                     }
 
+                    // we need to wait on the process to die, instead of just blocking
+                    // this loop provides the ability to add a harder stop impl, abort
+                    term.store(false, Ordering::Relaxed);
+                    while let Ok(true) = execd.running() {
+                        if term.load(Ordering::Relaxed) {
+                            execd.abort().expect("abort fail (term)");
+                            break;
+                        }
+                        thread::sleep(Duration::from_secs(1));
+                    }
+
+                    // no longer alive
                     alive.store(false, Ordering::Relaxed);
 
                     // write the target stdout/stderr if configured
-                    let output = execd.output().unwrap();
+                    let output: Output = execd.into();
                     if let Some(mut f) = stdout_log.as_ref() {
                         f.write_all(&output.stdout).unwrap();
                     }
@@ -214,8 +230,8 @@ impl PyProfiler {
                 }
             });
 
-            if inner.join().is_err() {
-                eprintln!("proc thread panic");
+            if let Some(e) = inner.join().err() {
+                eprintln!("exec thread panic {:?}", e);
             }
 
             rs.deactivate().expect("deactivate profiler");
@@ -323,6 +339,17 @@ struct Execd {
     output: Option<Output>,
 }
 
+impl From<Execd> for Output {
+    fn from(mut value: Execd) -> Self {
+        value
+            .proc
+            .take()
+            .unwrap()
+            .wait_with_output()
+            .expect("failed to get output")
+    }
+}
+
 impl Execd {
     fn new(proc: Child) -> Execd {
         Execd {
@@ -331,15 +358,12 @@ impl Execd {
         }
     }
 
-    /// get the process id (pid) if currently active
-    fn pid(&self) -> PyResult<u32> {
-        match self.proc.as_ref() {
-            Some(c) => Ok(c.id()),
-            None => Err(PyRuntimeError::new_err("No process")),
-        }
+    /// Get the process id (pid), None if inactive
+    fn pid(&self) -> Option<u32> {
+        self.proc.as_ref().map(|p| p.id())
     }
 
-    /// check to see if the process is still running
+    /// Is process is still running?, never blocks
     fn running(&mut self) -> PyResult<bool> {
         match self.proc.as_mut().unwrap().try_wait() {
             Ok(Some(_)) => Ok(false),
@@ -348,11 +372,7 @@ impl Execd {
         }
     }
 
-    fn output(&mut self) -> io::Result<Output> {
-        self.proc.take().unwrap().wait_with_output()
-    }
-
-    /// cancel the process, without blocking, no output will be available
+    /// Cancel the process, without blocking
     fn kill(&mut self) -> PyResult<()> {
         println!("killed");
         self.proc
@@ -362,16 +382,9 @@ impl Execd {
             .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
     }
 
-    /// cancel the process, blocking until it ends, output is available
+    /// Kill more
     fn abort(&mut self) -> PyResult<()> {
-        self.kill()?;
-        let output = self
-            .proc
-            .take()
-            .unwrap()
-            .wait_with_output()
-            .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))?;
-        self.output = Some(output);
+        eprintln!("abort is not yet implemented");
         Ok(())
     }
 }
