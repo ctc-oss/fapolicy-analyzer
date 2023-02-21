@@ -295,11 +295,7 @@ class FaProfSession:
         """
         logging.info("validateArgs()")
         # Verify all keys are in dictProfTgt; delta_keys should be empty.
-        expected_keys = set(["executeText",
-                             "argText",
-                             "userText",
-                             "dirText",
-                             "envText"])
+        expected_keys = {"executeText", "argText", "userText", "dirText", "envText"}
         delta_keys = expected_keys.difference(dictProfTgt.keys())
         if delta_keys:
             raise KeyError(f"Missing {delta_keys} key(s) from Profiler Page")
@@ -407,7 +403,8 @@ class FaProfSession:
 class FaProfiler:
     def __init__(self, fapd_mgr=None, fapd_persistance=True):
         logging.info("FaProfiler constructor")
-        # self.fapd_mgr = fapd_mgr
+        self.fapd_mgr = fapd_mgr
+
         self.faprofSession = None
         self.fapd_persistance = fapd_persistance
         self.fapd_pid = None
@@ -463,4 +460,7 @@ class FaProfiler:
         self.instance = 0
 
     def get_profiling_timestamp(self):
+        # Use FapdManager's start timestamp if available
+        if self.fapd_mgr:
+            self.strTimestamp = self.fapd_mgr._fapd_profiling_timestamp
         return self.strTimestamp

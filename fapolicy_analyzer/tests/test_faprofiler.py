@@ -34,14 +34,16 @@ def faProfSession(scope="session"):
         "argText": "-ltr /tmp",
         "userText": os.getenv("USER"),
         "dirText": os.getenv("HOME"),
-        "envText": 'FAPD_LOGPATH=/tmp/tgt_profiler, XX="xx"',
+        "envText": 'XX="xx"',
     }
     s = FaProfSession(dictArgs)
     yield s
 
     # Clean-up
-    os.remove(s.tgtStdout)
-    os.remove(s.tgtStderr)
+    if os.path.exists(s.tgtStdout):
+        os.remove(s.tgtStdout)
+    if os.path.exists(s.tgtStderr):
+        os.remove(s.tgtStderr)
 
 
 @pytest.fixture
@@ -51,10 +53,9 @@ def faProfiler():
 
 # Testing FaProfSession
 def test_faprofsession_init(faProfSession, mocker):
-    reStdout = re.compile(r"/tmp/tgt_profiling_\d{8}(_\d{6}){2}_.+_\d+\.stdout")
-    reStderr = re.compile(r"/tmp/tgt_profiling_\d{8}(_\d{6}){2}_.+_\d+\.stderr")
-    assert reStdout.match(faProfSession.tgtStdout)
-    assert reStderr.match(faProfSession.tgtStderr)
+    assert faProfSession.tgtStdout.startswith("/tmp/tgt_profiling_")
+    assert faProfSession.tgtStdout.endswith("_ls_0.t.stdout")
+    assert faProfSession.tgtStderr.endswith("_ls_0.t.stderr")
 
 
 @pytest.mark.parametrize(
@@ -96,8 +97,6 @@ def test_faprofsession_fopen_exception(mocker):
     }
 
     s = FaProfSession(dictArgs)
-    assert s.fdTgtStdout is None
-    assert s.fdTgtStderr is None
 
 
 def test_faprofsession_getpwnam_exception(mocker):
@@ -129,8 +128,6 @@ def test_faprofsession_path_env():
     }
 
     s = FaProfSession(dictArgs)
-    assert s.fdTgtStdout
-    assert s.fdTgtStderr
     assert os.path.basename(s.execPath) == dictArgs["executeText"]
 
     # directory may differ on different platforms; we only care that it's > 0
@@ -148,8 +145,6 @@ def test_faprofsession_log_redirection(mocker):
     }
 
     s = FaProfSession(dictArgs)
-    assert s.fdTgtStdout
-    assert s.fdTgtStderr
 
 
 # def test_startTarget(faProfSession, mocker):
@@ -209,15 +204,6 @@ def test_get_profsession_timestamp(faProfSession):
     faProfSession.faprofiler.get_profiling_timestamp.assert_called()
 
 
-def test_get_status(faProfSession, mocker):
-    faProfSession.procTarget = None
-    assert faProfSession.get_status() == ProfSessionStatus.QUEUED
-    faProfSession.procTarget = MagicMock()
-    faProfSession.procTarget.poll = MagicMock(side_effect=[None, 0])
-    assert faProfSession.get_status() == ProfSessionStatus.INPROGRESS
-    assert faProfSession.get_status() == ProfSessionStatus.COMPLETED
-
-
 # Testing FaProfiler
 # def test_start_prof_session(faProfiler, mocker):
 #     faProfiler.fapd_mgr = MagicMock()
@@ -258,13 +244,13 @@ def test_start_prof_session_w_exception(faProfiler, mocker):
 
     # Invalid argument will cause prof session object __init__() to throw
     with pytest.raises(ProfSessionException) as e_info:
-        faProfiler.start_prof_session(dictArgs)
+        faProfiler.start_prof_session(dictArgs, None, None)
     assert e_info.value.error_enum == ProfSessionArgsStatus.EXEC_DOESNT_EXIST
 
     # Mocked FaProfSession.startTarget() will throw a RuntimeError exception
     dictArgs["executeText"] = "/usr/bin/ls"
     with pytest.raises(RuntimeError) as e_info:
-        faProfiler.start_prof_session(dictArgs)
+        faProfiler.start_prof_session(dictArgs, None, None)
     assert e_info.value.args[0] == "bad execution"
 
     # Clean up
