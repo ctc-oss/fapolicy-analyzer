@@ -37,11 +37,11 @@ def faProfSession(scope="session"):
     s = FaProfSession(dictArgs)
     yield s
 
-    # Clean-up
-    if os.path.exists(s.tgtStdout):
-        os.remove(s.tgtStdout)
-    if os.path.exists(s.tgtStderr):
-        os.remove(s.tgtStderr)
+    # Clean up
+    for f in glob.glob("/tmp/tgt_profiling_*.stdout"):
+        os.remove(f)
+    for f in glob.glob("/tmp/tgt_profiling_*.stderr"):
+        os.remove(f)
 
 
 @pytest.fixture
