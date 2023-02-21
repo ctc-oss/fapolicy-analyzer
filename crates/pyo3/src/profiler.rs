@@ -19,7 +19,7 @@ use std::process::{Child, Command, Output, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, SystemTime};
 
 use fapolicy_daemon::profiler::Profiler;
 use fapolicy_rules::read::load_rules_db;
@@ -38,8 +38,9 @@ pub struct PyProfiler {
     daemon_stdout: Option<String>,
     target_stdout: Option<String>,
     target_stderr: Option<String>,
-    callback_done: Option<PyObject>,
     callback_exec: Option<PyObject>,
+    callback_tick: Option<PyObject>,
+    callback_done: Option<PyObject>,
 }
 
 #[pymethods]
@@ -116,13 +117,18 @@ impl PyProfiler {
     }
 
     #[setter]
-    fn set_done_callback(&mut self, f: PyObject) {
-        self.callback_done = Some(f);
+    fn set_exec_callback(&mut self, f: PyObject) {
+        self.callback_exec = Some(f);
     }
 
     #[setter]
-    fn set_exec_callback(&mut self, f: PyObject) {
-        self.callback_exec = Some(f);
+    fn set_tick_callback(&mut self, f: PyObject) {
+        self.callback_tick = Some(f);
+    }
+
+    #[setter]
+    fn set_done_callback(&mut self, f: PyObject) {
+        self.callback_done = Some(f);
     }
 
     fn profile(&self, target: &str) -> PyResult<ProcHandle> {
@@ -160,6 +166,7 @@ impl PyProfiler {
 
         // cloned handles to move into the exec thread
         let cb_exec = self.callback_exec.clone();
+        let cb_tick = self.callback_tick.clone();
         let cb_done = self.callback_done.clone();
 
         // python accessible kill flag from proc handle
@@ -187,11 +194,12 @@ impl PyProfiler {
 
                     let pid = execd.pid().expect("pid");
                     let handle = ExecHandle::new(pid, args, term.clone());
+                    let start = SystemTime::now();
 
                     if let Some(cb) = cb_exec.as_ref() {
                         Python::with_gil(|py| {
                             if cb.call1(py, (handle.clone(),)).is_err() {
-                                eprintln!("failed make 'exec' callback");
+                                eprintln!("'exec' callback failed");
                             }
                         });
                     }
@@ -202,6 +210,17 @@ impl PyProfiler {
                         if term.load(Ordering::Relaxed) {
                             execd.kill().expect("kill fail (term)");
                             break;
+                        }
+                        if let Some(cb) = cb_tick.as_ref() {
+                            let t = SystemTime::now()
+                                .duration_since(start)
+                                .expect("system time")
+                                .as_secs();
+                            Python::with_gil(|py| {
+                                if cb.call1(py, (handle.clone(), t)).is_err() {
+                                    eprintln!("'tick' callback failed");
+                                }
+                            });
                         }
                     }
 

@@ -92,13 +92,14 @@ class ProfSessionException(RuntimeError):
 
 # ########################## Profiler Session ###########################
 class FaProfSession:
-    def __init__(self, dictProfTgt, execd=None, done=None, instance=0, faprofiler=None):
+    def __init__(self, dictProfTgt, execd=None, tick=None, done=None, instance=0, faprofiler=None):
         logging.info("FaProfSession constructed")
         logging.debug(f"FaProfSession::__init__({dictProfTgt}, {faprofiler})")
         self.throwOnInvalidSessionArgs(dictProfTgt)
         self.timeStamp = None
 
         self.execd = execd
+        self.tick = tick
         self.done = done
 
         # euid, working directory and environment variables
@@ -193,6 +194,7 @@ class FaProfSession:
         # profiler.rules = args.rules
 
         profiler.exec_callback = self.execd
+        profiler.tick_callback = self.tick
         profiler.done_callback = self.done
 
         # Capture process object
@@ -416,7 +418,7 @@ class FaProfiler:
         self.dictFaProfSession = dict()  # dict of current / completed sessions
         self.instance = 0
 
-    def start_prof_session(self, dictArgs, execd, done):
+    def start_prof_session(self, dictArgs, execd, tick, done):
         """
         Invoke target executable.
         self.dictFaProfSession is a dict of current tgt profiling sessions
@@ -426,7 +428,7 @@ class FaProfiler:
         logging.debug(f"FaProfiler::start_prof_session('{dictArgs}')")
 
         try:
-            self.faprofSession = FaProfSession(dictArgs, execd, done, self.instance, self)
+            self.faprofSession = FaProfSession(dictArgs, execd, tick, done, self.instance, self)
         except ProfSessionException as e:
             logging.error(e)
             raise e

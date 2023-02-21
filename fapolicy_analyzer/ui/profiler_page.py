@@ -15,6 +15,7 @@
 
 import html
 import logging
+import datetime
 
 import gi
 from events import Events
@@ -162,7 +163,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
                     spacers = len(run_file)
                 markup += f"<b>{'=' * spacers}</b>\n"
             except OSError as ex:
-                logging.error(f"There was an issue reading from {run_file}.", ex)
+                logging.error(f"There was an issue reading from {run_file}", ex)
         dispatch(set_profiler_output(markup))
 
     def on_execd(self, h):
@@ -171,6 +172,10 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         GLib.idle_add(self.refresh_toolbar)
         logging.debug(f"profiling started {h.pid}: {h.cmd}")
 
+    def on_tick(self, h, d):
+        t = datetime.timedelta(seconds=d)
+        dispatch(set_profiler_output(f"<b>{h.pid}: Executing {h.cmd} {t}</b>"))
+
     def on_done(self):
         self.can_start = True
         self.display_log_output()
@@ -178,12 +183,13 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
 
     def on_stop_clicked(self, *args):
         self.can_stop = False
-        GLib.idle_add(self.refresh_toolbar)
+        self.refresh_toolbar()
         self._fapd_profiler.stop_prof_session()
 
     def on_start_clicked(self, *args):
         self.can_start = False
         self.refresh_toolbar()
+
         profiling_args = self.get_entry_dict()
         if not FaProfSession.validSessionArgs(profiling_args):
             logging.info("Invalid Profiler arguments")
@@ -195,6 +201,8 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
                     NotificationType.ERROR,
                 )
             )
+            self.can_start = True
+            self.refresh_toolbar()
             return
 
         logging.debug(f"Entry text = {profiling_args}")
@@ -203,7 +211,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         ).get_active()
 
         try:
-            self._fapd_profiler.start_prof_session(profiling_args, self.on_execd, self.on_done)
+            self._fapd_profiler.start_prof_session(profiling_args, self.on_execd, self.on_tick, self.on_done)
 
         except ProfSessionException as e:
             # Profiler Session creation failed because of bad args
