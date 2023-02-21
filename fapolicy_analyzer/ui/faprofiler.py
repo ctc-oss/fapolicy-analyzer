@@ -439,6 +439,8 @@ class FaProfiler:
             logging.error(e)
             raise e
 
+        self.instance += 1
+
         return key
 
     def status_prof_session(self, sessionName=None):
