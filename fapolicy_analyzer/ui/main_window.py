@@ -15,6 +15,7 @@
 
 import logging
 import os
+from enum import Enum
 from locale import gettext as _
 from os import getenv, geteuid, path
 from threading import Thread
@@ -27,7 +28,12 @@ import fapolicy_analyzer.ui.strings as strings
 from fapolicy_analyzer import System
 from fapolicy_analyzer import __version__ as app_version
 from fapolicy_analyzer.ui.action_toolbar import ActionToolbar
-from fapolicy_analyzer.ui.actions import NotificationType, add_notification
+from fapolicy_analyzer.ui.actions import (
+    NotificationType,
+    add_notification,
+    request_ancillary_trust,
+    request_system_trust,
+)
 from fapolicy_analyzer.ui.changeset_wrapper import Changeset
 from fapolicy_analyzer.ui.configs import Sizing
 from fapolicy_analyzer.ui.database_admin_page import DatabaseAdminPage
@@ -95,7 +101,7 @@ class MainWindow(UIConnectedWidget):
         self.mainContent = self.get_object("mainContent")
         # Set menu items in default initial state
         self.get_object("restoreMenu").set_sensitive(False)
-        self.__set_trustDbMenu_sensitive(False)
+        # self.__set_trustDbMenu_sensitive(False)
 
         # Set fapd status UI element to default 'No' = Red button
         self.fapdStatusLight.set_from_icon_name("process-stop", size=4)
@@ -190,16 +196,20 @@ class MainWindow(UIConnectedWidget):
         dlgSessionRestorePrompt.destroy()
         return response
 
-    def __set_trustDbMenu_sensitive(self, sensitive):
-        menuItem = self.get_object("trustDbMenu")
-        menuItem.set_sensitive(sensitive)
+    # def __set_trustDbMenu_sensitive(self, sensitive):
+    #     menuItem = self.get_object("trustDbMenu")
+    #     menuItem.set_sensitive(sensitive)
 
     def __dirty_changesets(self):
         return len(self.__changesets) > 0
 
     def on_start(self, *args):
         logging.info("MainWindow::on_start()")
-        self.__pack_main_content(router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN))
+        self.__pack_main_content(router(ANALYZER_SELECTION.RULES_ADMIN))
+
+        # start trust loading
+        dispatch(request_system_trust())
+        dispatch(request_ancillary_trust())
 
         # On startup check for the existing of a tmp session file
         # If detected, alert the user, enable the File|Restore menu item
@@ -383,7 +393,7 @@ class MainWindow(UIConnectedWidget):
             "height_request", int(height * Sizing.POLICY_BOTTOM_BOX)
         )
         self.__pack_main_content(page)
-        self.__set_trustDbMenu_sensitive(True)
+        # self.__set_trustDbMenu_sensitive(True)
 
     def on_analyzeMenu_activate(self, *args):
         fcd = Gtk.FileChooserDialog(
@@ -408,16 +418,16 @@ class MainWindow(UIConnectedWidget):
                 "height_request", int(height * Sizing.POLICY_BOTTOM_BOX)
             )
             self.__pack_main_content(page)
-            self.__set_trustDbMenu_sensitive(True)
+            # self.__set_trustDbMenu_sensitive(True)
         fcd.destroy()
 
     def activate_file_analyzer(self, file):
         self.__pack_main_content(router(ANALYZER_SELECTION.ANALYZE_FROM_AUDIT, file))
-        self.__set_trustDbMenu_sensitive(True)
+        # self.__set_trustDbMenu_sensitive(True)
 
     def on_trustDbMenu_activate(self, menuitem, *args):
         self.__pack_main_content(router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN))
-        self.__set_trustDbMenu_sensitive(False)
+        # self.__set_trustDbMenu_sensitive(False)
 
     def on_rulesAdminMenu_activate(self, *args, **kwargs):
         rulesPage = router(ANALYZER_SELECTION.RULES_ADMIN)
@@ -425,14 +435,14 @@ class MainWindow(UIConnectedWidget):
             rulesPage.highlight_row_from_data(kwargs["rule_id"])
         self.__pack_main_content(rulesPage)
         # TODO: figure out a good way to set sensitivity on the menu items based on what is selected
-        self.__set_trustDbMenu_sensitive(True)
+        # self.__set_trustDbMenu_sensitive(True)
 
     def on_profileExecMenu_activate(self, *args):
         page = router(ANALYZER_SELECTION.PROFILER, self._fapd_mgr)
         page.analyze_button_pushed += self.activate_file_analyzer
         page.refresh_toolbar += self._refresh_toolbar
         self.__pack_main_content(page)
-        self.__set_trustDbMenu_sensitive(True)
+        # self.__set_trustDbMenu_sensitive(True)
 
     def _refresh_toolbar(self):
         self.__toolbar.refresh_buttons_sensitivity()
