@@ -103,6 +103,8 @@ class FaProfSession:
 
         # euid, working directory and environment variables
         self.user = dictProfTgt.get("userText", "")
+        self.uid = None
+        self.gid = None
 
         # Set pwd - Use current dir for pwd if not supplied by user
         self.pwd = dictProfTgt.get("dirText") or os.getcwd()
@@ -174,14 +176,20 @@ class FaProfSession:
         logging.info("FaProfSession::startTarget()")
 
         profiler = Profiler()
-        profiler.uid = self.uid
-        profiler.gid = self.gid
         profiler.daemon_stdout = self.dStdout
         profiler.target_stdout = self.tgtStdout
         profiler.target_stderr = self.tgtStderr
-        profiler.pwd = self.pwd
 
-        # todo;; future- profiler accepts arbitrary path to rules, needs supported here
+        if self.uid:
+            profiler.uid = self.uid
+        if self.gid:
+            profiler.gid = self.gid
+        if self.pwd:
+            profiler.pwd = self.pwd
+
+        # todo;; the profiler will accept arbitrary paths to rules
+        #        writing the current system rules to a tmp location
+        #        and paassing it in here would be one way to support
         # profiler.rules = args.rules
 
         profiler.exec_callback = self.execd
