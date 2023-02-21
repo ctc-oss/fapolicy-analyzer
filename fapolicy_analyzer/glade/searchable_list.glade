@@ -18,11 +18,6 @@
 -->
 <interface>
   <requires lib="gtk+" version="3.22"/>
-  <object class="GtkLabel" id="overlayLabel">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="justify">center</property>
-  </object>
   <object class="GtkBox" id="searchableList">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -80,12 +75,18 @@
             <property name="can_focus">False</property>
             <property name="orientation">vertical</property>
             <child>
-              <object class="GtkScrolledWindow" id="viewScrolledWindow">
+              <object class="GtkScrolledWindow">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="shadow_type">in</property>
                 <child>
-                    <placeholder/>
+                  <object class="GtkTreeView" id="treeView">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <child internal-child="selection">
+                      <object class="GtkTreeSelection" id="treeSelection"/>
+                    </child>
+                  </object>
                 </child>
               </object>
               <packing>
@@ -139,13 +140,6 @@
         <property name="fill">True</property>
         <property name="position">2</property>
       </packing>
-    </child>
-  </object>
-  <object class="GtkTreeView" id="treeView">
-    <property name="visible">True</property>
-    <property name="can-focus">True</property>
-    <child internal-child="selection">
-      <object class="GtkTreeSelection" id="treeSelection"/>
     </child>
   </object>
 </interface>

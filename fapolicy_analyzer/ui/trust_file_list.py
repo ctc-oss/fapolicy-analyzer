@@ -75,6 +75,7 @@ class TrustFileList(SearchableList):
         self.refresh()
         self.selection_changed += self.__handle_selection_changed
         self.get_ref().connect("destroy", self.on_destroy)
+        self.show_trusted = False
 
     def __handle_selection_changed(self, data):
         trust = [datum[3] for datum in data] if data else None
@@ -198,7 +199,7 @@ class TrustFileList(SearchableList):
             for data in trust:
                 if self.__event.is_set():
                     return
-                if data.status.lower() == "u":
+                if self.show_trusted or data.status.lower() == "u":
                     self.__queue.put(self._row_data(data))
 
         if not self.__event.is_set():

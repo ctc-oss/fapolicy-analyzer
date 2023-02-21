@@ -72,7 +72,6 @@ class SearchableList(UIBuilderWidget, Events):
         self.set_action_buttons(*actionButtons)
 
     def _filter_view(self, model, iter, data):
-        return True if model[iter][1] == "Missing" else False
         filter = self.get_object("search").get_text()
         return True if not filter else filter in model[iter][self.searchColumnIndex]
 
