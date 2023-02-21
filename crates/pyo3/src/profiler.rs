@@ -336,9 +336,9 @@ impl ExecHandle {
 /// Internal struct used to inspect a running process
 struct Execd {
     proc: Option<Child>,
-    output: Option<Output>,
 }
 
+/// Consume the [Execd] into an [Output], blocking until the process completes
 impl From<Execd> for Output {
     fn from(mut value: Execd) -> Self {
         value
@@ -352,10 +352,7 @@ impl From<Execd> for Output {
 
 impl Execd {
     fn new(proc: Child) -> Execd {
-        Execd {
-            proc: Some(proc),
-            output: None,
-        }
+        Execd { proc: Some(proc) }
     }
 
     /// Get the process id (pid), None if inactive
