@@ -6,8 +6,11 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+use confy::ConfyError;
+use directories::ProjectDirs;
 use serde::Deserialize;
 use serde::Serialize;
+use std::path::PathBuf;
 
 use crate::error::Error;
 use crate::error::Error::ConfigError;
@@ -25,6 +28,13 @@ pub struct All {
 impl All {
     pub fn load() -> Result<All, Error> {
         confy::load(PROJECT_NAME).map_err(ConfigError)
+    }
+
+    pub fn config_dir() -> Result<PathBuf, Error> {
+        // the arguments here match the confy::load impl
+        ProjectDirs::from("rs", "", PROJECT_NAME)
+            .ok_or(ConfigError(ConfyError::BadConfigDirectoryStr))
+            .map(|d| d.config_dir().to_path_buf())
     }
 
     pub fn data_dir(&self) -> &str {
