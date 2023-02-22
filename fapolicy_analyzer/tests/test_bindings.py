@@ -14,9 +14,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from fapolicy_analyzer import config_file_path
-import test_xdg_utils
+
 
 def test_config_file_path():
     result = config_file_path()
     assert result.endswith(".config/fapolicy-analyzer")
-
