@@ -30,11 +30,13 @@ impl All {
         confy::load(PROJECT_NAME).map_err(ConfigError)
     }
 
-    pub fn config_dir() -> Result<PathBuf, Error> {
-        // the arguments here match the confy::load impl
-        ProjectDirs::from("rs", "", PROJECT_NAME)
-            .ok_or(ConfigError(ConfyError::BadConfigDirectoryStr))
-            .map(|d| d.config_dir().to_path_buf())
+    pub fn config_file() -> Result<PathBuf, Error> {
+        // this matches the confy impl
+        let project =
+            ProjectDirs::from("rs", "", PROJECT_NAME).ok_or(ConfyError::BadConfigDirectoryStr)?;
+        let mut config = project.config_dir().to_path_buf();
+        config.push("config.toml");
+        Ok(config)
     }
 
     pub fn data_dir(&self) -> &str {
@@ -48,7 +50,7 @@ mod tests {
 
     #[test]
     fn check_config_dir() {
-        let path = All::config_dir().expect("conf path");
-        assert!(path.ends_with(format!(".config/{}", PROJECT_NAME)));
+        let path = All::config_file().expect("conf path");
+        assert!(path.ends_with(format!(".config/{}/config.toml", PROJECT_NAME)));
     }
 }

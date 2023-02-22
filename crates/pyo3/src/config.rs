@@ -14,7 +14,7 @@ use fapolicy_app::cfg;
 /// Provide path to the application config file
 #[pyfunction]
 fn config_file_path() -> PyResult<String> {
-    cfg::All::config_dir()
+    cfg::All::config_file()
         .map(|p| p.display().to_string())
         .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
 }
