@@ -98,7 +98,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         self.analysis_file = ""
 
     def analyze_button_sensitivity(self):
-        return self.analysis_available
+        return self.analysis_available and self.can_start
 
     def on_next_system(self, system):
         if not self.inputDict == system.get("profiler").entry:
