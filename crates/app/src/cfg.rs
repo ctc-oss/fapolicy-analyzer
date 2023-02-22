@@ -27,11 +27,12 @@ pub struct All {
 
 impl All {
     pub fn load() -> Result<All, Error> {
-        confy::load(PROJECT_NAME).map_err(ConfigError)
+        let conf_file = All::config_file()?;
+        confy::load_path(conf_file).map_err(ConfigError)
     }
 
     pub fn config_file() -> Result<PathBuf, Error> {
-        // this matches the confy impl
+        // this matches the default confy impl
         let project =
             ProjectDirs::from("rs", "", PROJECT_NAME).ok_or(ConfyError::BadConfigDirectoryStr)?;
         let mut config = project.config_dir().to_path_buf();
