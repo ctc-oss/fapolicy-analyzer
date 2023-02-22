@@ -17,5 +17,4 @@ from fapolicy_analyzer import config_file_path
 
 
 def test_config_file_path():
-    result = config_file_path()
-    assert result.endswith(".config/fapolicy-analyzer")
+    assert config_file_path().endswith(".config/fapolicy-analyzer")
