@@ -41,3 +41,14 @@ impl All {
         self.application.data_dir.as_str()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn check_config_dir() {
+        let path = All::config_dir().expect("conf path");
+        assert!(path.ends_with(format!(".config/{}", PROJECT_NAME)));
+    }
+}
