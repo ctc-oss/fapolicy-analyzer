@@ -24,11 +24,7 @@ from fapolicy_analyzer.ui.ancillary_trust_database_admin import (
     AncillaryTrustDatabaseAdmin,
 )
 from fapolicy_analyzer.ui.system_trust_database_admin import SystemTrustDatabaseAdmin
-from fapolicy_analyzer.ui.ui_page import UIPage
 from fapolicy_analyzer.ui.ui_widget import UIWidget
-
-gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk  # isort: skip
 
 
 class DatabaseAdminPage(UIWidget, UIPage):
@@ -64,8 +60,6 @@ class DatabaseAdminPage(UIWidget, UIPage):
 
         notebook.set_current_page(1)
         notebook.show_all()
-
-
 
     def on_added_to_ancillary_trust(self, *files):
         self.ancillaryTrustDbAdmin.add_trusted_files(*files)

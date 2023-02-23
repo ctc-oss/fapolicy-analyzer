@@ -154,7 +154,6 @@ class TrustFileList(SearchableList):
             scrolled_window.add(self.treeView)
         scrolled_window.show_all()
 
-
     def init_list(self, count_of_trust_entries):
         store = Gtk.ListStore(str, str, str, object, str, str)
         self.load_store(count_of_trust_entries, store)
@@ -174,7 +173,8 @@ class TrustFileList(SearchableList):
                 return False
 
             count = self._get_tree_count()
-            if count < total:
+
+            if count < self.total:
                 pct = int(count / total * 100)
                 self._update_loading_status(f(_("Loading trust {pct}% complete...")))
                 self._update_progress(pct)
@@ -192,7 +192,8 @@ class TrustFileList(SearchableList):
         self.search.set_sensitive(False)
         self.search.set_tooltip_text(FILTERING_DISABLED_DURING_LOADING_MESSAGE)
         self.__queue = Queue()
-        GLib.timeout_add(200, process_rows, self.__queue, count_of_trust_entries)
+        self.total = count_of_trust_entries
+        GLib.timeout_add(200, process_rows, self.__queue, self.total)
 
     def append_trust(self, trust):
         def process_trust(trust):
