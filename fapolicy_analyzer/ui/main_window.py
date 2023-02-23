@@ -1,3 +1,33 @@
+# Copyright Concurrent Technologies Corporation 2023
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+# Copyright Concurrent Technologies Corporation 2023
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 # Copyright Concurrent Technologies Corporation 2021
 #
 # This program is free software: you can redistribute it and/or modify
@@ -15,7 +45,6 @@
 
 import logging
 import os
-from enum import Enum
 from locale import gettext as _
 from os import getenv, geteuid, path
 from threading import Thread
@@ -32,6 +61,7 @@ from fapolicy_analyzer.ui.actions import (
     NotificationType,
     add_notification,
     request_ancillary_trust,
+    request_app_config,
     request_system_trust,
 )
 from fapolicy_analyzer.ui.changeset_wrapper import Changeset
@@ -45,7 +75,12 @@ from fapolicy_analyzer.ui.policy_rules_admin_page import PolicyRulesAdminPage
 from fapolicy_analyzer.ui.profiler_page import ProfilerPage
 from fapolicy_analyzer.ui.rules import RulesAdminPage
 from fapolicy_analyzer.ui.session_manager import sessionManager
-from fapolicy_analyzer.ui.store import dispatch, get_system_feature
+from fapolicy_analyzer.ui.store import (
+    dispatch,
+    get_application_feature,
+    get_system_feature,
+)
+from fapolicy_analyzer.ui.types import PAGE_SELECTION
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 from fapolicy_analyzer.ui.unapplied_changes_dialog import UnappliedChangesDialog
@@ -55,22 +90,14 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, GLib  # isort: skip
 
 
-class ANALYZER_SELECTION(Enum):
-    TRUST_DATABASE_ADMIN = 0
-    RULES_ADMIN = 1
-    ANALYZE_FROM_AUDIT = 2
-    ANALYZE_SYSLOG = 3
-    PROFILER = 4
-
-
-def router(selection: ANALYZER_SELECTION, data: Any = None) -> UIPage:
+def router(page: PAGE_SELECTION, data: Any = None) -> UIPage:
     route = {
-        ANALYZER_SELECTION.TRUST_DATABASE_ADMIN: DatabaseAdminPage,
-        ANALYZER_SELECTION.ANALYZE_FROM_AUDIT: PolicyRulesAdminPage,
-        ANALYZER_SELECTION.ANALYZE_SYSLOG: PolicyRulesAdminPage,
-        ANALYZER_SELECTION.RULES_ADMIN: RulesAdminPage,
-        ANALYZER_SELECTION.PROFILER: ProfilerPage,
-    }.get(selection)
+        PAGE_SELECTION.TRUST_DATABASE_ADMIN: DatabaseAdminPage,
+        PAGE_SELECTION.ANALYZE_FROM_AUDIT: PolicyRulesAdminPage,
+        PAGE_SELECTION.ANALYZE_SYSLOG: PolicyRulesAdminPage,
+        PAGE_SELECTION.RULES_ADMIN: RulesAdminPage,
+        PAGE_SELECTION.PROFILER: ProfilerPage,
+    }.get(page, RulesAdminPage)
     if route:
         return route(data) if data else route()
     raise Exception("Bad Selection")
@@ -78,7 +105,11 @@ def router(selection: ANALYZER_SELECTION, data: Any = None) -> UIPage:
 
 class MainWindow(UIConnectedWidget):
     def __init__(self):
-        super().__init__(get_system_feature(), on_next=self.on_next_system)
+        features = [
+            {get_system_feature(): {"on_next": self.on_next_system}},
+            {get_application_feature(): {"on_next": self.on_next_application}},
+        ]
+        super().__init__(features=features)
         self.strSessionFilename = None
         self.window = self.get_ref()
         self.windowTopLevel = self.window.get_toplevel()
@@ -93,6 +124,7 @@ class MainWindow(UIConnectedWidget):
         self.__changesets: Sequence[Changeset] = []
         self.__system: System
         self.__checkpoint: System
+        self.__application = None
         self.__page = None
         self.__help = None
 
@@ -119,6 +151,14 @@ class MainWindow(UIConnectedWidget):
         self.get_object("profileExecMenu").set_sensitive(prof_ui_enable)
 
         self.__add_toolbar()
+
+        # load app config
+        dispatch(request_app_config())
+
+        # start trust loading
+        dispatch(request_system_trust())
+        dispatch(request_ancillary_trust())
+
         self.window.show_all()
 
     def __add_toolbar(self):
@@ -203,13 +243,17 @@ class MainWindow(UIConnectedWidget):
     def __dirty_changesets(self):
         return len(self.__changesets) > 0
 
+    def __startup_page(self) -> PAGE_SELECTION:
+        value = "foo"  # TODO: this will be read from the toml file and accessed via the rust bindings
+        return (
+            PAGE_SELECTION(value)
+            if value in PAGE_SELECTION
+            else PAGE_SELECTION.RULES_ADMIN
+        )
+
     def on_start(self, *args):
         logging.info("MainWindow::on_start()")
-        self.__pack_main_content(router(ANALYZER_SELECTION.RULES_ADMIN))
-
-        # start trust loading
-        dispatch(request_system_trust())
-        dispatch(request_ancillary_trust())
+        # self.__pack_main_content(router(self.__startup_page()))
 
         # On startup check for the existing of a tmp session file
         # If detected, alert the user, enable the File|Restore menu item
@@ -263,6 +307,14 @@ class MainWindow(UIConnectedWidget):
         title = f"*{self.strTopLevelTitle}" if dirty else self.strTopLevelTitle
         self.windowTopLevel.set_title(title)
         self.__toolbar.refresh_buttons_sensitivity()
+
+    def on_next_application(self, application):
+        if self.__application != application:
+            self.__application = application
+            selection = PAGE_SELECTION(application.initial_view)
+            # TODO: Need to figure out a better way to handle pages that need extra parameters
+            data = self._fapd_mgr if selection == PAGE_SELECTION.PROFILER else None
+            self.__pack_main_content(router(selection, data))
 
     def on_openMenu_activate(self, menuitem, data=None):
         logging.debug("Callback entered: MainWindow::on_openMenu_activate()")
@@ -387,7 +439,7 @@ class MainWindow(UIConnectedWidget):
         self.__help.show()
 
     def on_syslogMenu_activate(self, *args):
-        page = router(ANALYZER_SELECTION.ANALYZE_SYSLOG)
+        page = router(PAGE_SELECTION.ANALYZE_SYSLOG)
         height = self.get_object("mainWindow").get_size()[1]
         page.get_object("botBox").set_property(
             "height_request", int(height * Sizing.POLICY_BOTTOM_BOX)
@@ -411,7 +463,7 @@ class MainWindow(UIConnectedWidget):
         fcd.hide()
         if response == Gtk.ResponseType.OK and path.isfile((fcd.get_filename())):
             file = fcd.get_filename()
-            page = router(ANALYZER_SELECTION.ANALYZE_FROM_AUDIT, file)
+            page = router(PAGE_SELECTION.ANALYZE_FROM_AUDIT, file)
             page.object_list.rule_view_activate += self.on_rulesAdminMenu_activate
             height = self.get_object("mainWindow").get_size()[1]
             page.get_object("botBox").set_property(
@@ -422,15 +474,15 @@ class MainWindow(UIConnectedWidget):
         fcd.destroy()
 
     def activate_file_analyzer(self, file):
-        self.__pack_main_content(router(ANALYZER_SELECTION.ANALYZE_FROM_AUDIT, file))
+        self.__pack_main_content(router(PAGE_SELECTION.ANALYZE_FROM_AUDIT, file))
         # self.__set_trustDbMenu_sensitive(True)
 
     def on_trustDbMenu_activate(self, menuitem, *args):
-        self.__pack_main_content(router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN))
+        self.__pack_main_content(router(PAGE_SELECTION.TRUST_DATABASE_ADMIN))
         # self.__set_trustDbMenu_sensitive(False)
 
     def on_rulesAdminMenu_activate(self, *args, **kwargs):
-        rulesPage = router(ANALYZER_SELECTION.RULES_ADMIN)
+        rulesPage = router(PAGE_SELECTION.RULES_ADMIN)
         if kwargs.get("rule_id", None) is not None:
             rulesPage.highlight_row_from_data(kwargs["rule_id"])
         self.__pack_main_content(rulesPage)
@@ -438,7 +490,7 @@ class MainWindow(UIConnectedWidget):
         # self.__set_trustDbMenu_sensitive(True)
 
     def on_profileExecMenu_activate(self, *args):
-        page = router(ANALYZER_SELECTION.PROFILER, self._fapd_mgr)
+        page = router(PAGE_SELECTION.PROFILER, self._fapd_mgr)
         page.analyze_button_pushed += self.activate_file_analyzer
         page.refresh_toolbar += self._refresh_toolbar
         self.__pack_main_content(page)

@@ -15,24 +15,29 @@
 
 from typing import Tuple
 
+from fapolicy_analyzer.ui.features.application_feature import (
+    APPLICATION_FEATURE,
+    create_application_feature,
+)
 from fapolicy_analyzer.ui.features.notification_feature import (
     NOTIFICATIONS_FEATURE,
     create_notification_feature,
+)
+from fapolicy_analyzer.ui.features.profiler_feature import (
+    PROFILING_FEATURE,
+    create_profiler_feature,
 )
 from fapolicy_analyzer.ui.features.system_feature import (
     SYSTEM_FEATURE,
     create_system_feature,
 )
 
-from fapolicy_analyzer.ui.features.profiler_feature import (
-    PROFILING_FEATURE,
-    create_profiler_feature,
-)
-
 __all__: Tuple[str, ...] = (
+    "APPLICATION_FEATURE",
     "NOTIFICATIONS_FEATURE",
     "SYSTEM_FEATURE",
     "PROFILING_FEATURE",
+    "create_application_feature",
     "create_notification_feature",
     "create_system_feature",
     "create_profiler_feature",

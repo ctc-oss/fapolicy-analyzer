@@ -52,13 +52,11 @@ VALIDATION_NOTE_CATEGORY = "invalid rules"
 
 class RulesAdminPage(UIConnectedWidget, UIPage):
     def __init__(self):
-        UIConnectedWidget.__init__(
-            self, get_system_feature(), on_next=self.on_next_system
-        )
-
-        self.__notification_subscription = get_notifications_feature().subscribe(
-            on_next=self.on_next_notifications,
-        )
+        features = [
+            {get_system_feature(): {"on_next": self.on_next_system}},
+            {get_notifications_feature(): {"on_next": self.on_next_notifications}},
+        ]
+        UIConnectedWidget.__init__(self, features=features)
 
         actions = {
             "rules": [
