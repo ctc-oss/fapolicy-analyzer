@@ -84,7 +84,6 @@ PROFILING_TERM = "PROFILING_TERM"
 PROFILING_DONE = "PROFILING_DONE"
 PROFILING_FAIL = "PROFILING_FAIL"
 
-SET_PROFILER_STATE = "SET_PROFILER_STATE"
 SET_PROFILER_OUTPUT = "SET_PROFILER_OUTPUT"
 SET_PROFILER_ANALYSIS_FILE = "SET_PROFILER_ANALYSIS_FILE"
 CLEAR_PROFILER_STATE = "CLEAR_PROFILER_STATE"
@@ -280,6 +279,7 @@ def profiling_started(cmd: str) -> Action:
 
 
 def stop_profiling() -> Action:
+    print("stop_profiling")
     return _create_action(PROFILING_KILL)
 
 
@@ -291,28 +291,20 @@ def error_profiling(error: str) -> Action:
     return _create_action(PROFILING_FAIL, error)
 
 
-def profiler_exec(pid: int, cmd: str) -> Action:
-    return _create_action(PROFILING_EXEC, (pid, cmd))
+def profiler_exec(pid: int) -> Action:
+    return _create_action(PROFILING_EXEC, pid)
 
 
-def profiler_tick(update:  Tuple[int, int]) -> Action:
-    return _create_action(PROFILING_TICK, update)
+def profiler_tick(duration:  int) -> Action:
+    return _create_action(PROFILING_TICK, duration)
 
 
 def profiler_done() -> Action:
     return _create_action(PROFILING_DONE)
 
 
-def set_profiler_state(state: Dict[str, str]) -> Action:
-    return _create_action(SET_PROFILER_STATE, state)
-
-
-def set_profiler_output(output: str) -> Action:
-    return _create_action(SET_PROFILER_OUTPUT, output)
-
-
-def set_profiler_analysis_file(file: str) -> Action:
-    return _create_action(SET_PROFILER_ANALYSIS_FILE, file)
+def set_profiler_output(events: Optional[str], stdout: Optional[str], stderr: Optional[str]) -> Action:
+    return _create_action(SET_PROFILER_OUTPUT, (events, stdout, stderr))
 
 
 def clear_profiler_state() -> Action:

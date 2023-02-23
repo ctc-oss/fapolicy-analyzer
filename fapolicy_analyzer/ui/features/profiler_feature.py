@@ -11,7 +11,8 @@ from fapolicy_analyzer.redux import (
     Action,
 )
 from fapolicy_analyzer.redux import create_feature_module, ReduxFeatureModule, of_init_feature, combine_epics, of_type
-from fapolicy_analyzer.ui.actions import error_profiling, START_PROFILING, profiler_init, profiling_started, profiler_done, PROFILING_KILL, terminating_profiler, profiler_tick
+from fapolicy_analyzer.ui.actions import error_profiling, START_PROFILING, profiler_init, profiling_started, profiler_done, PROFILING_KILL, terminating_profiler, profiler_tick, profiler_exec, \
+    set_profiler_output
 from fapolicy_analyzer.ui.reducers import profiler_reducer
 
 gi.require_version("Gtk", "3.0")
@@ -32,9 +33,11 @@ def create_profiler_feature(
     def _init_profiler() -> Action:
         return profiler_init()
 
-    def _on_tick(h: ExecHandle, duration: int, action_fn: Callable[[Tuple[int, int]], Action]):
-        update = (h.pid, duration)
-        _idle_dispatch(action_fn(update))
+    def _on_exec(h: ExecHandle, action_fn: Callable[[int], Action]):
+        _idle_dispatch(action_fn(h.pid))
+
+    def _on_tick(_: ExecHandle, duration: int, action_fn: Callable[[int], Action]):
+        _idle_dispatch(action_fn(duration))
 
     def _on_done(action_fn: Callable[[], Action], flag_fn: Callable[[], None]):
         print("****** profiling done ******")
@@ -54,6 +57,11 @@ def create_profiler_feature(
 
         profiler_active = True
 
+        exed = partial(
+            _on_exec,
+            action_fn=profiler_exec,
+        )
+
         tick = partial(
             _on_tick,
             action_fn=profiler_tick,
@@ -72,16 +80,24 @@ def create_profiler_feature(
         target_args = args.get("argText", "")
 
         p = Profiler()
+        p.exec_callback = exed
         p.tick_callback = tick
         p.done_callback = done
+
         cmd = f"{target} {target_args}"
+        p.daemon_stdout = "/tmp/eventlog.txt"
+        p.target_stdout = "/tmp/stdout.txt"
+        p.target_stderr = "/tmp/stderr.txt"
+
         _handle = p.profile(cmd)
 
-        return profiling_started(cmd)
+        return dispatch(profiling_started(cmd))
 
     def _kill_profiler(action: Action) -> Action:
         global _handle
         nonlocal profiler_active
+
+        print("_kill_profiler")
 
         if not profiler_active:
             return action

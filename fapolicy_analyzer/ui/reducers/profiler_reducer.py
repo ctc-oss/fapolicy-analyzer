@@ -18,70 +18,67 @@ from typing import Any, Dict, NamedTuple, Optional, cast
 from fapolicy_analyzer.redux import Action, Reducer, handle_actions
 from fapolicy_analyzer.ui.actions import (
     CLEAR_PROFILER_STATE,
-    SET_PROFILER_OUTPUT,
-    SET_PROFILER_ANALYSIS_FILE,
-    SET_PROFILER_STATE,
     PROFILING_EXEC,
-    PROFILING_DONE, PROFILING_INIT, PROFILING_STARTED, PROFILING_KILL, PROFILING_TICK,
+    PROFILING_DONE, PROFILING_INIT, PROFILING_STARTED, PROFILING_KILL, PROFILING_TICK, SET_PROFILER_OUTPUT,
 )
 
 
 class ProfilerState(NamedTuple):
-    entry: Dict[str, str]
-    output: str
-    file: str
-    cmd: str
-    pid: int
-    duration: int
+    cmd: Optional[str]
+    pwd: Optional[str]
+    env: Optional[str]
+    user: Optional[str]
+    pid: Optional[int]
+    duration: Optional[int]
     running: bool
     killing: bool
-
-
-default_entry = {"executeText": "",
-                 "argText": "",
-                 "userText": "",
-                 "dirText": "",
-                 "envText": ""
-                 }
+    events_log: Optional[str]
+    stdout_log: Optional[str]
+    stderr_log: Optional[str]
 
 
 def _create_state(state: ProfilerState, **kwargs: Optional[Any]) -> ProfilerState:
     return ProfilerState(**{**state._asdict(), **kwargs})
 
 
-def handle_set_profiler_state(state: ProfilerState, action: Action) -> ProfilerState:
-    return _create_state(state, entry={**action.payload})
+def handle_start_profiling(state: ProfilerState, action: Action) -> ProfilerState:
+    args: Dict[str, str] = action.payload
+    cmd = ' '.join([args.get("executeText", ""), args.get("argText", "")])
+
+    return _create_state(state, cmd=cmd,)
 
 
 def handle_set_profiler_output(state: ProfilerState, action: Action) -> ProfilerState:
-    payload = cast(str, action.payload)
-    return _create_state(state, output=payload)
+    (ev, so, se) = action.payload
+    return _create_state(state, event_log=ev, stdout_log=so, stderr_log=se)
 
 
-def handle_set_profiler_analysis_file(state: ProfilerState, action: Action) -> ProfilerState:
-    payload = cast(str, action.payload)
-    return _create_state(state, file=payload)
-
-
-def handle_clear_profiler_state(state: ProfilerState, *args) -> ProfilerState:
-    return _create_state(state, entry=default_entry, output="")
+def handle_clear_profiler_state(state: ProfilerState, action: Action) -> ProfilerState:
+    return _create_state(state, cmd=None, pwd=None, env=None, user=None,)
 
 
 def handle_profiler_init_state(state: ProfilerState, action: Action) -> ProfilerState:
     return _create_state(state)
 
 
+def handle_profiler_exec(state: ProfilerState, action: Action) -> ProfilerState:
+    pid = action.payload
+    return _create_state(state, pid=pid)
+
+
 def handle_profiler_tick(state: ProfilerState, action: Action) -> ProfilerState:
-    (pid, tick) = action.payload
-    return _create_state(state, pid=pid, duration=tick)
+    tick = action.payload
+    return _create_state(state, duration=tick)
 
 
 def handle_profiler_started_state(state: ProfilerState, action: Action) -> ProfilerState:
+    print("handle started")
     cmd = action.payload
     return _create_state(state, cmd=cmd, running=True)
 
 
 def handle_profiler_kill_state(state: ProfilerState, action: Action) -> ProfilerState:
+    print("handle_profiler_kill_state")
     return _create_state(state, killing=True)
 
 
@@ -92,14 +89,23 @@ def handle_profiler_done_state(state: ProfilerState, action: Action) -> Profiler
 profiler_reducer: Reducer = handle_actions(
     {
         PROFILING_INIT: handle_profiler_init_state,
-        SET_PROFILER_STATE: handle_set_profiler_state,
         SET_PROFILER_OUTPUT: handle_set_profiler_output,
-        SET_PROFILER_ANALYSIS_FILE: handle_set_profiler_analysis_file,
         CLEAR_PROFILER_STATE: handle_clear_profiler_state,
         PROFILING_STARTED: handle_profiler_started_state,
+        PROFILING_EXEC: handle_profiler_exec,
         PROFILING_TICK: handle_profiler_tick,
         PROFILING_DONE: handle_profiler_done_state,
         PROFILING_KILL: handle_profiler_kill_state,
     },
-    ProfilerState(entry=default_entry, output="", file="", cmd="", pid=0, duration=0, running=False, killing=False)
+    ProfilerState(cmd=None,
+                  pwd=None,
+                  env=None,
+                  user=None,
+                  pid=None,
+                  duration=None,
+                  running=False,
+                  killing=False,
+                  events_log=None,
+                  stdout_log=None,
+                  stderr_log=None,)
 )

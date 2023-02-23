@@ -16,13 +16,15 @@
 import html
 import logging
 import datetime
+from typing import Optional
 
 import gi
 from events import Events
 from fapolicy_analyzer.ui.actions import (
     clear_profiler_state,
     set_profiler_output,
-    set_profiler_state, start_profiling, stop_profiling,
+    start_profiling,
+    stop_profiling,
 )
 from fapolicy_analyzer.ui.actions import NotificationType, add_notification
 from fapolicy_analyzer.ui.faprofiler import (
@@ -98,37 +100,32 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         return self.analysis_available and self.can_start
 
     def on_event(self, state: ProfilerState):
-        print(f"on_event.running: {state.running}")
-        print(f"on_event.killing: {state.killing}")
         self.can_start = not state.running
         self.can_stop = state.running
+        self.analysis_available = bool(self.markup)
         self.refresh_toolbar()
 
+        self.update_field_text(state.cmd, state.user, state.pwd, state.env)
+
         if state.running:
-            t = datetime.timedelta(seconds=state.duration)
+            print("running")
+            t = datetime.timedelta(seconds=state.duration) if state.duration else ""
             self.markup = f"<b>{state.pid}: Executing {state.cmd} {t}</b>"
             self.update_output_text(self.markup)
         else:
-            self.markup = state.output
-            self.update_output_text(self.markup)
+            print("displaying log output")
+            self.display_log_output(state.events_log, state.stdout_log, state.stderr_log)
 
+        self.analysis_file = state.events_log
 
-        # if not self.inputDict == system.get("profiler").entry:
-        #     self.update_field_text(system.get("profiler").entry)
-        #
-        # if not self.markup == system.get("profiler").output:
-        #     self.markup = system.get("profiler").output
-        #     self.update_output_text(self.markup)
-        #     self.analysis_available = bool(self.markup)
-        #     self.refresh_toolbar()
-        #
-        # self.analysis_file = system.get("profiler").file
-
-    def update_field_text(self, profilerDict):
-        for k, v in profilerDict.items():
-            self.get_object(k).get_buffer().set_text(v, len(v))
+    def update_field_text(self, cmd_string: Optional[str], user: Optional[str], pwd: Optional[str], env: Optional[str]):
+        if cmd_string:
+            (cmd, args) = cmd_string.split(" ", 1)
+            self.get_object("executeText").set_text(cmd if cmd else "")
+            self.get_object("argText").set_text(args if args else "")
 
     def update_output_text(self, markup):
+        self.markup = markup
         buff = Gtk.TextBuffer()
         buff.insert_markup(buff.get_end_iter(), markup, len(markup))
         self.get_object("profilerOutput").set_buffer(buff)
@@ -153,30 +150,24 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
             "dirText": self.get_object("dirText").get_text(),
             "envText": self.get_object("envText").get_text(),
         }
-        dispatch(set_profiler_state(self.inputDict))
         return self.inputDict
 
-    def display_log_output(self):
+    def display_log_output(self, event_log: Optional[str], stdout_log: Optional[str], stderr_log: Optional[str]):
         markup = ""
-        files = [
-            self._fapd_profiler.faprofSession.dStdout,
-            self._fapd_profiler.faprofSession.tgtStderr,
-            self._fapd_profiler.faprofSession.tgtStdout,
-        ]
-
-        for run_file in files:
-            markup += f"<b>{run_file}</b>\n"
-            try:
-                spacers = 10
-                if run_file is not None:
-                    with open(run_file, "r") as f:
-                        lines = f.readlines()
-                    markup += html.escape("".join(lines + ["\n"]))
-                    spacers = len(run_file)
-                markup += f"<b>{'=' * spacers}</b>\n"
-            except OSError as ex:
-                logging.error(f"There was an issue reading from {run_file}", ex)
-        dispatch(set_profiler_output(markup))
+        for run_file in [event_log, stdout_log, stderr_log]:
+            if run_file:
+                markup += f"<b>{run_file}</b>\n"
+                try:
+                    spacers = 10
+                    if run_file is not None:
+                        with open(run_file, "r") as f:
+                            lines = f.readlines()
+                        markup += html.escape("".join(lines + ["\n"]))
+                        spacers = len(run_file)
+                    markup += f"<b>{'=' * spacers}</b>\n"
+                except OSError as ex:
+                    logging.error(f"There was an issue reading from {run_file}", ex)
+        self.update_output_text(markup)
 
     def on_execd(self, h):
         self.can_stop = True
