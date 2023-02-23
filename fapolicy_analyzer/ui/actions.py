@@ -74,11 +74,13 @@ RECEIVED_RULES_TEXT = "RECEIVED_RULES_TEXT"
 MODIFY_RULES_TEXT = "MODIFY_RULES_TEXT"
 ERROR_RULES_TEXT = "ERROR_RULES_TEXT"
 
-INIT_PROFILER = "INIT_PROFILER"
+PROFILING_INIT = "PROFILING_INIT"
 START_PROFILING = "START_PROFILING"
+PROFILING_STARTED = "PROFILING_STARTED"
 PROFILING_EXEC = "PROFILING_EXEC"
 PROFILING_TICK = "PROFILING_TICK"
 PROFILING_DONE = "PROFILING_DONE"
+PROFILING_FAIL = "PROFILING_FAIL"
 
 SET_PROFILER_STATE = "SET_PROFILER_STATE"
 SET_PROFILER_OUTPUT = "SET_PROFILER_OUTPUT"
@@ -263,12 +265,20 @@ def error_rules_text(error: str) -> Action:
     return _create_action(ERROR_RULES_TEXT, error)
 
 
-def init_profiler() -> Action:
-    return _create_action(INIT_PROFILER)
+def profiler_init() -> Action:
+    return _create_action(PROFILING_INIT)
 
 
 def start_profiling(props: Dict[str, str]) -> Action:
     return _create_action(START_PROFILING, props)
+
+
+def profiling_started() -> Action:
+    return _create_action(PROFILING_STARTED)
+
+
+def error_profiling(error: str) -> Action:
+    return _create_action(PROFILING_FAIL, error)
 
 
 def profiler_exec(pid: int, cmd: str) -> Action:

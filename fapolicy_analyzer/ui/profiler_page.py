@@ -22,16 +22,14 @@ from events import Events
 from fapolicy_analyzer.ui.actions import (
     clear_profiler_state,
     set_profiler_output,
-    set_profiler_state,
+    set_profiler_state, start_profiling,
 )
 from fapolicy_analyzer.ui.actions import NotificationType, add_notification
 from fapolicy_analyzer.ui.faprofiler import (
-    FaProfiler,
-    FaProfSession,
-    ProfSessionException,
     EnumErrorPairs2Str,
 )
-from fapolicy_analyzer.ui.store import dispatch, get_system_feature
+from fapolicy_analyzer.ui.reducers.profiler_reducer import ProfilerState
+from fapolicy_analyzer.ui.store import dispatch, get_system_feature, get_profiling_feature
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 
@@ -43,7 +41,7 @@ from gi.repository import GLib  # isort: skip
 class ProfilerPage(UIConnectedWidget, UIPage, Events):
     def __init__(self, fapd_manager):
         UIConnectedWidget.__init__(
-            self, get_system_feature(), on_next=self.on_next_system
+            self, get_profiling_feature(), on_next=self.on_event
         )
         self.__events__ = [
             "analyze_button_pushed",
@@ -89,7 +87,6 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         }
 
         UIPage.__init__(self, actions)
-        self._fapd_profiler = FaProfiler(fapd_manager)
         self.can_start = True
         self.can_stop = False
         self.inputDict = {}
@@ -100,17 +97,21 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
     def analyze_button_sensitivity(self):
         return self.analysis_available and self.can_start
 
-    def on_next_system(self, system):
-        if not self.inputDict == system.get("profiler").entry:
-            self.update_field_text(system.get("profiler").entry)
+    def on_event(self, state: ProfilerState):
+        print(f"on_event.running: {state.running}")
 
-        if not self.markup == system.get("profiler").output:
-            self.markup = system.get("profiler").output
-            self.update_output_text(self.markup)
-            self.analysis_available = bool(self.markup)
-            self.refresh_toolbar()
 
-        self.analysis_file = system.get("profiler").file
+
+        # if not self.inputDict == system.get("profiler").entry:
+        #     self.update_field_text(system.get("profiler").entry)
+        #
+        # if not self.markup == system.get("profiler").output:
+        #     self.markup = system.get("profiler").output
+        #     self.update_output_text(self.markup)
+        #     self.analysis_available = bool(self.markup)
+        #     self.refresh_toolbar()
+        #
+        # self.analysis_file = system.get("profiler").file
 
     def update_field_text(self, profilerDict):
         for k, v in profilerDict.items():
@@ -191,42 +192,48 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         self.refresh_toolbar()
 
         profiling_args = self.get_entry_dict()
-        if not FaProfSession.validSessionArgs(profiling_args):
-            logging.info("Invalid Profiler arguments")
-            dictInvalidEnums = FaProfSession.validateArgs(profiling_args)
-            strStatusEnums = "\n  " + EnumErrorPairs2Str(dictInvalidEnums)
-            dispatch(
-                add_notification(
-                    f"Invalid Profiler Session argument(s): {strStatusEnums}",
-                    NotificationType.ERROR,
-                )
-            )
-            self.can_start = True
-            self.refresh_toolbar()
-            return
+        # todo-redux;; validation
+        # if not FaProfSession.validSessionArgs(profiling_args):
+        #     logging.info("Invalid Profiler arguments")
+        #     dictInvalidEnums = FaProfSession.validateArgs(profiling_args)
+        #     strStatusEnums = "\n  " + EnumErrorPairs2Str(dictInvalidEnums)
+        #     dispatch(
+        #         add_notification(
+        #             f"Invalid Profiler Session argument(s): {strStatusEnums}",
+        #             NotificationType.ERROR,
+        #         )
+        #     )
+        #     self.can_start = True
+        #     self.refresh_toolbar()
+        #     return
 
         logging.debug(f"Entry text = {profiling_args}")
-        self._fapd_profiler.fapd_persistance = self.get_object(
-            "persistentCheckbox"
-        ).get_active()
+        # todo;; revise the persistence stuff
+        # self._fapd_profiler.fapd_persistance = self.get_object(
+        #     "persistentCheckbox"
+        # ).get_active()
 
-        try:
-            self._fapd_profiler.start_prof_session(profiling_args, self.on_execd, self.on_tick, self.on_done)
+        # todo-redux;; start profiling
+        # self._fapd_profiler.start_prof_session(profiling_args, self.on_execd, self.on_tick, self.on_done)
+        dispatch(start_profiling(profiling_args))
 
-        except ProfSessionException as e:
-            # Profiler Session creation failed because of bad args
-            logging.debug(f"{e.error_msg}, {e.error_enum}")
-            dispatch(
-                add_notification(
-                    e.error_msg,
-                    NotificationType.ERROR,
-                )
-            )
-        except Exception as e:
-            logging.debug(f"Unknown exception thrown by start_prof_session {e}")
-            dispatch(
-                add_notification(
-                    "Error: An unknown Profiler Session error has occured.",
-                    NotificationType.ERROR,
-                )
-            )
+        # todo-redux;; handle arg errors
+        # except ProfSessionException as e:
+        #     # Profiler Session creation failed because of bad args
+        #     logging.debug(f"{e.error_msg}, {e.error_enum}")
+        #     dispatch(
+        #         add_notification(
+        #             e.error_msg,
+        #             NotificationType.ERROR,
+        #         )
+        #     )
+
+        # todo-redux;; handle profiling errors
+        # except Exception as e:
+        #     logging.debug(f"Unknown exception thrown by start_prof_session {e}")
+        #     dispatch(
+        #         add_notification(
+        #             "Error: An unknown Profiler Session error has occured.",
+        #             NotificationType.ERROR,
+        #         )
+        #     )
