@@ -79,6 +79,8 @@ START_PROFILING = "START_PROFILING"
 PROFILING_STARTED = "PROFILING_STARTED"
 PROFILING_EXEC = "PROFILING_EXEC"
 PROFILING_TICK = "PROFILING_TICK"
+PROFILING_KILL = "PROFILING_KILL"
+PROFILING_TERM = "PROFILING_TERM"
 PROFILING_DONE = "PROFILING_DONE"
 PROFILING_FAIL = "PROFILING_FAIL"
 
@@ -275,6 +277,14 @@ def start_profiling(props: Dict[str, str]) -> Action:
 
 def profiling_started() -> Action:
     return _create_action(PROFILING_STARTED)
+
+
+def stop_profiling() -> Action:
+    return _create_action(PROFILING_KILL)
+
+
+def terminating_profiler() -> Action:
+    return _create_action(PROFILING_TERM)
 
 
 def error_profiling(error: str) -> Action:

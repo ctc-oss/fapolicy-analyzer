@@ -22,7 +22,7 @@ from fapolicy_analyzer.ui.actions import (
     SET_PROFILER_ANALYSIS_FILE,
     SET_PROFILER_STATE,
     PROFILING_EXEC,
-    PROFILING_DONE, PROFILING_INIT, PROFILING_STARTED,
+    PROFILING_DONE, PROFILING_INIT, PROFILING_STARTED, PROFILING_KILL,
 )
 
 
@@ -31,6 +31,7 @@ class ProfilerState(NamedTuple):
     output: str
     file: str
     running: bool
+    killing: bool
 
 
 default_entry = {"executeText": "",
@@ -73,6 +74,11 @@ def handle_profiler_started_state(state: ProfilerState, action: Action) -> Profi
     return _create_state(state, running=True)
 
 
+def handle_profiler_kill_state(state: ProfilerState, action: Action) -> ProfilerState:
+    print("handle_profiler_kill_state")
+    return _create_state(state, killing=True)
+
+
 def handle_profiler_done_state(state: ProfilerState, action: Action) -> ProfilerState:
     print("handle_profiler_done_state")
     return _create_state(state, running=False)
@@ -80,13 +86,14 @@ def handle_profiler_done_state(state: ProfilerState, action: Action) -> Profiler
 
 profiler_reducer: Reducer = handle_actions(
     {
+        PROFILING_INIT: handle_profiler_init_state,
         SET_PROFILER_STATE: handle_set_profiler_state,
         SET_PROFILER_OUTPUT: handle_set_profiler_output,
         SET_PROFILER_ANALYSIS_FILE: handle_set_profiler_analysis_file,
         CLEAR_PROFILER_STATE: handle_clear_profiler_state,
-        PROFILING_INIT: handle_profiler_init_state,
         PROFILING_STARTED: handle_profiler_started_state,
         PROFILING_DONE: handle_profiler_done_state,
+        PROFILING_KILL: handle_profiler_kill_state,
     },
-    ProfilerState(entry=default_entry, output="", file="", running=False)
+    ProfilerState(entry=default_entry, output="", file="", running=False, killing=False)
 )

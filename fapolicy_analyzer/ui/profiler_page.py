@@ -22,7 +22,7 @@ from events import Events
 from fapolicy_analyzer.ui.actions import (
     clear_profiler_state,
     set_profiler_output,
-    set_profiler_state, start_profiling,
+    set_profiler_state, start_profiling, stop_profiling,
 )
 from fapolicy_analyzer.ui.actions import NotificationType, add_notification
 from fapolicy_analyzer.ui.faprofiler import (
@@ -99,7 +99,10 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
 
     def on_event(self, state: ProfilerState):
         print(f"on_event.running: {state.running}")
-
+        print(f"on_event.killing: {state.killing}")
+        self.can_start = not state.running
+        self.can_stop = state.running
+        self.refresh_toolbar()
 
 
         # if not self.inputDict == system.get("profiler").entry:
@@ -185,7 +188,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
     def on_stop_clicked(self, *args):
         self.can_stop = False
         self.refresh_toolbar()
-        self._fapd_profiler.stop_prof_session()
+        dispatch(stop_profiling())
 
     def on_start_clicked(self, *args):
         self.can_start = False
