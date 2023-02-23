@@ -279,7 +279,6 @@ def profiling_started(cmd: str) -> Action:
 
 
 def stop_profiling() -> Action:
-    print("stop_profiling")
     return _create_action(PROFILING_KILL)
 
 

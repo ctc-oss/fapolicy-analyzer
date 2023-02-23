@@ -50,7 +50,7 @@ def handle_start_profiling(state: ProfilerState, action: Action) -> ProfilerStat
 
 def handle_set_profiler_output(state: ProfilerState, action: Action) -> ProfilerState:
     (ev, so, se) = action.payload
-    return _create_state(state, event_log=ev, stdout_log=so, stderr_log=se)
+    return _create_state(state, events_log=ev, stdout_log=so, stderr_log=se)
 
 
 def handle_clear_profiler_state(state: ProfilerState, action: Action) -> ProfilerState:
@@ -72,13 +72,11 @@ def handle_profiler_tick(state: ProfilerState, action: Action) -> ProfilerState:
 
 
 def handle_profiler_started_state(state: ProfilerState, action: Action) -> ProfilerState:
-    print("handle started")
     cmd = action.payload
     return _create_state(state, cmd=cmd, running=True)
 
 
 def handle_profiler_kill_state(state: ProfilerState, action: Action) -> ProfilerState:
-    print("handle_profiler_kill_state")
     return _create_state(state, killing=True)
 
 

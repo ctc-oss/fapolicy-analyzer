@@ -11,7 +11,8 @@ from fapolicy_analyzer.redux import (
     Action,
 )
 from fapolicy_analyzer.redux import create_feature_module, ReduxFeatureModule, of_init_feature, combine_epics, of_type
-from fapolicy_analyzer.ui.actions import error_profiling, START_PROFILING, profiler_init, profiling_started, profiler_done, PROFILING_KILL, terminating_profiler, profiler_tick, profiler_exec
+from fapolicy_analyzer.ui.actions import error_profiling, START_PROFILING, profiler_init, profiling_started, profiler_done, PROFILING_KILL, terminating_profiler, profiler_tick, profiler_exec, \
+    set_profiler_output
 from fapolicy_analyzer.ui.reducers import profiler_reducer
 
 gi.require_version("Gtk", "3.0")
@@ -34,12 +35,12 @@ def create_profiler_feature(
 
     def _on_exec(h: ExecHandle, action_fn: Callable[[int], Action]):
         _idle_dispatch(action_fn(h.pid))
+        _idle_dispatch(set_profiler_output("/tmp/eventlog.txt", "/tmp/stdout.txt", "/tmp/stderr.txt"))
 
     def _on_tick(_: ExecHandle, duration: int, action_fn: Callable[[int], Action]):
         _idle_dispatch(action_fn(duration))
 
     def _on_done(action_fn: Callable[[], Action], flag_fn: Callable[[], None]):
-        print("****** profiling done ******")
         _idle_dispatch(action_fn())
         flag_fn()
 
@@ -98,8 +99,6 @@ def create_profiler_feature(
 
         if not profiler_active:
             return action
-
-        print("-------- terminating profiler ----------")
 
         _handle.kill()
 

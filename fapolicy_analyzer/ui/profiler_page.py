@@ -108,13 +108,12 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         self.update_field_text(state.cmd, state.user, state.pwd, state.env)
 
         if state.running:
-            print("running")
             t = datetime.timedelta(seconds=state.duration) if state.duration else ""
             self.markup = f"<b>{state.pid}: Executing {state.cmd} {t}</b>"
             self.update_output_text(self.markup)
         else:
-            print("displaying log output")
-            self.display_log_output(state.events_log, state.stdout_log, state.stderr_log)
+            print(f"displaying log output, {state.events_log}, {state.stdout_log}, {state.stderr_log}")
+            self.display_log_output([state.events_log, state.stdout_log, state.stderr_log])
 
         self.analysis_file = state.events_log
 
@@ -152,21 +151,20 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         }
         return self.inputDict
 
-    def display_log_output(self, event_log: Optional[str], stdout_log: Optional[str], stderr_log: Optional[str]):
+    def display_log_output(self, logs):
         markup = ""
-        for run_file in [event_log, stdout_log, stderr_log]:
-            if run_file:
-                markup += f"<b>{run_file}</b>\n"
+        for log in logs:
+            if log:
+                print(f"displaying log: {log}")
+                markup += f"<b>{log}</b>\n"
                 try:
-                    spacers = 10
-                    if run_file is not None:
-                        with open(run_file, "r") as f:
-                            lines = f.readlines()
-                        markup += html.escape("".join(lines + ["\n"]))
-                        spacers = len(run_file)
+                    with open(log, "r") as f:
+                        lines = f.readlines()
+                    markup += html.escape("".join(lines + ["\n"]))
+                    spacers = len(log)
                     markup += f"<b>{'=' * spacers}</b>\n"
                 except OSError as ex:
-                    logging.error(f"There was an issue reading from {run_file}", ex)
+                    logging.error(f"There was an issue reading from {log}", ex)
         self.update_output_text(markup)
 
     def on_execd(self, h):
