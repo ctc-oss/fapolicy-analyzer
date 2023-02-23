@@ -57,7 +57,7 @@ def test_uses_custom_markup_func(mocker):
     widget = TrustFileList(trust_func=MagicMock(), markup_func=markup_func)
     widget.init_list(2)
     widget.append_trust(_trust)
-    markup_func.assert_called_with("t")
+    markup_func.assert_called_with("u")
 
 
 def test_loads_trust_store(widget, mocker):
@@ -70,6 +70,7 @@ def test_loads_trust_store(widget, mocker):
         side_effect=lambda x, args: x(args),
     )
     widget.init_list(2)
+    widget.show_trusted = True
     widget.append_trust(_trust)
     refresh_gui(delay=0.5)
     view = widget.get_object("treeView")
