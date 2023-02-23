@@ -38,6 +38,7 @@ class AncillaryTrustFileList(TrustFileList):
 
         super().__init__(trust_func, self.__status_markup, addBtn.get_ref())
         self.show_trusted = True
+
     def __status_markup(self, status):
         s = status.lower()
         return (
