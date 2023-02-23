@@ -176,8 +176,8 @@ impl PyProfiler {
 
         // outer thread is responsible for daemon control
         thread::spawn(move || {
-            rs.activate_with_rules(db.as_ref())
-                .expect("activate profiler");
+            // rs.activate_with_rules(db.as_ref())
+            //     .expect("activate profiler");
 
             // inner thread is responsible for target execution
             let inner = thread::spawn(move || {
@@ -253,7 +253,7 @@ impl PyProfiler {
                 eprintln!("exec thread panic {:?}", e);
             }
 
-            rs.deactivate().expect("deactivate profiler");
+            // rs.deactivate().expect("deactivate profiler");
 
             // callback when all targets are completed / cancelled / failed
             // callback failure here is considered fatal due to the
