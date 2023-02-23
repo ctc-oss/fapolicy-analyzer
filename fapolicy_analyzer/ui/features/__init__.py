@@ -24,9 +24,16 @@ from fapolicy_analyzer.ui.features.system_feature import (
     create_system_feature,
 )
 
+from fapolicy_analyzer.ui.features.profiler_feature import (
+    PROFILING_FEATURE,
+    create_profiler_feature,
+)
+
 __all__: Tuple[str, ...] = (
     "NOTIFICATIONS_FEATURE",
     "SYSTEM_FEATURE",
+    "PROFILING_FEATURE",
     "create_notification_feature",
     "create_system_feature",
+    "create_profiler_feature",
 )

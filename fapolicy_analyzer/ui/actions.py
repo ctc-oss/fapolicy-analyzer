@@ -20,6 +20,7 @@ from typing import Any, Dict, Iterator, NamedTuple, Optional, Sequence, Tuple
 from fapolicy_analyzer import Changeset, Event, Group, Rule, System, Trust, User
 from fapolicy_analyzer.redux import Action, create_action
 
+
 INIT_SYSTEM = "INIT_SYSTEM"
 SYSTEM_RECEIVED = "SYSTEM_RECEIVED"
 ERROR_SYSTEM_INITIALIZATION = "ERROR_SYSTEM_INITIALIZATION"
@@ -72,6 +73,12 @@ REQUEST_RULES_TEXT = "REQUEST_RULES_TEXT"
 RECEIVED_RULES_TEXT = "RECEIVED_RULES_TEXT"
 MODIFY_RULES_TEXT = "MODIFY_RULES_TEXT"
 ERROR_RULES_TEXT = "ERROR_RULES_TEXT"
+
+INIT_PROFILER = "INIT_PROFILER"
+START_PROFILING = "START_PROFILING"
+PROFILING_EXEC = "PROFILING_EXEC"
+PROFILING_TICK = "PROFILING_TICK"
+PROFILING_DONE = "PROFILING_DONE"
 
 SET_PROFILER_STATE = "SET_PROFILER_STATE"
 SET_PROFILER_OUTPUT = "SET_PROFILER_OUTPUT"
@@ -254,6 +261,26 @@ def modify_rules_text(rules_text: str) -> Action:
 
 def error_rules_text(error: str) -> Action:
     return _create_action(ERROR_RULES_TEXT, error)
+
+
+def init_profiler() -> Action:
+    return _create_action(INIT_PROFILER)
+
+
+def start_profiling(props: Dict[str, str]) -> Action:
+    return _create_action(START_PROFILING, props)
+
+
+def profiler_exec(pid: int, cmd: str) -> Action:
+    return _create_action(PROFILING_EXEC, (pid, cmd))
+
+
+def profiler_tick(pid: int, tick: int) -> Action:
+    return _create_action(PROFILING_TICK, (pid, tick))
+
+
+def profiler_done() -> Action:
+    return _create_action(PROFILING_DONE)
 
 
 def set_profiler_state(state: Dict[str, str]) -> Action:

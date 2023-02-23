@@ -403,10 +403,8 @@ class FaProfSession:
 
 # ############################## Profiler ###############################
 class FaProfiler:
-    def __init__(self, fapd_mgr=None, fapd_persistance=True):
+    def __init__(self, fapd_persistance=True):
         logging.info("FaProfiler constructor")
-        self.fapd_mgr = fapd_mgr
-
         self.faprofSession = None
         self.fapd_persistance = fapd_persistance
         self.fapd_pid = None
@@ -465,6 +463,4 @@ class FaProfiler:
 
     def get_profiling_timestamp(self):
         # Use FapdManager's start timestamp if available
-        if self.fapd_mgr:
-            self.strTimestamp = self.fapd_mgr._fapd_profiling_timestamp
         return self.strTimestamp

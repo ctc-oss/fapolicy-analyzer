@@ -21,6 +21,8 @@ from fapolicy_analyzer.ui.actions import (
     SET_PROFILER_OUTPUT,
     SET_PROFILER_ANALYSIS_FILE,
     SET_PROFILER_STATE,
+    PROFILING_EXEC,
+    PROFILING_DONE,
 )
 
 
@@ -28,6 +30,7 @@ class ProfilerState(NamedTuple):
     entry: Dict[str, str]
     output: str
     file: str
+    running: bool
 
 
 default_entry = {"executeText": "",
@@ -60,12 +63,22 @@ def handle_clear_profiler_state(state: ProfilerState, *args) -> ProfilerState:
     return _create_state(state, entry=default_entry, output="")
 
 
+def handle_profiler_exec_state(state: ProfilerState, action: Action) -> ProfilerState:
+    return _create_state(state, running=True)
+
+
+def handle_profiler_done_state(state: ProfilerState, action: Action) -> ProfilerState:
+    return _create_state(state, running=False)
+
+
 profiler_reducer: Reducer = handle_actions(
     {
         SET_PROFILER_STATE: handle_set_profiler_state,
         SET_PROFILER_OUTPUT: handle_set_profiler_output,
         SET_PROFILER_ANALYSIS_FILE: handle_set_profiler_analysis_file,
         CLEAR_PROFILER_STATE: handle_clear_profiler_state,
+        PROFILING_EXEC: handle_profiler_exec_state,
+        PROFILING_DONE: handle_profiler_done_state,
     },
-    ProfilerState(entry=default_entry, output="", file="")
+    ProfilerState(entry=default_entry, output="", file="", running=False)
 )
