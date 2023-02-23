@@ -275,8 +275,8 @@ def start_profiling(props: Dict[str, str]) -> Action:
     return _create_action(START_PROFILING, props)
 
 
-def profiling_started() -> Action:
-    return _create_action(PROFILING_STARTED)
+def profiling_started(cmd: str) -> Action:
+    return _create_action(PROFILING_STARTED, cmd)
 
 
 def stop_profiling() -> Action:
@@ -295,8 +295,8 @@ def profiler_exec(pid: int, cmd: str) -> Action:
     return _create_action(PROFILING_EXEC, (pid, cmd))
 
 
-def profiler_tick(pid: int, tick: int) -> Action:
-    return _create_action(PROFILING_TICK, (pid, tick))
+def profiler_tick(update:  Tuple[int, int]) -> Action:
+    return _create_action(PROFILING_TICK, update)
 
 
 def profiler_done() -> Action:

@@ -22,7 +22,7 @@ from fapolicy_analyzer.ui.actions import (
     SET_PROFILER_ANALYSIS_FILE,
     SET_PROFILER_STATE,
     PROFILING_EXEC,
-    PROFILING_DONE, PROFILING_INIT, PROFILING_STARTED, PROFILING_KILL,
+    PROFILING_DONE, PROFILING_INIT, PROFILING_STARTED, PROFILING_KILL, PROFILING_TICK,
 )
 
 
@@ -30,6 +30,9 @@ class ProfilerState(NamedTuple):
     entry: Dict[str, str]
     output: str
     file: str
+    cmd: str
+    pid: int
+    duration: int
     running: bool
     killing: bool
 
@@ -65,22 +68,24 @@ def handle_clear_profiler_state(state: ProfilerState, *args) -> ProfilerState:
 
 
 def handle_profiler_init_state(state: ProfilerState, action: Action) -> ProfilerState:
-    print("handle_profiler_init_state")
     return _create_state(state)
 
 
+def handle_profiler_tick(state: ProfilerState, action: Action) -> ProfilerState:
+    (pid, tick) = action.payload
+    return _create_state(state, pid=pid, duration=tick)
+
+
 def handle_profiler_started_state(state: ProfilerState, action: Action) -> ProfilerState:
-    print("handle_profiler_started_state")
-    return _create_state(state, running=True)
+    cmd = action.payload
+    return _create_state(state, cmd=cmd, running=True)
 
 
 def handle_profiler_kill_state(state: ProfilerState, action: Action) -> ProfilerState:
-    print("handle_profiler_kill_state")
     return _create_state(state, killing=True)
 
 
 def handle_profiler_done_state(state: ProfilerState, action: Action) -> ProfilerState:
-    print("handle_profiler_done_state")
     return _create_state(state, running=False)
 
 
@@ -92,8 +97,9 @@ profiler_reducer: Reducer = handle_actions(
         SET_PROFILER_ANALYSIS_FILE: handle_set_profiler_analysis_file,
         CLEAR_PROFILER_STATE: handle_clear_profiler_state,
         PROFILING_STARTED: handle_profiler_started_state,
+        PROFILING_TICK: handle_profiler_tick,
         PROFILING_DONE: handle_profiler_done_state,
         PROFILING_KILL: handle_profiler_kill_state,
     },
-    ProfilerState(entry=default_entry, output="", file="", running=False, killing=False)
+    ProfilerState(entry=default_entry, output="", file="", cmd="", pid=0, duration=0, running=False, killing=False)
 )

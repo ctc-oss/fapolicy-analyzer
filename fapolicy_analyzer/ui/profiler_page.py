@@ -104,6 +104,14 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         self.can_stop = state.running
         self.refresh_toolbar()
 
+        if state.running:
+            t = datetime.timedelta(seconds=state.duration)
+            self.markup = f"<b>{state.pid}: Executing {state.cmd} {t}</b>"
+            self.update_output_text(self.markup)
+        else:
+            self.markup = state.output
+            self.update_output_text(self.markup)
+
 
         # if not self.inputDict == system.get("profiler").entry:
         #     self.update_field_text(system.get("profiler").entry)
