@@ -7,10 +7,10 @@ URL:           https://github.com/ctc-oss/fapolicy-analyzer
 Source0:       %{url}/releases/download/v%{version}/%{name}.tar.gz
 
 # vendored dependencies for EPEL
-Source1:     %{url}/releases/download/v%{version}/vendor-rs.tar.gz
+Source1:       %{url}/releases/download/v%{version}/vendor-rs.tar.gz
 
 # vendored user doc source files
-Source2:     %{url}/releases/download/v%{version}/vendor-docs.tar.gz
+Source2:       %{url}/releases/download/v%{version}/vendor-docs.tar.gz
 
 # we need to provide some updates to python on el8
 # for compatibility with setuptools-rust
@@ -41,9 +41,6 @@ BuildRequires: rust-toolset
 BuildRequires: python3dist(toml)
 BuildRequires: python3dist(typing-extensions)
 
-# todo;; ?? does it require git?
-BuildRequires: git
-
 Requires:      python3
 Requires:      python3-gobject
 Requires:      python3-events
@@ -51,6 +48,8 @@ Requires:      python3-configargparse
 Requires:      python3-more-itertools
 Requires:      python3-rx
 Requires:      python3-importlib-metadata
+Requires:      python3-dataclasses
+Requires:      python3-importlib-resources
 Requires:      gtk3
 Requires:      dbus-libs
 Requires:      gtksourceview3
@@ -62,9 +61,6 @@ Requires:      mesa-dri-drivers
 # rust-ring-devel does not support s390x and ppc64le:
 # https://bugzilla.redhat.com/show_bug.cgi?id=1869980
 ExcludeArch:   s390x %{power64}
-
-Requires:      python3-dataclasses
-Requires:      python3-importlib-resources
 
 %global module          fapolicy_analyzer
 %global venv_dir        %{_builddir}/vendor-py
@@ -124,9 +120,7 @@ sed -i '/tools/d' Cargo.toml
 echo %{module_version} > VERSION
 
 %build
-# on rhel we want to use the prep'd venv
-#alias python3=%{venv_py3}
-
+# use the venv to build
 %{venv_py3} setup.py compile_catalog -f
 %{venv_py3} help build
 %{venv_py3} setup.py bdist_wheel
