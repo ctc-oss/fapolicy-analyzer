@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Callable, Dict, Tuple
+from typing import Callable, Dict
 
 import gi
 from rx import of
@@ -10,9 +10,25 @@ from fapolicy_analyzer import Profiler, ExecHandle, ProcHandle
 from fapolicy_analyzer.redux import (
     Action,
 )
-from fapolicy_analyzer.redux import create_feature_module, ReduxFeatureModule, of_init_feature, combine_epics, of_type
-from fapolicy_analyzer.ui.actions import error_profiling, START_PROFILING, profiler_init, profiling_started, profiler_done, PROFILING_KILL, terminating_profiler, profiler_tick, profiler_exec, \
+from fapolicy_analyzer.redux import (
+    create_feature_module,
+    ReduxFeatureModule,
+    of_init_feature,
+    combine_epics,
+    of_type
+)
+from fapolicy_analyzer.ui.actions import (
+    error_profiling,
+    START_PROFILING,
+    profiler_init,
+    profiling_started,
+    profiler_done,
+    PROFILING_KILL,
+    terminating_profiler,
+    profiler_tick,
+    profiler_exec,
     set_profiler_output
+)
 from fapolicy_analyzer.ui.reducers import profiler_reducer
 
 gi.require_version("Gtk", "3.0")

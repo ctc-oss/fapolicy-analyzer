@@ -294,7 +294,7 @@ def profiler_exec(pid: int) -> Action:
     return _create_action(PROFILING_EXEC, pid)
 
 
-def profiler_tick(duration:  int) -> Action:
+def profiler_tick(duration: int) -> Action:
     return _create_action(PROFILING_TICK, duration)
 
 

@@ -30,7 +30,7 @@ from fapolicy_analyzer.ui.faprofiler import (
     EnumErrorPairs2Str, FaProfSession,
 )
 from fapolicy_analyzer.ui.reducers.profiler_reducer import ProfilerState
-from fapolicy_analyzer.ui.store import dispatch,  get_profiling_feature
+from fapolicy_analyzer.ui.store import dispatch, get_profiling_feature
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 
@@ -207,7 +207,9 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
             self.can_start = False
             self.refresh_toolbar()
 
-            profiling_args["envDict"] = FaProfSession.comma_delimited_kv_string_to_dict(profiling_args.get("envText", ""))
+            profiling_args["envDict"] = FaProfSession.comma_delimited_kv_string_to_dict(
+                profiling_args.get("envText", "")
+            )
 
             logging.debug(f"Entry text = {profiling_args}")
             dispatch(start_profiling(profiling_args))
