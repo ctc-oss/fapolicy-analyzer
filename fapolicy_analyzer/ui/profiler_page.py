@@ -28,7 +28,7 @@ from fapolicy_analyzer.ui.actions import (
 )
 from fapolicy_analyzer.ui.actions import NotificationType, add_notification
 from fapolicy_analyzer.ui.faprofiler import (
-    EnumErrorPairs2Str,
+    EnumErrorPairs2Str, FaProfSession,
 )
 from fapolicy_analyzer.ui.reducers.profiler_reducer import ProfilerState
 from fapolicy_analyzer.ui.store import dispatch, get_system_feature, get_profiling_feature
@@ -74,7 +74,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
                     "Analyze",
                     "Analyze Output",
                     "applications-science",
-                    {"clicked": self.on_analyzerButton_clicked},
+                    {"clicked": self.on_analyzer_button_clicked},
                     sensitivity_func=self.analyze_button_sensitivity,
                 )
             ],
@@ -83,7 +83,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
                     "Clear",
                     "Clear Fields",
                     "edit-clear",
-                    {"clicked": self.on_clearButton_clicked},
+                    {"clicked": self.on_clear_button_clicked},
                 )
             ],
         }
@@ -96,16 +96,13 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         self.analysis_available = False
         self.analysis_file = ""
 
-    def analyze_button_sensitivity(self):
-        return self.analysis_available and self.can_start
-
     def on_event(self, state: ProfilerState):
         self.can_start = not state.running
         self.can_stop = state.running
         self.analysis_available = bool(self.markup)
         self.refresh_toolbar()
 
-        self.update_field_text(state.cmd, state.user, state.pwd, state.env)
+        self.update_input_text(state.cmd, state.user, state.pwd, state.env)
 
         if state.running:
             t = datetime.timedelta(seconds=state.duration) if state.duration else ""
@@ -117,7 +114,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
 
         self.analysis_file = state.events_log
 
-    def update_field_text(self, cmd_string: Optional[str], user: Optional[str], pwd: Optional[str], env: Optional[str]):
+    def update_input_text(self, cmd_string: Optional[str], user: Optional[str], pwd: Optional[str], env: Optional[str]):
         if cmd_string:
             (cmd, args) = cmd_string.split(" ", 1)
             self.get_object("executeText").set_text(cmd if cmd else "")
@@ -129,11 +126,14 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         buff.insert_markup(buff.get_end_iter(), markup, len(markup))
         self.get_object("profilerOutput").set_buffer(buff)
 
-    def on_analyzerButton_clicked(self, *args):
+    def on_analyzer_button_clicked(self, *args):
         self.analyze_button_pushed(self.analysis_file)
 
-    def on_clearButton_clicked(self, *args):
+    def on_clear_button_clicked(self, *args):
         dispatch(clear_profiler_state())
+
+    def analyze_button_sensitivity(self):
+        return self.analysis_available and self.can_start
 
     def stop_button_sensitivity(self):
         return self.can_stop
@@ -167,73 +167,28 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
                     logging.error(f"There was an issue reading from {log}", ex)
         self.update_output_text(markup)
 
-    def on_execd(self, h):
-        self.can_stop = True
-        dispatch(set_profiler_output(f"<b>{h.pid}: Executing {h.cmd}</b>"))
-        GLib.idle_add(self.refresh_toolbar)
-        logging.debug(f"profiling started {h.pid}: {h.cmd}")
-
-    def on_tick(self, h, d):
-        t = datetime.timedelta(seconds=d)
-        dispatch(set_profiler_output(f"<b>{h.pid}: Executing {h.cmd} {t}</b>"))
-
-    def on_done(self):
-        self.can_start = True
-        self.display_log_output()
-        GLib.idle_add(self.refresh_toolbar)
-
     def on_stop_clicked(self, *args):
         self.can_stop = False
         self.refresh_toolbar()
         dispatch(stop_profiling())
 
     def on_start_clicked(self, *args):
-        self.can_start = False
-        self.refresh_toolbar()
-
         profiling_args = self.get_entry_dict()
-        # todo-redux;; validation
-        # if not FaProfSession.validSessionArgs(profiling_args):
-        #     logging.info("Invalid Profiler arguments")
-        #     dictInvalidEnums = FaProfSession.validateArgs(profiling_args)
-        #     strStatusEnums = "\n  " + EnumErrorPairs2Str(dictInvalidEnums)
-        #     dispatch(
-        #         add_notification(
-        #             f"Invalid Profiler Session argument(s): {strStatusEnums}",
-        #             NotificationType.ERROR,
-        #         )
-        #     )
-        #     self.can_start = True
-        #     self.refresh_toolbar()
-        #     return
+        if not FaProfSession.validSessionArgs(profiling_args):
+            logging.info("Invalid Profiler arguments")
+            dictInvalidEnums = FaProfSession.validateArgs(profiling_args)
+            strStatusEnums = "\n  " + EnumErrorPairs2Str(dictInvalidEnums)
+            dispatch(
+                add_notification(
+                    f"Invalid Profiler Session argument(s): {strStatusEnums}",
+                    NotificationType.ERROR,
+                )
+            )
+            self.can_start = True
+            self.refresh_toolbar()
+        else:
+            self.can_start = False
+            self.refresh_toolbar()
 
-        logging.debug(f"Entry text = {profiling_args}")
-        # todo;; revise the persistence stuff
-        # self._fapd_profiler.fapd_persistance = self.get_object(
-        #     "persistentCheckbox"
-        # ).get_active()
-
-        # todo-redux;; start profiling
-        # self._fapd_profiler.start_prof_session(profiling_args, self.on_execd, self.on_tick, self.on_done)
-        dispatch(start_profiling(profiling_args))
-
-        # todo-redux;; handle arg errors
-        # except ProfSessionException as e:
-        #     # Profiler Session creation failed because of bad args
-        #     logging.debug(f"{e.error_msg}, {e.error_enum}")
-        #     dispatch(
-        #         add_notification(
-        #             e.error_msg,
-        #             NotificationType.ERROR,
-        #         )
-        #     )
-
-        # todo-redux;; handle profiling errors
-        # except Exception as e:
-        #     logging.debug(f"Unknown exception thrown by start_prof_session {e}")
-        #     dispatch(
-        #         add_notification(
-        #             "Error: An unknown Profiler Session error has occured.",
-        #             NotificationType.ERROR,
-        #         )
-        #     )
+            logging.debug(f"Entry text = {profiling_args}")
+            dispatch(start_profiling(profiling_args))
