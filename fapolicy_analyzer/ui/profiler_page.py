@@ -22,7 +22,6 @@ import gi
 from events import Events
 from fapolicy_analyzer.ui.actions import (
     clear_profiler_state,
-    set_profiler_output,
     start_profiling,
     stop_profiling,
 )
@@ -31,13 +30,12 @@ from fapolicy_analyzer.ui.faprofiler import (
     EnumErrorPairs2Str, FaProfSession,
 )
 from fapolicy_analyzer.ui.reducers.profiler_reducer import ProfilerState
-from fapolicy_analyzer.ui.store import dispatch, get_system_feature, get_profiling_feature
+from fapolicy_analyzer.ui.store import dispatch,  get_profiling_feature
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
-from gi.repository import GLib  # isort: skip
 
 
 class ProfilerPage(UIConnectedWidget, UIPage, Events):

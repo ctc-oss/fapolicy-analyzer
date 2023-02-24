@@ -13,13 +13,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Any, Dict, NamedTuple, Optional, cast
+from typing import Any, Dict, NamedTuple, Optional
 
 from fapolicy_analyzer.redux import Action, Reducer, handle_actions
 from fapolicy_analyzer.ui.actions import (
     CLEAR_PROFILER_STATE,
     PROFILING_EXEC,
-    PROFILING_DONE, PROFILING_INIT, PROFILING_STARTED, PROFILING_KILL, PROFILING_TICK, SET_PROFILER_OUTPUT, START_PROFILING,
+    PROFILING_DONE,
+    PROFILING_INIT,
+    PROFILING_STARTED,
+    PROFILING_KILL,
+    PROFILING_TICK,
+    SET_PROFILER_OUTPUT,
+    START_PROFILING,
 )
 
 
@@ -55,7 +61,7 @@ def handle_set_profiler_output(state: ProfilerState, action: Action) -> Profiler
 
 
 def handle_clear_profiler_state(state: ProfilerState, action: Action) -> ProfilerState:
-    return _create_state(state, cmd=None, pwd=None, env=None, user=None,)
+    return _create_state(state, cmd=None, pwd=None, env=None, user=None, )
 
 
 def handle_profiler_init_state(state: ProfilerState, action: Action) -> ProfilerState:
@@ -107,5 +113,5 @@ profiler_reducer: Reducer = handle_actions(
                   killing=False,
                   events_log=None,
                   stdout_log=None,
-                  stderr_log=None,)
+                  stderr_log=None, )
 )
