@@ -35,9 +35,7 @@ def create_profiler_feature(
 
     def _on_exec(h: ExecHandle, action_fn: Callable[[int], Action]):
         _idle_dispatch(action_fn(h.pid))
-
-        # todo-redux;; generate a temp file for each
-        _idle_dispatch(set_profiler_output("/tmp/eventlog.txt", "/tmp/stdout.txt", "/tmp/stderr.txt"))
+        _idle_dispatch(set_profiler_output(h.event_log, h.stdout_log, h.stderr_log))
 
     def _on_tick(_: ExecHandle, duration: int, action_fn: Callable[[int], Action]):
         _idle_dispatch(action_fn(duration))
@@ -100,11 +98,6 @@ def create_profiler_feature(
         p.exec_callback = exed
         p.tick_callback = tick
         p.done_callback = done
-
-        # set output paths
-        p.daemon_stdout = "/tmp/eventlog.txt"
-        p.target_stdout = "/tmp/stdout.txt"
-        p.target_stderr = "/tmp/stderr.txt"
 
         # execute and dispatch
         _handle = p.profile(cmd)

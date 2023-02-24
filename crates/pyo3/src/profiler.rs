@@ -20,6 +20,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::thread;
 use std::time::{Duration, SystemTime};
+use tempfile::{NamedTempFile, PersistError};
 
 use fapolicy_daemon::profiler::Profiler;
 use fapolicy_rules::read::load_rules_db;
@@ -27,7 +28,7 @@ use fapolicy_rules::read::load_rules_db;
 type EnvVars = HashMap<String, String>;
 type CmdArgs = (Command, String);
 
-#[derive(Default)]
+#[derive(Debug, Default)]
 #[pyclass(module = "daemon", name = "Profiler")]
 pub struct PyProfiler {
     uid: Option<u32>,
@@ -35,9 +36,7 @@ pub struct PyProfiler {
     pwd: Option<PathBuf>,
     env: Option<EnvVars>,
     rules: Option<String>,
-    daemon_stdout: Option<String>,
-    target_stdout: Option<String>,
-    target_stderr: Option<String>,
+    log_dir: Option<String>,
     callback_exec: Option<PyObject>,
     callback_tick: Option<PyObject>,
     callback_done: Option<PyObject>,
@@ -47,7 +46,10 @@ pub struct PyProfiler {
 impl PyProfiler {
     #[new]
     fn new() -> Self {
-        Default::default()
+        Self {
+            log_dir: Some("/tmp".to_string()),
+            ..Default::default()
+        }
     }
 
     #[setter]
@@ -101,18 +103,8 @@ impl PyProfiler {
     }
 
     #[setter]
-    fn set_daemon_stdout(&mut self, path: &str) {
-        self.daemon_stdout = Some(path.to_string());
-    }
-
-    #[setter]
-    fn set_target_stdout(&mut self, path: &str) {
-        self.target_stdout = Some(path.to_string());
-    }
-
-    #[setter]
-    fn set_target_stderr(&mut self, path: &str) {
-        self.target_stderr = Some(path.to_string());
+    fn set_log_dir(&mut self, path: Option<&str>) {
+        self.log_dir = path.map(String::from);
     }
 
     #[setter]
@@ -155,10 +147,15 @@ impl PyProfiler {
 
         let mut rs = Profiler::new();
 
-        // configure the daemon and target logging outputs
-        rs.stdout_log = check_log_dest(self.daemon_stdout.as_ref());
-        let stdout_log = create_log_dest(self.target_stdout.as_ref());
-        let stderr_log = create_log_dest(self.target_stderr.as_ref());
+        // generate the daemon and target logs
+        let (event_log, mut stdout_log, mut stderr_log) =
+            create_log_files(self.log_dir.as_ref())
+                .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))?;
+
+        // set the daemon stdout log
+        if let Some((_, path)) = event_log.as_ref() {
+            rs.stdout_log = Some(path.clone());
+        }
 
         // build the target commands
         let targets: Vec<_> = targets.iter().map(|t| self.build(t)).collect();
@@ -192,7 +189,15 @@ impl PyProfiler {
                     alive.store(true, Ordering::Relaxed);
 
                     let pid = execd.pid().expect("pid");
-                    let handle = ExecHandle::new(pid, args, term.clone());
+                    let handle = ExecHandle::new(
+                        pid,
+                        args,
+                        term.clone(),
+                        // todo;; clean this up...
+                        event_log.as_ref().map(|x| x.1.display().to_string()),
+                        stdout_log.as_ref().map(|x| x.1.display().to_string()),
+                        stderr_log.as_ref().map(|x| x.1.display().to_string()),
+                    );
                     let start = SystemTime::now();
 
                     if let Some(cb) = cb_exec.as_ref() {
@@ -239,10 +244,10 @@ impl PyProfiler {
 
                     // write the target stdout/stderr if configured
                     let output: Output = execd.into();
-                    if let Some(mut f) = stdout_log.as_ref() {
+                    if let Some((ref mut f, _)) = stdout_log {
                         f.write_all(&output.stdout).unwrap();
                     }
-                    if let Some(mut f) = stderr_log.as_ref() {
+                    if let Some((ref mut f, _)) = stderr_log {
                         f.write_all(&output.stderr).unwrap();
                     }
                 }
@@ -266,34 +271,23 @@ impl PyProfiler {
     }
 }
 
-fn check_log_dest(path: Option<&String>) -> Option<PathBuf> {
-    let path = path.as_ref().map(PathBuf::from);
-    if let Some(path) = path.as_ref() {
-        if path.exists() {
-            eprintln!(
-                "warning: deleting existing log file from {}",
-                path.display()
-            );
-            if std::fs::remove_file(&path).is_err() {
-                eprintln!(
-                    "warning: failed to delete existing log file from {}",
-                    path.display()
-                )
-            };
-        }
+type LogPath = Option<(File, PathBuf)>;
+type LogPaths = (LogPath, LogPath, LogPath);
+fn create_log_files(log_dir: Option<&String>) -> Result<LogPaths, PersistError> {
+    if let Some(log_dir) = log_dir {
+        let event_log = make_log_path(log_dir)?;
+        let target_stdout = make_log_path(log_dir)?;
+        let target_stderr = make_log_path(log_dir)?;
+        return Ok((event_log, target_stdout, target_stderr));
     }
-    path
+    Ok((None, None, None))
 }
 
-fn create_log_dest(path: Option<&String>) -> Option<File> {
-    if let Some(path) = check_log_dest(path) {
-        match File::create(path) {
-            Ok(f) => Some(f),
-            Err(_) => None,
-        }
-    } else {
-        None
-    }
+fn make_log_path(log_dir: &str) -> Result<LogPath, PersistError> {
+    NamedTempFile::new_in(log_dir)
+        .ok()
+        .map(|f| f.keep())
+        .transpose()
 }
 
 /// Terminable process handle returned to python after starting profiling
@@ -322,14 +316,27 @@ struct ExecHandle {
     pid: u32,
     command: String,
     kill_flag: Arc<AtomicBool>,
+    target_stdout_log: Option<String>,
+    target_stderr_log: Option<String>,
+    service_stdout_log: Option<String>,
 }
 
 impl ExecHandle {
-    fn new(pid: u32, command: String, kill_flag: Arc<AtomicBool>) -> Self {
+    fn new(
+        pid: u32,
+        command: String,
+        kill_flag: Arc<AtomicBool>,
+        target_out: Option<String>,
+        target_err: Option<String>,
+        svc_out: Option<String>,
+    ) -> Self {
         ExecHandle {
             pid,
             command,
             kill_flag,
+            target_stdout_log: target_out,
+            target_stderr_log: target_err,
+            service_stdout_log: svc_out,
         }
     }
 }
@@ -344,6 +351,21 @@ impl ExecHandle {
     #[getter]
     fn cmd(&self) -> &str {
         &self.command
+    }
+
+    #[getter]
+    fn event_log(&self) -> Option<String> {
+        self.service_stdout_log.clone()
+    }
+
+    #[getter]
+    fn stdout_log(&self) -> Option<String> {
+        self.target_stdout_log.clone()
+    }
+
+    #[getter]
+    fn stderr_log(&self) -> Option<String> {
+        self.target_stderr_log.clone()
     }
 
     fn kill(&self) {
