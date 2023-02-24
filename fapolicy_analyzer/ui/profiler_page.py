@@ -109,7 +109,6 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
             self.markup = f"<b>{state.pid}: Executing {state.cmd} {t}</b>"
             self.update_output_text(self.markup)
         else:
-            print(f"displaying log output, {state.events_log}, {state.stdout_log}, {state.stderr_log}")
             self.display_log_output([state.events_log, state.stdout_log, state.stderr_log])
 
         self.analysis_file = state.events_log
@@ -176,7 +175,6 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         markup = ""
         for log in logs:
             if log:
-                print(f"displaying log: {log}")
                 markup += f"<b>{log}</b>\n"
                 try:
                     with open(log, "r") as f:

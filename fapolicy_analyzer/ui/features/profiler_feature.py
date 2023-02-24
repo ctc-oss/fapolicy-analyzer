@@ -73,16 +73,18 @@ def create_profiler_feature(
             flag_fn=on_done,
         )
 
-        print("=========== starting profiling =============")
-
-        # profiler backend
+        # create the backend
         p = Profiler()
 
-        # session args
+        # set callbacks
+        p.exec_callback = exed
+        p.tick_callback = tick
+        p.done_callback = done
+
+        # get the session args
         args: Dict[str, str] = action.payload
 
         # target command
-
         target = args.get("executeText", None)
         target_args = args.get("argText", None)
         cmd = target if target else None
@@ -93,11 +95,6 @@ def create_profiler_feature(
         p.user = args.get("userText", None)
         p.pwd = args.get("dirText", None)
         p.env = args.get("envDict", None)
-
-        # set callbacks
-        p.exec_callback = exed
-        p.tick_callback = tick
-        p.done_callback = done
 
         # execute and dispatch
         _handle = p.profile(cmd)
