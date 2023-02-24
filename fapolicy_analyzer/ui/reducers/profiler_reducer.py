@@ -61,7 +61,7 @@ def handle_set_profiler_output(state: ProfilerState, action: Action) -> Profiler
 
 
 def handle_clear_profiler_state(state: ProfilerState, action: Action) -> ProfilerState:
-    return _create_state(state, cmd=None, pwd=None, env=None, user=None, )
+    return _create_state(state, cmd=None, pwd=None, env=None, uid=None, )
 
 
 def handle_profiler_init_state(state: ProfilerState, action: Action) -> ProfilerState:
