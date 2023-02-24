@@ -102,7 +102,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         self.analysis_available = bool(self.markup)
         self.refresh_toolbar()
 
-        self.update_input_text(state.cmd, state.user, state.pwd, state.env)
+        self.update_input_text(state.cmd, state.uid, state.pwd, state.env)
 
         if state.running:
             t = datetime.timedelta(seconds=state.duration) if state.duration else ""
@@ -114,11 +114,13 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
 
         self.analysis_file = state.events_log
 
-    def update_input_text(self, cmd_string: Optional[str], user: Optional[str], pwd: Optional[str], env: Optional[str]):
-        if cmd_string:
-            (cmd, args) = cmd_string.split(" ", 1)
-            self.get_object("executeText").set_text(cmd if cmd else "")
-            self.get_object("argText").set_text(args if args else "")
+    def update_input_text(self, cmd_string: Optional[str], uid: Optional[str], pwd: Optional[str], env: Optional[str]):
+        (cmd, args) = cmd_string.split(" ", 1) if cmd_string and " " in cmd_string else [cmd_string, None]
+        self.get_object("argText").set_text(args if args else "")
+        self.get_object("executeText").set_text(cmd if cmd else "")
+        self.get_object("userText").set_text(uid if uid else "")
+        self.get_object("dirText").set_text(pwd if pwd else "")
+        self.get_object("envText").set_text(env if env else "")
 
     def update_output_text(self, markup):
         self.markup = markup
@@ -141,13 +143,32 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
     def start_button_sensitivity(self):
         return self.can_start
 
+    def _get_opt_text(self, named) -> Optional[str]:
+        txt = self.get_object(named).get_text()
+        return txt if txt else None
+
+    def get_target_text(self) -> Optional[str]:
+        return self._get_opt_text("executeText")
+
+    def get_arg_text(self) -> Optional[str]:
+        return self._get_opt_text("argText")
+
+    def get_user_text(self) -> Optional[str]:
+        return self._get_opt_text("userText")
+
+    def get_pwd_text(self) -> Optional[str]:
+        return self._get_opt_text("dirText")
+
+    def get_env_text(self) -> Optional[str]:
+        return self._get_opt_text("envText")
+
     def get_entry_dict(self):
         self.inputDict = {
-            "executeText": self.get_object("executeText").get_text(),
-            "argText": self.get_object("argText").get_text(),
-            "userText": self.get_object("userText").get_text(),
-            "dirText": self.get_object("dirText").get_text(),
-            "envText": self.get_object("envText").get_text(),
+            "executeText": self.get_target_text(),
+            "argText": self.get_arg_text(),
+            "userText": self.get_user_text(),
+            "dirText": self.get_pwd_text(),
+            "envText": self.get_env_text(),
         }
         return self.inputDict
 
@@ -189,6 +210,8 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         else:
             self.can_start = False
             self.refresh_toolbar()
+
+            profiling_args["envDict"] = FaProfSession.comma_delimited_kv_string_to_dict(profiling_args.get("envText", ""))
 
             logging.debug(f"Entry text = {profiling_args}")
             dispatch(start_profiling(profiling_args))

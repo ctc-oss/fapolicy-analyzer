@@ -162,7 +162,7 @@ class FaProfSession:
 
         # Validate, convert CSV  env string of "K=V" substrings to dict
         try:
-            exec_env = FaProfSession._comma_delimited_kv_string_to_dict(
+            exec_env = FaProfSession.comma_delimited_kv_string_to_dict(
                 dictProfTgt.get("envText", "")
             )
 
@@ -216,7 +216,8 @@ class FaProfSession:
 
         return dictReturn or {ProfSessionArgsStatus.OK: s.PROF_ARG_OK}
 
-    def _comma_delimited_kv_string_to_dict(string_in):
+    @staticmethod
+    def comma_delimited_kv_string_to_dict(string_in):
         """Generates dictionary from comma separated string of k=v pairs"""
         if not string_in:
             return None

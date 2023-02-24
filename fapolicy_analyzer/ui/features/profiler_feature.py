@@ -35,6 +35,8 @@ def create_profiler_feature(
 
     def _on_exec(h: ExecHandle, action_fn: Callable[[int], Action]):
         _idle_dispatch(action_fn(h.pid))
+
+        # todo-redux;; generate a temp file for each
         _idle_dispatch(set_profiler_output("/tmp/eventlog.txt", "/tmp/stdout.txt", "/tmp/stderr.txt"))
 
     def _on_tick(_: ExecHandle, duration: int, action_fn: Callable[[int], Action]):
@@ -75,22 +77,37 @@ def create_profiler_feature(
 
         print("=========== starting profiling =============")
 
-        args: Dict[str, str] = action.payload
-        target = args.get("executeText", "")
-        target_args = args.get("argText", "")
-
+        # profiler backend
         p = Profiler()
+
+        # session args
+        args: Dict[str, str] = action.payload
+
+        # target command
+
+        target = args.get("executeText", None)
+        target_args = args.get("argText", None)
+        cmd = target if target else None
+        if cmd and target_args:
+            cmd = f"{target} {target_args}"
+
+        # set user, pwd, envs
+        p.user = args.get("userText", None)
+        p.pwd = args.get("dirText", None)
+        p.env = args.get("envDict", None)
+
+        # set callbacks
         p.exec_callback = exed
         p.tick_callback = tick
         p.done_callback = done
 
-        cmd = f"{target} {target_args}"
+        # set output paths
         p.daemon_stdout = "/tmp/eventlog.txt"
         p.target_stdout = "/tmp/stdout.txt"
         p.target_stderr = "/tmp/stderr.txt"
 
+        # execute and dispatch
         _handle = p.profile(cmd)
-
         return profiling_started(cmd)
 
     def _kill_profiler(action: Action) -> Action:

@@ -51,59 +51,58 @@ impl PyProfiler {
     }
 
     #[setter]
-    fn set_uid(&mut self, uid: u32) {
-        self.uid = Some(uid);
+    fn set_uid(&mut self, uid: Option<u32>) {
+        self.uid = uid;
     }
 
-    fn set_user(&mut self, uid_or_uname: &str) -> PyResult<()> {
-        self.uid = if uid_or_uname.starts_with(|x: char| x.is_ascii_alphabetic()) {
-            Some(
-                read_users()
-                    .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))?
-                    .iter()
-                    .find(|x| x.name == uid_or_uname)
-                    .map(|u| u.uid)
-                    .ok_or_else(|| {
-                        PyRuntimeError::new_err(format!(
-                            "unable to lookup uid by uname {}",
-                            uid_or_uname
-                        ))
-                    })?,
-            )
-        } else {
-            Some(uid_or_uname.parse()?)
-        };
+    #[setter]
+    fn set_user(&mut self, uid_or_uname: Option<&str>) -> PyResult<()> {
+        if let Some(uid_or_uname) = uid_or_uname {
+            self.uid = if uid_or_uname.starts_with(|x: char| x.is_ascii_alphabetic()) {
+                Some(
+                    read_users()
+                        .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))?
+                        .iter()
+                        .find(|x| x.name == uid_or_uname)
+                        .map(|u| u.uid)
+                        .ok_or_else(|| {
+                            PyRuntimeError::new_err(format!(
+                                "unable to lookup uid by uname {}",
+                                uid_or_uname
+                            ))
+                        })?,
+                )
+            } else {
+                Some(uid_or_uname.parse()?)
+            };
+        }
         Ok(())
     }
 
     #[setter]
-    fn set_gid(&mut self, gid: u32) {
-        self.gid = Some(gid);
+    fn set_gid(&mut self, gid: Option<u32>) {
+        self.gid = gid;
     }
 
     #[setter]
-    fn set_pwd(&mut self, path: &str) {
-        self.pwd = Some(PathBuf::from(path))
+    fn set_pwd(&mut self, path: Option<&str>) {
+        self.pwd = path.map(PathBuf::from)
     }
 
     #[setter]
-    fn set_rules(&mut self, path: &str) {
-        self.rules = Some(path.to_string())
+    fn set_rules(&mut self, path: Option<&str>) {
+        self.rules = path.map(String::from)
     }
 
+    /// Accept a dict of String:String KV pairs to set as environment variables
     #[setter]
-    fn set_env(&mut self, args: EnvVars) {
-        self.env = Some(args);
+    fn set_env(&mut self, dict: Option<EnvVars>) {
+        self.env = dict;
     }
 
     #[setter]
     fn set_daemon_stdout(&mut self, path: &str) {
         self.daemon_stdout = Some(path.to_string());
-    }
-
-    #[getter]
-    fn get_target_stdout(&self) -> Option<&String> {
-        self.target_stdout.as_ref()
     }
 
     #[setter]

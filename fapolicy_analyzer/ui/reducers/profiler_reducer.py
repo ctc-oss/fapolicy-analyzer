@@ -19,7 +19,7 @@ from fapolicy_analyzer.redux import Action, Reducer, handle_actions
 from fapolicy_analyzer.ui.actions import (
     CLEAR_PROFILER_STATE,
     PROFILING_EXEC,
-    PROFILING_DONE, PROFILING_INIT, PROFILING_STARTED, PROFILING_KILL, PROFILING_TICK, SET_PROFILER_OUTPUT,
+    PROFILING_DONE, PROFILING_INIT, PROFILING_STARTED, PROFILING_KILL, PROFILING_TICK, SET_PROFILER_OUTPUT, START_PROFILING,
 )
 
 
@@ -27,7 +27,7 @@ class ProfilerState(NamedTuple):
     cmd: Optional[str]
     pwd: Optional[str]
     env: Optional[str]
-    user: Optional[str]
+    uid: Optional[str]
     pid: Optional[int]
     duration: Optional[int]
     running: bool
@@ -43,9 +43,10 @@ def _create_state(state: ProfilerState, **kwargs: Optional[Any]) -> ProfilerStat
 
 def handle_start_profiling(state: ProfilerState, action: Action) -> ProfilerState:
     args: Dict[str, str] = action.payload
-    cmd = ' '.join([args.get("executeText", ""), args.get("argText", "")])
-
-    return _create_state(state, cmd=cmd,)
+    uid = args.get("userText", None)
+    pwd = args.get("dirText", None)
+    env = args.get("envText", None)
+    return _create_state(state, uid=uid, pwd=pwd, env=env)
 
 
 def handle_set_profiler_output(state: ProfilerState, action: Action) -> ProfilerState:
@@ -89,6 +90,7 @@ profiler_reducer: Reducer = handle_actions(
         PROFILING_INIT: handle_profiler_init_state,
         SET_PROFILER_OUTPUT: handle_set_profiler_output,
         CLEAR_PROFILER_STATE: handle_clear_profiler_state,
+        START_PROFILING: handle_start_profiling,
         PROFILING_STARTED: handle_profiler_started_state,
         PROFILING_EXEC: handle_profiler_exec,
         PROFILING_TICK: handle_profiler_tick,
@@ -98,7 +100,7 @@ profiler_reducer: Reducer = handle_actions(
     ProfilerState(cmd=None,
                   pwd=None,
                   env=None,
-                  user=None,
+                  uid=None,
                   pid=None,
                   duration=None,
                   running=False,
