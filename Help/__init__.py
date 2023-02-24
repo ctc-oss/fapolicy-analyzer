@@ -125,6 +125,12 @@ def _download_file(url: str, filename: str, proxy: Optional[str] = None):
         print(f"Unable to download file from {url}: {e}")
 
 ################################################################################
+def _copy_from_local_clone(local_repo_path: str, filename: str):
+    makedirs(path.dirname(filename), exist_ok=True)
+    shutil.copyfile(local_repo_path, filename)
+
+
+################################################################################
 def _download(
     files: Sequence[str] = DEFAULT_HELP_FILES,
     repo: str = DEFAULT_REPO,
@@ -160,10 +166,18 @@ def _download(
         for url in media_urls:
 
             # Construct path to relative media in fapolicy-analyzer.m
-            filename = path.basename(urlparse(url).path)
+            url_tuple = urlparse(url)
+            filename = path.basename(url_tuple.path)
             local_path = path.join(DEFAULT_REL_MEDIA_DIR, filename)
-            _download_file(url, path.join(c_dir, local_path), proxy)
             rel_path = f"help:fapolicy-analyzer/{local_path}"
+
+            # Copy from public wiki repo or from local wiki repo clone
+            if url_tuple.scheme:
+                _download_file(url, path.join(c_dir, local_path), proxy)
+            else:
+                _copy_from_local_clone(path.join(tmp_dir, url),
+                                       path.join(c_dir, local_path))
+                
             html = html.replace(url, rel_path)
         html_files.append(html_file(md, html))
 
