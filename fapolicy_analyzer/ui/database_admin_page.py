@@ -29,15 +29,16 @@ from fapolicy_analyzer.ui.ui_widget import UIWidget
 
 class DatabaseAdminPage(UIWidget, UIPage):
     def __init__(self):
-        notebook = Gtk.Notebook()
-        UIWidget.__init__(self, notebook)
+        self.notebook = Gtk.Notebook()
+        UIWidget.__init__(self, self.notebook)
         actions = {
             "toggle": [
                 UIAction(
                     name="Toggle",
                     tooltip="Toggle Displaying Trusted Entries",
-                    icon="system-software-update",
+                    icon="media-playlist-repeat",
                     signals={"clicked": self.on_trust_toggle_clicked},
+                    sensitivity_func=self.trust_toggle_sensitivity,
                 )
             ],
         }
@@ -49,17 +50,17 @@ class DatabaseAdminPage(UIWidget, UIPage):
             self.on_added_to_ancillary_trust
         )
 
-        notebook.append_page(
+        self.notebook.append_page(
             self.systemTrustDbAdmin.get_ref(),
             Gtk.Label(label=strings.SYSTEM_TRUST_TAB_LABEL),
         )
-        notebook.append_page(
+        self.notebook.append_page(
             self.ancillaryTrustDbAdmin.get_ref(),
             Gtk.Label(label=strings.ANCILLARY_TRUST_TAB_LABEL),
         )
 
-        notebook.set_current_page(1)
-        notebook.show_all()
+        self.notebook.set_current_page(1)
+        self.notebook.show_all()
 
     def on_added_to_ancillary_trust(self, *files):
         self.ancillaryTrustDbAdmin.add_trusted_files(*files)
@@ -67,6 +68,9 @@ class DatabaseAdminPage(UIWidget, UIPage):
     def on_trust_toggle_clicked(self, *args):
         self.systemTrustDbAdmin.trust_file_list.show_trusted = not self.systemTrustDbAdmin.trust_file_list.show_trusted
         self.systemTrustDbAdmin.trust_file_list.refresh()
+
+    def trust_toggle_sensitivity(self):
+        return True if self.notebook.get_current_page() == 0 else False
 
     def _dispose(self):
         self.ancillaryTrustDbAdmin.dispose()

@@ -61,6 +61,7 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
         self.get_object("rightBox").pack_start(
             self.trustFileDetails.get_ref(), True, True, 0
         )
+        self.show_label = False
 
     def __load_trust(self):
         self.__loading = True
@@ -163,6 +164,20 @@ SHA256: {fs.sha(trust.path)}"""
 
             self.delete_trusted_files(*self.selectedFiles)
 
+    def set_label_display(self):
+        scroll_window = self.trust_file_list.get_object("viewScroll")
+        scroll_window.remove(scroll_window.get_child())
+        scroll_window.add(Gtk.Label(label=strings.ANCILLARY_TRUST_NO_ENTRIES))
+        self.show_label = True
+        scroll_window.show_all()
+
+    def set_treeview_display(self):
+        scroll_window = self.trust_file_list.get_object("viewScroll")
+        scroll_window.remove(scroll_window.get_child())
+        scroll_window.add(self.trust_file_list.treeView)
+        self.show_label = False
+        scroll_window.show_all()
+
     def on_next_system(self, system):
         def started_loading(state):
             return (
@@ -196,6 +211,11 @@ SHA256: {fs.sha(trust.path)}"""
             self._changesets = changeset_state.changesets
             self.trust_file_list.set_changesets(self._changesets)
             self.__load_trust()
+
+        if trust_state.trust_count == 0:
+            self.set_label_display()
+        elif self.show_label and trust_state.trust_count > 0:
+            self.set_treeview_display()
 
         # if there was an error loading show appropriate notification
         if trust_state.error and self.__loading:
