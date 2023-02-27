@@ -21,7 +21,7 @@ import subprocess
 import urllib.request
 from distutils import dir_util
 from glob import glob
-from os import makedirs, path
+from os import makedirs, path, environ
 from typing import Optional, Sequence
 from urllib.parse import urlparse
 
@@ -33,6 +33,11 @@ DEFAULT_INSTALL_DIR = "share"
 DEFAULT_MEDIA_URL = "https://user-images.githubusercontent.com/1545372"
 DEFAULT_REL_MEDIA_DIR = "media"
 DEFAULT_BUILD_DIR = path.join("build", DEFAULT_OUTPUT_DIR)
+
+if environ.get("LOCAL_HELP_GFX"):
+    DEFAULT_REL_HELP_GFX_PREFIX = ""
+else:
+    DEFAULT_REL_HELP_GFX_PREFIX = "help:fapolicy-analyzer/"
 
 try:
     # attempt to read version from a file in the help dir
@@ -161,7 +166,7 @@ def _download(
             url_tuple = urlparse(url)
             filename = path.basename(url_tuple.path)
             local_path = path.join(DEFAULT_REL_MEDIA_DIR, filename)
-            rel_path = f"help:fapolicy-analyzer/{local_path}"
+            rel_path = f"{DEFAULT_REL_HELP_GFX_PREFIX}{local_path}"
 
             # Copy from public wiki repo or from local wiki repo clone
             if url_tuple.scheme:
