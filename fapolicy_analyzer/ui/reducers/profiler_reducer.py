@@ -43,27 +43,7 @@ class ProfilerState(NamedTuple):
     stderr_log: Optional[str]
 
 
-class ProfilerCreated(ProfilerState):
-    pass
-
-
-class ProfilerRequested(ProfilerState):
-    pass
-
-
-class ProfilerStarting(ProfilerState):
-    pass
-
-
 class ProfilerStarted(ProfilerState):
-    pass
-
-
-class ProfilerOutput(ProfilerState):
-    pass
-
-
-class ProfilerReset(ProfilerState):
     pass
 
 
@@ -84,21 +64,20 @@ def _create_state(target, source: ProfilerState, **kwargs: Optional[Any]) -> Pro
 
 
 def handle_profiler_init_state(state: ProfilerState, action: Action) -> ProfilerState:
-    print("INIT STATE")
-    return _create_state(ProfilerCreated, state)
+    return _create_state(ProfilerState, state)
 
 
 def handle_start_profiling(state: ProfilerState, action: Action) -> ProfilerState:
     args: Dict[str, str] = action.payload
-    uid = args.get("userText", None)
-    pwd = args.get("dirText", None)
-    env = args.get("envText", None)
-    return _create_state(ProfilerRequested, state, uid=uid, pwd=pwd, env=env)
+    uid = args.get("uid", None)
+    pwd = args.get("pwd", None)
+    env = args.get("env_text", None)
+    return _create_state(ProfilerState, state, uid=uid, pwd=pwd, env=env)
 
 
 def handle_profiler_started_state(state: ProfilerState, action: Action) -> ProfilerState:
     cmd = action.payload
-    return _create_state(ProfilerStarting, state, cmd=cmd, running=True)
+    return _create_state(ProfilerState, state, cmd=cmd, running=True)
 
 
 def handle_profiler_exec(state: ProfilerState, action: Action) -> ProfilerState:
@@ -108,11 +87,11 @@ def handle_profiler_exec(state: ProfilerState, action: Action) -> ProfilerState:
 
 def handle_set_profiler_output(state: ProfilerState, action: Action) -> ProfilerState:
     (ev, so, se) = action.payload
-    return _create_state(ProfilerOutput, state, events_log=ev, stdout_log=so, stderr_log=se)
+    return _create_state(ProfilerState, state, events_log=ev, stdout_log=so, stderr_log=se)
 
 
 def handle_clear_profiler_state(state: ProfilerState, action: Action) -> ProfilerState:
-    return _create_state(ProfilerReset, state, cmd=None, pwd=None, env=None, uid=None, )
+    return _create_state(ProfilerState, state, cmd=None, pwd=None, env=None, uid=None, )
 
 
 def handle_profiler_tick(state: ProfilerState, action: Action) -> ProfilerState:

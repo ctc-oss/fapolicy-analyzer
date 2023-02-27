@@ -128,16 +128,16 @@ class FaProfSession:
         """
         logging.info("validateArgs()")
         # Verify all keys are in dictProfTgt; delta_keys should be empty.
-        expected_keys = {"executeText", "argText", "userText", "dirText", "envText"}
+        expected_keys = {"cmd", "arg", "uid", "pwd", "env_text"}
         delta_keys = expected_keys.difference(dictProfTgt.keys())
         if delta_keys:
             raise KeyError(f"Missing {delta_keys} key(s) from Profiler Page")
 
         dictReturn = {}
         logging.debug(f"validateArgs({dictProfTgt}")
-        exec_path = dictProfTgt.get("executeText", "")
-        exec_user = dictProfTgt.get("userText", "")
-        exec_pwd = dictProfTgt.get("dirText", "")
+        exec_path = dictProfTgt.get("cmd", "")
+        exec_user = dictProfTgt.get("uid", "")
+        exec_pwd = dictProfTgt.get("pwd", "")
 
         # working dir?
         # pwd empty? Check pwd first because it is used with relative exec paths
@@ -163,7 +163,7 @@ class FaProfSession:
         # Validate, convert CSV  env string of "K=V" substrings to dict
         try:
             exec_env = FaProfSession.comma_delimited_kv_string_to_dict(
-                dictProfTgt.get("envText", "")
+                dictProfTgt.get("env_text", "")
             )
 
         except RuntimeError as e:

@@ -33,7 +33,6 @@ from fapolicy_analyzer.ui.reducers.profiler_reducer import (
     ProfilerState,
     ProfilerTick,
     ProfilerDone,
-    ProfilerReset,
 )
 from fapolicy_analyzer.ui.store import dispatch, get_profiling_feature
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
@@ -102,7 +101,6 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         self.analysis_file = ""
 
         self.profiling_handlers = {
-            ProfilerReset: self.handle_reset,
             ProfilerTick: self.handle_tick,
             ProfilerDone: self.handle_done,
         }
@@ -113,9 +111,6 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         if state.__class__ in self.profiling_handlers:
             self.profiling_handlers.get(state.__class__)(state)
 
-    def handle_reset(self, state: ProfilerReset):
-        self.clear_input_fields()
-
     def handle_tick(self, state: ProfilerTick):
         t = datetime.timedelta(seconds=state.duration) if state.duration else ""
         self.markup = f"<b>{state.pid}: Executing {state.cmd} {t}</b>"
@@ -125,8 +120,8 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         self.display_log_output([state.events_log, state.stdout_log, state.stderr_log])
         self.analysis_file = state.events_log
 
-    def update_input_fields(self, cmd_string: Optional[str], uid: Optional[str], pwd: Optional[str], env: Optional[str]):
-        (cmd, args) = cmd_string.split(" ", 1) if cmd_string and " " in cmd_string else [cmd_string, None]
+    def update_input_fields(self, cmd_args: Optional[str], uid: Optional[str], pwd: Optional[str], env: Optional[str]):
+        (cmd, args) = cmd_args.split(" ", 1) if cmd_args and " " in cmd_args else [cmd_args, None]
         self.get_object("argText").set_text(args if args else "")
         self.get_object("executeText").set_text(cmd if cmd else "")
         self.get_object("userText").set_text(uid if uid else "")
@@ -154,6 +149,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         self.analyze_button_pushed(self.analysis_file)
 
     def on_clear_button_clicked(self, *args):
+        self.clear_input_fields()
         dispatch(clear_profiler_state())
 
     def analyze_button_sensitivity(self):
@@ -186,11 +182,11 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
 
     def get_entry_dict(self):
         self.inputDict = {
-            "executeText": self.get_target_text(),
-            "argText": self.get_arg_text(),
-            "userText": self.get_user_text(),
-            "dirText": self.get_pwd_text(),
-            "envText": self.get_env_text(),
+            "cmd": self.get_target_text(),
+            "arg": self.get_arg_text(),
+            "uid": self.get_user_text(),
+            "pwd": self.get_pwd_text(),
+            "env_text": self.get_env_text(),
         }
         return self.inputDict
 
@@ -234,8 +230,8 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
             self.can_start = False
             self.refresh_toolbar()
 
-            profiling_args["envDict"] = FaProfSession.comma_delimited_kv_string_to_dict(
-                profiling_args.get("envText", "")
+            profiling_args["env"] = FaProfSession.comma_delimited_kv_string_to_dict(
+                profiling_args.get("env_text", "")
             )
 
             logging.debug(f"Entry text = {profiling_args}")

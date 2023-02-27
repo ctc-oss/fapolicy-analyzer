@@ -101,16 +101,16 @@ def create_profiler_feature(
         args: Dict[str, str] = action.payload
 
         # target command
-        target = args.get("executeText", None)
-        target_args = args.get("argText", None)
+        target = args.get("cmd", None)
+        target_args = args.get("arg", None)
         cmd = target if target else None
         if cmd and target_args:
             cmd = f"{target} {target_args}"
 
         # set user, pwd, envs
-        p.user = args.get("userText", None)
-        p.pwd = args.get("dirText", None)
-        p.env = args.get("envDict", None)
+        p.user = args.get("uid", None)
+        p.pwd = args.get("pwd", None)
+        p.env = args.get("env", None)
 
         # execute and dispatch
         _handle = p.profile(cmd)
