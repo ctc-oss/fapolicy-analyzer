@@ -36,18 +36,16 @@ DEFAULT_BUILD_DIR = path.join("build", DEFAULT_OUTPUT_DIR)
 
 try:
     # attempt to read version from a file in the help dir
-    with open("Help/version") as f:
+    with open("help/version") as f:
         DEFAULT_COMMIT = f.readline().strip() or "HEAD"
         print(f"Generating help content from git repo: {DEFAULT_COMMIT}")
 except FileNotFoundError:
     DEFAULT_COMMIT = "HEAD"
 
-################################################################################
 def _runs(cmds):
     for cmd in cmds:
         subprocess.run(cmd, check=True)
 
-################################################################################
 def _clone_help(repo: str, commit: str, output_dir: str) -> str:
     tmp_dir = path.join(output_dir, "tmp")
     shutil.rmtree(tmp_dir, ignore_errors=True)
@@ -72,7 +70,6 @@ def _clone_help(repo: str, commit: str, output_dir: str) -> str:
     shutil.rmtree(path.join(tmp_dir, ".git"), ignore_errors=True)
     return tmp_dir
 
-################################################################################
 def _parse_media_urls(html: str, filter: str) -> Sequence[str]:
     from bs4 import BeautifulSoup
 
@@ -83,7 +80,6 @@ def _parse_media_urls(html: str, filter: str) -> Sequence[str]:
         #if url and url.startswith(filter)
     ]
 
-################################################################################
 def _markdown_to_html(markdown_file: str) -> str:
     import markdown2
     from bs4 import BeautifulSoup
@@ -108,8 +104,6 @@ def _markdown_to_html(markdown_file: str) -> str:
     title = get_title()
     return template.format(title=title, body=body)
 
-
-################################################################################
 def _download_file(url: str, filename: str, proxy: Optional[str] = None):
     try:
         if proxy:
@@ -124,13 +118,11 @@ def _download_file(url: str, filename: str, proxy: Optional[str] = None):
     except Exception as e:
         print(f"Unable to download file from {url}: {e}")
 
-################################################################################
 def _copy_from_local_clone(local_repo_path: str, filename: str):
     makedirs(path.dirname(filename), exist_ok=True)
     shutil.copyfile(local_repo_path, filename)
 
 
-################################################################################
 def _download(
     files: Sequence[str] = DEFAULT_HELP_FILES,
     repo: str = DEFAULT_REPO,
@@ -184,7 +176,6 @@ def _download(
     shutil.rmtree(tmp_dir)
     return html_files
 
-################################################################################
 def update_help(
     repo: str = DEFAULT_REPO,
     commit: str = DEFAULT_COMMIT,
@@ -235,7 +226,6 @@ def update_help(
     _generate_translation_template(c_files)
 
 
-################################################################################
 def _get_languages(source: str):
     lang_dirs = [
         d
@@ -245,7 +235,6 @@ def _get_languages(source: str):
     return list({"C", *lang_dirs})
 
 
-################################################################################
 def build_help(
     source: str = DEFAULT_OUTPUT_DIR,
     build: str = DEFAULT_BUILD_DIR,
@@ -280,7 +269,6 @@ def build_help(
             dir_util.copy_tree(source_path, build_path)
 
 
-################################################################################
 def install_help(
         source: str = DEFAULT_BUILD_DIR,
         dest: str = DEFAULT_INSTALL_DIR,
@@ -295,7 +283,6 @@ def install_help(
         dir_util.copy_tree(lang_source, lang_dest)
 
 
-################################################################################
 def _args():
     parser = argparse.ArgumentParser(
         description="Utility scripts for working with help documentation files"
