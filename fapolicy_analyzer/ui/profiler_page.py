@@ -29,7 +29,12 @@ from fapolicy_analyzer.ui.actions import NotificationType, add_notification
 from fapolicy_analyzer.ui.faprofiler import (
     EnumErrorPairs2Str, FaProfSession,
 )
-from fapolicy_analyzer.ui.reducers.profiler_reducer import ProfilerState
+from fapolicy_analyzer.ui.reducers.profiler_reducer import (
+    ProfilerState,
+    ProfilerTick,
+    ProfilerDone,
+    ProfilerReset,
+)
 from fapolicy_analyzer.ui.store import dispatch, get_profiling_feature
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
@@ -87,31 +92,40 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         }
 
         UIPage.__init__(self, actions)
+        self.needs_state = True
         self.can_start = True
         self.can_stop = False
+        self.input_error = False
         self.inputDict = {}
         self.markup = ""
         self.analysis_available = False
         self.analysis_file = ""
 
+        self.profiling_handlers = {
+            ProfilerReset: self.handle_reset,
+            ProfilerTick: self.handle_tick,
+            ProfilerDone: self.handle_done,
+        }
+
     def on_event(self, state: ProfilerState):
-        self.can_start = not state.running
-        self.can_stop = state.running
-        self.analysis_available = bool(self.markup)
+        self.refresh_view(state)
         self.refresh_toolbar()
+        if state.__class__ in self.profiling_handlers:
+            self.profiling_handlers.get(state.__class__)(state)
 
-        self.update_input_text(state.cmd, state.uid, state.pwd, state.env)
+    def handle_reset(self, state: ProfilerReset):
+        self.clear_input_fields()
 
-        if state.running:
-            t = datetime.timedelta(seconds=state.duration) if state.duration else ""
-            self.markup = f"<b>{state.pid}: Executing {state.cmd} {t}</b>"
-            self.update_output_text(self.markup)
-        else:
-            self.display_log_output([state.events_log, state.stdout_log, state.stderr_log])
+    def handle_tick(self, state: ProfilerTick):
+        t = datetime.timedelta(seconds=state.duration) if state.duration else ""
+        self.markup = f"<b>{state.pid}: Executing {state.cmd} {t}</b>"
+        self.update_output_text(self.markup)
 
+    def handle_done(self, state: ProfilerState):
+        self.display_log_output([state.events_log, state.stdout_log, state.stderr_log])
         self.analysis_file = state.events_log
 
-    def update_input_text(self, cmd_string: Optional[str], uid: Optional[str], pwd: Optional[str], env: Optional[str]):
+    def update_input_fields(self, cmd_string: Optional[str], uid: Optional[str], pwd: Optional[str], env: Optional[str]):
         (cmd, args) = cmd_string.split(" ", 1) if cmd_string and " " in cmd_string else [cmd_string, None]
         self.get_object("argText").set_text(args if args else "")
         self.get_object("executeText").set_text(cmd if cmd else "")
@@ -119,11 +133,22 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         self.get_object("dirText").set_text(pwd if pwd else "")
         self.get_object("envText").set_text(env if env else "")
 
+    def clear_input_fields(self):
+        self.update_input_fields(None, None, None, None)
+
     def update_output_text(self, markup):
         self.markup = markup
         buff = Gtk.TextBuffer()
         buff.insert_markup(buff.get_end_iter(), markup, len(markup))
         self.get_object("profilerOutput").set_buffer(buff)
+
+    def refresh_view(self, state: ProfilerState):
+        self.can_start = not state.running
+        self.can_stop = state.running
+        self.analysis_available = bool(self.markup)
+        if self.needs_state:
+            self.needs_state = False
+            self.update_input_fields(state.cmd, state.uid, state.pwd, state.env)
 
     def on_analyzer_button_clicked(self, *args):
         self.analyze_button_pushed(self.analysis_file)
@@ -201,9 +226,11 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
                     NotificationType.ERROR,
                 )
             )
+            self.input_error = True
             self.can_start = True
             self.refresh_toolbar()
         else:
+            self.input_error = False
             self.can_start = False
             self.refresh_toolbar()
 

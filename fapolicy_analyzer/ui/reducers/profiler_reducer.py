@@ -43,8 +43,49 @@ class ProfilerState(NamedTuple):
     stderr_log: Optional[str]
 
 
-def _create_state(state: ProfilerState, **kwargs: Optional[Any]) -> ProfilerState:
-    return ProfilerState(**{**state._asdict(), **kwargs})
+class ProfilerCreated(ProfilerState):
+    pass
+
+
+class ProfilerRequested(ProfilerState):
+    pass
+
+
+class ProfilerStarting(ProfilerState):
+    pass
+
+
+class ProfilerStarted(ProfilerState):
+    pass
+
+
+class ProfilerOutput(ProfilerState):
+    pass
+
+
+class ProfilerReset(ProfilerState):
+    pass
+
+
+class ProfilerTick(ProfilerState):
+    pass
+
+
+class ProfilerKill(ProfilerState):
+    pass
+
+
+class ProfilerDone(ProfilerState):
+    pass
+
+
+def _create_state(target, source: ProfilerState, **kwargs: Optional[Any]) -> ProfilerState:
+    return target(**{**source._asdict(), **kwargs})
+
+
+def handle_profiler_init_state(state: ProfilerState, action: Action) -> ProfilerState:
+    print("INIT STATE")
+    return _create_state(ProfilerCreated, state)
 
 
 def handle_start_profiling(state: ProfilerState, action: Action) -> ProfilerState:
@@ -52,43 +93,39 @@ def handle_start_profiling(state: ProfilerState, action: Action) -> ProfilerStat
     uid = args.get("userText", None)
     pwd = args.get("dirText", None)
     env = args.get("envText", None)
-    return _create_state(state, uid=uid, pwd=pwd, env=env)
-
-
-def handle_set_profiler_output(state: ProfilerState, action: Action) -> ProfilerState:
-    (ev, so, se) = action.payload
-    return _create_state(state, events_log=ev, stdout_log=so, stderr_log=se)
-
-
-def handle_clear_profiler_state(state: ProfilerState, action: Action) -> ProfilerState:
-    return _create_state(state, cmd=None, pwd=None, env=None, uid=None, )
-
-
-def handle_profiler_init_state(state: ProfilerState, action: Action) -> ProfilerState:
-    return _create_state(state)
-
-
-def handle_profiler_exec(state: ProfilerState, action: Action) -> ProfilerState:
-    pid = action.payload
-    return _create_state(state, pid=pid)
-
-
-def handle_profiler_tick(state: ProfilerState, action: Action) -> ProfilerState:
-    tick = action.payload
-    return _create_state(state, duration=tick)
+    return _create_state(ProfilerRequested, state, uid=uid, pwd=pwd, env=env)
 
 
 def handle_profiler_started_state(state: ProfilerState, action: Action) -> ProfilerState:
     cmd = action.payload
-    return _create_state(state, cmd=cmd, running=True)
+    return _create_state(ProfilerStarting, state, cmd=cmd, running=True)
+
+
+def handle_profiler_exec(state: ProfilerState, action: Action) -> ProfilerState:
+    pid = action.payload
+    return _create_state(ProfilerStarted, state, pid=pid)
+
+
+def handle_set_profiler_output(state: ProfilerState, action: Action) -> ProfilerState:
+    (ev, so, se) = action.payload
+    return _create_state(ProfilerOutput, state, events_log=ev, stdout_log=so, stderr_log=se)
+
+
+def handle_clear_profiler_state(state: ProfilerState, action: Action) -> ProfilerState:
+    return _create_state(ProfilerReset, state, cmd=None, pwd=None, env=None, uid=None, )
+
+
+def handle_profiler_tick(state: ProfilerState, action: Action) -> ProfilerState:
+    tick = action.payload
+    return _create_state(ProfilerTick, state, duration=tick)
 
 
 def handle_profiler_kill_state(state: ProfilerState, action: Action) -> ProfilerState:
-    return _create_state(state, killing=True)
+    return _create_state(ProfilerKill, state, killing=True)
 
 
 def handle_profiler_done_state(state: ProfilerState, action: Action) -> ProfilerState:
-    return _create_state(state, running=False)
+    return _create_state(ProfilerDone, state, running=False)
 
 
 profiler_reducer: Reducer = handle_actions(
