@@ -21,9 +21,9 @@ from callee.attributes import Attrs
 
 import fapolicy_analyzer.ui.store as store
 from fapolicy_analyzer.redux import Action, ReduxFeatureModule, create_store
-from fapolicy_analyzer.ui.actions import start_profiling, ERROR_PROFILER_INIT
+from fapolicy_analyzer.ui.actions import start_profiling, ERROR_PROFILER_INIT, ERROR_PROFILER_EXEC, START_PROFILING_RESPONSE, stop_profiling, ERROR_PROFILER_TERM, PROFILING_KILL_RESPONSE
 from fapolicy_analyzer.ui.features import create_profiler_feature
-from fapolicy_analyzer.ui.strings import PROFILER_INIT_ERROR
+from fapolicy_analyzer.ui.strings import PROFILER_INIT_ERROR, PROFILER_EXEC_ERROR
 
 
 @pytest.fixture
@@ -60,7 +60,7 @@ def test_start_profiler(mock_dispatch, mocker):
     mock_profiler.assert_called()
 
 
-def test_start_profiler_with_error(mock_dispatch, mocker):
+def test_start_profiler_with_init_error(mock_dispatch, mocker):
     mock_profiler = mocker.patch(
         "fapolicy_analyzer.ui.features.profiler_feature.Profiler",
         side_effect=RuntimeError(),
@@ -76,3 +76,41 @@ def test_start_profiler_with_error(mock_dispatch, mocker):
             payload=PROFILER_INIT_ERROR,
         )
     )
+
+
+def test_start_profiler_with_exec_error(mock_dispatch, mocker):
+    profiler = MagicMock()
+    profiler.profile.side_effect = RuntimeError()
+    mock_profiler_ctor = mocker.patch(
+        "fapolicy_analyzer.ui.features.profiler_feature.Profiler",
+        return_value=profiler,
+    )
+    store = create_store()
+    store.add_feature_module(create_profiler_feature(mock_dispatch))
+    store.dispatch(start_profiling({"cmd": "foo"}))
+    mock_profiler_ctor.assert_called()
+    profiler.profile.assert_called()
+    mock_dispatch.assert_called_with(
+        InstanceOf(Action)
+        & Attrs(
+            type=ERROR_PROFILER_EXEC,
+            payload=PROFILER_EXEC_ERROR,
+        )
+    )
+
+
+def test_kill_profiler(mock_dispatch, mocker):
+    handle = MagicMock()
+    profiler = MagicMock()
+    profiler.profile.return_value = handle
+    mock_profiler_ctor = mocker.patch(
+        "fapolicy_analyzer.ui.features.profiler_feature.Profiler",
+        return_value=profiler,
+    )
+    store = create_store()
+    store.add_feature_module(create_profiler_feature(mock_dispatch))
+    store.dispatch(start_profiling({"cmd": "foo"}))
+    mock_profiler_ctor.assert_called()
+    profiler.profile.assert_called()
+    store.dispatch(stop_profiling())
+    handle.kill.assert_called()
