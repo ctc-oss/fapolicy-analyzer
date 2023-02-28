@@ -13,36 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# Copyright Concurrent Technologies Corporation 2023
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-# Copyright Concurrent Technologies Corporation 2021
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 import logging
 import os
 from locale import gettext as _
@@ -243,17 +213,8 @@ class MainWindow(UIConnectedWidget):
     def __dirty_changesets(self):
         return len(self.__changesets) > 0
 
-    def __startup_page(self) -> PAGE_SELECTION:
-        value = "foo"  # TODO: this will be read from the toml file and accessed via the rust bindings
-        return (
-            PAGE_SELECTION(value)
-            if value in PAGE_SELECTION
-            else PAGE_SELECTION.RULES_ADMIN
-        )
-
     def on_start(self, *args):
         logging.info("MainWindow::on_start()")
-        # self.__pack_main_content(router(self.__startup_page()))
 
         # On startup check for the existing of a tmp session file
         # If detected, alert the user, enable the File|Restore menu item

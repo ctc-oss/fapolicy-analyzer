@@ -81,15 +81,17 @@ class UIBuilderWidget(UIWidget, ABC):
     """
 
     def __init__(self, name=None):
+        self._builder = Gtk.Builder()
+        self._builder.set_translation_domain(DOMAIN)
+
         name = name or self.__module__.split(".")[-1]
         glade = get_resource(f"{name}.glade")
 
         if not glade:
             logging.error(f"Resource {name}.glade is not available.")
+        else:
+            self._builder.add_from_string(glade)
 
-        self._builder = Gtk.Builder()
-        self._builder.set_translation_domain(DOMAIN)
-        self._builder.add_from_string(glade)
         self._builder.connect_signals(self)
         UIWidget.__init__(self, self.get_object(snake_to_camelcase(name)))
 
@@ -119,11 +121,6 @@ class UIConnectedWidget(UIBuilderWidget, metaclass=_combinedMeta):
 
         UIBuilderWidget.__init__(self)
 
-        # self._feature = feature
-        # self._on_next = on_next
-        # self._on_error = on_error
-        # self._on_completed = on_completed
-        # self._subscription = None
         single = (
             {
                 feature: {
@@ -152,11 +149,6 @@ class UIConnectedWidget(UIBuilderWidget, metaclass=_combinedMeta):
             for feature_details in self.__features
             for feature, handlers in feature_details.items()
         ]
-        # self._subscription = self._feature.subscribe(
-        #     on_next=self._on_next,
-        #     on_error=self._on_error,
-        #     on_completed=self._on_completed,
-        # )
 
     def _dispose(self):
         if self.__subscriptions:

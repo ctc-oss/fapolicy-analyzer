@@ -365,6 +365,35 @@ def test_load_trust(mocker):
     )
 
 
+def test_load_trust_in_progress(mocker):
+    mockChangeset = mock_changesets_state()
+    mockSystemFeature = Subject()
+    mocker.patch(
+        "fapolicy_analyzer.ui.ancillary_trust_database_admin.get_system_feature",
+        return_value=mockSystemFeature,
+    )
+    init_store(mock_System())
+    widget = AncillaryTrustDatabaseAdmin()
+    mockAppendTrust = mocker.patch.object(widget.trust_file_list, "append_trust")
+    mockInitList = mocker.patch.object(widget.trust_file_list, "init_list")
+    mockSystemFeature.on_next(
+        {
+            "changesets": mock_changesets_state([mockChangeset]),
+            "ancillary_trust": MagicMock(
+                error=False,
+                loading=True,
+                percent_complete=10,
+                trust_count=10,
+                trust=["trust1"],
+            ),
+        }
+    )
+
+    mockInitList.assert_called_once_with(10)
+    mockAppendTrust.assert_called_once_with(["trust1"])
+    # the rest of the test would be the same as test_load_trust
+
+
 def test_load_trust_w_exception(mock_dispatch, mocker):
     mockSystemFeature = Subject()
     mocker.patch(

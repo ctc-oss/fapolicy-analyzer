@@ -28,6 +28,7 @@ from fapolicy_analyzer.ui.actions import (
     CLEAR_CHANGESETS,
     DEPLOY_SYSTEM,
     ERROR_ANCILLARY_TRUST,
+    ERROR_APP_CONFIG,
     ERROR_APPLY_CHANGESETS,
     ERROR_DEPLOYING_SYSTEM,
     ERROR_EVENTS,
@@ -40,6 +41,7 @@ from fapolicy_analyzer.ui.actions import (
     INIT_SYSTEM,
     MODIFY_RULES_TEXT,
     RECEIVED_ANCILLARY_TRUST_UPDATE,
+    RECEIVED_APP_CONFIG,
     RECEIVED_EVENTS,
     RECEIVED_GROUPS,
     RECEIVED_RULES,
@@ -48,6 +50,7 @@ from fapolicy_analyzer.ui.actions import (
     RECEIVED_USERS,
     REMOVE_NOTIFICATION,
     REQUEST_ANCILLARY_TRUST,
+    REQUEST_APP_CONFIG,
     REQUEST_EVENTS,
     REQUEST_GROUPS,
     REQUEST_RULES,
@@ -72,6 +75,7 @@ from fapolicy_analyzer.ui.actions import (
     clear_profiler_state,
     deploy_system,
     error_ancillary_trust,
+    error_app_config,
     error_apply_changesets,
     error_deploying_system,
     error_events,
@@ -83,6 +87,7 @@ from fapolicy_analyzer.ui.actions import (
     init_system,
     modify_rules_text,
     received_ancillary_trust_update,
+    received_app_config,
     received_events,
     received_groups,
     received_rules,
@@ -91,6 +96,7 @@ from fapolicy_analyzer.ui.actions import (
     received_users,
     remove_notification,
     request_ancillary_trust,
+    request_app_config,
     request_events,
     request_groups,
     request_rules,
@@ -507,4 +513,26 @@ def test_system_initialization_error():
     action = system_initialization_error("foo")
     assert type(action) is Action
     assert action.type == ERROR_SYSTEM_INITIALIZATION
+    assert action.payload == "foo"
+
+
+def test_request_app_config():
+    action = request_app_config()
+    assert type(action) is Action
+    assert action.type == REQUEST_APP_CONFIG
+    assert not action.payload
+
+
+def test_received_app_config():
+    config = {"initial_view": "foo"}
+    action = received_app_config(config)
+    assert type(action) is Action
+    assert action.type == RECEIVED_APP_CONFIG
+    assert action.payload == config
+
+
+def test_error_app_config():
+    action = error_app_config("foo")
+    assert type(action) is Action
+    assert action.type == ERROR_APP_CONFIG
     assert action.payload == "foo"
