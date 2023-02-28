@@ -37,6 +37,7 @@ class RulesListView(SearchableList):
 
         self.treeView.get_selection().set_select_function(lambda *_: False)
         self.model = self.treeView.get_model()
+        self.reset_default_view = True
 
     def __columns(self):
         merged_col = Gtk.TreeViewColumn("")
@@ -123,7 +124,6 @@ class RulesListView(SearchableList):
         )
 
     def get_collapsed_status(self, store, parent):
-        model = self.treeView.get_model()
         is_collapsed = None
         if store:
             if parent is None:
@@ -144,7 +144,7 @@ class RulesListView(SearchableList):
     def on_row_collapsed(self, view, iter, path):
         model_iter = self.get_child_model_from_sort(view, iter)
         self.model.set(model_iter, 7, True)
- 
+
     def on_row_expanded(self, view, iter, path):
         model_iter = self.get_child_model_from_sort(view, iter)
         self.model.set(model_iter, 7, False)
@@ -152,7 +152,7 @@ class RulesListView(SearchableList):
     def restore_row_collapse(self):
         def toggle_collapse(store, treepath, treeiter):
             self.treeView.collapse_row(treepath) if store[treeiter][7] else self.treeView.expand_row(treepath, False)
-        if not self.model is None:
+        if self.model is not None:
             self.model.foreach(toggle_collapse)
 
     def highlight_row_from_data(self, data: Any):
@@ -165,8 +165,10 @@ class RulesListView(SearchableList):
             selection.select_path(row)
             self.treeView.scroll_to_cell(row, use_align=True, row_align=0.0)
 
-    def __expand_rows_at_root(self, store):
+    def __set_default_view(self, store):
+        self.reset_default_view = False
         iter = store.get_iter_first()
+        self.treeView.collapse_all()
         while iter:
             self.treeView.expand_row(store.get_path(iter), False)
             iter = store.iter_next(iter)
@@ -188,5 +190,4 @@ class RulesListView(SearchableList):
                         self.__append_info(store, rule, info, rule_row)
 
         self.load_store(store)
-        #self.__expand_rows_at_root(store)
-        self.restore_row_collapse()
+        self.__set_default_view(store) if self.reset_default_view else self.restore_row_collapse()

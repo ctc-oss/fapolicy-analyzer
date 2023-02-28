@@ -76,6 +76,13 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
                     signals={"clicked": self.on_save_clicked},
                     sensitivity_func=self.__rules_dirty,
                 ),
+                UIAction(
+                    name="Reset",
+                    tooltip="Reset Default View",
+                    icon="edit-undo-symbolic",
+                    signals={"clicked": self.reset_view_clicked},
+                    sensitivity_func=self.__is_list_view,
+                ),
             ],
         }
         UIPage.__init__(self, actions)
@@ -187,6 +194,9 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         if self.__notification_subscription:
             self.__notification_subscription.dispose()
 
+    def __is_list_view(self):
+        return True if self.get_object("ruleNotebook").get_current_page() == 1 else False
+
     def on_save_clicked(self, *args):
         changeset, valid = self.__build_and_validate_changeset()
         self.__update_list_view(changeset)
@@ -203,6 +213,10 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         self._list_view.restore_row_collapse()
         # dispatch to force toolbar refresh
         dispatch(modify_rules_text(self.__rules_validated))
+
+    def reset_view_clicked(self, *args):
+        self._list_view.reset_default_view = True
+        self._list_view.render_rules(self.__rules)
 
     def on_text_view_rules_changed(self, rules: str):
         self.__modified_rules_text = rules
