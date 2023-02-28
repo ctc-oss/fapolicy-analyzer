@@ -42,6 +42,22 @@ class ProfilerState(NamedTuple):
     stdout_log: Optional[str]
     stderr_log: Optional[str]
 
+#
+# About these state subtypes:
+# I am using these subclasses to tag the event type, which allows
+# subscribers to route handling by type of the state received.
+# could also achieve this by adding the action type string to the
+# state but wanted to see what this looks like and how it holds up.
+# I wanted to also separate the properties into proper contexts by type
+# but that proves troublesome on some transitions, you still end up
+# having to include properties that are not applicable, just for the
+# next transition. Originally there were subtypes for each possible
+# state, but currently there are only subtypes for the states that need
+# special handling, all other cases use the base class ProfilerState.
+#
+# In summary, this approach wanted to behave like a State Machine, but didnt quite succeed.
+#
+
 
 class ProfilerStarted(ProfilerState):
     pass
