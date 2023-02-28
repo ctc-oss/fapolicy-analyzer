@@ -113,7 +113,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
 
     def handle_tick(self, state: ProfilerTick):
         t = datetime.timedelta(seconds=state.duration) if state.duration else ""
-        self.markup = f"<b>{state.pid}: Executing {state.cmd} {t}</b>"
+        self.markup = f"<span size='large'><b>{state.pid}: Executing {state.cmd} {t}</b></span>"
         self.update_output_text(self.markup)
 
     def handle_done(self, state: ProfilerState):
