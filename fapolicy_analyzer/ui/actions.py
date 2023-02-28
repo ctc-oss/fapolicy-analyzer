@@ -74,22 +74,20 @@ RECEIVED_RULES_TEXT = "RECEIVED_RULES_TEXT"
 MODIFY_RULES_TEXT = "MODIFY_RULES_TEXT"
 ERROR_RULES_TEXT = "ERROR_RULES_TEXT"
 
-PROFILING_INIT = "PROFILING_INIT"
-START_PROFILING = "START_PROFILING"
-PROFILING_STARTED = "PROFILING_STARTED"
-PROFILING_EXEC = "PROFILING_EXEC"
-PROFILING_TICK = "PROFILING_TICK"
-PROFILING_KILL = "PROFILING_KILL"
-PROFILING_TERM = "PROFILING_TERM"
-PROFILING_DONE = "PROFILING_DONE"
-PROFILING_FAIL = "PROFILING_FAIL"
-
+PROFILING_INIT_EVENT = "PROFILING_INIT"
+START_PROFILING_REQUEST = "START_PROFILING_REQUEST"
+START_PROFILING_RESPONSE = "START_PROFILING_RESPONSE"
+PROFILING_EXEC_EVENT = "PROFILING_EXEC"
+PROFILING_TICK_EVENT = "PROFILING_TICK"
+PROFILING_KILL_REQUEST = "PROFILING_KILL"
+PROFILING_KILL_RESPONSE = "PROFILING_TERM"
+PROFILING_DONE_EVENT = "PROFILING_DONE"
+PROFILER_SET_OUTPUT_CMD = "PROFILER_SET_OUTPUT_CMD"
+PROFILER_SET_ANALYSIS_CMD = "PROFILER_SET_ANALYSIS_CMD"
+PROFILER_CLEAR_STATE_CMD = "PROFILER_CLEAR_STATE_CMD"
 PROFILER_INIT_ERROR = "PROFILER_INIT_ERROR"
 PROFILER_EXEC_ERROR = "PROFILER_EXEC_ERROR"
-
-SET_PROFILER_OUTPUT = "SET_PROFILER_OUTPUT"
-SET_PROFILER_ANALYSIS_FILE = "SET_PROFILER_ANALYSIS_FILE"
-CLEAR_PROFILER_STATE = "CLEAR_PROFILER_STATE"
+PROFILER_TERM_ERROR = "PROFILER_TERM_ERROR"
 
 
 def _create_action(type: str, payload: Any = None) -> Action:
@@ -270,47 +268,43 @@ def error_rules_text(error: str) -> Action:
 
 
 def profiler_init() -> Action:
-    return _create_action(PROFILING_INIT)
+    return _create_action(PROFILING_INIT_EVENT)
 
 
 def start_profiling(props: Dict[str, str]) -> Action:
-    return _create_action(START_PROFILING, props)
+    return _create_action(START_PROFILING_REQUEST, props)
 
 
 def profiling_started(cmd: str) -> Action:
-    return _create_action(PROFILING_STARTED, cmd)
+    return _create_action(START_PROFILING_RESPONSE, cmd)
 
 
 def stop_profiling() -> Action:
-    return _create_action(PROFILING_KILL)
+    return _create_action(PROFILING_KILL_REQUEST)
 
 
 def terminating_profiler() -> Action:
-    return _create_action(PROFILING_TERM)
-
-
-def error_profiling(error: str) -> Action:
-    return _create_action(PROFILING_FAIL, error)
+    return _create_action(PROFILING_KILL_RESPONSE)
 
 
 def profiler_exec(pid: int) -> Action:
-    return _create_action(PROFILING_EXEC, pid)
+    return _create_action(PROFILING_EXEC_EVENT, pid)
 
 
 def profiler_tick(duration: int) -> Action:
-    return _create_action(PROFILING_TICK, duration)
+    return _create_action(PROFILING_TICK_EVENT, duration)
 
 
 def profiler_done() -> Action:
-    return _create_action(PROFILING_DONE)
+    return _create_action(PROFILING_DONE_EVENT)
 
 
 def set_profiler_output(events: Optional[str], stdout: Optional[str], stderr: Optional[str]) -> Action:
-    return _create_action(SET_PROFILER_OUTPUT, (events, stdout, stderr))
+    return _create_action(PROFILER_SET_OUTPUT_CMD, (events, stdout, stderr))
 
 
 def clear_profiler_state() -> Action:
-    return _create_action(CLEAR_PROFILER_STATE)
+    return _create_action(PROFILER_CLEAR_STATE_CMD)
 
 
 def profiler_initialization_error(error: str) -> Action:
@@ -319,6 +313,10 @@ def profiler_initialization_error(error: str) -> Action:
 
 def profiler_execution_error(error: str) -> Action:
     return _create_action(PROFILER_EXEC_ERROR, error)
+
+
+def profiler_termination_error(error: str) -> Action:
+    return _create_action(PROFILER_TERM_ERROR, error)
 
 
 def init_system() -> Action:

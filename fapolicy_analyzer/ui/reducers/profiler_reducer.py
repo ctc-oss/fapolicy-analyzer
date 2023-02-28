@@ -17,15 +17,15 @@ from typing import Any, Dict, NamedTuple, Optional
 
 from fapolicy_analyzer.redux import Action, Reducer, handle_actions
 from fapolicy_analyzer.ui.actions import (
-    CLEAR_PROFILER_STATE,
-    PROFILING_EXEC,
-    PROFILING_DONE,
-    PROFILING_INIT,
-    PROFILING_STARTED,
-    PROFILING_KILL,
-    PROFILING_TICK,
-    SET_PROFILER_OUTPUT,
-    START_PROFILING,
+    PROFILER_CLEAR_STATE_CMD,
+    PROFILING_INIT_EVENT,
+    PROFILER_SET_OUTPUT_CMD,
+    START_PROFILING_REQUEST,
+    START_PROFILING_RESPONSE,
+    PROFILING_KILL_RESPONSE,
+    PROFILING_DONE_EVENT,
+    PROFILING_TICK_EVENT,
+    PROFILING_EXEC_EVENT,
 )
 
 
@@ -67,7 +67,7 @@ def handle_profiler_init_state(state: ProfilerState, action: Action) -> Profiler
     return _create_state(ProfilerState, state)
 
 
-def handle_start_profiling(state: ProfilerState, action: Action) -> ProfilerState:
+def handle_start_profiling_request(state: ProfilerState, action: Action) -> ProfilerState:
     args: Dict[str, str] = action.payload
     uid = args.get("uid", None)
     pwd = args.get("pwd", None)
@@ -75,14 +75,9 @@ def handle_start_profiling(state: ProfilerState, action: Action) -> ProfilerStat
     return _create_state(ProfilerState, state, uid=uid, pwd=pwd, env=env)
 
 
-def handle_profiler_started_state(state: ProfilerState, action: Action) -> ProfilerState:
+def handle_start_profiling_response(state: ProfilerState, action: Action) -> ProfilerState:
     cmd = action.payload
     return _create_state(ProfilerState, state, cmd=cmd, running=True)
-
-
-def handle_profiler_exec(state: ProfilerState, action: Action) -> ProfilerState:
-    pid = action.payload
-    return _create_state(ProfilerStarted, state, pid=pid)
 
 
 def handle_set_profiler_output(state: ProfilerState, action: Action) -> ProfilerState:
@@ -94,30 +89,35 @@ def handle_clear_profiler_state(state: ProfilerState, action: Action) -> Profile
     return _create_state(ProfilerState, state, cmd=None, pwd=None, env=None, uid=None, )
 
 
+def handle_profiler_exec(state: ProfilerState, action: Action) -> ProfilerState:
+    pid = action.payload
+    return _create_state(ProfilerStarted, state, pid=pid)
+
+
 def handle_profiler_tick(state: ProfilerState, action: Action) -> ProfilerState:
     tick = action.payload
     return _create_state(ProfilerTick, state, duration=tick)
 
 
-def handle_profiler_kill_state(state: ProfilerState, action: Action) -> ProfilerState:
+def handle_profiler_kill(state: ProfilerState, action: Action) -> ProfilerState:
     return _create_state(ProfilerKill, state, killing=True)
 
 
-def handle_profiler_done_state(state: ProfilerState, action: Action) -> ProfilerState:
+def handle_profiler_done(state: ProfilerState, action: Action) -> ProfilerState:
     return _create_state(ProfilerDone, state, running=False)
 
 
 profiler_reducer: Reducer = handle_actions(
     {
-        PROFILING_INIT: handle_profiler_init_state,
-        SET_PROFILER_OUTPUT: handle_set_profiler_output,
-        CLEAR_PROFILER_STATE: handle_clear_profiler_state,
-        START_PROFILING: handle_start_profiling,
-        PROFILING_STARTED: handle_profiler_started_state,
-        PROFILING_EXEC: handle_profiler_exec,
-        PROFILING_TICK: handle_profiler_tick,
-        PROFILING_DONE: handle_profiler_done_state,
-        PROFILING_KILL: handle_profiler_kill_state,
+        PROFILING_INIT_EVENT: handle_profiler_init_state,
+        PROFILER_SET_OUTPUT_CMD: handle_set_profiler_output,
+        PROFILER_CLEAR_STATE_CMD: handle_clear_profiler_state,
+        START_PROFILING_REQUEST: handle_start_profiling_request,
+        START_PROFILING_RESPONSE: handle_start_profiling_response,
+        PROFILING_EXEC_EVENT: handle_profiler_exec,
+        PROFILING_TICK_EVENT: handle_profiler_tick,
+        PROFILING_DONE_EVENT: handle_profiler_done,
+        PROFILING_KILL_RESPONSE: handle_profiler_kill,
     },
     ProfilerState(cmd=None,
                   pwd=None,

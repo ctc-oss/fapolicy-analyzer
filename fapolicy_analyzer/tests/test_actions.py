@@ -56,7 +56,6 @@ from fapolicy_analyzer.ui.actions import (
     REQUEST_SYSTEM_TRUST,
     REQUEST_USERS,
     RESTORE_SYSTEM_CHECKPOINT,
-    SET_PROFILER_STATE,
     SET_SYSTEM_CHECKPOINT,
     SYSTEM_CHECKPOINT_SET,
     SYSTEM_DEPLOYED,
@@ -100,7 +99,6 @@ from fapolicy_analyzer.ui.actions import (
     request_system_trust,
     request_users,
     restore_system_checkpoint,
-    set_profiler_state,
     set_system_checkpoint,
     system_checkpoint_set,
     system_deployed,
@@ -399,13 +397,11 @@ def test_error_rules_text():
     assert action.payload == "foo"
 
 
-def test_set_profiler_state():
-    payload = {"key1": "value1"}
-    action = set_profiler_state(payload)
+def test_clear_profiler_state():
+    action = clear_profiler_state()
     assert type(action) is Action
-    assert action.type == SET_PROFILER_STATE
-    assert action.payload == payload
-
+    assert action.type == CLEAR_PROFILER_STATE
+    assert action.payload is None
 
 def test_clear_profiler_state():
     action = clear_profiler_state()

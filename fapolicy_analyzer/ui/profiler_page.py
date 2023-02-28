@@ -177,7 +177,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
     def get_pwd_text(self) -> Optional[str]:
         return self._get_opt_text("dirText")
 
-    def get_env(self) -> Optional[str]:
+    def get_env_text(self) -> Optional[str]:
         return self._get_opt_text("envText")
 
     def get_entry_dict(self):

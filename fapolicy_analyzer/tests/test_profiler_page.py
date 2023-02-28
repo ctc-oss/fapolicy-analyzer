@@ -35,7 +35,7 @@ def test_creates_widget(widget):
 
 def test_run_analyzer(widget):
     widget.get_object("dirText").set_text("/tmp")
-    widget.on_test_activate()
+    widget.on_start_clicked()
     textBuffer = widget.get_object("profilerOutput").get_buffer()
     assert (
         textBuffer.get_text(
