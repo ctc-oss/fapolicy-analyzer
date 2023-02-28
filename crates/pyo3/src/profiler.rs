@@ -411,7 +411,6 @@ impl Execd {
 
     /// Cancel the process, without blocking
     fn kill(&mut self) -> PyResult<()> {
-        println!("killed");
         self.proc
             .as_mut()
             .unwrap()
