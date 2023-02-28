@@ -32,7 +32,7 @@ from fapolicy_analyzer.tests.helpers import refresh_gui
 from fapolicy_analyzer.ui.actions import ADD_NOTIFICATION
 from fapolicy_analyzer.ui.changeset_wrapper import TrustChangeset
 from fapolicy_analyzer.ui.fapd_manager import ServiceStatus
-from fapolicy_analyzer.ui.main_window import MainWindow, router
+from fapolicy_analyzer.ui.main_window import MainWindow
 from fapolicy_analyzer.ui.session_manager import NotificationType, sessionManager
 from fapolicy_analyzer.ui.store import init_store
 from fapolicy_analyzer.ui.strings import AUTOSAVE_RESTORE_ERROR_MSG
@@ -288,10 +288,27 @@ def test_open_rules_admin_with_args(mainWindow, mocker):
     assert Gtk.Buildable.get_name(content) == "rulesAdminPage"
 
 
-def test_bad_router_option():
-    with pytest.raises(Exception) as excinfo:
-        router("foo")
-        assert excinfo.value.message == "Bad Selection"
+@pytest.mark.usefixtures("mock_init_store", "mock_dispatches")
+def test_loads_initial_view(mocker):
+    def app_config(observer, *args):
+        observer.on_next(MagicMock(initial_view="trust"))
+        observer.on_completed()
+
+    application_features_mock = create(app_config)
+    mocker.patch(
+        "fapolicy_analyzer.ui.main_window.get_application_feature",
+        return_value=application_features_mock,
+    )
+    mainWindow = MainWindow()
+    mainContent = mainWindow.get_object("mainContent")
+    mainContent.remove(next(iter(mainContent.get_children())))
+    assert not mainContent.get_children()
+    menuItem = mainWindow.get_object("trustDbMenu")
+    menuItem.activate()
+    content = next(iter(mainContent.get_children()))
+    assert (
+        content.get_tab_label_text(content.get_nth_page(0)) == "System Trust Database"
+    )
 
 
 @pytest.mark.skip(reason="Not currently working in GitHub CI")

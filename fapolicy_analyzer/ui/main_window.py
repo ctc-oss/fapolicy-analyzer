@@ -68,9 +68,7 @@ def router(page: PAGE_SELECTION, data: Any = None) -> UIPage:
         PAGE_SELECTION.RULES_ADMIN: RulesAdminPage,
         PAGE_SELECTION.PROFILER: ProfilerPage,
     }.get(page, RulesAdminPage)
-    if route:
-        return route(data) if data else route()
-    raise Exception("Bad Selection")
+    return route(data) if data else route()
 
 
 class MainWindow(UIConnectedWidget):
