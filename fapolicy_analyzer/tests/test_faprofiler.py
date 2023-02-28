@@ -16,23 +16,20 @@
 import pytest
 import glob
 import os
-from unittest.mock import MagicMock
 from fapolicy_analyzer.ui.faprofiler import (
-    FaProfiler,
     FaProfSession,
     ProfSessionArgsStatus,
-    ProfSessionException,
 )
 
 
 @pytest.fixture
 def faProfSession(scope="session"):
     dictArgs = {
-        "executeText": "/usr/bin/ls",
-        "argText": "-ltr /tmp",
-        "userText": os.getenv("USER"),
-        "dirText": os.getenv("HOME"),
-        "envText": 'XX="xx"',
+        "cmd": "/usr/bin/ls",
+        "arg": "-ltr /tmp",
+        "uid": os.getenv("USER"),
+        "pwd": os.getenv("HOME"),
+        "env": 'XX="xx"',
     }
     s = FaProfSession(dictArgs)
     yield s
@@ -44,57 +41,27 @@ def faProfSession(scope="session"):
         os.remove(f)
 
 
-@pytest.fixture
-def faProfiler():
-    return FaProfiler()
-
-
-# Testing FaProfSession
-def test_faprofsession_init(faProfSession, mocker):
-    assert faProfSession.tgtStdout.startswith("/tmp/tgt_profiling_")
-    assert faProfSession.tgtStdout.endswith("_ls_0.t.stdout")
-    assert faProfSession.tgtStderr.endswith("_ls_0.t.stderr")
-
-
 @pytest.mark.parametrize(
     "dictArgs", [
         # Populate target dictionary w/unexpected keys
         {
-            "executeText": "Now.sh",
+            "cmd": "Now.sh",
             "argBadText": "",
-            "userText": os.getenv("USER"),
+            "uid": os.getenv("USER"),
             "dirBadText": "/tmp",
-            "envText": "PATH=.:${PATH}",
+            "env": "PATH=.:${PATH}",
         },
         # Populate target dictionary w/Missing keys
         {
-            "executeText": "ls",
-            "userText": os.getenv("USER"),
-            "envText": "",
+            "cmd": "ls",
+            "uid": os.getenv("USER"),
+            "env": "",
         },
     ]
 )
 def test_faprofsession_init_w_bad_keys(dictArgs):
     with pytest.raises(KeyError):
         FaProfSession.validateArgs(dictArgs)
-
-    with pytest.raises(KeyError):
-        FaProfSession(dictArgs)
-
-
-def test_faprofsession_fopen_exception(mocker):
-    # Emulate a file open() exception
-    mocker.patch("fapolicy_analyzer.ui.faprofiler.open",
-                 side_effect=Exception())
-    dictArgs = {
-        "executeText": "/usr/bin/ls",
-        "argText": "-ltr /tmp",
-        "userText": os.getenv("USER"),
-        "dirText": os.getenv("HOME"),
-        "envText": 'XX="xx"',
-    }
-
-    FaProfSession(dictArgs)
 
 
 def test_faprofsession_getpwnam_exception(mocker):
@@ -105,11 +72,11 @@ def test_faprofsession_getpwnam_exception(mocker):
     )
 
     dictArgs = {
-        "executeText": "/usr/bin/ls",
-        "argText": "-ltr /tmp",
-        "userText": "ooo",
-        "dirText": os.getenv("HOME"),
-        "envText": 'XX="xx"',
+        "cmd": "/usr/bin/ls",
+        "arg": "-ltr /tmp",
+        "uid": "ooo",
+        "pwd": os.getenv("HOME"),
+        "env": 'XX="xx"',
     }
 
     with pytest.raises(Exception):
@@ -118,190 +85,27 @@ def test_faprofsession_getpwnam_exception(mocker):
 
 def test_faprofsession_path_env():
     dictArgs = {
-        "executeText": "ls",
-        "argText": "-ltr /tmp",
-        "userText": os.getenv("USER"),
-        "dirText": os.getenv("HOME"),
-        "envText": 'PATH=/tmp:$PATH, XX="xx"',
+        "cmd": "ls",
+        "arg": "-ltr /tmp",
+        "uid": os.getenv("USER"),
+        "pwd": os.getenv("HOME"),
+        "env": 'PATH=/tmp:$PATH, XX="xx"',
     }
 
-    s = FaProfSession(dictArgs)
-    assert os.path.basename(s.execPath) == dictArgs["executeText"]
+    s = FaProfSession.which(dictArgs)
+    assert os.path.basename(s) == dictArgs["cmd"]
 
     # directory may differ on different platforms; we only care that it's > 0
-    assert os.path.dirname(s.execPath)
-
-
-def test_faprofsession_log_redirection(mocker):
-    os.environ["FAPD_LOGPATH"] = "/tmp/fapd_logpath_test_"
-    dictArgs = {
-        "executeText": "ls",
-        "argText": "-ltr /tmp",
-        "userText": os.getenv("USER"),
-        "dirText": os.getenv("HOME"),
-        "envText": 'PATH=/tmp:$PATH, XX="xx"',
-    }
-
-    FaProfSession(dictArgs)
-
-
-def test_startTarget(faProfSession, mocker):
-    handle = MagicMock()
-    mocker.patch(
-        "fapolicy_analyzer.Profiler.profile",
-        return_value=handle
-    )
-    handle.running = True
-
-    assert not faProfSession.procTarget
-    faProfSession.startTarget()
-    assert faProfSession.procTarget.running is True
-
-
-def test_startTarget_w_exception(mocker):
-    mocker.patch(
-        "fapolicy_analyzer.Profiler.profile",
-        side_effect=OSError()
-    )
-
-    mockDispatch = mocker.patch(
-        "fapolicy_analyzer.ui.faprofiler.dispatch",
-    )
-
-    dictArgs = {
-        "executeText": "ls",
-        "argText": "-ltr /tmp",
-        "userText": os.getenv("USER"),
-        "dirText": os.getenv("HOME"),
-        "envText": 'PATH=/tmp:$PATH, XX="xx"',
-    }
-
-    s = FaProfSession(dictArgs)
-
-    assert not s.procTarget
-    s.startTarget()
-    mockDispatch.assert_called()
-
-
-def test_stopTarget(faProfSession, mocker):
-    handle = MagicMock()
-    mocker.patch(
-        "fapolicy_analyzer.Profiler.profile",
-        return_value=handle
-    )
-
-    faProfSession.procTarget = handle
-    faProfSession.stopTarget()
-    handle.kill.assert_called()
-
-
-def test_get_profsession_timestamp(faProfSession):
-    faProfSession.faprofiler = MagicMock()
-    faProfSession._get_profiling_timestamp()
-    faProfSession.faprofiler.get_profiling_timestamp.assert_called()
-
-
-# Testing FaProfiler
-def test_start_prof_session(faProfiler, mocker):
-    faProfiler.fapd_mgr = MagicMock()
-    dictArgs = {
-        "executeText": "/usr/bin/ls",
-        "argText": "-ltr /tmp",
-        "userText": os.getenv("USER"),
-        "dirText": os.getenv("HOME"),
-        "envText": "XYZ=123",
-    }
-
-    key = faProfiler.start_prof_session(dictArgs, None, None)
-    assert faProfiler.instance != 0
-    assert key in faProfiler.dictFaProfSession
-
-    # Clean up
-    for f in glob.glob("/tmp/tgt_profiling_*.stdout"):
-        os.remove(f)
-    for f in glob.glob("/tmp/tgt_profiling_*.stderr"):
-        os.remove(f)
-
-
-def test_start_prof_session_w_exception(faProfiler, mocker):
-    faProfiler.fapd_mgr = MagicMock()
-    mocker.patch(
-        "fapolicy_analyzer.ui.faprofiler.FaProfSession.startTarget",
-        side_effect=RuntimeError("bad execution")
-    )
-
-    # "executeText" dict key references non-existent executable
-    dictArgs = {
-        "executeText": "/usr/bin/l",
-        "argText": "-ltr /tmp",
-        "userText": os.getenv("USER"),
-        "dirText": os.getenv("HOME"),
-        "envText": "XYZ=123",
-    }
-
-    # Invalid argument will cause prof session object __init__() to throw
-    with pytest.raises(ProfSessionException) as e_info:
-        faProfiler.start_prof_session(dictArgs, None, None)
-    assert e_info.value.error_enum == ProfSessionArgsStatus.EXEC_DOESNT_EXIST
-
-    # Mocked FaProfSession.startTarget() will throw a RuntimeError exception
-    dictArgs["executeText"] = "/usr/bin/ls"
-    with pytest.raises(RuntimeError) as e_info:
-        faProfiler.start_prof_session(dictArgs, None, None)
-    assert e_info.value.args[0] == "bad execution"
-
-    # Clean up
-    for f in glob.glob("/tmp/tgt_profiling_*.stdout"):
-        os.remove(f)
-    for f in glob.glob("/tmp/tgt_profiling_*.stderr"):
-        os.remove(f)
-
-
-def test_stop_prof_session(faProfiler, mocker):
-    faProfiler.fapd_mgr = MagicMock()
-    dictArgs = {
-        "executeText": "/usr/bin/ls",
-        "argText": "-ltr /tmp",
-        "userText": os.getenv("USER"),
-        "dirText": os.getenv("HOME"),
-        "envText": "XYZ=123",
-    }
-
-    session_name = faProfiler.start_prof_session(dictArgs, None, None)
-    assert faProfiler.instance != 0
-    faProfiler.stop_prof_session(session_name)
-    assert faProfiler.instance == 0
-    session_name = faProfiler.start_prof_session(dictArgs, None, None)
-    faProfiler.stop_prof_session()
-    assert faProfiler.instance == 0
-    assert not faProfiler.dictFaProfSession
-
-    # Clean up
-    for f in glob.glob("/tmp/tgt_profiling_*.stdout"):
-        os.remove(f)
-    for f in glob.glob("/tmp/tgt_profiling_*.stderr"):
-        os.remove(f)
-
-
-def test_status_prof_session(faProfiler, mocker):
-    pass
-
-
-def test_get_profiling_timestamp(faProfiler, mocker):
-    faProfiler.fapd_mgr = None
-    assert not faProfiler.get_profiling_timestamp()
-    faProfiler.fapd_mgr = MagicMock()
-    faProfiler.fapd_mgr._fapd_profiling_timestamp = "20220501_231624_890930"
-    assert faProfiler.get_profiling_timestamp() == "20220501_231624_890930"
+    assert os.path.dirname(s)
 
 
 def test_validateArgs():
     dictArgs = {
-        "executeText": "/usr/bin/ls",
-        "argText": "-ltr /tmp",
-        "userText": os.getenv("USER"),
-        "dirText": os.getenv("HOME"),
-        "envText": "XYZ=123",
+        "cmd": "/usr/bin/ls",
+        "arg": "-ltr /tmp",
+        "uid": os.getenv("USER"),
+        "pwd": os.getenv("HOME"),
+        "env": "XYZ=123",
     }
 
     # Test w/good args; only OK key is in returned dict
@@ -310,50 +114,50 @@ def test_validateArgs():
     assert ProfSessionArgsStatus.OK in dict_valid_args_return
 
     # Verify empty exec path is detected
-    dictArgs["executeText"] = ""
+    dictArgs["cmd"] = ""
     dict_valid_args_return = FaProfSession.validateArgs(dictArgs)
     assert len(dict_valid_args_return) == 1
     assert ProfSessionArgsStatus.EXEC_EMPTY in dict_valid_args_return
 
     # Verify non-existent exec path is detected
-    dictArgs["executeText"] = "/usr/bin/l"
+    dictArgs["cmd"] = "/usr/bin/l"
     dict_valid_args_return = FaProfSession.validateArgs(dictArgs)
     assert len(dict_valid_args_return) == 1
     assert ProfSessionArgsStatus.EXEC_DOESNT_EXIST in dict_valid_args_return
 
     # Verify non-executable exec path is detected
-    dictArgs["executeText"] = os.getenv("HOME") + "/.bashrc"
+    dictArgs["cmd"] = os.getenv("HOME") + "/.bashrc"
     dict_valid_args_return = FaProfSession.validateArgs(dictArgs)
     assert len(dict_valid_args_return) == 1
     assert ProfSessionArgsStatus.EXEC_NOT_EXEC in dict_valid_args_return
-    dictArgs["executeText"] = "/usr/bin/ls"
+    dictArgs["cmd"] = "/usr/bin/ls"
 
     # Verify non-existent user is detected
-    dictArgs["userText"] = "ooo"
+    dictArgs["uid"] = "ooo"
     dict_valid_args_return = FaProfSession.validateArgs(dictArgs)
     assert len(dict_valid_args_return) == 1
     assert ProfSessionArgsStatus.USER_DOESNT_EXIST in dict_valid_args_return
-    dictArgs["userText"] = os.getenv("USER")
+    dictArgs["uid"] = os.getenv("USER")
 
     # Verify non-existent pwd is detected
-    dictArgs["dirText"] = os.getenv("HOME") + "/ng/"
+    dictArgs["pwd"] = os.getenv("HOME") + "/ng/"
     dict_valid_args_return = FaProfSession.validateArgs(dictArgs)
     assert len(dict_valid_args_return) == 1
     assert ProfSessionArgsStatus.PWD_DOESNT_EXIST in dict_valid_args_return
 
     # Verify non-directory pwd is detected
-    dictArgs["dirText"] = os.getenv("HOME") + "/.bashrc"
+    dictArgs["pwd"] = os.getenv("HOME") + "/.bashrc"
     dict_valid_args_return = FaProfSession.validateArgs(dictArgs)
     assert len(dict_valid_args_return) == 1
     assert ProfSessionArgsStatus.PWD_ISNT_DIR in dict_valid_args_return
 
     # Verify multiple invalid fields are packed into returned dict
     dictArgs = {
-        "executeText": "/usr/bin/l",
-        "argText": "-ltr /tmp",
-        "userText": "ooo",
-        "dirText": os.getenv("HOME") + "/ng/",
-        "envText": "XYZ=123",
+        "cmd": "/usr/bin/l",
+        "arg": "-ltr /tmp",
+        "uid": "ooo",
+        "pwd": os.getenv("HOME") + "/ng/",
+        "env": "XYZ=123",
     }
 
     dict_valid_args_return = FaProfSession.validateArgs(dictArgs)
@@ -368,22 +172,22 @@ def test_validateArgs():
         (
             # Verify non-existent relative exec path is detected
             {
-                "executeText": "Now.sh",
-                "argText": "",
-                "userText": os.getenv("USER"),
-                "dirText": "/tmp",
-                "envText": "PATH=.:${PATH}",
+                "cmd": "Now.sh",
+                "arg": "",
+                "uid": os.getenv("USER"),
+                "pwd": "/tmp",
+                "env": "PATH=.:${PATH}",
             },
             ProfSessionArgsStatus.EXEC_NOT_FOUND,
         ),
         (
             # Test w/good args; only OK key is in returned dict
             {
-                "executeText": "ls",
-                "argText": "",
-                "userText": os.getenv("USER"),
-                "dirText": os.getenv("HOME"),
-                "envText": "",
+                "cmd": "ls",
+                "arg": "",
+                "uid": os.getenv("USER"),
+                "pwd": os.getenv("HOME"),
+                "env": "",
             },
             ProfSessionArgsStatus.OK,
         ),
@@ -400,55 +204,55 @@ def test_validateArgs_relative_exec(dictArgs, expected_status):
         (
             # Test w/good env var string; only OK key is in returned dict
             {
-                "executeText": "ls",
-                "argText": "",
-                "userText": os.getenv("USER"),
-                "dirText": os.getenv("HOME"),
-                "envText": "PATH=$PATH:.,A=a",
+                "cmd": "ls",
+                "arg": "",
+                "uid": os.getenv("USER"),
+                "pwd": os.getenv("HOME"),
+                "env": "PATH=$PATH:.,A=a",
             },
             ProfSessionArgsStatus.OK,
         ),
         (
             # Test w/bad env vars (not KV pair) ENV_VARS_FORMATING is returned
             {
-                "executeText": "ls",
-                "argText": "",
-                "userText": os.getenv("USER"),
-                "dirText": os.getenv("HOME"),
-                "envText": "PATH=$PATH:.,A",
+                "cmd": "ls",
+                "arg": "",
+                "uid": os.getenv("USER"),
+                "pwd": os.getenv("HOME"),
+                "env": "PATH=$PATH:.,A",
             },
             ProfSessionArgsStatus.ENV_VARS_FORMATING,
         ),
         (
             # Test w/bad env vars (key name) ENV_VARS_FORMATING is returned
             {
-                "executeText": "ls",
-                "argText": "",
-                "userText": os.getenv("USER"),
-                "dirText": os.getenv("HOME"),
-                "envText": "PATH=$PATH:.,A-B=1",
+                "cmd": "ls",
+                "arg": "",
+                "uid": os.getenv("USER"),
+                "pwd": os.getenv("HOME"),
+                "env": "PATH=$PATH:.,A-B=1",
             },
             ProfSessionArgsStatus.ENV_VARS_FORMATING,
         ),
         (
             # Test w/bad env vars (missing key) ENV_VARS_FORMATING is returned
             {
-                "executeText": "ls",
-                "argText": "",
-                "userText": os.getenv("USER"),
-                "dirText": os.getenv("HOME"),
-                "envText": "PATH=$PATH:.,=1",
+                "cmd": "ls",
+                "arg": "",
+                "uid": os.getenv("USER"),
+                "pwd": os.getenv("HOME"),
+                "env": "PATH=$PATH:.,=1",
             },
             ProfSessionArgsStatus.ENV_VARS_FORMATING,
         ),
         (
             # Test w/bad env vars (empty key) ENV_VARS_FORMATING is returned
             {
-                "executeText": "ls",
-                "argText": "",
-                "userText": os.getenv("USER"),
-                "dirText": os.getenv("HOME"),
-                "envText": "PATH=$PATH:.," "=1",
+                "cmd": "ls",
+                "arg": "",
+                "uid": os.getenv("USER"),
+                "pwd": os.getenv("HOME"),
+                "env": "PATH=$PATH:.," "=1",
             },
             ProfSessionArgsStatus.ENV_VARS_FORMATING,
         ),

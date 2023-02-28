@@ -177,7 +177,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
     def get_pwd_text(self) -> Optional[str]:
         return self._get_opt_text("dirText")
 
-    def get_env_text(self) -> Optional[str]:
+    def get_env(self) -> Optional[str]:
         return self._get_opt_text("envText")
 
     def get_entry_dict(self):
@@ -186,7 +186,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
             "arg": self.get_arg_text(),
             "uid": self.get_user_text(),
             "pwd": self.get_pwd_text(),
-            "env_text": self.get_env_text(),
+            "env": self.get_env_text(),
         }
         return self.inputDict
 
@@ -230,8 +230,8 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
             self.can_start = False
             self.refresh_toolbar()
 
-            profiling_args["env"] = FaProfSession.comma_delimited_kv_string_to_dict(
-                profiling_args.get("env_text", "")
+            profiling_args["env_dict"] = FaProfSession.comma_delimited_kv_string_to_dict(
+                profiling_args.get("env", "")
             )
 
             logging.debug(f"Entry text = {profiling_args}")

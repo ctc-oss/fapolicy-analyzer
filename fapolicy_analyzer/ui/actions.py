@@ -84,6 +84,9 @@ PROFILING_TERM = "PROFILING_TERM"
 PROFILING_DONE = "PROFILING_DONE"
 PROFILING_FAIL = "PROFILING_FAIL"
 
+PROFILER_INIT_ERROR = "PROFILER_INIT_ERROR"
+PROFILER_EXEC_ERROR = "PROFILER_EXEC_ERROR"
+
 SET_PROFILER_OUTPUT = "SET_PROFILER_OUTPUT"
 SET_PROFILER_ANALYSIS_FILE = "SET_PROFILER_ANALYSIS_FILE"
 CLEAR_PROFILER_STATE = "CLEAR_PROFILER_STATE"
@@ -308,6 +311,14 @@ def set_profiler_output(events: Optional[str], stdout: Optional[str], stderr: Op
 
 def clear_profiler_state() -> Action:
     return _create_action(CLEAR_PROFILER_STATE)
+
+
+def profiler_initialization_error(error: str) -> Action:
+    return _create_action(PROFILER_INIT_ERROR, error)
+
+
+def profiler_execution_error(error: str) -> Action:
+    return _create_action(PROFILER_EXEC_ERROR, error)
 
 
 def init_system() -> Action:

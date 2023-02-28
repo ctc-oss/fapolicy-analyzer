@@ -82,6 +82,15 @@ class ProfSessionException(RuntimeError):
 # ########################## Profiler Session ###########################
 class FaProfSession:
     @staticmethod
+    def which(dictProfTgt):
+        FaProfSession.throwOnInvalidSessionArgs(dictProfTgt)
+        return FaProfSession._rel_tgt_which(
+            dictProfTgt.get("cmd", ""),
+            FaProfSession.comma_delimited_kv_string_to_dict(dictProfTgt.get("env", "")),
+            dictProfTgt.get("pwd", "")
+        )
+
+    @staticmethod
     def _rel_tgt_which(relative_exec, user_provided_env, working_dir):
         """
         Given a specified relative executable and a colon separated PATH string
@@ -128,7 +137,7 @@ class FaProfSession:
         """
         logging.info("validateArgs()")
         # Verify all keys are in dictProfTgt; delta_keys should be empty.
-        expected_keys = {"cmd", "arg", "uid", "pwd", "env_text"}
+        expected_keys = {"cmd", "arg", "uid", "pwd", "env"}
         delta_keys = expected_keys.difference(dictProfTgt.keys())
         if delta_keys:
             raise KeyError(f"Missing {delta_keys} key(s) from Profiler Page")
@@ -163,7 +172,7 @@ class FaProfSession:
         # Validate, convert CSV  env string of "K=V" substrings to dict
         try:
             exec_env = FaProfSession.comma_delimited_kv_string_to_dict(
-                dictProfTgt.get("env_text", "")
+                dictProfTgt.get("env", "")
             )
 
         except RuntimeError as e:
