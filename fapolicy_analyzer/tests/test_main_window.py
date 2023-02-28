@@ -32,7 +32,7 @@ from fapolicy_analyzer.tests.helpers import refresh_gui
 from fapolicy_analyzer.ui.actions import ADD_NOTIFICATION
 from fapolicy_analyzer.ui.changeset_wrapper import TrustChangeset
 from fapolicy_analyzer.ui.fapd_manager import ServiceStatus
-from fapolicy_analyzer.ui.main_window import MainWindow
+from fapolicy_analyzer.ui.main_window import MainWindow, router
 from fapolicy_analyzer.ui.session_manager import NotificationType, sessionManager
 from fapolicy_analyzer.ui.store import init_store
 from fapolicy_analyzer.ui.strings import AUTOSAVE_RESTORE_ERROR_MSG
