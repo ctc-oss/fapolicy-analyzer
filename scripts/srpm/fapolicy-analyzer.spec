@@ -79,7 +79,7 @@ Tools to assist with the configuration and management of fapolicyd.
 # there exists a circular dependency between setuptools <-> wheel
 # by calling setuptools/setup.py before pip'ing we can bypass that
 mkdir -p %{_builddir}/setuptools
-tar xzf %{SOURCE12} -C %{_builddir}/setuptools --strip-components=1
+tar -xzf %{SOURCE12} -C %{_builddir}/setuptools --strip-components=1
 %{venv_py3} %{_builddir}/setuptools/setup.py -q install
 # now pip wheel, and setuptools again
 %{venv_install} %{SOURCE13}
