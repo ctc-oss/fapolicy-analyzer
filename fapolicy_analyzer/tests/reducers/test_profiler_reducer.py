@@ -12,19 +12,19 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from typing import Optional, Any
-
 import context  # noqa: F401 # isort: skip
 from unittest.mock import MagicMock
 
 from fapolicy_analyzer.ui.reducers.profiler_reducer import (
     ProfilerState,
-    handle_start_profiling_request, empty_profiler_state, handle_clear_profiler_state, derive_profiler_state, handle_profiler_exec, handle_profiler_tick,
+    handle_start_profiling_request,
+    empty_profiler_state,
+    handle_clear_profiler_state,
+    derive_profiler_state,
+    handle_profiler_exec,
+    handle_profiler_tick,
+    profiler_state,
 )
-
-
-def profiler_state(target, **kwargs: Optional[Any]) -> ProfilerState:
-    return target(**{**empty_profiler_state()._asdict(), **kwargs})
 
 
 def test_handle_profiler_exec():

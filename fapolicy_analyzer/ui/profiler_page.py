@@ -165,13 +165,13 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         txt = self.get_object(named).get_text()
         return txt if txt else None
 
-    def get_target_text(self) -> Optional[str]:
+    def get_cmd_text(self) -> Optional[str]:
         return self._get_opt_text("executeText")
 
     def get_arg_text(self) -> Optional[str]:
         return self._get_opt_text("argText")
 
-    def get_user_text(self) -> Optional[str]:
+    def get_uid_text(self) -> Optional[str]:
         return self._get_opt_text("userText")
 
     def get_pwd_text(self) -> Optional[str]:
@@ -182,9 +182,9 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
 
     def get_entry_dict(self):
         self.inputDict = {
-            "cmd": self.get_target_text(),
+            "cmd": self.get_cmd_text(),
             "arg": self.get_arg_text(),
-            "uid": self.get_user_text(),
+            "uid": self.get_uid_text(),
             "pwd": self.get_pwd_text(),
             "env": self.get_env_text(),
         }
@@ -210,6 +210,13 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         self.refresh_toolbar()
         dispatch(stop_profiling())
 
+    def make_profiling_args(self):
+        res = dict(self.get_entry_dict())
+        res["env_dict"] = FaProfSession.comma_delimited_kv_string_to_dict(
+            res.get("env", "")
+        )
+        return res
+
     def on_start_clicked(self, *args):
         profiling_args = self.get_entry_dict()
         if not FaProfSession.validSessionArgs(profiling_args):
@@ -230,9 +237,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
             self.can_start = False
             self.refresh_toolbar()
 
-            profiling_args["env_dict"] = FaProfSession.comma_delimited_kv_string_to_dict(
-                profiling_args.get("env", "")
-            )
+            profiling_args = self.make_profiling_args()
 
             logging.debug(f"Entry text = {profiling_args}")
             dispatch(start_profiling(profiling_args))

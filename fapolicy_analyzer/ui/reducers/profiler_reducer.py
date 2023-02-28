@@ -77,6 +77,10 @@ def derive_profiler_state(target, source: ProfilerState, **kwargs: Optional[Any]
     return target(**{**source._asdict(), **kwargs})
 
 
+def profiler_state(target, **kwargs: Optional[Any]) -> ProfilerState:
+    return target(**{**empty_profiler_state()._asdict(), **kwargs})
+
+
 def handle_profiler_init_state(state: ProfilerState, action: Action) -> ProfilerState:
     return derive_profiler_state(ProfilerState, state)
 
