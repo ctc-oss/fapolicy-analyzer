@@ -12,25 +12,54 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from typing import Optional, Any
 
 import context  # noqa: F401 # isort: skip
 from unittest.mock import MagicMock
 
 from fapolicy_analyzer.ui.reducers.profiler_reducer import (
     ProfilerState,
-    handle_clear_profiler_state,
+    handle_start_profiling_request, empty_profiler_state, handle_clear_profiler_state, derive_profiler_state, handle_profiler_exec, handle_profiler_tick,
 )
 
 
-# def test_handle_set_profiler_state():
-#     new_state = {"key1": "value1"}
-#     result = handle_set_profiler_state(
-#         ProfilerState(entry={"oldkey": "oldvalue"}, output="", file=""),
-#         MagicMock(payload=new_state)
-#     )
-#     assert result == ProfilerState(entry=new_state, output="", file="")
-#
-#
-# def test_handle_clear_profiler_state():
-#     result = handle_clear_profiler_state(ProfilerState(entry={"oldkey": "oldvalue"}, output="", file=""))
-#     assert result == ProfilerState(entry=default_entry, output="", file="")
+def profiler_state(target, **kwargs: Optional[Any]) -> ProfilerState:
+    return target(**{**empty_profiler_state()._asdict(), **kwargs})
+
+
+def test_handle_profiler_exec():
+    original = profiler_state(ProfilerState, cmd="foo")
+    res = handle_profiler_exec(original, MagicMock(payload=999))
+    assert res == derive_profiler_state(ProfilerState, original, cmd="foo", pid=999)
+
+
+def test_handle_profiler_tick():
+    original = profiler_state(ProfilerState, cmd="foo")
+    res = handle_profiler_tick(original, MagicMock(payload=999))
+    assert res == derive_profiler_state(ProfilerState, original, cmd="foo", duration=999)
+
+
+def test_handle_clear_profiler_state():
+    original = profiler_state(ProfilerState, cmd="foo", uid="root", pwd="/")
+    res = handle_clear_profiler_state(original, MagicMock())
+    assert res == derive_profiler_state(ProfilerState, original, cmd=None, uid=None, pwd=None)
+
+
+def test_handle_start_profiling_request():
+    args = {"cmd": "foo", "uid": "root"}
+    res = handle_start_profiling_request(empty_profiler_state(), MagicMock(payload=args))
+    assert res == profiler_state(ProfilerState, uid="root")
+
+    args = {"cmd": "foo", "pwd": "/"}
+    res = handle_start_profiling_request(
+        empty_profiler_state(),
+        MagicMock(payload=args)
+    )
+    assert res == profiler_state(ProfilerState, pwd="/")
+
+    args = {"cmd": "foo", "uid": "root", "pwd": "/"}
+    res = handle_start_profiling_request(
+        empty_profiler_state(),
+        MagicMock(payload=args)
+    )
+    assert res == profiler_state(ProfilerState, uid="root", pwd="/")
