@@ -21,7 +21,7 @@ from callee.attributes import Attrs
 
 import fapolicy_analyzer.ui.store as store
 from fapolicy_analyzer.redux import Action, ReduxFeatureModule, create_store
-from fapolicy_analyzer.ui.actions import start_profiling, ERROR_PROFILER_INIT, ERROR_PROFILER_EXEC, START_PROFILING_RESPONSE, stop_profiling, ERROR_PROFILER_TERM, PROFILING_KILL_RESPONSE
+from fapolicy_analyzer.ui.actions import start_profiling, ERROR_PROFILER_INIT, ERROR_PROFILER_EXEC, stop_profiling
 from fapolicy_analyzer.ui.features import create_profiler_feature
 from fapolicy_analyzer.ui.strings import PROFILER_INIT_ERROR, PROFILER_EXEC_ERROR
 
