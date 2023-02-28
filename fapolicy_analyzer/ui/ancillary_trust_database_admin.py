@@ -197,13 +197,6 @@ SHA256: {fs.sha(trust.path)}"""
             self.trust_file_list.set_changesets(self._changesets)
             self.__load_trust()
 
-        # print(
-        #     f"""
-        # self: loading = {self.__loading}, pct = {self.__loading_percent}
-        # state: loading = {trust_state.loading}, pct = {trust_state.percent_complete}
-        # """
-        # )
-
         # if there was an error loading show appropriate notification
         if trust_state.error and self.__loading:
             self.__loading = False

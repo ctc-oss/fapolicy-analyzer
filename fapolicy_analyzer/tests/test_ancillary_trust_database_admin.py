@@ -327,12 +327,14 @@ def test_load_trust(mocker):
         {
             "changesets": mock_changesets_state([mockChangeset]),
             "ancillary_trust": MagicMock(
-                error=False, loading=True, percent_complete=0, trust_count=1
+                error=False, loading=True, percent_complete=0, trust_count=1, trust=[]
             ),
         }
     )
 
     mockInitList.assert_called_once_with(1)
+    mockAppendTrust.assert_called_once_with([])
+    mockAppendTrust.reset_mock()
 
     mockSystemFeature.on_next(
         {
