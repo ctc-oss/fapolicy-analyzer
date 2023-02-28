@@ -46,6 +46,7 @@ from fapolicy_analyzer.ui.actions import (
     profiler_termination_error
 )
 from fapolicy_analyzer.ui.reducers import profiler_reducer
+from fapolicy_analyzer.ui.strings import PROFILER_EXEC_ERROR, PROFILER_INIT_ERROR
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import GLib  # isort: skip
@@ -125,14 +126,14 @@ def create_profiler_feature(dispatch: Callable) -> ReduxFeatureModule:
             p.pwd = args.get("pwd", None)
             p.env = args.get("env", None)
         except RuntimeError:
-            dispatch(profiler_initialization_error("Failed to initialize profiler backend"))
+            dispatch(profiler_initialization_error(PROFILER_INIT_ERROR))
             return profiler_done()
 
         # execute and dispatch
         try:
             _handle = p.profile(cmd)
         except RuntimeError:
-            dispatch(profiler_execution_error("Failed to execute profiling target"))
+            dispatch(profiler_execution_error(PROFILER_EXEC_ERROR))
             return profiler_done()
 
         return profiling_started(cmd)

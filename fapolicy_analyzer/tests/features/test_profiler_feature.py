@@ -21,8 +21,9 @@ from callee.attributes import Attrs
 
 import fapolicy_analyzer.ui.store as store
 from fapolicy_analyzer.redux import Action, ReduxFeatureModule, create_store
-from fapolicy_analyzer.ui.actions import start_profiling, PROFILER_INIT_ERROR
+from fapolicy_analyzer.ui.actions import start_profiling, ERROR_PROFILER_INIT
 from fapolicy_analyzer.ui.features import create_profiler_feature
+from fapolicy_analyzer.ui.strings import PROFILER_INIT_ERROR
 
 
 @pytest.fixture
@@ -71,7 +72,7 @@ def test_start_profiler_with_error(mock_dispatch, mocker):
     mock_dispatch.assert_called_with(
         InstanceOf(Action)
         & Attrs(
-            type=PROFILER_INIT_ERROR,
-            payload="Failed to initialize profiler backend",
+            type=ERROR_PROFILER_INIT,
+            payload=PROFILER_INIT_ERROR,
         )
     )
