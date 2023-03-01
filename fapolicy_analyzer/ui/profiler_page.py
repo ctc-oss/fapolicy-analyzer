@@ -212,7 +212,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         markup = ""
         for (description, log) in logs:
             if log:
-                markup += f"<span size='x-large' underline='single'><b>{description}</b></span> (log)\n"
+                markup += f"<span size='x-large' underline='single'><b>{description}</b></span> (<b>{log}</b>)\n"
                 try:
                     with open(log, "r") as f:
                         lines = f.readlines()
