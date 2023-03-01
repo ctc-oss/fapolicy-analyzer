@@ -104,6 +104,8 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
 
         self._list_view.treeView.connect("row-collapsed", self._list_view.on_row_collapsed)
         self._list_view.treeView.connect("row-expanded", self._list_view.on_row_expanded)
+        self.__status_info.get_object("statusList").connect("row-collapsed", self.__status_info.on_row_collapsed)
+        self.__status_info.get_object("statusList").connect("row-expanded", self.__status_info.on_row_expanded)
 
         self.__load_rules()
 
