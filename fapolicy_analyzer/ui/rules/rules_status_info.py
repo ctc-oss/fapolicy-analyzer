@@ -75,8 +75,8 @@ class RulesStatusInfo(UIBuilderWidget):
             iter = self.__model.iter_next(iter)
 
     def restore_row_collapse(self):
-        def toggle_collapse(store, treepath, treeiter):
-            self.__status_list.collapse_row(treepath) if store[treeiter][3] else self.__status_list.expand_row(treepath, False)
+        def toggle_collapse(store, path, treeiter):
+            self.__status_list.collapse_row(path) if store[treeiter][3] else self.__status_list.expand_row(path, False)
         if self.__model is not None:
             self.__model.foreach(toggle_collapse)
 
