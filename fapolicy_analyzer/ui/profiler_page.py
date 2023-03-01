@@ -117,7 +117,11 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         self.update_output_text(self.markup)
 
     def handle_done(self, state: ProfilerState):
-        self.display_log_output([state.events_log, state.stdout_log, state.stderr_log])
+        self.display_log_output([
+            (f"`{state.cmd}` stdout", state.stdout_log),
+            (f"`{state.cmd}` stderr", state.stderr_log),
+            ("fapolicyd stdout", state.events_log),
+        ])
         self.analysis_file = state.events_log
 
     def update_input_fields(self, cmd_args: Optional[str], uid: Optional[str], pwd: Optional[str], env: Optional[str]):
@@ -192,17 +196,17 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
 
     def display_log_output(self, logs):
         markup = ""
-        for log in logs:
+        for (description, log) in logs:
             if log:
-                markup += f"<b>{log}</b>\n"
+                markup += f"<span size='x-large' underline='single'><b>{description}</b></span> (log)\n"
                 try:
                     with open(log, "r") as f:
                         lines = f.readlines()
                     markup += html.escape("".join(lines + ["\n"]))
-                    spacers = len(log)
-                    markup += f"<b>{'=' * spacers}</b>\n"
                 except OSError as ex:
                     logging.error(f"There was an issue reading from {log}", ex)
+                    markup += f"<span size='large'>Failed to open log: <span underline='error'>{ex}</span></span>\n"
+                markup += "\n\n"
         self.update_output_text(markup)
 
     def on_stop_clicked(self, *args):
