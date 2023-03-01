@@ -120,7 +120,7 @@ def handle_set_profiler_output(state: ProfilerState, action: Action) -> Profiler
 
 
 def handle_clear_profiler_state(state: ProfilerState, action: Action) -> ProfilerState:
-    return derive_profiler_state(ProfilerState, state, cmd=None, pwd=None, env=None, uid=None, )
+    return derive_profiler_state(ProfilerState, state, cmd=None, pwd=None, env=None, uid=None)
 
 
 def handle_profiler_exec(state: ProfilerState, action: Action) -> ProfilerState:

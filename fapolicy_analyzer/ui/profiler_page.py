@@ -86,6 +86,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
                     "Clear Fields",
                     "edit-clear",
                     {"clicked": self.on_clear_button_clicked},
+                    sensitivity_func=self.clear_button_sensitivity,
                 )
             ],
         }
@@ -94,11 +95,10 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         self.needs_state = True
         self.can_start = True
         self.can_stop = False
+        self.terminating = False
         self.input_error = False
-        self.inputDict = {}
+        self.analysis_file = None
         self.markup = ""
-        self.analysis_available = False
-        self.analysis_file = ""
 
         self.profiling_handlers = {
             ProfilerTick: self.handle_tick,
@@ -106,15 +106,18 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         }
 
     def on_event(self, state: ProfilerState):
-        self.refresh_view(state)
-        self.refresh_toolbar()
         if state.__class__ in self.profiling_handlers:
             self.profiling_handlers.get(state.__class__)(state)
+        self.refresh_view(state)
+        self.refresh_toolbar()
 
     def handle_tick(self, state: ProfilerTick):
         t = datetime.timedelta(seconds=state.duration) if state.duration else ""
-        self.markup = f"<span size='large'><b>{state.pid}: Executing {state.cmd} {t}</b></span>"
-        self.update_output_text(self.markup)
+        if self.terminating:
+            self.update_output_text(".")
+        else:
+            self.markup = f"<span size='large'><b>{state.pid}: Executing {state.cmd} {t}</b></span>"
+            self.set_output_text(self.markup)
 
     def handle_done(self, state: ProfilerState):
         self.display_log_output([
@@ -123,6 +126,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
             ("fapolicyd stdout", state.events_log),
         ])
         self.analysis_file = state.events_log
+        self.terminating = False
 
     def update_input_fields(self, cmd_args: Optional[str], uid: Optional[str], pwd: Optional[str], env: Optional[str]):
         (cmd, args) = cmd_args.split(" ", 1) if cmd_args and " " in cmd_args else [cmd_args, None]
@@ -135,16 +139,22 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
     def clear_input_fields(self):
         self.update_input_fields(None, None, None, None)
 
-    def update_output_text(self, markup):
-        self.markup = markup
+    def clear_output_test(self):
+        self.set_output_text(None)
+
+    def set_output_text(self, markup):
         buff = Gtk.TextBuffer()
-        buff.insert_markup(buff.get_end_iter(), markup, len(markup))
+        if markup:
+            self.markup = f"{markup}"
+            buff.insert_markup(buff.get_end_iter(), markup, len(markup))
         self.get_object("profilerOutput").set_buffer(buff)
+
+    def update_output_text(self, append):
+        self.set_output_text(f"{self.markup}{append}")
 
     def refresh_view(self, state: ProfilerState):
         self.can_start = not state.running
         self.can_stop = state.running
-        self.analysis_available = bool(self.markup)
         if self.needs_state:
             self.needs_state = False
             self.update_input_fields(state.cmd, state.uid, state.pwd, state.env)
@@ -153,11 +163,16 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         self.analyze_button_pushed(self.analysis_file)
 
     def on_clear_button_clicked(self, *args):
+        self.clear_output_test()
         self.clear_input_fields()
+        self.analysis_file = None
         dispatch(clear_profiler_state())
 
     def analyze_button_sensitivity(self):
-        return self.analysis_available and self.can_start
+        return self.start_button_sensitivity() and self.analysis_file is not None
+
+    def clear_button_sensitivity(self):
+        return self.start_button_sensitivity()
 
     def stop_button_sensitivity(self):
         return self.can_stop
@@ -185,14 +200,13 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         return self._get_opt_text("envText")
 
     def get_entry_dict(self):
-        self.inputDict = {
+        return {
             "cmd": self.get_cmd_text(),
             "arg": self.get_arg_text(),
             "uid": self.get_uid_text(),
             "pwd": self.get_pwd_text(),
             "env": self.get_env_text(),
         }
-        return self.inputDict
 
     def display_log_output(self, logs):
         markup = ""
@@ -207,19 +221,14 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
                     logging.error(f"There was an issue reading from {log}", ex)
                     markup += f"<span size='large'>Failed to open log: <span underline='error'>{ex}</span></span>\n"
                 markup += "\n\n"
-        self.update_output_text(markup)
+        self.set_output_text(markup)
 
     def on_stop_clicked(self, *args):
         self.can_stop = False
+        self.terminating = True
         self.refresh_toolbar()
+        self.update_output_text("\n<span size='large'><b>Profiler terminating...</b></span>")
         dispatch(stop_profiling())
-
-    def make_profiling_args(self):
-        res = dict(self.get_entry_dict())
-        res["env_dict"] = FaProfSession.comma_delimited_kv_string_to_dict(
-            res.get("env", "")
-        )
-        return res
 
     def on_start_clicked(self, *args):
         profiling_args = self.get_entry_dict()
@@ -235,13 +244,24 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
             )
             self.input_error = True
             self.can_start = True
+            self.terminating = False
             self.refresh_toolbar()
         else:
             self.input_error = False
             self.can_start = False
+            self.terminating = False
             self.refresh_toolbar()
+
+            self.set_output_text("<span size='large'><b>Profiler starting...</b></span>")
 
             profiling_args = self.make_profiling_args()
 
             logging.debug(f"Entry text = {profiling_args}")
             dispatch(start_profiling(profiling_args))
+
+    def make_profiling_args(self):
+        res = dict(self.get_entry_dict())
+        res["env_dict"] = FaProfSession.comma_delimited_kv_string_to_dict(
+            res.get("env", "")
+        )
+        return res
