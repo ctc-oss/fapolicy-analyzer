@@ -97,6 +97,7 @@ def test_filtering(widget):
     view = widget.get_object("treeView")
     viewFilter = widget.get_object("search")
     viewFilter.set_text("foo")
+    widget.on_search_activate()
     refresh_gui(delay=0.3)
     paths = [x[0] for x in view.get_model()]
     assert "foo" in paths
