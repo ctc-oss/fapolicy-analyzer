@@ -116,7 +116,7 @@
                           <object class="GtkMenuItem" id="syslogMenu">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">Analyze From Syslog</property>
+                            <property name="label" translatable="yes">Syslog</property>
                             <property name="use_underline">True</property>
                             <signal name="activate" handler="on_syslogMenu_activate" swapped="no"/>
                           </object>
@@ -125,7 +125,7 @@
                           <object class="GtkMenuItem" id="analyzeMenu">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">Analyze From Debug Log</property>
+                            <property name="label" translatable="yes">Debug Log</property>
                             <signal name="activate" handler="on_analyzeMenu_activate" swapped="no"/>
                           </object>
                         </child>
@@ -147,7 +147,7 @@
                           <object class="GtkMenuItem" id="trustDbMenu">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">Administer Trust Databases</property>
+                            <property name="label" translatable="yes">Trust</property>
                             <property name="use_underline">True</property>
                             <signal name="activate" handler="on_trustDbMenu_activate" swapped="no"/>
                           </object>
@@ -156,7 +156,7 @@
                           <object class="GtkMenuItem" id="rulesAdminMenu">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">Administer Rules</property>
+                            <property name="label" translatable="yes">Rules</property>
                             <property name="use_underline">True</property>
                             <signal name="activate" handler="on_rulesAdminMenu_activate" swapped="no"/>
                           </object>
@@ -165,7 +165,7 @@
                           <object class="GtkMenuItem" id="profileExecMenu">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">Profile Executable</property>
+                            <property name="label" translatable="yes">Profiler</property>
                             <property name="use_underline">True</property>
                             <signal name="activate" handler="on_profileExecMenu_activate" swapped="no"/>
                           </object>
@@ -173,8 +173,40 @@
                       </object>
                     </child>
                   </object>
-                </child>
+                </child>     
                 <child>
+                  <object class="GtkMenuItem">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">Daemon</property>
+                    <child type="submenu">
+                      <object class="GtkMenu">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <child>
+                          <object class="GtkImageMenuItem" id="fapdStopMenu">
+                            <property name="label">Stop</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="use_underline">True</property>
+                            <property name="use_stock">True</property>
+                            <signal name="activate" handler="on_fapdStopMenu_activate" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkImageMenuItem" id="fapdStartMenu">
+                            <property name="label">Start</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="use_underline">True</property>
+                            <property name="use_stock">True</property>
+                            <signal name="activate" handler="on_fapdStartMenu_activate" swapped="no"/>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child><child>
                   <object class="GtkMenuItem">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
@@ -221,39 +253,6 @@
                             <property name="use_underline">True</property>
                             <property name="use_stock">True</property>
                             <signal name="activate" handler="on_saveAsMenu_activate" swapped="no"/>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkMenuItem">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">Daemon</property>
-                    <child type="submenu">
-                      <object class="GtkMenu">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <child>
-                          <object class="GtkImageMenuItem" id="fapdStopMenu">
-                            <property name="label">Stop</property>
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="use_underline">True</property>
-                            <property name="use_stock">True</property>
-                            <signal name="activate" handler="on_fapdStopMenu_activate" swapped="no"/>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkImageMenuItem" id="fapdStartMenu">
-                            <property name="label">Start</property>
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="use_underline">True</property>
-                            <property name="use_stock">True</property>
-                            <signal name="activate" handler="on_fapdStartMenu_activate" swapped="no"/>
                           </object>
                         </child>
                       </object>
