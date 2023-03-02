@@ -34,8 +34,7 @@ DEFAULT_MEDIA_URL = "https://user-images.githubusercontent.com/1545372"
 DEFAULT_REL_MEDIA_DIR = "media"
 DEFAULT_BUILD_DIR = path.join("build", DEFAULT_OUTPUT_DIR)
 
-#if environ.get("LOCAL_HELP_GFX"):
-if True:
+if environ.get("LOCAL_HELP_GFX"):
     DEFAULT_REL_HELP_GFX_PREFIX = ""
 else:
     DEFAULT_REL_HELP_GFX_PREFIX = "help:fapolicy-analyzer/"
