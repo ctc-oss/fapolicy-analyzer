@@ -242,11 +242,11 @@ def test_opens_analyze_with_audit_page(mainWindow, mocker):
     )
 
     mocker.patch(
-        "fapolicy_analyzer.ui.main_window.Gtk.FileChooserDialog.run",
+        "fapolicy_analyzer.ui.main_window.FileChooserDialog.run",
         return_value=Gtk.ResponseType.OK,
     )
     mocker.patch(
-        "fapolicy_analyzer.ui.main_window.Gtk.FileChooserDialog.get_filename",
+        "fapolicy_analyzer.ui.main_window.FileChooserDialog.get_filename",
         return_value="foo",
     )
     mocker.patch("fapolicy_analyzer.ui.main_window.path.isfile", return_value=True)
@@ -332,7 +332,7 @@ def test_on_openMenu_activate(mainWindow, mocker):
     mockDialog.run.return_value = Gtk.ResponseType.OK
     mockDialog.get_filename.return_value = "/tmp/open_tmp.json"
     mocker.patch(
-        "fapolicy_analyzer.ui.main_window.Gtk.FileChooserDialog",
+        "fapolicy_analyzer.ui.main_window.FileChooserDialog",
         return_value=mockDialog,
     )
 
@@ -352,7 +352,7 @@ def test_on_openMenu_activate_fail(mainWindow, mock_dispatch, mocker):
     mockDialog.run.return_value = Gtk.ResponseType.OK
     mockDialog.get_filename.return_value = fakeFile
     mocker.patch(
-        "fapolicy_analyzer.ui.main_window.Gtk.FileChooserDialog",
+        "fapolicy_analyzer.ui.main_window.FileChooserDialog",
         return_value=mockDialog,
     )
 
@@ -406,7 +406,7 @@ def test_on_saveAsMenu_activate(mainWindow, mocker):
     mockDialog.run.return_value = Gtk.ResponseType.OK
     mockDialog.get_filename.return_value = "/tmp/save_as_tmp.json"
     mocker.patch(
-        "fapolicy_analyzer.ui.main_window.Gtk.FileChooserDialog",
+        "fapolicy_analyzer.ui.main_window.FileChooserDialog",
         return_value=mockDialog,
     )
     mockFunc = mocker.patch(

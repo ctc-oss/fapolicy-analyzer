@@ -17,9 +17,11 @@ import logging
 import re
 from os import path
 
-import fapolicy_analyzer.ui.strings as strings
 import gi
 from events import Events
+
+from fapolicy_analyzer.ui import strings
+from fapolicy_analyzer.ui.file_chooser_dialog import FileChooserDialog
 from fapolicy_analyzer.ui.ui_widget import UIBuilderWidget
 
 gi.require_version("Gtk", "3.0")
@@ -35,51 +37,41 @@ class AddFileButton(UIBuilderWidget, Events):
         self.dialog = self.get_object("fileChooserDialog")
 
     def addFileButton_clicked(self, *args):
-        fcd = Gtk.FileChooserDialog(
+        fcd = FileChooserDialog(
             title=strings.ADD_FILE_LABEL,
-            transient_for=self.get_ref().get_toplevel(),
-            action=Gtk.FileChooserAction.OPEN,
+            parent=self.get_ref().get_toplevel(),
+            action_button=Gtk.STOCK_ADD,
         )
-        fcd.add_buttons(
-            Gtk.STOCK_CANCEL,
-            Gtk.ResponseType.CANCEL,
-            Gtk.STOCK_ADD,
-            Gtk.ResponseType.OK,
-        )
-        fcd.set_select_multiple(True)
-        response = fcd.run()
-        fcd.hide()
-        if response == Gtk.ResponseType.OK:
-            files = [f for f in fcd.get_filenames() if path.isfile(f)]
+        files = [f for f in fcd.get_filenames() if path.isfile(f)]
 
-            # -- Filter to address fapolicyd embeded whitspace in path issue
-            # fapolicyd issue 109:Files and Directories with spaces in the name
-            #
-            # Detect and remove file paths w/embedded spaces. Alert user w/dlg
-            logging.info("Filtering out paths with embedded whitespace")
-            listAccepted = [e for e in files if not re.search(r"\s", e)]
-            listRejected = [e for e in files if re.search(r"\s", e)]
-            if listRejected:
-                dlgWhitespaceInfo = Gtk.MessageDialog(
-                    transient_for=self.get_ref().get_toplevel(),
-                    flags=0,
-                    message_type=Gtk.MessageType.INFO,
-                    buttons=Gtk.ButtonsType.OK,
-                    text=strings.WHITESPACE_WARNING_DIALOG_TITLE,
-                )
+        # -- Filter to address fapolicyd embedded whitespace in path issue
+        # fapolicyd issue 109:Files and Directories with spaces in the name
+        #
+        # Detect and remove file paths w/embedded spaces. Alert user w/dlg
+        logging.info("Filtering out paths with embedded whitespace")
+        listAccepted = [e for e in files if not re.search(r"\s", e)]
+        listRejected = [e for e in files if re.search(r"\s", e)]
+        if listRejected:
+            dlgWhitespaceInfo = Gtk.MessageDialog(
+                transient_for=self.get_ref().get_toplevel(),
+                flags=0,
+                message_type=Gtk.MessageType.INFO,
+                buttons=Gtk.ButtonsType.OK,
+                text=strings.WHITESPACE_WARNING_DIALOG_TITLE,
+            )
 
-                # Convert list of paths to a single string
-                strListRejected = "\n".join(listRejected)
+            # Convert list of paths to a single string
+            strListRejected = "\n".join(listRejected)
 
-                dlgWhitespaceInfo.format_secondary_text(
-                    strings.WHITESPACE_WARNING_DIALOG_TEXT + strListRejected
-                )
-                dlgWhitespaceInfo.run()
-                dlgWhitespaceInfo.destroy()
-            files = listAccepted
-            #     Remove this filter block if fapolicyd bug #TBD is fixed
-            # ----------------------------------------------------------------
+            dlgWhitespaceInfo.format_secondary_text(
+                strings.WHITESPACE_WARNING_DIALOG_TEXT + strListRejected
+            )
+            dlgWhitespaceInfo.run()
+            dlgWhitespaceInfo.destroy()
+        files = listAccepted
+        #     Remove this filter block if fapolicyd bug #TBD is fixed
+        # ----------------------------------------------------------------
 
-            if files:
-                self.files_added(files)
+        if files:
+            self.files_added(files)
         fcd.destroy()

@@ -38,6 +38,7 @@ from fapolicy_analyzer.ui.changeset_wrapper import Changeset
 from fapolicy_analyzer.ui.configs import Sizing
 from fapolicy_analyzer.ui.database_admin_page import DatabaseAdminPage
 from fapolicy_analyzer.ui.fapd_manager import FapdManager, ServiceStatus
+from fapolicy_analyzer.ui.file_chooser_dialog import FileChooserDialog
 from fapolicy_analyzer.ui.help_browser import HelpBrowser
 from fapolicy_analyzer.ui.notification import Notification
 from fapolicy_analyzer.ui.operations import DeployChangesetsOp
@@ -72,6 +73,12 @@ def router(page: PAGE_SELECTION, data: Any = None) -> UIPage:
 
 
 class MainWindow(UIConnectedWidget):
+
+    __JSON_FILE_FILTERS = [
+        (strings.FA_SESSION_FILES_FILTER_LABEL, "*.json"),
+        (strings.ANY_FILES_FILTER_LABEL, "*"),
+    ]
+
     def __init__(self):
         features = [
             {get_system_feature(): {"on_next": self.on_next_system}},
@@ -158,17 +165,6 @@ class MainWindow(UIConnectedWidget):
         response = unappliedChangesDlg.run()
         unappliedChangesDlg.destroy()
         return response != Gtk.ResponseType.OK
-
-    def __apply_json_file_filters(self, dialog):
-        fileFilterJson = Gtk.FileFilter()
-        fileFilterJson.set_name(strings.FA_SESSION_FILES_FILTER_LABEL)
-        fileFilterJson.add_pattern("*.json")
-        dialog.add_filter(fileFilterJson)
-
-        fileFilterAny = Gtk.FileFilter()
-        fileFilterAny.set_name(strings.ANY_FILES_FILTER_LABEL)
-        fileFilterAny.add_pattern("*")
-        dialog.add_filter(fileFilterAny)
 
     def __pack_main_content(self, page: UIPage):
         if self.__page:
@@ -278,36 +274,26 @@ class MainWindow(UIConnectedWidget):
     def on_openMenu_activate(self, menuitem, data=None):
         logging.debug("Callback entered: MainWindow::on_openMenu_activate()")
         # Display file chooser dialog
-        fcd = Gtk.FileChooserDialog(
-            strings.OPEN_FILE_LABEL,
-            self.windowTopLevel,
-            Gtk.FileChooserAction.OPEN,
-            (
-                Gtk.STOCK_CANCEL,
-                Gtk.ResponseType.CANCEL,
-                Gtk.STOCK_OPEN,
-                Gtk.ResponseType.OK,
-            ),
+        fcd = FileChooserDialog(
+            title=strings.OPEN_FILE_LABEL,
+            parent=self.get_ref(),
+            filters=self.__JSON_FILE_FILTERS,
         )
-        self.__apply_json_file_filters(fcd)
-        response = fcd.run()
-        fcd.hide()
 
-        if response == Gtk.ResponseType.OK:
-            strFilename = fcd.get_filename()
-            if path.isfile(strFilename):
-                self.strSessionFilename = strFilename
-                if not sessionManager.open_edit_session(self.strSessionFilename):
-                    dispatch(
-                        add_notification(
-                            f(
-                                _(
-                                    "An error occurred trying to open the session file, {self.strSessionFilename}"
-                                )
-                            ),
-                            NotificationType.ERROR,
-                        )
+        strFilename = fcd.get_filename() or ""
+        if path.isfile(strFilename):
+            self.strSessionFilename = strFilename
+            if not sessionManager.open_edit_session(self.strSessionFilename):
+                dispatch(
+                    add_notification(
+                        f(
+                            _(
+                                "An error occurred trying to open the session file, {self.strSessionFilename}"
+                            )
+                        ),
+                        NotificationType.ERROR,
                     )
+                )
 
         fcd.destroy()
 
@@ -341,26 +327,17 @@ class MainWindow(UIConnectedWidget):
     def on_saveAsMenu_activate(self, menuitem, data=None):
         logging.debug("Callback entered: MainWindow::on_saveAsMenu_activate()")
         # Display file chooser dialog
-        fcd = Gtk.FileChooserDialog(
-            strings.SAVE_AS_FILE_LABEL,
-            self.windowTopLevel,
-            Gtk.FileChooserAction.SAVE,
-            (
-                Gtk.STOCK_CANCEL,
-                Gtk.ResponseType.CANCEL,
-                Gtk.STOCK_SAVE,
-                Gtk.ResponseType.OK,
-            ),
+        fcd = FileChooserDialog(
+            title=strings.SAVE_AS_FILE_LABEL,
+            parent=self.get_ref(),
+            action=Gtk.FileChooserAction.SAVE,
+            action_button=Gtk.STOCK_SAVE,
+            do_overwrite_confirmation=True,
+            filters=self.__JSON_FILE_FILTERS,
         )
 
-        self.__apply_json_file_filters(fcd)
-        fcd.set_do_overwrite_confirmation(True)
-        response = fcd.run()
-        fcd.hide()
-
-        if response == Gtk.ResponseType.OK:
-            strFilename = fcd.get_filename()
-            self.strSessionFilename = strFilename
+        self.strSessionFilename = fcd.get_filename()
+        if self.strSessionFilename:
             sessionManager.save_edit_session(
                 self.__changesets,
                 self.strSessionFilename,
@@ -407,21 +384,12 @@ class MainWindow(UIConnectedWidget):
         # self.__set_trustDbMenu_sensitive(True)
 
     def on_analyzeMenu_activate(self, *args):
-        fcd = Gtk.FileChooserDialog(
+        fcd = FileChooserDialog(
             title=strings.OPEN_FILE_LABEL,
-            transient_for=self.get_ref(),
-            action=Gtk.FileChooserAction.OPEN,
+            parent=self.get_ref(),
         )
-        fcd.add_buttons(
-            Gtk.STOCK_CANCEL,
-            Gtk.ResponseType.CANCEL,
-            Gtk.STOCK_OPEN,
-            Gtk.ResponseType.OK,
-        )
-        response = fcd.run()
-        fcd.hide()
-        if response == Gtk.ResponseType.OK and path.isfile((fcd.get_filename())):
-            file = fcd.get_filename()
+        file = fcd.get_filename() or ""
+        if path.isfile(file):
             page = router(PAGE_SELECTION.ANALYZE_FROM_AUDIT, file)
             page.object_list.rule_view_activate += self.on_rulesAdminMenu_activate
             height = self.get_object("mainWindow").get_size()[1]

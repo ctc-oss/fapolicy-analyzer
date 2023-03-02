@@ -283,11 +283,11 @@ def test_saves_state(operation, mocker):
         ),
     )
     mocker.patch(
-        "fapolicy_analyzer.ui.operations.deploy_changesets_op._FapdArchiveFileChooserDialog.run",
+        "fapolicy_analyzer.ui.operations.deploy_changesets_op.FileChooserDialog.run",
         return_value=Gtk.ResponseType.OK,
     )
     mocker.patch(
-        "fapolicy_analyzer.ui.operations.deploy_changesets_op._FapdArchiveFileChooserDialog.get_filename",
+        "fapolicy_analyzer.ui.operations.deploy_changesets_op.FileChooserDialog.get_filename",
         return_value="fooFile",
     )
     mockSnapshot = mocker.patch(
@@ -328,8 +328,7 @@ def test_unsaved_change_dialog(operation, mocker, mock_dispatch):
                     loading=False,
                 ),
                 "rules_text": MagicMock(
-                    rules_text="foo",
-                    modified_rules_text="foo bar"
+                    rules_text="foo", modified_rules_text="foo bar"
                 ),
             }
         )
