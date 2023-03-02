@@ -40,19 +40,13 @@ class FileChooserDialog(Gtk.FileChooserDialog):
             title=title,
             transient_for=parent,
             action=action,
-            buttons=(
-                Gtk.STOCK_CANCEL,
-                Gtk.ResponseType.CANCEL,
-                action_button,
-                Gtk.ResponseType.OK,
-            ),
         )
-        # self.add_buttons(
-        #     Gtk.STOCK_CANCEL,
-        #     Gtk.ResponseType.CANCEL,
-        #     action_button,
-        #     Gtk.ResponseType.OK,
-        # )
+        self.add_buttons(
+            Gtk.STOCK_CANCEL,
+            Gtk.ResponseType.CANCEL,
+            action_button,
+            Gtk.ResponseType.OK,
+        )
         self.set_do_overwrite_confirmation(do_overwrite_confirmation)
         self.__add_filters(*filters)
 

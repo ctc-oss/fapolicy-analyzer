@@ -14,6 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from functools import partial
+from os import path
 from typing import Optional, Sequence
 
 import gi
@@ -28,6 +29,7 @@ from fapolicy_analyzer.ui.actions import (
     request_groups,
     request_users,
 )
+from fapolicy_analyzer.ui.file_chooser_dialog import FileChooserDialog
 from fapolicy_analyzer.ui.object_list import ObjectList
 from fapolicy_analyzer.ui.store import dispatch, get_system_feature
 from fapolicy_analyzer.ui.strings import (
@@ -35,6 +37,7 @@ from fapolicy_analyzer.ui.strings import (
     GET_USERS_ERROR_MSG,
     GROUP_LABEL,
     GROUPS_LABEL,
+    OPEN_FILE_LABEL,
     PARSE_EVENT_LOG_ERROR_MSG,
     USER_LABEL,
     USERS_LABEL,
@@ -68,14 +71,26 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             ]
         }
         if not self.__audit_file:
-            actions["time"] = [
+            actions["analyze"] = [
+                *actions["analyze"],
                 UIAction(
                     "Time",
                     "Time Selection",
                     "alarm-symbolic",
                     {"clicked": self.on_timeSelectBtn_clicked},
-                )
+                ),
             ]
+        else:
+            actions["analyze"] = [
+                *actions["analyze"],
+                UIAction(
+                    "Open File",
+                    "Open Log File",
+                    "document-open",
+                    {"clicked": self.on_openFileBtn_clicked},
+                ),
+            ]
+
         UIPage.__init__(self, actions)
         self.__n_changesets = 0
 
@@ -541,6 +556,19 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             self.__refresh()
             self.__populate_acls()
             self.__populate_subjects_from_acl()
+
+    def on_openFileBtn_clicked(self, *args):
+        fcd = FileChooserDialog(
+            title=OPEN_FILE_LABEL,
+            parent=self.get_ref().get_toplevel(),
+        )
+
+        _file = fcd.get_filename() or ""
+        if path.isfile(_file):
+            self.__audit_file = _file
+            self.__refresh()
+
+        fcd.destroy()
 
     class Switcher(Events):
         __events__ = ["buttonClicked"]

@@ -388,9 +388,9 @@ class MainWindow(UIConnectedWidget):
             title=strings.OPEN_FILE_LABEL,
             parent=self.get_ref(),
         )
-        file = fcd.get_filename() or ""
-        if path.isfile(file):
-            page = router(PAGE_SELECTION.ANALYZE_FROM_AUDIT, file)
+        _file = fcd.get_filename() or ""
+        if path.isfile(_file):
+            page = router(PAGE_SELECTION.ANALYZE_FROM_AUDIT, _file)
             page.object_list.rule_view_activate += self.on_rulesAdminMenu_activate
             height = self.get_object("mainWindow").get_size()[1]
             page.get_object("botBox").set_property(
