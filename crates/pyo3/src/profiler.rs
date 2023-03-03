@@ -148,12 +148,11 @@ impl PyProfiler {
         let mut rs = Profiler::new();
 
         // generate the daemon and target logs
-        let (event_log, mut stdout_log, mut stderr_log) =
-            create_log_files(self.log_dir.as_ref())
-                .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))?;
+        let (events_log, mut stdout_log, mut stderr_log) = create_log_files(self.log_dir.as_ref())
+            .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))?;
 
-        // set the daemon stdout log
-        if let Some((_, path)) = event_log.as_ref() {
+        // set the daemon stdout log, aka the events log
+        if let Some((_, path)) = events_log.as_ref() {
             rs.stdout_log = Some(path.clone());
         }
 
@@ -194,7 +193,7 @@ impl PyProfiler {
                         args,
                         term.clone(),
                         // todo;; clean this up...
-                        event_log.as_ref().map(|x| x.1.display().to_string()),
+                        events_log.as_ref().map(|x| x.1.display().to_string()),
                         stdout_log.as_ref().map(|x| x.1.display().to_string()),
                         stderr_log.as_ref().map(|x| x.1.display().to_string()),
                     );
@@ -316,9 +315,9 @@ struct ExecHandle {
     pid: u32,
     command: String,
     kill_flag: Arc<AtomicBool>,
+    daemon_stdout_log: Option<String>,
     target_stdout_log: Option<String>,
     target_stderr_log: Option<String>,
-    service_stdout_log: Option<String>,
 }
 
 impl ExecHandle {
@@ -326,17 +325,17 @@ impl ExecHandle {
         pid: u32,
         command: String,
         kill_flag: Arc<AtomicBool>,
+        events_log: Option<String>,
         target_out: Option<String>,
         target_err: Option<String>,
-        svc_out: Option<String>,
     ) -> Self {
         ExecHandle {
             pid,
             command,
             kill_flag,
+            daemon_stdout_log: events_log,
             target_stdout_log: target_out,
             target_stderr_log: target_err,
-            service_stdout_log: svc_out,
         }
     }
 }
@@ -355,7 +354,7 @@ impl ExecHandle {
 
     #[getter]
     fn event_log(&self) -> Option<String> {
-        self.service_stdout_log.clone()
+        self.daemon_stdout_log.clone()
     }
 
     #[getter]
