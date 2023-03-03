@@ -61,9 +61,6 @@ def create_profiler_feature(dispatch: Callable) -> ReduxFeatureModule:
     def _idle_dispatch(action: Action):
         GLib.idle_add(dispatch, action)
 
-    def _init_profiler() -> Action:
-        return profiler_init()
-
     def _on_exec(h: ExecHandle, action_fn: Callable[[int], Action]):
         _idle_dispatch(action_fn(h.pid))
         _idle_dispatch(set_profiler_output(h.event_log, h.stdout_log, h.stderr_log))
@@ -149,11 +146,6 @@ def create_profiler_feature(dispatch: Callable) -> ReduxFeatureModule:
 
         return terminating_profiler()
 
-    init_epic = pipe(
-        of_init_feature(PROFILING_FEATURE),
-        map(lambda _: _init_profiler()),
-    )
-
     start_profiling_epic = pipe(
         of_type(START_PROFILING_REQUEST),
         map(_start_profiling),
@@ -167,7 +159,6 @@ def create_profiler_feature(dispatch: Callable) -> ReduxFeatureModule:
     )
 
     profiler_epic = combine_epics(
-        init_epic,
         start_profiling_epic,
         kill_profiler_epic,
     )

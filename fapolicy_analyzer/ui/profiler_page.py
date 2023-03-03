@@ -53,34 +53,28 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         ]
         Events.__init__(self)
         actions = {
-            "start": [
+            "profiler": [
                 UIAction(
                     "Start",
                     "Start Profiling",
                     "media-playback-start",
                     {"clicked": self.on_start_clicked},
                     sensitivity_func=self.start_button_sensitivity,
-                )
-            ],
-            "stop": [
+                ),
                 UIAction(
                     "Stop",
                     "Stop Profiling",
                     "media-playback-stop",
                     {"clicked": self.on_stop_clicked},
                     sensitivity_func=self.stop_button_sensitivity,
-                )
-            ],
-            "analyze": [
+                ),
                 UIAction(
                     "Analyze",
                     "Analyze Output",
                     "applications-science",
                     {"clicked": self.on_analyzer_button_clicked},
                     sensitivity_func=self.analyze_button_sensitivity,
-                )
-            ],
-            "clear": [
+                ),
                 UIAction(
                     "Clear",
                     "Clear Fields",

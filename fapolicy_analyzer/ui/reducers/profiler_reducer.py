@@ -18,7 +18,6 @@ from typing import Any, Dict, NamedTuple, Optional
 from fapolicy_analyzer.redux import Action, Reducer, handle_actions
 from fapolicy_analyzer.ui.actions import (
     PROFILER_CLEAR_STATE_CMD,
-    PROFILING_INIT_EVENT,
     PROFILER_SET_OUTPUT_CMD,
     START_PROFILING_REQUEST,
     START_PROFILING_RESPONSE,
@@ -44,18 +43,22 @@ class ProfilerState(NamedTuple):
 
 #
 # About these state subtypes:
-# I am using these subclasses to tag the event type, which allows
-# subscribers to route handling by type of the state received.
-# could also achieve this by adding the action type string to the
-# state but wanted to see what this looks like and how it holds up.
-# I wanted to also separate the properties into proper contexts by type
-# but that proves troublesome on some transitions, you still end up
-# having to include properties that are not applicable, just for the
-# next transition. Originally there were subtypes for each possible
-# state, but currently there are only subtypes for the states that need
-# special handling, all other cases use the base class ProfilerState.
 #
-# In summary, this approach wanted to behave like a State Machine, but didnt quite succeed.
+# tl;dr; wanted a State Machine, but didn't quite make it
+#
+# This is using these subclasses to tag the event type, which allows
+# subscribers to route handling by type of the state received.
+# This could also be achieved by adding the action-type string to the
+# state, but I decided to see what this looks like, and how it holds up.
+#
+# I had also wanted to separate the state properties by context of type,
+# but that proves troublesome on some state transitions, where you still
+# end up having to include properties that do not belong to the context, to
+# support the next transition.
+#
+# Originally there were subtypes for each possible state, but now there are
+# only subtypes for the states that get special treatment, all other cases
+# use the base class ProfilerState. State types can be added as needed.
 #
 
 
@@ -95,10 +98,6 @@ def derive_profiler_state(target, source: ProfilerState, **kwargs: Optional[Any]
 
 def profiler_state(target, **kwargs: Optional[Any]) -> ProfilerState:
     return target(**{**empty_profiler_state()._asdict(), **kwargs})
-
-
-def handle_profiler_init_state(state: ProfilerState, action: Action) -> ProfilerState:
-    return derive_profiler_state(ProfilerState, state)
 
 
 def handle_start_profiling_request(state: ProfilerState, action: Action) -> ProfilerState:
@@ -143,7 +142,6 @@ def handle_profiler_done(state: ProfilerState, action: Action) -> ProfilerState:
 
 profiler_reducer: Reducer = handle_actions(
     {
-        PROFILING_INIT_EVENT: handle_profiler_init_state,
         PROFILER_SET_OUTPUT_CMD: handle_set_profiler_output,
         PROFILER_CLEAR_STATE_CMD: handle_clear_profiler_state,
         START_PROFILING_REQUEST: handle_start_profiling_request,
