@@ -96,7 +96,7 @@ Follow this method only if you have installed all required build tools
 
 `make run`
 
-This requires Pip + Pipenv + Python 3.6 or greater, and Rust 1.58.1 or greater.
+This requires Pip + Pipenv + Python 3.6 or greater, and Rust 1.62.1 or greater.
 
 Python and Rust dependencies will be installed during the build process.
 
