@@ -13,18 +13,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import argparse
+import signal
 import sys
 import threading
-import argparse
-import time
+from functools import partial
 
-import fapolicy_analyzer
-from fapolicy_analyzer import *
+from fapolicy_analyzer import Profiler
+
+
+def on_sigint(signum, frame, kill):
+    print("Terminating target...")
+    kill()
 
 
 def main(*argv):
-    print(f"v{fapolicy_analyzer.__version__}")
-
     parser = argparse.ArgumentParser()
     parser.add_argument("target", nargs=argparse.REMAINDER)
 
@@ -41,6 +44,7 @@ def main(*argv):
     print(args.target)
 
     profiler = Profiler()
+    kill_flag = threading.Event()
     wait_for_done = threading.Event()
 
     def execd(h):
@@ -48,6 +52,7 @@ def main(*argv):
 
     def done():
         print("[python] all done")
+        kill_flag.set()
         wait_for_done.set()
 
     profiler.exec_callback = execd
@@ -71,14 +76,15 @@ def main(*argv):
     # profile a single target in a session
     proc_target = profiler.profile(" ".join(args.target))
 
-    time.sleep(5)
+    handler = partial(
+        on_sigint,
+        kill=proc_target.kill,
+    )
 
-    proc_target.kill()
+    # ctrl+c to kill the profiling process
+    signal.signal(signal.SIGINT, handler)
 
-    # profile multiple targets in same session
-    #profiler.profile_all(["whoami", "id", "pwd", "ls /tmp"])
-
-    # keep the example running until processing completed
+    # wait for the profiler to exit
     wait_for_done.wait()
 
 
