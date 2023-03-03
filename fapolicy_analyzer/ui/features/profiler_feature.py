@@ -27,12 +27,10 @@ from fapolicy_analyzer.redux import (
 from fapolicy_analyzer.redux import (
     create_feature_module,
     ReduxFeatureModule,
-    of_init_feature,
     combine_epics,
     of_type
 )
 from fapolicy_analyzer.ui.actions import (
-    profiler_init,
     profiling_started,
     profiler_done,
     terminating_profiler,
