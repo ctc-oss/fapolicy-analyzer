@@ -20,14 +20,14 @@ Source1:       %{url}/releases/download/v%{version}/vendor-rs.tar.gz
 
 # Build-time python dependencies
 # required for compatibility with setuptools-rust
-Source10:       %{pypi_source setuptools-rust 1.1.2}
-Source11:       %{pypi_source pip 21.3.1}
-Source12:       %{pypi_source setuptools 59.6.0}
-Source13:       %{pypi_source wheel 0.37.0}
-Source14:       %{pypi_source setuptools_scm 6.4.2}
-Source15:       %{pypi_source semantic_version 2.8.2}
-Source16:       %{pypi_source packaging 21.3}
-Source17:       %{pypi_source pyparsing 2.1.0}
+Source10:      %{pypi_source setuptools-rust 1.1.2}
+Source11:      %{pypi_source pip 21.3.1}
+Source12:      %{pypi_source setuptools 59.6.0}
+Source13:      %{pypi_source wheel 0.37.0}
+Source14:      %{pypi_source setuptools_scm 6.4.2}
+Source15:      %{pypi_source semantic_version 2.8.2}
+Source16:      %{pypi_source packaging 21.3}
+Source17:      %{pypi_source pyparsing 2.1.0}
 Source18:      %{pypi_source tomli 1.2.3}
 Source19:      %{pypi_source flit_core 3.7.1}
 Source20:      %{pypi_source typing_extensions 3.7.4.3}
@@ -68,15 +68,16 @@ ExcludeArch:   s390x %{power64}
 Tools to assist with the configuration and management of fapolicyd.
 
 %prep
-# Python- on rhel we are missing setuptools-rust, and to get it requires
-# upgrades of pip, setuptools, and wheel along with several other dependencies
-# use a virtual environment to isolate changes, %venv_py3 is defined to use this
+# setuptools-rust is not available as a package. installing it requires
+# upgrades of pip, setuptools, wheel, and some transient dependencies.
+# install these to a virtual environment to isolate changes, and
+# define venv_py3 for accessing the venv python3 interpreter.
 %{python3} -m venv %{venv_dir}
 
 # the upgraded packages will not install with the older pip
 %{venv_install} %{SOURCE11}
 
-# there exists a circular dependency between setuptools <-> wheel
+# there exists a circular dependency between setuptools <-> wheel,
 # by calling setuptools/setup.py before pip'ing we can bypass that
 mkdir -p %{_builddir}/setuptools
 tar -xzf %{SOURCE12} -C %{_builddir}/setuptools --strip-components=1
