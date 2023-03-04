@@ -88,7 +88,7 @@ def test_creates_system_feature(mock_dispatch):
 def test_initializes_system(mock_dispatch, mocker):
     system = MagicMock()
     mock_system = mocker.patch(
-        "fapolicy_analyzer.ui.features.system_feature.unchecked_system",
+        "fapolicy_analyzer.ui.features.system_feature.System",
         return_value=system,
     )
     store = create_store()
@@ -123,7 +123,7 @@ def test_uses_provided_system(mock_dispatch, mocker):
 
 def test_handles_system_initialization_error(mock_dispatch, mocker):
     mock_system = mocker.patch(
-        "fapolicy_analyzer.ui.features.system_feature.unchecked_system",
+        "fapolicy_analyzer.ui.features.system_feature.System",
         side_effect=RuntimeError(),
     )
     store = create_store()
