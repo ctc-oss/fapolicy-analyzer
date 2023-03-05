@@ -16,6 +16,7 @@
 use clap::Parser;
 use fapolicy_daemon::profiler::Profiler;
 use fapolicy_rules::read::load_rules_db;
+use log;
 use std::error::Error;
 use std::os::unix::prelude::CommandExt;
 use std::path::PathBuf;
@@ -48,7 +49,7 @@ struct Opts {
 
 fn main() -> Result<(), Box<dyn Error>> {
     let opts: Opts = Opts::parse();
-    eprintln!("profiling: {:?}", opts.target);
+    log::info!("profiling: {:?}", opts.target);
     let target = opts.target.first().expect("target not specified");
     let args: Vec<&String> = opts.target.iter().skip(1).collect();
 
@@ -59,10 +60,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     if let Some(path) = opts.stdout.map(PathBuf::from) {
         if path.exists() {
-            eprintln!(
-                "warning: deleting existing log file from {}",
-                path.display()
-            );
+            log::warn!("deleting existing log file from {}", path.display());
             std::fs::remove_file(&path)?;
         }
         profiler.events_log = Some(path);

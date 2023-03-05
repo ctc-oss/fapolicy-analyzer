@@ -60,6 +60,7 @@ impl PyProfiler {
 
     #[setter]
     fn set_user(&mut self, uid_or_uname: Option<&str>) -> PyResult<()> {
+        log::debug!("set_user {uid_or_uname}");
         if let Some(uid_or_uname) = uid_or_uname {
             self.uid = if uid_or_uname.starts_with(|x: char| x.is_ascii_alphabetic()) {
                 Some(
@@ -129,6 +130,7 @@ impl PyProfiler {
 
     // accept callback for exec control (eg kill), and done notification
     fn profile_all(&self, targets: Vec<&str>) -> PyResult<ProcHandle> {
+        log::debug!("profile_all {}", targets.join(";"));
         // the working dir must exist prior to execution
         if let Some(pwd) = self.pwd.as_ref() {
             // todo;; stable in 1.63

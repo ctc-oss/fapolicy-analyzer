@@ -276,6 +276,7 @@ dependencies = [
  "fapolicy-rules",
  "fapolicy-trust",
  "fapolicy-util",
+ "log",
  "nom",
  "tempfile",
  "thiserror",
@@ -301,6 +302,7 @@ dependencies = [
 name = "fapolicy-rules"
 version = "0.4.3"
 dependencies = [
+ "log",
  "nom",
  "serde",
  "tempfile",
@@ -320,6 +322,7 @@ dependencies = [
  "fapolicy-trust",
  "fapolicy-util",
  "lmdb",
+ "log",
  "nom",
  "rayon",
  "thiserror",
@@ -331,6 +334,7 @@ version = "0.5.0"
 dependencies = [
  "fapolicy-util",
  "lmdb",
+ "log",
  "nom",
  "rayon",
  "serde",

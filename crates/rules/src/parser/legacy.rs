@@ -6,6 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+use log;
 use nom::bytes::complete::{is_not, take_until};
 use nom::bytes::streaming::tag;
 use nom::character::complete::space0;
@@ -48,7 +49,7 @@ pub fn subject(i: &str) -> nom::IResult<&str, Subject> {
     match parser::subject::parse(ss) {
         Ok((_, s)) => Ok((r.current, s)),
         Err(e) => {
-            println!("{:?}", e);
+            log::error!("{:?}", e);
             Err(nom::Err::Error(nom::error::Error {
                 input: i,
                 code: ErrorKind::Alpha,

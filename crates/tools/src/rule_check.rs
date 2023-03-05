@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use log;
 use std::error::Error;
 use std::ops::Range;
 use std::path::PathBuf;
@@ -142,7 +143,7 @@ fn to_ariadne_labels<'a>(
             Some(ariadne::Label::new((id, e.1..e.2)).with_message(format!("{}", e.0)))
         }
         res => {
-            eprintln!("unhandled err {:?}", res);
+            log::warn!("unhandled err {:?}", res);
             None
         }
     }
