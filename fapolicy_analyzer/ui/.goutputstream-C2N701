@@ -192,9 +192,7 @@ class MainWindow(UIConnectedWidget):
 
     def on_start(self, *args):
         logging.info("MainWindow::on_start()")
-        page = router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN)
-        page.systemTrustDbAdmin.trust_file_list.refresh_toolbar += self._refresh_toolbar
-        self.__pack_main_content(page)
+        self.__pack_main_content(router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN))
 
         # On startup check for the existing of a tmp session file
         # If detected, alert the user, enable the File|Restore menu item
@@ -411,8 +409,8 @@ class MainWindow(UIConnectedWidget):
         self.__set_trustDbMenu_sensitive(True)
 
     def on_trustDbMenu_activate(self, menuitem, *args):
-        page = router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN)
-        page.systemTrustDbAdmin.trust_file_list.refresh_toolbar += self._refresh_toolbar
+        self.__pack_main_content(router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN))
+
         self.__set_trustDbMenu_sensitive(False)
 
     def on_rulesAdminMenu_activate(self, *args, **kwargs):

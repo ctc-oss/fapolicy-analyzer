@@ -58,6 +58,7 @@ class TrustFileList(SearchableList):
             "files_added",
             "files_deleted",
             "trust_selection_changed",
+            "refresh_toolbar",
         ]
 
         super().__init__(
@@ -76,6 +77,7 @@ class TrustFileList(SearchableList):
         self.selection_changed += self.__handle_selection_changed
         self.get_ref().connect("destroy", self.on_destroy)
         self.show_trusted = False
+        self.loading_sensitive = False
 
     def __handle_selection_changed(self, data):
         trust = [datum[3] for datum in data] if data else None
@@ -182,14 +184,16 @@ class TrustFileList(SearchableList):
             else:
                 super(TrustFileList, self).load_store(self._store)
                 self._update_progress(100)
-                self.search.set_sensitive(True)
+                self.loading_sensitive = True
+                self.search.set_sensitive(self.loading_sensitive)
                 self.search.set_tooltip_text(None)
+                self.refresh_toolbar()
                 return False
 
         super().load_store(store, filterable=False)
         self._update_loading_status("Loading trust 0% complete...")
         self.set_loading(False)
-        self.search.set_sensitive(False)
+        self.search.set_sensitive(self.loading_sensitive)
         self.search.set_tooltip_text(FILTERING_DISABLED_DURING_LOADING_MESSAGE)
         self.__queue = Queue()
         self.total = count_of_trust_entries

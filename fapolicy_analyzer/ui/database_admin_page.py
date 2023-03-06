@@ -16,9 +16,6 @@
 import gi
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 
-gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
-
 import fapolicy_analyzer.ui.strings as strings
 from fapolicy_analyzer.ui.ancillary_trust_database_admin import (
     AncillaryTrustDatabaseAdmin,
@@ -26,6 +23,8 @@ from fapolicy_analyzer.ui.ancillary_trust_database_admin import (
 from fapolicy_analyzer.ui.system_trust_database_admin import SystemTrustDatabaseAdmin
 from fapolicy_analyzer.ui.ui_widget import UIWidget
 
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
 
 class DatabaseAdminPage(UIWidget, UIPage):
     def __init__(self):
@@ -70,7 +69,7 @@ class DatabaseAdminPage(UIWidget, UIPage):
         self.systemTrustDbAdmin.trust_file_list.refresh()
 
     def trust_toggle_sensitivity(self):
-        return True if self.notebook.get_current_page() == 0 else False
+        return self.systemTrustDbAdmin.trust_file_list.loading_sensitive
 
     def _dispose(self):
         self.ancillaryTrustDbAdmin.dispose()
