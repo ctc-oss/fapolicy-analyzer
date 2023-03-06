@@ -13,21 +13,26 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import sys
 import argparse
-import fapolicy_analyzer
-from fapolicy_analyzer import *
+import signal
+import sys
+import threading
+from functools import partial
+
+from fapolicy_analyzer import Profiler
+
+
+def on_sigint(signum, frame, kill):
+    print("Terminating target...")
+    kill()
 
 
 def main(*argv):
-    print(f"v{fapolicy_analyzer.__version__}")
-
     parser = argparse.ArgumentParser()
     parser.add_argument("target", nargs=argparse.REMAINDER)
 
     parser.add_argument("-r", "--rules", type=str, required=False, help="path to rules")
     parser.add_argument("-d", "--dir", type=str, required=False, help="path to working dir")
-    parser.add_argument("--stdout", type=str, required=False, help="path to stdout log")
 
     user_opts = parser.add_mutually_exclusive_group(required=False)
     user_opts.add_argument("-u", "--username", type=str, required=False, help="username")
@@ -39,18 +44,28 @@ def main(*argv):
     print(args.target)
 
     profiler = Profiler()
+    kill_flag = threading.Event()
+    wait_for_done = threading.Event()
+
+    def execd(h):
+        print(f"[python] executing {h.cmd} ({h.pid})")
+
+    def done():
+        print("[python] all done")
+        kill_flag.set()
+        wait_for_done.set()
+
+    profiler.exec_callback = execd
+    profiler.done_callback = done
 
     if args.uid:
         profiler.uid = args.uid
 
     if args.username:
-        profiler.set_user(args.username)
+        profiler.user = args.username
 
     if args.gid:
         profiler.gid = args.gid
-
-    if args.stdout:
-        profiler.stdout = args.stdout
 
     if args.rules:
         profiler.rules = args.rules
@@ -59,10 +74,18 @@ def main(*argv):
         profiler.pwd = args.dir
 
     # profile a single target in a session
-    profiler.profile(" ".join(args.target))
+    proc_target = profiler.profile(" ".join(args.target))
 
-    # profile multiple targets in same session
-    #profiler.profile_all(["whoami", "id", "pwd", "ls /tmp"])
+    handler = partial(
+        on_sigint,
+        kill=proc_target.kill,
+    )
+
+    # ctrl+c to kill the profiling process
+    signal.signal(signal.SIGINT, handler)
+
+    # wait for the profiler to exit
+    wait_for_done.wait()
 
 
 if __name__ == "__main__":
