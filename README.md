@@ -104,7 +104,9 @@ Python and Rust dependencies will be installed during the build process.
 
 ## fapolicyd
 
-We aim to be compatible back to v1.0, but newer versions will likely work best.
+We target support for v1.0+
+
+Support for some recent features may not be integrated yet ![fapolicyd-fature-badge](https://img.shields.io/github/labels/ctc-oss/fapolicy-analyzer/fapolicyd%20feature)
 
 To analyze from syslog we require the following `syslog_format` in fapolicyd.conf
 
