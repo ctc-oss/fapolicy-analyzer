@@ -74,7 +74,7 @@ impl<I: InputLength> InputLength for Trace<I> {
     }
 }
 
-impl<'a, I> InputIter for Trace<I>
+impl<I> InputIter for Trace<I>
 where
     I: InputIter,
 {
@@ -121,7 +121,7 @@ impl<T: AsBytes> AsBytes for Trace<T> {
     }
 }
 
-impl<'a, I, R> Slice<R> for Trace<I>
+impl<I, R> Slice<R> for Trace<I>
 where
     I: Slice<R> + Offset + AsBytes + Slice<RangeTo<usize>> + Clone,
 {

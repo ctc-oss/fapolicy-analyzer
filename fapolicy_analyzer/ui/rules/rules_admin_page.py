@@ -144,7 +144,7 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         for note in self.__validation_notifications:
             dispatch(remove_notification(note.id))
 
-    def __build_and_validate_changeset(self) -> Tuple[RuleChangeset, bool]:
+    def __build_and_validate_changeset(self, show_notifications=True) -> Tuple[RuleChangeset, bool]:
         changeset = RuleChangeset()
         valid = True
 
@@ -165,23 +165,25 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         rules = changeset.rules()
 
         if not all([r.is_valid for r in rules]):
-            dispatch(
-                add_notification(
-                    RULES_VALIDATION_ERROR,
-                    NotificationType.ERROR,
-                    category=VALIDATION_NOTE_CATEGORY,
+            if show_notifications:
+                dispatch(
+                    add_notification(
+                        RULES_VALIDATION_ERROR,
+                        NotificationType.ERROR,
+                        category=VALIDATION_NOTE_CATEGORY,
+                    )
                 )
-            )
             valid = False
 
         if any([True for r in rules for i in r.info if i.category.lower() == "w"]):
-            dispatch(
-                add_notification(
-                    RULES_VALIDATION_WARNING,
-                    NotificationType.WARN,
-                    category=VALIDATION_NOTE_CATEGORY,
+            if show_notifications:
+                dispatch(
+                    add_notification(
+                        RULES_VALIDATION_WARNING,
+                        NotificationType.WARN,
+                        category=VALIDATION_NOTE_CATEGORY,
+                    )
                 )
-            )
         return changeset, valid
 
     def _dispose(self):
@@ -202,7 +204,7 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
             self.__status_info.render_rule_status(changeset.rules())
 
     def on_validate_clicked(self, *args):
-        changeset, _ = self.__build_and_validate_changeset()
+        changeset, _ = self.__build_and_validate_changeset(show_notifications=False)
         self.__update_list_view(changeset)
         self.__status_info.render_rule_status(changeset.rules())
         self._list_view.restore_row_collapse()
