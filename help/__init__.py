@@ -82,7 +82,6 @@ def _parse_media_urls(html: str, filter: str) -> Sequence[str]:
     return [
         url
         for url in [img.get("src") for img in soup("img")]
-        #if url and url.startswith(filter)
     ]
 
 def _markdown_to_html(markdown_file: str) -> str:
@@ -162,7 +161,7 @@ def _download(
         media_urls = _parse_media_urls(html, media_url)
         for url in media_urls:
 
-            # Construct path to relative media in fapolicy-analyzer.m
+            # Construct path to relative media in help staging area
             url_tuple = urlparse(url)
             filename = path.basename(url_tuple.path)
             local_path = path.join(DEFAULT_REL_MEDIA_DIR, filename)
