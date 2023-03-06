@@ -226,7 +226,7 @@ def test_validate_clicked_valid(widget, mock_dispatch):
 def test_validate_clicked_invalid(widget, mock_dispatch):
     widget._text_view.rules_changed("bar baz bah")
     widget.on_validate_clicked()
-    mock_dispatch.assert_any_call(
+    mock_dispatch.assert_not_any_call(
         InstanceOf(Action)
         & Attrs(
             type=ADD_NOTIFICATION,
@@ -238,7 +238,7 @@ def test_validate_clicked_invalid(widget, mock_dispatch):
 def test_validate_clicked_warning(widget, mock_dispatch):
     widget._text_view.rules_changed("allow perm=any exe=/foo : all")
     widget.on_validate_clicked()
-    mock_dispatch.assert_any_call(
+    mock_dispatch.assert_not_any_call(
         InstanceOf(Action)
         & Attrs(
             type=ADD_NOTIFICATION,

@@ -17,8 +17,10 @@ import logging
 from fapolicy_analyzer import System
 from fapolicy_analyzer.ui.features import (
     NOTIFICATIONS_FEATURE,
+    PROFILING_FEATURE,
     SYSTEM_FEATURE,
     create_notification_feature,
+    create_profiler_feature,
     create_system_feature,
 )
 from fapolicy_analyzer.redux import Action, create_store, select_feature
@@ -37,6 +39,7 @@ def init_store(system: System = None):
               a new System object will be initialized.  Used for testing purposes only.
     """
     store.add_feature_module(create_notification_feature())
+    store.add_feature_module(create_profiler_feature(store.dispatch))
     store.add_feature_module(create_system_feature(store.dispatch, system))
 
 
@@ -49,6 +52,10 @@ def get_notifications_feature() -> Observable:
     return store.as_observable().pipe(
         operators.map(select_feature(NOTIFICATIONS_FEATURE))
     )
+
+
+def get_profiling_feature() -> Observable:
+    return store.as_observable().pipe(operators.map(select_feature(PROFILING_FEATURE)))
 
 
 def get_system_feature() -> Observable:
