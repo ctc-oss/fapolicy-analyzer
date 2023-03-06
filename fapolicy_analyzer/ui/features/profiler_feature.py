@@ -119,7 +119,7 @@ def create_profiler_feature(dispatch: Callable) -> ReduxFeatureModule:
             # set user, pwd, envs
             p.user = args.get("uid", None)
             p.pwd = args.get("pwd", None)
-            p.env = args.get("env", None)
+            p.env = args.get("env_dict", None)
         except RuntimeError:
             dispatch(profiler_initialization_error(PROFILER_INIT_ERROR))
             return profiler_done()
