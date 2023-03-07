@@ -26,6 +26,7 @@ from fapolicy_analyzer.ui.ui_widget import UIWidget
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
+
 class DatabaseAdminPage(UIWidget, UIPage):
     def __init__(self):
         self.notebook = Gtk.Notebook()
