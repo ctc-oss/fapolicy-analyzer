@@ -289,7 +289,7 @@ fn create_log_files(log_dir: Option<&String>) -> Result<LogPaths, io::Error> {
 }
 
 fn make_log_path(log_dir: &str, t: i64, suffix: &str) -> Result<LogPath, io::Error> {
-    let path = PathBuf::from(format!("{log_dir}/fapa{t}.{suffix}"));
+    let path = PathBuf::from(format!("{log_dir}/.fapa{t}.{suffix}"));
     let file = File::create(&path)?;
     Ok(Some((file, path)))
 }
