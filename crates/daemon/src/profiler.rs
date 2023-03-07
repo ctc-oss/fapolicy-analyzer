@@ -18,7 +18,7 @@ use fapolicy_rules::write;
 
 use crate::error::Error;
 use crate::fapolicyd::COMPILED_RULES_PATH;
-use crate::svc::{wait_for_daemon, Handle, State};
+use crate::svc::{daemon_reload, wait_for_daemon, Handle, State};
 
 const PROFILER_UNIT_NAME: &str = "fapolicyp";
 
@@ -50,7 +50,8 @@ impl Profiler {
     }
 
     pub fn is_active(&self) -> Result<bool, Error> {
-        self.handle().active()
+        let handle = self.handle();
+        Ok(handle.valid() && handle.active()?)
     }
 
     pub fn activate(&mut self) -> Result<State, Error> {
@@ -133,10 +134,15 @@ fn write_service(stdout: Option<&PathBuf>) -> Result<(), Error> {
         );
     }
     unit_file.write_all(service_def.as_bytes())?;
+
+    // reload the daemon to ensure profiler unit is visible
+    daemon_reload()?;
+
     Ok(())
 }
 
 fn delete_service() -> Result<(), Error> {
     fs::remove_file(PathBuf::from(service_path()))?;
+    daemon_reload()?;
     Ok(())
 }
