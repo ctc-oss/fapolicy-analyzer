@@ -24,7 +24,7 @@ from fapolicy_analyzer.ui.system_trust_database_admin import SystemTrustDatabase
 from fapolicy_analyzer.ui.ui_widget import UIWidget
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk # isort: skip
+from gi.repository import Gtk  # isort: skip
 
 
 class DatabaseAdminPage(UIWidget, UIPage):
