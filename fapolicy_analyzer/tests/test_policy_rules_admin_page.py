@@ -104,7 +104,7 @@ def widget(mock_dispatch, mock_system_features, mocker, states):
     )
 
     init_store(mock_System())
-    widget = PolicyRulesAdminPage(_mock_file)
+    widget = PolicyRulesAdminPage(audit_file=_mock_file)
 
     for s in states:
         mock_system_features.on_next(s)
@@ -152,7 +152,7 @@ def test_creates_widget(widget):
 
 def test_loads_debug_file(mock_dispatch):
     init_store(mock_System())
-    PolicyRulesAdminPage(_mock_file)
+    PolicyRulesAdminPage(audit_file=_mock_file)
     mock_dispatch.assert_any_call(
         InstanceOf(Action) & Attrs(type=REQUEST_EVENTS, payload=("debug", _mock_file))
     )
@@ -160,7 +160,7 @@ def test_loads_debug_file(mock_dispatch):
 
 def test_loads_syslog(mock_dispatch):
     init_store(mock_System())
-    PolicyRulesAdminPage()
+    PolicyRulesAdminPage(use_syslog=True)
     mock_dispatch.assert_any_call(
         InstanceOf(Action) & Attrs(type=REQUEST_EVENTS, payload=("syslog", None))
     )
@@ -664,7 +664,7 @@ def test_users_loading_w_exception(mock_system_features, states, mock_dispatch):
 
 def test_groups_loading_w_exception(mock_system_features, states, mock_dispatch):
     init_store(mock_System())
-    PolicyRulesAdminPage(_mock_file)
+    widget = PolicyRulesAdminPage(audit_file=_mock_file)
     mock_system_features.on_next(
         {**states[0], **{"groups": MagicMock(error="foo", loading=False)}}
     )
@@ -684,7 +684,7 @@ def test_time_not_displayed(mocker, widget):
 
 
 def test_time_select_button_clicked(mocker):
-    page = PolicyRulesAdminPage()
+    page = PolicyRulesAdminPage(use_syslog=True)
     mockDialog = MagicMock()
     mockDialog.run.return_value = 1
     mockDialog.get_seconds.return_value = 3600

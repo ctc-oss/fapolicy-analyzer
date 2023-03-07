@@ -19,7 +19,7 @@ from locale import gettext as _
 from os import getenv, geteuid, path
 from threading import Thread
 from time import sleep
-from typing import Any, Sequence
+from typing import Sequence
 
 import gi
 
@@ -61,7 +61,8 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, GLib  # isort: skip
 
 
-def router(page: PAGE_SELECTION, data: Any = None) -> UIPage:
+def router(page: PAGE_SELECTION, *data) -> UIPage:
+    data = (d for d in data if d is not None)
     route = {
         PAGE_SELECTION.TRUST_DATABASE_ADMIN: DatabaseAdminPage,
         PAGE_SELECTION.ANALYZE_FROM_AUDIT: PolicyRulesAdminPage,
@@ -69,7 +70,7 @@ def router(page: PAGE_SELECTION, data: Any = None) -> UIPage:
         PAGE_SELECTION.RULES_ADMIN: RulesAdminPage,
         PAGE_SELECTION.PROFILER: ProfilerPage,
     }.get(page, RulesAdminPage)
-    return route(data) if data else route()
+    return route(*data)
 
 
 class MainWindow(UIConnectedWidget):
@@ -108,7 +109,6 @@ class MainWindow(UIConnectedWidget):
         self.mainContent = self.get_object("mainContent")
         # Set menu items in default initial state
         self.get_object("restoreMenu").set_sensitive(False)
-        # self.__set_trustDbMenu_sensitive(False)
 
         # Set fapd status UI element to default 'No' = Red button
         self.fapdStatusLight.set_from_icon_name("process-stop", size=4)
@@ -200,10 +200,6 @@ class MainWindow(UIConnectedWidget):
         dlgSessionRestorePrompt.destroy()
         return response
 
-    # def __set_trustDbMenu_sensitive(self, sensitive):
-    #     menuItem = self.get_object("trustDbMenu")
-    #     menuItem.set_sensitive(sensitive)
-
     def __dirty_changesets(self):
         return len(self.__changesets) > 0
 
@@ -268,8 +264,16 @@ class MainWindow(UIConnectedWidget):
             self.__application = application
             selection = PAGE_SELECTION(application.initial_view)
             # TODO: Need to figure out a better way to handle pages that need extra parameters
-            data = self._fapd_mgr if selection == PAGE_SELECTION.PROFILER else None
-            self.__pack_main_content(router(selection, data))
+            data = {
+                PAGE_SELECTION.PROFILER: self._fapd_mgr,
+                PAGE_SELECTION.ANALYZE_SYSLOG: True,
+            }.get(selection)
+            page = router(selection, data)
+            self.__pack_main_content(page)
+
+            if selection == PAGE_SELECTION.PROFILER:
+                page.analyze_button_pushed += self.activate_file_analyzer
+                page.refresh_toolbar += self._refresh_toolbar
 
     def on_openMenu_activate(self, menuitem, data=None):
         logging.debug("Callback entered: MainWindow::on_openMenu_activate()")
@@ -375,13 +379,12 @@ class MainWindow(UIConnectedWidget):
         self.__help.show()
 
     def on_syslogMenu_activate(self, *args):
-        page = router(PAGE_SELECTION.ANALYZE_SYSLOG)
+        page = router(PAGE_SELECTION.ANALYZE_SYSLOG, True)
         height = self.get_object("mainWindow").get_size()[1]
         page.get_object("botBox").set_property(
             "height_request", int(height * Sizing.POLICY_BOTTOM_BOX)
         )
         self.__pack_main_content(page)
-        # self.__set_trustDbMenu_sensitive(True)
 
     def on_analyzeMenu_activate(self, *args):
         fcd = FileChooserDialog(
@@ -389,39 +392,35 @@ class MainWindow(UIConnectedWidget):
             parent=self.get_ref(),
         )
         _file = fcd.get_filename() or ""
+
         if path.isfile(_file):
-            page = router(PAGE_SELECTION.ANALYZE_FROM_AUDIT, _file)
+            page = router(PAGE_SELECTION.ANALYZE_FROM_AUDIT, False, _file)
             page.object_list.rule_view_activate += self.on_rulesAdminMenu_activate
             height = self.get_object("mainWindow").get_size()[1]
             page.get_object("botBox").set_property(
                 "height_request", int(height * Sizing.POLICY_BOTTOM_BOX)
             )
             self.__pack_main_content(page)
-            # self.__set_trustDbMenu_sensitive(True)
+
         fcd.destroy()
 
     def activate_file_analyzer(self, file):
-        self.__pack_main_content(router(PAGE_SELECTION.ANALYZE_FROM_AUDIT, file))
-        # self.__set_trustDbMenu_sensitive(True)
+        self.__pack_main_content(router(PAGE_SELECTION.ANALYZE_FROM_AUDIT, False, file))
 
     def on_trustDbMenu_activate(self, menuitem, *args):
         self.__pack_main_content(router(PAGE_SELECTION.TRUST_DATABASE_ADMIN))
-        # self.__set_trustDbMenu_sensitive(False)
 
     def on_rulesAdminMenu_activate(self, *args, **kwargs):
         rulesPage = router(PAGE_SELECTION.RULES_ADMIN)
         if kwargs.get("rule_id", None) is not None:
             rulesPage.highlight_row_from_data(kwargs["rule_id"])
         self.__pack_main_content(rulesPage)
-        # TODO: figure out a good way to set sensitivity on the menu items based on what is selected
-        # self.__set_trustDbMenu_sensitive(True)
 
     def on_profileExecMenu_activate(self, *args):
         page = router(PAGE_SELECTION.PROFILER, self._fapd_mgr)
         page.analyze_button_pushed += self.activate_file_analyzer
         page.refresh_toolbar += self._refresh_toolbar
         self.__pack_main_content(page)
-        # self.__set_trustDbMenu_sensitive(True)
 
     def _refresh_toolbar(self):
         self.__toolbar.refresh_buttons_sensitivity()

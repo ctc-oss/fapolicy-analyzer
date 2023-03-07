@@ -240,11 +240,6 @@ def test_opens_analyze_with_audit_page(mainWindow, mocker):
         "fapolicy_analyzer.ui.ancillary_trust_file_list.epoch_to_string",
         return_value="10-01-2020",
     )
-
-    mocker.patch(
-        "fapolicy_analyzer.ui.main_window.FileChooserDialog.run",
-        return_value=Gtk.ResponseType.OK,
-    )
     mocker.patch(
         "fapolicy_analyzer.ui.main_window.FileChooserDialog.get_filename",
         return_value="foo",

@@ -55,11 +55,14 @@ import time
 
 
 class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
-    def __init__(self, audit_file: str = None):
+    def __init__(self, use_syslog: bool = False, audit_file: Optional[str] = None):
         UIConnectedWidget.__init__(
             self, get_system_feature(), on_next=self.on_next_system
         )
-        self.__audit_file: Optional[str] = audit_file
+
+        self.__use_syslog = use_syslog
+        self.__audit_file = audit_file
+
         actions = {
             "analyze": [
                 UIAction(
@@ -70,7 +73,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
                 )
             ]
         }
-        if not self.__audit_file:
+        if use_syslog:
             actions["analyze"] = [
                 *actions["analyze"],
                 UIAction(
@@ -194,14 +197,15 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
     def __refresh(self):
         self.__users_loading = True
         self.__groups_loading = True
-        self.__events_loading = True
         dispatch(request_users())
         dispatch(request_groups())
-        if self.__audit_file:
-            dispatch(request_events("debug", self.__audit_file))
-            self.get_object("time_bar").set_visible(False)
-        else:
+        if self.__use_syslog:
+            self.__events_loading = True
             dispatch(request_events("syslog"))
+            self.get_object("time_bar").set_visible(True)
+        elif self.__audit_file:
+            self.__events_loading = True
+            dispatch(request_events("debug", self.__audit_file))
 
     def __populate_list(
         self,
@@ -402,6 +406,18 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         else:
             self.__populate_list(self.object_list, [], "objects")
 
+    def __get_audit_file(self) -> Optional[str]:
+        fcd = FileChooserDialog(
+            title=OPEN_FILE_LABEL,
+            parent=self.get_ref().get_toplevel(),
+        )
+
+        _file = fcd.get_filename() or ""
+        if path.isfile(_file):
+            return _file
+
+        fcd.destroy()
+
     def on_next_system(self, system):
         def exec_primary_data_func():
             next(
@@ -558,17 +574,9 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             self.__populate_subjects_from_acl()
 
     def on_openFileBtn_clicked(self, *args):
-        fcd = FileChooserDialog(
-            title=OPEN_FILE_LABEL,
-            parent=self.get_ref().get_toplevel(),
-        )
-
-        _file = fcd.get_filename() or ""
-        if path.isfile(_file):
-            self.__audit_file = _file
+        self.__audit_file = self.__get_audit_file()
+        if self.__audit_file:
             self.__refresh()
-
-        fcd.destroy()
 
     class Switcher(Events):
         __events__ = ["buttonClicked"]
