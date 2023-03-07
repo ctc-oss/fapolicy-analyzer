@@ -30,21 +30,17 @@ pub enum Version {
     Release { major: u8, minor: u8, patch: u8 },
 }
 
+/// watch a fapolicyd log at the specified path for the
+/// message it prints when ready to start polling events
 pub fn wait_until_ready(path: &Path) -> Result<(), Error> {
     let mut f = File::open(path)?;
-    let mut found = false;
     for _ in 0..10 {
         thread::sleep(Duration::from_secs(1));
         let mut s = String::new();
         f.read_to_string(&mut s)?;
         if s.contains("Starting to listen for events") {
-            found = true;
-            break;
+            return Ok(());
         }
     }
-    if found {
-        Ok(())
-    } else {
-        Err(Error::NotReady)
-    }
+    Err(Error::NotReady)
 }
