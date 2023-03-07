@@ -35,6 +35,7 @@ class RulesStatusInfo(UIBuilderWidget):
         super().__init__()
         self.__status_list = self.get_object("statusList")
         self.__status_list.get_selection().set_mode(Gtk.SelectionMode.NONE)
+        self.__model = None
         self.__status_list.append_column(
             Gtk.TreeViewColumn(
                 "",
@@ -58,19 +59,42 @@ class RulesStatusInfo(UIBuilderWidget):
             else (Colors.BLACK, FontWeights.NORMAL)
         )
 
+    def on_row_collapsed(self, view, iter, path):
+        self.__model.set(iter, 3, True)
+
+    def on_row_expanded(self, view, iter, path):
+        self.__model.set(iter, 3, False)
+
+    def get_row_collapsed(self, cat):
+        if self.__model is None:
+            return True
+        iter = self.__model.get_iter_first()
+        while iter:
+            if _STATUS_HEADERS[cat] in self.__model[iter][0]:
+                return self.__model[iter][3]
+            iter = self.__model.iter_next(iter)
+
+    def restore_row_collapse(self):
+        def toggle_collapse(store, path, treeiter):
+            self.__status_list.collapse_row(path) if store[treeiter][3] else self.__status_list.expand_row(path, False)
+        if self.__model is not None:
+            self.__model.foreach(toggle_collapse)
+
     def render_rule_status(self, rules):
         stats = {"e": [], "w": [], "i": []}
         for r in rules:
             for i in r.info:
                 stats.get(i.category, []).append(f"rule {r.id}: {i.message}")
 
-        store = Gtk.TreeStore(str, str, int)
+        store = Gtk.TreeStore(str, str, int, bool)
 
         for cat, messages in stats.items():
             count = len(messages)
             style = self.__status_text_style(count, cat)
-            parent = store.append(None, [f"{count} {_STATUS_HEADERS[cat]}", *style])
+            parent = store.append(None, [f"{count} {_STATUS_HEADERS[cat]}", *style, self.get_row_collapsed(cat)])
             for m in messages:
-                store.append(parent, [m, *style])
+                store.append(parent, [m, *style, True])
 
         self.__status_list.set_model(store)
+        self.__model = self.__status_list.get_model()
+        self.restore_row_collapse()
