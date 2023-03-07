@@ -36,6 +36,8 @@ class RulesListView(SearchableList):
         )
 
         self.treeView.get_selection().set_select_function(lambda *_: False)
+        self.model = self.treeView.get_model()
+        self.reset_default_view = True
 
     def __columns(self):
         merged_col = Gtk.TreeViewColumn("")
@@ -85,6 +87,7 @@ class RulesListView(SearchableList):
                 FontWeights.BOLD,
                 "",
                 Pango.Style.ITALIC,
+                self.get_collapsed_status(store, None),
             ],
         )
 
@@ -101,6 +104,7 @@ class RulesListView(SearchableList):
                 *self.__rule_text_style(rule),
                 str(rule.id),
                 Pango.Style.NORMAL,
+                self.get_collapsed_status(store, parent),
             ],
         )
 
@@ -115,8 +119,41 @@ class RulesListView(SearchableList):
                 FontWeights.NORMAL,
                 "",
                 Pango.Style.NORMAL,
+                self.get_collapsed_status(store, parent_row),
             ],
         )
+
+    def get_collapsed_status(self, store, parent):
+        is_collapsed = None
+        if store:
+            if parent is None:
+                return True
+            is_collapsed = next(iter(store.get(parent, 7)))
+            return is_collapsed
+        else:
+            return False
+
+    def get_child_model_from_sort(self, view, iter):
+        sort_model = view.get_model()
+        filter_iter = sort_model.convert_iter_to_child_iter(iter)
+        filter_model = sort_model.get_model()
+        model_iter = filter_model.convert_iter_to_child_iter(filter_iter)
+        self.model = filter_model.get_model()
+        return model_iter
+
+    def on_row_collapsed(self, view, iter, path):
+        model_iter = self.get_child_model_from_sort(view, iter)
+        self.model.set(model_iter, 7, True)
+
+    def on_row_expanded(self, view, iter, path):
+        model_iter = self.get_child_model_from_sort(view, iter)
+        self.model.set(model_iter, 7, False)
+
+    def restore_row_collapse(self):
+        def toggle_collapse(store, treepath, treeiter):
+            self.treeView.collapse_row(treepath) if store[treeiter][7] else self.treeView.expand_row(treepath, False)
+        if self.model is not None:
+            self.model.foreach(toggle_collapse)
 
     def highlight_row_from_data(self, data: Any):
         row = self.find_selected_row_by_data(data, 1)
@@ -128,8 +165,10 @@ class RulesListView(SearchableList):
             selection.select_path(row)
             self.treeView.scroll_to_cell(row, use_align=True, row_align=0.0)
 
-    def __expand_rows_at_root(self, store):
+    def __set_default_view(self, store):
+        self.reset_default_view = False
         iter = store.get_iter_first()
+        self.treeView.collapse_all()
         while iter:
             self.treeView.expand_row(store.get_path(iter), False)
             iter = store.iter_next(iter)
@@ -139,7 +178,7 @@ class RulesListView(SearchableList):
         self.treeCount.set_text(" ".join([str(count), label]))
 
     def render_rules(self, rules: Sequence[Rule]):
-        store = Gtk.TreeStore(str, int, str, str, int, str, Pango.Style)
+        store = Gtk.TreeStore(str, int, str, str, int, str, Pango.Style, bool)
         rule_map = {o: list(r) for o, r in groupby(rules or [], lambda r: r.origin)}
 
         for origin in rule_map.keys():
@@ -151,4 +190,4 @@ class RulesListView(SearchableList):
                         self.__append_info(store, rule, info, rule_row)
 
         self.load_store(store)
-        self.__expand_rows_at_root(store)
+        self.__set_default_view(store) if self.reset_default_view else self.restore_row_collapse()
