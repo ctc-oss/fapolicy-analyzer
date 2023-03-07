@@ -16,6 +16,7 @@
 from typing import Tuple
 
 from fapolicy_analyzer.ui.reducers.notification_reducer import notification_reducer
+from fapolicy_analyzer.ui.reducers.profiler_reducer import profiler_reducer
 from fapolicy_analyzer.ui.reducers.system_reducer import system_reducer
 
-__all__: Tuple[str, ...] = ("notification_reducer", "system_reducer")
+__all__: Tuple[str, ...] = ("notification_reducer", "profiler_reducer", "system_reducer")

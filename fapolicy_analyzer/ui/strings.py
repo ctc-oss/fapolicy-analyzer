@@ -36,6 +36,8 @@ RULES_VALIDATION_WARNING = _(
 RULE_LABEL = _("Rule")
 RULES_LABEL = _("Rules")
 DAEMON_INITIALIZATION_ERROR = _("Error initializing communications with daemon")
+PROFILER_INIT_ERROR = _("Failed to initialize profiler backend.")
+PROFILER_EXEC_ERROR = _("Failed to execute profiling target.")
 
 
 DEPLOY_ANCILLARY_CONFIRM_DLG_ACTION_COL_HDR = _("Action")
