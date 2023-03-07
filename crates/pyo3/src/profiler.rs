@@ -6,7 +6,9 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+use chrono::Utc;
 use fapolicy_analyzer::users::read_users;
+use fapolicy_daemon::fapolicyd;
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
 use pyo3::{PyResult, Python};
@@ -18,9 +20,8 @@ use std::path::PathBuf;
 use std::process::{Child, Command, Output, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
-use std::thread;
 use std::time::{Duration, SystemTime};
-use tempfile::{NamedTempFile, PersistError};
+use std::{io, thread};
 
 use fapolicy_daemon::profiler::Profiler;
 use fapolicy_rules::read::load_rules_db;
@@ -174,6 +175,9 @@ impl PyProfiler {
             rs.activate_with_rules(db.as_ref())
                 .expect("activate profiler");
 
+            // check fapolicyd log for "Starting to listen for events"
+            fapolicyd::wait_until_ready(&events_log.as_ref().unwrap().1).expect("fapolicyd ready");
+
             // inner thread is responsible for target execution
             let inner = thread::spawn(move || {
                 for (mut cmd, args) in targets {
@@ -272,21 +276,22 @@ impl PyProfiler {
 
 type LogPath = Option<(File, PathBuf)>;
 type LogPaths = (LogPath, LogPath, LogPath);
-fn create_log_files(log_dir: Option<&String>) -> Result<LogPaths, PersistError> {
+fn create_log_files(log_dir: Option<&String>) -> Result<LogPaths, io::Error> {
     if let Some(log_dir) = log_dir {
-        let event_log = make_log_path(log_dir)?;
-        let target_stdout = make_log_path(log_dir)?;
-        let target_stderr = make_log_path(log_dir)?;
+        let t = Utc::now().timestamp();
+
+        let event_log = make_log_path(log_dir, t, "events")?;
+        let target_stdout = make_log_path(log_dir, t, "stdout")?;
+        let target_stderr = make_log_path(log_dir, t, "stderr")?;
         return Ok((event_log, target_stdout, target_stderr));
     }
     Ok((None, None, None))
 }
 
-fn make_log_path(log_dir: &str) -> Result<LogPath, PersistError> {
-    NamedTempFile::new_in(log_dir)
-        .ok()
-        .map(|f| f.keep())
-        .transpose()
+fn make_log_path(log_dir: &str, t: i64, suffix: &str) -> Result<LogPath, io::Error> {
+    let path = PathBuf::from(format!("{log_dir}/fapa{t}.{suffix}"));
+    let file = File::create(&path)?;
+    Ok(Some((file, path)))
 }
 
 /// Terminable process handle returned to python after starting profiling

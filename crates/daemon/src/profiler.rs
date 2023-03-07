@@ -122,16 +122,13 @@ fn service_path() -> String {
     format!("/usr/lib/systemd/system/{}.service", PROFILER_UNIT_NAME)
 }
 
-fn write_service(stdout: Option<&PathBuf>) -> Result<(), Error> {
+fn write_service(event_log: Option<&PathBuf>) -> Result<(), Error> {
     let mut unit_file = File::create(service_path())?;
     let mut service_def = include_str!("profiler.service").to_string();
-    if let Some(stdout_path) = stdout {
-        // append? it appears that a bug pre v240 forces append here - systemd#10944
-        service_def = format!(
-            "{}\nStandardError=\"file:{}\"\n",
-            service_def,
-            stdout_path.display()
-        );
+    if let Some(log_path) = event_log {
+        // selinux may block systemd, making StandardOutput troublesome
+        // so instead we will just grab stderr and redirect to a file
+        service_def = service_def.replace("/dev/null", &log_path.display().to_string());
     }
     unit_file.write_all(service_def.as_bytes())?;
 

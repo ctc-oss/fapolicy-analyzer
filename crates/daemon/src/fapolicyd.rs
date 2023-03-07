@@ -8,6 +8,13 @@
 
 // todo;; tracking the fapolicyd specific bits in here to determine if bindings are worthwhile
 
+use crate::error::Error;
+use std::fs::File;
+use std::io::Read;
+use std::path::Path;
+use std::thread;
+use std::time::Duration;
+
 pub const TRUST_LMDB_PATH: &str = "/var/lib/fapolicyd";
 pub const TRUST_LMDB_NAME: &str = "trust.db";
 pub const TRUST_DIR_PATH: &str = "/etc/fapolicyd/trust.d";
@@ -21,4 +28,23 @@ pub const FIFO_PIPE: &str = "/run/fapolicyd/fapolicyd.fifo";
 pub enum Version {
     Unknown,
     Release { major: u8, minor: u8, patch: u8 },
+}
+
+pub fn wait_until_ready(path: &Path) -> Result<(), Error> {
+    let mut f = File::open(path)?;
+    let mut found = false;
+    for _ in 0..10 {
+        thread::sleep(Duration::from_secs(1));
+        let mut s = String::new();
+        f.read_to_string(&mut s)?;
+        if s.contains("Starting to listen for events") {
+            found = true;
+            break;
+        }
+    }
+    if found {
+        Ok(())
+    } else {
+        Err(Error::NotReady)
+    }
 }
