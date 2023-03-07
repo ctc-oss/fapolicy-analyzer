@@ -413,6 +413,7 @@ class MainWindow(UIConnectedWidget):
     def on_trustDbMenu_activate(self, menuitem, *args):
         page = router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN)
         page.systemTrustDbAdmin.trust_file_list.refresh_toolbar += self._refresh_toolbar
+        self.__pack_main_content(page)
         self.__set_trustDbMenu_sensitive(False)
 
     def on_rulesAdminMenu_activate(self, *args, **kwargs):
