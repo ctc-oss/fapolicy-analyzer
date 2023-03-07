@@ -58,7 +58,7 @@ def get_notifications_feature() -> Observable:
 
 
 def get_profiling_feature() -> Observable:
-    return store.as_observable().pipe(operators.map(select_feature(PROFILING_FEATURE)))
+    return store.as_observable().pipe(map(select_feature(PROFILING_FEATURE)))
 
 
 def get_system_feature() -> Observable:

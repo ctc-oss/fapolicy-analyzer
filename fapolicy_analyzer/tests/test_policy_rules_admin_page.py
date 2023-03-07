@@ -664,7 +664,7 @@ def test_users_loading_w_exception(mock_system_features, states, mock_dispatch):
 
 def test_groups_loading_w_exception(mock_system_features, states, mock_dispatch):
     init_store(mock_System())
-    widget = PolicyRulesAdminPage(audit_file=_mock_file)
+    PolicyRulesAdminPage(audit_file=_mock_file)
     mock_system_features.on_next(
         {**states[0], **{"groups": MagicMock(error="foo", loading=False)}}
     )
