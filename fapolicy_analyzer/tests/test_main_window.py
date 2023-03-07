@@ -82,7 +82,7 @@ def mock_system_feature(changesets_state, mocker):
 @pytest.fixture
 def mock_application_feature(mocker):
     def app_config(observer, *args):
-        observer.on_next(MagicMock(initial_view="trust"))
+        observer.on_next(MagicMock(initial_view="rules"))
         observer.on_completed()
 
     application_features_mock = create(app_config)
@@ -210,10 +210,7 @@ def test_brings_help_dialog_to_foreground(mainWindow, mocker):
 
 def test_defaults_to_trust_db_admin_page(mainWindow):
     content = next(iter(mainWindow.get_object("mainContent").get_children()))
-    assert (
-        content.get_tab_label_text(content.get_nth_page(0)) == "System Trust Database"
-    )
-    # assert Gtk.Buildable.get_name(content) == "rulesAdminPage"
+    assert Gtk.Buildable.get_name(content) == "rulesAdminPage"
 
 
 def test_opens_trust_db_admin_page(mainWindow):
@@ -295,15 +292,26 @@ def test_loads_initial_view(mocker):
         return_value=application_features_mock,
     )
     mainWindow = MainWindow()
-    mainContent = mainWindow.get_object("mainContent")
-    mainContent.remove(next(iter(mainContent.get_children())))
-    assert not mainContent.get_children()
-    menuItem = mainWindow.get_object("trustDbMenu")
-    menuItem.activate()
-    content = next(iter(mainContent.get_children()))
+    content = next(iter(mainWindow.get_object("mainContent").get_children()))
     assert (
         content.get_tab_label_text(content.get_nth_page(0)) == "System Trust Database"
     )
+
+
+@pytest.mark.usefixtures("mock_init_store", "mock_dispatches")
+def test_handles_bad_initial_view(mocker):
+    def app_config(observer, *args):
+        observer.on_next(MagicMock(initial_view="test"))
+        observer.on_completed()
+
+    application_features_mock = create(app_config)
+    mocker.patch(
+        "fapolicy_analyzer.ui.main_window.get_application_feature",
+        return_value=application_features_mock,
+    )
+    mainWindow = MainWindow()
+    content = next(iter(mainWindow.get_object("mainContent").get_children()))
+    assert Gtk.Buildable.get_name(content) == "rulesAdminPage"
 
 
 @pytest.mark.skip(reason="Not currently working in GitHub CI")

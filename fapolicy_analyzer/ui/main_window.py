@@ -262,7 +262,15 @@ class MainWindow(UIConnectedWidget):
     def on_next_application(self, application):
         if self.__application != application:
             self.__application = application
-            selection = PAGE_SELECTION(application.initial_view)
+
+            try:
+                selection = PAGE_SELECTION(application.initial_view)
+            except ValueError:
+                logging.warning(
+                    f"Invalid initial page set to {application.initial_view}"
+                )
+                selection = PAGE_SELECTION.RULES_ADMIN
+
             # TODO: Need to figure out a better way to handle pages that need extra parameters
             data = {
                 PAGE_SELECTION.PROFILER: self._fapd_mgr,
