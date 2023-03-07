@@ -128,7 +128,7 @@ fn write_service(stdout: Option<&PathBuf>) -> Result<(), Error> {
     if let Some(stdout_path) = stdout {
         // append? it appears that a bug pre v240 forces append here - systemd#10944
         service_def = format!(
-            "{}\nStandardError=file:{}\n",
+            "{}\nStandardError=\"file:{}\"\n",
             service_def,
             stdout_path.display()
         );
