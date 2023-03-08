@@ -106,7 +106,7 @@ fn build(args: &str, out: Option<&PathBuf>) -> CmdArgs {
 
     if let Some(path) = out {
         println!("writing stderr to {}", path.display());
-        let mut f = File::create(path).unwrap();
+        let f = File::create(path).unwrap();
         cmd.stderr(Stdio::from(f));
     }
 
@@ -122,11 +122,6 @@ struct Execd {
 impl Execd {
     fn new(proc: Child) -> Execd {
         Execd { proc: Some(proc) }
-    }
-
-    /// Get the process id (pid), None if inactive
-    fn pid(&self) -> Option<u32> {
-        self.proc.as_ref().map(|p| p.id())
     }
 
     /// Is process is still running?, never blocks

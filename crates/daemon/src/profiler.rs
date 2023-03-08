@@ -6,14 +6,8 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use std::fs::File;
-use std::io::Write;
+use std::fs;
 use std::path::PathBuf;
-use std::process::{Child, Command, Stdio};
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
-use std::time::Duration;
-use std::{fs, io, thread};
 
 use tempfile::NamedTempFile;
 
@@ -22,7 +16,7 @@ use fapolicy_rules::write;
 
 use crate::error::Error;
 use crate::fapolicyd::{Daemon, COMPILED_RULES_PATH};
-use crate::svc::{wait_for_service, State};
+use crate::svc::State;
 use crate::{fapolicyd, svc};
 
 const PROFILER_NAME: &str = "fapolicyp";
