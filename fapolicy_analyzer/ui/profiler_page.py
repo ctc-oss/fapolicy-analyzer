@@ -246,10 +246,11 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
             self.terminating = False
             self.refresh_toolbar()
 
-            self.set_output_text("<span size='large'><b>Profiler starting...</b></span>")
-
             profiling_args = self.make_profiling_args()
 
+            self.set_output_text("<span size='large'><b>Profiler starting...</b></span>\n"
+                                 + "".join([f"{key}: {value}\n" for key, value in profiling_args.items()])
+                                 )
             logging.debug(f"Entry text = {profiling_args}")
             dispatch(start_profiling(profiling_args))
 
