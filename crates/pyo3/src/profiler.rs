@@ -154,7 +154,7 @@ impl PyProfiler {
 
         // set the daemon stdout log, aka the events log
         if let Some((_, path)) = events_log.as_ref() {
-            rs.stdout_log = Some(path.clone());
+            rs.events_log = Some(path.clone());
         }
 
         // build the target commands
