@@ -158,3 +158,13 @@ pub fn wait_until_ready(path: &Path) -> Result<(), Error> {
     }
     Err(Error::NotReady)
 }
+
+pub fn wait_until_shutdown(daemon: &Daemon) -> Result<(), Error> {
+    for _ in 0..10 {
+        thread::sleep(Duration::from_secs(1));
+        if !daemon.alive.load(Ordering::Relaxed) {
+            return Ok(());
+        }
+    }
+    Err(Error::NotStopped)
+}

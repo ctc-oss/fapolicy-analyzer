@@ -61,9 +61,9 @@ impl Profiler {
     pub fn activate_with_rules(&mut self, db: Option<&DB>) -> Result<State, Error> {
         let fapolicyd = svc::Handle::default();
         if !self.is_active() {
-            // 1. preserve daemon state
+            // 1. preserve fapolicyd daemon state
             self.prev_state = Some(fapolicyd.state()?);
-            // 2. stop daemon if running
+            // 2. stop fapolicyd daemon if running
             if let Some(State::Active) = self.prev_state {
                 // todo;; probably need to ensure its not in
                 //        a state like restart, init or some such
@@ -82,9 +82,9 @@ impl Profiler {
                 eprintln!("rules backed up to {:?}", backup.path());
                 self.prev_rules = Some(backup);
             }
-            // 5. start the profiler
+            // 5. start the profiler daemon
             self.fapolicyp.start(self.events_log.as_ref())?;
-            // 6. wait for the profiler to become active
+            // 6. wait for the profiler daemon to become active
             if let Some(log) = self.events_log.as_ref() {
                 if fapolicyd::wait_until_ready(log).is_err() {
                     eprintln!("wait_until_ready failed");
@@ -97,16 +97,16 @@ impl Profiler {
     pub fn deactivate(&mut self) -> Result<State, Error> {
         let fapolicyd = svc::Handle::default();
         if self.is_active() {
-            // 1. stop the daemon
+            // 1. stop the profiler daemon
             self.fapolicyp.stop();
-            // 2. wait for the profiler to become inactive
-            // wait_for_service(&self.handle(), State::Inactive, 10)?;
+            // 2. wait for the profiler daemon to become inactive
+            fapolicyd::wait_until_shutdown(&self.fapolicyp)?;
             // 3. swap original rules back in if they were changed
             if let Some(f) = self.prev_rules.take() {
                 // persist the temp file as the compiled rules
                 f.persist(COMPILED_RULES_PATH).map_err(|e| e.error)?;
             }
-            // 4. start daemon if it was previously active
+            // 4. start fapolicyd daemon if it was previously active
             if let Some(State::Active) = self.prev_state {
                 eprintln!("restarting daemon");
                 fapolicyd.start()?;

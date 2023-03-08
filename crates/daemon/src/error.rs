@@ -32,4 +32,7 @@ pub enum Error {
 
     #[error("failed to observe fapolicyd ready state")]
     NotReady,
+
+    #[error("failed to observe fapolicyd shutdown")]
+    NotStopped,
 }
