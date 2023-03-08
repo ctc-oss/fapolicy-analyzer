@@ -105,7 +105,6 @@ fn build(args: &str, out: Option<&PathBuf>) -> CmdArgs {
     let mut cmd = Command::new(target);
 
     if let Some(path) = out {
-        println!("writing stderr to {}", path.display());
         let f = File::create(path).unwrap();
         cmd.stderr(Stdio::from(f));
     }
