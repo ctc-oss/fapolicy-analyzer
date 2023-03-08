@@ -48,7 +48,7 @@ impl PyProfiler {
     #[new]
     fn new() -> Self {
         Self {
-            log_dir: Some("/tmp".to_string()),
+            log_dir: Some("/var/tmp".to_string()),
             ..Default::default()
         }
     }
