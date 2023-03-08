@@ -18,7 +18,7 @@ use fapolicy_rules::write;
 
 use crate::error::Error;
 use crate::fapolicyd::COMPILED_RULES_PATH;
-use crate::svc::{daemon_reload, wait_for_daemon, Handle, State};
+use crate::svc::{daemon_reload, wait_for_service, Handle, State};
 
 const PROFILER_UNIT_NAME: &str = "fapolicyp";
 
@@ -87,7 +87,7 @@ impl Profiler {
             // 5. start the profiler
             self.handle().start()?;
             // 6. wait for the profiler to become active
-            wait_for_daemon(&self.handle(), State::Active, 10)?;
+            wait_for_service(&self.handle(), State::Active, 10)?;
         }
         daemon.state()
     }
@@ -98,7 +98,7 @@ impl Profiler {
             // 1. stop the daemon
             self.handle().stop()?;
             // 2. wait for the profiler to become inactive
-            wait_for_daemon(&self.handle(), State::Inactive, 10)?;
+            wait_for_service(&self.handle(), State::Inactive, 10)?;
             // 3. swap original rules back in if they were changed
             if let Some(f) = self.prev_rules.take() {
                 // persist the temp file as the compiled rules

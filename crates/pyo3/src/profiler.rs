@@ -176,89 +176,92 @@ impl PyProfiler {
                 .expect("activate profiler");
 
             // check fapolicyd log for "Starting to listen for events"
-            fapolicyd::wait_until_ready(&events_log.as_ref().unwrap().1).expect("fapolicyd ready");
+            let ready_res = fapolicyd::wait_until_ready(&events_log.as_ref().unwrap().1)
+                .map_err(|e| e.to_string());
 
-            // inner thread is responsible for target execution
-            let inner = thread::spawn(move || {
-                for (mut cmd, args) in targets {
-                    if term.load(Ordering::Relaxed) {
-                        break;
-                    }
-
-                    // start the process, wrapping in the execd helper
-                    let mut execd = Execd::new(cmd.spawn().unwrap());
-
-                    // the process is now alive
-                    alive.store(true, Ordering::Relaxed);
-
-                    let pid = execd.pid().expect("pid");
-                    let handle = ExecHandle::new(
-                        pid,
-                        args,
-                        term.clone(),
-                        // todo;; clean this up...
-                        events_log.as_ref().map(|x| x.1.display().to_string()),
-                        stdout_log.as_ref().map(|x| x.1.display().to_string()),
-                        stderr_log.as_ref().map(|x| x.1.display().to_string()),
-                    );
-                    let start = SystemTime::now();
-
-                    if let Some(cb) = cb_exec.as_ref() {
-                        Python::with_gil(|py| {
-                            if cb.call1(py, (handle.clone(),)).is_err() {
-                                eprintln!("'exec' callback failed");
-                            }
-                        });
-                    }
-
-                    // loop on target completion status, providing opportunity to interrupt
-                    while let Ok(true) = execd.running() {
-                        thread::sleep(Duration::from_secs(1));
+            let res = if ready_res.is_ok() {
+                // inner thread is responsible for target execution
+                let inner = thread::spawn(move || {
+                    for (mut cmd, args) in targets {
                         if term.load(Ordering::Relaxed) {
-                            execd.kill().expect("kill fail (term)");
                             break;
                         }
-                        if let Some(cb) = cb_tick.as_ref() {
-                            let t = SystemTime::now()
-                                .duration_since(start)
-                                .expect("system time")
-                                .as_secs();
+
+                        // start the process, wrapping in the execd helper
+                        let mut execd = Execd::new(cmd.spawn().unwrap());
+
+                        // the process is now alive
+                        alive.store(true, Ordering::Relaxed);
+
+                        let pid = execd.pid().expect("pid");
+                        let handle = ExecHandle::new(
+                            pid,
+                            args,
+                            term.clone(),
+                            // todo;; clean this up...
+                            events_log.as_ref().map(|x| x.1.display().to_string()),
+                            stdout_log.as_ref().map(|x| x.1.display().to_string()),
+                            stderr_log.as_ref().map(|x| x.1.display().to_string()),
+                        );
+                        let start = SystemTime::now();
+
+                        if let Some(cb) = cb_exec.as_ref() {
                             Python::with_gil(|py| {
-                                if cb.call1(py, (handle.clone(), t)).is_err() {
-                                    eprintln!("'tick' callback failed");
+                                if cb.call1(py, (handle.clone(),)).is_err() {
+                                    eprintln!("'exec' callback failed");
                                 }
                             });
                         }
-                    }
 
-                    // we need to wait on the process to die, instead of just blocking
-                    // this loop provides the ability to add a harder stop impl, abort
-                    term.store(false, Ordering::Relaxed);
-                    while let Ok(true) = execd.running() {
-                        if term.load(Ordering::Relaxed) {
-                            execd.abort().expect("abort fail (term)");
-                            break;
+                        // loop on target completion status, providing opportunity to interrupt
+                        while let Ok(true) = execd.running() {
+                            thread::sleep(Duration::from_secs(1));
+                            if term.load(Ordering::Relaxed) {
+                                execd.kill().expect("kill fail (term)");
+                                break;
+                            }
+                            if let Some(cb) = cb_tick.as_ref() {
+                                let t = SystemTime::now()
+                                    .duration_since(start)
+                                    .expect("system time")
+                                    .as_secs();
+                                Python::with_gil(|py| {
+                                    if cb.call1(py, (handle.clone(), t)).is_err() {
+                                        eprintln!("'tick' callback failed");
+                                    }
+                                });
+                            }
                         }
-                        thread::sleep(Duration::from_secs(1));
-                    }
 
-                    // no longer alive
-                    alive.store(false, Ordering::Relaxed);
+                        // we need to wait on the process to die, instead of just blocking
+                        // this loop provides the ability to add a harder stop impl, abort
+                        term.store(false, Ordering::Relaxed);
+                        while let Ok(true) = execd.running() {
+                            if term.load(Ordering::Relaxed) {
+                                execd.abort().expect("abort fail (term)");
+                                break;
+                            }
+                            thread::sleep(Duration::from_secs(1));
+                        }
 
-                    // write the target stdout/stderr if configured
-                    let output: Output = execd.into();
-                    if let Some((ref mut f, _)) = stdout_log {
-                        f.write_all(&output.stdout).unwrap();
-                    }
-                    if let Some((ref mut f, _)) = stderr_log {
-                        f.write_all(&output.stderr).unwrap();
-                    }
-                }
-            });
+                        // no longer alive
+                        alive.store(false, Ordering::Relaxed);
 
-            if let Some(e) = inner.join().err() {
-                eprintln!("exec thread panic {:?}", e);
-            }
+                        // write the target stdout/stderr if configured
+                        let output: Output = execd.into();
+                        if let Some((ref mut f, _)) = stdout_log {
+                            f.write_all(&output.stdout).unwrap();
+                        }
+                        if let Some((ref mut f, _)) = stderr_log {
+                            f.write_all(&output.stderr).unwrap();
+                        }
+                    }
+                });
+
+                inner.join().map_err(|e| format!("{:?}", e))
+            } else {
+                ready_res
+            };
 
             rs.deactivate().expect("deactivate profiler");
 
@@ -268,6 +271,8 @@ impl PyProfiler {
             if let Some(cb) = cb_done.as_ref() {
                 Python::with_gil(|py| cb.call0(py).expect("done callback failed"));
             }
+
+            res.expect("profiling failure");
         });
 
         Ok(proc_handle)
