@@ -9,4 +9,4 @@ WantedBy=multi-user.target
 [Service]
 Type=simple
 PIDFile=/run/fapolicyp.pid
-ExecStart=sh -c 'exec /usr/sbin/fapolicyd --debug --permissive --no-details 2> /dev/null'
+ExecStart=bash -c 'exec /usr/sbin/fapolicyd --debug --permissive --no-details 2> /dev/null'
