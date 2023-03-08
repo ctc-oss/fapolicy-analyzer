@@ -21,10 +21,9 @@ import subprocess
 import urllib.request
 from distutils import dir_util
 from glob import glob
-from os import makedirs, path, environ
+from os import makedirs, path
 from typing import Optional, Sequence
 from urllib.parse import urlparse
-
 
 DEFAULT_HELP_FILES = ["User-Guide.md"]
 DEFAULT_REPO = "https://github.com/ctc-oss/fapolicy-analyzer.wiki.git"
@@ -34,11 +33,6 @@ DEFAULT_MEDIA_URL = "https://user-images.githubusercontent.com/1545372"
 DEFAULT_REL_MEDIA_DIR = "media"
 DEFAULT_BUILD_DIR = path.join("build", DEFAULT_OUTPUT_DIR)
 
-if environ.get("LOCAL_HELP_GFX"):
-    DEFAULT_REL_HELP_GFX_PREFIX = ""
-else:
-    DEFAULT_REL_HELP_GFX_PREFIX = "help:fapolicy-analyzer/"
-
 try:
     # attempt to read version from a file in the help dir
     with open("help/version") as f:
@@ -47,9 +41,11 @@ try:
 except FileNotFoundError:
     DEFAULT_COMMIT = "HEAD"
 
+
 def _runs(cmds):
     for cmd in cmds:
         subprocess.run(cmd, check=True)
+
 
 def _clone_help(repo: str, commit: str, output_dir: str) -> str:
     tmp_dir = path.join(output_dir, "tmp")
@@ -75,14 +71,13 @@ def _clone_help(repo: str, commit: str, output_dir: str) -> str:
     shutil.rmtree(path.join(tmp_dir, ".git"), ignore_errors=True)
     return tmp_dir
 
+
 def _parse_media_urls(html: str, filter: str) -> Sequence[str]:
     from bs4 import BeautifulSoup
 
     soup = BeautifulSoup(html, "html.parser")
-    return [
-        url
-        for url in [img.get("src") for img in soup("img")]
-    ]
+    return [url for url in [img.get("src") for img in soup("img")]]
+
 
 def _markdown_to_html(markdown_file: str) -> str:
     import markdown2
@@ -108,6 +103,7 @@ def _markdown_to_html(markdown_file: str) -> str:
     title = get_title()
     return template.format(title=title, body=body)
 
+
 def _download_file(url: str, filename: str, proxy: Optional[str] = None):
     try:
         if proxy:
@@ -121,6 +117,7 @@ def _download_file(url: str, filename: str, proxy: Optional[str] = None):
             out_file.write(response.read())
     except Exception as e:
         print(f"Unable to download file from {url}: {e}")
+
 
 def _copy_from_local_clone(local_repo_path: str, filename: str):
     makedirs(path.dirname(filename), exist_ok=True)
@@ -165,20 +162,21 @@ def _download(
             url_tuple = urlparse(url)
             filename = path.basename(url_tuple.path)
             local_path = path.join(DEFAULT_REL_MEDIA_DIR, filename)
-            rel_path = f"{DEFAULT_REL_HELP_GFX_PREFIX}{local_path}"
 
             # Copy from public wiki repo or from local wiki repo clone
             if url_tuple.scheme:
                 _download_file(url, path.join(c_dir, local_path), proxy)
             else:
-                _copy_from_local_clone(path.join(tmp_dir, url),
-                                       path.join(c_dir, local_path))
-                
-            html = html.replace(url, rel_path)
+                _copy_from_local_clone(
+                    path.join(tmp_dir, url), path.join(c_dir, local_path)
+                )
+
+            html = html.replace(url, local_path)
         html_files.append(html_file(md, html))
 
     shutil.rmtree(tmp_dir)
     return html_files
+
 
 def update_help(
     repo: str = DEFAULT_REPO,
@@ -233,7 +231,8 @@ def update_help(
 def _get_languages(source: str):
     lang_dirs = [
         d
-        for d in os.listdir(source) if not d.startswith("_")
+        for d in os.listdir(source)
+        if not d.startswith("_")
         if path.isdir(path.join(source, d)) and d != "tmp"
     ]
     return list({"C", *lang_dirs})
@@ -274,8 +273,8 @@ def build_help(
 
 
 def install_help(
-        source: str = DEFAULT_BUILD_DIR,
-        dest: str = DEFAULT_INSTALL_DIR,
+    source: str = DEFAULT_BUILD_DIR,
+    dest: str = DEFAULT_INSTALL_DIR,
 ):
     name = "fapolicy-analyzer"
     print(f"Installing langs to {dest}")
@@ -332,9 +331,7 @@ def _args():
         default=DEFAULT_BUILD_DIR,
     )
 
-    parser_i = subpar.add_parser(
-        "install", help="Install help documentation"
-    )
+    parser_i = subpar.add_parser("install", help="Install help documentation")
     parser_i.set_defaults(cmd=install_help)
     parser_i.add_argument(
         "--source",
@@ -345,7 +342,7 @@ def _args():
         "-d",
         "--dest",
         help="Target installation directory",
-        default=DEFAULT_INSTALL_DIR
+        default=DEFAULT_INSTALL_DIR,
     )
 
     return parser.parse_args()
