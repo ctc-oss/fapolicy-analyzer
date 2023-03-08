@@ -21,14 +21,14 @@ use fapolicy_rules::db::DB;
 use fapolicy_rules::write;
 
 use crate::error::Error;
-use crate::fapolicyd::COMPILED_RULES_PATH;
-use crate::svc;
+use crate::fapolicyd::{Daemon, COMPILED_RULES_PATH};
 use crate::svc::{wait_for_service, State};
+use crate::{fapolicyd, svc};
 
 const PROFILER_NAME: &str = "fapolicyp";
 
 pub struct Profiler {
-    daemon: Daemon,
+    fapolicyp: Daemon,
     prev_state: Option<State>,
     prev_rules: Option<NamedTempFile>,
     pub events_log: Option<PathBuf>,
@@ -40,7 +40,7 @@ impl Default for Profiler {
             prev_state: None,
             prev_rules: None,
             events_log: None,
-            daemon: Daemon::new(PROFILER_NAME),
+            fapolicyp: Daemon::new(PROFILER_NAME),
         }
     }
 }
@@ -51,7 +51,7 @@ impl Profiler {
     }
 
     pub fn is_active(&self) -> bool {
-        self.daemon.active()
+        self.fapolicyp.active()
     }
 
     pub fn activate(&mut self) -> Result<State, Error> {
@@ -83,18 +83,22 @@ impl Profiler {
                 self.prev_rules = Some(backup);
             }
             // 5. start the profiler
-            self.daemon.start(self.events_log.as_ref())?;
+            self.fapolicyp.start(self.events_log.as_ref())?;
             // 6. wait for the profiler to become active
-            //wait_for_service(&self.handle(), State::Active, 10)?;
+            if let Some(log) = self.events_log.as_ref() {
+                if fapolicyd::wait_until_ready(log).is_err() {
+                    eprintln!("wait_until_ready failed");
+                };
+            }
         }
         fapolicyd.state()
     }
 
     pub fn deactivate(&mut self) -> Result<State, Error> {
-        let daemon = svc::Handle::default();
+        let fapolicyd = svc::Handle::default();
         if self.is_active() {
             // 1. stop the daemon
-            self.daemon.stop();
+            self.fapolicyp.stop();
             // 2. wait for the profiler to become inactive
             // wait_for_service(&self.handle(), State::Inactive, 10)?;
             // 3. swap original rules back in if they were changed
@@ -105,109 +109,11 @@ impl Profiler {
             // 4. start daemon if it was previously active
             if let Some(State::Active) = self.prev_state {
                 eprintln!("restarting daemon");
-                daemon.start()?;
+                fapolicyd.start()?;
             }
         }
         // clear the prev state
         self.prev_state = None;
-        // delete the service file
-        daemon.state()
-    }
-}
-
-struct Daemon {
-    pub name: String,
-    alive: Arc<AtomicBool>,
-    term: Arc<AtomicBool>,
-}
-
-impl Daemon {
-    pub fn new(name: &str) -> Self {
-        Self {
-            name: name.to_string(),
-            alive: Default::default(),
-            term: Default::default(),
-        }
-    }
-
-    pub fn active(&self) -> bool {
-        self.alive.load(Ordering::Relaxed)
-    }
-
-    pub fn stop(&self) {
-        self.term.store(true, Ordering::Relaxed)
-    }
-
-    pub fn start(&self, events_log: Option<&PathBuf>) -> io::Result<()> {
-        let (mut cmd, _) = build(
-            "/usr/sbin/fapolicyd --debug --permissive --no-details",
-            events_log,
-        );
-        let alive: Arc<AtomicBool> = Default::default();
-        let term: Arc<AtomicBool> = Default::default();
-
-        thread::spawn(move || {
-            let mut execd = Execd::new(cmd.spawn().unwrap());
-
-            // the process is now alive
-            alive.store(true, Ordering::Relaxed);
-
-            while let Ok(true) = execd.running() {
-                thread::sleep(Duration::from_secs(1));
-                if term.load(Ordering::Relaxed) {
-                    execd.kill().expect("kill fail (term)");
-                    break;
-                }
-            }
-        });
-
-        Ok(())
-    }
-}
-
-type CmdArgs = (Command, String);
-fn build(args: &str, out: Option<&PathBuf>) -> CmdArgs {
-    let opts: Vec<&str> = args.split(' ').collect();
-    let (target, opts) = opts.split_first().expect("invalid cmd string");
-
-    let mut cmd = Command::new(target);
-
-    if let Some(path) = out {
-        println!("writing stderr to {}", path.display());
-        let mut f = File::create(path).unwrap();
-        cmd.stderr(Stdio::from(f));
-    }
-
-    cmd.args(opts);
-    (cmd, args.to_string())
-}
-
-/// Internal struct used to inspect a running process
-struct Execd {
-    proc: Option<Child>,
-}
-
-impl Execd {
-    fn new(proc: Child) -> Execd {
-        Execd { proc: Some(proc) }
-    }
-
-    /// Get the process id (pid), None if inactive
-    fn pid(&self) -> Option<u32> {
-        self.proc.as_ref().map(|p| p.id())
-    }
-
-    /// Is process is still running?, never blocks
-    fn running(&mut self) -> io::Result<bool> {
-        match self.proc.as_mut().unwrap().try_wait() {
-            Ok(Some(_)) => Ok(false),
-            Ok(None) => Ok(true),
-            Err(e) => Err(e),
-        }
-    }
-
-    /// Cancel the process, without blocking
-    fn kill(&mut self) -> io::Result<()> {
-        self.proc.as_mut().unwrap().kill()
+        fapolicyd.state()
     }
 }
