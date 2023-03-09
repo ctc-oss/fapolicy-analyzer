@@ -93,4 +93,4 @@ def test_renders_message_style(widget, category, color, weight, index):
     widget.render_rule_status(mock_rules)
     model = widget.get_object("statusList").get_model()
 
-    assert model[index][-2:] == [color, weight]
+    assert model[index][1:3] == [color, weight]

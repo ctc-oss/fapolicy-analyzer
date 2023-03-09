@@ -26,7 +26,6 @@ from fapolicy_analyzer.ui.actions import (
     ANCILLARY_TRUST_LOAD_STARTED,
     APPLY_CHANGESETS,
     CLEAR_CHANGESETS,
-    CLEAR_PROFILER_STATE,
     DEPLOY_SYSTEM,
     ERROR_ANCILLARY_TRUST,
     ERROR_APPLY_CHANGESETS,
@@ -56,7 +55,6 @@ from fapolicy_analyzer.ui.actions import (
     REQUEST_SYSTEM_TRUST,
     REQUEST_USERS,
     RESTORE_SYSTEM_CHECKPOINT,
-    SET_PROFILER_STATE,
     SET_SYSTEM_CHECKPOINT,
     SYSTEM_CHECKPOINT_SET,
     SYSTEM_DEPLOYED,
@@ -100,7 +98,6 @@ from fapolicy_analyzer.ui.actions import (
     request_system_trust,
     request_users,
     restore_system_checkpoint,
-    set_profiler_state,
     set_system_checkpoint,
     system_checkpoint_set,
     system_deployed,
@@ -108,6 +105,25 @@ from fapolicy_analyzer.ui.actions import (
     system_received,
     system_trust_load_complete,
     system_trust_load_started,
+    set_profiler_output,
+    PROFILER_CLEAR_STATE_CMD,
+    profiler_done,
+    PROFILER_SET_OUTPUT_CMD,
+    stop_profiling,
+    terminating_profiler,
+    profiler_tick,
+    PROFILING_KILL_RESPONSE,
+    PROFILING_KILL_REQUEST,
+    profiler_exec,
+    PROFILING_EXEC_EVENT,
+    PROFILING_TICK_EVENT,
+    PROFILING_INIT_EVENT,
+    profiler_init,
+    start_profiling,
+    START_PROFILING_REQUEST,
+    START_PROFILING_RESPONSE,
+    profiling_started,
+    PROFILING_DONE_EVENT,
 )
 
 
@@ -399,18 +415,76 @@ def test_error_rules_text():
     assert action.payload == "foo"
 
 
-def test_set_profiler_state():
-    payload = {"key1": "value1"}
-    action = set_profiler_state(payload)
+def test_profiler_init_event():
+    action = profiler_init()
     assert type(action) is Action
-    assert action.type == SET_PROFILER_STATE
-    assert action.payload == payload
+    assert action.type == PROFILING_INIT_EVENT
+    assert action.payload is None
+
+
+def test_profiler_start_request():
+    expected = {"cmd": "foo"}
+    action = start_profiling(expected)
+    assert type(action) is Action
+    assert action.type == START_PROFILING_REQUEST
+    assert action.payload is expected
+
+
+def test_profiler_start_response():
+    expected = "cmd"
+    action = profiling_started(expected)
+    assert type(action) is Action
+    assert action.type == START_PROFILING_RESPONSE
+    assert action.payload is expected
+
+
+def test_profiler_exec_event():
+    action = profiler_exec(999)
+    assert type(action) is Action
+    assert action.type == PROFILING_EXEC_EVENT
+    assert action.payload == 999
+
+
+def test_profiler_tick_event():
+    action = profiler_tick(999)
+    assert type(action) is Action
+    assert action.type == PROFILING_TICK_EVENT
+    assert action.payload == 999
+
+
+def test_profiler_kill_request():
+    action = stop_profiling()
+    assert type(action) is Action
+    assert action.type == PROFILING_KILL_REQUEST
+    assert action.payload is None
+
+
+def test_profiler_kill_response():
+    action = terminating_profiler()
+    assert type(action) is Action
+    assert action.type == PROFILING_KILL_RESPONSE
+    assert action.payload is None
+
+
+def test_profiler_done():
+    action = profiler_done()
+    assert type(action) is Action
+    assert action.type == PROFILING_DONE_EVENT
+    assert action.payload is None
+
+
+def test_set_output():
+    expected = ("foo", "bar", "baz")
+    action = set_profiler_output(expected[0], expected[1], expected[2])
+    assert type(action) is Action
+    assert action.type == PROFILER_SET_OUTPUT_CMD
+    assert action.payload == expected
 
 
 def test_clear_profiler_state():
     action = clear_profiler_state()
     assert type(action) is Action
-    assert action.type == CLEAR_PROFILER_STATE
+    assert action.type == PROFILER_CLEAR_STATE_CMD
     assert action.payload is None
 
 
