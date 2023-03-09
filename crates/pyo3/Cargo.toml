@@ -11,10 +11,10 @@ crate-type = ["cdylib"]
 [dependencies]
 pyo3 = { version = "0.15", features = ["abi3-py36", "auto-initialize"] }
 similar = "2.1"
-chrono = "0.4.22"
+chrono = "0.4"
 tempfile = "3.3"
-pyo3-log = "0.8.1"
 log = "0.4"
+pyo3-log = "0.8"
 
 fapolicy-analyzer = { version = "*", path = "../analyzer" }
 fapolicy-app = { version = "*", path = "../app" }

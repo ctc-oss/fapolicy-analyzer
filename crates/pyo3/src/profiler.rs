@@ -60,9 +60,9 @@ impl PyProfiler {
 
     #[setter]
     fn set_user(&mut self, uid_or_uname: Option<&str>) -> PyResult<()> {
-        log::debug!("set_user {uid_or_uname}");
         if let Some(uid_or_uname) = uid_or_uname {
             self.uid = if uid_or_uname.starts_with(|x: char| x.is_ascii_alphabetic()) {
+                log::debug!("set_user: looking up username {uid_or_uname}");
                 Some(
                     read_users()
                         .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))?
@@ -77,8 +77,11 @@ impl PyProfiler {
                         })?,
                 )
             } else {
+                log::debug!("set_user: assigning uid {uid_or_uname}");
                 Some(uid_or_uname.parse()?)
             };
+        } else {
+            self.uid = None;
         }
         Ok(())
     }

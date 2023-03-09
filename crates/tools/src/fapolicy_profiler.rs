@@ -16,7 +16,6 @@
 use clap::Parser;
 use fapolicy_daemon::profiler::Profiler;
 use fapolicy_rules::read::load_rules_db;
-use log;
 use std::error::Error;
 use std::os::unix::prelude::CommandExt;
 use std::path::PathBuf;
