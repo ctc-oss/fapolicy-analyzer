@@ -8,9 +8,8 @@
 
 pub mod error;
 pub mod fapolicyd;
-
-pub use version::fapolicyd_version as version;
-
 pub mod profiler;
 pub mod svc;
 pub mod version;
+
+pub use version::fapolicyd_version as version;

@@ -156,22 +156,22 @@ impl Handle {
     }
 }
 
-pub fn wait_for_daemon(handle: &Handle, target_state: State, seconds: usize) -> Result<(), Error> {
+pub fn wait_for_service(handle: &Handle, target_state: State, seconds: usize) -> Result<(), Error> {
     for _ in 0..seconds {
-        eprintln!("waiting on daemon to be {target_state:?}...");
+        eprintln!("waiting on {} to be {target_state:?}...", handle.name);
         sleep(Duration::from_secs(1));
         if handle
             .state()
             .map(|state| target_state.can_be(state))
             .unwrap_or(false)
         {
-            eprintln!("daemon is now {target_state:?}");
+            eprintln!("{} is now {target_state:?}", handle.name);
             return Ok(());
         }
     }
 
     let actual_state = handle.state()?;
-    eprintln!("done waiting, daemon is {target_state:?}");
+    eprintln!("done waiting, {} is {target_state:?}", handle.name);
 
     if target_state.can_be(actual_state) {
         Ok(())
