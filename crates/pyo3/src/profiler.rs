@@ -8,7 +8,7 @@
 
 use chrono::Utc;
 use fapolicy_analyzer::users::read_users;
-use fapolicy_daemon::fapolicyd;
+use fapolicy_daemon::fapolicyd::wait_until_ready;
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
 use pyo3::{PyResult, Python};
@@ -172,16 +172,16 @@ impl PyProfiler {
 
         // outer thread is responsible for daemon control
         thread::spawn(move || {
-            rs.activate_with_rules(db.as_ref())
-                .expect("activate profiler");
-
-            // check fapolicyd log for "Starting to listen for events"
-            let ready_res = fapolicyd::wait_until_ready(&events_log.as_ref().unwrap().1)
+            // start the daemon and wait until it is ready
+            let start_profiling_daemon = rs
+                .activate_with_rules(db.as_ref())
+                .and_then(|_| wait_until_ready(&events_log.as_ref().unwrap().1))
                 .map_err(|e| e.to_string());
 
-            let res = if ready_res.is_ok() {
+            // if profiling daemon is not ready do not spawn target threads
+            let profiling_res = if start_profiling_daemon.is_ok() {
                 // inner thread is responsible for target execution
-                let inner = thread::spawn(move || {
+                let target_thread = thread::spawn(move || {
                     for (mut cmd, args) in targets {
                         if term.load(Ordering::Relaxed) {
                             break;
@@ -258,21 +258,27 @@ impl PyProfiler {
                     }
                 });
 
-                inner.join().map_err(|e| format!("{:?}", e))
+                // outer thread waits on the target thread to complete
+                target_thread.join().map_err(|e| format!("{:?}", e))
             } else {
-                ready_res
+                start_profiling_daemon
             };
 
-            rs.deactivate().expect("deactivate profiler");
-
-            // callback when all targets are completed / cancelled / failed
-            // callback failure here is considered fatal due to the
-            // transactional completion nature of this call
-            if let Some(cb) = cb_done.as_ref() {
-                Python::with_gil(|py| cb.call0(py).expect("done callback failed"));
+            // attempt to deactivate if active
+            if rs.is_active() {
+                if rs.deactivate().is_err() {
+                    eprintln!("profiler deactivate failed");
+                }
             }
 
-            res.expect("profiling failure");
+            // done; all targets are completed / cancelled / failed
+            if let Some(cb) = cb_done.as_ref() {
+                if Python::with_gil(|py| cb.call0(py)).is_err() {
+                    eprintln!("'done' callback failed");
+                }
+            }
+
+            profiling_res.expect("profiling failure");
         });
 
         Ok(proc_handle)
