@@ -16,6 +16,7 @@ from functools import partial
 from typing import Callable, Dict
 
 import gi
+import logging
 from rx import of
 from rx.core.pipe import pipe
 from rx.operators import catch, map
@@ -119,15 +120,17 @@ def create_profiler_feature(dispatch: Callable) -> ReduxFeatureModule:
             # set user, pwd, envs
             p.user = args.get("uid", None)
             p.pwd = args.get("pwd", None)
-            p.env = args.get("env", None)
-        except RuntimeError:
+            p.env = args.get("env_dict", None)
+        except RuntimeError as e:
+            logging.error(f"profiler init failed {e}")
             dispatch(profiler_initialization_error(PROFILER_INIT_ERROR))
             return profiler_done()
 
         # execute and dispatch
         try:
             _handle = p.profile(cmd)
-        except RuntimeError:
+        except RuntimeError as e:
+            logging.error(f"profiler exec failed {e}")
             dispatch(profiler_execution_error(PROFILER_EXEC_ERROR))
             return profiler_done()
 

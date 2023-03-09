@@ -117,7 +117,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         self.display_log_output([
             (f"`{state.cmd}` stdout", state.stdout_log),
             (f"`{state.cmd}` stderr", state.stderr_log),
-            ("fapolicyd stdout", state.events_log),
+            ("fapolicyd", state.events_log),
         ])
         self.analysis_file = state.events_log
         self.terminating = False

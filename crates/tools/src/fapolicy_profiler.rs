@@ -65,7 +65,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             );
             std::fs::remove_file(&path)?;
         }
-        profiler.stdout_log = Some(path);
+        profiler.events_log = Some(path);
     }
 
     profiler.activate_with_rules(db.as_ref())?;
