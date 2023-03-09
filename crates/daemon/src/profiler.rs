@@ -81,7 +81,7 @@ impl Profiler {
             // 6. wait for the profiler daemon to become active
             if let Some(log) = self.events_log.as_ref() {
                 if fapolicyd::wait_until_ready(log).is_err() {
-                    eprintln!("wait_until_ready failed");
+                    log::warn!("wait_until_ready failed");
                 };
             }
         }
