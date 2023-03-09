@@ -26,6 +26,7 @@ pub const RULES_FILE_PATH: &str = "/etc/fapolicyd/rules.d";
 pub const COMPILED_RULES_PATH: &str = "/etc/fapolicyd/compiled.rules";
 pub const RPM_DB_PATH: &str = "/var/lib/rpm";
 pub const FIFO_PIPE: &str = "/run/fapolicyd/fapolicyd.fifo";
+pub const START_POLLING_EVENTS_MESSAGE: &str = "Starting to listen for events";
 
 #[derive(Clone, Debug)]
 pub enum Version {
@@ -33,6 +34,7 @@ pub enum Version {
     Release { major: u8, minor: u8, patch: u8 },
 }
 
+/// A fapolicyd runner
 pub struct Daemon {
     pub name: String,
     alive: Arc<AtomicBool>,
@@ -146,13 +148,14 @@ pub fn wait_until_ready(path: &Path) -> Result<(), Error> {
         thread::sleep(Duration::from_secs(1));
         let mut s = String::new();
         f.read_to_string(&mut s)?;
-        if s.contains("Starting to listen for events") {
+        if s.contains(START_POLLING_EVENTS_MESSAGE) {
             return Ok(());
         }
     }
     Err(Error::NotReady)
 }
 
+/// wait for the daemon process to shutdown
 pub fn wait_until_shutdown(daemon: &Daemon) -> Result<(), Error> {
     for _ in 0..10 {
         thread::sleep(Duration::from_secs(1));
