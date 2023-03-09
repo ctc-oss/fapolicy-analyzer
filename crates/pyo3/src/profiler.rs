@@ -265,10 +265,8 @@ impl PyProfiler {
             };
 
             // attempt to deactivate if active
-            if rs.is_active() {
-                if rs.deactivate().is_err() {
-                    eprintln!("profiler deactivate failed");
-                }
+            if rs.is_active() && rs.deactivate().is_err() {
+                eprintln!("profiler deactivate failed");
             }
 
             // done; all targets are completed / cancelled / failed
