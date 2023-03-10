@@ -287,7 +287,6 @@ dependencies = [
  "fapolicy-trust",
  "pyo3",
  "similar",
- "tempfile",
 ]
 
 [[package]]
