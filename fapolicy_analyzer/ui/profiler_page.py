@@ -117,7 +117,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         self.display_log_output([
             (f"`{state.cmd}` stdout", state.stdout_log),
             (f"`{state.cmd}` stderr", state.stderr_log),
-            ("fapolicyd stdout", state.events_log),
+            ("fapolicyd", state.events_log),
         ])
         self.analysis_file = state.events_log
         self.terminating = False
@@ -202,8 +202,12 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
             "env": self.get_env_text(),
         }
 
+    def get_entry_dict_markup(self):
+        return "<span size='x-large' underline='single'><b>Target</b></span>\n" + \
+            "\n".join([f"{key}: {value}" for key, value in self.get_entry_dict().items()])
+
     def display_log_output(self, logs):
-        markup = ""
+        markup = self.get_entry_dict_markup() + "\n\n"
         for (description, log) in logs:
             if log:
                 markup += f"<span size='x-large' underline='single'><b>{description}</b></span> (<b>{log}</b>)\n"
@@ -215,7 +219,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
                     logging.error(f"There was an issue reading from {log}", ex)
                     markup += f"<span size='large'>Failed to open log: <span underline='error'>{ex}</span></span>\n"
                 markup += "\n\n"
-        self.set_output_text(markup)
+        self.set_output_text(markup.rstrip())
 
     def on_stop_clicked(self, *args):
         self.can_stop = False
