@@ -203,7 +203,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         }
 
     def get_entry_dict_markup(self):
-        return f"<span size='x-large' underline='single'><b>Target</b></span>\n" + \
+        return "<span size='x-large' underline='single'><b>Target</b></span>\n" + \
             "\n".join([f"{key}: {value}" for key, value in self.get_entry_dict().items()])
 
     def display_log_output(self, logs):
