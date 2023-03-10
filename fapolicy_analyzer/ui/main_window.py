@@ -65,7 +65,7 @@ def router(page: PAGE_SELECTION, *data) -> UIPage:
     data = (d for d in data if d is not None)
     route = {
         PAGE_SELECTION.TRUST_DATABASE_ADMIN: DatabaseAdminPage,
-        PAGE_SELECTION.ANALYZE_FROM_AUDIT: PolicyRulesAdminPage,
+        PAGE_SELECTION.ANALYZE_FROM_DEBUG: PolicyRulesAdminPage,
         PAGE_SELECTION.ANALYZE_SYSLOG: PolicyRulesAdminPage,
         PAGE_SELECTION.RULES_ADMIN: RulesAdminPage,
         PAGE_SELECTION.PROFILER: ProfilerPage,
@@ -402,7 +402,7 @@ class MainWindow(UIConnectedWidget):
         _file = fcd.get_filename() or ""
 
         if path.isfile(_file):
-            page = router(PAGE_SELECTION.ANALYZE_FROM_AUDIT, False, _file)
+            page = router(PAGE_SELECTION.ANALYZE_FROM_DEBUG, False, _file)
             page.object_list.rule_view_activate += self.on_rulesAdminMenu_activate
             height = self.get_object("mainWindow").get_size()[1]
             page.get_object("botBox").set_property(
@@ -413,7 +413,7 @@ class MainWindow(UIConnectedWidget):
         fcd.destroy()
 
     def activate_file_analyzer(self, file):
-        self.__pack_main_content(router(PAGE_SELECTION.ANALYZE_FROM_AUDIT, False, file))
+        self.__pack_main_content(router(PAGE_SELECTION.ANALYZE_FROM_DEBUG, False, file))
 
     def on_trustDbMenu_activate(self, menuitem, *args):
         self.__pack_main_content(router(PAGE_SELECTION.TRUST_DATABASE_ADMIN))

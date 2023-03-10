@@ -20,6 +20,6 @@ from enum import Enum
 class PAGE_SELECTION(Enum):
     TRUST_DATABASE_ADMIN = "trust"
     RULES_ADMIN = "rules"
-    ANALYZE_FROM_AUDIT = "audit log"
+    ANALYZE_FROM_DEBUG = "debug log"
     ANALYZE_SYSLOG = "syslog"
     PROFILER = "profiler"
