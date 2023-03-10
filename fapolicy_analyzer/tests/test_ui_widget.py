@@ -18,6 +18,7 @@ from unittest.mock import MagicMock
 
 import gi
 import pytest
+
 from fapolicy_analyzer.ui.ui_widget import UIBuilderWidget, UIConnectedWidget, UIWidget
 
 gi.require_version("GtkSource", "3.0")
@@ -91,8 +92,18 @@ def test_loads_named_glade_file(mockBuilder, mockResource):
     mockBuilder.get_object.assert_called_once_with("fooWidget")
 
 
+def test_UIBuilderWidget_with_bad_glade_file(mocker):
+    mock_error_logger = MagicMock()
+    mocker.patch("fapolicy_analyzer.ui.ui_widget.get_resource", return_value=None)
+    mocker.patch("fapolicy_analyzer.ui.ui_widget.logging", error=mock_error_logger)
+    concrete_UIBuilderWidget("fooWidget")
+    mock_error_logger.assert_called_once_with(
+        "Resource fooWidget.glade is not available."
+    )
+
+
 @pytest.mark.usefixtures("mockBuilder", "mockResource")
-def test_runs_post_init(mockFeature):
+def test_connects_feature(mockFeature):
     concrete_UIConnectedWidget(
         mockFeature,
         on_next="foo_next",
@@ -105,9 +116,63 @@ def test_runs_post_init(mockFeature):
 
 
 @pytest.mark.usefixtures("mockBuilder", "mockResource")
+def test_connects_features():
+    mock_feature_1 = MagicMock(subscribe=MagicMock())
+    mock_feature_2 = MagicMock(subscribe=MagicMock())
+    concrete_UIConnectedWidget(
+        features=[
+            {
+                mock_feature_1: {
+                    "on_next": "mock1_next",
+                    "on_error": "mock1_error",
+                    "on_completed": "mock1_complete",
+                }
+            },
+            {
+                mock_feature_2: {
+                    "on_next": "mock2_next",
+                    "on_error": "mock2_error",
+                    "on_completed": "mock2_complete",
+                }
+            },
+        ]
+    )
+    mock_feature_1.subscribe.assert_called_once_with(
+        on_next="mock1_next", on_error="mock1_error", on_completed="mock1_complete"
+    )
+    mock_feature_2.subscribe.assert_called_once_with(
+        on_next="mock2_next", on_error="mock2_error", on_completed="mock2_complete"
+    )
+
+
+@pytest.mark.usefixtures("mockBuilder", "mockResource")
 def test_disposes_subscription(mockFeature):
     mockDispose = MagicMock()
     mockFeature.subscribe.return_value = MagicMock(dispose=mockDispose)
     widget = concrete_UIConnectedWidget(mockFeature)
     widget.dispose()
     mockDispose.assert_called_once()
+
+
+@pytest.mark.usefixtures("mockBuilder", "mockResource")
+def test_disposes_subscriptions():
+    mock_feature_1 = MagicMock(subscribe=MagicMock())
+    mock_feature_2 = MagicMock(subscribe=MagicMock())
+    mock_dispose_1 = MagicMock()
+    mock_dispose_2 = MagicMock()
+    mock_feature_1.subscribe.return_value = MagicMock(dispose=mock_dispose_1)
+    mock_feature_2.subscribe.return_value = MagicMock(dispose=mock_dispose_2)
+    widget = concrete_UIConnectedWidget(
+        features=[{mock_feature_1: {}}, {mock_feature_2: {}}]
+    )
+    widget.dispose()
+    mock_dispose_1.assert_called_once()
+    mock_dispose_2.assert_called_once()
+
+
+def test_UIConnectedWidget_with_bad_parameters():
+    with pytest.raises(TypeError) as ex:
+        concrete_UIConnectedWidget()
+    assert "UIConnectedWidget.__init__() no feature parameters provided" in str(
+        ex.value
+    )

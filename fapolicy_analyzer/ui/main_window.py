@@ -1,4 +1,4 @@
-# Copyright Concurrent Technologies Corporation 2021
+# Copyright Concurrent Technologies Corporation 2023
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@ from locale import gettext as _
 from os import getenv, geteuid, path
 from threading import Thread
 from time import sleep
-from typing import Any, Sequence
+from typing import Sequence
 
 import gi
 
@@ -27,12 +27,18 @@ import fapolicy_analyzer.ui.strings as strings
 from fapolicy_analyzer import System
 from fapolicy_analyzer import __version__ as app_version
 from fapolicy_analyzer.ui.action_toolbar import ActionToolbar
-from fapolicy_analyzer.ui.actions import NotificationType, add_notification
-from fapolicy_analyzer.ui.analyzer_selection_dialog import ANALYZER_SELECTION
+from fapolicy_analyzer.ui.actions import (
+    NotificationType,
+    add_notification,
+    request_ancillary_trust,
+    request_app_config,
+    request_system_trust,
+)
 from fapolicy_analyzer.ui.changeset_wrapper import Changeset
 from fapolicy_analyzer.ui.configs import Sizing
 from fapolicy_analyzer.ui.database_admin_page import DatabaseAdminPage
 from fapolicy_analyzer.ui.fapd_manager import FapdManager, ServiceStatus
+from fapolicy_analyzer.ui.file_chooser_dialog import FileChooserDialog
 from fapolicy_analyzer.ui.help_browser import HelpBrowser
 from fapolicy_analyzer.ui.notification import Notification
 from fapolicy_analyzer.ui.operations import DeployChangesetsOp
@@ -40,7 +46,12 @@ from fapolicy_analyzer.ui.policy_rules_admin_page import PolicyRulesAdminPage
 from fapolicy_analyzer.ui.profiler_page import ProfilerPage
 from fapolicy_analyzer.ui.rules import RulesAdminPage
 from fapolicy_analyzer.ui.session_manager import sessionManager
-from fapolicy_analyzer.ui.store import dispatch, get_system_feature
+from fapolicy_analyzer.ui.store import (
+    dispatch,
+    get_application_feature,
+    get_system_feature,
+)
+from fapolicy_analyzer.ui.types import PAGE_SELECTION
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 from fapolicy_analyzer.ui.unapplied_changes_dialog import UnappliedChangesDialog
@@ -50,22 +61,31 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, GLib  # isort: skip
 
 
-def router(selection: ANALYZER_SELECTION, data: Any = None) -> UIPage:
+def router(page: PAGE_SELECTION, *data) -> UIPage:
+    data = (d for d in data if d is not None)
     route = {
-        ANALYZER_SELECTION.TRUST_DATABASE_ADMIN: DatabaseAdminPage,
-        ANALYZER_SELECTION.ANALYZE_FROM_AUDIT: PolicyRulesAdminPage,
-        ANALYZER_SELECTION.ANALYZE_SYSLOG: PolicyRulesAdminPage,
-        ANALYZER_SELECTION.RULES_ADMIN: RulesAdminPage,
-        ANALYZER_SELECTION.PROFILER: ProfilerPage,
-    }.get(selection)
-    if route:
-        return route(data) if data else route()
-    raise Exception("Bad Selection")
+        PAGE_SELECTION.TRUST_DATABASE_ADMIN: DatabaseAdminPage,
+        PAGE_SELECTION.ANALYZE_FROM_DEBUG: PolicyRulesAdminPage,
+        PAGE_SELECTION.ANALYZE_SYSLOG: PolicyRulesAdminPage,
+        PAGE_SELECTION.RULES_ADMIN: RulesAdminPage,
+        PAGE_SELECTION.PROFILER: ProfilerPage,
+    }.get(page, RulesAdminPage)
+    return route(*data)
 
 
 class MainWindow(UIConnectedWidget):
+
+    __JSON_FILE_FILTERS = [
+        (strings.FA_SESSION_FILES_FILTER_LABEL, "*.json"),
+        (strings.ANY_FILES_FILTER_LABEL, "*"),
+    ]
+
     def __init__(self):
-        super().__init__(get_system_feature(), on_next=self.on_next_system)
+        features = [
+            {get_system_feature(): {"on_next": self.on_next_system}},
+            {get_application_feature(): {"on_next": self.on_next_application}},
+        ]
+        super().__init__(features=features)
         self.strSessionFilename = None
         self.window = self.get_ref()
         self.windowTopLevel = self.window.get_toplevel()
@@ -80,6 +100,7 @@ class MainWindow(UIConnectedWidget):
         self.__changesets: Sequence[Changeset] = []
         self.__system: System
         self.__checkpoint: System
+        self.__application = None
         self.__page = None
         self.__help = None
 
@@ -88,7 +109,6 @@ class MainWindow(UIConnectedWidget):
         self.mainContent = self.get_object("mainContent")
         # Set menu items in default initial state
         self.get_object("restoreMenu").set_sensitive(False)
-        self.__set_trustDbMenu_sensitive(False)
 
         # Set fapd status UI element to default 'No' = Red button
         self.fapdStatusLight.set_from_icon_name("process-stop", size=4)
@@ -106,6 +126,14 @@ class MainWindow(UIConnectedWidget):
         self.get_object("profileExecMenu").set_sensitive(prof_ui_enable)
 
         self.__add_toolbar()
+
+        # load app config
+        dispatch(request_app_config())
+
+        # start trust loading
+        dispatch(request_system_trust())
+        dispatch(request_ancillary_trust())
+
         self.window.show_all()
 
     def __add_toolbar(self):
@@ -137,17 +165,6 @@ class MainWindow(UIConnectedWidget):
         response = unappliedChangesDlg.run()
         unappliedChangesDlg.destroy()
         return response != Gtk.ResponseType.OK
-
-    def __apply_json_file_filters(self, dialog):
-        fileFilterJson = Gtk.FileFilter()
-        fileFilterJson.set_name(strings.FA_SESSION_FILES_FILTER_LABEL)
-        fileFilterJson.add_pattern("*.json")
-        dialog.add_filter(fileFilterJson)
-
-        fileFilterAny = Gtk.FileFilter()
-        fileFilterAny.set_name(strings.ANY_FILES_FILTER_LABEL)
-        fileFilterAny.add_pattern("*")
-        dialog.add_filter(fileFilterAny)
 
     def __pack_main_content(self, page: UIPage):
         if self.__page:
@@ -183,16 +200,11 @@ class MainWindow(UIConnectedWidget):
         dlgSessionRestorePrompt.destroy()
         return response
 
-    def __set_trustDbMenu_sensitive(self, sensitive):
-        menuItem = self.get_object("trustDbMenu")
-        menuItem.set_sensitive(sensitive)
-
     def __dirty_changesets(self):
         return len(self.__changesets) > 0
 
     def on_start(self, *args):
         logging.info("MainWindow::on_start()")
-        self.__pack_main_content(router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN))
 
         # On startup check for the existing of a tmp session file
         # If detected, alert the user, enable the File|Restore menu item
@@ -247,39 +259,53 @@ class MainWindow(UIConnectedWidget):
         self.windowTopLevel.set_title(title)
         self.__toolbar.refresh_buttons_sensitivity()
 
+    def on_next_application(self, application):
+        if self.__application != application:
+            self.__application = application
+
+            try:
+                selection = PAGE_SELECTION(application.initial_view)
+            except ValueError:
+                logging.warning(
+                    f"Invalid initial page set to {application.initial_view}"
+                )
+                selection = PAGE_SELECTION.RULES_ADMIN
+
+            # TODO: Need to figure out a better way to handle pages that need extra parameters
+            data = {
+                PAGE_SELECTION.PROFILER: self._fapd_mgr,
+                PAGE_SELECTION.ANALYZE_SYSLOG: True,
+            }.get(selection)
+            page = router(selection, data)
+            self.__pack_main_content(page)
+
+            if selection == PAGE_SELECTION.PROFILER:
+                page.analyze_button_pushed += self.activate_file_analyzer
+                page.refresh_toolbar += self._refresh_toolbar
+
     def on_openMenu_activate(self, menuitem, data=None):
         logging.debug("Callback entered: MainWindow::on_openMenu_activate()")
         # Display file chooser dialog
-        fcd = Gtk.FileChooserDialog(
-            strings.OPEN_FILE_LABEL,
-            self.windowTopLevel,
-            Gtk.FileChooserAction.OPEN,
-            (
-                Gtk.STOCK_CANCEL,
-                Gtk.ResponseType.CANCEL,
-                Gtk.STOCK_OPEN,
-                Gtk.ResponseType.OK,
-            ),
+        fcd = FileChooserDialog(
+            title=strings.OPEN_FILE_LABEL,
+            parent=self.get_ref(),
+            filters=self.__JSON_FILE_FILTERS,
         )
-        self.__apply_json_file_filters(fcd)
-        response = fcd.run()
-        fcd.hide()
 
-        if response == Gtk.ResponseType.OK:
-            strFilename = fcd.get_filename()
-            if path.isfile(strFilename):
-                self.strSessionFilename = strFilename
-                if not sessionManager.open_edit_session(self.strSessionFilename):
-                    dispatch(
-                        add_notification(
-                            f(
-                                _(
-                                    "An error occurred trying to open the session file, {self.strSessionFilename}"
-                                )
-                            ),
-                            NotificationType.ERROR,
-                        )
+        strFilename = fcd.get_filename() or ""
+        if path.isfile(strFilename):
+            self.strSessionFilename = strFilename
+            if not sessionManager.open_edit_session(self.strSessionFilename):
+                dispatch(
+                    add_notification(
+                        f(
+                            _(
+                                "An error occurred trying to open the session file, {self.strSessionFilename}"
+                            )
+                        ),
+                        NotificationType.ERROR,
                     )
+                )
 
         fcd.destroy()
 
@@ -313,26 +339,17 @@ class MainWindow(UIConnectedWidget):
     def on_saveAsMenu_activate(self, menuitem, data=None):
         logging.debug("Callback entered: MainWindow::on_saveAsMenu_activate()")
         # Display file chooser dialog
-        fcd = Gtk.FileChooserDialog(
-            strings.SAVE_AS_FILE_LABEL,
-            self.windowTopLevel,
-            Gtk.FileChooserAction.SAVE,
-            (
-                Gtk.STOCK_CANCEL,
-                Gtk.ResponseType.CANCEL,
-                Gtk.STOCK_SAVE,
-                Gtk.ResponseType.OK,
-            ),
+        fcd = FileChooserDialog(
+            title=strings.SAVE_AS_FILE_LABEL,
+            parent=self.get_ref(),
+            action=Gtk.FileChooserAction.SAVE,
+            action_button=Gtk.STOCK_SAVE,
+            do_overwrite_confirmation=True,
+            filters=self.__JSON_FILE_FILTERS,
         )
 
-        self.__apply_json_file_filters(fcd)
-        fcd.set_do_overwrite_confirmation(True)
-        response = fcd.run()
-        fcd.hide()
-
-        if response == Gtk.ResponseType.OK:
-            strFilename = fcd.get_filename()
-            self.strSessionFilename = strFilename
+        self.strSessionFilename = fcd.get_filename()
+        if self.strSessionFilename:
             sessionManager.save_edit_session(
                 self.__changesets,
                 self.strSessionFilename,
@@ -370,62 +387,48 @@ class MainWindow(UIConnectedWidget):
         self.__help.show()
 
     def on_syslogMenu_activate(self, *args):
-        page = router(ANALYZER_SELECTION.ANALYZE_SYSLOG)
+        page = router(PAGE_SELECTION.ANALYZE_SYSLOG, True)
         height = self.get_object("mainWindow").get_size()[1]
         page.get_object("botBox").set_property(
             "height_request", int(height * Sizing.POLICY_BOTTOM_BOX)
         )
         self.__pack_main_content(page)
-        self.__set_trustDbMenu_sensitive(True)
 
     def on_analyzeMenu_activate(self, *args):
-        fcd = Gtk.FileChooserDialog(
+        fcd = FileChooserDialog(
             title=strings.OPEN_FILE_LABEL,
-            transient_for=self.get_ref(),
-            action=Gtk.FileChooserAction.OPEN,
+            parent=self.get_ref(),
         )
-        fcd.add_buttons(
-            Gtk.STOCK_CANCEL,
-            Gtk.ResponseType.CANCEL,
-            Gtk.STOCK_OPEN,
-            Gtk.ResponseType.OK,
-        )
-        response = fcd.run()
-        fcd.hide()
-        if response == Gtk.ResponseType.OK and path.isfile((fcd.get_filename())):
-            file = fcd.get_filename()
-            page = router(ANALYZER_SELECTION.ANALYZE_FROM_AUDIT, file)
+        _file = fcd.get_filename() or ""
+
+        if path.isfile(_file):
+            page = router(PAGE_SELECTION.ANALYZE_FROM_DEBUG, False, _file)
             page.object_list.rule_view_activate += self.on_rulesAdminMenu_activate
             height = self.get_object("mainWindow").get_size()[1]
             page.get_object("botBox").set_property(
                 "height_request", int(height * Sizing.POLICY_BOTTOM_BOX)
             )
             self.__pack_main_content(page)
-            self.__set_trustDbMenu_sensitive(True)
+
         fcd.destroy()
 
     def activate_file_analyzer(self, file):
-        self.__pack_main_content(router(ANALYZER_SELECTION.ANALYZE_FROM_AUDIT, file))
-        self.__set_trustDbMenu_sensitive(True)
+        self.__pack_main_content(router(PAGE_SELECTION.ANALYZE_FROM_DEBUG, False, file))
 
     def on_trustDbMenu_activate(self, menuitem, *args):
-        self.__pack_main_content(router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN))
-        self.__set_trustDbMenu_sensitive(False)
+        self.__pack_main_content(router(PAGE_SELECTION.TRUST_DATABASE_ADMIN))
 
     def on_rulesAdminMenu_activate(self, *args, **kwargs):
-        rulesPage = router(ANALYZER_SELECTION.RULES_ADMIN)
+        rulesPage = router(PAGE_SELECTION.RULES_ADMIN)
         if kwargs.get("rule_id", None) is not None:
             rulesPage.highlight_row_from_data(kwargs["rule_id"])
         self.__pack_main_content(rulesPage)
-        # TODO: figure out a good way to set sensitivity on the menu items based on what is selected
-        self.__set_trustDbMenu_sensitive(True)
 
     def on_profileExecMenu_activate(self, *args):
-        page = router(ANALYZER_SELECTION.PROFILER, self._fapd_mgr)
+        page = router(PAGE_SELECTION.PROFILER, self._fapd_mgr)
         page.analyze_button_pushed += self.activate_file_analyzer
         page.refresh_toolbar += self._refresh_toolbar
         self.__pack_main_content(page)
-        self.__set_trustDbMenu_sensitive(True)
 
     def _refresh_toolbar(self):
         self.__toolbar.refresh_buttons_sensitivity()
