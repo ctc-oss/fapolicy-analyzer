@@ -1,4 +1,4 @@
-# Copyright Concurrent Technologies Corporation 2021
+# Copyright Concurrent Technologies Corporation 2023
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,32 +13,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Tuple
-
-from fapolicy_analyzer.ui.features.application_feature import (
-    APPLICATION_FEATURE,
-    create_application_feature,
-)
+from fapolicy_analyzer.redux import ReduxFeatureModule
 from fapolicy_analyzer.ui.features.notification_feature import (
-    NOTIFICATIONS_FEATURE,
     create_notification_feature,
 )
-from fapolicy_analyzer.ui.features.profiler_feature import (
-    PROFILING_FEATURE,
-    create_profiler_feature,
-)
-from fapolicy_analyzer.ui.features.system_feature import (
-    SYSTEM_FEATURE,
-    create_system_feature,
-)
 
-__all__: Tuple[str, ...] = (
-    "APPLICATION_FEATURE",
-    "NOTIFICATIONS_FEATURE",
-    "SYSTEM_FEATURE",
-    "PROFILING_FEATURE",
-    "create_application_feature",
-    "create_notification_feature",
-    "create_system_feature",
-    "create_profiler_feature",
-)
+
+def test_creates_notification_feature():
+    assert isinstance(create_notification_feature(), ReduxFeatureModule)

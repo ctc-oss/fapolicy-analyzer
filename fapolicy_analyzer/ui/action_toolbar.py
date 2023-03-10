@@ -14,9 +14,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from typing import Dict, Sequence, Union
+from typing import Dict, List, Mapping, Sequence, Union
 
 import gi
+
 from fapolicy_analyzer.ui.ui_page import UIAction
 
 gi.require_version("Gtk", "3.0")
@@ -24,7 +25,7 @@ from gi.repository import Gtk  # isort: skip
 
 
 class ActionToolbar(Gtk.Toolbar):
-    def __init__(self, actions: Dict[str, Sequence[UIAction]] = {}, **kwargs):
+    def __init__(self, actions: Dict[str, List[UIAction]] = {}, **kwargs):
         super().__init__(**kwargs)
         self.__btn_action_map: Dict[Gtk.ToolButton, UIAction] = {}
         self.rebuild_toolbar(actions)
@@ -62,7 +63,7 @@ class ActionToolbar(Gtk.Toolbar):
             btn.destroy()
         self.__btn_action_map = {}
 
-    def rebuild_toolbar(self, actions: Dict[str, Sequence[UIAction]]):
+    def rebuild_toolbar(self, actions: Mapping[str, Sequence[UIAction]]):
         def create_button(action: UIAction) -> Gtk.ToolButton:
             btn = Gtk.ToolButton(
                 label=action.name,

@@ -1,4 +1,4 @@
-# Copyright Concurrent Technologies Corporation 2021
+# Copyright Concurrent Technologies Corporation 2023
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,16 +13,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Tuple
 
-from fapolicy_analyzer.ui.reducers.application_reducer import application_reducer
-from fapolicy_analyzer.ui.reducers.notification_reducer import notification_reducer
-from fapolicy_analyzer.ui.reducers.profiler_reducer import profiler_reducer
-from fapolicy_analyzer.ui.reducers.system_reducer import system_reducer
+from enum import Enum
 
-__all__: Tuple[str, ...] = (
-    "application_reducer",
-    "notification_reducer",
-    "profiler_reducer",
-    "system_reducer",
-)
+
+class PAGE_SELECTION(Enum):
+    TRUST_DATABASE_ADMIN = "trust"
+    RULES_ADMIN = "rules"
+    ANALYZE_FROM_DEBUG = "debug log"
+    ANALYZE_SYSLOG = "syslog"
+    PROFILER = "profiler"

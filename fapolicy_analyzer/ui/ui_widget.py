@@ -16,12 +16,13 @@
 import logging
 from abc import ABC, ABCMeta
 from dataclasses import dataclass
-from typing import Callable
+from typing import Callable, Dict, Optional, Sequence
 
 import gi
+from rx.core.typing import Observable
+
 from fapolicy_analyzer.ui import DOMAIN, get_resource
 from fapolicy_analyzer.util.format import snake_to_camelcase
-from rx.core.typing import Observable
 
 gi.require_version("GtkSource", "3.0")
 from gi.repository import Gtk  # isort: skip
@@ -80,15 +81,17 @@ class UIBuilderWidget(UIWidget, ABC):
     """
 
     def __init__(self, name=None):
+        self._builder = Gtk.Builder()
+        self._builder.set_translation_domain(DOMAIN)
+
         name = name or self.__module__.split(".")[-1]
         glade = get_resource(f"{name}.glade")
 
         if not glade:
             logging.error(f"Resource {name}.glade is not available.")
+        else:
+            self._builder.add_from_string(glade)
 
-        self._builder = Gtk.Builder()
-        self._builder.set_translation_domain(DOMAIN)
-        self._builder.add_from_string(glade)
         self._builder.connect_signals(self)
         UIWidget.__init__(self, self.get_object(snake_to_camelcase(name)))
 
@@ -105,35 +108,54 @@ class UIConnectedWidget(UIBuilderWidget, metaclass=_combinedMeta):
 
     def __init__(
         self,
-        feature: Observable,
-        on_next: Callable = None,
-        on_error: Callable = None,
-        on_completed: Callable = None,
+        feature: Optional[Observable] = None,
+        on_next: Optional[Callable] = None,
+        on_error: Optional[Callable] = None,
+        on_completed: Optional[Callable] = None,
+        features: Sequence[Dict[Observable, Dict[str, Callable]]] = [],
     ):
+        if not feature and not features:
+            raise TypeError(
+                "UIConnectedWidget.__init__() no feature parameters provided"
+            )
+
         UIBuilderWidget.__init__(self)
-        self._feature = feature
-        self._on_next = on_next
-        self._on_error = on_error
-        self._on_completed = on_completed
-        self._subscription = None
+
+        single = (
+            {
+                feature: {
+                    "on_next": on_next,
+                    "on_error": on_error,
+                    "on_completed": on_completed,
+                }
+            }
+            if feature
+            else {}
+        )
+        self.__features = [single, *features]
+        self.__subscriptions = None
 
     def __post_init__(
         self,
-        feature: Observable = None,
-        on_next: Callable = None,
-        on_error: Callable = None,
-        on_completed: Callable = None,
+        *args,
         **kwargs,
     ):
-        self._subscription = self._feature.subscribe(
-            on_next=self._on_next,
-            on_error=self._on_error,
-            on_completed=self._on_completed,
-        )
+        self.__subscriptions = [
+            feature.subscribe(
+                on_next=handlers.get("on_next"),
+                on_error=handlers.get("on_error"),
+                on_completed=handlers.get("on_completed"),
+            )
+            for feature_details in self.__features
+            for feature, handlers in feature_details.items()
+        ]
 
     def _dispose(self):
-        if self._subscription:
-            logging.debug(
-                "disposing of subscription for class {}".format(self.__class__.__name__)
-            )
-            self._subscription.dispose()
+        if self.__subscriptions:
+            for subscription in self.__subscriptions:
+                logging.debug(
+                    "disposing of subscription for class {}".format(
+                        self.__class__.__name__
+                    )
+                )
+                subscription.dispose()

@@ -52,13 +52,11 @@ VALIDATION_NOTE_CATEGORY = "invalid rules"
 
 class RulesAdminPage(UIConnectedWidget, UIPage):
     def __init__(self):
-        UIConnectedWidget.__init__(
-            self, get_system_feature(), on_next=self.on_next_system
-        )
-
-        self.__notification_subscription = get_notifications_feature().subscribe(
-            on_next=self.on_next_notifications,
-        )
+        features = [
+            {get_system_feature(): {"on_next": self.on_next_system}},
+            {get_notifications_feature(): {"on_next": self.on_next_notifications}},
+        ]
+        UIConnectedWidget.__init__(self, features=features)
 
         actions = {
             "rules": [
@@ -95,10 +93,18 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         self.__system: System = None
         self.__validation_notifications: Sequence[Notification] = []
 
-        self._list_view.treeView.connect("row-collapsed", self._list_view.on_row_collapsed)
-        self._list_view.treeView.connect("row-expanded", self._list_view.on_row_expanded)
-        self.__status_info.get_object("statusList").connect("row-collapsed", self.__status_info.on_row_collapsed)
-        self.__status_info.get_object("statusList").connect("row-expanded", self.__status_info.on_row_expanded)
+        self._list_view.treeView.connect(
+            "row-collapsed", self._list_view.on_row_collapsed
+        )
+        self._list_view.treeView.connect(
+            "row-expanded", self._list_view.on_row_expanded
+        )
+        self.__status_info.get_object("statusList").connect(
+            "row-collapsed", self.__status_info.on_row_collapsed
+        )
+        self.__status_info.get_object("statusList").connect(
+            "row-expanded", self.__status_info.on_row_expanded
+        )
 
         self.__load_rules()
 
@@ -144,7 +150,9 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         for note in self.__validation_notifications:
             dispatch(remove_notification(note.id))
 
-    def __build_and_validate_changeset(self, show_notifications=True) -> Tuple[RuleChangeset, bool]:
+    def __build_and_validate_changeset(
+        self, show_notifications=True
+    ) -> Tuple[RuleChangeset, bool]:
         changeset = RuleChangeset()
         valid = True
 
@@ -186,13 +194,10 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
                 )
         return changeset, valid
 
-    def _dispose(self):
-        UIConnectedWidget._dispose(self)
-        if self.__notification_subscription:
-            self.__notification_subscription.dispose()
-
     def __is_list_view(self):
-        return True if self.get_object("ruleNotebook").get_current_page() == 1 else False
+        return (
+            True if self.get_object("ruleNotebook").get_current_page() == 1 else False
+        )
 
     def on_save_clicked(self, *args):
         changeset, valid = self.__build_and_validate_changeset()
