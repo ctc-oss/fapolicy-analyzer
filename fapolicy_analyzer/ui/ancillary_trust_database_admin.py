@@ -49,6 +49,15 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
         self.__loading_percent = -1
         self.selectedFiles = None
 
+        self.create_trust_file_list()
+
+        self.trustFileDetails = TrustFileDetails()
+        self.get_object("rightBox").pack_start(
+            self.trustFileDetails.get_ref(), True, True, 0
+        )
+        self.show_label = False
+
+    def create_trust_file_list(self):
         self.trust_file_list = AncillaryTrustFileList(trust_func=self.__load_trust)
         self.trust_file_list.trust_selection_changed += self.on_trust_selection_changed
         self.trust_file_list.files_added += self.on_files_added
@@ -56,12 +65,6 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
         self.get_object("leftBox").pack_start(
             self.trust_file_list.get_ref(), True, True, 0
         )
-
-        self.trustFileDetails = TrustFileDetails()
-        self.get_object("rightBox").pack_start(
-            self.trustFileDetails.get_ref(), True, True, 0
-        )
-        self.show_label = False
 
     def __load_trust(self):
         self.__loading = True
@@ -174,7 +177,10 @@ SHA256: {fs.sha(trust.path)}"""
     def set_treeview_display(self):
         scroll_window = self.trust_file_list.get_object("viewScroll")
         scroll_window.remove(scroll_window.get_child())
-        scroll_window.add(self.trust_file_list.treeView)
+        if self.trust_file_list.treeView is not None:
+            scroll_window.add(self.trust_file_list.treeView)
+        else:
+            self.create_trust_file_list()
         self.show_label = False
         scroll_window.show_all()
 
