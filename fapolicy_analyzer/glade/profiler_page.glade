@@ -198,7 +198,7 @@
             <child>
               <object class="GtkTextView" id="profilerOutput">
                 <property name="visible">True</property>
-                <property name="sensitive">False</property>
+                <property name="sensitive">True</property>
                 <property name="can_focus">True</property>
                 <property name="vexpand">True</property>
                 <property name="editable">False</property>
