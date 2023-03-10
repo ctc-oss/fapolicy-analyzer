@@ -14,18 +14,22 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+
+from rx.core.typing import Observable
+from rx.operators import map
+
 from fapolicy_analyzer import System
+from fapolicy_analyzer.redux import Action, create_store, select_feature
 from fapolicy_analyzer.ui.features import (
+    APPLICATION_FEATURE,
     NOTIFICATIONS_FEATURE,
     PROFILING_FEATURE,
     SYSTEM_FEATURE,
+    create_application_feature,
     create_notification_feature,
     create_profiler_feature,
     create_system_feature,
 )
-from fapolicy_analyzer.redux import Action, create_store, select_feature
-from rx import operators
-from rx.core.typing import Observable
 
 store = create_store()
 
@@ -38,6 +42,7 @@ def init_store(system: System = None):
     system -- the fapolicy_analyzer.System object, defaults to None. If not provided,
               a new System object will be initialized.  Used for testing purposes only.
     """
+    store.add_feature_module(create_application_feature())
     store.add_feature_module(create_notification_feature())
     store.add_feature_module(create_profiler_feature(store.dispatch))
     store.add_feature_module(create_system_feature(store.dispatch, system))
@@ -49,14 +54,16 @@ def dispatch(action: Action) -> None:
 
 
 def get_notifications_feature() -> Observable:
-    return store.as_observable().pipe(
-        operators.map(select_feature(NOTIFICATIONS_FEATURE))
-    )
+    return store.as_observable().pipe(map(select_feature(NOTIFICATIONS_FEATURE)))
 
 
 def get_profiling_feature() -> Observable:
-    return store.as_observable().pipe(operators.map(select_feature(PROFILING_FEATURE)))
+    return store.as_observable().pipe(map(select_feature(PROFILING_FEATURE)))
 
 
 def get_system_feature() -> Observable:
-    return store.as_observable().pipe(operators.map(select_feature(SYSTEM_FEATURE)))
+    return store.as_observable().pipe(map(select_feature(SYSTEM_FEATURE)))
+
+
+def get_application_feature() -> Observable:
+    return store.as_observable().pipe(map(select_feature(APPLICATION_FEATURE)))

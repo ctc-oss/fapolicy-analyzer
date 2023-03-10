@@ -19,6 +19,9 @@ from unittest.mock import MagicMock
 import gi
 import pytest
 from callee import Attrs, InstanceOf
+from mocks import mock_events, mock_groups, mock_log, mock_System, mock_users
+from rx.subject import Subject
+
 from fapolicy_analyzer.redux import Action
 from fapolicy_analyzer.ui.actions import (
     ADD_NOTIFICATION,
@@ -34,9 +37,6 @@ from fapolicy_analyzer.ui.strings import (
     GET_USERS_ERROR_MSG,
     PARSE_EVENT_LOG_ERROR_MSG,
 )
-from rx.subject import Subject
-
-from mocks import mock_events, mock_groups, mock_log, mock_System, mock_users
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
@@ -104,7 +104,7 @@ def widget(mock_dispatch, mock_system_features, mocker, states):
     )
 
     init_store(mock_System())
-    widget = PolicyRulesAdminPage(_mock_file)
+    widget = PolicyRulesAdminPage(audit_file=_mock_file)
 
     for s in states:
         mock_system_features.on_next(s)
@@ -152,7 +152,7 @@ def test_creates_widget(widget):
 
 def test_loads_debug_file(mock_dispatch):
     init_store(mock_System())
-    PolicyRulesAdminPage(_mock_file)
+    PolicyRulesAdminPage(audit_file=_mock_file)
     mock_dispatch.assert_any_call(
         InstanceOf(Action) & Attrs(type=REQUEST_EVENTS, payload=("debug", _mock_file))
     )
@@ -160,7 +160,7 @@ def test_loads_debug_file(mock_dispatch):
 
 def test_loads_syslog(mock_dispatch):
     init_store(mock_System())
-    PolicyRulesAdminPage()
+    PolicyRulesAdminPage(use_syslog=True)
     mock_dispatch.assert_any_call(
         InstanceOf(Action) & Attrs(type=REQUEST_EVENTS, payload=("syslog", None))
     )
@@ -664,7 +664,7 @@ def test_users_loading_w_exception(mock_system_features, states, mock_dispatch):
 
 def test_groups_loading_w_exception(mock_system_features, states, mock_dispatch):
     init_store(mock_System())
-    PolicyRulesAdminPage(_mock_file)
+    PolicyRulesAdminPage(audit_file=_mock_file)
     mock_system_features.on_next(
         {**states[0], **{"groups": MagicMock(error="foo", loading=False)}}
     )
@@ -684,7 +684,7 @@ def test_time_not_displayed(mocker, widget):
 
 
 def test_time_select_button_clicked(mocker):
-    page = PolicyRulesAdminPage()
+    page = PolicyRulesAdminPage(use_syslog=True)
     mockDialog = MagicMock()
     mockDialog.run.return_value = 1
     mockDialog.get_seconds.return_value = 3600
@@ -695,13 +695,32 @@ def test_time_select_button_clicked(mocker):
 
     time_click = next(
         iter(
-            [
-                a.signals["clicked"]
-                for a in page.actions["time"]
-                if a.name == "Time"
-            ]
+            [a.signals["clicked"] for a in page.actions["analyze"] if a.name == "Time"]
         )
     )
     time_click()
     mockDialog.run.assert_called()
     assert page._time_delay == 3600
+
+
+def test_open_file_button_clicked(widget, mock_dispatch, mocker):
+    mock_get_Filename = mocker.patch(
+        "fapolicy_analyzer.ui.policy_rules_admin_page.FileChooserDialog.get_filename",
+        return_value="foo",
+    )
+    Gtk.Window().add(widget.get_ref())  # add widget to window for dialog parent
+
+    on_click = next(
+        iter(
+            [
+                a.signals["clicked"]
+                for a in widget.actions["analyze"]
+                if a.name == "Open File"
+            ]
+        )
+    )
+    on_click()
+    mock_get_Filename.assert_called()
+    mock_dispatch.assert_any_call(
+        InstanceOf(Action) & Attrs(type=REQUEST_EVENTS, payload=("debug", "foo"))
+    )

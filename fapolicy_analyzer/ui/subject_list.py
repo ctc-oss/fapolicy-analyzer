@@ -18,23 +18,22 @@ from more_itertools import first_true
 
 import fapolicy_analyzer.ui.strings as strings
 from fapolicy_analyzer.ui.actions import apply_changesets
-from fapolicy_analyzer.ui.add_file_button import AddFileButton
 from fapolicy_analyzer.ui.changeset_wrapper import TrustChangeset
 from fapolicy_analyzer.ui.configs import Colors
 from fapolicy_analyzer.ui.confirm_change_dialog import ConfirmChangeDialog
 from fapolicy_analyzer.ui.searchable_list import SearchableList
 from fapolicy_analyzer.ui.store import dispatch
 from fapolicy_analyzer.ui.strings import (
+    ACCESS_ALLOWED_TOOLTIP,
+    ACCESS_DENIED_TOOLTIP,
+    ACCESS_PARTIAL_TOOLTIP,
     FILE_LABEL,
     FILES_LABEL,
-    UNTRUSTED_ANCILLARY_TOOLTIP,
-    UNTRUSTED_SYSTEM_TOOLTIP,
     TRUSTED_ANCILLARY_TOOLTIP,
     TRUSTED_SYSTEM_TOOLTIP,
     UNKNOWN_TOOLTIP,
-    ACCESS_ALLOWED_TOOLTIP,
-    ACCESS_PARTIAL_TOOLTIP,
-    ACCESS_DENIED_TOOLTIP,
+    UNTRUSTED_ANCILLARY_TOOLTIP,
+    UNTRUSTED_SYSTEM_TOOLTIP,
 )
 from fapolicy_analyzer.ui.trust_reconciliation_dialog import TrustReconciliationDialog
 
@@ -52,13 +51,8 @@ class SubjectList(SearchableList):
             "file_selection_changed",
         ]
 
-        add_button = AddFileButton()
-        add_button.files_added += lambda files: print(files)
-        add_button.get_ref().set_sensitive(False)  # disable for now in readonly-view
-
         super().__init__(
             self._columns(),
-            add_button.get_ref(),
             searchColumnIndex=2,
             defaultSortIndex=2,
             selection_type="multi",
@@ -128,35 +122,52 @@ class SubjectList(SearchableList):
         trust = subject.trust.lower()
         if not status == "t":
             at_str, at_tooltip = (
-                (f'<span color="{Colors.RED}"><b>AT</b></span>', UNTRUSTED_ANCILLARY_TOOLTIP)
+                (
+                    f'<span color="{Colors.RED}"><b>AT</b></span>',
+                    UNTRUSTED_ANCILLARY_TOOLTIP,
+                )
                 if trust == "at"
                 else ("AT", "")
             )
             st_str, st_tooltip = (
-                (f'<span color="{Colors.RED}"><b>ST</b></span>', UNTRUSTED_SYSTEM_TOOLTIP)
+                (
+                    f'<span color="{Colors.RED}"><b>ST</b></span>',
+                    UNTRUSTED_SYSTEM_TOOLTIP,
+                )
                 if trust == "st"
                 else ("ST", "")
             )
             u_str, u_tooltip = (
-                (f'<span color="{Colors.GREEN}"><u><b>U</b></u></span>', UNKNOWN_TOOLTIP)
+                (
+                    f'<span color="{Colors.GREEN}"><u><b>U</b></u></span>',
+                    UNKNOWN_TOOLTIP,
+                )
                 if trust == "u"
                 else ("U", "")
             )
         else:
             at_str, at_tooltip = (
-                (f'<span color="{Colors.GREEN}"><u><b>AT</b></u></span>', TRUSTED_ANCILLARY_TOOLTIP)
+                (
+                    f'<span color="{Colors.GREEN}"><u><b>AT</b></u></span>',
+                    TRUSTED_ANCILLARY_TOOLTIP,
+                )
                 if trust == "at"
                 else ("AT", "")
             )
             st_str, st_tooltip = (
-                (f'<span color="{Colors.GREEN}"><u><b>ST</b></u></span>', TRUSTED_SYSTEM_TOOLTIP)
+                (
+                    f'<span color="{Colors.GREEN}"><u><b>ST</b></u></span>',
+                    TRUSTED_SYSTEM_TOOLTIP,
+                )
                 if trust == "st"
                 else ("ST", "")
             )
             u_str, u_tooltip = "U", ""
 
         tooltips = [at_tooltip, st_tooltip, u_tooltip]
-        return " / ".join([st_str, at_str, u_str]), "\n".join([t for t in tooltips if not t == ""])
+        return " / ".join([st_str, at_str, u_str]), "\n".join(
+            [t for t in tooltips if not t == ""]
+        )
 
     def __markup(self, value, options):
 
