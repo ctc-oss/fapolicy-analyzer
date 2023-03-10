@@ -95,6 +95,11 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         self.__system: System = None
         self.__validation_notifications: Sequence[Notification] = []
 
+        self._list_view.treeView.connect("row-collapsed", self._list_view.on_row_collapsed)
+        self._list_view.treeView.connect("row-expanded", self._list_view.on_row_expanded)
+        self.__status_info.get_object("statusList").connect("row-collapsed", self.__status_info.on_row_collapsed)
+        self.__status_info.get_object("statusList").connect("row-expanded", self.__status_info.on_row_expanded)
+
         self.__load_rules()
 
     def __init_child_widgets(self):
@@ -186,6 +191,9 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         if self.__notification_subscription:
             self.__notification_subscription.dispose()
 
+    def __is_list_view(self):
+        return True if self.get_object("ruleNotebook").get_current_page() == 1 else False
+
     def on_save_clicked(self, *args):
         changeset, valid = self.__build_and_validate_changeset()
         self.__update_list_view(changeset)
@@ -199,7 +207,7 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         changeset, _ = self.__build_and_validate_changeset(show_notifications=False)
         self.__update_list_view(changeset)
         self.__status_info.render_rule_status(changeset.rules())
-
+        self._list_view.restore_row_collapse()
         # dispatch to force toolbar refresh
         dispatch(modify_rules_text(self.__rules_validated))
 
