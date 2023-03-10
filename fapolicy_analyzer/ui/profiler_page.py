@@ -202,8 +202,12 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
             "env": self.get_env_text(),
         }
 
+    def get_entry_dict_markup(self):
+        return f"<span size='x-large' underline='single'><b>Target</b></span>\n" + \
+            "\n".join([f"{key}: {value}" for key, value in self.get_entry_dict().items()])
+
     def display_log_output(self, logs):
-        markup = ""
+        markup = self.get_entry_dict_markup() + "\n\n"
         for (description, log) in logs:
             if log:
                 markup += f"<span size='x-large' underline='single'><b>{description}</b></span> (<b>{log}</b>)\n"
@@ -215,7 +219,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
                     logging.error(f"There was an issue reading from {log}", ex)
                     markup += f"<span size='large'>Failed to open log: <span underline='error'>{ex}</span></span>\n"
                 markup += "\n\n"
-        self.set_output_text(markup)
+        self.set_output_text(markup.rstrip())
 
     def on_stop_clicked(self, *args):
         self.can_stop = False
@@ -246,11 +250,10 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
             self.terminating = False
             self.refresh_toolbar()
 
+            self.set_output_text("<span size='large'><b>Profiler starting...</b></span>")
+
             profiling_args = self.make_profiling_args()
 
-            self.set_output_text("<span size='large'><b>Profiler starting...</b></span>\n"
-                                 + "".join([f"{key}: {value}\n" for key, value in profiling_args.items()])
-                                 )
             logging.debug(f"Entry text = {profiling_args}")
             dispatch(start_profiling(profiling_args))
 
