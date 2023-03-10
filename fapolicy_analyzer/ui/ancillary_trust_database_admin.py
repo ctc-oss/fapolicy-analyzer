@@ -218,10 +218,10 @@ SHA256: {fs.sha(trust.path)}"""
             self.trust_file_list.set_changesets(self._changesets)
             self.__load_trust()
 
-        if trust_state.trust_count == 0:
-            self.set_label_display()
-        elif self.show_label and trust_state.trust_count > 0:
-            self.set_treeview_display()
+        # if trust_state.trust_count == 0:
+            # self.set_label_display()
+        # elif self.show_label and trust_state.trust_count > 0:
+            # self.set_treeview_display()
 
         # if there was an error loading show appropriate notification
         if trust_state.error and self.__loading:
