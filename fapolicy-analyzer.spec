@@ -97,6 +97,7 @@ Requires:      python3-configargparse
 Requires:      python3-more-itertools
 Requires:      python3-rx
 Requires:      python3-importlib-metadata
+Requires:      python3-toml 
 
 Requires:      gtk3
 Requires:      gtksourceview3
