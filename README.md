@@ -16,11 +16,9 @@ You can install the Policy Analyzer in one of the following ways
 
 <details>
 
-  <summary>Using Official Fedora Packages</summary>
+  <summary>From Fedora Packages</summary>
 
-This installation method is currently available for Fedora 37 and greater, including Rawhide.
-
-Official EPEL releases are coming, but are not yet available.  See the Copr releases for EPEL 8.
+This installation method is currently available for Fedora EPEL 8, and Fedora 37 or later, including Rawhide.
 
 ```sh
 dnf install fapolicy-analyzer
@@ -41,9 +39,11 @@ Choose an RPM from the latest Fedora stable, Rawhide, and EPEL builds. <br>
 
 <details>
 
-  <summary>Using Fedora Copr</summary>
+  <summary>From Fedora Copr</summary>
 
-Follow this method to install EPEL 8 and prerelease packages.
+The Copr repository contains the latest development builds and release builds prior to publishing to the Fedora repositories.
+
+Follow this method to install a prerelease package.
 
 ### Add Copr repository
 
@@ -54,9 +54,11 @@ dnf install dnf-plugins-core
 dnf copr enable ctc-oss/fapolicy-analyzer
 ```
 
-### Copr EPEL builds
+### Copr Release builds
 
-EPEL releases of the Policy Analyzer are available from Copr and can be installed with the normal process
+Releases packages of the Policy Analyzer are generally available from Copr a week before being available from Fedora.
+
+The Policy Analyzer can be installed from the ctc-oss repository with the normal process
 
 `dnf install fapolicy-analyzer`
 
@@ -102,7 +104,9 @@ Python and Rust dependencies will be installed during the build process.
 
 ## fapolicyd
 
-We aim to be compatible back to v1.0, but newer versions will likely work best.
+We target support for v1.0+
+
+[![fapolicyd-fature-badge](https://img.shields.io/github/labels/ctc-oss/fapolicy-analyzer/fapolicyd%20feature)](https://github.com/ctc-oss/fapolicy-analyzer/labels/fapolicyd%20feature) labels issues for features that are not yet supported. 
 
 To analyze from syslog we require the following `syslog_format` in fapolicyd.conf
 
@@ -112,9 +116,10 @@ syslog_format = rule,dec,perm,uid,gid,pid,exe,:,path,ftype,trust
 
 ## Getting Help
 
+- Read the [User Guide](https://github.com/ctc-oss/fapolicy-analyzer/wiki/User-Guide)
+- Check [Known Issues](https://github.com/ctc-oss/fapolicy-analyzer/wiki/Known-Issues)
 - Start a [Discussion](https://github.com/ctc-oss/fapolicy-analyzer/discussions)
 - Open an [Issue](https://github.com/ctc-oss/fapolicy-analyzer/issues)
-- See the [Wiki](https://github.com/ctc-oss/fapolicy-analyzer/wiki)
 
 ## License
 

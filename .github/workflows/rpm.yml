@@ -157,6 +157,12 @@ jobs:
         run: |
           git config --global --add safe.directory $GITHUB_WORKSPACE
 
+      - name: Generate doc tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          echo "${{ steps.tag_name.outputs.VERSION }}" > help/version
+          cat help/version
+
       - name: Build SRPM
         run: |
           make -f .copr/Makefile             \
