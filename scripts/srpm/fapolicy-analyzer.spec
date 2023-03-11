@@ -63,6 +63,7 @@ Requires:      python3-rx
 Requires:      python3-importlib-metadata
 Requires:      python3-dataclasses
 Requires:      python3-importlib-resources
+Requires:      python3-toml
 Requires:      gtk3
 Requires:      dbus-libs
 Requires:      gtksourceview3

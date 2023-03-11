@@ -63,7 +63,7 @@ fn dir(db: &DB, dir: &Path) -> Result<(), io::Error> {
     // and it will be needed for the future. the only thing that will
     // be changed is to eventually remove this comment
     if !dir.exists() && !files.is_empty() {
-        eprintln!("NOTICE: trust.d does not exist, creating it now");
+        log::warn!("trust.d does not exist, creating it now");
         fs::create_dir_all(dir)?;
     }
 

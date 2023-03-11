@@ -15,7 +15,7 @@
 
 import logging
 from locale import gettext as _
-from typing import Any, Sequence
+from typing import Any, Optional, Sequence
 
 import gi
 
@@ -32,6 +32,7 @@ from fapolicy_analyzer.ui.actions import (
 from fapolicy_analyzer.ui.changeset_wrapper import Changeset
 from fapolicy_analyzer.ui.confirm_deployment_dialog import ConfirmDeploymentDialog
 from fapolicy_analyzer.ui.deploy_revert_dialog import DeployRevertDialog
+from fapolicy_analyzer.ui.file_chooser_dialog import FileChooserDialog
 from fapolicy_analyzer.ui.operations.ui_operation import UIOperation
 from fapolicy_analyzer.ui.store import dispatch, get_system_feature
 from fapolicy_analyzer.ui.strings import (
@@ -48,33 +49,6 @@ from fapolicy_analyzer.util.fapd_dbase import fapd_dbase_snapshot
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
-
-
-class _FapdArchiveFileChooserDialog(Gtk.FileChooserDialog):
-    def __init__(self, parent):
-        super().__init__(
-            title=SAVE_AS_FILE_LABEL,
-            transient_for=parent,
-            action=Gtk.FileChooserAction.SAVE,
-        )
-        self.add_buttons(
-            Gtk.STOCK_CANCEL,
-            Gtk.ResponseType.CANCEL,
-            Gtk.STOCK_SAVE,
-            Gtk.ResponseType.OK,
-        )
-        self.set_do_overwrite_confirmation(True)
-
-        fileFilterTgz = Gtk.FileFilter()
-        fileFilterTgz.set_name(FA_ARCHIVE_FILES_FILTER_LABEL)
-        fileFilterTgz.add_pattern("*.tgz")
-        self.add_filter(fileFilterTgz)
-
-        fileFilterAny = Gtk.FileFilter()
-        fileFilterAny.set_name(ANY_FILES_FILTER_LABEL)
-        fileFilterAny.add_pattern("*")
-        self.add_filter(fileFilterAny)
-        self.show_all()
 
 
 class DeployChangesetsOp(UIOperation):
@@ -97,18 +71,28 @@ class DeployChangesetsOp(UIOperation):
         op.deploy(changesets)
     """
 
+    __FILE_FILTERS = [
+        (FA_ARCHIVE_FILES_FILTER_LABEL, "*.tgz"),
+        (ANY_FILES_FILTER_LABEL, "*"),
+    ]
+
     def __init__(self, parentWindow: Gtk.Window = None) -> None:
         self.__window = parentWindow
         self.__deploying = False
         self.__reverting = False
         self.__subscription = get_system_feature().subscribe(on_next=self.__on_next)
 
-    def __get_fapd_archive_file_name(self) -> str:
+    def __get_fapd_archive_file_name(self) -> Optional[str]:
         """Display a file chooser dialog to specify the output archive file."""
-        fcd = _FapdArchiveFileChooserDialog(self.__window)
-        response = fcd.run()
-        fcd.hide()
-        strFilename = fcd.get_filename() if response == Gtk.ResponseType.OK else None
+        fcd = FileChooserDialog(
+            title=SAVE_AS_FILE_LABEL,
+            parent=self.__window,
+            action=Gtk.FileChooserAction.SAVE,
+            action_button=Gtk.STOCK_SAVE,
+            do_overwrite_confirmation=True,
+            filters=self.__FILE_FILTERS,
+        )
+        strFilename = fcd.get_filename()
         fcd.destroy()
         return strFilename
 

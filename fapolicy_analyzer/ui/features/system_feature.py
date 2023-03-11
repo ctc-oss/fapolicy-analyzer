@@ -185,7 +185,6 @@ def create_system_feature(
             action_fn=ancillary_trust_load_complete,
             flag_fn=checking_finished,
         )
-        print(check_ancillary_trust)
         total_to_check = check_ancillary_trust(_system, update, done)
         return ancillary_trust_load_started(total_to_check)
 

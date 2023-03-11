@@ -6,7 +6,9 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+use chrono::Utc;
 use fapolicy_analyzer::users::read_users;
+use fapolicy_daemon::fapolicyd::wait_until_ready;
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
 use pyo3::{PyResult, Python};
@@ -18,9 +20,8 @@ use std::path::PathBuf;
 use std::process::{Child, Command, Output, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
-use std::thread;
 use std::time::{Duration, SystemTime};
-use tempfile::{NamedTempFile, PersistError};
+use std::{io, thread};
 
 use fapolicy_daemon::profiler::Profiler;
 use fapolicy_rules::read::load_rules_db;
@@ -47,7 +48,7 @@ impl PyProfiler {
     #[new]
     fn new() -> Self {
         Self {
-            log_dir: Some("/tmp".to_string()),
+            log_dir: Some("/var/tmp".to_string()),
             ..Default::default()
         }
     }
@@ -61,6 +62,7 @@ impl PyProfiler {
     fn set_user(&mut self, uid_or_uname: Option<&str>) -> PyResult<()> {
         if let Some(uid_or_uname) = uid_or_uname {
             self.uid = if uid_or_uname.starts_with(|x: char| x.is_ascii_alphabetic()) {
+                log::debug!("set_user: looking up username {uid_or_uname}");
                 Some(
                     read_users()
                         .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))?
@@ -75,8 +77,11 @@ impl PyProfiler {
                         })?,
                 )
             } else {
+                log::debug!("set_user: assigning uid {uid_or_uname}");
                 Some(uid_or_uname.parse()?)
             };
+        } else {
+            self.uid = None;
         }
         Ok(())
     }
@@ -128,6 +133,7 @@ impl PyProfiler {
 
     // accept callback for exec control (eg kill), and done notification
     fn profile_all(&self, targets: Vec<&str>) -> PyResult<ProcHandle> {
+        log::debug!("profile_all {}", targets.join(";"));
         // the working dir must exist prior to execution
         if let Some(pwd) = self.pwd.as_ref() {
             // todo;; stable in 1.63
@@ -153,7 +159,7 @@ impl PyProfiler {
 
         // set the daemon stdout log, aka the events log
         if let Some((_, path)) = events_log.as_ref() {
-            rs.stdout_log = Some(path.clone());
+            rs.events_log = Some(path.clone());
         }
 
         // build the target commands
@@ -171,99 +177,111 @@ impl PyProfiler {
 
         // outer thread is responsible for daemon control
         thread::spawn(move || {
-            rs.activate_with_rules(db.as_ref())
-                .expect("activate profiler");
+            // start the daemon and wait until it is ready
+            let start_profiling_daemon = rs
+                .activate_with_rules(db.as_ref())
+                .and_then(|_| wait_until_ready(&events_log.as_ref().unwrap().1))
+                .map_err(|e| e.to_string());
 
-            // inner thread is responsible for target execution
-            let inner = thread::spawn(move || {
-                for (mut cmd, args) in targets {
-                    if term.load(Ordering::Relaxed) {
-                        break;
-                    }
-
-                    // start the process, wrapping in the execd helper
-                    let mut execd = Execd::new(cmd.spawn().unwrap());
-
-                    // the process is now alive
-                    alive.store(true, Ordering::Relaxed);
-
-                    let pid = execd.pid().expect("pid");
-                    let handle = ExecHandle::new(
-                        pid,
-                        args,
-                        term.clone(),
-                        // todo;; clean this up...
-                        events_log.as_ref().map(|x| x.1.display().to_string()),
-                        stdout_log.as_ref().map(|x| x.1.display().to_string()),
-                        stderr_log.as_ref().map(|x| x.1.display().to_string()),
-                    );
-                    let start = SystemTime::now();
-
-                    if let Some(cb) = cb_exec.as_ref() {
-                        Python::with_gil(|py| {
-                            if cb.call1(py, (handle.clone(),)).is_err() {
-                                eprintln!("'exec' callback failed");
-                            }
-                        });
-                    }
-
-                    // loop on target completion status, providing opportunity to interrupt
-                    while let Ok(true) = execd.running() {
-                        thread::sleep(Duration::from_secs(1));
+            // if profiling daemon is not ready do not spawn target threads
+            let profiling_res = if start_profiling_daemon.is_ok() {
+                // inner thread is responsible for target execution
+                let target_thread = thread::spawn(move || {
+                    for (mut cmd, args) in targets {
                         if term.load(Ordering::Relaxed) {
-                            execd.kill().expect("kill fail (term)");
                             break;
                         }
-                        if let Some(cb) = cb_tick.as_ref() {
-                            let t = SystemTime::now()
-                                .duration_since(start)
-                                .expect("system time")
-                                .as_secs();
+
+                        // start the process, wrapping in the execd helper
+                        let mut execd = Execd::new(cmd.spawn().unwrap());
+
+                        // the process is now alive
+                        alive.store(true, Ordering::Relaxed);
+
+                        let pid = execd.pid().expect("pid");
+                        let handle = ExecHandle::new(
+                            pid,
+                            args,
+                            term.clone(),
+                            // todo;; clean this up...
+                            events_log.as_ref().map(|x| x.1.display().to_string()),
+                            stdout_log.as_ref().map(|x| x.1.display().to_string()),
+                            stderr_log.as_ref().map(|x| x.1.display().to_string()),
+                        );
+                        let start = SystemTime::now();
+
+                        if let Some(cb) = cb_exec.as_ref() {
                             Python::with_gil(|py| {
-                                if cb.call1(py, (handle.clone(), t)).is_err() {
-                                    eprintln!("'tick' callback failed");
+                                if cb.call1(py, (handle.clone(),)).is_err() {
+                                    log::warn!("'exec' callback failed");
                                 }
                             });
                         }
-                    }
 
-                    // we need to wait on the process to die, instead of just blocking
-                    // this loop provides the ability to add a harder stop impl, abort
-                    term.store(false, Ordering::Relaxed);
-                    while let Ok(true) = execd.running() {
-                        if term.load(Ordering::Relaxed) {
-                            execd.abort().expect("abort fail (term)");
-                            break;
+                        // loop on target completion status, providing opportunity to interrupt
+                        while let Ok(true) = execd.running() {
+                            thread::sleep(Duration::from_secs(1));
+                            if term.load(Ordering::Relaxed) {
+                                execd.kill().expect("kill fail (term)");
+                                break;
+                            }
+                            if let Some(cb) = cb_tick.as_ref() {
+                                let t = SystemTime::now()
+                                    .duration_since(start)
+                                    .expect("system time")
+                                    .as_secs();
+                                Python::with_gil(|py| {
+                                    if cb.call1(py, (handle.clone(), t)).is_err() {
+                                        log::warn!("'tick' callback failed");
+                                    }
+                                });
+                            }
                         }
-                        thread::sleep(Duration::from_secs(1));
-                    }
 
-                    // no longer alive
-                    alive.store(false, Ordering::Relaxed);
+                        // we need to wait on the process to die, instead of just blocking
+                        // this loop provides the ability to add a harder stop impl, abort
+                        term.store(false, Ordering::Relaxed);
+                        while let Ok(true) = execd.running() {
+                            if term.load(Ordering::Relaxed) {
+                                execd.abort().expect("abort fail (term)");
+                                break;
+                            }
+                            thread::sleep(Duration::from_secs(1));
+                        }
 
-                    // write the target stdout/stderr if configured
-                    let output: Output = execd.into();
-                    if let Some((ref mut f, _)) = stdout_log {
-                        f.write_all(&output.stdout).unwrap();
-                    }
-                    if let Some((ref mut f, _)) = stderr_log {
-                        f.write_all(&output.stderr).unwrap();
-                    }
-                }
-            });
+                        // no longer alive
+                        alive.store(false, Ordering::Relaxed);
 
-            if let Some(e) = inner.join().err() {
-                eprintln!("exec thread panic {:?}", e);
+                        // write the target stdout/stderr if configured
+                        let output: Output = execd.into();
+                        if let Some((ref mut f, _)) = stdout_log {
+                            f.write_all(&output.stdout).unwrap();
+                        }
+                        if let Some((ref mut f, _)) = stderr_log {
+                            f.write_all(&output.stderr).unwrap();
+                        }
+                    }
+                });
+
+                // outer thread waits on the target thread to complete
+                target_thread.join().map_err(|e| format!("{:?}", e))
+            } else {
+                start_profiling_daemon
+            };
+
+            // attempt to deactivate if active
+            if rs.is_active() && rs.deactivate().is_err() {
+                log::warn!("profiler deactivate failed");
             }
 
-            rs.deactivate().expect("deactivate profiler");
-
-            // callback when all targets are completed / cancelled / failed
-            // callback failure here is considered fatal due to the
-            // transactional completion nature of this call
+            // done; all targets are completed / cancelled / failed
             if let Some(cb) = cb_done.as_ref() {
-                Python::with_gil(|py| cb.call0(py).expect("done callback failed"));
+                if Python::with_gil(|py| cb.call0(py)).is_err() {
+                    log::warn!("'done' callback failed");
+                }
             }
+
+            profiling_res.expect("profiling failure");
         });
 
         Ok(proc_handle)
@@ -272,21 +290,22 @@ impl PyProfiler {
 
 type LogPath = Option<(File, PathBuf)>;
 type LogPaths = (LogPath, LogPath, LogPath);
-fn create_log_files(log_dir: Option<&String>) -> Result<LogPaths, PersistError> {
+fn create_log_files(log_dir: Option<&String>) -> Result<LogPaths, io::Error> {
     if let Some(log_dir) = log_dir {
-        let event_log = make_log_path(log_dir)?;
-        let target_stdout = make_log_path(log_dir)?;
-        let target_stderr = make_log_path(log_dir)?;
+        let t = Utc::now().timestamp();
+
+        let event_log = make_log_path(log_dir, t, "events")?;
+        let target_stdout = make_log_path(log_dir, t, "stdout")?;
+        let target_stderr = make_log_path(log_dir, t, "stderr")?;
         return Ok((event_log, target_stdout, target_stderr));
     }
     Ok((None, None, None))
 }
 
-fn make_log_path(log_dir: &str) -> Result<LogPath, PersistError> {
-    NamedTempFile::new_in(log_dir)
-        .ok()
-        .map(|f| f.keep())
-        .transpose()
+fn make_log_path(log_dir: &str, t: i64, suffix: &str) -> Result<LogPath, io::Error> {
+    let path = PathBuf::from(format!("{log_dir}/.fapa{t}.{suffix}"));
+    let file = File::create(&path)?;
+    Ok(Some((file, path)))
 }
 
 /// Terminable process handle returned to python after starting profiling
@@ -419,7 +438,7 @@ impl Execd {
 
     /// Kill more
     fn abort(&mut self) -> PyResult<()> {
-        eprintln!("abort is not yet implemented");
+        log::debug!("abort is not yet implemented");
         Ok(())
     }
 }

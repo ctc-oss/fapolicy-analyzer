@@ -104,7 +104,7 @@ def handle_start_profiling_request(state: ProfilerState, action: Action) -> Prof
     args: Dict[str, str] = action.payload
     uid = args.get("uid", None)
     pwd = args.get("pwd", None)
-    env = args.get("env_dict", None)
+    env = args.get("env", None)
     return derive_profiler_state(ProfilerState, state, uid=uid, pwd=pwd, env=env)
 
 
