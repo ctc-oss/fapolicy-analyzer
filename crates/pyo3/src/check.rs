@@ -59,7 +59,7 @@ fn check_all_trust(system: &PySystem, update: PyObject, done: PyObject) -> PyRes
 fn callback_on_done(done: PyObject) {
     Python::with_gil(|py| {
         if done.call0(py).is_err() {
-            eprintln!("failed to make 'done' callback");
+            log::error!("failed to make 'done' callback");
         }
     })
 }
@@ -74,7 +74,7 @@ fn check_disk_trust(recs: Vec<Rec>, update: PyObject, done: PyObject) -> PyResul
 
     // determine batch model based on the total recs to be checked
     let batch_cfg = calculate_batch_config(recs.len());
-    eprintln!(
+    log::debug!(
         "BatchConf: recs: {}, tc:{}, tl:{}, bc:{}, bl:{}",
         recs.len(),
         batch_cfg.thread_cnt,
@@ -92,7 +92,7 @@ fn check_disk_trust(recs: Vec<Rec>, update: PyObject, done: PyObject) -> PyResul
         .collect();
 
     if batch_cfg.thread_cnt != batches.len() {
-        eprintln!(
+        log::warn!(
             "warning: thread_cnt {} does not match batch count {}",
             batch_cfg.thread_cnt,
             batches.len()
@@ -113,7 +113,7 @@ fn check_disk_trust(recs: Vec<Rec>, update: PyObject, done: PyObject) -> PyResul
                         let r: Vec<_> = i.into_iter().map(PyTrust::from).collect();
                         Python::with_gil(|py| {
                             if update.call1(py, (r, cnt)).is_err() {
-                                eprintln!("failed make 'update' callback");
+                                log::error!("failed make 'update' callback");
                             }
                         });
                     }
@@ -138,7 +138,7 @@ fn check_disk_trust(recs: Vec<Rec>, update: PyObject, done: PyObject) -> PyResul
                     .map(|r| check(&r.trusted).unwrap_or(Status::Missing(r.trusted)))
                     .collect::<Vec<_>>();
                 if ttx.send(Update::Items(updates)).is_err() {
-                    eprintln!("failed to send Items msg");
+                    log::error!("failed to send Items msg");
                 };
             }
         });
@@ -149,11 +149,11 @@ fn check_disk_trust(recs: Vec<Rec>, update: PyObject, done: PyObject) -> PyResul
     thread::spawn(move || {
         for handle in handles {
             if handle.join().is_err() {
-                eprintln!("failed to join update handle");
+                log::error!("failed to join update handle");
             };
         }
         if tx.send(Update::Done).is_err() {
-            eprintln!("failed to send Done msg");
+            log::error!("failed to send Done msg");
         };
     });
 

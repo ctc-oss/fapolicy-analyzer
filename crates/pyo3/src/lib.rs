@@ -20,6 +20,8 @@ pub mod trust;
 
 #[pymodule]
 fn rust(_py: Python, m: &PyModule) -> PyResult<()> {
+    pyo3_log::init();
+
     acl::init_module(_py, m)?;
     analysis::init_module(_py, m)?;
     check::init_module(_py, m)?;
