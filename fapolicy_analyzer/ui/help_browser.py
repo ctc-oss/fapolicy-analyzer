@@ -13,17 +13,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 from os import path
+from typing import Optional
+from urllib.parse import ParseResult, urlparse, urlunparse
 
 import gi
 
 gi.require_version("Gtk", "3.0")
 gi.require_version("WebKit2", "4.0")
-from gi.repository import Gio, Gtk, WebKit2
+from gi.repository import Gtk, WebKit2
 
 
 class HelpBrowser(Gtk.Window):
-    def __init__(self, *args, uri: str = None, allow_navigation: bool = True, **kwargs):
+    def __init__(
+        self, *args, uri: Optional[str] = None, allow_navigation: bool = True, **kwargs
+    ):
         super().__init__(
             type=Gtk.WindowType.TOPLEVEL,
             *args,
@@ -43,7 +48,6 @@ class HelpBrowser(Gtk.Window):
         scrolled_window = Gtk.ScrolledWindow()
 
         context = WebKit2.WebContext()
-        context.register_uri_scheme("help", self.__handle_help_scheme)
         self.webview = WebKit2.WebView.new_with_context(context)
         scrolled_window.add(self.webview)
 
@@ -71,28 +75,38 @@ class HelpBrowser(Gtk.Window):
         self.go_back.set_sensitive(self.webview.can_go_back())
         self.go_forward.set_sensitive(self.webview.can_go_forward())
 
-    def __handle_help_scheme(self, request: WebKit2.URISchemeRequest, *args):
-        def open_stream(base, rel_path):
-            full_path = path.join(base, rel_path)
-            if path.isdir(full_path):
-                full_path = path.join(full_path, "index.html")
-            if path.isfile(full_path):
-                return Gio.File.new_for_path(full_path).read()
+    def __handle_help_scheme(self, uri_parts: ParseResult):
+        def uri_to_file_path(base: str):
+            _file = path.join(base, uri_parts.path)
+            if path.exists(_file):
+                return _file
             return None
 
+        _file = None
         base_dirs = [
             "/usr/share/help/C",
             path.join(path.expanduser("~"), ".local/share/help/C"),
         ]
         for base in base_dirs:
-            stream = open_stream(base, request.get_path())
-            if stream:
+            _file = uri_to_file_path(base)
+            if _file:
                 break
-        if not stream:
-            file, _ = Gio.File.new_tmp()
-            stream = file.read()
 
-        request.finish(stream, -1, None)
+        if not _file:
+            logging.warning(f"Cannot load URI {urlunparse(uri_parts)}")
+            self.webview.load_html("No help documentation found!")
+            return
+
+        # uncomment for displaying the webview developer tools for debugging
+        # self.webview.get_settings().set_enable_developer_extras(True)
+        # self.webview.get_inspector().show()
+
+        self.webview.get_settings().set_allow_file_access_from_file_urls(True)
+        self.webview.load_uri(f"file://{_file}")
 
     def load_uri(self, uri: str):
-        self.webview.load_uri(uri)
+        uri_parts = urlparse(uri)
+        if uri_parts.scheme == "help":
+            self.__handle_help_scheme(uri_parts)
+        else:
+            self.webview.load_uri(uri)
