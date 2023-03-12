@@ -9,13 +9,6 @@
     },
     {
       "platform": "fedora",
-      "dist": "fc38",
-      "spec": "fapolicy-analyzer.spec",
-      "image": "registry.fedoraproject.org/fedora:38",
-      "chroot": "fedora-38-x86_64"
-    },
-    {
-      "platform": "fedora",
       "dist": "fc37",
       "spec": "fapolicy-analyzer.spec",
       "image": "registry.fedoraproject.org/fedora:37",
