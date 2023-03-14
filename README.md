@@ -34,6 +34,8 @@ You can install the Policy Analyzer in one of the following ways
 
   <summary>From Fedora Packages</summary>
 
+<a href="https://packages.fedoraproject.org/pkgs/fapolicy-analyzer/fapolicy-analyzer/"><img src="https://img.shields.io/fedora/v/fapolicy-analyzer?logo=fedora&label=Fedora&color=3c6eb4"></a>
+
 This installation method is currently available for Fedora EPEL 8, and Fedora 37 or later, including Rawhide.
 
 ```sh
@@ -58,6 +60,8 @@ Choose an RPM from the latest Fedora stable, Rawhide, and EPEL builds. <br>
 <details>
 
   <summary>From Fedora Copr</summary>
+
+<a href="https://copr.fedorainfracloud.org/coprs/ctc-oss/fapolicy-analyzer/"><img src="https://img.shields.io/badge/dynamic/json?color=B87333&logo=fedora&label=Copr&query=builds.latest.state&url=https%3A%2F%2Fcopr.fedorainfracloud.org%2Fapi_3%2Fpackage%3Fownername%3Dctc-oss%26projectname%3Dfapolicy-analyzer%26packagename%3Dfapolicy-analyzer%26with_latest_build%3DTrue"></a>
 
 The Copr repository contains the latest development builds and release builds prior to publishing to the Fedora repositories.
 
