@@ -6,7 +6,7 @@
 <a href="https://packages.fedoraproject.org/pkgs/fapolicy-analyzer/fapolicy-analyzer/"><img src="https://img.shields.io/fedora/v/fapolicy-analyzer?logo=fedora&label=Fedora&color=3c6eb4"></a>
 <a href="https://github.com/ctc-oss/fapolicy-analyzer/releases"><img src="https://img.shields.io/github/v/release/ctc-oss/fapolicy-analyzer?color=4078c0&include_prereleases&label=GitHub&logo=github"></a>
 <a href="https://copr.fedorainfracloud.org/coprs/ctc-oss/fapolicy-analyzer/"><img src="https://img.shields.io/badge/dynamic/json?color=B87333&logo=fedora&label=Copr&query=builds.latest.state&url=https%3A%2F%2Fcopr.fedorainfracloud.org%2Fapi_3%2Fpackage%3Fownername%3Dctc-oss%26projectname%3Dfapolicy-analyzer%26packagename%3Dfapolicy-analyzer%26with_latest_build%3DTrue"></a>
-<img src="https://badgen.net/github/checks/ctc-oss/fapolicy-analyzer?label=CI">
+<img src="https://badgen.net/github/checks/ctc-oss/fapolicy-analyzer?label=CI&icon=github">
 <a href="https://scan.coverity.com/projects/ctc-oss-fapolicy-analyzer"><img src="https://img.shields.io/coverity/scan/26261?label=Coverity"></a>
 <img src="https://img.shields.io/github/license/ctc-oss/fapolicy-analyzer?color=3c6eb4&label=License">
 </p>
@@ -125,10 +125,11 @@ Python and Rust dependencies will be installed during the build process.
 </details>
 
 ## fapolicyd
+[![fapolicyd-version](https://img.shields.io/badge/fapolicyd-1.1.7-3c6eb4)][3]
 
 v1.0+ is supported.
 
-Issues labeled [![fapolicyd-badge](https://img.shields.io/github/labels/ctc-oss/fapolicy-analyzer/fapolicyd%20feature?style=flat)][3] indicate the level of support.
+Issues labeled [![fapolicyd-badge](https://img.shields.io/github/labels/ctc-oss/fapolicy-analyzer/fapolicyd-feature?style=flat)][2] indicate the level of support.
 
 ### fapolicyd.conf
 
@@ -149,5 +150,5 @@ syslog_format = rule,dec,perm,uid,gid,pid,exe,:,path,ftype,trust
 GPL v3
 
 [1]: https://github.com/ctc-oss/fapolicy-analyzer/wiki/User-Guide
-[2]: https://github.com/ctc-oss/fapolicy-analyzer/labels/fapolicyd%20feature
+[2]: https://github.com/ctc-oss/fapolicy-analyzer/labels/fapolicyd-feature
 [3]: https://github.com/linux-application-whitelisting/fapolicyd/blob/main/ChangeLog
