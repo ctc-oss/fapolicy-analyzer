@@ -121,15 +121,10 @@ Python and Rust dependencies will be installed during the build process.
 </details>
 
 ## fapolicyd
-[![fapolicyd-version](https://img.shields.io/badge/fapolicyd-1.2-3c6eb4)][2]
 
-We support v1.0 onward, which requires some use of version based feature flags.
+v1.0+ is supported.
 
-Feature flags will always default to the latest supported version of fapolicyd.
-
-The supported version is determined by compatibility.
-
-Issues labeled [![fapolicyd-badge](https://img.shields.io/github/labels/ctc-oss/fapolicy-analyzer/fapolicyd%20feature?style=flat)][3] are directly related to fapolicyd capabilities.
+Issues labeled [![fapolicyd-badge](https://img.shields.io/github/labels/ctc-oss/fapolicy-analyzer/fapolicyd%20feature?style=flat)][3] indicate the level of support.
 
 ### fapolicyd.conf
 
