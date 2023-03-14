@@ -128,7 +128,7 @@ Issues labeled [![fapolicyd-badge](https://img.shields.io/github/labels/ctc-oss/
 
 ### fapolicyd.conf
 
-To analyze from syslog we require the following `syslog_format`:
+Analyzing from syslog requires the following `syslog_format` entry:
 
 ```
 syslog_format = rule,dec,perm,uid,gid,pid,exe,:,path,ftype,trust
