@@ -100,9 +100,9 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         }
 
     def on_event(self, state: ProfilerState):
+        self.refresh_view(state)
         if state.__class__ in self.profiling_handlers:
             self.profiling_handlers.get(state.__class__)(state)
-        self.refresh_view(state)
         self.refresh_toolbar()
 
     def handle_tick(self, state: ProfilerTick):
