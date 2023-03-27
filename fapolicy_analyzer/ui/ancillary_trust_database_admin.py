@@ -65,6 +65,7 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
     def __load_trust(self):
         self.__loading = True
         self.__loading_percent = -1
+        print("atdb load trust")
         dispatch(request_ancillary_trust())
 
     def __apply_changeset(self, changeset):
@@ -191,13 +192,10 @@ SHA256: {fs.sha(trust.path)}"""
         changeset_state = system.get("changesets")
         trust_state = system.get("ancillary_trust")
 
-        print(self.__loading, not trust_state.loading, trust_state.percent_complete, self.__loading_percent)
-
         # if changesets have changes request a new ancillary trust
         if self._changesets != changeset_state.changesets:
             self._changesets = changeset_state.changesets
             self.trust_file_list.set_changesets(self._changesets)
-            print("atdb load_trust")
             self.__load_trust()
 
         # if there was an error loading show appropriate notification
@@ -224,7 +222,6 @@ SHA256: {fs.sha(trust.path)}"""
         elif done_loading(trust_state):
             self.__loading = False
             self.__loading_percent = 100
-        else:
-        #You're stuck somehow
-            print(trust_state.loading, self.__loading, trust_state.percent_complete, self.__loading_percent)
+        else not trust_state.loading and self.__loading and trust_state.percent_complete >= 100 and self.__loading_percent < 100:
+            self.__load_trust()  
             
