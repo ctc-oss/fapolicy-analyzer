@@ -108,7 +108,7 @@ class DeployChangesetsOp(UIOperation):
             dispatch(restore_system_checkpoint())
             dispatch(clear_changesets())
             dispatch(apply_changesets(*changesets))
-            dispatch(set_system_checkpoint())
+            print("dco:ddrd")
 
     def __on_next(self, system: Any):
         systemState = system.get("system")
