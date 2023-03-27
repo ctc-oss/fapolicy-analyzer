@@ -191,12 +191,13 @@ SHA256: {fs.sha(trust.path)}"""
         changeset_state = system.get("changesets")
         trust_state = system.get("ancillary_trust")
 
-        print(still_loading(trust_state), done_loading(trust_state))
+        print(self.__loading, not state.loading, state.percent_complete, self.__loading_percent)
 
         # if changesets have changes request a new ancillary trust
         if self._changesets != changeset_state.changesets:
             self._changesets = changeset_state.changesets
             self.trust_file_list.set_changesets(self._changesets)
+            print("atdb load_trust")
             self.__load_trust()
 
         # if there was an error loading show appropriate notification
