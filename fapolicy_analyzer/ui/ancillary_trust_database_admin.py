@@ -188,6 +188,13 @@ SHA256: {fs.sha(trust.path)}"""
                 and state.percent_complete >= 100
                 and self.__loading_percent >= 100
             )
+        def stuck(state):
+            return (
+                not trust_state.loading
+                and self.__loading 
+                and trust_state.percent_complete >= 100 
+                and self.__loading_percent < 100)
+            )
 
         changeset_state = system.get("changesets")
         trust_state = system.get("ancillary_trust")
@@ -222,6 +229,7 @@ SHA256: {fs.sha(trust.path)}"""
         elif done_loading(trust_state):
             self.__loading = False
             self.__loading_percent = 100
-        else not trust_state.loading and self.__loading and trust_state.percent_complete >= 100 and self.__loading_percent < 100:
+        else stuck(trust_state):
+            print("stuck")
             self.__load_trust()  
             
