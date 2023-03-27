@@ -191,7 +191,7 @@ SHA256: {fs.sha(trust.path)}"""
         changeset_state = system.get("changesets")
         trust_state = system.get("ancillary_trust")
 
-        print(self.__loading, not state.loading, state.percent_complete, self.__loading_percent)
+        print(self.__loading, not trust_state.loading, trust_state.percent_complete, self.__loading_percent)
 
         # if changesets have changes request a new ancillary trust
         if self._changesets != changeset_state.changesets:
