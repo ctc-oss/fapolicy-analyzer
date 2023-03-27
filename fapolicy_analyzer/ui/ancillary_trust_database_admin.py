@@ -193,7 +193,7 @@ SHA256: {fs.sha(trust.path)}"""
                 not trust_state.loading
                 and self.__loading 
                 and trust_state.percent_complete >= 100 
-                and self.__loading_percent < 100)
+                and self.__loading_percent < 100
             )
 
         changeset_state = system.get("changesets")
