@@ -224,3 +224,7 @@ SHA256: {fs.sha(trust.path)}"""
         elif done_loading(trust_state):
             self.__loading = False
             self.__loading_percent = 100
+        else:
+        #You're stuck somehow
+            print(trust_state.loading, self.__loading, trust_state.percent_complete, self.__loading_percent)
+            
