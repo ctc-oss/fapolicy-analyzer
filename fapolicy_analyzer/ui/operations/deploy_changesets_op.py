@@ -28,6 +28,7 @@ from fapolicy_analyzer.ui.actions import (
     deploy_system,
     restore_system_checkpoint,
     set_system_checkpoint,
+    request_ancillary_trust,
 )
 from fapolicy_analyzer.ui.changeset_wrapper import Changeset
 from fapolicy_analyzer.ui.confirm_deployment_dialog import ConfirmDeploymentDialog
@@ -108,6 +109,7 @@ class DeployChangesetsOp(UIOperation):
             dispatch(restore_system_checkpoint())
             dispatch(clear_changesets())
             dispatch(apply_changesets(*changesets))
+            dispatch(request_ancillary_trust)
             print("dco:ddrd")
 
     def __on_next(self, system: Any):
