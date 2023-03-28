@@ -231,5 +231,6 @@ SHA256: {fs.sha(trust.path)}"""
             self.__loading_percent = 100
         elif stuck(trust_state):
             print("stuck")
-            self.__load_trust()  
+            self.__loading_percent = 100
+            
             
