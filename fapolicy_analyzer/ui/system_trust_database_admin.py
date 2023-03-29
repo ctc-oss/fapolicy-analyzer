@@ -98,7 +98,6 @@ class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
             )
 
         trust_state = system.get("system_trust")
-
         if not trust_state.loading and self.__error != trust_state.error:
             self.__error = trust_state.error
             self.__loading = False

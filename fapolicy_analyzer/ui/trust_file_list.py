@@ -175,9 +175,8 @@ class TrustFileList(SearchableList):
                 return False
 
             count = self._get_tree_count()
-
             if count < self.total:
-                pct = int(count / total * 100)
+                pct = int(count / self.total * 100)
                 self._update_loading_status(f(_("Loading trust {pct}% complete...")))
                 self._update_progress(pct)
                 return True

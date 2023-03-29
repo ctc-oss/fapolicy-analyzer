@@ -205,13 +205,9 @@ class MainWindow(UIConnectedWidget):
 
     def on_start(self, *args):
         logging.info("MainWindow::on_start()")
-<<<<<<< HEAD
-        page = router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN)
+        page = router(PAGE_SELECTION.TRUST_DATABASE_ADMIN)
         page.systemTrustDbAdmin.trust_file_list.refresh_toolbar += self._refresh_toolbar
         self.__pack_main_content(page)
-=======
->>>>>>> origin/master
-
         # On startup check for the existing of a tmp session file
         # If detected, alert the user, enable the File|Restore menu item
         if sessionManager.detect_previous_session():
@@ -422,10 +418,9 @@ class MainWindow(UIConnectedWidget):
         self.__pack_main_content(router(PAGE_SELECTION.ANALYZE_FROM_DEBUG, False, file))
 
     def on_trustDbMenu_activate(self, menuitem, *args):
-        page = router(ANALYZER_SELECTION.TRUST_DATABASE_ADMIN)
+        page = router(PAGE_SELECTION.TRUST_DATABASE_ADMIN)
         page.systemTrustDbAdmin.trust_file_list.refresh_toolbar += self._refresh_toolbar
         self.__pack_main_content(page)
-        self.__set_trustDbMenu_sensitive(False)
 
     def on_rulesAdminMenu_activate(self, *args, **kwargs):
         rulesPage = router(PAGE_SELECTION.RULES_ADMIN)

@@ -66,7 +66,8 @@ class DatabaseAdminPage(UIWidget, UIPage):
         self.ancillaryTrustDbAdmin.add_trusted_files(*files)
 
     def on_trust_toggle_clicked(self, *args):
-        self.systemTrustDbAdmin.trust_file_list.show_trusted = not self.systemTrustDbAdmin.trust_file_list.show_trusted
+        self.systemTrustDbAdmin.trust_file_list.show_trusted ^= True
+        self.systemTrustDbAdmin.trust_file_list.loading_sensitive ^= True
         self.systemTrustDbAdmin.trust_file_list.refresh()
 
     def trust_toggle_sensitivity(self):
