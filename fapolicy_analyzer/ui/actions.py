@@ -88,6 +88,10 @@ ERROR_PROFILER_INIT = "ERROR_PROFILER_INIT"
 ERROR_PROFILER_EXEC = "ERROR_PROFILER_EXEC"
 ERROR_PROFILER_TERM = "ERROR_PROFILER_TERM"
 
+REQUEST_APP_CONFIG = "REQUEST_APP_CONFIG"
+RECEIVED_APP_CONFIG = "RECEIVED_APP_CONFIG"
+ERROR_APP_CONFIG = "ERROR_APP_CONFIG"
+
 
 def _create_action(type: str, payload: Any = None) -> Action:
     return create_action(type)(payload)
@@ -328,3 +332,15 @@ def system_received(system: System) -> Action:
 
 def system_initialization_error(error: str) -> Action:
     return _create_action(ERROR_SYSTEM_INITIALIZATION, error)
+
+
+def request_app_config() -> Action:
+    return _create_action(REQUEST_APP_CONFIG)
+
+
+def received_app_config(config: Dict[str, str]) -> Action:
+    return _create_action(RECEIVED_APP_CONFIG, config)
+
+
+def error_app_config(error: str) -> Action:
+    return _create_action(ERROR_APP_CONFIG, error)

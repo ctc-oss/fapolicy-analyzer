@@ -62,6 +62,7 @@ impl PyProfiler {
     fn set_user(&mut self, uid_or_uname: Option<&str>) -> PyResult<()> {
         if let Some(uid_or_uname) = uid_or_uname {
             self.uid = if uid_or_uname.starts_with(|x: char| x.is_ascii_alphabetic()) {
+                log::debug!("set_user: looking up username {uid_or_uname}");
                 Some(
                     read_users()
                         .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))?
@@ -76,8 +77,11 @@ impl PyProfiler {
                         })?,
                 )
             } else {
+                log::debug!("set_user: assigning uid {uid_or_uname}");
                 Some(uid_or_uname.parse()?)
             };
+        } else {
+            self.uid = None;
         }
         Ok(())
     }
@@ -129,6 +133,7 @@ impl PyProfiler {
 
     // accept callback for exec control (eg kill), and done notification
     fn profile_all(&self, targets: Vec<&str>) -> PyResult<ProcHandle> {
+        log::debug!("profile_all {}", targets.join(";"));
         // the working dir must exist prior to execution
         if let Some(pwd) = self.pwd.as_ref() {
             // todo;; stable in 1.63
@@ -208,7 +213,7 @@ impl PyProfiler {
                         if let Some(cb) = cb_exec.as_ref() {
                             Python::with_gil(|py| {
                                 if cb.call1(py, (handle.clone(),)).is_err() {
-                                    eprintln!("'exec' callback failed");
+                                    log::warn!("'exec' callback failed");
                                 }
                             });
                         }
@@ -227,7 +232,7 @@ impl PyProfiler {
                                     .as_secs();
                                 Python::with_gil(|py| {
                                     if cb.call1(py, (handle.clone(), t)).is_err() {
-                                        eprintln!("'tick' callback failed");
+                                        log::warn!("'tick' callback failed");
                                     }
                                 });
                             }
@@ -266,13 +271,13 @@ impl PyProfiler {
 
             // attempt to deactivate if active
             if rs.is_active() && rs.deactivate().is_err() {
-                eprintln!("profiler deactivate failed");
+                log::warn!("profiler deactivate failed");
             }
 
             // done; all targets are completed / cancelled / failed
             if let Some(cb) = cb_done.as_ref() {
                 if Python::with_gil(|py| cb.call0(py)).is_err() {
-                    eprintln!("'done' callback failed");
+                    log::warn!("'done' callback failed");
                 }
             }
 
@@ -433,7 +438,7 @@ impl Execd {
 
     /// Kill more
     fn abort(&mut self) -> PyResult<()> {
-        eprintln!("abort is not yet implemented");
+        log::debug!("abort is not yet implemented");
         Ok(())
     }
 }

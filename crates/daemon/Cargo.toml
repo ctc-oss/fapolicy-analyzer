@@ -8,8 +8,10 @@ edition = "2018"
 [dependencies]
 nom = "7.1"
 thiserror = "1.0"
+dbus = "0.9"
+tempfile = "3.3"
+log = "0.4"
+
 fapolicy-trust = { version = "*", path = "../trust" }
 fapolicy-rules = { version = "*", path = "../rules" }
 fapolicy-util = { version = "*", path = "../util" }
-dbus = "0.9"
-tempfile = "3.3"

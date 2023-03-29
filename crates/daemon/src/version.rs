@@ -29,7 +29,7 @@ pub fn fapolicyd_version() -> fapolicyd::Version {
     match rpm_q_fapolicyd() {
         Ok(v) => v,
         Err(e) => {
-            eprintln!("Unable to detect fapolicyd version: {:?}", e);
+            log::debug!("Unable to detect fapolicyd version: {:?}", e);
             fapolicyd::Version::Unknown
         }
     }

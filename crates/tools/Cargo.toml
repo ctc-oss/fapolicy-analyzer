@@ -24,6 +24,7 @@ nom = "7.1"
 rayon = "1.5"
 thiserror = "1.0"
 ariadne = "0.1"
+log = "0.4"
 
 fapolicy-analyzer = { version = "*", path = "../analyzer" }
 fapolicy-app = { version = "*", path = "../app" }

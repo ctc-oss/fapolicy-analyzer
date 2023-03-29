@@ -80,8 +80,8 @@ class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
             return (
                 self.__loading
                 and state.loading
-                and state.percent_complete == 0
-                and self.__loading_percent != state.percent_complete
+                and state.percent_complete >= 0
+                and self.__loading_percent == -1
             )
 
         def still_loading(state):
@@ -110,10 +110,13 @@ class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
             )
         elif started_loading(trust_state):
             self.__error = None
-            self.__loading_percent = 0
+            self.__loading_percent = (
+                trust_state.percent_complete if trust_state.percent_complete >= 0 else 0
+            )
             self.trust_file_list.set_loading(True)
             self.set_treeview_display() if self.show_label else None
             self.trust_file_list.init_list(trust_state.trust_count)
+            self.trust_file_list.append_trust(trust_state.trust)
         elif still_loading(trust_state):
             self.__error = None
             self.__loading_percent = trust_state.percent_complete

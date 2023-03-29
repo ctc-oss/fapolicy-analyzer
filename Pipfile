@@ -36,6 +36,7 @@ more-itertools = "~=7.2"
 importlib-resources = "~=1.0.2"
 importlib-metadata = "~=0.23"
 dataclasses = "==0.6"
+toml = "*"
 
 [pipenv]
 allow_prereleases = true

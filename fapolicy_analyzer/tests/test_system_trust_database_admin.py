@@ -128,12 +128,14 @@ def test_load_trust(mock_system_feature, mocker):
         {
             "changesets": [],
             "system_trust": MagicMock(
-                error=False, loading=True, percent_complete=0, trust_count=1
+                error=False, loading=True, percent_complete=0, trust_count=1, trust=[]
             ),
         }
     )
 
     mockInitList.assert_called_once_with(1)
+    mockAppendTrust.assert_called_once_with([])
+    mockAppendTrust.reset_mock()
 
     mock_system_feature.on_next(
         {
@@ -162,6 +164,30 @@ def test_load_trust(mock_system_feature, mocker):
             ),
         }
     )
+
+
+def test_load_trust_in_progress(mock_system_feature, mocker):
+    mock_system_feature.on_next({"changesets": []})
+    init_store(mock_System())
+    widget = SystemTrustDatabaseAdmin()
+    mockAppendTrust = mocker.patch.object(widget.trust_file_list, "append_trust")
+    mockInitList = mocker.patch.object(widget.trust_file_list, "init_list")
+    mock_system_feature.on_next(
+        {
+            "changesets": [],
+            "system_trust": MagicMock(
+                error=False,
+                loading=True,
+                percent_complete=10,
+                trust_count=10,
+                trust=["trust"],
+            ),
+        }
+    )
+
+    mockInitList.assert_called_once_with(10)
+    mockAppendTrust.assert_called_once_with(["trust"])
+    # the rest of the test would be the same as test_load_trust
 
 
 def test_load_trust_w_exception(mock_dispatch, mock_system_feature):
