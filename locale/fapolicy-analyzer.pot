@@ -16,7 +16,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.11.0\n"
+"Generated-By: Babel 2.10.1\n"
 
 #: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:116
 #: fapolicy_analyzer/ui/system_trust_database_admin.py:135
@@ -56,7 +56,7 @@ msgstr ""
 msgid "Reverting to previous settings in {i+1} seconds"
 msgstr ""
 
-#: fapolicy_analyzer/ui/main_window.py:276
+#: fapolicy_analyzer/ui/main_window.py:281
 msgid ""
 "An error occurred trying to open the session file, "
 "{self.strSessionFilename}"
@@ -450,11 +450,25 @@ msgstr ""
 msgid "Error applying changes"
 msgstr ""
 
+<<<<<<< HEAD
+#: fapolicy_analyzer/ui/strings.py:195
+msgid ""
+"fifo pipe does not exist.\n"
+" Default: /run/fapolicyd/fapolicyd.fifo"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:197
+msgid "Unsaved Rules Changes"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:198
+=======
 #: fapolicy_analyzer/ui/strings.py:196
 msgid "Unsaved Rules Changes"
 msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:197
+>>>>>>> origin/master
 msgid ""
 "You have unsaved changes to the rules. If you deploy, your changes will "
 "be lost.\n"
@@ -554,6 +568,7 @@ msgid "No"
 msgstr ""
 
 #: fapolicy_analyzer/glade/confirm_change_dialog.glade:63
+#: fapolicy_analyzer/glade/main_window.glade:402
 #: fapolicy_analyzer/glade/time_select_dialog.glade:57
 #: fapolicy_analyzer/glade/trust_reconciliation_dialog.glade:67
 msgid "Cancel"
@@ -629,16 +644,36 @@ msgstr ""
 msgid "System"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:239
+#: fapolicy_analyzer/glade/main_window.glade:235
+msgid "Syncronize Databases"
+msgstr ""
+
+#: fapolicy_analyzer/glade/main_window.glade:248
 msgid "_Help"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:249
+#: fapolicy_analyzer/glade/main_window.glade:258
 msgid "User Guide"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:312
+#: fapolicy_analyzer/glade/main_window.glade:321
 msgid "fapolicyd:"
+msgstr ""
+
+#: fapolicy_analyzer/glade/main_window.glade:358
+msgid "Sync Trust Databases"
+msgstr ""
+
+#: fapolicy_analyzer/glade/main_window.glade:376
+msgid "Restart"
+msgstr ""
+
+#: fapolicy_analyzer/glade/main_window.glade:389
+msgid "Later"
+msgstr ""
+
+#: fapolicy_analyzer/glade/main_window.glade:426
+msgid "Restart to view database update?"
 msgstr ""
 
 #: fapolicy_analyzer/glade/notification.glade:46

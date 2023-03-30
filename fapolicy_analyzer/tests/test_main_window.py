@@ -437,6 +437,14 @@ def test_on_saveMenu_activate(mainWindow, mocker):
     mockFunc.assert_called()
 
 
+def test_on_syncDatabaseMenu_activate(mainWindow, mocker):
+    restartDialog = mainWindow.get_object("restartDialog")
+    menuItem = mainWindow.get_object("syncDatabaseMenu")
+    mocker.patch.object(restartDialog, "run", return_value=1)
+    menuItem.activate()
+    restartDialog.run.assert_called()
+
+
 def test_on_saveMenu_activate_w_set_filename(mainWindow, mocker):
     mainWindow.strSessionFilename = "/tmp/save_w_filename_tmp.json"
     mocker.patch(

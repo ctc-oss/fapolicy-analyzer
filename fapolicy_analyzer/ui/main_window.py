@@ -15,6 +15,7 @@
 
 import logging
 import os
+import sys
 from locale import gettext as _
 from os import getenv, geteuid, path
 from threading import Thread
@@ -24,7 +25,7 @@ from typing import Sequence
 import gi
 
 import fapolicy_analyzer.ui.strings as strings
-from fapolicy_analyzer import System
+from fapolicy_analyzer import System, signal_trust_reload
 from fapolicy_analyzer import __version__ as app_version
 from fapolicy_analyzer.ui.action_toolbar import ActionToolbar
 from fapolicy_analyzer.ui.actions import (
@@ -46,6 +47,7 @@ from fapolicy_analyzer.ui.policy_rules_admin_page import PolicyRulesAdminPage
 from fapolicy_analyzer.ui.profiler_page import ProfilerPage
 from fapolicy_analyzer.ui.rules import RulesAdminPage
 from fapolicy_analyzer.ui.session_manager import sessionManager
+from fapolicy_analyzer.ui.strings import SYNC_FIFO_ERROR_MESSAGE
 from fapolicy_analyzer.ui.store import (
     dispatch,
     get_application_feature,
@@ -429,6 +431,25 @@ class MainWindow(UIConnectedWidget):
         page.analyze_button_pushed += self.activate_file_analyzer
         page.refresh_toolbar += self._refresh_toolbar
         self.__pack_main_content(page)
+
+    def on_syncDatabaseMenu_activate(self, *args):
+        restartDialog = self.get_object("restartDialog")
+        restartDialog.set_transient_for(self.window)
+        resp = restartDialog.run()
+        restartDialog.hide()
+        if resp > 0:
+            try:
+                signal_trust_reload()
+            except RuntimeError:
+                dispatch(
+                    add_notification(
+                        SYNC_FIFO_ERROR_MESSAGE,
+                        NotificationType.ERROR,
+                    )
+                )
+
+        if resp == 2:
+            os.execl(sys.executable, "python", *sys.argv)
 
     def _refresh_toolbar(self):
         self.__toolbar.refresh_buttons_sensitivity()
