@@ -146,6 +146,7 @@ class SessionManager:
         logging.debug("SessionManager::open_edit_session():{}".format(changesets))
 
         if changesets:
+            print(f"**** open session detected changesets so clearing session")
             # Deleting current edit session history prior to replacing it.
             dispatch(restore_system_checkpoint())
             dispatch(clear_changesets())

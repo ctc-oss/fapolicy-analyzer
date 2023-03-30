@@ -146,17 +146,18 @@ class TrustFileList(SearchableList):
         self.load_store(count_of_trust_entries, store)
 
     def load_store(self, count_of_trust_entries, store):
-        def process_rows(queue, total):
-            store = self._store
+        def process_rows(queue, total, store, event):
+            # store = self._store
             columns = range(store.get_n_columns())
             for i in range(200):
-                if queue.empty() or self.__event.is_set():
+                if queue.empty() or event.is_set():  # self.__event.is_set():
                     break
                 row = queue.get()
+                # print(f"inserting into store {store}")
                 store.insert_with_valuesv(-1, columns, row)
                 queue.task_done()
 
-            if self.__event.is_set():
+            if event.is_set():  # self.__event.is_set():
                 return False
 
             count = self._get_tree_count()
@@ -166,26 +167,37 @@ class TrustFileList(SearchableList):
                 self._update_progress(pct)
                 return True
             else:
-                super(TrustFileList, self).load_store(self._store)
+                super(TrustFileList, self).load_store(store)  # (self._store)
                 self._update_progress(100)
                 self.search.set_sensitive(True)
                 self.search.set_tooltip_text(None)
                 return False
 
+        self.__event.set()  # cancel any processing currently running
         super().load_store(store, filterable=False)
         self._update_loading_status("Loading trust 0% complete...")
         self.set_loading(False)
         self.search.set_sensitive(False)
         self.search.set_tooltip_text(FILTERING_DISABLED_DURING_LOADING_MESSAGE)
         self.__queue = Queue()
-        GLib.timeout_add(200, process_rows, self.__queue, count_of_trust_entries)
+        self.__event = Event()
+        # print(f"count = {count_of_trust_entries}")
+        GLib.timeout_add(
+            200,
+            process_rows,
+            self.__queue,
+            count_of_trust_entries,
+            self._store,
+            self.__event,
+        )
 
     def append_trust(self, trust):
-        def process_trust(trust):
+        def process_trust(trust, event):
             for data in trust:
-                if self.__event.is_set():
+                if event.is_set():
                     return
+                # print(f"path= {self._row_data(data)[2]}")
                 self.__queue.put(self._row_data(data))
 
         if not self.__event.is_set():
-            self.__executor.submit(process_trust, trust)
+            self.__executor.submit(process_trust, trust, self.__event)

@@ -38,6 +38,7 @@ class TrustState(NamedTuple):
     trust: Sequence[Trust]
     trust_count: int
     last_set_completed: Optional[Sequence[Trust]]
+    timestamp: float
 
 
 def _create_state(state: TrustState, **kwargs: Optional[Any]) -> TrustState:
@@ -49,7 +50,10 @@ def handle_request_trust(state: TrustState, _: Action) -> TrustState:
 
 
 def handle_trust_load_started(state: TrustState, action: Action) -> TrustState:
-    count = cast(int, action.payload)
+    count, timestamp = cast(Tuple[int, float], action.payload)
+    if timestamp < state.timestamp:
+        return state
+
     return _create_state(
         state,
         loading=True,
@@ -58,22 +62,40 @@ def handle_trust_load_started(state: TrustState, action: Action) -> TrustState:
         last_set_completed=None,
         error=None,
         trust_count=count,
+        timestamp=timestamp,
     )
 
 
 def handle_received_trust_update(state: TrustState, action: Action) -> TrustState:
-    update, running_count = cast(Tuple[Sequence[Trust], int], action.payload)
+    update, running_count, timestamp = cast(
+        Tuple[Sequence[Trust], int, float], action.payload
+    )
+    if timestamp < state.timestamp:
+        return state
+
+    #     print(
+    #         f"""received trust update:
+    # {os.linesep.join([u.path for u in update])}
+    # """
+    #     )
     return _create_state(
         state,
         percent_complete=running_count / state.trust_count * 100,
         trust=[*state.trust, *update],
         last_set_completed=update,
         error=None,
+        timestamp=timestamp,
     )
 
 
-def handle_trust_load_complete(state: TrustState, _: Action) -> TrustState:
-    return _create_state(state, error=None, loading=False, last_set_completed=None)
+def handle_trust_load_complete(state: TrustState, action: Action) -> TrustState:
+    timestamp = cast(float, action.payload)
+    if timestamp < state.timestamp:
+        return state
+
+    return _create_state(
+        state, error=None, loading=False, last_set_completed=None, timestamp=timestamp
+    )
 
 
 def handle_error_trust(state: TrustState, action: Action) -> TrustState:
@@ -96,6 +118,7 @@ system_trust_reducer: Reducer = handle_actions(
         percent_complete=-1,
         last_set_completed=None,
         trust_count=0,
+        timestamp=0,
     ),
 )
 
@@ -114,5 +137,6 @@ ancillary_trust_reducer: Reducer = handle_actions(
         percent_complete=-1,
         last_set_completed=None,
         trust_count=0,
+        timestamp=0,
     ),
 )

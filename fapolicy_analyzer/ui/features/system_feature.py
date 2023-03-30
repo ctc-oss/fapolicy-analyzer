@@ -14,9 +14,12 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+import os
+import time
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
-from typing import Callable, Sequence, Tuple
+from threading import Event
+from typing import Callable, Dict, Sequence
 
 import gi
 from rx import of
@@ -27,7 +30,6 @@ from fapolicy_analyzer import (
     System,
     Trust,
     check_ancillary_trust,
-    check_system_trust,
     rollback_fapolicyd,
     unchecked_system,
 )
@@ -69,14 +71,11 @@ from fapolicy_analyzer.ui.actions import (
     received_groups,
     received_rules,
     received_rules_text,
-    received_system_trust_update,
     received_users,
     system_checkpoint_set,
     system_deployed,
     system_initialization_error,
     system_received,
-    system_trust_load_complete,
-    system_trust_load_started,
 )
 from fapolicy_analyzer.ui.reducers import system_reducer
 from fapolicy_analyzer.ui.strings import SYSTEM_INITIALIZATION_ERROR
@@ -103,8 +102,8 @@ def create_system_feature(
               a new System object will be initialized.  Used for testing purposes only.
     """
 
-    checking_system_trust: bool = False
-    checking_ancillary_trust: bool = False
+    system_trust_checks: Dict[System, Event] = {}
+    ancillary_trust_checks: Dict[System, Event] = {}
 
     def _init_system() -> Action:
         def execute_system():
@@ -143,72 +142,123 @@ def create_system_feature(
 
     def _apply_changesets(action: Action) -> Action:
         global _system
+        nonlocal ancillary_trust_checks
+
         changesets = action.payload
         for c in changesets:
+            old_system = _system
             _system = c.apply_to_system(_system)
+            print(
+                f"* applied {c.serialize()} to system {old_system} new system {_system}"
+            )
+            # print(f"** {old_system}, {ancillary_trust_checks.keys()}")
+            if old_system in ancillary_trust_checks:
+                event = ancillary_trust_checks.pop(old_system)
+                event.set()
+                # print(f"* event {event} set")
         dispatch(system_received(_system))
         return add_changesets(changesets)
 
     def _check_disk_trust_update(
         updates: Sequence[Trust],
         count: int,
-        action_fn: Callable[[Tuple[Sequence[Trust], int]], Action],
+        action_fn: Callable[[Trust, int, float], Action],
+        event: Event,
+        timestamp: float,
     ):
+        # print(f"* checking if event {event} is set")
+        if event.is_set():
+            # print(f"* event {event} was set")
+            # do nothing if check is cancelled
+            return
+
+        # print(
+        # f"""updates merged to system {_system} with event {event}:
+        print(
+            f"""updates merged for {event} with timestamp {timestamp}:
+{os.linesep.join([u.path for u in updates])}
+"""
+        )
+
         # merge the updated trust into the system
         _system.merge(updates)
         # dispatch the update
-        trust_update = (updates, count)
-        _idle_dispatch(action_fn(trust_update))
+        # trust_update = (updates, count)
+        _idle_dispatch(action_fn(updates, count, timestamp))
 
     def _check_disk_trust_complete(
-        action_fn: Callable[[], Action], flag_fn: Callable[[], None]
+        action_fn: Callable[[float], Action],
+        flag_fn: Callable[[], None],
+        event: Event,
+        timestamp: float,
     ):
-        _idle_dispatch(action_fn())
-        flag_fn()
+        try:
+            if not event.is_set():
+                _idle_dispatch(action_fn(timestamp))
+            flag_fn()
+        except Exception as e:
+            print(f"exception: {type(e)}")
 
     def _get_ancillary_trust(action: Action) -> Action:
-        nonlocal checking_ancillary_trust
+        nonlocal ancillary_trust_checks
 
         def checking_finished():
-            nonlocal checking_ancillary_trust
-            checking_ancillary_trust = False
+            nonlocal ancillary_trust_checks
+            # print(f"** popping system {_system}")
+            ancillary_trust_checks.pop(_system)
 
-        if checking_ancillary_trust:
+        if _system in ancillary_trust_checks:
             return action
 
-        checking_ancillary_trust = True
+        # for event in ancillary_trust_checks.values():
+        #     event.set()
+
+        event = Event()
+        timestamp = time.time()
+        ancillary_trust_checks[_system] = event
+        # print(f"*** {ancillary_trust_checks}")
+
         update = partial(
-            _check_disk_trust_update, action_fn=received_ancillary_trust_update
+            _check_disk_trust_update,
+            action_fn=received_ancillary_trust_update,
+            event=event,
+            timestamp=timestamp,
         )
         done = partial(
             _check_disk_trust_complete,
             action_fn=ancillary_trust_load_complete,
             flag_fn=checking_finished,
+            event=event,
+            timestamp=timestamp,
+        )
+        print(
+            f"* checking with system {_system} and event {event} and timestamp {timestamp}"
         )
         total_to_check = check_ancillary_trust(_system, update, done)
-        return ancillary_trust_load_started(total_to_check)
+        return ancillary_trust_load_started(total_to_check, timestamp)
 
     def _get_system_trust(action: Action) -> Action:
-        nonlocal checking_system_trust
+        return action
+        # nonlocal checking_system_trust
 
-        def checking_finished():
-            nonlocal checking_system_trust
-            checking_system_trust = False
+        # def checking_finished():
+        #     nonlocal checking_system_trust
+        #     checking_system_trust = False
 
-        if checking_system_trust:
-            return action
+        # if checking_system_trust:
+        #     return action
 
-        checking_system_trust = True
-        update = partial(
-            _check_disk_trust_update, action_fn=received_system_trust_update
-        )
-        done = partial(
-            _check_disk_trust_complete,
-            action_fn=system_trust_load_complete,
-            flag_fn=checking_finished,
-        )
-        total_to_check = check_system_trust(_system, update, done)
-        return system_trust_load_started(total_to_check)
+        # checking_system_trust = True
+        # update = partial(
+        #     _check_disk_trust_update, action_fn=received_system_trust_update
+        # )
+        # done = partial(
+        #     _check_disk_trust_complete,
+        #     action_fn=system_trust_load_complete,
+        #     flag_fn=checking_finished,
+        # )
+        # total_to_check = check_system_trust(_system, update, done)
+        # return system_trust_load_started(total_to_check)
 
     def _deploy_system(_: Action) -> Action:
         if not fapd_dbase_snapshot():
@@ -226,6 +276,7 @@ def create_system_feature(
     def _restore_checkpoint(_: Action) -> Action:
         global _system
         _system = _checkpoint
+        print(f"**** rolling back to system {_system}")
         rollback_fapolicyd(_system)
         return system_received(_system)
 
