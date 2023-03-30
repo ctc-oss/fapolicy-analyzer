@@ -18,6 +18,7 @@ from unittest.mock import MagicMock
 
 import gi
 import pytest
+
 from fapolicy_analyzer.ui.add_file_button import AddFileButton
 
 gi.require_version("Gtk", "3.0")
@@ -35,11 +36,11 @@ def test_creates_widget(widget):
 
 def test_fires_files_added(widget, mocker):
     mocker.patch(
-        "fapolicy_analyzer.ui.add_file_button.Gtk.FileChooserDialog.run",
+        "fapolicy_analyzer.ui.add_file_button.FileChooserDialog.run",
         return_value=Gtk.ResponseType.OK,
     )
     mocker.patch(
-        "fapolicy_analyzer.ui.add_file_button.Gtk.FileChooserDialog.get_filenames",
+        "fapolicy_analyzer.ui.add_file_button.FileChooserDialog.get_filenames",
         return_value=["foo"],
     )
     mocker.patch("fapolicy_analyzer.ui.add_file_button.path.isfile", return_value=True)
@@ -53,11 +54,11 @@ def test_fires_files_added(widget, mocker):
 
 def test_fires_files_w_spaces_added(widget, mocker):
     mocker.patch(
-        "fapolicy_analyzer.ui.add_file_button.Gtk.FileChooserDialog.run",
+        "fapolicy_analyzer.ui.add_file_button.FileChooserDialog.run",
         return_value=Gtk.ResponseType.OK,
     )
     mocker.patch(
-        "fapolicy_analyzer.ui.add_file_button.Gtk.FileChooserDialog.get_filenames",
+        "fapolicy_analyzer.ui.add_file_button.FileChooserDialog.get_filenames",
         return_value=["/tmp/a file name with spaces"],
     )
     mocker.patch("fapolicy_analyzer.ui.add_file_button.path.isfile", return_value=True)

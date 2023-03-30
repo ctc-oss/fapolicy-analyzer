@@ -11,6 +11,7 @@ use pyo3::prelude::*;
 pub mod acl;
 pub mod analysis;
 pub mod check;
+pub mod config;
 pub mod daemon;
 pub mod profiler;
 pub mod rules;
@@ -19,9 +20,12 @@ pub mod trust;
 
 #[pymodule]
 fn rust(_py: Python, m: &PyModule) -> PyResult<()> {
+    pyo3_log::init();
+
     acl::init_module(_py, m)?;
     analysis::init_module(_py, m)?;
     check::init_module(_py, m)?;
+    config::init_module(_py, m)?;
     daemon::init_module(_py, m)?;
     profiler::init_module(_py, m)?;
     rules::init_module(_py, m)?;

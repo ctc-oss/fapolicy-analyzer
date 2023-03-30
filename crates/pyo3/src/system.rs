@@ -65,6 +65,7 @@ impl PySystem {
     /// This represents state in the current fapolicyd database, not necessarily
     /// matching what is currently in the RPM database.
     fn system_trust(&self) -> Vec<PyTrust> {
+        log::debug!("system_trust");
         self.rs
             .trust_db
             .values()
@@ -78,6 +79,7 @@ impl PySystem {
     /// This represents state in the current fapolicyd database, not necessarily
     /// matching what is currently in the ancillary trust file.
     fn ancillary_trust(&self) -> Vec<PyTrust> {
+        log::debug!("ancillary_trust");
         self.rs
             .trust_db
             .values()
@@ -89,21 +91,25 @@ impl PySystem {
 
     /// Apply the changeset to the state of this System, produces a new System
     fn apply_changeset(&self, change: trust::PyChangeset) -> PySystem {
+        log::debug!("apply_changeset");
         self.rs.apply_trust_changes(change.into()).into()
     }
 
     /// Apply the changeset to the state of this System, produces a new System
     fn apply_rule_changes(&self, change: rules::PyChangeset) -> PySystem {
+        log::debug!("apply_rule_changes");
         self.rs.apply_rule_changes(change.into()).into()
     }
 
     /// Update the host system with this state of this System and signal fapolicyd to reload trust
     pub fn deploy(&self) -> PyResult<()> {
+        log::debug!("deploy");
         daemon::deploy(self).map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))
     }
 
     /// Update the host system with this state of this System
     pub fn deploy_only(&self) -> PyResult<()> {
+        log::debug!("deploy_only");
         deploy_app_state(&self.rs)
             .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))
     }
@@ -116,16 +122,19 @@ impl PySystem {
 
     /// Load a list of system users
     fn users(&self) -> Vec<PyUser> {
+        log::debug!("users");
         self.rs.users.iter().map(|u| u.clone().into()).collect()
     }
 
     /// Load a list of system groups
     fn groups(&self) -> Vec<PyGroup> {
+        log::debug!("groups");
         self.rs.groups.iter().map(|g| g.clone().into()).collect()
     }
 
     /// Parse events from debug mode log at the specified path
     fn load_debuglog(&self, log: &str) -> PyResult<PyEventLog> {
+        log::debug!("load_debuglog");
         let xs = events::read::from_debug(log)
             .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))?;
         Ok(PyEventLog::new(EventDB::from(xs), self.rs.trust_db.clone()))
@@ -133,20 +142,25 @@ impl PySystem {
 
     /// Parse events from syslog at the specified path
     fn load_syslog(&self) -> PyResult<PyEventLog> {
+        log::debug!("load_syslog");
         let xs = events::read::from_syslog(&self.rs.config.system.syslog_file_path)
             .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))?;
         Ok(PyEventLog::new(EventDB::from(xs), self.rs.trust_db.clone()))
     }
 
     fn rules(&self) -> Vec<PyRule> {
+        log::debug!("rules");
         rules::to_vec(&self.rs.rules_db)
     }
 
     fn rules_text(&self) -> String {
+        log::debug!("rules_text");
         rules::to_text(&self.rs.rules_db)
     }
 
+    // we rely on the gil to keep this synced up
     fn merge(&mut self, trust: Vec<PyTrust>) {
+        log::trace!("merging {} entries", trust.len());
         for t in trust {
             if let Some(e) = self.rs.trust_db.get_mut(&t.rs_trust.path) {
                 match (t.status.as_str(), t.rs_actual) {
@@ -162,6 +176,8 @@ impl PySystem {
 
 #[pyfunction]
 fn rules_difference(lhs: &PySystem, rhs: &PySystem) -> String {
+    log::debug!("rules_difference");
+
     let ltxt = lhs.rules_text();
     let rtxt = rhs.rules_text();
     let diff = TextDiff::from_lines(&ltxt, &rtxt);

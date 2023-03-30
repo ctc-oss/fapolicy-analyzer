@@ -7,6 +7,7 @@
  */
 
 use crate::system::PySystem;
+use fapolicy_trust::db::{Rec, DB};
 use pyo3::prelude::*;
 use std::sync::mpsc;
 use std::thread;
@@ -30,12 +31,57 @@ struct BatchConfig {
     batch_load: usize,
 }
 
+pub fn filter_db<F>(db: &DB, f: F) -> Vec<Rec>
+where
+    F: FnMut(&&Rec) -> bool,
+{
+    db.values().into_iter().filter(f).cloned().collect()
+}
+
 #[pyfunction]
-fn check_disk_trust(system: &PySystem, update: PyObject, done: PyObject) -> PyResult<usize> {
+fn check_ancillary_trust(system: &PySystem, update: PyObject, done: PyObject) -> PyResult<usize> {
+    let recs = filter_db(&system.rs.trust_db, |r| r.is_ancillary());
+    check_disk_trust(recs, update, done)
+}
+
+#[pyfunction]
+fn check_system_trust(system: &PySystem, update: PyObject, done: PyObject) -> PyResult<usize> {
+    let recs = filter_db(&system.rs.trust_db, |r| r.is_system());
+    check_disk_trust(recs, update, done)
+}
+
+#[pyfunction]
+fn check_all_trust(system: &PySystem, update: PyObject, done: PyObject) -> PyResult<usize> {
     let recs: Vec<_> = system.rs.trust_db.values().into_iter().cloned().collect();
+    check_disk_trust(recs, update, done)
+}
+
+fn callback_on_done(done: PyObject) {
+    Python::with_gil(|py| {
+        if done.call0(py).is_err() {
+            log::error!("failed to make 'done' callback");
+        }
+    })
+}
+
+fn check_disk_trust(recs: Vec<Rec>, update: PyObject, done: PyObject) -> PyResult<usize> {
+    if recs.is_empty() {
+        thread::spawn(move || {
+            callback_on_done(done);
+        });
+        return Ok(0);
+    }
 
     // determine batch model based on the total recs to be checked
     let batch_cfg = calculate_batch_config(recs.len());
+    log::debug!(
+        "BatchConf: recs: {}, tc:{}, tl:{}, bc:{}, bl:{}",
+        recs.len(),
+        batch_cfg.thread_cnt,
+        batch_cfg.thread_load,
+        batch_cfg.batch_cnt,
+        batch_cfg.batch_load
+    );
 
     // 1. split the total recs into sized batches
     // 2. split the batches into chunks based on thread load
@@ -46,7 +92,7 @@ fn check_disk_trust(system: &PySystem, update: PyObject, done: PyObject) -> PyRe
         .collect();
 
     if batch_cfg.thread_cnt != batches.len() {
-        eprintln!(
+        log::warn!(
             "warning: thread_cnt {} does not match batch count {}",
             batch_cfg.thread_cnt,
             batches.len()
@@ -63,11 +109,11 @@ fn check_disk_trust(system: &PySystem, update: PyObject, done: PyObject) -> PyRe
             if let Ok(u) = rx.recv() {
                 match u {
                     Update::Items(i) => {
-                        cnt += 1;
+                        cnt += i.len();
                         let r: Vec<_> = i.into_iter().map(PyTrust::from).collect();
                         Python::with_gil(|py| {
                             if update.call1(py, (r, cnt)).is_err() {
-                                eprintln!("failed make 'update' callback");
+                                log::error!("failed make 'update' callback");
                             }
                         });
                     }
@@ -76,11 +122,7 @@ fn check_disk_trust(system: &PySystem, update: PyObject, done: PyObject) -> PyRe
             }
         }
 
-        Python::with_gil(|py| {
-            if done.call0(py).is_err() {
-                eprintln!("failed to make 'done' callback");
-            }
-        });
+        callback_on_done(done);
     });
 
     // at this point data is organized into per-thread batches
@@ -93,10 +135,10 @@ fn check_disk_trust(system: &PySystem, update: PyObject, done: PyObject) -> PyRe
             for batch in thread_load {
                 let updates = batch
                     .into_iter()
-                    .flat_map(|r| check(&r.trusted))
+                    .map(|r| check(&r.trusted).unwrap_or(Status::Missing(r.trusted)))
                     .collect::<Vec<_>>();
                 if ttx.send(Update::Items(updates)).is_err() {
-                    eprintln!("failed to send Items msg");
+                    log::error!("failed to send Items msg");
                 };
             }
         });
@@ -107,15 +149,15 @@ fn check_disk_trust(system: &PySystem, update: PyObject, done: PyObject) -> PyRe
     thread::spawn(move || {
         for handle in handles {
             if handle.join().is_err() {
-                eprintln!("failed to join update handle");
+                log::error!("failed to join update handle");
             };
         }
         if tx.send(Update::Done).is_err() {
-            eprintln!("failed to send Done msg");
+            log::error!("failed to send Done msg");
         };
     });
 
-    Ok(batch_cfg.batch_cnt)
+    Ok(recs.len())
 }
 
 fn calculate_batch_config(rec_sz: usize) -> BatchConfig {
@@ -137,14 +179,10 @@ fn calculate_batch_config(rec_sz: usize) -> BatchConfig {
     let thread_cnt = match (batch_cnt, batch_load) {
         // one batch, one thread
         (1, _) => 1,
-        // small batches get 4 threads
-        (_, s) if s <= 10 => 4,
-        // medium batches get 10 threads
-        (_, s) if s <= 100 => 10,
-        // large batches get 20 threads
-        (_, s) if s <= 200 => 20,
-        // xl batches get 25 threads
-        _ => 25,
+        // small batches get 5 threads
+        (_, s) if s <= 1000 => 5,
+        // large batches get 10 threads
+        _ => 10,
     };
 
     // thread load is number of batches per thread
@@ -159,7 +197,9 @@ fn calculate_batch_config(rec_sz: usize) -> BatchConfig {
 }
 
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add_function(wrap_pyfunction!(check_disk_trust, m)?)?;
+    m.add_function(wrap_pyfunction!(check_system_trust, m)?)?;
+    m.add_function(wrap_pyfunction!(check_ancillary_trust, m)?)?;
+    m.add_function(wrap_pyfunction!(check_all_trust, m)?)?;
     Ok(())
 }
 
@@ -240,8 +280,8 @@ mod tests {
         let cfg = calculate_batch_config(num);
         assert_eq!(cfg.batch_cnt, 100);
         assert_eq!(cfg.batch_load, 6);
-        assert_eq!(cfg.thread_cnt, 4);
-        assert_eq!(cfg.thread_load, 25);
+        assert_eq!(cfg.thread_cnt, 5);
+        assert_eq!(cfg.thread_load, 20);
 
         // assert that we are within one batch of the total
         assert!(num <= cfg.batch_cnt * cfg.batch_load);
@@ -255,8 +295,8 @@ mod tests {
         let cfg = calculate_batch_config(num);
         assert_eq!(cfg.batch_cnt, 100);
         assert_eq!(cfg.batch_load, 10);
-        assert_eq!(cfg.thread_cnt, 4);
-        assert_eq!(cfg.thread_load, 25);
+        assert_eq!(cfg.thread_cnt, 5);
+        assert_eq!(cfg.thread_load, 20);
 
         // assert that we are within one batch of the total
         assert!(num <= cfg.batch_cnt * cfg.batch_load);
@@ -267,8 +307,8 @@ mod tests {
         let cfg = calculate_batch_config(num);
         assert_eq!(cfg.batch_cnt, 100);
         assert_eq!(cfg.batch_load, 10);
-        assert_eq!(cfg.thread_cnt, 4);
-        assert_eq!(cfg.thread_load, 25);
+        assert_eq!(cfg.thread_cnt, 5);
+        assert_eq!(cfg.thread_load, 20);
 
         // assert that we are within one batch of the total
         assert!(num <= cfg.batch_cnt * cfg.batch_load);
@@ -279,8 +319,8 @@ mod tests {
         let cfg = calculate_batch_config(num);
         assert_eq!(cfg.batch_cnt, 100);
         assert_eq!(cfg.batch_load, 10);
-        assert_eq!(cfg.thread_cnt, 4);
-        assert_eq!(cfg.thread_load, 25);
+        assert_eq!(cfg.thread_cnt, 5);
+        assert_eq!(cfg.thread_load, 20);
 
         // assert that we are within one batch of the total
         assert!(num <= cfg.batch_cnt * cfg.batch_load);
@@ -294,8 +334,25 @@ mod tests {
         let cfg = calculate_batch_config(num);
         assert_eq!(cfg.batch_cnt, 100);
         assert_eq!(cfg.batch_load, 200);
-        assert_eq!(cfg.thread_cnt, 20);
-        assert_eq!(cfg.thread_load, 5);
+        assert_eq!(cfg.thread_cnt, 5);
+        assert_eq!(cfg.thread_load, 20);
+
+        // assert that we are within one batch of the total
+        assert!(num <= cfg.batch_cnt * cfg.batch_load);
+        assert!(num / cfg.batch_cnt <= cfg.batch_load);
+        assert_eq!(100, cfg.thread_load * cfg.thread_cnt);
+    }
+
+    #[test]
+    fn batch_load_60000() {
+        let num = 60000;
+        let cfg = calculate_batch_config(num);
+
+        // assert the basic configuration
+        assert_eq!(cfg.batch_cnt, 100);
+        assert_eq!(cfg.batch_load, 600);
+        assert_eq!(cfg.thread_cnt, 5);
+        assert_eq!(cfg.thread_load, 20);
 
         // assert that we are within one batch of the total
         assert!(num <= cfg.batch_cnt * cfg.batch_load);
@@ -311,8 +368,8 @@ mod tests {
         // assert the basic configuration
         assert_eq!(cfg.batch_cnt, 100);
         assert_eq!(cfg.batch_load, 1121);
-        assert_eq!(cfg.thread_cnt, 25);
-        assert_eq!(cfg.thread_load, 4);
+        assert_eq!(cfg.thread_cnt, 10);
+        assert_eq!(cfg.thread_load, 10);
 
         // assert that we are within one batch of the total
         assert!(num <= cfg.batch_cnt * cfg.batch_load);

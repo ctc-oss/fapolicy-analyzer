@@ -16,15 +16,17 @@
 from importlib import reload
 from unittest.mock import MagicMock, call
 
-import fapolicy_analyzer.ui.store as store
 import pytest
 from callee import InstanceOf
 from callee.attributes import Attrs
+
+import fapolicy_analyzer.ui.store as store
 from fapolicy_analyzer.redux import Action, ReduxFeatureModule, create_store
 from fapolicy_analyzer.ui.actions import (
     ERROR_SYSTEM_INITIALIZATION,
     SYSTEM_CHECKPOINT_SET,
     SYSTEM_RECEIVED,
+    ancillary_trust_load_started,
     apply_changesets,
     deploy_system,
     error_ancillary_trust,
@@ -34,12 +36,10 @@ from fapolicy_analyzer.ui.actions import (
     error_rules_text,
     error_system_trust,
     error_users,
-    received_ancillary_trust,
     received_events,
     received_groups,
     received_rules,
     received_rules_text,
-    received_system_trust,
     received_users,
     request_ancillary_trust,
     request_events,
@@ -48,6 +48,7 @@ from fapolicy_analyzer.ui.actions import (
     request_rules_text,
     request_system_trust,
     request_users,
+    system_trust_load_started,
 )
 from fapolicy_analyzer.ui.changeset_wrapper import TrustChangeset
 from fapolicy_analyzer.ui.features.system_feature import create_system_feature
@@ -87,7 +88,8 @@ def test_creates_system_feature(mock_dispatch):
 def test_initializes_system(mock_dispatch, mocker):
     system = MagicMock()
     mock_system = mocker.patch(
-        "fapolicy_analyzer.ui.features.system_feature.System", return_value=system
+        "fapolicy_analyzer.ui.features.system_feature.unchecked_system",
+        return_value=system,
     )
     store = create_store()
     store.add_feature_module(create_system_feature(mock_dispatch))
@@ -121,7 +123,7 @@ def test_uses_provided_system(mock_dispatch, mocker):
 
 def test_handles_system_initialization_error(mock_dispatch, mocker):
     mock_system = mocker.patch(
-        "fapolicy_analyzer.ui.features.system_feature.System",
+        "fapolicy_analyzer.ui.features.system_feature.unchecked_system",
         side_effect=RuntimeError(),
     )
     store = create_store()
@@ -168,14 +170,12 @@ def test_apply_changset_epic_error(mocker):
 @pytest.mark.parametrize(
     "action_to_dispatch, payload, system_fn_to_mock, receive_action_to_mock",
     [
-        (request_ancillary_trust, None, "ancillary_trust", received_ancillary_trust),
         (request_events, ("debug", MagicMock()), "load_debuglog", received_events),
         (request_events, ("syslog", None), "load_syslog", received_events),
         (request_users, None, "users", received_users),
         (request_groups, None, "groups", received_groups),
         (request_rules, None, "rules", received_rules),
         (request_rules_text, None, "rules_text", received_rules_text),
-        (request_system_trust, None, "system_trust", received_system_trust),
     ],
 )
 def test_request_epic(
@@ -198,14 +198,12 @@ def test_request_epic(
 @pytest.mark.parametrize(
     "action_to_dispatch, payload, system_fn_to_mock, error_action_to_mock",
     [
-        (request_ancillary_trust, None, "ancillary_trust", error_ancillary_trust),
         (request_events, ("debug", MagicMock()), "load_debuglog", error_events),
         (request_events, ("syslog", None), "load_syslog", error_events),
         (request_users, None, "users", error_users),
         (request_groups, None, "groups", error_groups),
         (request_rules, None, "rules", error_rules),
         (request_rules_text, None, "rules_text", error_rules_text),
-        (request_system_trust, None, "system_trust", error_system_trust),
     ],
 )
 def test_request_epic_error(
@@ -221,6 +219,61 @@ def test_request_epic_error(
     mock_error_action = mocker.patch(
         f"fapolicy_analyzer.ui.features.system_feature.{error_action_to_mock.__name__}"
     )
+    init_store(mock_system)
+    dispatch(action_to_dispatch(*(payload or [])))
+    mock_error_action.assert_called_with(f"{system_fn_to_mock} error")
+
+
+@pytest.mark.parametrize(
+    "action_to_dispatch, payload, system_fn_to_mock, receive_action_to_mock",
+    [
+        (
+            request_ancillary_trust,
+            None,
+            "check_ancillary_trust",
+            ancillary_trust_load_started,
+        ),
+        (request_system_trust, None, "check_system_trust", system_trust_load_started),
+    ],
+)
+def test_request_trust(
+    action_to_dispatch, payload, system_fn_to_mock, receive_action_to_mock, mocker
+):
+    mock_return_value = MagicMock()
+    mock_system_fn = mocker.patch(
+        f"fapolicy_analyzer.ui.features.system_feature.{system_fn_to_mock}",
+        return_value=mock_return_value,
+    )
+    mock_received_action = mocker.patch(
+        f"fapolicy_analyzer.ui.features.system_feature.{receive_action_to_mock.__name__}"
+    )
+
+    mock_system = MagicMock()
+    init_store(mock_system)
+    dispatch(action_to_dispatch(*(payload or [])))
+
+    mock_system_fn.assert_called()
+    mock_received_action.assert_called_with(mock_return_value)
+
+
+@pytest.mark.parametrize(
+    "action_to_dispatch, payload, system_fn_to_mock, error_action_to_mock",
+    [
+        (request_ancillary_trust, None, "check_ancillary_trust", error_ancillary_trust),
+        (request_system_trust, None, "check_system_trust", error_system_trust),
+    ],
+)
+def test_request_trust_error(
+    action_to_dispatch, payload, system_fn_to_mock, error_action_to_mock, mocker
+):
+    mocker.patch(
+        f"fapolicy_analyzer.ui.features.system_feature.{system_fn_to_mock}",
+        side_effect=Exception(f"{system_fn_to_mock} error"),
+    )
+    mock_error_action = mocker.patch(
+        f"fapolicy_analyzer.ui.features.system_feature.{error_action_to_mock.__name__}"
+    )
+    mock_system = MagicMock()
     init_store(mock_system)
     dispatch(action_to_dispatch(*(payload or [])))
     mock_error_action.assert_called_with(f"{system_fn_to_mock} error")

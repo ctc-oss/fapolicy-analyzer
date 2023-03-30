@@ -16,7 +16,12 @@
 import gi
 from events import Events
 
-import fapolicy_analyzer.ui.strings as strings
+from fapolicy_analyzer.ui.strings import (
+    FILE_LIST_RULE_ID_HEADER,
+    FILE_LIST_PERM_HEADER,
+    ACCESS_ALLOWED_TOOLTIP,
+    ACCESS_DENIED_TOOLTIP,
+)
 from fapolicy_analyzer.ui.configs import Colors
 from fapolicy_analyzer.ui.subject_list import SubjectList
 
@@ -33,23 +38,24 @@ class ObjectList(SubjectList, Events):
         ]
         Events.__init__(self)
         self.reconcileContextMenu = self._build_reconcile_context_menu()
+        self.get_object("treeView").set_tooltip_column(8)
 
     def _columns(self):
         columns = super()._columns()
 
         rule_cell = Gtk.CellRendererText(background=Colors.LIGHT_GRAY)
         rule_column = Gtk.TreeViewColumn(
-            strings.FILE_LIST_RULE_ID_HEADER, rule_cell, markup=7
+            FILE_LIST_RULE_ID_HEADER, rule_cell, markup=7
         )
         rule_column.set_sort_column_id(7)
         columns.insert(0, rule_column)
 
-        mode_cell = Gtk.CellRendererText(background=Colors.LIGHT_GRAY, xalign=0.5)
-        mode_column = Gtk.TreeViewColumn(
-            strings.FILE_LIST_MODE_HEADER, mode_cell, markup=6
+        perm_cell = Gtk.CellRendererText(background=Colors.LIGHT_GRAY, xalign=0.5)
+        perm_column = Gtk.TreeViewColumn(
+            FILE_LIST_PERM_HEADER, perm_cell, markup=6
         )
-        mode_column.set_sort_column_id(6)
-        columns.insert(2, mode_column)
+        perm_column.set_sort_column_id(6)
+        columns.insert(2, perm_column)
         return columns
 
     def __markup(self, value, options, seperator=" / ", multiValue=False):
@@ -61,9 +67,9 @@ class ObjectList(SubjectList, Events):
         return seperator.join([wrap(o) if o in matches else o for o in options])
 
     def __colors(self, access, status, trust):
-        green = (Colors.LIGHT_GREEN, Colors.BLACK)
-        orange = (Colors.ORANGE, Colors.BLACK)
-        red = (Colors.LIGHT_RED, Colors.WHITE)
+        green = (Colors.LIGHT_GREEN, Colors.BLACK, ACCESS_ALLOWED_TOOLTIP)
+        orange = (Colors.ORANGE, Colors.BLACK, ACCESS_ALLOWED_TOOLTIP)
+        red = (Colors.LIGHT_RED, Colors.WHITE, ACCESS_DENIED_TOOLTIP)
         if access.upper() != "A":
             return red
         elif trust.lower() in ["at", "st"] and status.lower() == "t":
@@ -87,19 +93,18 @@ class ObjectList(SubjectList, Events):
     def load_store(self, objects, **kwargs):
         self._systemTrust = kwargs.get("systemTrust", [])
         self._ancillaryTrust = kwargs.get("ancillaryTrust", [])
-        store = Gtk.ListStore(str, str, str, object, str, str, str, int)
+        store = Gtk.ListStore(str, str, str, object, str, str, str, int, str)
         for ob in objects:
             i, o = next(iter(ob.items()))
-            status = self._trust_markup(o)
-            mode = self.__markup(
-                o.mode.upper(),
-                ["R", "W", "X"],
-                seperator="",
-                multiValue=True,
+            status, status_tooltip = self._trust_markup(o)
+            perm = self.__markup(
+                "",
+                [o.perm],
             )
             access = self.__markup(o.access.upper(), ["A", "D"])
-            bg_color, txt_color = self.__colors(o.access, o.trust_status, o.trust)
-            store.append([status, access, o.file, o, bg_color, txt_color, mode, i])
+            bg_color, txt_color, access_tooltip = self.__colors(o.access, o.trust_status, o.trust)
+            tooltip = status_tooltip + "\n" + access_tooltip
+            store.append([status, access, o.file, o, bg_color, txt_color, perm, i, tooltip])
 
         # call grandfather SearchableList's load_store method
         super(SubjectList, self).load_store(store)

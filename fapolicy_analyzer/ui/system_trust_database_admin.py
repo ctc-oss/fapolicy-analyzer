@@ -16,11 +16,9 @@
 import logging
 from locale import gettext as _
 
-import fapolicy_analyzer.ui.strings as strings
 from events import Events
-from fapolicy_analyzer.util import fs  # noqa: F401
-from fapolicy_analyzer.util.format import f
 
+import fapolicy_analyzer.ui.strings as strings
 from fapolicy_analyzer.ui.actions import (
     NotificationType,
     add_notification,
@@ -31,6 +29,8 @@ from fapolicy_analyzer.ui.store import dispatch, get_system_feature
 from fapolicy_analyzer.ui.trust_file_details import TrustFileDetails
 from fapolicy_analyzer.ui.trust_file_list import TrustFileList
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
+from fapolicy_analyzer.util import fs  # noqa: F401
+from fapolicy_analyzer.util.format import f
 
 
 class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
@@ -42,16 +42,16 @@ class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
             self, get_system_feature(), on_next=self.on_next_system
         )
         Events.__init__(self)
-        self._trust = []
-        self._error = None
-        self._loading = False
+        self.__error = None
+        self.__loading = False
+        self.__loading_percent = -1
 
-        self.trustFileList = TrustFileList(
+        self.trust_file_list = TrustFileList(
             trust_func=self.__load_trust, markup_func=self.__status_markup
         )
-        self.trustFileList.trust_selection_changed += self.on_trust_selection_changed
+        self.trust_file_list.trust_selection_changed += self.on_trust_selection_changed
         self.get_object("leftBox").pack_start(
-            self.trustFileList.get_ref(), True, True, 0
+            self.trust_file_list.get_ref(), True, True, 0
         )
 
         self.trustFileDetails = TrustFileDetails()
@@ -67,28 +67,59 @@ class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
         )
 
     def __load_trust(self):
-        self._loading = True
+        self.__loading = True
+        self.__loading_percent = -1
         dispatch(request_system_trust())
 
     def on_next_system(self, system):
-        trustState = system.get("system_trust")
+        def started_loading(state):
+            return (
+                self.__loading
+                and state.loading
+                and state.percent_complete >= 0
+                and self.__loading_percent == -1
+            )
 
-        if not trustState.loading and self._error != trustState.error:
-            self._error = trustState.error
-            self._loading = False
-            logging.error("%s: %s", strings.SYSTEM_TRUST_LOAD_ERROR, self._error)
+        def still_loading(state):
+            return (
+                self.__loading
+                and state.loading
+                and state.percent_complete > 0
+                and self.__loading_percent != state.percent_complete
+            )
+
+        def done_loading(state):
+            return (
+                self.__loading and not state.loading and state.percent_complete >= 100
+            )
+
+        trust_state = system.get("system_trust")
+
+        if not trust_state.loading and self.__error != trust_state.error:
+            self.__error = trust_state.error
+            self.__loading = False
+            logging.error("%s: %s", strings.SYSTEM_TRUST_LOAD_ERROR, self.__error)
             dispatch(
                 add_notification(
                     strings.SYSTEM_TRUST_LOAD_ERROR, NotificationType.ERROR
                 )
             )
-        elif (
-            self._loading and not trustState.loading and self._trust != trustState.trust
-        ):
-            self._error = None
-            self._loading = False
-            self._trust = trustState.trust
-            self.trustFileList.load_trust(self._trust)
+        elif started_loading(trust_state):
+            self.__error = None
+            self.__loading_percent = (
+                trust_state.percent_complete if trust_state.percent_complete >= 0 else 0
+            )
+            self.trust_file_list.set_loading(True)
+            self.trust_file_list.init_list(trust_state.trust_count)
+            self.trust_file_list.append_trust(trust_state.trust)
+        elif still_loading(trust_state):
+            self.__error = None
+            self.__loading_percent = trust_state.percent_complete
+            self.trust_file_list.append_trust(trust_state.last_set_completed)
+        elif done_loading(trust_state):
+            self.__error = None
+            self.__loading = False
+            self.__loading_percent = 100
 
     def on_trust_selection_changed(self, trusts):
         self.selectedFiles = trusts

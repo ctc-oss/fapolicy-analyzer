@@ -36,6 +36,8 @@ RULES_VALIDATION_WARNING = _(
 RULE_LABEL = _("Rule")
 RULES_LABEL = _("Rules")
 DAEMON_INITIALIZATION_ERROR = _("Error initializing communications with daemon")
+PROFILER_INIT_ERROR = _("Failed to initialize profiler backend.")
+PROFILER_EXEC_ERROR = _("Failed to execute profiling target.")
 
 
 DEPLOY_ANCILLARY_CONFIRM_DLG_ACTION_COL_HDR = _("Action")
@@ -73,7 +75,7 @@ FILE_LIST_TRUST_HEADER = _("Trust")
 FILE_LIST_FILE_HEADER = _("File")
 FILE_LIST_MTIME_HEADER = _("MTime")
 FILE_LIST_CHANGES_HEADER = _("Changes")
-FILE_LIST_MODE_HEADER = _("Mode")
+FILE_LIST_PERM_HEADER = _("Perm")
 FILE_LIST_ACCESS_HEADER = _("Access")
 FILE_LIST_RULE_ID_HEADER = _("Rule")
 
@@ -200,3 +202,16 @@ UNSAVED_DIALOG_TEXT = _(
 
 Would you like to continue deploying?"""
 )
+
+FILTERING_DISABLED_DURING_LOADING_MESSAGE = _(
+    "Filtering is disabled during trust loading"
+)
+
+UNTRUSTED_ANCILLARY_TOOLTIP = _("File is untrusted in the Ancillary Trust Database")
+UNTRUSTED_SYSTEM_TOOLTIP = _("File is untrusted in the System Trust Database")
+TRUSTED_ANCILLARY_TOOLTIP = _("File is trusted in the Ancillary Trust Database")
+TRUSTED_SYSTEM_TOOLTIP = _("File is trusted in the System Trust Database")
+UNKNOWN_TOOLTIP = _("File trust is unknown")
+ACCESS_ALLOWED_TOOLTIP = _("File access fully allowed")
+ACCESS_PARTIAL_TOOLTIP = _("File access partially allowed")
+ACCESS_DENIED_TOOLTIP = _("File access denied")

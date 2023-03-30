@@ -1,4 +1,4 @@
-# Copyright Concurrent Technologies Corporation 2021
+# Copyright Concurrent Technologies Corporation 2023
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,17 +22,17 @@ from unittest.mock import MagicMock
 import gi
 import pytest
 from callee import Attrs, InstanceOf
-from helpers import refresh_gui
 from mocks import mock_System
 from rx import create
 from rx.subject import Subject
 
 import fapolicy_analyzer.ui
 from fapolicy_analyzer.redux import Action
+from fapolicy_analyzer.tests.helpers import refresh_gui
 from fapolicy_analyzer.ui.actions import ADD_NOTIFICATION
 from fapolicy_analyzer.ui.changeset_wrapper import TrustChangeset
 from fapolicy_analyzer.ui.fapd_manager import ServiceStatus
-from fapolicy_analyzer.ui.main_window import MainWindow, router
+from fapolicy_analyzer.ui.main_window import MainWindow
 from fapolicy_analyzer.ui.session_manager import NotificationType, sessionManager
 from fapolicy_analyzer.ui.store import init_store
 from fapolicy_analyzer.ui.strings import AUTOSAVE_RESTORE_ERROR_MSG
@@ -59,13 +59,15 @@ def mock_init_store():
 
 
 @pytest.fixture
-def mock_system_features(changesets_state, mocker):
+def mock_system_feature(changesets_state, mocker):
     def push_changeset(observer, *args):
         observer.on_next(
             {
                 "changesets": changesets_state,
                 "system": MagicMock(),
                 "checkpoint": MagicMock(),
+                "rules": MagicMock(),
+                "rules_text": MagicMock(),
             }
         )
         observer.on_completed()
@@ -78,16 +80,30 @@ def mock_system_features(changesets_state, mocker):
 
 
 @pytest.fixture
+def mock_application_feature(mocker):
+    def app_config(observer, *args):
+        observer.on_next(MagicMock(initial_view="rules"))
+        observer.on_completed()
+
+    application_features_mock = create(app_config)
+    mocker.patch(
+        "fapolicy_analyzer.ui.main_window.get_application_feature",
+        return_value=application_features_mock,
+    )
+
+
+@pytest.fixture
 def mock_dispatches(mocker):
     mocker.patch("fapolicy_analyzer.ui.ancillary_trust_database_admin.dispatch")
     mocker.patch("fapolicy_analyzer.ui.system_trust_database_admin.dispatch")
     mocker.patch("fapolicy_analyzer.ui.policy_rules_admin_page.dispatch")
     mocker.patch("fapolicy_analyzer.ui.rules.rules_admin_page.dispatch")
+    mocker.patch("fapolicy_analyzer.ui.main_window.dispatch")
 
 
 @pytest.fixture
-@pytest.mark.usefixtures("mock_system_features")
-def mainWindow(mock_init_store, mock_dispatches):
+@pytest.mark.usefixtures("mock_system_feature")
+def mainWindow(mock_init_store, mock_dispatches, mock_application_feature):
     return MainWindow()
 
 
@@ -119,7 +135,7 @@ def test_displays_window(mainWindow):
     assert window.get_title() == "File Access Policy Analyzer"
 
 
-@pytest.mark.usefixtures("mock_system_features")
+@pytest.mark.usefixtures("mock_system_feature", "mock_application_feature")
 @pytest.mark.parametrize("changesets_state", [mock_changesets_state()])
 def test_shows_confirm_if_unapplied_changes(mainWindow, mocker):
     mockDialog = MagicMock()
@@ -194,9 +210,7 @@ def test_brings_help_dialog_to_foreground(mainWindow, mocker):
 
 def test_defaults_to_trust_db_admin_page(mainWindow):
     content = next(iter(mainWindow.get_object("mainContent").get_children()))
-    assert (
-        content.get_tab_label_text(content.get_nth_page(0)) == "System Trust Database"
-    )
+    assert Gtk.Buildable.get_name(content) == "rulesAdminPage"
 
 
 def test_opens_trust_db_admin_page(mainWindow):
@@ -223,13 +237,8 @@ def test_opens_analyze_with_audit_page(mainWindow, mocker):
         "fapolicy_analyzer.ui.ancillary_trust_file_list.epoch_to_string",
         return_value="10-01-2020",
     )
-
     mocker.patch(
-        "fapolicy_analyzer.ui.main_window.Gtk.FileChooserDialog.run",
-        return_value=Gtk.ResponseType.OK,
-    )
-    mocker.patch(
-        "fapolicy_analyzer.ui.main_window.Gtk.FileChooserDialog.get_filename",
+        "fapolicy_analyzer.ui.main_window.FileChooserDialog.get_filename",
         return_value="foo",
     )
     mocker.patch("fapolicy_analyzer.ui.main_window.path.isfile", return_value=True)
@@ -271,10 +280,38 @@ def test_open_rules_admin_with_args(mainWindow, mocker):
     assert Gtk.Buildable.get_name(content) == "rulesAdminPage"
 
 
-def test_bad_router_option():
-    with pytest.raises(Exception) as excinfo:
-        router("foo")
-        assert excinfo.value.message == "Bad Selection"
+@pytest.mark.usefixtures("mock_init_store", "mock_dispatches")
+def test_loads_initial_view(mocker):
+    def app_config(observer, *args):
+        observer.on_next(MagicMock(initial_view="trust"))
+        observer.on_completed()
+
+    application_features_mock = create(app_config)
+    mocker.patch(
+        "fapolicy_analyzer.ui.main_window.get_application_feature",
+        return_value=application_features_mock,
+    )
+    mainWindow = MainWindow()
+    content = next(iter(mainWindow.get_object("mainContent").get_children()))
+    assert (
+        content.get_tab_label_text(content.get_nth_page(0)) == "System Trust Database"
+    )
+
+
+@pytest.mark.usefixtures("mock_init_store", "mock_dispatches")
+def test_handles_bad_initial_view(mocker):
+    def app_config(observer, *args):
+        observer.on_next(MagicMock(initial_view="test"))
+        observer.on_completed()
+
+    application_features_mock = create(app_config)
+    mocker.patch(
+        "fapolicy_analyzer.ui.main_window.get_application_feature",
+        return_value=application_features_mock,
+    )
+    mainWindow = MainWindow()
+    content = next(iter(mainWindow.get_object("mainContent").get_children()))
+    assert Gtk.Buildable.get_name(content) == "rulesAdminPage"
 
 
 @pytest.mark.skip(reason="Not currently working in GitHub CI")
@@ -298,7 +335,7 @@ def test_on_openMenu_activate(mainWindow, mocker):
     mockDialog.run.return_value = Gtk.ResponseType.OK
     mockDialog.get_filename.return_value = "/tmp/open_tmp.json"
     mocker.patch(
-        "fapolicy_analyzer.ui.main_window.Gtk.FileChooserDialog",
+        "fapolicy_analyzer.ui.main_window.FileChooserDialog",
         return_value=mockDialog,
     )
 
@@ -318,7 +355,7 @@ def test_on_openMenu_activate_fail(mainWindow, mock_dispatch, mocker):
     mockDialog.run.return_value = Gtk.ResponseType.OK
     mockDialog.get_filename.return_value = fakeFile
     mocker.patch(
-        "fapolicy_analyzer.ui.main_window.Gtk.FileChooserDialog",
+        "fapolicy_analyzer.ui.main_window.FileChooserDialog",
         return_value=mockDialog,
     )
 
@@ -372,7 +409,7 @@ def test_on_saveAsMenu_activate(mainWindow, mocker):
     mockDialog.run.return_value = Gtk.ResponseType.OK
     mockDialog.get_filename.return_value = "/tmp/save_as_tmp.json"
     mocker.patch(
-        "fapolicy_analyzer.ui.main_window.Gtk.FileChooserDialog",
+        "fapolicy_analyzer.ui.main_window.FileChooserDialog",
         return_value=mockDialog,
     )
     mockFunc = mocker.patch(
@@ -421,7 +458,9 @@ def test_on_saveMenu_activate_w_set_filename(mainWindow, mocker):
     )
 
 
-@pytest.mark.usefixtures("mock_init_store", "mock_dispatches")
+@pytest.mark.usefixtures(
+    "mock_init_store", "mock_dispatches", "mock_application_feature"
+)
 def test_on_start(mocker):
     mockDetectAutosave = mocker.patch(
         "fapolicy_analyzer.ui.main_window.sessionManager.detect_previous_session",
@@ -431,7 +470,9 @@ def test_on_start(mocker):
     mockDetectAutosave.assert_called()
 
 
-@pytest.mark.usefixtures("mock_init_store", "mock_dispatches")
+@pytest.mark.usefixtures(
+    "mock_init_store", "mock_dispatches", "mock_application_feature"
+)
 def test_on_start_w_declined_restore(mocker):
     """
     Test specifically for exercising the on_start() functionality.
@@ -458,7 +499,9 @@ def test_on_start_w_declined_restore(mocker):
     mockGtkDialog.assert_called()
 
 
-@pytest.mark.usefixtures("mock_init_store", "mock_dispatches")
+@pytest.mark.usefixtures(
+    "mock_init_store", "mock_dispatches", "mock_application_feature"
+)
 def test_on_start_w_accepted_restore(mocker):
     """
     Test specifically for exercising the on_start() functionality.
@@ -491,7 +534,9 @@ def test_on_start_w_accepted_restore(mocker):
     mockRestoreAutosave.assert_called()
 
 
-@pytest.mark.usefixtures("mock_init_store", "mock_dispatches")
+@pytest.mark.usefixtures(
+    "mock_init_store", "mock_dispatches", "mock_application_feature"
+)
 def test_on_start_w_restore_exception(mocker):
     """
     Test specifically for exercising the on_start() functionality.
@@ -524,7 +569,9 @@ def test_on_start_w_restore_exception(mocker):
     mockRestoreAutosave.assert_called()
 
 
-@pytest.mark.usefixtures("mock_init_store", "mock_dispatches")
+@pytest.mark.usefixtures(
+    "mock_init_store", "mock_dispatches", "mock_application_feature"
+)
 def test_on_start_w_failed_restore(mock_dispatch, mocker):
     mocker.patch(
         "fapolicy_analyzer.ui.main_window.sessionManager.detect_previous_session",
@@ -549,7 +596,8 @@ def test_on_start_w_failed_restore(mock_dispatch, mocker):
     )
 
 
-def test_toolbar_deploy_operation(mainWindow, mocker):
+@pytest.mark.usefixtures("mock_application_feature")
+def test_toolbar_deploy_operation(mocker):
     mocker.patch(
         "fapolicy_analyzer.ui.operations.deploy_changesets_op.get_system_feature"
     )
@@ -565,6 +613,10 @@ def test_toggles_deploy_changes_toolbar_btn(mocker):
     mocker.patch(
         "fapolicy_analyzer.ui.main_window.get_system_feature",
         return_value=system_features_mock,
+    )
+    mocker.patch(
+        "fapolicy_analyzer.ui.main_window.get_application_feature",
+        return_value=Subject(),
     )
     init_store(mock_System())
     tool_bar = MainWindow().get_object("appArea").get_children()[1]
@@ -593,6 +645,10 @@ def test_toggles_dirty_title(mocker):
     mocker.patch(
         "fapolicy_analyzer.ui.main_window.get_system_feature",
         return_value=system_features_mock,
+    )
+    mocker.patch(
+        "fapolicy_analyzer.ui.main_window.get_application_feature",
+        return_value=Subject(),
     )
     init_store(mock_System())
     windowRef = MainWindow().get_ref()

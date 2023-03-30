@@ -2,10 +2,17 @@
   "props": [
     {
       "platform": "fedora",
+      "dist": "fc39",
+      "spec": "fapolicy-analyzer.spec",
+      "image": "registry.fedoraproject.org/fedora:39",
+      "chroot": "fedora-rawhide-x86_64"
+    },
+    {
+      "platform": "fedora",
       "dist": "fc38",
       "spec": "fapolicy-analyzer.spec",
       "image": "registry.fedoraproject.org/fedora:38",
-      "chroot": "fedora-rawhide-x86_64"
+      "chroot": "fedora-38-x86_64"
     },
     {
       "platform": "fedora",

@@ -15,24 +15,26 @@
 
 import html
 import logging
-from time import sleep
+import datetime
+from typing import Optional
 
 import gi
 from events import Events
 from fapolicy_analyzer.ui.actions import (
     clear_profiler_state,
-    set_profiler_output,
-    set_profiler_analysis_file,
-    set_profiler_state,
+    start_profiling,
+    stop_profiling,
 )
 from fapolicy_analyzer.ui.actions import NotificationType, add_notification
 from fapolicy_analyzer.ui.faprofiler import (
-    FaProfiler,
-    FaProfSession,
-    ProfSessionException,
-    EnumErrorPairs2Str,
+    EnumErrorPairs2Str, FaProfSession,
 )
-from fapolicy_analyzer.ui.store import dispatch, get_system_feature
+from fapolicy_analyzer.ui.reducers.profiler_reducer import (
+    ProfilerState,
+    ProfilerTick,
+    ProfilerDone,
+)
+from fapolicy_analyzer.ui.store import dispatch, get_profiling_feature
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 
@@ -43,7 +45,7 @@ from gi.repository import Gtk  # isort: skip
 class ProfilerPage(UIConnectedWidget, UIPage, Events):
     def __init__(self, fapd_manager):
         UIConnectedWidget.__init__(
-            self, get_system_feature(), on_next=self.on_next_system
+            self, get_profiling_feature(), on_next=self.on_event
         )
         self.__events__ = [
             "analyze_button_pushed",
@@ -51,125 +53,185 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         ]
         Events.__init__(self)
         actions = {
-            "start": [
+            "profiler": [
                 UIAction(
                     "Start",
-                    "Start Test",
+                    "Start Profiling",
                     "media-playback-start",
-                    {"clicked": self.on_test_activate},
+                    {"clicked": self.on_start_clicked},
                     sensitivity_func=self.start_button_sensitivity,
-                )
-            ],
-            "stop": [
+                ),
                 UIAction(
                     "Stop",
-                    "Stop Test",
+                    "Stop Profiling",
                     "media-playback-stop",
-                    {},
+                    {"clicked": self.on_stop_clicked},
                     sensitivity_func=self.stop_button_sensitivity,
-                )
-            ],
-            "analyze": [
+                ),
                 UIAction(
                     "Analyze",
-                    "Analyze Target",
+                    "Analyze Output",
                     "applications-science",
-                    {"clicked": self.on_analyzerButton_clicked},
+                    {"clicked": self.on_analyzer_button_clicked},
                     sensitivity_func=self.analyze_button_sensitivity,
-                )
-            ],
-            "clear": [
+                ),
                 UIAction(
                     "Clear",
                     "Clear Fields",
                     "edit-clear",
-                    {"clicked": self.on_clearButton_clicked},
+                    {"clicked": self.on_clear_button_clicked},
+                    sensitivity_func=self.clear_button_sensitivity,
                 )
             ],
         }
 
         UIPage.__init__(self, actions)
-        self._fapd_profiler = FaProfiler(fapd_manager)
-        self.running = False
-        self.inputDict = {}
+        self.needs_state = True
+        self.can_start = True
+        self.can_stop = False
+        self.terminating = False
+        self.input_error = False
+        self.analysis_file = None
         self.markup = ""
-        self.analysis_available = False
-        self.analysis_file = ""
 
-    def analyze_button_sensitivity(self):
-        return self.analysis_available
+        self.profiling_handlers = {
+            ProfilerTick: self.handle_tick,
+            ProfilerDone: self.handle_done,
+        }
 
-    def on_next_system(self, system):
-        if not self.inputDict == system.get("profiler").entry:
-            self.update_field_text(system.get("profiler").entry)
+    def on_event(self, state: ProfilerState):
+        if state.__class__ in self.profiling_handlers:
+            self.profiling_handlers.get(state.__class__)(state)
+        self.refresh_view(state)
+        self.refresh_toolbar()
 
-        if not self.markup == system.get("profiler").output:
-            self.markup = system.get("profiler").output
-            self.update_output_text(self.markup)
-            self.analysis_available = bool(self.markup)
-            self.refresh_toolbar()
+    def handle_tick(self, state: ProfilerTick):
+        t = datetime.timedelta(seconds=state.duration) if state.duration else ""
+        if self.terminating:
+            self.update_output_text(".")
+        else:
+            self.markup = f"<span size='large'><b>{state.pid}: Executing {state.cmd} {t}</b></span>"
+            self.set_output_text(self.markup)
 
-        self.analysis_file = system.get("profiler").file
+    def handle_done(self, state: ProfilerState):
+        self.display_log_output([
+            (f"`{state.cmd}` stdout", state.stdout_log),
+            (f"`{state.cmd}` stderr", state.stderr_log),
+            ("fapolicyd", state.events_log),
+        ])
+        self.analysis_file = state.events_log
+        self.terminating = False
 
-    def update_field_text(self, profilerDict):
-        for k, v in profilerDict.items():
-            self.get_object(k).get_buffer().set_text(v, len(v))
+    def update_input_fields(self, cmd_args: Optional[str], uid: Optional[str], pwd: Optional[str], env: Optional[str]):
+        (cmd, args) = cmd_args.split(" ", 1) if cmd_args and " " in cmd_args else [cmd_args, None]
+        self.get_object("argText").set_text(args if args else "")
+        self.get_object("executeText").set_text(cmd if cmd else "")
+        self.get_object("userText").set_text(uid if uid else "")
+        self.get_object("dirText").set_text(pwd if pwd else "")
+        self.get_object("envText").set_text(env if env else "")
 
-    def update_output_text(self, markup):
+    def clear_input_fields(self):
+        self.update_input_fields(None, None, None, None)
+
+    def clear_output_test(self):
+        self.set_output_text(None)
+
+    def set_output_text(self, markup):
         buff = Gtk.TextBuffer()
-        buff.insert_markup(buff.get_end_iter(), markup, len(markup))
+        if markup:
+            self.markup = f"{markup}"
+            buff.insert_markup(buff.get_end_iter(), markup, len(markup))
         self.get_object("profilerOutput").set_buffer(buff)
 
-    def on_analyzerButton_clicked(self, *args):
+    def update_output_text(self, append):
+        self.set_output_text(f"{self.markup}{append}")
+
+    def refresh_view(self, state: ProfilerState):
+        self.can_start = not state.running
+        self.can_stop = state.running
+        if self.needs_state:
+            self.needs_state = False
+            self.update_input_fields(state.cmd, state.uid, state.pwd, state.env)
+
+    def on_analyzer_button_clicked(self, *args):
         self.analyze_button_pushed(self.analysis_file)
 
-    def on_clearButton_clicked(self, *args):
+    def on_clear_button_clicked(self, *args):
+        self.clear_output_test()
+        self.clear_input_fields()
+        self.analysis_file = None
         dispatch(clear_profiler_state())
 
+    def analyze_button_sensitivity(self):
+        return self.start_button_sensitivity() and self.analysis_file is not None
+
+    def clear_button_sensitivity(self):
+        return self.start_button_sensitivity()
+
     def stop_button_sensitivity(self):
-        return self.running
+        return self.can_stop
 
     def start_button_sensitivity(self):
-        return not self.running
+        return self.can_start
+
+    def _get_opt_text(self, named) -> Optional[str]:
+        txt = self.get_object(named).get_text()
+        return txt if txt else None
+
+    def get_cmd_text(self) -> Optional[str]:
+        return self._get_opt_text("executeText")
+
+    def get_arg_text(self) -> Optional[str]:
+        return self._get_opt_text("argText")
+
+    def get_uid_text(self) -> Optional[str]:
+        return self._get_opt_text("userText")
+
+    def get_pwd_text(self) -> Optional[str]:
+        return self._get_opt_text("dirText")
+
+    def get_env_text(self) -> Optional[str]:
+        return self._get_opt_text("envText")
 
     def get_entry_dict(self):
-        self.inputDict = {
-            "executeText": self.get_object("executeText").get_text(),
-            "argText": self.get_object("argText").get_text(),
-            "userText": self.get_object("userText").get_text(),
-            "dirText": self.get_object("dirText").get_text(),
-            "envText": self.get_object("envText").get_text(),
+        return {
+            "cmd": self.get_cmd_text(),
+            "arg": self.get_arg_text(),
+            "uid": self.get_uid_text(),
+            "pwd": self.get_pwd_text(),
+            "env": self.get_env_text(),
         }
-        dispatch(set_profiler_state(self.inputDict))
-        return self.inputDict
 
-    def display_log_output(self):
-        markup = ""
-        files = [
-            self._fapd_profiler.fapd_prof_stderr,
-            self._fapd_profiler.fapd_prof_stdout,
-            self._fapd_profiler.faprofSession.tgtStderr,
-            self._fapd_profiler.faprofSession.tgtStdout,
-        ]
+    def get_entry_dict_markup(self):
+        return "<span size='x-large' underline='single'><b>Target</b></span>\n" + \
+            "\n".join([f"{key}: {value}" for key, value in self.get_entry_dict().items()])
 
-        for run_file in files:
-            markup += f"<b>{run_file}</b>\n"
-            try:
-                spacers = 10
-                if run_file is not None:
-                    with open(run_file, "r") as f:
+    def display_log_output(self, logs):
+        markup = self.get_entry_dict_markup() + "\n\n"
+        for (description, log) in logs:
+            if log:
+                markup += f"<span size='x-large' underline='single'><b>{description}</b></span> (<b>{log}</b>)\n"
+                try:
+                    with open(log, "r") as f:
                         lines = f.readlines()
                     markup += html.escape("".join(lines + ["\n"]))
-                    spacers = len(run_file)
-                markup += f"<b>{'=' * spacers}</b>\n"
-            except OSError as ex:
-                logging.error(f"There was an issue reading from {run_file}.", ex)
-        dispatch(set_profiler_output(markup))
+                except OSError as ex:
+                    logging.error(f"There was an issue reading from {log}", ex)
+                    markup += f"<span size='large'>Failed to open log: <span underline='error'>{ex}</span></span>\n"
+                markup += "\n\n"
+        self.set_output_text(markup.rstrip())
 
-    def on_test_activate(self, *args):
+    def on_stop_clicked(self, *args):
+        self.can_stop = False
+        self.terminating = True
+        self.refresh_toolbar()
+        self.update_output_text("\n<span size='large'><b>Profiler terminating...</b></span>")
+        dispatch(stop_profiling())
+
+    def on_start_clicked(self, *args):
         profiling_args = self.get_entry_dict()
         if not FaProfSession.validSessionArgs(profiling_args):
-            logging.debug("Invalid Profiler arguments")
+            logging.info("Invalid Profiler arguments")
             dictInvalidEnums = FaProfSession.validateArgs(profiling_args)
             strStatusEnums = "\n  " + EnumErrorPairs2Str(dictInvalidEnums)
             dispatch(
@@ -178,37 +240,26 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
                     NotificationType.ERROR,
                 )
             )
-            return
+            self.input_error = True
+            self.can_start = True
+            self.terminating = False
+            self.refresh_toolbar()
+        else:
+            self.input_error = False
+            self.can_start = False
+            self.terminating = False
+            self.refresh_toolbar()
 
-        logging.debug(f"Entry text = {profiling_args}")
-        self.running = True
-        self._fapd_profiler.fapd_persistance = self.get_object(
-            "persistentCheckbox"
-        ).get_active()
-        try:
-            self._fapd_profiler.start_prof_session(profiling_args)
-            fapd_prof_stderr = self._fapd_profiler.fapd_prof_stderr
-            logging.debug(f"Start prof session: stderr={fapd_prof_stderr}")
+            self.set_output_text("<span size='large'><b>Profiler starting...</b></span>")
 
-            sleep(4)
-            self._fapd_profiler.stop_prof_session()
-            dispatch(set_profiler_analysis_file(fapd_prof_stderr))
-            self.running = False
-            self.display_log_output()
-        except ProfSessionException as e:
-            # Profiler Session creation failed because of bad args
-            logging.debug(f"{e.error_msg}, {e.error_enum}")
-            dispatch(
-                add_notification(
-                    e.error_msg,
-                    NotificationType.ERROR,
-                )
-            )
-        except Exception as e:
-            logging.debug(f"Unknown exception thrown by start_prof_session {e}")
-            dispatch(
-                add_notification(
-                    "Error: An unknown Profiler Session error has occured.",
-                    NotificationType.ERROR,
-                )
-            )
+            profiling_args = self.make_profiling_args()
+
+            logging.debug(f"Entry text = {profiling_args}")
+            dispatch(start_profiling(profiling_args))
+
+    def make_profiling_args(self):
+        res = dict(self.get_entry_dict())
+        res["env_dict"] = FaProfSession.comma_delimited_kv_string_to_dict(
+            res.get("env", "")
+        )
+        return res

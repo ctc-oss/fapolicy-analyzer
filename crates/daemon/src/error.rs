@@ -29,4 +29,10 @@ pub enum Error {
 
     #[error("FileIO error: {0}")]
     IOError(#[from] io::Error),
+
+    #[error("failed to observe fapolicyd ready state")]
+    NotReady,
+
+    #[error("failed to observe fapolicyd shutdown")]
+    NotStopped,
 }

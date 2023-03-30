@@ -1,6 +1,6 @@
 Summary:       File Access Policy Analyzer
 Name:          fapolicy-analyzer
-Version:       1.0.0
+Version:       1.1.0
 Release:       1%{?dist}
 License:       GPLv3+
 URL:           https://github.com/ctc-oss/fapolicy-analyzer
@@ -66,6 +66,7 @@ BuildRequires: (crate(pyo3/default) >= 0.15.0 with crate(pyo3/default) < 0.16.0)
 BuildRequires: (crate(pyo3-macros/default) >= 0.15.0 with crate(pyo3-macros/default) < 0.16.0)
 BuildRequires: (crate(pyo3-build-config/default) >= 0.15.0 with crate(pyo3-build-config/default) < 0.16.0)
 BuildRequires: (crate(pyo3-macros-backend/default) >= 0.15.0 with crate(pyo3-macros-backend/default) < 0.16.0)
+BuildRequires: rust-pyo3-log-devel
 BuildRequires: rust-quote-devel
 BuildRequires: rust-rayon-devel
 BuildRequires: rust-rayon-core-devel
@@ -96,6 +97,7 @@ Requires:      python3-configargparse
 Requires:      python3-more-itertools
 Requires:      python3-rx
 Requires:      python3-importlib-metadata
+Requires:      python3-toml 
 
 Requires:      gtk3
 Requires:      gtksourceview3
@@ -104,6 +106,10 @@ Requires:      gnome-icon-theme
 # runtime required for rendering user guide
 Requires:      webkit2gtk3
 Requires:      mesa-dri-drivers
+
+# rust-ring-devel does not support s390x and ppc64le:
+# https://bugzilla.redhat.com/show_bug.cgi?id=1869980
+ExcludeArch:   s390x %{power64}
 
 %global module          fapolicy_analyzer
 # pep440 versions handle dev and rc differently, so we call them out explicitly here
@@ -114,13 +120,8 @@ Requires:      mesa-dri-drivers
 Tools to assist with the configuration and management of fapolicyd.
 
 %prep
-%cargo_prep
-
 %autosetup -n %{name}
-
-# throw out the checked-in lock
-# this build will use what is available from the local registry
-rm Cargo.lock
+%cargo_prep
 
 # disable dev-tools crate
 sed -i '/tools/d' Cargo.toml
@@ -129,16 +130,19 @@ sed -i '/tools/d' Cargo.toml
 tar xvzf %{SOURCE1}
 
 # our setup.py looks up the version from git describe
-# this overrides that check to the RPM version
+# this overrides that check to use the RPM version
 echo %{module_version} > VERSION
 
 %build
+# ensure standard Rust compiler flags are set
+export RUSTFLAGS="%{build_rustflags}"
+
 %{python3} setup.py compile_catalog -f
 %{python3} help build
 %{python3} setup.py bdist_wheel
 
 %install
-%{py3_install_wheel %{module}-%{module_version}*%{_arch}.whl}
+%{py3_install_wheel %{module}-%{module_version}*%{_target_cpu}.whl}
 %{python3} help install --dest %{buildroot}/%{_datadir}/help
 install -D bin/%{name} %{buildroot}/%{_sbindir}/%{name}
 install -D data/%{name}.8 -t %{buildroot}/%{_mandir}/man8/
@@ -159,5 +163,5 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
 %attr(755,root,root) %{_datadir}/applications/%{name}.desktop
 
 %changelog
-* Fri Dec 16 2022 John Wass <jwass3@gmail.com> 1.0.0-1
+* Wed Mar 22 2023 John Wass <jwass3@gmail.com> 1.1.0-1
 - New release

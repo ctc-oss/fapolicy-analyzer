@@ -13,18 +13,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import fapolicy_analyzer.ui.strings as strings
 import gi
-from fapolicy_analyzer.ui.ui_page import UIPage
 
-gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
-
+import fapolicy_analyzer.ui.strings as strings
 from fapolicy_analyzer.ui.ancillary_trust_database_admin import (
     AncillaryTrustDatabaseAdmin,
 )
 from fapolicy_analyzer.ui.system_trust_database_admin import SystemTrustDatabaseAdmin
+from fapolicy_analyzer.ui.ui_page import UIPage
 from fapolicy_analyzer.ui.ui_widget import UIWidget
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk  # isort: skip
 
 
 class DatabaseAdminPage(UIWidget, UIPage):

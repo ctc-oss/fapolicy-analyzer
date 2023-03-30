@@ -15,10 +15,11 @@
 
 from enum import Enum
 from itertools import count
-from typing import Any, Dict, Iterator, NamedTuple, Optional, Sequence
+from typing import Any, Dict, Iterator, NamedTuple, Optional, Sequence, Tuple
 
 from fapolicy_analyzer import Changeset, Event, Group, Rule, System, Trust, User
 from fapolicy_analyzer.redux import Action, create_action
+
 
 INIT_SYSTEM = "INIT_SYSTEM"
 SYSTEM_RECEIVED = "SYSTEM_RECEIVED"
@@ -37,11 +38,15 @@ ERROR_APPLY_CHANGESETS = "ERROR_APPLY_CHANGESETS"
 CLEAR_CHANGESETS = "CLEAR_CHANGESET"
 
 REQUEST_ANCILLARY_TRUST = "REQUEST_ANCILLARY_TRUST"
-RECEIVED_ANCILLARY_TRUST = "RECEIVED_ANCILLARY_TRUST"
+ANCILLARY_TRUST_LOAD_STARTED = "ANCILLARY_TRUST_LOAD_STARTED"
+RECEIVED_ANCILLARY_TRUST_UPDATE = "RECEIVED_ANCILLARY_TRUST_UPDATE"
+ANCILLARY_TRUST_LOAD_COMPLETE = "ANCILLARY_TRUST_LOAD_COMPLETE"
 ERROR_ANCILLARY_TRUST = "ERROR_ANCILLARY_TRUST"
 
 REQUEST_SYSTEM_TRUST = "REQUEST_SYSTEM_TRUST"
-RECEIVED_SYSTEM_TRUST = "RECEIVED_SYSTEM_TRUST"
+SYSTEM_TRUST_LOAD_STARTED = "SYSTEM_TRUST_LOAD_STARTED"
+RECEIVED_SYSTEM_TRUST_UPDATE = "RECEIVED_SYSTEM_TRUST_UPDATE"
+SYSTEM_TRUST_LOAD_COMPLETE = "SYSTEM_TRUST_LOAD_COMPLETE"
 ERROR_SYSTEM_TRUST = "ERROR_SYSTEM_TRUST"
 
 DEPLOY_SYSTEM = "DEPLOY_SYSTEM"
@@ -69,10 +74,23 @@ RECEIVED_RULES_TEXT = "RECEIVED_RULES_TEXT"
 MODIFY_RULES_TEXT = "MODIFY_RULES_TEXT"
 ERROR_RULES_TEXT = "ERROR_RULES_TEXT"
 
-SET_PROFILER_STATE = "SET_PROFILER_STATE"
-SET_PROFILER_OUTPUT = "SET_PROFILER_OUTPUT"
-SET_PROFILER_ANALYSIS_FILE = "SET_PROFILER_ANALYSIS_FILE"
-CLEAR_PROFILER_STATE = "CLEAR_PROFILER_STATE"
+PROFILING_INIT_EVENT = "PROFILING_INIT"
+START_PROFILING_REQUEST = "START_PROFILING_REQUEST"
+START_PROFILING_RESPONSE = "START_PROFILING_RESPONSE"
+PROFILING_EXEC_EVENT = "PROFILING_EXEC"
+PROFILING_TICK_EVENT = "PROFILING_TICK"
+PROFILING_KILL_REQUEST = "PROFILING_KILL"
+PROFILING_KILL_RESPONSE = "PROFILING_TERM"
+PROFILING_DONE_EVENT = "PROFILING_DONE"
+PROFILER_SET_OUTPUT_CMD = "PROFILER_SET_OUTPUT_CMD"
+PROFILER_CLEAR_STATE_CMD = "PROFILER_CLEAR_STATE_CMD"
+ERROR_PROFILER_INIT = "ERROR_PROFILER_INIT"
+ERROR_PROFILER_EXEC = "ERROR_PROFILER_EXEC"
+ERROR_PROFILER_TERM = "ERROR_PROFILER_TERM"
+
+REQUEST_APP_CONFIG = "REQUEST_APP_CONFIG"
+RECEIVED_APP_CONFIG = "RECEIVED_APP_CONFIG"
+ERROR_APP_CONFIG = "ERROR_APP_CONFIG"
 
 
 def _create_action(type: str, payload: Any = None) -> Action:
@@ -128,8 +146,16 @@ def request_ancillary_trust() -> Action:
     return _create_action(REQUEST_ANCILLARY_TRUST)
 
 
-def received_ancillary_trust(trust: Sequence[Trust]) -> Action:
-    return _create_action(RECEIVED_ANCILLARY_TRUST, trust)
+def ancillary_trust_load_started(count: int) -> Action:
+    return _create_action(ANCILLARY_TRUST_LOAD_STARTED, count)
+
+
+def received_ancillary_trust_update(update: Tuple[Sequence[Trust], int]) -> Action:
+    return _create_action(RECEIVED_ANCILLARY_TRUST_UPDATE, update)
+
+
+def ancillary_trust_load_complete() -> Action:
+    return _create_action(ANCILLARY_TRUST_LOAD_COMPLETE)
 
 
 def error_ancillary_trust(error: str) -> Action:
@@ -140,8 +166,16 @@ def request_system_trust() -> Action:
     return _create_action(REQUEST_SYSTEM_TRUST)
 
 
-def received_system_trust(trust: Sequence[Trust]) -> Action:
-    return _create_action(RECEIVED_SYSTEM_TRUST, trust)
+def system_trust_load_started(count: int) -> Action:
+    return _create_action(SYSTEM_TRUST_LOAD_STARTED, count)
+
+
+def received_system_trust_update(update: Tuple[Sequence[Trust], int]) -> Action:
+    return _create_action(RECEIVED_SYSTEM_TRUST_UPDATE, update)
+
+
+def system_trust_load_complete() -> Action:
+    return _create_action(SYSTEM_TRUST_LOAD_COMPLETE)
 
 
 def error_system_trust(error: str) -> Action:
@@ -236,20 +270,56 @@ def error_rules_text(error: str) -> Action:
     return _create_action(ERROR_RULES_TEXT, error)
 
 
-def set_profiler_state(state: Dict[str, str]) -> Action:
-    return _create_action(SET_PROFILER_STATE, state)
+def profiler_init() -> Action:
+    return _create_action(PROFILING_INIT_EVENT)
 
 
-def set_profiler_output(output: str) -> Action:
-    return _create_action(SET_PROFILER_OUTPUT, output)
+def start_profiling(props: Dict[str, str]) -> Action:
+    return _create_action(START_PROFILING_REQUEST, props)
 
 
-def set_profiler_analysis_file(file: str) -> Action:
-    return _create_action(SET_PROFILER_ANALYSIS_FILE, file)
+def profiling_started(cmd: str) -> Action:
+    return _create_action(START_PROFILING_RESPONSE, cmd)
+
+
+def stop_profiling() -> Action:
+    return _create_action(PROFILING_KILL_REQUEST)
+
+
+def terminating_profiler() -> Action:
+    return _create_action(PROFILING_KILL_RESPONSE)
+
+
+def profiler_exec(pid: int) -> Action:
+    return _create_action(PROFILING_EXEC_EVENT, pid)
+
+
+def profiler_tick(duration: int) -> Action:
+    return _create_action(PROFILING_TICK_EVENT, duration)
+
+
+def profiler_done() -> Action:
+    return _create_action(PROFILING_DONE_EVENT)
+
+
+def set_profiler_output(events: Optional[str], stdout: Optional[str], stderr: Optional[str]) -> Action:
+    return _create_action(PROFILER_SET_OUTPUT_CMD, (events, stdout, stderr))
 
 
 def clear_profiler_state() -> Action:
-    return _create_action(CLEAR_PROFILER_STATE)
+    return _create_action(PROFILER_CLEAR_STATE_CMD)
+
+
+def profiler_initialization_error(error: str) -> Action:
+    return _create_action(ERROR_PROFILER_INIT, error)
+
+
+def profiler_execution_error(error: str) -> Action:
+    return _create_action(ERROR_PROFILER_EXEC, error)
+
+
+def profiler_termination_error(error: str) -> Action:
+    return _create_action(ERROR_PROFILER_TERM, error)
 
 
 def init_system() -> Action:
@@ -262,3 +332,15 @@ def system_received(system: System) -> Action:
 
 def system_initialization_error(error: str) -> Action:
     return _create_action(ERROR_SYSTEM_INITIALIZATION, error)
+
+
+def request_app_config() -> Action:
+    return _create_action(REQUEST_APP_CONFIG)
+
+
+def received_app_config(config: Dict[str, str]) -> Action:
+    return _create_action(RECEIVED_APP_CONFIG, config)
+
+
+def error_app_config(error: str) -> Action:
+    return _create_action(ERROR_APP_CONFIG, error)

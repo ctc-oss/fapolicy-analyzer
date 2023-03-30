@@ -15,15 +15,28 @@ name: RPM
 
 jobs:
   config:
-    name: Load config matrix
+    name: Load configuration
     runs-on: ubuntu-20.04
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
+      is-copr-enabled: ${{ steps.is-copr-enabled.outputs.defined }}
     steps:
-      - uses: actions/checkout@v2
-      - id: set-matrix
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Load config matrix
+        id: set-matrix
         run: |
           echo "::set-output name=matrix::$(cat .github/rpm-matrix.json | tr -d '\n' | tr -d ' ')"
+
+      - name: Copr token discovery
+        id: is-copr-enabled
+        if: "${{ env.COPR_KEY != '' }}"
+        run: echo "::set-output name=defined::true"
+        env:
+          COPR_KEY: ${{ secrets.COPR_API_LOGIN }}
+
 
   source0:
     name: Vendor Source0
@@ -33,7 +46,7 @@ jobs:
       - name: Install deps
         run: dnf install -y git make
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
@@ -73,7 +86,7 @@ jobs:
       - name: Install Git
         run: dnf install -y git
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
@@ -109,11 +122,20 @@ jobs:
           echo "The spec version $spec_version is correct based on git tag $tag"
 
       - name: Patch spec with prerelease version
-        if: endsWith(github.ref, '/master')
+        if: endsWith(github.ref, '/master') && github.event_name != 'pull_request_target'
         run: |
           spec_version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
           commit_number=$(git rev-list HEAD --count)
           patched_version="$spec_version~dev${commit_number}"
+          sed -i "s#Version:\s*${spec_version}#Version: ${patched_version}#" ${{ matrix.props.spec }}
+          grep Version ${{ matrix.props.spec }}
+
+      - name: Patch spec with pull request version
+        if: github.event_name == 'pull_request_target'
+        run: |
+          spec_version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
+          pr_number=${{ github.event.pull_request.number }}
+          patched_version="0.0.${pr_number}"
           sed -i "s#Version:\s*${spec_version}#Version: ${patched_version}#" ${{ matrix.props.spec }}
           grep Version ${{ matrix.props.spec }}
 
@@ -134,6 +156,12 @@ jobs:
       - name: Mark as git safe
         run: |
           git config --global --add safe.directory $GITHUB_WORKSPACE
+
+      - name: Generate doc tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          echo "${{ steps.tag_name.outputs.VERSION }}" > help/version
+          cat help/version
 
       - name: Build SRPM
         run: |
@@ -178,7 +206,7 @@ jobs:
   copr:
     needs: [ config, srpm ]
     name: Copr Build ${{ matrix.props.dist }}
-    if: startsWith(github.ref, 'refs/tags/v') || endsWith(github.ref, '/master')
+    if: needs.config.outputs.is-copr-enabled == 'true'
     container: 'rockylinux:8.6'
     runs-on: ubuntu-20.04
     strategy:
@@ -203,11 +231,12 @@ jobs:
         run: |
           mkdir -p $HOME/.config
           echo "[copr-cli]" > $HOME/.config/copr 
-          echo "username = ctc-oss" >> $HOME/.config/copr
+          echo "username = ${COPR_USER}" >> $HOME/.config/copr
           echo "login = ${COPR_LOGIN}" >> $HOME/.config/copr
           echo "token = ${COPR_TOKEN}" >> $HOME/.config/copr
           echo "copr_url = https://copr.fedorainfracloud.org" >> $HOME/.config/copr
         env:
+          COPR_USER:  ${{ secrets.COPR_API_USER }}
           COPR_LOGIN: ${{ secrets.COPR_API_LOGIN }}
           COPR_TOKEN: ${{ secrets.COPR_API_TOKEN }}
 
@@ -223,7 +252,9 @@ jobs:
     strategy:
       matrix: ${{ fromJson(needs.config.outputs.matrix )}}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
 
       - name: Download srpm artifacts
         uses: actions/download-artifact@v3
@@ -270,7 +301,9 @@ jobs:
     strategy:
       matrix: ${{ fromJson(needs.config.outputs.matrix )}}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
 
       - name: Download rpm artifacts
         uses: actions/download-artifact@v3
@@ -302,7 +335,9 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
 
       - name: Download artifacts
         uses: actions/download-artifact@v3

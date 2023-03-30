@@ -13,10 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import context  # noqa: F401
 import gi
 import pytest
-
-import context  # noqa: F401
 
 gi.require_version("Gtk", "3.0")
 from unittest.mock import MagicMock
@@ -24,8 +23,10 @@ from unittest.mock import MagicMock
 from callee import Attrs, InstanceOf
 from callee.strings import Regex
 from gi.repository import Gtk
-from fapolicy_analyzer.redux import Action
+from mocks import mock_System
 from rx.subject import Subject
+
+from fapolicy_analyzer.redux import Action
 from fapolicy_analyzer.ui.actions import ADD_NOTIFICATION, NotificationType
 from fapolicy_analyzer.ui.configs import Colors
 from fapolicy_analyzer.ui.store import init_store
@@ -34,8 +35,6 @@ from fapolicy_analyzer.ui.strings import (
     SYSTEM_TRUSTED_FILE_MESSAGE,
 )
 from fapolicy_analyzer.ui.system_trust_database_admin import SystemTrustDatabaseAdmin
-
-from mocks import mock_System, mock_trust
 
 
 @pytest.fixture()
@@ -113,20 +112,82 @@ def test_fires_file_added_to_ancillary_trust(widget):
     handler.assert_called_with("foo")
 
 
-def test_load_trust(mock_dispatch, mock_system_feature, mocker):
+def test_load_trust(mock_system_feature, mocker):
     mock_system_feature.on_next({"changesets": []})
     init_store(mock_System())
     widget = SystemTrustDatabaseAdmin()
-    mockTrustListLoad = mocker.patch.object(widget.trustFileList, "load_trust")
-
-    mockTrust = [mock_trust()]
+    mockAppendTrust = mocker.patch.object(widget.trust_file_list, "append_trust")
+    mockInitList = mocker.patch.object(widget.trust_file_list, "init_list")
     mock_system_feature.on_next(
         {
             "changesets": [],
-            "system_trust": MagicMock(error=None, trust=mockTrust, loading=False),
+            "system_trust": MagicMock(error=False, percent_complete=-1),
         }
     )
-    mockTrustListLoad.assert_called_with(mockTrust)
+    mock_system_feature.on_next(
+        {
+            "changesets": [],
+            "system_trust": MagicMock(
+                error=False, loading=True, percent_complete=0, trust_count=1, trust=[]
+            ),
+        }
+    )
+
+    mockInitList.assert_called_once_with(1)
+    mockAppendTrust.assert_called_once_with([])
+    mockAppendTrust.reset_mock()
+
+    mock_system_feature.on_next(
+        {
+            "changesets": [],
+            "system_trust": MagicMock(
+                error=False,
+                loading=True,
+                percent_complete=100,
+                last_set_completed="trust",
+                trust_count=1,
+            ),
+        }
+    )
+
+    mockAppendTrust.assert_called_once_with("trust")
+
+    mock_system_feature.on_next(
+        {
+            "changesets": [],
+            "system_trust": MagicMock(
+                error=False,
+                loading=False,
+                percent_complete=100,
+                last_set_completed="trust",
+                trust_count=1,
+            ),
+        }
+    )
+
+
+def test_load_trust_in_progress(mock_system_feature, mocker):
+    mock_system_feature.on_next({"changesets": []})
+    init_store(mock_System())
+    widget = SystemTrustDatabaseAdmin()
+    mockAppendTrust = mocker.patch.object(widget.trust_file_list, "append_trust")
+    mockInitList = mocker.patch.object(widget.trust_file_list, "init_list")
+    mock_system_feature.on_next(
+        {
+            "changesets": [],
+            "system_trust": MagicMock(
+                error=False,
+                loading=True,
+                percent_complete=10,
+                trust_count=10,
+                trust=["trust"],
+            ),
+        }
+    )
+
+    mockInitList.assert_called_once_with(10)
+    mockAppendTrust.assert_called_once_with(["trust"])
+    # the rest of the test would be the same as test_load_trust
 
 
 def test_load_trust_w_exception(mock_dispatch, mock_system_feature):

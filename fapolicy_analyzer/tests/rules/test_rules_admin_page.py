@@ -226,7 +226,7 @@ def test_validate_clicked_valid(widget, mock_dispatch):
 def test_validate_clicked_invalid(widget, mock_dispatch):
     widget._text_view.rules_changed("bar baz bah")
     widget.on_validate_clicked()
-    mock_dispatch.assert_any_call(
+    mock_dispatch.assert_not_any_call(
         InstanceOf(Action)
         & Attrs(
             type=ADD_NOTIFICATION,
@@ -238,7 +238,7 @@ def test_validate_clicked_invalid(widget, mock_dispatch):
 def test_validate_clicked_warning(widget, mock_dispatch):
     widget._text_view.rules_changed("allow perm=any exe=/foo : all")
     widget.on_validate_clicked()
-    mock_dispatch.assert_any_call(
+    mock_dispatch.assert_not_any_call(
         InstanceOf(Action)
         & Attrs(
             type=ADD_NOTIFICATION,
@@ -402,3 +402,31 @@ def test_forces_rule_text_update_after_save(widget, mock_dispatch, mock_system_f
         }
     )
     assert_text(original_text)
+
+
+def test_preserve_list_row_collapse(widget):
+    mock_rules = [
+        MagicMock(
+            id=1,
+            text="Mock Rule Number 1",
+            is_valid=True,
+            origin="Rule File 1",
+            info=[],
+        ),
+        MagicMock(
+            id=2,
+            text="Mock Rule Number 2",
+            origin="Rule File 1",
+            is_valid=True,
+            info=[MagicMock(category="i", message="info message")],
+        )
+    ]
+    widget._list_view.render_rules(mock_rules)
+    model = widget._list_view.get_object("treeView").get_model()
+    iter = model.get_iter_first()
+    assert widget._list_view.treeView.row_expanded(model.get_path(iter)) is True
+    widget._list_view.treeView.collapse_row(model.get_path(iter))
+    widget._text_view.rules_changed("allow perm=any exe=/foo : all")
+    widget.on_validate_clicked()
+    iter = model.get_iter_first()
+    assert widget._list_view.treeView.row_expanded(model.get_path(iter)) is False

@@ -20,6 +20,7 @@ use crate::svc::Method::*;
 
 #[derive(Debug)]
 pub enum Method {
+    Reload,
     StartUnit,
     StopUnit,
     EnableUnitFiles,
@@ -32,6 +33,16 @@ impl fmt::Display for Method {
     }
 }
 
+fn method_call(m: Method) -> Result<Message, Error> {
+    Message::new_method_call(
+        "org.freedesktop.systemd1",
+        "/org/freedesktop/systemd1",
+        "org.freedesktop.systemd1.Manager",
+        m.to_string(),
+    )
+    .map_err(DbusMethodCall)
+}
+
 fn call(msg: Message) -> Result<Message, Error> {
     Connection::new_system()
         .and_then(|conn| conn.send_with_reply_and_block(msg, Duration::from_millis(2000)))
@@ -39,14 +50,12 @@ fn call(msg: Message) -> Result<Message, Error> {
 }
 
 fn msg(m: Method, unit: &str) -> Result<Message, Error> {
-    dbus::Message::new_method_call(
-        "org.freedesktop.systemd1",
-        "/org/freedesktop/systemd1",
-        "org.freedesktop.systemd1.Manager",
-        m.to_string(),
-    )
-    .map_err(DbusMethodCall)
-    .map(|m| m.append2(unit, "fail"))
+    method_call(m).map(|m| m.append2(unit, "fail"))
+}
+
+/// reload all systemd units, ie. systemctl daemon-reload
+pub fn daemon_reload() -> Result<(), Error> {
+    method_call(Reload).and_then(call).map(|_| ())
 }
 
 /// a handle to a service that can be signalled by dbus
@@ -105,8 +114,16 @@ impl Handle {
         msg(DisableUnitFiles, &self.unit).and_then(call).map(|_| ())
     }
 
+    pub fn reload(&self) -> Result<(), Error> {
+        msg(Reload, &self.unit).and_then(call).map(|_| ())
+    }
+
     pub fn active(&self) -> Result<bool, Error> {
         self.state().map(|state| matches!(state, State::Active))
+    }
+
+    pub fn valid(&self) -> bool {
+        self.state().is_ok()
     }
 
     pub fn state(&self) -> Result<State, Error> {
@@ -139,22 +156,22 @@ impl Handle {
     }
 }
 
-pub fn wait_for_daemon(handle: &Handle, target_state: State, seconds: usize) -> Result<(), Error> {
+pub fn wait_for_service(handle: &Handle, target_state: State, seconds: usize) -> Result<(), Error> {
     for _ in 0..seconds {
-        eprintln!("waiting on daemon to be {target_state:?}...");
+        log::debug!("waiting on {} to be {target_state:?}...", handle.name);
         sleep(Duration::from_secs(1));
         if handle
             .state()
             .map(|state| target_state.can_be(state))
             .unwrap_or(false)
         {
-            eprintln!("daemon is now {target_state:?}");
+            log::debug!("{} is now {target_state:?}", handle.name);
             return Ok(());
         }
     }
 
     let actual_state = handle.state()?;
-    eprintln!("done waiting, daemon is {target_state:?}");
+    log::debug!("done waiting, {} is {target_state:?}", handle.name);
 
     if target_state.can_be(actual_state) {
         Ok(())

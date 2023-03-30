@@ -13,18 +13,29 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import fapolicy_analyzer.ui.strings as strings
 import gi
+from more_itertools import first_true
+
+import fapolicy_analyzer.ui.strings as strings
 from fapolicy_analyzer.ui.actions import apply_changesets
-from fapolicy_analyzer.ui.add_file_button import AddFileButton
 from fapolicy_analyzer.ui.changeset_wrapper import TrustChangeset
 from fapolicy_analyzer.ui.configs import Colors
 from fapolicy_analyzer.ui.confirm_change_dialog import ConfirmChangeDialog
 from fapolicy_analyzer.ui.searchable_list import SearchableList
 from fapolicy_analyzer.ui.store import dispatch
-from fapolicy_analyzer.ui.strings import FILE_LABEL, FILES_LABEL
+from fapolicy_analyzer.ui.strings import (
+    ACCESS_ALLOWED_TOOLTIP,
+    ACCESS_DENIED_TOOLTIP,
+    ACCESS_PARTIAL_TOOLTIP,
+    FILE_LABEL,
+    FILES_LABEL,
+    TRUSTED_ANCILLARY_TOOLTIP,
+    TRUSTED_SYSTEM_TOOLTIP,
+    UNKNOWN_TOOLTIP,
+    UNTRUSTED_ANCILLARY_TOOLTIP,
+    UNTRUSTED_SYSTEM_TOOLTIP,
+)
 from fapolicy_analyzer.ui.trust_reconciliation_dialog import TrustReconciliationDialog
-from more_itertools import first_true
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gdk, Gtk  # isort: skip
@@ -40,13 +51,8 @@ class SubjectList(SearchableList):
             "file_selection_changed",
         ]
 
-        add_button = AddFileButton()
-        add_button.files_added += lambda files: print(files)
-        add_button.get_ref().set_sensitive(False)  # disable for now in readonly-view
-
         super().__init__(
             self._columns(),
-            add_button.get_ref(),
             searchColumnIndex=2,
             defaultSortIndex=2,
             selection_type="multi",
@@ -62,6 +68,7 @@ class SubjectList(SearchableList):
         self.get_object("treeView").connect(
             "button-press-event", self.on_view_button_press_event
         )
+        self.get_object("treeView").set_tooltip_column(6)
         self.selection = []
 
     def _build_reconcile_context_menu(self):
@@ -114,35 +121,53 @@ class SubjectList(SearchableList):
         status = subject.trust_status.lower()
         trust = subject.trust.lower()
         if not status == "t":
-            at_str = (
-                f'<span color="{Colors.RED}"><b>AT</b></span>'
+            at_str, at_tooltip = (
+                (
+                    f'<span color="{Colors.RED}"><b>AT</b></span>',
+                    UNTRUSTED_ANCILLARY_TOOLTIP,
+                )
                 if trust == "at"
-                else "AT"
+                else ("AT", "")
             )
-            st_str = (
-                f'<span color="{Colors.RED}"><b>ST</b></span>'
+            st_str, st_tooltip = (
+                (
+                    f'<span color="{Colors.RED}"><b>ST</b></span>',
+                    UNTRUSTED_SYSTEM_TOOLTIP,
+                )
                 if trust == "st"
-                else "ST"
+                else ("ST", "")
             )
-            u_str = (
-                f'<span color="{Colors.GREEN}"><u><b>U</b></u></span>'
+            u_str, u_tooltip = (
+                (
+                    f'<span color="{Colors.GREEN}"><u><b>U</b></u></span>',
+                    UNKNOWN_TOOLTIP,
+                )
                 if trust == "u"
-                else "U"
+                else ("U", "")
             )
         else:
-            at_str = (
-                f'<span color="{Colors.GREEN}"><u><b>AT</b></u></span>'
+            at_str, at_tooltip = (
+                (
+                    f'<span color="{Colors.GREEN}"><u><b>AT</b></u></span>',
+                    TRUSTED_ANCILLARY_TOOLTIP,
+                )
                 if trust == "at"
-                else "AT"
+                else ("AT", "")
             )
-            st_str = (
-                f'<span color="{Colors.GREEN}"><u><b>ST</b></u></span>'
+            st_str, st_tooltip = (
+                (
+                    f'<span color="{Colors.GREEN}"><u><b>ST</b></u></span>',
+                    TRUSTED_SYSTEM_TOOLTIP,
+                )
                 if trust == "st"
-                else "ST"
+                else ("ST", "")
             )
-            u_str = "U"
+            u_str, u_tooltip = "U", ""
 
-        return " / ".join([st_str, at_str, u_str])
+        tooltips = [at_tooltip, st_tooltip, u_tooltip]
+        return " / ".join([st_str, at_str, u_str]), "\n".join(
+            [t for t in tooltips if not t == ""]
+        )
 
     def __markup(self, value, options):
 
@@ -154,11 +179,11 @@ class SubjectList(SearchableList):
     def __colors(self, access):
         a = access.upper()
         return (
-            (Colors.LIGHT_GREEN, Colors.BLACK)
+            (Colors.LIGHT_GREEN, Colors.BLACK, ACCESS_ALLOWED_TOOLTIP)
             if a == "A"
-            else (Colors.ORANGE, Colors.BLACK)
+            else (Colors.ORANGE, Colors.BLACK, ACCESS_PARTIAL_TOOLTIP)
             if a == "P"
-            else (Colors.LIGHT_RED, Colors.WHITE)
+            else (Colors.LIGHT_RED, Colors.WHITE, ACCESS_DENIED_TOOLTIP)
         )
 
     def __handle_selection_changed(self, data):
@@ -211,19 +236,20 @@ class SubjectList(SearchableList):
         if confirm == Gtk.ResponseType.YES:
             dispatch(apply_changesets(changeset))
 
-    def _update_tree_count(self, count):
+    def _update_list_status(self, count):
         label = FILE_LABEL if count == 1 else FILES_LABEL
         self.treeCount.set_text(" ".join([str(count), label]))
 
     def load_store(self, subjects, **kwargs):
         self._systemTrust = kwargs.get("systemTrust", [])
         self._ancillaryTrust = kwargs.get("ancillaryTrust", [])
-        store = Gtk.ListStore(str, str, str, object, str, str)
+        store = Gtk.ListStore(str, str, str, object, str, str, str)
         for s in subjects:
-            status = self._trust_markup(s)
+            status, status_tooltip = self._trust_markup(s)
             access = self.__markup(s.access.upper(), ["A", "P", "D"])
-            bg_color, txt_color = self.__colors(s.access)
-            store.append([status, access, s.file, s, bg_color, txt_color])
+            bg_color, txt_color, access_tooltip = self.__colors(s.access)
+            tooltip = status_tooltip + "\n" + access_tooltip
+            store.append([status, access, s.file, s, bg_color, txt_color, tooltip])
         super().load_store(store)
 
     def get_selected_row_by_file(self, file: str) -> Gtk.TreePath:

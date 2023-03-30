@@ -14,7 +14,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os
-import logging
 
 
 def _xdg_dir_prefix(key):
@@ -47,7 +46,6 @@ def xdg_state_dir_prefix(strBaseName):
     directory, creates the directory if needed.
     """
     strAbsolutePath = _xdg_dir_prefix("XDG_STATE_HOME") + strBaseName
-    logging.debug("Xdg absolute path: {}".format(strAbsolutePath))
     return strAbsolutePath
 
 
@@ -56,7 +54,6 @@ def xdg_data_dir_prefix(strBaseName):
     directory, creates the directory if needed.
     """
     strAbsolutePath = _xdg_dir_prefix("XDG_DATA_HOME") + strBaseName
-    logging.debug("Xdg absolute path: {}".format(strAbsolutePath))
     return strAbsolutePath
 
 

@@ -52,13 +52,11 @@ VALIDATION_NOTE_CATEGORY = "invalid rules"
 
 class RulesAdminPage(UIConnectedWidget, UIPage):
     def __init__(self):
-        UIConnectedWidget.__init__(
-            self, get_system_feature(), on_next=self.on_next_system
-        )
-
-        self.__notification_subscription = get_notifications_feature().subscribe(
-            on_next=self.on_next_notifications,
-        )
+        features = [
+            {get_system_feature(): {"on_next": self.on_next_system}},
+            {get_notifications_feature(): {"on_next": self.on_next_notifications}},
+        ]
+        UIConnectedWidget.__init__(self, features=features)
 
         actions = {
             "rules": [
@@ -94,6 +92,19 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         self.__saving: bool = False
         self.__system: System = None
         self.__validation_notifications: Sequence[Notification] = []
+
+        self._list_view.treeView.connect(
+            "row-collapsed", self._list_view.on_row_collapsed
+        )
+        self._list_view.treeView.connect(
+            "row-expanded", self._list_view.on_row_expanded
+        )
+        self.__status_info.get_object("statusList").connect(
+            "row-collapsed", self.__status_info.on_row_collapsed
+        )
+        self.__status_info.get_object("statusList").connect(
+            "row-expanded", self.__status_info.on_row_expanded
+        )
 
         self.__load_rules()
 
@@ -139,7 +150,9 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         for note in self.__validation_notifications:
             dispatch(remove_notification(note.id))
 
-    def __build_and_validate_changeset(self) -> Tuple[RuleChangeset, bool]:
+    def __build_and_validate_changeset(
+        self, show_notifications=True
+    ) -> Tuple[RuleChangeset, bool]:
         changeset = RuleChangeset()
         valid = True
 
@@ -160,29 +173,31 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         rules = changeset.rules()
 
         if not all([r.is_valid for r in rules]):
-            dispatch(
-                add_notification(
-                    RULES_VALIDATION_ERROR,
-                    NotificationType.ERROR,
-                    category=VALIDATION_NOTE_CATEGORY,
+            if show_notifications:
+                dispatch(
+                    add_notification(
+                        RULES_VALIDATION_ERROR,
+                        NotificationType.ERROR,
+                        category=VALIDATION_NOTE_CATEGORY,
+                    )
                 )
-            )
             valid = False
 
         if any([True for r in rules for i in r.info if i.category.lower() == "w"]):
-            dispatch(
-                add_notification(
-                    RULES_VALIDATION_WARNING,
-                    NotificationType.WARN,
-                    category=VALIDATION_NOTE_CATEGORY,
+            if show_notifications:
+                dispatch(
+                    add_notification(
+                        RULES_VALIDATION_WARNING,
+                        NotificationType.WARN,
+                        category=VALIDATION_NOTE_CATEGORY,
+                    )
                 )
-            )
         return changeset, valid
 
-    def _dispose(self):
-        UIConnectedWidget._dispose(self)
-        if self.__notification_subscription:
-            self.__notification_subscription.dispose()
+    def __is_list_view(self):
+        return (
+            True if self.get_object("ruleNotebook").get_current_page() == 1 else False
+        )
 
     def on_save_clicked(self, *args):
         changeset, valid = self.__build_and_validate_changeset()
@@ -194,10 +209,10 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
             self.__status_info.render_rule_status(changeset.rules())
 
     def on_validate_clicked(self, *args):
-        changeset, _ = self.__build_and_validate_changeset()
+        changeset, _ = self.__build_and_validate_changeset(show_notifications=False)
         self.__update_list_view(changeset)
         self.__status_info.render_rule_status(changeset.rules())
-
+        self._list_view.restore_row_collapse()
         # dispatch to force toolbar refresh
         dispatch(modify_rules_text(self.__rules_validated))
 

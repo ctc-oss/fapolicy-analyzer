@@ -17,15 +17,18 @@ import context  # noqa: F401 # isort: skip
 from unittest.mock import MagicMock
 
 import pytest
+
 from fapolicy_analyzer.redux import Action
 from fapolicy_analyzer.ui.actions import (
     ADD_CHANGESETS,
     ADD_NOTIFICATION,
+    ANCILLARY_TRUST_LOAD_COMPLETE,
+    ANCILLARY_TRUST_LOAD_STARTED,
     APPLY_CHANGESETS,
     CLEAR_CHANGESETS,
-    CLEAR_PROFILER_STATE,
     DEPLOY_SYSTEM,
     ERROR_ANCILLARY_TRUST,
+    ERROR_APP_CONFIG,
     ERROR_APPLY_CHANGESETS,
     ERROR_DEPLOYING_SYSTEM,
     ERROR_EVENTS,
@@ -37,15 +40,17 @@ from fapolicy_analyzer.ui.actions import (
     ERROR_USERS,
     INIT_SYSTEM,
     MODIFY_RULES_TEXT,
-    RECEIVED_ANCILLARY_TRUST,
+    RECEIVED_ANCILLARY_TRUST_UPDATE,
+    RECEIVED_APP_CONFIG,
     RECEIVED_EVENTS,
     RECEIVED_GROUPS,
     RECEIVED_RULES,
     RECEIVED_RULES_TEXT,
-    RECEIVED_SYSTEM_TRUST,
+    RECEIVED_SYSTEM_TRUST_UPDATE,
     RECEIVED_USERS,
     REMOVE_NOTIFICATION,
     REQUEST_ANCILLARY_TRUST,
+    REQUEST_APP_CONFIG,
     REQUEST_EVENTS,
     REQUEST_GROUPS,
     REQUEST_RULES,
@@ -53,20 +58,24 @@ from fapolicy_analyzer.ui.actions import (
     REQUEST_SYSTEM_TRUST,
     REQUEST_USERS,
     RESTORE_SYSTEM_CHECKPOINT,
-    SET_PROFILER_STATE,
     SET_SYSTEM_CHECKPOINT,
     SYSTEM_CHECKPOINT_SET,
     SYSTEM_DEPLOYED,
     SYSTEM_RECEIVED,
+    SYSTEM_TRUST_LOAD_COMPLETE,
+    SYSTEM_TRUST_LOAD_STARTED,
     Notification,
     NotificationType,
     add_changesets,
     add_notification,
+    ancillary_trust_load_complete,
+    ancillary_trust_load_started,
     apply_changesets,
     clear_changesets,
     clear_profiler_state,
     deploy_system,
     error_ancillary_trust,
+    error_app_config,
     error_apply_changesets,
     error_deploying_system,
     error_events,
@@ -77,15 +86,17 @@ from fapolicy_analyzer.ui.actions import (
     error_users,
     init_system,
     modify_rules_text,
-    received_ancillary_trust,
+    received_ancillary_trust_update,
+    received_app_config,
     received_events,
     received_groups,
     received_rules,
     received_rules_text,
-    received_system_trust,
+    received_system_trust_update,
     received_users,
     remove_notification,
     request_ancillary_trust,
+    request_app_config,
     request_events,
     request_groups,
     request_rules,
@@ -93,12 +104,32 @@ from fapolicy_analyzer.ui.actions import (
     request_system_trust,
     request_users,
     restore_system_checkpoint,
-    set_profiler_state,
     set_system_checkpoint,
     system_checkpoint_set,
     system_deployed,
     system_initialization_error,
     system_received,
+    system_trust_load_complete,
+    system_trust_load_started,
+    set_profiler_output,
+    PROFILER_CLEAR_STATE_CMD,
+    profiler_done,
+    PROFILER_SET_OUTPUT_CMD,
+    stop_profiling,
+    terminating_profiler,
+    profiler_tick,
+    PROFILING_KILL_RESPONSE,
+    PROFILING_KILL_REQUEST,
+    profiler_exec,
+    PROFILING_EXEC_EVENT,
+    PROFILING_TICK_EVENT,
+    PROFILING_INIT_EVENT,
+    profiler_init,
+    start_profiling,
+    START_PROFILING_REQUEST,
+    START_PROFILING_RESPONSE,
+    profiling_started,
+    PROFILING_DONE_EVENT,
 )
 
 
@@ -160,12 +191,25 @@ def test_request_ancillary_trust():
     assert not action.payload
 
 
-def test_received_ancillary_trust():
-    trust = [MagicMock()]
-    action = received_ancillary_trust(trust)
+def test_ancillary_trust_load_started():
+    action = ancillary_trust_load_started(1)
     assert type(action) is Action
-    assert action.type == RECEIVED_ANCILLARY_TRUST
-    assert action.payload == trust
+    assert action.type == ANCILLARY_TRUST_LOAD_STARTED
+    assert action.payload == 1
+
+
+def test_received_ancillary_trust_update():
+    trust = [MagicMock()]
+    action = received_ancillary_trust_update((trust, 1))
+    assert type(action) is Action
+    assert action.type == RECEIVED_ANCILLARY_TRUST_UPDATE
+    assert action.payload == (trust, 1)
+
+
+def test_ancillary_trust_load_complete():
+    action = ancillary_trust_load_complete()
+    assert type(action) is Action
+    assert action.type == ANCILLARY_TRUST_LOAD_COMPLETE
 
 
 def test_error_ancillary_trust():
@@ -182,12 +226,25 @@ def test_request_system_trust():
     assert not action.payload
 
 
-def test_received_system_trust():
-    trust = [MagicMock()]
-    action = received_system_trust(trust)
+def test_system_trust_load_started():
+    action = system_trust_load_started(1)
     assert type(action) is Action
-    assert action.type == RECEIVED_SYSTEM_TRUST
-    assert action.payload == trust
+    assert action.type == SYSTEM_TRUST_LOAD_STARTED
+    assert action.payload == 1
+
+
+def test_received_system_trust_update():
+    trust = [MagicMock()]
+    action = received_system_trust_update((trust, 1))
+    assert type(action) is Action
+    assert action.type == RECEIVED_SYSTEM_TRUST_UPDATE
+    assert action.payload == (trust, 1)
+
+
+def test_system_trust_load_complete():
+    action = system_trust_load_complete()
+    assert type(action) is Action
+    assert action.type == SYSTEM_TRUST_LOAD_COMPLETE
 
 
 def test_error_system_trust():
@@ -364,18 +421,76 @@ def test_error_rules_text():
     assert action.payload == "foo"
 
 
-def test_set_profiler_state():
-    payload = {"key1": "value1"}
-    action = set_profiler_state(payload)
+def test_profiler_init_event():
+    action = profiler_init()
     assert type(action) is Action
-    assert action.type == SET_PROFILER_STATE
-    assert action.payload == payload
+    assert action.type == PROFILING_INIT_EVENT
+    assert action.payload is None
+
+
+def test_profiler_start_request():
+    expected = {"cmd": "foo"}
+    action = start_profiling(expected)
+    assert type(action) is Action
+    assert action.type == START_PROFILING_REQUEST
+    assert action.payload is expected
+
+
+def test_profiler_start_response():
+    expected = "cmd"
+    action = profiling_started(expected)
+    assert type(action) is Action
+    assert action.type == START_PROFILING_RESPONSE
+    assert action.payload is expected
+
+
+def test_profiler_exec_event():
+    action = profiler_exec(999)
+    assert type(action) is Action
+    assert action.type == PROFILING_EXEC_EVENT
+    assert action.payload == 999
+
+
+def test_profiler_tick_event():
+    action = profiler_tick(999)
+    assert type(action) is Action
+    assert action.type == PROFILING_TICK_EVENT
+    assert action.payload == 999
+
+
+def test_profiler_kill_request():
+    action = stop_profiling()
+    assert type(action) is Action
+    assert action.type == PROFILING_KILL_REQUEST
+    assert action.payload is None
+
+
+def test_profiler_kill_response():
+    action = terminating_profiler()
+    assert type(action) is Action
+    assert action.type == PROFILING_KILL_RESPONSE
+    assert action.payload is None
+
+
+def test_profiler_done():
+    action = profiler_done()
+    assert type(action) is Action
+    assert action.type == PROFILING_DONE_EVENT
+    assert action.payload is None
+
+
+def test_set_output():
+    expected = ("foo", "bar", "baz")
+    action = set_profiler_output(expected[0], expected[1], expected[2])
+    assert type(action) is Action
+    assert action.type == PROFILER_SET_OUTPUT_CMD
+    assert action.payload == expected
 
 
 def test_clear_profiler_state():
     action = clear_profiler_state()
     assert type(action) is Action
-    assert action.type == CLEAR_PROFILER_STATE
+    assert action.type == PROFILER_CLEAR_STATE_CMD
     assert action.payload is None
 
 
@@ -398,4 +513,26 @@ def test_system_initialization_error():
     action = system_initialization_error("foo")
     assert type(action) is Action
     assert action.type == ERROR_SYSTEM_INITIALIZATION
+    assert action.payload == "foo"
+
+
+def test_request_app_config():
+    action = request_app_config()
+    assert type(action) is Action
+    assert action.type == REQUEST_APP_CONFIG
+    assert not action.payload
+
+
+def test_received_app_config():
+    config = {"initial_view": "foo"}
+    action = received_app_config(config)
+    assert type(action) is Action
+    assert action.type == RECEIVED_APP_CONFIG
+    assert action.payload == config
+
+
+def test_error_app_config():
+    action = error_app_config("foo")
+    assert type(action) is Action
+    assert action.type == ERROR_APP_CONFIG
     assert action.payload == "foo"
