@@ -26,6 +26,7 @@ jobs:
       - name: clone wiki
         run: |
           git clone https://github.com/ctc-oss/fapolicy-analyzer.wiki
+          git checkout ${{ steps.tag_name.outputs.VERSION }}
 
       - name: generate pdf
         run: |
