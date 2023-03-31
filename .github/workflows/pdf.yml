@@ -32,7 +32,7 @@ jobs:
           pandoc -V CJKmainfont="KaiTi" User-Guide.md -o user-guide.pdf
         working-directory: fapolicy-analyzer.wiki
 
-      - name: Release artifacts
+      - name: release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ steps.tag_name.outputs.VERSION }}
