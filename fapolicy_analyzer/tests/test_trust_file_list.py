@@ -119,3 +119,50 @@ def test_epoch_to_string():
 
     # Verify a NULL string input outputs "Missing"
     assert epoch_to_string(None) == "Missing"
+
+def test_tree_count_full(widget, mocker):
+    mocker.patch(
+        "fapolicy_analyzer.ui.trust_file_list.ThreadPoolExecutor",
+        return_value=MagicMock(submit=lambda x: x()),
+    )
+    mocker.patch(
+        "fapolicy_analyzer.ui.trust_file_list.GLib.idle_add",
+        side_effect=lambda x, args: x(args),
+    )
+    widget.init_list(2)
+    widget.append_trust(_trust)
+    refresh_gui(delay=0.5)
+    assert widget.treeCount.get_text() == "2  files"
+
+def test_tree_count_empty(widget, mocker):
+    mocker.patch(
+        "fapolicy_analyzer.ui.trust_file_list.ThreadPoolExecutor",
+        return_value=MagicMock(submit=lambda x: x()),
+    )
+    mocker.patch(
+        "fapolicy_analyzer.ui.trust_file_list.GLib.idle_add",
+        side_effect=lambda x, args: x(args),
+    )
+    widget.init_list(0)
+    widget.append_trust([])
+    refresh_gui(delay=0.5)
+    assert widget.treeCount.get_text() == "0  files"
+
+def test_tree_count_full(widget, mocker):
+    mocker.patch(
+        "fapolicy_analyzer.ui.trust_file_list.ThreadPoolExecutor",
+        return_value=MagicMock(submit=lambda x: x()),
+    )
+    mocker.patch(
+        "fapolicy_analyzer.ui.trust_file_list.GLib.idle_add",
+        side_effect=lambda x, args: x(args),
+    )
+    widget.init_list(2)
+    widget.append_trust(_trust)
+    refresh_gui(delay=0.5)
+    view = widget.get_object("treeView")
+    viewFilter = widget.get_object("search")
+    viewFilter.set_text("foo")
+    widget.on_search_activate()
+    refresh_gui(delay=0.3)
+    assert widget.treeCount.get_text() == "1 / 2 files"

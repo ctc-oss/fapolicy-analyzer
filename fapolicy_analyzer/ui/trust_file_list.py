@@ -118,7 +118,7 @@ class TrustFileList(SearchableList):
         return [trustColumn, mtimeColumn, fileColumn]
 
     def _update_list_status(self, count):
-        label = FILE_LABEL if count == 1 else FILES_LABEL
+        label = FILE_LABEL if self.total == 1 else FILES_LABEL
         denom_str = "" if count == 0 or count == self.total else " ".join(["/", str(self.total)])
         super()._update_list_status(" ".join([str(count), denom_str, label]))
 
