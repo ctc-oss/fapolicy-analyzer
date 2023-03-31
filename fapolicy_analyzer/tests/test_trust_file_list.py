@@ -120,6 +120,7 @@ def test_epoch_to_string():
     # Verify a NULL string input outputs "Missing"
     assert epoch_to_string(None) == "Missing"
 
+
 def test_tree_count_full(widget, mocker):
     mocker.patch(
         "fapolicy_analyzer.ui.trust_file_list.ThreadPoolExecutor",
@@ -133,6 +134,7 @@ def test_tree_count_full(widget, mocker):
     widget.append_trust(_trust)
     refresh_gui(delay=0.5)
     assert widget.treeCount.get_text() == "2  files"
+
 
 def test_tree_count_empty(widget, mocker):
     mocker.patch(
@@ -148,7 +150,8 @@ def test_tree_count_empty(widget, mocker):
     refresh_gui(delay=0.5)
     assert widget.treeCount.get_text() == "0  files"
 
-def test_tree_count_full(widget, mocker):
+
+def test_tree_count_partial(widget, mocker):
     mocker.patch(
         "fapolicy_analyzer.ui.trust_file_list.ThreadPoolExecutor",
         return_value=MagicMock(submit=lambda x: x()),
@@ -160,7 +163,6 @@ def test_tree_count_full(widget, mocker):
     widget.init_list(2)
     widget.append_trust(_trust)
     refresh_gui(delay=0.5)
-    view = widget.get_object("treeView")
     viewFilter = widget.get_object("search")
     viewFilter.set_text("foo")
     widget.on_search_activate()
