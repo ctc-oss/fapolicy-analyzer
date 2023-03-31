@@ -31,7 +31,7 @@ jobs:
       - name: generate pdf
         run: |
           pandoc -V CJKmainfont="KaiTi" User-Guide.md -o user-guide.pdf
-        working-directory: fapolicy-analyzer-wiki
+        working-directory: fapolicy-analyzer.wiki
 
       - name: Release artifacts
         uses: softprops/action-gh-release@v1
@@ -40,4 +40,4 @@ jobs:
           prerelease: ${{ startsWith(github.ref, 'refs/tags/v0') || contains(github.ref, 'rc') }}
           draft: true
           files: |
-            fapolicy-analyzer-wiki/user-guide.pdf
+            fapolicy-analyzer.wiki/user-guide.pdf
