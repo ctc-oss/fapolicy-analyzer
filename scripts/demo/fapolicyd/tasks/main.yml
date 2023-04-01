@@ -22,6 +22,7 @@
 
 - name: Move original rules to default.rules.d
   copy:
+    remote_src: true
     src: /etc/fapolicyd/rules.d
     dest: /etc/fapolicyd/default.rules.d
 
