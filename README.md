@@ -1,22 +1,40 @@
-File Access Policy Analyzer
-===
+<div align="center">
+  <h1><samp>File Access Policy Analyzer</samp></h1>
 
-Tools to assist with the configuration and management of [fapolicyd](https://github.com/linux-application-whitelisting/fapolicyd).
 
-[![Fedora package](https://img.shields.io/fedora/v/fapolicy-analyzer?logo=fedora&label=Fedora)](https://packages.fedoraproject.org/pkgs/fapolicy-analyzer/fapolicy-analyzer/)
-[![GitHub release](https://shields.io/github/v/release/ctc-oss/fapolicy-analyzer?color=blue&display_name=tag&sort=semver&label=GitHub)](https://github.com/ctc-oss/fapolicy-analyzer/releases/latest)
-![GitHub CI](https://badgen.net/github/checks/ctc-oss/fapolicy-analyzer?label=CI)
-[![Copr build status](https://img.shields.io/badge/dynamic/json?color=B87333&label=Copr&query=builds.latest.state&url=https%3A%2F%2Fcopr.fedorainfracloud.org%2Fapi_3%2Fpackage%3Fownername%3Dctc-oss%26projectname%3Dfapolicy-analyzer%26packagename%3Dfapolicy-analyzer%26with_latest_build%3DTrue)](https://copr.fedorainfracloud.org/coprs/ctc-oss/fapolicy-analyzer/)
-[![Coverity Scan](https://img.shields.io/coverity/scan/26261?label=Coverity)](https://scan.coverity.com/projects/ctc-oss-fapolicy-analyzer)
-![GitHub](https://img.shields.io/github/license/ctc-oss/fapolicy-analyzer?color=red&label=License)
+<p>
+<a href="https://packages.fedoraproject.org/pkgs/fapolicy-analyzer/fapolicy-analyzer/"><img src="https://img.shields.io/fedora/v/fapolicy-analyzer?logo=fedora&label=Fedora&color=3c6eb4"></a>
+<a href="https://github.com/ctc-oss/fapolicy-analyzer/releases"><img src="https://img.shields.io/github/v/release/ctc-oss/fapolicy-analyzer?color=4078c0&include_prereleases&label=GitHub&logo=github"></a>
+<a href="https://copr.fedorainfracloud.org/coprs/ctc-oss/fapolicy-analyzer/"><img src="https://img.shields.io/badge/dynamic/json?color=B87333&logo=fedora&label=Copr&query=builds.latest.state&url=https%3A%2F%2Fcopr.fedorainfracloud.org%2Fapi_3%2Fpackage%3Fownername%3Dctc-oss%26projectname%3Dfapolicy-analyzer%26packagename%3Dfapolicy-analyzer%26with_latest_build%3DTrue"></a>
+<img src="https://badgen.net/github/checks/ctc-oss/fapolicy-analyzer?label=CI&icon=github">
+<a href="https://scan.coverity.com/projects/ctc-oss-fapolicy-analyzer"><img src="https://img.shields.io/coverity/scan/26261?label=Coverity"></a>
+<img src="https://img.shields.io/github/license/ctc-oss/fapolicy-analyzer?color=3c6eb4&label=License">
+</p>
 
-## Install
+<p>
+<strong>Tools to assist with the configuration and management of <a href="https://github.com/linux-application-whitelisting/fapolicyd">fapolicyd</a></strong>
+</p>
+
+</div>
+
+## Features
+
+1. Edit rules with validation and syntax highlighting
+2. Diff trust between fapolicyd trust db and disk
+3. Analyze fapolicyd logs and fix trust discrepancies
+4. Profile application disk access in fapolicy permissive mode
+
+See the [**User Guide**][1] for details.
+
+## Installation
 
 You can install the Policy Analyzer in one of the following ways
 
 <details>
 
   <summary>From Fedora Packages</summary>
+
+<a href="https://packages.fedoraproject.org/pkgs/fapolicy-analyzer/fapolicy-analyzer/"><img src="https://img.shields.io/fedora/v/fapolicy-analyzer?logo=fedora&label=Fedora&color=3c6eb4"></a>
 
 This installation method is currently available for Fedora EPEL 8, and Fedora 37 or later, including Rawhide.
 
@@ -30,7 +48,9 @@ dnf install fapolicy-analyzer
 
   <summary>From GitHub releases</summary>
 
-![GitHub download counter](https://img.shields.io/github/downloads/ctc-oss/fapolicy-analyzer/total?color=success&logo=github)
+[![GitHub latest release](https://shields.io/github/v/release/ctc-oss/fapolicy-analyzer?color=3c6eb4&display_name=tag&sort=semver&label=Stable&logo=github)](https://github.com/ctc-oss/fapolicy-analyzer/releases/latest)
+[![GitHub Latest pre-release)](https://img.shields.io/github/v/release/ctc-oss/fapolicy-analyzer?color=3c6eb4&include_prereleases&label=Beta&logo=github)](https://github.com/ctc-oss/fapolicy-analyzer/releases)
+![GitHub downloads](https://img.shields.io/github/downloads/ctc-oss/fapolicy-analyzer/total?color=3c6eb4&logo=github)
 
 You can install the Policy Analyzer through the installers available in the [latest release](https://github.com/ctc-oss/fapolicy-analyzer/releases). <br>
 Choose an RPM from the latest Fedora stable, Rawhide, and EPEL builds. <br>
@@ -40,6 +60,8 @@ Choose an RPM from the latest Fedora stable, Rawhide, and EPEL builds. <br>
 <details>
 
   <summary>From Fedora Copr</summary>
+
+<a href="https://copr.fedorainfracloud.org/coprs/ctc-oss/fapolicy-analyzer/"><img src="https://img.shields.io/badge/dynamic/json?color=B87333&logo=fedora&label=Copr&query=builds.latest.state&url=https%3A%2F%2Fcopr.fedorainfracloud.org%2Fapi_3%2Fpackage%3Fownername%3Dctc-oss%26projectname%3Dfapolicy-analyzer%26packagename%3Dfapolicy-analyzer%26with_latest_build%3DTrue"></a>
 
 The Copr repository contains the latest development builds and release builds prior to publishing to the Fedora repositories.
 
@@ -104,11 +126,13 @@ Python and Rust dependencies will be installed during the build process.
 
 ## fapolicyd
 
-We target support for v1.0+
+Compatible with v1.0+
 
-[![fapolicyd-fature-badge](https://img.shields.io/github/labels/ctc-oss/fapolicy-analyzer/fapolicyd%20feature)](https://github.com/ctc-oss/fapolicy-analyzer/labels/fapolicyd%20feature) labels issues for features that are not yet supported. 
+The [![fapolicyd-badge](https://img.shields.io/github/labels/ctc-oss/fapolicy-analyzer/fapolicyd-feature?style=flat)][2] label tracks support for specific [capability][3].
 
-To analyze from syslog we require the following `syslog_format` in fapolicyd.conf
+### fapolicyd.conf
+
+Analyzing from syslog requires the following `syslog_format` entry:
 
 ```
 syslog_format = rule,dec,perm,uid,gid,pid,exe,:,path,ftype,trust
@@ -116,11 +140,14 @@ syslog_format = rule,dec,perm,uid,gid,pid,exe,:,path,ftype,trust
 
 ## Getting Help
 
-- Read the [User Guide](https://github.com/ctc-oss/fapolicy-analyzer/wiki/User-Guide)
-- Check [Known Issues](https://github.com/ctc-oss/fapolicy-analyzer/wiki/Known-Issues)
+- See the [Known Issues](https://github.com/ctc-oss/fapolicy-analyzer/wiki/Known-Issues)
 - Start a [Discussion](https://github.com/ctc-oss/fapolicy-analyzer/discussions)
-- Open an [Issue](https://github.com/ctc-oss/fapolicy-analyzer/issues)
+- Create a new [Issue](https://github.com/ctc-oss/fapolicy-analyzer/issues)
 
 ## License
 
 GPL v3
+
+[1]: https://github.com/ctc-oss/fapolicy-analyzer/wiki/User-Guide
+[2]: https://github.com/ctc-oss/fapolicy-analyzer/labels/fapolicyd-feature
+[3]: https://github.com/linux-application-whitelisting/fapolicyd/blob/main/ChangeLog

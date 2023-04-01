@@ -1,19 +1,6 @@
-%global module          fapolicy_analyzer
-
-%global venv_dir        %{_builddir}/vendor-py
-%global venv_py3        %{venv_dir}/bin/python3
-%global venv_lib        %{venv_dir}/lib/python3.6/site-packages
-%global venv_install    %{venv_py3} -m pip install --find-links=%{_sourcedir} --no-index --quiet
-
-%global build_rustflags -Copt-level=3 -Cdebuginfo=2 -Ccodegen-units=1 -Clink-arg=-Wl,-z,relro -Clink-arg=-Wl,-z,now --cap-lints=warn
-
-# pep440 versions handle dev and rc differently, so we call them out explicitly here
-%global module_version  %{lua: v = string.gsub(rpm.expand("%{?version}"), "~dev", ".dev"); \
-                               v = string.gsub(v, "~rc",  "rc"); print(v) }
-
 Summary:       File Access Policy Analyzer
 Name:          fapolicy-analyzer
-Version:       1.0.0
+Version:       1.1.0
 Release:       1%{?dist}
 License:       GPLv3+
 URL:           https://github.com/ctc-oss/fapolicy-analyzer
@@ -75,6 +62,19 @@ Requires:      mesa-dri-drivers
 # rust-ring-devel does not support s390x and ppc64le:
 # https://bugzilla.redhat.com/show_bug.cgi?id=1869980
 ExcludeArch:   s390x %{power64}
+
+%global module          fapolicy_analyzer
+
+%global venv_dir        %{_builddir}/vendor-py
+%global venv_py3        %{venv_dir}/bin/python3
+%global venv_lib        %{venv_dir}/lib/python3.6/site-packages
+%global venv_install    %{venv_py3} -m pip install --find-links=%{_sourcedir} --no-index --quiet
+
+%global build_rustflags -Copt-level=3 -Cdebuginfo=2 -Ccodegen-units=1 -Clink-arg=-Wl,-z,relro -Clink-arg=-Wl,-z,now --cap-lints=warn
+
+# pep440 versions handle dev and rc differently, so we call them out explicitly here
+%global module_version  %{lua: v = string.gsub(rpm.expand("%{?version}"), "~dev", ".dev"); \
+                               v = string.gsub(v, "~rc",  "rc"); print(v) }
 
 %description
 Tools to assist with the configuration and management of fapolicyd.
@@ -156,5 +156,5 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
 %attr(755,root,root) %{_datadir}/applications/%{name}.desktop
 
 %changelog
-* Fri Dec 16 2022 John Wass <jwass3@gmail.com> 1.0.0-1
+* Wed Mar 22 2023 John Wass <jwass3@gmail.com> 1.1.0-1
 - New release
