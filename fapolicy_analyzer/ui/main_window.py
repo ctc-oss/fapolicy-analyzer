@@ -418,7 +418,9 @@ class MainWindow(UIConnectedWidget):
         fcd.destroy()
 
     def activate_file_analyzer(self, file):
-        self.__pack_main_content(router(PAGE_SELECTION.ANALYZE_FROM_DEBUG, False, file))
+        page = router(PAGE_SELECTION.ANALYZE_FROM_DEBUG, False, file)
+        page.object_list.rule_view_activate += self.on_rulesAdminMenu_activate
+        self.__pack_main_content(page)
 
     def on_trustDbMenu_activate(self, menuitem, *args):
         self.__pack_main_content(router(PAGE_SELECTION.TRUST_DATABASE_ADMIN))
