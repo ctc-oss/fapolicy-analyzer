@@ -19,6 +19,7 @@ import fapolicy_analyzer.ui.strings as strings
 from fapolicy_analyzer.ui.ancillary_trust_database_admin import (
     AncillaryTrustDatabaseAdmin,
 )
+from fapolicy_analyzer.ui.system_trust_database_admin import SystemTrustDatabaseAdmin
 from fapolicy_analyzer.ui.ui_page import UIPage
 from fapolicy_analyzer.ui.ui_widget import UIWidget
 
@@ -33,15 +34,15 @@ class DatabaseAdminPage(UIWidget, UIPage):
         UIPage.__init__(self)
 
         self.ancillaryTrustDbAdmin = AncillaryTrustDatabaseAdmin()
-        # self.systemTrustDbAdmin = SystemTrustDatabaseAdmin()
-        # self.systemTrustDbAdmin.file_added_to_ancillary_trust += (
-        #     self.on_added_to_ancillary_trust
-        # )
+        self.systemTrustDbAdmin = SystemTrustDatabaseAdmin()
+        self.systemTrustDbAdmin.file_added_to_ancillary_trust += (
+            self.on_added_to_ancillary_trust
+        )
 
-        # notebook.append_page(
-        #     self.systemTrustDbAdmin.get_ref(),
-        #     Gtk.Label(label=strings.SYSTEM_TRUST_TAB_LABEL),
-        # )
+        notebook.append_page(
+            self.systemTrustDbAdmin.get_ref(),
+            Gtk.Label(label=strings.SYSTEM_TRUST_TAB_LABEL),
+        )
         notebook.append_page(
             self.ancillaryTrustDbAdmin.get_ref(),
             Gtk.Label(label=strings.ANCILLARY_TRUST_TAB_LABEL),
@@ -55,4 +56,4 @@ class DatabaseAdminPage(UIWidget, UIPage):
 
     def _dispose(self):
         self.ancillaryTrustDbAdmin.dispose()
-        # self.systemTrustDbAdmin.dispose()
+        self.systemTrustDbAdmin.dispose()

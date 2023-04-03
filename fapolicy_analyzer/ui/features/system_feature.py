@@ -30,6 +30,7 @@ from fapolicy_analyzer import (
     System,
     Trust,
     check_ancillary_trust,
+    check_system_trust,
     rollback_fapolicyd,
     unchecked_system,
 )
@@ -71,11 +72,14 @@ from fapolicy_analyzer.ui.actions import (
     received_groups,
     received_rules,
     received_rules_text,
+    received_system_trust_update,
     received_users,
     system_checkpoint_set,
     system_deployed,
     system_initialization_error,
     system_received,
+    system_trust_load_complete,
+    system_trust_load_started,
 )
 from fapolicy_analyzer.ui.reducers import system_reducer
 from fapolicy_analyzer.ui.strings import SYSTEM_INITIALIZATION_ERROR
@@ -238,27 +242,34 @@ def create_system_feature(
         return ancillary_trust_load_started(total_to_check, timestamp)
 
     def _get_system_trust(action: Action) -> Action:
-        return action
-        # nonlocal checking_system_trust
+        nonlocal system_trust_checks
 
-        # def checking_finished():
-        #     nonlocal checking_system_trust
-        #     checking_system_trust = False
+        def checking_finished():
+            nonlocal system_trust_checks
+            system_trust_checks.pop(_system)
 
-        # if checking_system_trust:
-        #     return action
+        if _system in system_trust_checks:
+            return action
 
-        # checking_system_trust = True
-        # update = partial(
-        #     _check_disk_trust_update, action_fn=received_system_trust_update
-        # )
-        # done = partial(
-        #     _check_disk_trust_complete,
-        #     action_fn=system_trust_load_complete,
-        #     flag_fn=checking_finished,
-        # )
-        # total_to_check = check_system_trust(_system, update, done)
-        # return system_trust_load_started(total_to_check)
+        event = Event()
+        timestamp = time.time()
+        system_trust_checks[_system] = event
+
+        update = partial(
+            _check_disk_trust_update,
+            action_fn=received_system_trust_update,
+            event=event,
+            timestamp=timestamp,
+        )
+        done = partial(
+            _check_disk_trust_complete,
+            action_fn=system_trust_load_complete,
+            flag_fn=checking_finished,
+            event=event,
+            timestamp=timestamp,
+        )
+        total_to_check = check_system_trust(_system, update, done)
+        return system_trust_load_started(total_to_check, timestamp)
 
     def _deploy_system(_: Action) -> Action:
         if not fapd_dbase_snapshot():
