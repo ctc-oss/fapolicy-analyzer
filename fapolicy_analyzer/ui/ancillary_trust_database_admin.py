@@ -213,18 +213,10 @@ SHA256: {fs.sha(trust.path)}"""
                 trust_state.percent_complete if trust_state.percent_complete >= 0 else 0
             )
             self.trust_file_list.set_loading(True)
-            # print(
-            #     f"starting loading with count {trust_state.trust_count} and trust len {len(trust_state.trust)}"
-            # )
             self.trust_file_list.init_list(trust_state.trust_count)
             self.trust_file_list.append_trust(trust_state.trust)
         elif still_loading(trust_state):
             self.__loading_percent = trust_state.percent_complete
-            #             print(
-            #                 f"""appending trust:
-            # {os.linesep.join([u.path for u in trust_state.last_set_completed])}
-            # """
-            #             )
             self.trust_file_list.append_trust(trust_state.last_set_completed)
         elif done_loading(trust_state):
             # print("done loading")

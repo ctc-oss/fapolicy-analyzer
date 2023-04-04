@@ -1,8 +1,0 @@
-[
-    {
-        "/usr/sbin/fapolicyd": "Add"
-    },
-    {
-        "/etc/bash_completion.d/bpftool": "Add"
-    }
-]

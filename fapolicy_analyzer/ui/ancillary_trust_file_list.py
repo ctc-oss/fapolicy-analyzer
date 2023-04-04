@@ -86,7 +86,6 @@ class AncillaryTrustFileList(TrustFileList):
 
     def set_changesets(self, changesets):
         self.__changeset_map = self._changesets_to_map(changesets)
-        # print(f"changesets = {self.__changeset_map}")
 
     def init_list(self, count_of_trust_entries):
         store = Gtk.ListStore(str, str, str, object, str, str, str)
@@ -116,7 +115,6 @@ class AncillaryTrustFileList(TrustFileList):
                 ]
             )
 
-        # print(f"init store load with store {store}")
         super().load_store(count_of_trust_entries, store)
 
     def on_addBtn_files_added(self, files):

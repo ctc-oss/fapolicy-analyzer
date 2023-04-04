@@ -119,7 +119,11 @@ class TrustFileList(SearchableList):
 
     def _update_list_status(self, count):
         label = FILE_LABEL if self.total == 1 else FILES_LABEL
-        denom_str = "" if count == 0 or count == self.total else " ".join(["/", str(self.total)])
+        denom_str = (
+            ""
+            if count == 0 or count == self.total
+            else " ".join(["/", str(self.total)])
+        )
         super()._update_list_status(" ".join([str(count), denom_str, label]))
 
     def _update_loading_status(self, status):
@@ -149,17 +153,15 @@ class TrustFileList(SearchableList):
 
     def load_store(self, count_of_trust_entries, store):
         def process_rows(queue, total, store, event):
-            # store = self._store
             columns = range(store.get_n_columns())
             for i in range(200):
-                if queue.empty() or event.is_set():  # self.__event.is_set():
+                if queue.empty() or event.is_set():
                     break
                 row = queue.get()
-                # print(f"inserting into store {store}")
                 store.insert_with_valuesv(-1, columns, row)
                 queue.task_done()
 
-            if event.is_set():  # self.__event.is_set():
+            if event.is_set():
                 return False
 
             count = self._get_tree_count()
@@ -169,7 +171,7 @@ class TrustFileList(SearchableList):
                 self._update_progress(pct)
                 return True
             else:
-                super(TrustFileList, self).load_store(store)  # (self._store)
+                super(TrustFileList, self).load_store(store)
                 self._update_progress(100)
                 self.search.set_sensitive(True)
                 self.search.set_tooltip_text(None)
@@ -184,7 +186,6 @@ class TrustFileList(SearchableList):
         self.total = count_of_trust_entries
         self.__queue = Queue()
         self.__event = Event()
-        # print(f"count = {count_of_trust_entries}")
         GLib.timeout_add(
             200,
             process_rows,
@@ -193,14 +194,12 @@ class TrustFileList(SearchableList):
             self._store,
             self.__event,
         )
- 
 
     def append_trust(self, trust):
         def process_trust(trust, event):
             for data in trust:
                 if event.is_set():
                     return
-                # print(f"path= {self._row_data(data)[2]}")
                 self.__queue.put(self._row_data(data))
 
         if not self.__event.is_set():

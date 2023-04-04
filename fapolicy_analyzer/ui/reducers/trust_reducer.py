@@ -73,11 +73,6 @@ def handle_received_trust_update(state: TrustState, action: Action) -> TrustStat
     if timestamp < state.timestamp:
         return state
 
-    #     print(
-    #         f"""received trust update:
-    # {os.linesep.join([u.path for u in update])}
-    # """
-    #     )
     return _create_state(
         state,
         percent_complete=running_count / state.trust_count * 100,

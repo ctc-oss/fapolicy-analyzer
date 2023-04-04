@@ -14,7 +14,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-import os
 import time
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
@@ -147,19 +146,15 @@ def create_system_feature(
     def _apply_changesets(action: Action) -> Action:
         global _system
         nonlocal ancillary_trust_checks
-
         changesets = action.payload
+
         for c in changesets:
             old_system = _system
             _system = c.apply_to_system(_system)
-            print(
-                f"* applied {c.serialize()} to system {old_system} new system {_system}"
-            )
-            # print(f"** {old_system}, {ancillary_trust_checks.keys()}")
             if old_system in ancillary_trust_checks:
                 event = ancillary_trust_checks.pop(old_system)
                 event.set()
-                # print(f"* event {event} set")
+
         dispatch(system_received(_system))
         return add_changesets(changesets)
 
@@ -170,24 +165,12 @@ def create_system_feature(
         event: Event,
         timestamp: float,
     ):
-        # print(f"* checking if event {event} is set")
         if event.is_set():
-            # print(f"* event {event} was set")
-            # do nothing if check is cancelled
             return
-
-        # print(
-        # f"""updates merged to system {_system} with event {event}:
-        print(
-            f"""updates merged for {event} with timestamp {timestamp}:
-{os.linesep.join([u.path for u in updates])}
-"""
-        )
 
         # merge the updated trust into the system
         _system.merge(updates)
         # dispatch the update
-        # trust_update = (updates, count)
         _idle_dispatch(action_fn(updates, count, timestamp))
 
     def _check_disk_trust_complete(
@@ -196,31 +179,23 @@ def create_system_feature(
         event: Event,
         timestamp: float,
     ):
-        try:
-            if not event.is_set():
-                _idle_dispatch(action_fn(timestamp))
-            flag_fn()
-        except Exception as e:
-            print(f"exception: {type(e)}")
+        if not event.is_set():
+            _idle_dispatch(action_fn(timestamp))
+        flag_fn()
 
     def _get_ancillary_trust(action: Action) -> Action:
         nonlocal ancillary_trust_checks
 
         def checking_finished():
             nonlocal ancillary_trust_checks
-            # print(f"** popping system {_system}")
             ancillary_trust_checks.pop(_system)
 
         if _system in ancillary_trust_checks:
             return action
 
-        # for event in ancillary_trust_checks.values():
-        #     event.set()
-
         event = Event()
         timestamp = time.time()
         ancillary_trust_checks[_system] = event
-        # print(f"*** {ancillary_trust_checks}")
 
         update = partial(
             _check_disk_trust_update,
@@ -234,9 +209,6 @@ def create_system_feature(
             flag_fn=checking_finished,
             event=event,
             timestamp=timestamp,
-        )
-        print(
-            f"* checking with system {_system} and event {event} and timestamp {timestamp}"
         )
         total_to_check = check_ancillary_trust(_system, update, done)
         return ancillary_trust_load_started(total_to_check, timestamp)
@@ -287,7 +259,6 @@ def create_system_feature(
     def _restore_checkpoint(_: Action) -> Action:
         global _system
         _system = _checkpoint
-        print(f"**** rolling back to system {_system}")
         rollback_fapolicyd(_system)
         return system_received(_system)
 
