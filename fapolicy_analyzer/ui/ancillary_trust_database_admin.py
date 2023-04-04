@@ -219,6 +219,5 @@ SHA256: {fs.sha(trust.path)}"""
             self.__loading_percent = trust_state.percent_complete
             self.trust_file_list.append_trust(trust_state.last_set_completed)
         elif done_loading(trust_state):
-            # print("done loading")
             self.__loading = False
             self.__loading_percent = 100

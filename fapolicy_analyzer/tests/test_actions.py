@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import context  # noqa: F401 # isort: skip
+import time
 from unittest.mock import MagicMock
 
 import pytest
@@ -40,6 +40,14 @@ from fapolicy_analyzer.ui.actions import (
     ERROR_USERS,
     INIT_SYSTEM,
     MODIFY_RULES_TEXT,
+    PROFILER_CLEAR_STATE_CMD,
+    PROFILER_SET_OUTPUT_CMD,
+    PROFILING_DONE_EVENT,
+    PROFILING_EXEC_EVENT,
+    PROFILING_INIT_EVENT,
+    PROFILING_KILL_REQUEST,
+    PROFILING_KILL_RESPONSE,
+    PROFILING_TICK_EVENT,
     RECEIVED_ANCILLARY_TRUST_UPDATE,
     RECEIVED_APP_CONFIG,
     RECEIVED_EVENTS,
@@ -59,6 +67,8 @@ from fapolicy_analyzer.ui.actions import (
     REQUEST_USERS,
     RESTORE_SYSTEM_CHECKPOINT,
     SET_SYSTEM_CHECKPOINT,
+    START_PROFILING_REQUEST,
+    START_PROFILING_RESPONSE,
     SYSTEM_CHECKPOINT_SET,
     SYSTEM_DEPLOYED,
     SYSTEM_RECEIVED,
@@ -86,6 +96,11 @@ from fapolicy_analyzer.ui.actions import (
     error_users,
     init_system,
     modify_rules_text,
+    profiler_done,
+    profiler_exec,
+    profiler_init,
+    profiler_tick,
+    profiling_started,
     received_ancillary_trust_update,
     received_app_config,
     received_events,
@@ -104,33 +119,20 @@ from fapolicy_analyzer.ui.actions import (
     request_system_trust,
     request_users,
     restore_system_checkpoint,
+    set_profiler_output,
     set_system_checkpoint,
+    start_profiling,
+    stop_profiling,
     system_checkpoint_set,
     system_deployed,
     system_initialization_error,
     system_received,
     system_trust_load_complete,
     system_trust_load_started,
-    set_profiler_output,
-    PROFILER_CLEAR_STATE_CMD,
-    profiler_done,
-    PROFILER_SET_OUTPUT_CMD,
-    stop_profiling,
     terminating_profiler,
-    profiler_tick,
-    PROFILING_KILL_RESPONSE,
-    PROFILING_KILL_REQUEST,
-    profiler_exec,
-    PROFILING_EXEC_EVENT,
-    PROFILING_TICK_EVENT,
-    PROFILING_INIT_EVENT,
-    profiler_init,
-    start_profiling,
-    START_PROFILING_REQUEST,
-    START_PROFILING_RESPONSE,
-    profiling_started,
-    PROFILING_DONE_EVENT,
 )
+
+import context  # noqa: F401 # isort: skip
 
 
 @pytest.mark.parametrize("notification_type", [t for t in list(NotificationType)])
@@ -192,24 +194,28 @@ def test_request_ancillary_trust():
 
 
 def test_ancillary_trust_load_started():
-    action = ancillary_trust_load_started(1)
+    timestamp = time.time()
+    action = ancillary_trust_load_started(1, timestamp)
     assert type(action) is Action
     assert action.type == ANCILLARY_TRUST_LOAD_STARTED
-    assert action.payload == 1
+    assert action.payload == (1, timestamp)
 
 
 def test_received_ancillary_trust_update():
+    timestamp = time.time()
     trust = [MagicMock()]
-    action = received_ancillary_trust_update((trust, 1))
+    action = received_ancillary_trust_update(trust, 1, timestamp)
     assert type(action) is Action
     assert action.type == RECEIVED_ANCILLARY_TRUST_UPDATE
-    assert action.payload == (trust, 1)
+    assert action.payload == (trust, 1, timestamp)
 
 
 def test_ancillary_trust_load_complete():
-    action = ancillary_trust_load_complete()
+    timestamp = time.time()
+    action = ancillary_trust_load_complete(timestamp)
     assert type(action) is Action
     assert action.type == ANCILLARY_TRUST_LOAD_COMPLETE
+    assert action.payload == timestamp
 
 
 def test_error_ancillary_trust():
@@ -227,24 +233,28 @@ def test_request_system_trust():
 
 
 def test_system_trust_load_started():
-    action = system_trust_load_started(1)
+    timestamp = time.time()
+    action = system_trust_load_started(1, timestamp)
     assert type(action) is Action
     assert action.type == SYSTEM_TRUST_LOAD_STARTED
-    assert action.payload == 1
+    assert action.payload == (1, timestamp)
 
 
 def test_received_system_trust_update():
+    timestamp = time.time()
     trust = [MagicMock()]
-    action = received_system_trust_update((trust, 1))
+    action = received_system_trust_update(trust, 1, timestamp)
     assert type(action) is Action
     assert action.type == RECEIVED_SYSTEM_TRUST_UPDATE
-    assert action.payload == (trust, 1)
+    assert action.payload == (trust, 1, timestamp)
 
 
 def test_system_trust_load_complete():
-    action = system_trust_load_complete()
+    timestamp = time.time()
+    action = system_trust_load_complete(timestamp)
     assert type(action) is Action
     assert action.type == SYSTEM_TRUST_LOAD_COMPLETE
+    assert action.payload == timestamp
 
 
 def test_error_system_trust():

@@ -143,17 +143,30 @@ def create_system_feature(
     def _idle_dispatch(action: Action):
         GLib.idle_add(dispatch, action)
 
+    def _set_system(system: System):
+        global _system
+        nonlocal ancillary_trust_checks, system_trust_checks
+
+        events = [
+            e
+            for e in (
+                ancillary_trust_checks.pop(system, None),
+                system_trust_checks.pop(system, None),
+            )
+            if e
+        ]
+        for e in events:
+            e.set()
+
+        _system = system
+
     def _apply_changesets(action: Action) -> Action:
         global _system
-        nonlocal ancillary_trust_checks
         changesets = action.payload
 
         for c in changesets:
-            old_system = _system
             _system = c.apply_to_system(_system)
-            if old_system in ancillary_trust_checks:
-                event = ancillary_trust_checks.pop(old_system)
-                event.set()
+            _set_system(_system)
 
         dispatch(system_received(_system))
         return add_changesets(changesets)
@@ -257,8 +270,7 @@ def create_system_feature(
         return system_checkpoint_set(_checkpoint)
 
     def _restore_checkpoint(_: Action) -> Action:
-        global _system
-        _system = _checkpoint
+        _set_system(_checkpoint)
         rollback_fapolicyd(_system)
         return system_received(_system)
 
