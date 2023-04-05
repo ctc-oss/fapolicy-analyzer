@@ -145,6 +145,7 @@ class FapdManager():
                         self.mode = FapdMode.ONLINE
 
                 except Exception:
+                    self._fapd_status = ServiceStatus.UNKNOWN
                     logging.error(FAPD_DBUS_START_ERROR_MSG)
                     dispatch(add_notification(FAPD_DBUS_START_ERROR_MSG,
                                               NotificationType.ERROR))
