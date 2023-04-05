@@ -267,6 +267,7 @@ class FapdManager():
     def initial_daemon_status(self):
         with self._fapd_lock:
             try:
+                print(self._fapd_ref.is_valid())
                 if self._fapd_ref.is_valid():
                     self._fapd_status = ServiceStatus(self._fapd_ref.is_active())
                 else:
