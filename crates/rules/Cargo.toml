@@ -10,6 +10,7 @@ path = "src/lib.rs"
 
 [dev-dependencies]
 tempfile = "3.3"
+assert_matches = "1.5"
 
 [dependencies]
 nom = "7.1"
