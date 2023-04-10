@@ -16,6 +16,7 @@
 import html
 import logging
 import datetime
+import pwd
 from typing import Optional
 
 import gi
@@ -100,9 +101,9 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         }
 
     def on_event(self, state: ProfilerState):
+        self.refresh_view(state)
         if state.__class__ in self.profiling_handlers:
             self.profiling_handlers.get(state.__class__)(state)
-        self.refresh_view(state)
         self.refresh_toolbar()
 
     def handle_tick(self, state: ProfilerTick):
@@ -262,4 +263,11 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         res["env_dict"] = FaProfSession.comma_delimited_kv_string_to_dict(
             res.get("env", "")
         )
+
+        # If the user is specified but a working dir is not, use the user's HOME
+        if res["uid"] and not res["pwd"]:
+            # We don't catch exception here because args previously validated
+            user_pw_record = pwd.getpwnam(res["uid"])
+            res["pwd"] = user_pw_record.pw_dir
+
         return res

@@ -1,6 +1,6 @@
 Summary:       File Access Policy Analyzer
 Name:          fapolicy-analyzer
-Version:       1.0.0
+Version:       1.0.1
 Release:       1%{?dist}
 License:       GPLv3+
 URL:           https://github.com/ctc-oss/fapolicy-analyzer
@@ -22,6 +22,7 @@ BuildRequires: desktop-file-utils
 BuildRequires: rust-packaging
 BuildRequires: python3dist(setuptools-rust)
 
+BuildRequires: rust-assert_matches-devel
 BuildRequires: rust-autocfg-devel
 BuildRequires: rust-bitflags-devel
 BuildRequires: rust-bumpalo-devel
@@ -66,6 +67,7 @@ BuildRequires: (crate(pyo3/default) >= 0.15.0 with crate(pyo3/default) < 0.16.0)
 BuildRequires: (crate(pyo3-macros/default) >= 0.15.0 with crate(pyo3-macros/default) < 0.16.0)
 BuildRequires: (crate(pyo3-build-config/default) >= 0.15.0 with crate(pyo3-build-config/default) < 0.16.0)
 BuildRequires: (crate(pyo3-macros-backend/default) >= 0.15.0 with crate(pyo3-macros-backend/default) < 0.16.0)
+BuildRequires: rust-pyo3-log-devel
 BuildRequires: rust-quote-devel
 BuildRequires: rust-rayon-devel
 BuildRequires: rust-rayon-core-devel
@@ -162,5 +164,5 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
 %attr(755,root,root) %{_datadir}/applications/%{name}.desktop
 
 %changelog
-* Fri Dec 16 2022 John Wass <jwass3@gmail.com> 1.0.0-1
+* Mon Apr 10 2023 John Wass <jwass3@gmail.com> 1.0.1-1
 - New release

@@ -48,7 +48,7 @@ struct Opts {
 
 fn main() -> Result<(), Box<dyn Error>> {
     let opts: Opts = Opts::parse();
-    eprintln!("profiling: {:?}", opts.target);
+    log::info!("profiling: {:?}", opts.target);
     let target = opts.target.first().expect("target not specified");
     let args: Vec<&String> = opts.target.iter().skip(1).collect();
 
@@ -59,10 +59,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     if let Some(path) = opts.stdout.map(PathBuf::from) {
         if path.exists() {
-            eprintln!(
-                "warning: deleting existing log file from {}",
-                path.display()
-            );
+            log::warn!("deleting existing log file from {}", path.display());
             std::fs::remove_file(&path)?;
         }
         profiler.events_log = Some(path);

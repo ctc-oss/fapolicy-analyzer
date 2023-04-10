@@ -142,7 +142,7 @@ fn to_ariadne_labels<'a>(
             Some(ariadne::Label::new((id, e.1..e.2)).with_message(format!("{}", e.0)))
         }
         res => {
-            eprintln!("unhandled err {:?}", res);
+            log::warn!("unhandled err {:?}", res);
             None
         }
     }

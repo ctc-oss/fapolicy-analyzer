@@ -166,7 +166,6 @@ impl PyChangeset {
 
 #[pyfunction]
 fn rule_text_error_check(txt: &str) -> Option<String> {
-    println!("error check");
     match parse_with_error_message(StrTrace::new(txt)) {
         Ok(_) => None,
         Err(s) => Some(s),

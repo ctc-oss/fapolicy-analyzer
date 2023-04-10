@@ -73,7 +73,7 @@ impl Profiler {
                 fs::rename(&compiled, &backup)?;
                 // write compiled rules for the profiling run
                 write::compiled_rules(db, &compiled)?;
-                eprintln!("rules backed up to {:?}", backup.path());
+                log::debug!("rules backed up to {:?}", backup.path());
                 self.prev_rules = Some(backup);
             }
             // 5. start the profiler daemon
@@ -81,7 +81,7 @@ impl Profiler {
             // 6. wait for the profiler daemon to become active
             if let Some(log) = self.events_log.as_ref() {
                 if fapolicyd::wait_until_ready(log).is_err() {
-                    eprintln!("wait_until_ready failed");
+                    log::warn!("wait_until_ready failed");
                 };
             }
         }
@@ -102,7 +102,7 @@ impl Profiler {
             }
             // 4. start fapolicyd daemon if it was previously active
             if let Some(State::Active) = self.prev_state {
-                eprintln!("restarting daemon");
+                log::debug!("restarting daemon");
                 fapolicyd.start()?;
             }
         }
