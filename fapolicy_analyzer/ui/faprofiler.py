@@ -148,9 +148,20 @@ class FaProfSession:
         exec_user = dictProfTgt.get("uid", "")
         exec_pwd = dictProfTgt.get("pwd", "")
 
+        # user?
+        user_pw_record = None  # passwd file record associated with a user
+        try:
+            if exec_user:
+                user_pw_record = pwd.getpwnam(exec_user)
+        except KeyError as e:
+            logging.debug(f"User {exec_user} does not exist: {e}")
+            dictReturn[ProfSessionArgsStatus.USER_DOESNT_EXIST] = (
+                exec_user + s.PROF_ARG_USER_DOESNT_EXIST
+            )
+
         # working dir?
-        # pwd empty? Check pwd first because it is used with relative exec paths
-        # as the current working dir
+        # pwd empty? Set pwd up-front  because it is used with relative exec
+        # paths as the current working dir
         if exec_pwd:
             logging.debug(f"Processing current working dir: {exec_pwd}")
             if not os.path.exists(exec_pwd):
@@ -163,8 +174,11 @@ class FaProfSession:
                     exec_pwd + s.PROF_ARG_PWD_ISNT_DIR
                 )
         else:
-            # Set it if not set
-            exec_pwd = os.getcwd()
+            # If valid user is specified and working dir is not, use user's HOME
+            if user_pw_record:
+                exec_pwd = user_pw_record.pw_dir
+            else:
+                exec_pwd = os.getcwd()
 
         if not dictReturn:
             logging.debug("FaProfSession::validateArgs() --> pwd verified")
@@ -213,15 +227,6 @@ class FaProfSession:
                 else:
                     # Convert relative exec path to absolute exec path
                     exec_path = new_path
-        # user?
-        try:
-            if exec_user:
-                pwd.getpwnam(exec_user)
-        except KeyError as e:
-            logging.debug(f"User {exec_user} does not exist: {e}")
-            dictReturn[ProfSessionArgsStatus.USER_DOESNT_EXIST] = (
-                exec_user + s.PROF_ARG_USER_DOESNT_EXIST
-            )
 
         return dictReturn or {ProfSessionArgsStatus.OK: s.PROF_ARG_OK}
 
