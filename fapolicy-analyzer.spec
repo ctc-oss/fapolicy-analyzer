@@ -22,6 +22,7 @@ BuildRequires: desktop-file-utils
 BuildRequires: rust-packaging
 BuildRequires: python3dist(setuptools-rust)
 
+BuildRequires: rust-assert_matches-devel
 BuildRequires: rust-autocfg-devel
 BuildRequires: rust-bitflags-devel
 BuildRequires: rust-bumpalo-devel
