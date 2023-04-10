@@ -81,6 +81,7 @@ pub(crate) fn parse(i: StrTrace) -> TraceResult<Subject> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use assert_matches::assert_matches;
 
     #[test]
     fn parse_subj_part() {
@@ -90,5 +91,17 @@ mod tests {
             subj_part("uid=10001".into()).ok().unwrap().1
         );
         assert_eq!(SubjPart::Gid(0), subj_part("gid=0".into()).ok().unwrap().1);
+    }
+
+    #[test]
+    fn unknown_part() {
+        assert_matches!(
+            subj_part("uid=1".into()).ok().map(|f| f.1),
+            Some(SubjPart::Uid(_))
+        );
+        assert_matches!(
+            subj_part("foo=bar".into()).err(),
+            Some(nom::Err::Error(UnknownSubjectPart(_)))
+        );
     }
 }
