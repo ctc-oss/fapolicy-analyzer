@@ -18,6 +18,7 @@ from typing import Sequence, Tuple
 
 import gi
 from fapolicy_analyzer import System, rules_difference
+from fapolicy_analyzer.ui.rules_difference_dialog import RulesDifferenceDialog
 from fapolicy_analyzer.ui.changeset_wrapper import Changeset, TrustChangeset
 from fapolicy_analyzer.ui.configs import Colors
 from fapolicy_analyzer.ui.strings import (
@@ -48,6 +49,8 @@ class ConfirmDeploymentDialog(UIBuilderWidget):
 
         changes_view = self.get_object("changesTreeView")
         self.__config_changes_view(changes_view)
+        self.current_system = current_system
+        self.previous_system = previous_system
         store = self.__load_store(changesets, current_system, previous_system)
         changes_view.set_model(store)
 
@@ -84,7 +87,7 @@ class ConfirmDeploymentDialog(UIBuilderWidget):
             add_text = f"{adds} addition{'s' if adds > 1 else ''}" if adds else None
             del_text = f"{dels} removal{'s' if dels > 1 else ''}" if dels else None
             message = " and ".join((m for m in [add_text, del_text] if m)) + " made"
-            return [(_(message), "Rules")]
+            return ([(_(message), "Rules")], diffs)
 
         def trust_changes():
             return [
@@ -94,7 +97,11 @@ class ConfirmDeploymentDialog(UIBuilderWidget):
                 for t in e.serialize().items()
             ]
 
-        return [*trust_changes(), *rules_changes()]
+        messages, diff = rules_changes()
+        expand_btn = self.get_object("expandButton")
+        expand_btn.set_visible(True) if [*messages] else expand_btn.set_visible(False)
+
+        return ([*trust_changes()] + [*messages], diff)
 
     def __load_store(
         self,
@@ -108,7 +115,7 @@ class ConfirmDeploymentDialog(UIBuilderWidget):
             "Rules": CHANGESET_ACTION_RULES,
         }
         store = Gtk.ListStore(str, str)
-        pathActionPairs = self.__to_path_action_pairs(
+        pathActionPairs, _ = self.__to_path_action_pairs(
             changesets, current_system, previous_system
         )
         for e in pathActionPairs:
@@ -119,3 +126,9 @@ class ConfirmDeploymentDialog(UIBuilderWidget):
 
     def get_save_state(self) -> bool:
         return self.get_object("saveStateCbn").get_active()
+
+    def on_expandButton_clicked(self, *args):
+
+        diff_dialog = RulesDifferenceDialog(self.current_system, self.previous_system).get_ref()
+        resp = diff_dialog.run()
+        diff_dialog.destroy()
