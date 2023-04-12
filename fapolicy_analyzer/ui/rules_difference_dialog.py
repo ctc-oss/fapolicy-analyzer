@@ -38,8 +38,15 @@ class RulesDifferenceDialog(UIBuilderWidget):
         self.get_object("prevContent").add(prev_list.get_ref())
         new_store = Gtk.ListStore(str)
         prev_store = Gtk.ListStore(str)
-        [new_store.append([d]) for d in diffs if d.startswith("+")]
-        [prev_store.append([d]) for d in diffs if d.startswith("-")]
+
+        for d in diffs:
+            if d.startswith("+") and d.split("+")[-1] in current_system.rules_text():
+                new_store.append([d])
+            elif d.startswith("-") and d.split("-")[-1] in current_system.rules_text():
+                new_store.append([d])
+            elif d.startswith("-") and d.split("-")[-1] in previous_system.rules_text():
+                prev_store.append([d])
+
         new_list.load_store(new_store)
         prev_list.load_store(prev_store)
 

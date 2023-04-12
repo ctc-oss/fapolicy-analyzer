@@ -77,12 +77,13 @@ class ConfirmDeploymentDialog(UIBuilderWidget):
     ) -> Sequence[Tuple[str, str]]:
         def rules_changes():
             if not previous_system or not current_system:
-                return []
-            diffs = rules_difference(previous_system, current_system).split("\n")
+                return ([],"")
+            diffs = ""
+            diffs = rules_difference(previous_system, current_system).split("\n") 
             adds = len([d for d in diffs if d.startswith("+")])
             dels = len([d for d in diffs if d.startswith("-")])
             if (adds + dels) == 0:
-                return []
+                return ([],"")
 
             add_text = f"{adds} addition{'s' if adds > 1 else ''}" if adds else None
             del_text = f"{dels} removal{'s' if dels > 1 else ''}" if dels else None
