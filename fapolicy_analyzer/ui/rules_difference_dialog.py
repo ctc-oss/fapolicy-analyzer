@@ -40,6 +40,12 @@ class RulesDifferenceDialog(UIBuilderWidget):
         prev_store = Gtk.ListStore(str)
 
         for d in diffs:
+            if (
+               (d.startswith("+") and d.split("+")[-1] + "\n" in previous_system.rules_text()) or
+               (d.startswith("-") and d.split("-")[-1].split("\n")[0] in current_system.rules_text())
+               ):
+                continue
+
             if d.startswith("+") and d.split("+")[-1] in current_system.rules_text():
                 new_store.append([d])
             elif d.startswith("-") and d.split("-")[-1] in current_system.rules_text():

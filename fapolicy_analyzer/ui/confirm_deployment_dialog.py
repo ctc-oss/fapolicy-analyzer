@@ -80,8 +80,21 @@ class ConfirmDeploymentDialog(UIBuilderWidget):
                 return ([],"")
             diffs = ""
             diffs = rules_difference(previous_system, current_system).split("\n") 
-            adds = len([d for d in diffs if d.startswith("+")])
-            dels = len([d for d in diffs if d.startswith("-")])
+            adds_list = []
+            dels_list = []
+            for d in diffs:
+              if (
+                 (d.startswith("+") and d.split("+")[-1] + "\n" in previous_system.rules_text()) or
+                 (d.startswith("-") and d.split("-")[-1].split("\n")[0] in current_system.rules_text())
+                 ):
+                    continue
+              elif d.startswith("+"):
+                  adds_list += [d]
+              elif d.startswith("-"):
+                  dels_list += [d]
+
+            adds = len(adds_list)
+            dels = len(dels_list)
             if (adds + dels) == 0:
                 return ([],"")
 
