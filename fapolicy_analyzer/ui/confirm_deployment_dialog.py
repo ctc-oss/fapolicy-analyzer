@@ -77,26 +77,26 @@ class ConfirmDeploymentDialog(UIBuilderWidget):
     ) -> Sequence[Tuple[str, str]]:
         def rules_changes():
             if not previous_system or not current_system:
-                return ([],"")
+                return ([], "")
             diffs = ""
-            diffs = rules_difference(previous_system, current_system).split("\n") 
+            diffs = rules_difference(previous_system, current_system).split("\n")
             adds_list = []
             dels_list = []
             for d in diffs:
-              if (
-                 (d.startswith("+") and d.split("+")[-1] + "\n" in previous_system.rules_text()) or
-                 (d.startswith("-") and d.split("-")[-1].split("\n")[0] in current_system.rules_text())
-                 ):
+                if (
+                   (d.startswith("+") and d.split("+")[-1] + "\n" in previous_system.rules_text())
+                   or (d.startswith("-") and d.split("-")[-1].split("\n")[0] in current_system.rules_text())
+                   ):
                     continue
-              elif d.startswith("+"):
-                  adds_list += [d]
-              elif d.startswith("-"):
-                  dels_list += [d]
+                elif d.startswith("+"):
+                    adds_list += [d]
+                elif d.startswith("-"):
+                    dels_list += [d]
 
             adds = len(adds_list)
             dels = len(dels_list)
             if (adds + dels) == 0:
-                return ([],"")
+                return ([], "")
 
             add_text = f"{adds} addition{'s' if adds > 1 else ''}" if adds else None
             del_text = f"{dels} removal{'s' if dels > 1 else ''}" if dels else None
@@ -142,7 +142,6 @@ class ConfirmDeploymentDialog(UIBuilderWidget):
         return self.get_object("saveStateCbn").get_active()
 
     def on_expandButton_clicked(self, *args):
-
         diff_dialog = RulesDifferenceDialog(self.current_system, self.previous_system).get_ref()
-        resp = diff_dialog.run()
+        diff_dialog.run()
         diff_dialog.destroy()

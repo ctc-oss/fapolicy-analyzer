@@ -21,12 +21,13 @@ from fapolicy_analyzer.ui.searchable_list import SearchableList
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
 
+
 class RulesDifferenceDialog(UIBuilderWidget):
-    def __init__(self, 
+    def __init__(self,
                  current_system: System,
                  previous_system: System,
                  parent=None,
-    ):
+                 ):
         super().__init__()
         if parent:
             self.get_ref().set_transient_for(parent)
@@ -41,8 +42,8 @@ class RulesDifferenceDialog(UIBuilderWidget):
 
         for d in diffs:
             if (
-               (d.startswith("+") and d.split("+")[-1] + "\n" in previous_system.rules_text()) or
-               (d.startswith("-") and d.split("-")[-1].split("\n")[0] in current_system.rules_text())
+               (d.startswith("+") and d.split("+")[-1] + "\n" in previous_system.rules_text())
+               or (d.startswith("-") and d.split("-")[-1].split("\n")[0] in current_system.rules_text())
                ):
                 continue
 
