@@ -73,6 +73,7 @@ pub(crate) fn parse(i: StrTrace) -> TraceResult<Object> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use assert_matches::assert_matches;
 
     #[test]
     fn parse_obj_part() {
@@ -95,6 +96,18 @@ mod tests {
         assert_eq!(
             Object::new(vec![ObjPart::Trust(true), ObjPart::All]),
             parse("trust=1 all".into()).ok().unwrap().1
+        );
+    }
+
+    #[test]
+    fn unknown_part() {
+        assert_matches!(
+            obj_part("dir=/tmp".into()).ok().map(|f| f.1),
+            Some(ObjPart::Dir(_))
+        );
+        assert_matches!(
+            obj_part("foo=/tmp".into()).err(),
+            Some(nom::Err::Error(UnknownObjectPart(_)))
         );
     }
 }
