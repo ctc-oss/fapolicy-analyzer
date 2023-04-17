@@ -36,7 +36,7 @@ dnf-fc:
 dnf-el:
 	dnf install -y rpmdevtools
 	dnf install -y rust-toolset
-	cargo install cargo-vendor-filterer
+	cargo install cargo-vendor-filterer@0.5.8
 
 ifeq ($(OS_ID),rhel)
 # we only need to vendor rust and python on rhel
