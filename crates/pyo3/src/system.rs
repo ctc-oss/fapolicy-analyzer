@@ -194,8 +194,21 @@ fn rules_difference(lhs: &PySystem, rhs: &PySystem) -> String {
     diff_lines.join("")
 }
 
+#[pyfunction]
+fn checked_system(py: Python) -> PyResult<PySystem> {
+    py.allow_threads(|| {
+        let conf = cfg::All::load()
+            .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))?;
+        match State::load_checked(&conf) {
+            Ok(state) => Ok(state.into()),
+            Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{:?}", e))),
+        }
+    })
+}
+
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PySystem>()?;
     m.add_function(wrap_pyfunction!(rules_difference, m)?)?;
+    m.add_function(wrap_pyfunction!(checked_system, m)?)?;
     Ok(())
 }
