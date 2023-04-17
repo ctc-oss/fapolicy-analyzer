@@ -31,7 +31,6 @@ from fapolicy_analyzer import (
     check_ancillary_trust,
     check_system_trust,
     rollback_fapolicyd,
-    unchecked_system,
 )
 from fapolicy_analyzer.redux import (
     Action,
@@ -111,7 +110,7 @@ def create_system_feature(
     def _init_system() -> Action:
         def execute_system():
             try:
-                system = unchecked_system()
+                system = System()
                 GLib.idle_add(finish, system)
             except RuntimeError:
                 logging.exception(SYSTEM_INITIALIZATION_ERROR)

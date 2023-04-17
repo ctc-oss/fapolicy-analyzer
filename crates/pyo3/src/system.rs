@@ -45,7 +45,7 @@ impl From<PySystem> for State {
 
 #[pymethods]
 impl PySystem {
-    /// Create a new initialized System
+    /// Create a new uninitialized System
     /// This returns a result object that will be an error if initialization fails,
     /// allowing the member accessors on the System to return non-result objects.
     #[new]
@@ -53,7 +53,7 @@ impl PySystem {
         py.allow_threads(|| {
             let conf = cfg::All::load()
                 .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))?;
-            match State::load_checked(&conf) {
+            match State::load(&conf) {
                 Ok(state) => Ok(state.into()),
                 Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{:?}", e))),
             }
@@ -194,14 +194,13 @@ fn rules_difference(lhs: &PySystem, rhs: &PySystem) -> String {
     diff_lines.join("")
 }
 
-// todo;; this is temporary bridge while trust callbacks are being implemented
-//        it will be removed and the main ctor will switch to unchecked loading
+/// Creates a [PySystem] that has all trust entries checked against disk
 #[pyfunction]
-fn unchecked_system(py: Python) -> PyResult<PySystem> {
+fn checked_system(py: Python) -> PyResult<PySystem> {
     py.allow_threads(|| {
         let conf = cfg::All::load()
             .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))?;
-        match State::load(&conf) {
+        match State::load_checked(&conf) {
             Ok(state) => Ok(state.into()),
             Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{:?}", e))),
         }
@@ -211,6 +210,6 @@ fn unchecked_system(py: Python) -> PyResult<PySystem> {
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PySystem>()?;
     m.add_function(wrap_pyfunction!(rules_difference, m)?)?;
-    m.add_function(wrap_pyfunction!(unchecked_system, m)?)?;
+    m.add_function(wrap_pyfunction!(checked_system, m)?)?;
     Ok(())
 }
