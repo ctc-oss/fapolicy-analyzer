@@ -68,7 +68,7 @@
             </child>
             <child>
               <object class="GtkButton" id="expandButton">
-                <property name="label">Expand</property>
+                <property name="label">Rule Details</property>
                 <property name="visible">False</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>

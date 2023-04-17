@@ -22,6 +22,17 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
 
 
+def filter_rule_diff(previous_system, current_system):
+    diffs = rules_difference(previous_system, current_system).split("\n")
+    for d in diffs:
+        if (
+           (d.startswith("+") and d.split("+")[-1] + "\n" in previous_system.rules_text())
+           or (d.startswith("-") and d.split("-")[-1].split("\n")[0] in current_system.rules_text())
+           ):
+            diffs.remove(d)
+    return diffs
+
+
 class RulesDifferenceDialog(UIBuilderWidget):
     def __init__(self,
                  current_system: System,
@@ -32,7 +43,6 @@ class RulesDifferenceDialog(UIBuilderWidget):
         if parent:
             self.get_ref().set_transient_for(parent)
 
-        diffs = rules_difference(previous_system, current_system).split("\n")
         new_list = SearchableList(self.__columns())
         prev_list = SearchableList(self.__columns())
         self.get_object("newContent").add(new_list.get_ref())
@@ -40,13 +50,8 @@ class RulesDifferenceDialog(UIBuilderWidget):
         new_store = Gtk.ListStore(str)
         prev_store = Gtk.ListStore(str)
 
+        diffs = filter_rule_diff(previous_system, current_system)
         for d in diffs:
-            if (
-               (d.startswith("+") and d.split("+")[-1] + "\n" in previous_system.rules_text())
-               or (d.startswith("-") and d.split("-")[-1].split("\n")[0] in current_system.rules_text())
-               ):
-                continue
-
             if d.startswith("+") and d.split("+")[-1] in current_system.rules_text():
                 new_store.append([d])
             elif d.startswith("-") and d.split("-")[-1] in current_system.rules_text():

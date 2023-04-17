@@ -17,8 +17,8 @@ from locale import gettext as _
 from typing import Sequence, Tuple
 
 import gi
-from fapolicy_analyzer import System, rules_difference
-from fapolicy_analyzer.ui.rules_difference_dialog import RulesDifferenceDialog
+from fapolicy_analyzer import System
+from fapolicy_analyzer.ui.rules.rules_difference_dialog import RulesDifferenceDialog, filter_rule_diff
 from fapolicy_analyzer.ui.changeset_wrapper import Changeset, TrustChangeset
 from fapolicy_analyzer.ui.configs import Colors
 from fapolicy_analyzer.ui.strings import (
@@ -49,8 +49,8 @@ class ConfirmDeploymentDialog(UIBuilderWidget):
 
         changes_view = self.get_object("changesTreeView")
         self.__config_changes_view(changes_view)
-        self.current_system = current_system
-        self.previous_system = previous_system
+        self.__current_system = current_system
+        self.__previous_system = previous_system
         store = self.__load_store(changesets, current_system, previous_system)
         changes_view.set_model(store)
 
@@ -79,16 +79,11 @@ class ConfirmDeploymentDialog(UIBuilderWidget):
             if not previous_system or not current_system:
                 return ([], "")
             diffs = ""
-            diffs = rules_difference(previous_system, current_system).split("\n")
+            diffs = filter_rule_diff(previous_system, current_system)
             adds_list = []
             dels_list = []
             for d in diffs:
-                if (
-                   (d.startswith("+") and d.split("+")[-1] + "\n" in previous_system.rules_text())
-                   or (d.startswith("-") and d.split("-")[-1].split("\n")[0] in current_system.rules_text())
-                   ):
-                    continue
-                elif d.startswith("+"):
+                if d.startswith("+"):
                     adds_list += [d]
                 elif d.startswith("-"):
                     dels_list += [d]
@@ -111,11 +106,11 @@ class ConfirmDeploymentDialog(UIBuilderWidget):
                 for t in e.serialize().items()
             ]
 
-        messages, diff = rules_changes()
+        rule_messages, rule_diff = rules_changes()
         expand_btn = self.get_object("expandButton")
-        expand_btn.set_visible(True) if [*messages] else expand_btn.set_visible(False)
+        expand_btn.set_visible(True) if [*rule_messages] else expand_btn.set_visible(False)
 
-        return ([*trust_changes()] + [*messages], diff)
+        return ([*trust_changes()] + [*rule_messages], rule_diff)
 
     def __load_store(
         self,
@@ -142,6 +137,6 @@ class ConfirmDeploymentDialog(UIBuilderWidget):
         return self.get_object("saveStateCbn").get_active()
 
     def on_expandButton_clicked(self, *args):
-        diff_dialog = RulesDifferenceDialog(self.current_system, self.previous_system).get_ref()
+        diff_dialog = RulesDifferenceDialog(self.__current_system, self.__previous_system).get_ref()
         diff_dialog.run()
         diff_dialog.destroy()
