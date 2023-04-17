@@ -80,7 +80,7 @@ def main(*argv):
     # integrates the callbacks this function will go away
     # and the main System ctor will load unchecked trust
     # s1 = System()
-    s1 = unchecked_system()
+    s1 = System()
 
     duration = time.time() - t
     print(f"system created in {duration} seconds")

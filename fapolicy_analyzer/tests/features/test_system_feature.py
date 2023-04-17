@@ -88,7 +88,7 @@ def test_creates_system_feature(mock_dispatch):
 def test_initializes_system(mock_dispatch, mocker):
     system = MagicMock()
     mock_system = mocker.patch(
-        "fapolicy_analyzer.ui.features.system_feature.unchecked_system",
+        "fapolicy_analyzer.ui.features.system_feature.System",
         return_value=system,
     )
     store = create_store()
@@ -123,7 +123,7 @@ def test_uses_provided_system(mock_dispatch, mocker):
 
 def test_handles_system_initialization_error(mock_dispatch, mocker):
     mock_system = mocker.patch(
-        "fapolicy_analyzer.ui.features.system_feature.unchecked_system",
+        "fapolicy_analyzer.ui.features.system_feature.System",
         side_effect=RuntimeError(),
     )
     store = create_store()
@@ -247,13 +247,16 @@ def test_request_trust(
     mock_received_action = mocker.patch(
         f"fapolicy_analyzer.ui.features.system_feature.{receive_action_to_mock.__name__}"
     )
+    mocker.patch(
+        "fapolicy_analyzer.ui.features.system_feature.time.time", return_value=1
+    )
 
     mock_system = MagicMock()
     init_store(mock_system)
     dispatch(action_to_dispatch(*(payload or [])))
 
     mock_system_fn.assert_called()
-    mock_received_action.assert_called_with(mock_return_value)
+    mock_received_action.assert_called_with(mock_return_value, 1)
 
 
 @pytest.mark.parametrize(
