@@ -36,6 +36,7 @@ dnf-fc:
 dnf-el:
 	dnf install -y rpmdevtools
 	dnf install -y rust-toolset
+	# v0.5.9 requires rust 1.64
 	cargo install cargo-vendor-filterer@0.5.8
 
 ifeq ($(OS_ID),rhel)
