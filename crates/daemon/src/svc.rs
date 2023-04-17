@@ -122,10 +122,6 @@ impl Handle {
         self.state().map(|state| matches!(state, State::Active))
     }
 
-    pub fn valid(&self) -> bool {
-        self.state().is_ok()
-    }
-
     pub fn state(&self) -> Result<State, Error> {
         use dbus::arg::messageitem::Props;
         use dbus::ffidisp::Connection;
@@ -151,6 +147,32 @@ impl Handle {
         } else {
             Err(ServiceCheckFailure(
                 "DBUS unit active check failed".to_string(),
+            ))
+        }
+    }
+
+    pub fn valid(&self) -> Result<bool, Error> {
+        use dbus::arg::messageitem::Props;
+        use dbus::ffidisp::Connection;
+
+        let c = Connection::new_system()?;
+        let p = Props::new(
+            &c,
+            "org.freedesktop.systemd1",
+            // todo;; the path name may need to be fetched dynamically via a Message
+            format!("/org/freedesktop/systemd1/unit/{}_2eservice", self.name),
+            "org.freedesktop.systemd1.Unit",
+            5000,
+        );
+
+        if let MessageItem::Str(state) = p.get("LoadState")? {
+            Ok(match state.as_str() {
+                "loaded" => true,
+                _ => false,
+            })
+        } else {
+            Err(ServiceCheckFailure(
+                "DBUS unit valid check failed".to_string(),
             ))
         }
     }
