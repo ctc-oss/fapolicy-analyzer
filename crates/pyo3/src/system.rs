@@ -194,6 +194,7 @@ fn rules_difference(lhs: &PySystem, rhs: &PySystem) -> String {
     diff_lines.join("")
 }
 
+/// Creates a [PySystem] that has all trust entries checked against disk
 #[pyfunction]
 fn checked_system(py: Python) -> PyResult<PySystem> {
     py.allow_threads(|| {
