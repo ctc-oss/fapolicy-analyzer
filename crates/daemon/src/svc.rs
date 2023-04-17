@@ -166,10 +166,7 @@ impl Handle {
         );
 
         if let MessageItem::Str(state) = p.get("LoadState")? {
-            Ok(match state.as_str() {
-                "loaded" => true,
-                _ => false,
-            })
+            Ok(matches!(state.as_str(), "loaded"))
         } else {
             Err(ServiceCheckFailure(
                 "DBUS unit valid check failed".to_string(),
