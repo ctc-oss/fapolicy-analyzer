@@ -493,7 +493,7 @@ class MainWindow(UIConnectedWidget):
                     logging.debug("monitor_daemon:Dispatch update request")
                     self.on_update_daemon_status(bStatus)
             except Exception:
-                print("Daemon monitor query/update dispatch failed.")
+                logging.warning("Daemon monitor query/update dispatch failed.")
             sleep(timeout)
 
     def _start_daemon_monitor(self):
