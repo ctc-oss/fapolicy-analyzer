@@ -442,15 +442,18 @@ class MainWindow(UIConnectedWidget):
     # ###################### fapolicyd interfacing ##########################
     def on_fapdStartMenu_activate(self, menuitem, data=None):
         logging.info("on_fapdStartMenu_activate() invoked.")
+        print(self._fapd_status)
         if self._fapd_status != ServiceStatus.UNKNOWN:
             self._fapd_mgr.start()
 
     def on_fapdStopMenu_activate(self, menuitem, data=None):
         logging.info("on_fapdStopMenu_activate() invoked.")
+        print(self._fapd_status)
         if self._fapd_status != ServiceStatus.UNKNOWN:
             self._fapd_mgr.stop()
 
     def _enable_fapd_menu_items(self, status: ServiceStatus):
+        print(status)
         if self._fapdControlPermitted and (status != ServiceStatus.UNKNOWN):
             # Convert ServiceStatus to bool
             if status == ServiceStatus.TRUE:
@@ -465,7 +468,7 @@ class MainWindow(UIConnectedWidget):
 
     def _update_fapd_status(self, status: ServiceStatus):
         logging.debug(f"_update_fapd_status({status})")
-
+        print(status)
         # Enable/Disable fapd menu items
         self._enable_fapd_menu_items(status)
         if status is ServiceStatus.TRUE:
