@@ -247,13 +247,16 @@ def test_request_trust(
     mock_received_action = mocker.patch(
         f"fapolicy_analyzer.ui.features.system_feature.{receive_action_to_mock.__name__}"
     )
+    mocker.patch(
+        "fapolicy_analyzer.ui.features.system_feature.time.time", return_value=1
+    )
 
     mock_system = MagicMock()
     init_store(mock_system)
     dispatch(action_to_dispatch(*(payload or [])))
 
     mock_system_fn.assert_called()
-    mock_received_action.assert_called_with(mock_return_value)
+    mock_received_action.assert_called_with(mock_return_value, 1)
 
 
 @pytest.mark.parametrize(

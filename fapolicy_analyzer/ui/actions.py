@@ -15,11 +15,10 @@
 
 from enum import Enum
 from itertools import count
-from typing import Any, Dict, Iterator, NamedTuple, Optional, Sequence, Tuple
+from typing import Any, Dict, Iterator, NamedTuple, Optional, Sequence
 
 from fapolicy_analyzer import Changeset, Event, Group, Rule, System, Trust, User
 from fapolicy_analyzer.redux import Action, create_action
-
 
 INIT_SYSTEM = "INIT_SYSTEM"
 SYSTEM_RECEIVED = "SYSTEM_RECEIVED"
@@ -146,16 +145,18 @@ def request_ancillary_trust() -> Action:
     return _create_action(REQUEST_ANCILLARY_TRUST)
 
 
-def ancillary_trust_load_started(count: int) -> Action:
-    return _create_action(ANCILLARY_TRUST_LOAD_STARTED, count)
+def ancillary_trust_load_started(count: int, timestamp: float) -> Action:
+    return _create_action(ANCILLARY_TRUST_LOAD_STARTED, (count, timestamp))
 
 
-def received_ancillary_trust_update(update: Tuple[Sequence[Trust], int]) -> Action:
-    return _create_action(RECEIVED_ANCILLARY_TRUST_UPDATE, update)
+def received_ancillary_trust_update(
+    update: Sequence[Trust], count: int, timestamp: float
+) -> Action:
+    return _create_action(RECEIVED_ANCILLARY_TRUST_UPDATE, (update, count, timestamp))
 
 
-def ancillary_trust_load_complete() -> Action:
-    return _create_action(ANCILLARY_TRUST_LOAD_COMPLETE)
+def ancillary_trust_load_complete(timestamp: float) -> Action:
+    return _create_action(ANCILLARY_TRUST_LOAD_COMPLETE, timestamp)
 
 
 def error_ancillary_trust(error: str) -> Action:
@@ -166,16 +167,18 @@ def request_system_trust() -> Action:
     return _create_action(REQUEST_SYSTEM_TRUST)
 
 
-def system_trust_load_started(count: int) -> Action:
-    return _create_action(SYSTEM_TRUST_LOAD_STARTED, count)
+def system_trust_load_started(count: int, timestamp: float) -> Action:
+    return _create_action(SYSTEM_TRUST_LOAD_STARTED, (count, timestamp))
 
 
-def received_system_trust_update(update: Tuple[Sequence[Trust], int]) -> Action:
-    return _create_action(RECEIVED_SYSTEM_TRUST_UPDATE, update)
+def received_system_trust_update(
+    update: Sequence[Trust], count: int, timestamp: float
+) -> Action:
+    return _create_action(RECEIVED_SYSTEM_TRUST_UPDATE, (update, count, timestamp))
 
 
-def system_trust_load_complete() -> Action:
-    return _create_action(SYSTEM_TRUST_LOAD_COMPLETE)
+def system_trust_load_complete(timestamp: float) -> Action:
+    return _create_action(SYSTEM_TRUST_LOAD_COMPLETE, timestamp)
 
 
 def error_system_trust(error: str) -> Action:
@@ -302,7 +305,9 @@ def profiler_done() -> Action:
     return _create_action(PROFILING_DONE_EVENT)
 
 
-def set_profiler_output(events: Optional[str], stdout: Optional[str], stderr: Optional[str]) -> Action:
+def set_profiler_output(
+    events: Optional[str], stdout: Optional[str], stderr: Optional[str]
+) -> Action:
     return _create_action(PROFILER_SET_OUTPUT_CMD, (events, stdout, stderr))
 
 
