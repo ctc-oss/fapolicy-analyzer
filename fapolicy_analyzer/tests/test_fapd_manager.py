@@ -155,7 +155,7 @@ def test_initial_daemon_status(fapdManager, mocker):
 
 def test_initial_daemon_status_w_exception(mocker):
     mocker.patch(
-        "fapolicy_analyzer.ui.fapd_manager.Handle.is_active",
+        "fapolicy_analyzer.ui.fapd_manager.Handle.is_valid",
         side_effect=IOError()
     )
 
