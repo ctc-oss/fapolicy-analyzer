@@ -224,6 +224,7 @@ class FapdManager():
             self._fapd_profiler_pid = None
 
     def _status(self):
+        print(self.mode)
         if self.mode == FapdMode.DISABLED:
             logging.debug("fapd is currently DISABLED")
             return ServiceStatus.UNKNOWN
@@ -271,6 +272,7 @@ class FapdManager():
                 if self._fapd_ref.is_valid():
                     self._fapd_status = ServiceStatus(self._fapd_ref.is_active())
                 else:
+                    print("fapdm status unknown")
                     self._fapd_status = ServiceStatus.UNKNOWN
             except Exception as e:
                 print(f"Fapd Handle is_valid() or is_active() exception: {e}",
