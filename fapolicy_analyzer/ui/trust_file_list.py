@@ -202,7 +202,6 @@ class TrustFileList(SearchableList):
         self.search.set_tooltip_text(FILTERING_DISABLED_DURING_LOADING_MESSAGE)
         self.total = count_of_trust_entries
         self.__queue = Queue()
-        #self.total = count_of_trust_entries
         self.__event = Event()
         GLib.timeout_add(
             200,
