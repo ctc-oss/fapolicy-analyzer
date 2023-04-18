@@ -2,7 +2,7 @@
 name = "fapolicy-rules"
 description = "Rule support for fapolicyd"
 license = "MPL-2.0"
-version = "0.4.4"
+version = "0.4.5"
 edition = "2018"
 
 [lib]
@@ -17,3 +17,4 @@ nom = "7.1"
 serde = { version = "1.0", features = ["derive"] }
 thiserror = "1.0"
 log = "0.4"
+is_executable = "1"
