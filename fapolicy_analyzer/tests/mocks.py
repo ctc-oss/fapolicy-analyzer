@@ -101,6 +101,3 @@ class mock_System:
 
     def rules(self):
         return [mock_rule()]
-
-    def rules_text(self):
-        return mock_rule().text

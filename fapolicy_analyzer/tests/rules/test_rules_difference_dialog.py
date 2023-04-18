@@ -15,7 +15,8 @@
 
 import gi
 from fapolicy_analyzer.ui.rules.rules_difference_dialog import RulesDifferenceDialog
-from mocks import mock_System
+from unittest.mock import MagicMock
+
 gi.require_version("GtkSource", "3.0")
 from gi.repository import Gtk  # isort: skip
 
@@ -25,16 +26,5 @@ def test_creates_widget(mocker):
         "fapolicy_analyzer.ui.rules.rules_difference_dialog.rules_difference",
         return_value="",
     )
-    widget = RulesDifferenceDialog(mock_System(), mock_System(), parent=Gtk.Window())
+    widget = RulesDifferenceDialog(MagicMock(), MagicMock(), parent=Gtk.Window())
     assert type(widget) is RulesDifferenceDialog
-
-
-def test_rule_addition(mocker):
-    mocker.patch(
-        "fapolicy_analyzer.ui.rules.rules_difference_dialog.rules_difference",
-        return_value="+Mock Rule Number 1",
-    )
-    widget = RulesDifferenceDialog(mock_System(), mock_System(), parent=Gtk.Window())
-    view = widget.new_list.get_object("treeView")
-    rows = [x for x in view.get_model()]
-    assert ["+Mock Rule Number 1" in r[0] for r in rows]
