@@ -43,6 +43,7 @@ BuildRequires: rust-either-devel
 BuildRequires: rust-fastrand-devel
 BuildRequires: rust-getrandom-devel
 BuildRequires: rust-iana-time-zone-devel
+BuildRequires: rust-is_executable-devel
 BuildRequires: rust-instant-devel
 BuildRequires: rust-lazy_static-devel
 BuildRequires: rust-libc-devel
