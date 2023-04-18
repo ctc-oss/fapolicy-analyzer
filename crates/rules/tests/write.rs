@@ -21,8 +21,8 @@ fn test_file() -> Result<(), Box<dyn Error>> {
     let db = read::deserialize_rules_db(expected)?;
     let file = NamedTempFile::new()?;
 
-    write::db(&db, &file.path().to_path_buf())?;
-    let actual = read_string(&file.path().to_path_buf())?;
+    write::db(&db, file.path())?;
+    let actual = read_string(file.path())?;
     assert_eq!(expected, actual.trim());
 
     Ok(())

@@ -78,6 +78,7 @@ class TrustFileList(SearchableList):
         self.get_ref().connect("destroy", self.on_destroy)
         self.show_trusted = False
         self.loading_sensitive = False
+        self.total = 0
 
     def __handle_selection_changed(self, data):
         trust = [datum[3] for datum in data] if data else None
@@ -120,8 +121,13 @@ class TrustFileList(SearchableList):
         return [trustColumn, mtimeColumn, fileColumn]
 
     def _update_list_status(self, count):
-        label = FILE_LABEL if count == 1 else FILES_LABEL
-        super()._update_list_status(" ".join([str(count), label]))
+        label = FILE_LABEL if self.total == 1 else FILES_LABEL
+        denom_str = (
+            ""
+            if count == 0 or count == self.total
+            else " ".join(["/", str(self.total)])
+        )
+        super()._update_list_status(" ".join([str(count), denom_str, label]))
 
     def _update_loading_status(self, status):
         super()._update_list_status(status)
@@ -161,17 +167,16 @@ class TrustFileList(SearchableList):
         self.load_store(count_of_trust_entries, store)
 
     def load_store(self, count_of_trust_entries, store):
-        def process_rows(queue, total):
-            store = self._store
+        def process_rows(queue, total, store, event):
             columns = range(store.get_n_columns())
             for i in range(200):
-                if queue.empty() or self.__event.is_set():
+                if queue.empty() or event.is_set():
                     break
                 row = queue.get()
                 store.insert_with_valuesv(-1, columns, row)
                 queue.task_done()
 
-            if self.__event.is_set():
+            if event.is_set():
                 return False
 
             count = self._get_tree_count()
@@ -181,7 +186,7 @@ class TrustFileList(SearchableList):
                 self._update_progress(pct)
                 return True
             else:
-                super(TrustFileList, self).load_store(self._store)
+                super(TrustFileList, self).load_store(store)
                 self._update_progress(100)
                 self.loading_sensitive = True
                 self.search.set_sensitive(self.loading_sensitive)
@@ -189,22 +194,32 @@ class TrustFileList(SearchableList):
                 self.refresh_toolbar()
                 return False
 
+        self.__event.set()  # cancel any processing currently running
         super().load_store(store, filterable=False)
         self._update_loading_status("Loading trust 0% complete...")
         self.set_loading(False)
         self.search.set_sensitive(self.loading_sensitive)
         self.search.set_tooltip_text(FILTERING_DISABLED_DURING_LOADING_MESSAGE)
-        self.__queue = Queue()
         self.total = count_of_trust_entries
-        GLib.timeout_add(200, process_rows, self.__queue, self.total)
+        self.__queue = Queue()
+        #self.total = count_of_trust_entries
+        self.__event = Event()
+        GLib.timeout_add(
+            200,
+            process_rows,
+            self.__queue,
+            count_of_trust_entries,
+            self._store,
+            self.__event,
+        )
 
     def append_trust(self, trust):
-        def process_trust(trust):
+        def process_trust(trust, event):
             for data in trust:
-                if self.__event.is_set():
+                if event.is_set():
                     return
                 if self.show_trusted or data.status.lower() == "u":
                     self.__queue.put(self._row_data(data))
 
         if not self.__event.is_set():
-            self.__executor.submit(process_trust, trust)
+            self.__executor.submit(process_trust, trust, self.__event)
