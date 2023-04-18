@@ -110,7 +110,7 @@ class ConfirmDeploymentDialog(UIBuilderWidget):
         expand_btn = self.get_object("expandButton")
         expand_btn.set_visible(True) if [*rule_messages] else expand_btn.set_visible(False)
 
-        return ([*trust_changes()] + [*rule_messages], rule_diff)
+        return ([*trust_changes(), *rule_messages], rule_diff)
 
     def __load_store(
         self,

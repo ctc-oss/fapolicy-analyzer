@@ -43,10 +43,10 @@ class RulesDifferenceDialog(UIBuilderWidget):
         if parent:
             self.get_ref().set_transient_for(parent)
 
-        new_list = SearchableList(self.__columns())
-        prev_list = SearchableList(self.__columns())
-        self.get_object("newContent").add(new_list.get_ref())
-        self.get_object("prevContent").add(prev_list.get_ref())
+        self.new_list = SearchableList(self.__columns())
+        self.prev_list = SearchableList(self.__columns())
+        self.get_object("newContent").add(self.new_list.get_ref())
+        self.get_object("prevContent").add(self.prev_list.get_ref())
         new_store = Gtk.ListStore(str)
         prev_store = Gtk.ListStore(str)
 
@@ -59,8 +59,8 @@ class RulesDifferenceDialog(UIBuilderWidget):
             elif d.startswith("-") and d.split("-")[-1] in previous_system.rules_text():
                 prev_store.append([d])
 
-        new_list.load_store(new_store)
-        prev_list.load_store(prev_store)
+        self.new_list.load_store(new_store)
+        self.prev_list.load_store(prev_store)
 
     def __columns(self):
         merged_col = Gtk.TreeViewColumn("")
