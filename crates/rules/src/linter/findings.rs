@@ -17,8 +17,8 @@ pub(crate) const L003_MESSAGE_A: &str = "object does not exist at";
 pub(crate) const L003_MESSAGE_B: &str = "The object should be a";
 pub(crate) const L004_MESSAGE: &str = "Duplicate of rule";
 pub(crate) const L005_MESSAGE: &str = "Directory should have trailing slash";
-pub(crate) const L006_MESSAGE: &str = "exe is a directory";
-pub(crate) const L007_MESSAGE: &str = "exe is not executable";
+pub(crate) const L006_MESSAGE: &str = "The subject exe is a directory";
+pub(crate) const L007_MESSAGE: &str = "The subject exe is not executable";
 
 pub fn l001(fk: usize, r: &Rule, db: &DB) -> Option<String> {
     let id = db.rule_rev(fk).map(|e| e.id).unwrap();
