@@ -16,6 +16,7 @@
 import html
 import logging
 import datetime
+import os
 import pwd
 from typing import Optional
 
@@ -261,7 +262,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
     def make_profiling_args(self):
         res = dict(self.get_entry_dict())
         res["env_dict"] = FaProfSession.comma_delimited_kv_string_to_dict(
-            res.get("env", "")
+            os.path.expandvars(res.get("env", ""))
         )
 
         # If the user is specified but a working dir is not, use the user's HOME
