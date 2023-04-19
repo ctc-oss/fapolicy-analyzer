@@ -16,7 +16,6 @@
 import html
 import logging
 import datetime
-import os
 import pwd
 from typing import Optional
 
