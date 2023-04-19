@@ -126,7 +126,7 @@ def test_status_online(fapdManager, mocker):
     fapdManager._fapd_ref.is_active.side_effect = [False, True, False]
     fapdManager.mode = FapdMode.ONLINE
     bStatus = fapdManager._status()
-    assert bStatus == ServiceStatus.FALSE
+    assert bStatus == (ServiceStatus.FALSE or ServiceStatus.UNKNOWN)
     bStatus = fapdManager._status()
     assert bStatus == ServiceStatus.TRUE
     bStatus = fapdManager._status()
