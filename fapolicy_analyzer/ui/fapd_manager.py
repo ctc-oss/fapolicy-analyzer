@@ -224,14 +224,12 @@ class FapdManager():
             self._fapd_profiler_pid = None
 
     def _status(self):
-        print(self.mode)
         if self.mode == FapdMode.DISABLED:
             logging.debug("fapd is currently DISABLED")
             return ServiceStatus.UNKNOWN
         elif self.mode == FapdMode.ONLINE:
             if self._fapd_lock.acquire(blocking=False):
                 try:
-                    print(self._fapd_ref.is_active(), self._fapd_status)
                     bStatus = ServiceStatus(self._fapd_ref.is_active())
                     if bStatus != self._fapd_status and self._fapd_status is not ServiceStatus.UNKNOWN:
                         logging.debug(f"_status({bStatus} updated")
@@ -269,11 +267,9 @@ class FapdManager():
     def initial_daemon_status(self):
         with self._fapd_lock:
             try:
-                print(self._fapd_ref.is_valid())
                 if self._fapd_ref.is_valid():
                     self._fapd_status = ServiceStatus(self._fapd_ref.is_active())
                 else:
-                    print("fapdm status unknown")
                     self._fapd_status = ServiceStatus.UNKNOWN
             except Exception as e:
                 print(f"Fapd Handle is_valid() or is_active() exception: {e}",
