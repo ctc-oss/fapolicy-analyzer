@@ -261,14 +261,18 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
 
     def make_profiling_args(self):
         res = dict(self.get_entry_dict())
-        res["env_dict"] = FaProfSession.comma_delimited_kv_string_to_dict(
-            os.path.expandvars(res.get("env", ""))
-        )
 
         # If the user is specified but a working dir is not, use the user's HOME
         if res["uid"] and not res["pwd"]:
             # We don't catch exception here because args previously validated
             user_pw_record = pwd.getpwnam(res["uid"])
             res["pwd"] = user_pw_record.pw_dir
+
+        # convert env string to dict, Expand $PATH if in the env vars
+        d = FaProfSession.comma_delimited_kv_string_to_dict(res.get("env", ""))
+        if d and "PATH" in d:
+            d["PATH"] = FaProfSession.expand_path(d.get("PATH"),
+                                                  res.get("pwd", "."))
+        res["env_dict"] = d
 
         return res
