@@ -293,6 +293,7 @@ name = "fapolicy-pyo3"
 version = "0.4.2"
 dependencies = [
  "chrono",
+ "crossbeam-channel",
  "fapolicy-analyzer",
  "fapolicy-app",
  "fapolicy-daemon",
