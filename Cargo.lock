@@ -307,9 +307,10 @@ dependencies = [
 
 [[package]]
 name = "fapolicy-rules"
-version = "0.4.4"
+version = "0.4.5"
 dependencies = [
  "assert_matches",
+ "is_executable",
  "log",
  "nom",
  "serde",
@@ -455,6 +456,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bee0328b1209d157ef001c94dd85b4f8f64139adb0eac2659f4b08382b2f474d"
 dependencies = [
  "cfg-if 1.0.0",
+]
+
+[[package]]
+name = "is_executable"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fa9acdc6d67b75e626ad644734e8bc6df893d9cd2a834129065d3dd6158ea9c8"
+dependencies = [
+ "winapi",
 ]
 
 [[package]]

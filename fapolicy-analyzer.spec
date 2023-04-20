@@ -2,7 +2,7 @@ Summary:       File Access Policy Analyzer
 Name:          fapolicy-analyzer
 Version:       1.0.1
 Release:       1%{?dist}
-License:       GPLv3+
+License:       GPL-3.0-or-later
 URL:           https://github.com/ctc-oss/fapolicy-analyzer
 Source0:       %{url}/releases/download/v%{version}/%{name}.tar.gz
 
@@ -43,6 +43,7 @@ BuildRequires: rust-either-devel
 BuildRequires: rust-fastrand-devel
 BuildRequires: rust-getrandom-devel
 BuildRequires: rust-iana-time-zone-devel
+BuildRequires: rust-is_executable-devel
 BuildRequires: rust-instant-devel
 BuildRequires: rust-lazy_static-devel
 BuildRequires: rust-libc-devel
