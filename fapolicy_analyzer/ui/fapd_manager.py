@@ -230,8 +230,8 @@ class FapdManager():
         elif self.mode == FapdMode.ONLINE:
             if self._fapd_lock.acquire(blocking=False):
                 try:
-                    bStatus = ServiceStatus(self._fapd_ref.is_active())
-                    if bStatus != self._fapd_status and self._fapd_status is not ServiceStatus.UNKNOWN:
+                    bStatus = ServiceStatus(self._fapd_ref.is_active()) if self._fapd_ref.is_valid()) else ServiceStatus(None)
+                    if bStatus != self._fapd_status:
                         logging.debug(f"_status({bStatus} updated")
                         self._fapd_status = bStatus
                 except Exception:
