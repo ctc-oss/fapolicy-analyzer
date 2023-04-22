@@ -28,7 +28,7 @@ from fapolicy_analyzer.ui.actions import (
 )
 from fapolicy_analyzer.ui.actions import NotificationType, add_notification
 from fapolicy_analyzer.ui.faprofiler import (
-    EnumErrorPairs2Str, FaProfSession,
+    EnumErrorPairs2Str, FaProfSession, expand_path
 )
 from fapolicy_analyzer.ui.reducers.profiler_reducer import (
     ProfilerState,
@@ -260,7 +260,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
 
     def make_profiling_args(self):
         res = dict(self.get_entry_dict())
-
+        logging.debug(f"make_profiling_args(): initial form args = {res}")
         # If the user is specified but a working dir is not, use the user's HOME
         if res["uid"] and not res["pwd"]:
             # We don't catch exception here because args previously validated
@@ -270,8 +270,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         # convert env string to dict, Expand $PATH if in the env vars
         d = FaProfSession.comma_delimited_kv_string_to_dict(res.get("env", ""))
         if d and "PATH" in d:
-            d["PATH"] = FaProfSession.expand_path(d.get("PATH"),
-                                                  res.get("pwd", "."))
+            d["PATH"] = expand_path(d.get("PATH"), res.get("pwd", ".") or ".")
         res["env_dict"] = d
-
+        logging.debug(f"make_profiling_args(): expanded form args = {res}")
         return res
