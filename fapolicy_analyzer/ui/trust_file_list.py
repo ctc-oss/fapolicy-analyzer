@@ -219,6 +219,8 @@ class TrustFileList(SearchableList):
                     return
                 if self.show_trusted or data.status.lower() == "u":
                     self.__queue.put(self._row_data(data))
+                elif data.status.lower() == "t":
+                    self.total -= 1
 
         if not self.__event.is_set():
             self.__executor.submit(process_trust, trust, self.__event)

@@ -132,7 +132,7 @@ def test_tree_count_full(widget, mocker):
         "fapolicy_analyzer.ui.trust_file_list.GLib.idle_add",
         side_effect=lambda x, args: x(args),
     )
-    widget.init_list(2)
+    widget.init_list(3)
     widget.append_trust(_trust)
     refresh_gui(delay=0.5)
     assert widget.treeCount.get_text() == "2  files"
@@ -162,7 +162,7 @@ def test_tree_count_partial(widget, mocker):
         "fapolicy_analyzer.ui.trust_file_list.GLib.idle_add",
         side_effect=lambda x, args: x(args),
     )
-    widget.init_list(2)
+    widget.init_list(3)
     widget.append_trust(_trust)
     refresh_gui(delay=0.5)
     assert widget.treeCount.get_text() == "2  files"
