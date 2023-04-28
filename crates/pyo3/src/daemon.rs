@@ -70,11 +70,9 @@ impl PyHandle {
             .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
     }
 
-    /// returns true if the unit exists, false otherwise
-    pub fn is_valid(&self) -> PyResult<bool> {
-        self.rs
-            .valid()
-            .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
+    /// returns true if the unit is valid, false otherwise
+    pub fn is_valid(&self) -> bool {
+        self.rs.valid().unwrap_or(false)
     }
 
     #[args(timeout = 15)]
