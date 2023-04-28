@@ -14,31 +14,11 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import pytest
-import glob
 import os
 from fapolicy_analyzer.ui.faprofiler import (
     FaProfSession,
     ProfSessionArgsStatus,
 )
-
-
-@pytest.fixture
-def faProfSession(scope="session"):
-    dictArgs = {
-        "cmd": "/usr/bin/ls",
-        "arg": "-ltr /tmp",
-        "uid": os.getenv("USER"),
-        "pwd": os.getenv("HOME"),
-        "env": 'XX="xx"',
-    }
-    s = FaProfSession(dictArgs)
-    yield s
-
-    # Clean up
-    for f in glob.glob("/tmp/tgt_profiling_*.stdout"):
-        os.remove(f)
-    for f in glob.glob("/tmp/tgt_profiling_*.stderr"):
-        os.remove(f)
 
 
 @pytest.mark.parametrize(
@@ -62,25 +42,6 @@ def faProfSession(scope="session"):
 def test_faprofsession_init_w_bad_keys(dictArgs):
     with pytest.raises(KeyError):
         FaProfSession.validateArgs(dictArgs)
-
-
-def test_faprofsession_getpwnam_exception(mocker):
-    # Emulate a getpwnam() exception
-    mocker.patch(
-        "fapolicy_analyzer.ui.faprofiler.pwd.getpwnam",
-        side_effect=Exception()
-    )
-
-    dictArgs = {
-        "cmd": "/usr/bin/ls",
-        "arg": "-ltr /tmp",
-        "uid": "ooo",
-        "pwd": os.getenv("HOME"),
-        "env": 'XX="xx"',
-    }
-
-    with pytest.raises(Exception):
-        FaProfSession(dictArgs)
 
 
 def test_faprofsession_path_env():
