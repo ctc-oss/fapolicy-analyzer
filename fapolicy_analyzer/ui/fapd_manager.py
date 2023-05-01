@@ -145,6 +145,7 @@ class FapdManager():
                         self.mode = FapdMode.ONLINE
 
                 except Exception:
+                    self._fapd_status = ServiceStatus.UNKNOWN
                     logging.error(FAPD_DBUS_START_ERROR_MSG)
                     dispatch(add_notification(FAPD_DBUS_START_ERROR_MSG,
                                               NotificationType.ERROR))
@@ -229,7 +230,8 @@ class FapdManager():
         elif self.mode == FapdMode.ONLINE:
             if self._fapd_lock.acquire(blocking=False):
                 try:
-                    bStatus = ServiceStatus(self._fapd_ref.is_active())
+                    valid = self._fapd_ref.is_valid()
+                    bStatus = ServiceStatus(self._fapd_ref.is_active()) if valid else ServiceStatus(None)
                     if bStatus != self._fapd_status:
                         logging.debug(f"_status({bStatus} updated")
                         self._fapd_status = bStatus
