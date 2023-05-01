@@ -9,8 +9,8 @@ Source0:       %{url}/releases/download/v%{version}/%{name}.tar.gz
 # vendored user doc source files
 Source1:       %{url}/releases/download/v%{version}/vendor-docs.tar.gz
 
-# vendored dependencies for EPEL
-Source2:       %{url}/releases/download/v%{version}/vendor-rs.tar.gz
+# vendored dependencies for EPEL 8
+Source2:       %{url}/releases/download/v%{version}/vendor-rs.el8.tar.gz
 
 # Build-time python dependencies
 # required for compatibility with setuptools-rust
