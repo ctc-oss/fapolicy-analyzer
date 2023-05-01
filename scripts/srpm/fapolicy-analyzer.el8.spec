@@ -6,11 +6,11 @@ License:       GPL-3.0-or-later
 URL:           https://github.com/ctc-oss/fapolicy-analyzer
 Source0:       %{url}/releases/download/v%{version}/%{name}.tar.gz
 
-# vendored dependencies for EPEL
-Source1:       %{url}/releases/download/v%{version}/vendor-rs.tar.gz
-
 # vendored user doc source files
-Source2:       %{url}/releases/download/v%{version}/vendor-docs.tar.gz
+Source1:       %{url}/releases/download/v%{version}/vendor-docs.tar.gz
+
+# vendored dependencies for EPEL
+Source2:       %{url}/releases/download/v%{version}/vendor-rs.tar.gz
 
 # Build-time python dependencies
 # required for compatibility with setuptools-rust
@@ -114,9 +114,9 @@ rm -rf %{venv_lib}/pip*
 cp -r  %{python3_sitelib}/pip* %{venv_lib}
 
 %autosetup -n %{name}
-%cargo_prep -V1
+%cargo_prep -V2
 
-tar -xzf %{SOURCE2}
+tar -xzf %{SOURCE1}
 
 # disable dev-tools crate
 sed -i '/tools/d' Cargo.toml
