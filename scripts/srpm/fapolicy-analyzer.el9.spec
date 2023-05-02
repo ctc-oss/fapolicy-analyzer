@@ -1,19 +1,18 @@
 Summary:       File Access Policy Analyzer
 Name:          fapolicy-analyzer
-Version:       1.0.3
+Version:       1.0.2
 Release:       1%{?dist}
 License:       GPL-3.0-or-later
 URL:           https://github.com/ctc-oss/fapolicy-analyzer
 Source0:       %{url}/releases/download/v%{version}/%{name}-%{version}.tar.gz
 
-# vendored user doc source files
+# this tarball contains documentation used to generate help docs
 Source1:       %{url}/releases/download/v%{version}/vendor-docs-%{version}.tar.gz
 
-# vendored dependencies for el8
-Source2:       %{url}/releases/download/v%{version}/vendor-rs-%{version}.el8.tar.gz
+# vendored dependencies for el9
+Source2:       %{url}/releases/download/v%{version}/vendor-rs-%{version}.el9.tar.gz
 
 # Build-time python dependencies
-# required for compatibility with setuptools-rust
 Source10:      %{pypi_source setuptools-rust 1.1.2}
 Source11:      %{pypi_source pip 21.3.1}
 Source12:      %{pypi_source setuptools 59.6.0}
@@ -27,19 +26,81 @@ Source19:      %{pypi_source flit_core 3.7.1}
 Source20:      %{pypi_source typing_extensions 3.7.4.3}
 Source21:      %{pypi_source pytz 2022.7.1}
 
+
 BuildRequires: python3-devel
-BuildRequires: python3dist(setuptools)
-BuildRequires: python3dist(pip)
-BuildRequires: python3dist(wheel)
 BuildRequires: python3dist(babel)
+BuildRequires: python3dist(packaging)
+BuildRequires: python3dist(pyparsing)
+BuildRequires: python3dist(tomli)
+BuildRequires: python3dist(flit-core)
+BuildRequires: python3dist(typing-extensions)
+BuildRequires: python3dist(pytz)
+
 BuildRequires: dbus-devel
 BuildRequires: gettext
 BuildRequires: itstool
 BuildRequires: desktop-file-utils
 
-BuildRequires: rust-toolset
-BuildRequires: python3dist(toml)
-BuildRequires: python3dist(typing-extensions)
+BuildRequires: rust-packaging
+
+BuildRequires: rust-assert_matches-devel
+BuildRequires: rust-autocfg-devel
+BuildRequires: rust-bitflags-devel
+BuildRequires: rust-bumpalo-devel
+BuildRequires: rust-byteorder-devel
+BuildRequires: rust-cc-devel
+BuildRequires: rust-cfg-if-devel
+BuildRequires: rust-chrono-devel
+BuildRequires: rust-crossbeam-channel-devel
+BuildRequires: rust-crossbeam-deque-devel
+BuildRequires: rust-crossbeam-epoch-devel
+BuildRequires: rust-crossbeam-utils-devel
+BuildRequires: rust-data-encoding-devel
+BuildRequires: rust-directories-devel
+BuildRequires: rust-dirs-sys-devel
+BuildRequires: rust-either-devel
+BuildRequires: rust-fastrand-devel
+BuildRequires: rust-getrandom-devel
+BuildRequires: rust-iana-time-zone-devel
+BuildRequires: rust-is_executable-devel
+BuildRequires: rust-instant-devel
+BuildRequires: rust-lazy_static-devel
+BuildRequires: rust-libc-devel
+BuildRequires: rust-lock_api-devel
+BuildRequires: rust-log-devel
+BuildRequires: rust-memchr-devel
+BuildRequires: rust-memoffset-devel
+BuildRequires: rust-minimal-lexical-devel
+BuildRequires: rust-nom-devel
+BuildRequires: rust-num-integer-devel
+BuildRequires: rust-num-traits-devel
+BuildRequires: rust-num_cpus-devel
+BuildRequires: rust-once_cell-devel
+BuildRequires: rust-parking_lot-devel
+BuildRequires: rust-parking_lot_core-devel
+BuildRequires: rust-pkg-config-devel
+BuildRequires: rust-proc-macro-hack-devel
+BuildRequires: rust-proc-macro2-devel
+BuildRequires: rust-quote-devel
+BuildRequires: rust-rayon-devel
+BuildRequires: rust-rayon-core-devel
+BuildRequires: rust-remove_dir_all-devel
+BuildRequires: rust-scopeguard-devel
+BuildRequires: rust-serde-devel
+BuildRequires: rust-serde_derive-devel
+BuildRequires: rust-similar-devel
+BuildRequires: rust-smallvec-devel
+BuildRequires: rust-spin-devel
+BuildRequires: rust-syn-devel
+BuildRequires: rust-tempfile-devel
+BuildRequires: rust-thiserror-devel
+BuildRequires: rust-thiserror-impl-devel
+BuildRequires: rust-time0.1-devel
+BuildRequires: rust-toml-devel
+BuildRequires: rust-unicode-xid-devel
+BuildRequires: rust-unindent-devel
+BuildRequires: rust-paste-devel
+BuildRequires: rust-indoc-devel
 
 Requires:      python3
 Requires:      python3-gobject
@@ -48,12 +109,11 @@ Requires:      python3-configargparse
 Requires:      python3-more-itertools
 Requires:      python3-rx
 Requires:      python3-importlib-metadata
-Requires:      python3-dataclasses
-Requires:      python3-importlib-resources
-Requires:      python3-toml
+Requires:      python3-toml 
+
 Requires:      gtk3
-Requires:      dbus-libs
 Requires:      gtksourceview3
+Requires:      gnome-icon-theme
 
 # runtime required for rendering user guide
 Requires:      webkit2gtk3
@@ -67,10 +127,8 @@ ExcludeArch:   s390x %{power64}
 
 %global venv_dir        %{_builddir}/vendor-py
 %global venv_py3        %{venv_dir}/bin/python3
-%global venv_lib        %{venv_dir}/lib/python3.6/site-packages
+%global venv_lib        %{venv_dir}/lib/python3.9/site-packages
 %global venv_install    %{venv_py3} -m pip install --find-links=%{_sourcedir} --no-index --quiet
-
-%global build_rustflags -Copt-level=3 -Cdebuginfo=2 -Ccodegen-units=1 -Clink-arg=-Wl,-z,relro -Clink-arg=-Wl,-z,now --cap-lints=warn
 
 # pep440 versions handle dev and rc differently, so we call them out explicitly here
 %global module_version  %{lua: v = string.gsub(rpm.expand("%{?version}"), "~dev", ".dev"); \
@@ -86,8 +144,7 @@ Tools to assist with the configuration and management of fapolicyd.
 # define venv_py3 for accessing the venv python3 interpreter.
 %{python3} -m venv %{venv_dir}
 
-# the upgraded packages will not install with the older pip
-%{venv_install} %{SOURCE11}
+ln -sf  %{python3_sitelib}/tomli* %{venv_lib}
 
 # there exists a circular dependency between setuptools <-> wheel,
 # by calling setuptools/setup.py before pip'ing we can bypass that
@@ -113,23 +170,40 @@ ln -sf  %{python3_sitelib}/{Babel*,babel} %{venv_lib}
 rm -rf %{venv_lib}/pip*
 cp -r  %{python3_sitelib}/pip* %{venv_lib}
 
-%autosetup -n %{name}
-%cargo_prep -V2
+# An issue with unpacking the vendored crates is that an unprivileged user
+# cannot write to the default registry at /usr/share/cargo/registry
+# To unblock this, we link the contents of the /usr/share/cargo/registry
+# into a new writable registry location, and then extract the contents of the
+# vendor tarball to this new writable dir.
+# Later the Cargo config will be updated to point to this new registry dir
+CARGO_REG_DIR=%{_builddir}/vendor-rs
+mkdir -p ${CARGO_REG_DIR}
+for d in %{cargo_registry}/*; do ln -sf ${d} ${CARGO_REG_DIR}; done
+tar -xzf %{SOURCE1} -C ${CARGO_REG_DIR} --strip-components=2
 
-tar -xzf %{SOURCE1}
+%cargo_prep
+
+# here the Cargo config is updated to point to the new registry dir
+sed -i "s#%{cargo_registry}#${CARGO_REG_DIR}#g" .cargo/config
+
+%autosetup -n %{name}
+
+rm Cargo.lock
 
 # disable dev-tools crate
 sed -i '/tools/d' Cargo.toml
 
-# setup.py looks up the version from git describe
-# this overrides that check to the RPM version
+# extract our doc sourcs
+tar xvzf %{SOURCE1}
+
+# our setup.py looks up the version from git describe
+# this overrides that check to use the RPM version
 echo %{module_version} > VERSION
 
 %build
 # ensure standard Rust compiler flags are set
 export RUSTFLAGS="%{build_rustflags}"
 
-# use the venv to build
 %{venv_py3} setup.py compile_catalog -f
 %{venv_py3} help build
 %{venv_py3} setup.py bdist_wheel
@@ -156,5 +230,5 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
 %attr(755,root,root) %{_datadir}/applications/%{name}.desktop
 
 %changelog
-* Mon May 29 2023 John Wass <jwass3@gmail.com> 1.0.3-1
+* Mon Apr 10 2023 John Wass <jwass3@gmail.com> 1.0.2-1
 - New release

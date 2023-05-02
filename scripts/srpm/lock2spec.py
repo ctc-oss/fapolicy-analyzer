@@ -12,22 +12,14 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import os
+import argparse
 import shutil
 
 import requests as req
 import toml
 from bs4 import BeautifulSoup
 
-rawhide_rust = "https://mirrors.kernel.org/fedora/development/rawhide/Everything/source/tree/Packages/r/"
-
-# todo;; try to fit everything in to remappings
-overridden_crates = ["paste", "indoc"]
-blacklisted_crates = ["paste-impl", "indoc-impl", "parking_lot", "parking_lot_core"]
-remappings = {
-    "rust-time": "rust-time0.1",
-    "rust-arrayvec": "rust-arrayvec0.5"
-}
+mirror_url = "https://mirrors.kernel.org/fedora-epel/9/Everything/x86_64/Packages/r/"
 
 
 def required_packages():
@@ -44,43 +36,31 @@ def required_packages():
 
 
 def available_packages():
-    soup = BeautifulSoup(req.get(rawhide_rust).text, features="html.parser")
+    soup = BeautifulSoup(req.get(mirror_url).text, features="html.parser")
     links = soup.find_all('a')
 
     pkgs = {}
     for link in links:
         if link.text.startswith("rust-"):
             try:
-                # rust-zstd-safe-4.1.4-2.fc37.src.rpm
+                # rust-zstd-safe-devel-4.1.4-2.fc37.src.rpm
                 (name, version) = link.text.split("-", 1)[1].rsplit("-", 1)[0].rsplit("-", 1)
             except:
                 continue
 
-            pkgs[name] = version
+            pkgs[name.rstrip("-devel")] = version
     return pkgs
 
 
 if __name__ == '__main__':
-    # this needs to stay synched up with the path in vendor-rs.sh
-    vendor_dir = "vendor-rs/vendor"
-    os_id = None
-    os_version = None
-    with open("/etc/os-release") as file:
-        release = {}
-        for ln in file.readlines():
-            ln = ln.replace('"', "").strip("\n")
-            if len(ln):
-                k, v = ln.split("=")
-                release[k] = v
-        os_id = release.get("ID") or "unknown"
-        os_version = release["VERSION_ID"]
+    parser = argparse.ArgumentParser()
+    parser.add_argument("dist", type=str, help="Target dist")
+    parser.add_argument("--vendor_dir", type=str, default="vendor-rs/vendor", help="This needs to stay synched up with the path in vendor-rs.sh")
+    args = parser.parse_args()
 
-    if "TARGET_PLATFORM" in os.environ:
-        os_id, os_version = os.environ.get("TARGET_PLATFORM").split(":")
-        print(f"overriding platform to {os_id}:{os_version}")
-
-    vendoring_all = os_id != "fedora" or int(float(os_version)) < 37
-    print(f"{os_id}:{os_version}")
+    args.dist = args.dist.lstrip(".")
+    vendoring_all = args.dist == "el8"
+    print(f"dist: {args.dist}")
     if vendoring_all:
         print("== vendoring all ==")
 
@@ -89,6 +69,7 @@ if __name__ == '__main__':
     unvendor = []
     available = available_packages()
     for p, v in required_packages().items():
+        print(p)
         if p in available:
             (major, minor, patch) = v.split(".", 2)
             (rpm_major, rpm_minor, rpm_patch) = available[p].split(".", 2)
@@ -112,25 +93,12 @@ if __name__ == '__main__':
             print(f"[vendor] {p} {v}: not available")
             crates[p] = f"%{{crates_source {p} {v}}}"
 
-    excluded_crates = overridden_crates + blacklisted_crates
     if vendoring_all:
-        print("BuildRequires: rust-toolset")
-        print(f"Vendored (all) {len(rpms) + len(crates) - len(excluded_crates)}")
+        print(f"Vendored (all) {len(rpms) + len(crates)}")
     else:
-        print("BuildRequires: rust-packaging")
-        for r in rpms.values():
-            rpm = remappings[r] if r in remappings else r
-            print(f"BuildRequires: {rpm}-devel")
-
-        if overridden_crates:
-            print("# Overridden to rpms due to Fedora version patching")
-            for r in overridden_crates:
-                print(f"BuildRequires: rust-{r}-devel")
-                unvendor.append(r)
-
         for c in unvendor:
             print(f"[unvendor] {c}")
-            shutil.rmtree(f"{vendor_dir}/{c}")
+            shutil.rmtree(f"{args.vendor_dir}/{c}")
 
         print(f"Official {len(unvendor)}")
-        print(f"Vendored {len(crates) - len(excluded_crates)}")
+        print(f"Vendored {len(crates)}")

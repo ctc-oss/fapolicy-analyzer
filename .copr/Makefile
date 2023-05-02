@@ -1,9 +1,12 @@
-.PHONY: clean identify prepfs dnf vendor vendor-app vendor-py vendor-rs dep srpm
+.PHONY: clean identify prepfs dnf vendor vendor-app vendor-rs dep srpm
 .SILENT: clean
 
 OS_PRETTY_NAME = $(shell grep /etc/os-release -e "^PRETTY_NAME=" | tr -d '"' | cut -d= -f2 | cut -d: -f1)
 OS_ID_FN =       $(shell grep /etc/os-release -e "^ID=" | tr -d '"' | cut -d= -f2 | cut -d: -f1)
 OS_ID   ?=       $(OS_ID_FN)
+VERSION ?=       $(shell grep "Version:" $(spec) | tr -s ' ' | cut -d' ' -f2)
+DIST    ?=       $(shell rpm --eval "%{?dist}")
+
 
 identify:
 	@echo "Platform: $(OS_PRETTY_NAME) (id: $(OS_ID))"
@@ -17,9 +20,8 @@ prep_rpmbuild_dir:
 	mkdir -p /tmp/rpmbuild/SOURCES/
 
 clean:
-	rm -f fapolicy-analyzer.tar.gz
-	rm -f vendor-rs.tar.gz
-	rm -f vendor-py.tar.gz
+	rm -f fapolicy-analyzer-${VERSION}.tar.gz
+	rm -f vendor-rs-${VERSION}.tar.gz
 
 ifeq ($(OS_ID),rhel)
 dnf: dnf-common dnf-el
@@ -41,29 +43,26 @@ dnf-el:
 
 ifeq ($(OS_ID),rhel)
 # we only need to vendor rust and python on rhel
-vendor: prep_rpmbuild_dir vendor-app vendor-doc vendor-rs vendor-py
+vendor: prep_rpmbuild_dir vendor-app vendor-doc vendor-rs
 else
 vendor: prep_rpmbuild_dir vendor-app vendor-doc
 endif
 
 vendor-app:
-	git archive HEAD -o fapolicy-analyzer.tar.gz --prefix=fapolicy-analyzer/
-
-vendor-py:
-	which spectool && spectool -gf -C /tmp/rpmbuild/SOURCES/ \$(spec) || true
+	git archive HEAD -o "fapolicy-analyzer-${VERSION}.tar.gz" --prefix=fapolicy-analyzer/
 
 vendor-rs:
 	cargo check
-	./scripts/srpm/vendor-rs.sh
-	cp vendor-rs.tar.gz /tmp/rpmbuild/SOURCES/
+	./scripts/srpm/vendor-rs.sh ${VERSION} ${DIST}
+	cp vendor-rs.tar.gz /tmp/rpmbuild/SOURCES/vendor-rs-${VERSION}${DIST}.tar.gz
 
 move-sources: prepfs
-	cp fapolicy-analyzer.tar.gz /tmp/rpmbuild/SOURCES/
+	cp fapolicy-analyzer-${VERSION}.tar.gz /tmp/rpmbuild/SOURCES/
 
 vendor-doc:
 	python3 help update
-	tar --exclude=es --exclude=*.py --exclude=.gitignore -cvzf vendor-docs.tar.gz help
-	cp vendor-docs.tar.gz /tmp/rpmbuild/SOURCES/
+	tar --exclude=es --exclude=*.py --exclude=.gitignore -cvzf vendor-docs-${VERSION}.tar.gz help
+	cp vendor-docs-${VERSION}.tar.gz /tmp/rpmbuild/SOURCES/
 
 build:
 	rpmbuild -bs -D "_topdir /tmp/rpmbuild" \$(spec)
@@ -73,4 +72,4 @@ export:
 	cp -v /tmp/rpmbuild/SRPMS/* \$(outdir)/
 
 # the copr entrypoint
-srpm: idenfity dnf vendor move-sources build export
+srpm: identify dnf vendor move-sources build export

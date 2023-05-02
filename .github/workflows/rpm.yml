@@ -59,16 +59,21 @@ jobs:
         run: |
           make -f .copr/Makefile vendor-app
 
+      - name: Tag archive with version number
+          tag="${{ steps.tag_name.outputs.VERSION }}"
+          tag_version="${tag#v}"
+          mv fapolicy-analyzer.tar.gz "fapolicy-analyzer-$tag_version.tar.gz"
+
       - name: Upload
         uses: actions/upload-artifact@v3
         with:
           name: source0
           path: |
-            fapolicy-analyzer.tar.gz
+            fapolicy-analyzer-*.tar.gz
 
       - name: Checksum
         run: |
-          sha256sum fapolicy-analyzer.tar.gz
+          sha256sum fapolicy-analyzer-*.tar.gz
 
   srpm:
     needs: [ config, source0 ]
@@ -181,7 +186,9 @@ jobs:
       - name: Export el tarballs
         if: startsWith(matrix.props.dist, 'el')
         run: |
-          mv vendor-rs.tar.gz /tmp/archives/vendor-rs.tar.gz
+          tag="${{ steps.tag_name.outputs.VERSION }}"
+          tag_version="${tag#v}"
+          mv vendor-rs.tar.gz /tmp/archives/vendor-rs-${tag_version}.${PLATFORM}.tar.gz
         env:
           PLATFORM: ${{ matrix.props.dist }}
 

@@ -27,6 +27,13 @@
       "spec": "scripts/srpm/fapolicy-analyzer.el8.spec",
       "image": "rockylinux:8.6",
       "chroot": "epel-8-x86_64"
+    },
+    {
+      "platform": "rhel",
+      "dist": "el9",
+      "spec": "scripts/srpm/fapolicy-analyzer.el9.spec",
+      "image": "rockylinux:9.1",
+      "chroot": "epel-9-x86_64"
     }
   ]
 }
