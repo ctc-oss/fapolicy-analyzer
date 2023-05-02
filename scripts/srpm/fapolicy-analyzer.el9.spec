@@ -122,14 +122,10 @@ mkdir -p ${CARGO_REG_DIR}
 for d in %{cargo_registry}/*; do ln -sf ${d} ${CARGO_REG_DIR}; done
 tar -xzf %{SOURCE2} -C ${CARGO_REG_DIR} --strip-components=2
 
-ls ${CARGO_REG_DIR}
-
 %cargo_prep
 
 # here the Cargo config is updated to point to the new registry dir
 sed -i "s#%{cargo_registry}#${CARGO_REG_DIR}#g" .cargo/config
-
-cat .cargo/config
 
 %autosetup -n %{name}
 
