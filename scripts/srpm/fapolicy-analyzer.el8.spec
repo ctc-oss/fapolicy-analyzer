@@ -10,7 +10,7 @@ Source0:       %{url}/releases/download/v%{version}/%{name}-%{version}.tar.gz
 Source1:       %{url}/releases/download/v%{version}/vendor-docs-%{version}.tar.gz
 
 # vendored dependencies for el8
-Source2:       %{url}/releases/download/v%{version}/vendor-rs-%{version}.el8.tar.gz
+Source2:       %{url}/releases/download/v%{version}/vendor-rs-%{version}.tar.gz
 
 # Build-time python dependencies
 # required for compatibility with setuptools-rust

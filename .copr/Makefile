@@ -5,8 +5,6 @@ OS_PRETTY_NAME = $(shell grep /etc/os-release -e "^PRETTY_NAME=" | tr -d '"' | c
 OS_ID_FN =       $(shell grep /etc/os-release -e "^ID=" | tr -d '"' | cut -d= -f2 | cut -d: -f1)
 OS_ID   ?=       $(OS_ID_FN)
 VERSION ?=       $(shell grep "Version:" $(spec) | tr -s ' ' | cut -d' ' -f2)
-DIST    ?=       $(shell rpm --eval "%{?dist}")
-
 
 identify:
 	@echo "Platform: $(OS_PRETTY_NAME) (id: $(OS_ID))"
@@ -53,8 +51,8 @@ vendor-app:
 
 vendor-rs:
 	cargo check
-	./scripts/srpm/vendor-rs.sh ${VERSION} ${DIST}
-	cp vendor-rs.tar.gz /tmp/rpmbuild/SOURCES/vendor-rs-${VERSION}${DIST}.tar.gz
+	./scripts/srpm/vendor-rs.sh ${VERSION}
+	cp vendor-rs-${VERSION}.tar.gz /tmp/rpmbuild/SOURCES/vendor-rs-${VERSION}.tar.gz
 
 move-sources: prepfs
 	cp fapolicy-analyzer-${VERSION}.tar.gz /tmp/rpmbuild/SOURCES/

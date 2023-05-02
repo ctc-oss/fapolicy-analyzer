@@ -54,14 +54,11 @@ def available_packages():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("dist", type=str, help="Target dist")
+    parser.add_argument("--vendor_all", action='store_true', help="Vendor all requirements")
     parser.add_argument("--vendor_dir", type=str, default="vendor-rs/vendor", help="This needs to stay synched up with the path in vendor-rs.sh")
     args = parser.parse_args()
 
-    args.dist = args.dist.lstrip(".")
-    vendoring_all = args.dist == "el8"
-    print(f"dist: {args.dist}")
-    if vendoring_all:
+    if args.vendor_all:
         print("== vendoring all ==")
 
     rpms = {}
@@ -93,7 +90,7 @@ if __name__ == '__main__':
             print(f"[vendor] {p} {v}: not available")
             crates[p] = f"%{{crates_source {p} {v}}}"
 
-    if vendoring_all:
+    if args.vendor_all:
         print(f"Vendored (all) {len(rpms) + len(crates)}")
     else:
         for c in unvendor:
