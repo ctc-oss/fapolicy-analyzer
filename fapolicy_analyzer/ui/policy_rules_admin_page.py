@@ -448,7 +448,8 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             self.__events_loading = False
             self.__log = eventsState.log
             utc = datetime.datetime.now(datetime.timezone.utc)
-            tzdelta = int(time.localtime().tm_gmtoff)
+            tzdelta = 0# int(time.localtime().tm_gmtoff)
+            print(time.time() + tzdelta - self._time_delay)
             if self._time_delay < 0:
                 self.__log.begin(int(time.time()) + tzdelta - 3600)
             else:
