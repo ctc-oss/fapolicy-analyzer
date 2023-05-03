@@ -40,8 +40,10 @@ jobs:
 
   source0:
     name: Vendor Source0
-    runs-on: ubuntu-20.04
     container: registry.fedoraproject.org/fedora:rawhide
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix: ${{ fromJson(needs.config.outputs.matrix) }}
     steps:
       - name: Install deps
         run: dnf install -y git make
@@ -59,11 +61,10 @@ jobs:
         run: |
           make -f .copr/Makefile vendor-app
 
-      - name: Tag archive with version number
+      - name: Tag archive with spec version number
         run: |
-          tag="${{ steps.tag_name.outputs.VERSION }}"
-          tag_version="${tag#v}"
-          mv fapolicy-analyzer.tar.gz "fapolicy-analyzer-$tag_version.tar.gz"
+          version=$(shell grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
+          mv fapolicy-analyzer.tar.gz "fapolicy-analyzer-$version.tar.gz"
 
       - name: Upload
         uses: actions/upload-artifact@v3
