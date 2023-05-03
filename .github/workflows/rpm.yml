@@ -61,7 +61,7 @@ jobs:
 
       - name: Tag archive with spec version number
         run: |
-          version=$(shell grep "Version:" fapolicy-analyzer.spec | tr -s ' ' | cut -d' ' -f2)
+          version=$(grep "Version:" fapolicy-analyzer.spec | tr -s ' ' | cut -d' ' -f2)
           mv fapolicy-analyzer.tar.gz "fapolicy-analyzer-$version.tar.gz"
 
       - name: Upload
