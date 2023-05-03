@@ -204,7 +204,6 @@ impl PyEventLog {
     }
 
     fn temporal_filter(&self, e: &PyEvent) -> bool {
-        println!("{:?}",e.rs.event.when);
         match (e.rs.event.when, self.start, self.stop) {
             (None, _, _) | (_, None, None) => true,
             (Some(t), Some(begin), None) => t.timestamp() >= begin,
