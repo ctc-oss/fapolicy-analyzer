@@ -6,14 +6,13 @@ License:       GPL-3.0-or-later
 URL:           https://github.com/ctc-oss/fapolicy-analyzer
 Source0:       %{url}/releases/download/v%{version}/%{name}-%{version}.tar.gz
 
-# vendored user doc source files
+# vendored documentation sources, used to generate help docs
 Source1:       %{url}/releases/download/v%{version}/vendor-docs-%{version}.tar.gz
 
-# vendored dependencies for el8
+# vendored rust dependencies
 Source2:       %{url}/releases/download/v%{version}/vendor-rs-%{version}.tar.gz
 
-# Build-time python dependencies
-# required for compatibility with setuptools-rust
+# Build-time python dependencies for setuptools-rust
 Source10:      %{pypi_source setuptools-rust 1.1.2}
 Source11:      %{pypi_source pip 21.3.1}
 Source12:      %{pypi_source setuptools 59.6.0}
