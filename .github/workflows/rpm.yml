@@ -57,7 +57,7 @@ jobs:
 
       - name: Vendor
         run: |
-          make -f .copr/Makefile vendor-app
+          make -f .copr/Makefile vendor-app spec=fapolicy-analyzer.spec
 
       - name: Upload
         uses: actions/upload-artifact@v3
