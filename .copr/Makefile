@@ -51,7 +51,7 @@ vendor-app:
 	git archive HEAD -o "fapolicy-analyzer-${VERSION}.tar.gz" --prefix=fapolicy-analyzer/
 
 vendor-py:
-	which spectool && spectool -gf -C /tmp/rpmbuild/SOURCES/ \$(spec) || true
+	which spectool && spectool -g -C /tmp/rpmbuild/SOURCES/ \$(spec) || true
 
 vendor-rs:
 	cargo check
