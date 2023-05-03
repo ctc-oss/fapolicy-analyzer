@@ -23,7 +23,6 @@ Source17:      %{pypi_source pyparsing 2.1.0}
 Source18:      %{pypi_source tomli 1.2.3}
 Source19:      %{pypi_source flit_core 3.7.1}
 Source20:      %{pypi_source typing_extensions 3.7.4.3}
-Source21:      %{pypi_source pytz 2022.7.1}
 
 BuildRequires: python3-devel
 BuildRequires: python3dist(babel)
@@ -166,8 +165,8 @@ tar -xzf %{SOURCE12} -C %{_builddir}/setuptools --strip-components=1
 # install setuptools-rust
 %{venv_install} %{SOURCE10}
 
-# babel will be called directly by compile_catalog
-# link it to the venv from the system site-packages
+# post install deps linked from system site-packages
+ln -sf  %{python3_sitelib}/pytz* %{venv_lib}
 ln -sf  %{python3_sitelib}/{Babel*,babel} %{venv_lib}
 
 # An unprivileged user cannot write to the default registry location of
