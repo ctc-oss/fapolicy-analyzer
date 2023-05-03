@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import context  # noqa: F401 # isort: skip
+import time
 from unittest.mock import MagicMock
 
 import pytest
@@ -27,6 +27,8 @@ from fapolicy_analyzer.ui.reducers.trust_reducer import (
     handle_trust_load_started,
 )
 
+import context  # noqa: F401 # isort: skip
+
 
 @pytest.fixture()
 def initial_state():
@@ -37,6 +39,7 @@ def initial_state():
         percent_complete=-1,
         last_set_completed=None,
         trust_count=0,
+        timestamp=0,
     )
 
 
@@ -49,11 +52,13 @@ def test_handle_request_trust(initial_state):
         percent_complete=-1,
         last_set_completed=None,
         trust_count=0,
+        timestamp=0,
     )
 
 
 def test_handle_trust_load_started(initial_state):
-    result = handle_trust_load_started(initial_state, MagicMock(payload=1))
+    timestamp = time.time()
+    result = handle_trust_load_started(initial_state, MagicMock(payload=(1, timestamp)))
     assert result == TrustState(
         error=None,
         trust=[],
@@ -61,6 +66,7 @@ def test_handle_trust_load_started(initial_state):
         percent_complete=0,
         last_set_completed=None,
         trust_count=1,
+        timestamp=timestamp,
     )
 
 
@@ -75,8 +81,9 @@ def test_handle_received_trust_update(initial_state):
             "loading": True,
         }
     )
+    timestamp = time.time()
     result = handle_received_trust_update(
-        incoming_state, MagicMock(payload=(trust_update, 2))
+        incoming_state, MagicMock(payload=(trust_update, 2, timestamp))
     )
     assert result == TrustState(
         error=None,
@@ -85,6 +92,7 @@ def test_handle_received_trust_update(initial_state):
         percent_complete=100,
         last_set_completed=trust_update,
         trust_count=2,
+        timestamp=timestamp,
     )
 
 
@@ -100,7 +108,8 @@ def test_handle_trust_load_complete(initial_state):
             "percent_complete": 100,
         }
     )
-    result = handle_trust_load_complete(incoming_state, MagicMock())
+    timestamp = time.time()
+    result = handle_trust_load_complete(incoming_state, MagicMock(payload=timestamp))
     assert result == TrustState(
         error=None,
         loading=False,
@@ -108,6 +117,7 @@ def test_handle_trust_load_complete(initial_state):
         percent_complete=100,
         last_set_completed=None,
         trust_count=1,
+        timestamp=timestamp,
     )
 
 
@@ -120,4 +130,5 @@ def test_handle_error_trust(initial_state):
         percent_complete=-1,
         last_set_completed=None,
         trust_count=0,
+        timestamp=0,
     )

@@ -413,7 +413,9 @@ class MainWindow(UIConnectedWidget):
         fcd.destroy()
 
     def activate_file_analyzer(self, file):
-        self.__pack_main_content(router(PAGE_SELECTION.ANALYZE_FROM_DEBUG, False, file))
+        page = router(PAGE_SELECTION.ANALYZE_FROM_DEBUG, False, file)
+        page.object_list.rule_view_activate += self.on_rulesAdminMenu_activate
+        self.__pack_main_content(page)
 
     def on_trustDbMenu_activate(self, menuitem, *args):
         self.__pack_main_content(router(PAGE_SELECTION.TRUST_DATABASE_ADMIN))
@@ -463,8 +465,8 @@ class MainWindow(UIConnectedWidget):
 
     def _update_fapd_status(self, status: ServiceStatus):
         logging.debug(f"_update_fapd_status({status})")
-
         # Enable/Disable fapd menu items
+
         self._enable_fapd_menu_items(status)
         if status is ServiceStatus.TRUE:
             self.fapdStatusLight.set_from_icon_name("emblem-default", size=4)
@@ -491,7 +493,7 @@ class MainWindow(UIConnectedWidget):
                     logging.debug("monitor_daemon:Dispatch update request")
                     self.on_update_daemon_status(bStatus)
             except Exception:
-                print("Daemon monitor query/update dispatch failed.")
+                logging.warning("Daemon monitor query/update dispatch failed.")
             sleep(timeout)
 
     def _start_daemon_monitor(self):
