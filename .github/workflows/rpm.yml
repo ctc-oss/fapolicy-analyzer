@@ -174,18 +174,15 @@ jobs:
       - name: Export common tarballs
         run: |
           mkdir -p /tmp/archives
-          mv vendor-docs.tar.gz /tmp/archives
+          mv vendor-docs-*.tar.gz /tmp/archives
         env:
           PLATFORM: ${{ matrix.props.dist }}
 
       - name: Export el tarballs
         if: startsWith(matrix.props.dist, 'el')
         run: |
-          tag="${{ steps.tag_name.outputs.VERSION }}"
-          tag_version="${tag#v}"
-          mv vendor-rs.tar.gz /tmp/archives/vendor-rs-${tag_version}.${PLATFORM}.tar.gz
-        env:
-          PLATFORM: ${{ matrix.props.dist }}
+          version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
+          mv vendor-rs-${version}.tar.gz /tmp/archives/
 
       - name: Upload SourceX
         uses: actions/upload-artifact@v3
