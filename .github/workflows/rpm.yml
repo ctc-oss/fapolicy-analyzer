@@ -59,11 +59,6 @@ jobs:
         run: |
           make -f .copr/Makefile vendor-app
 
-      - name: Tag archive with spec version number
-        run: |
-          version=$(grep "Version:" fapolicy-analyzer.spec | tr -s ' ' | cut -d' ' -f2)
-          mv fapolicy-analyzer.tar.gz "fapolicy-analyzer-$version.tar.gz"
-
       - name: Upload
         uses: actions/upload-artifact@v3
         with:
