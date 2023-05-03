@@ -1,4 +1,4 @@
-.PHONY: clean identify prepfs dnf vendor vendor-app vendor-rs dep srpm
+.PHONY: clean identify prepfs dnf vendor vendor-app vendor-py vendor-rs dep srpm
 .SILENT: clean
 
 OS_PRETTY_NAME = $(shell grep /etc/os-release -e "^PRETTY_NAME=" | tr -d '"' | cut -d= -f2 | cut -d: -f1)
@@ -42,13 +42,16 @@ dnf-el:
 
 ifeq ($(OS_ID),rhel)
 # we only need to vendor rust and python on rhel
-vendor: prep_rpmbuild_dir vendor-app vendor-doc vendor-rs
+vendor: prep_rpmbuild_dir vendor-app vendor-doc vendor-rs vendor-py
 else
 vendor: prep_rpmbuild_dir vendor-app vendor-doc
 endif
 
 vendor-app:
 	git archive HEAD -o "fapolicy-analyzer-${VERSION}.tar.gz" --prefix=fapolicy-analyzer/
+
+vendor-py:
+	which spectool && spectool -gf -C /tmp/rpmbuild/SOURCES/ \$(spec) || true
 
 vendor-rs:
 	cargo check
