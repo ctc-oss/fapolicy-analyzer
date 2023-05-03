@@ -42,8 +42,6 @@ jobs:
     name: Vendor Source0
     container: registry.fedoraproject.org/fedora:rawhide
     runs-on: ubuntu-20.04
-    strategy:
-      matrix: ${{ fromJson(needs.config.outputs.matrix) }}
     steps:
       - name: Install deps
         run: dnf install -y git make
@@ -63,7 +61,7 @@ jobs:
 
       - name: Tag archive with spec version number
         run: |
-          version=$(shell grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
+          version=$(shell grep "Version:" fapolicy-analyzer.spec | tr -s ' ' | cut -d' ' -f2)
           mv fapolicy-analyzer.tar.gz "fapolicy-analyzer-$version.tar.gz"
 
       - name: Upload
