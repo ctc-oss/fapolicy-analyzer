@@ -18,6 +18,12 @@ Source12:      %{pypi_source setuptools 59.6.0}
 Source13:      %{pypi_source wheel 0.37.0}
 Source14:      %{pypi_source setuptools_scm 6.4.2}
 Source15:      %{pypi_source semantic_version 2.8.2}
+Source16:      %{pypi_source packaging 21.3}
+Source17:      %{pypi_source pyparsing 2.1.0}
+Source18:      %{pypi_source tomli 1.2.3}
+Source19:      %{pypi_source flit_core 3.7.1}
+Source20:      %{pypi_source typing_extensions 3.7.4.3}
+Source21:      %{pypi_source pytz 2022.7.1}
 
 BuildRequires: python3-devel
 BuildRequires: python3dist(babel)
@@ -131,7 +137,7 @@ ExcludeArch:   s390x %{power64}
 %global venv_dir        %{_builddir}/vendor-py
 %global venv_py3        %{venv_dir}/bin/python3
 %global venv_lib        %{venv_dir}/lib/python3.9/site-packages
-%global venv_install    %{venv_py3} -m pip install --find-links=%{_sourcedir} --quiet
+%global venv_install    %{venv_py3} -m pip install --find-links=%{_sourcedir} --no-index --quiet
 
 # pep440 versions handle dev and rc differently, so we call them out explicitly here
 %global module_version  %{lua: v = string.gsub(rpm.expand("%{?version}"), "~dev", ".dev"); \
