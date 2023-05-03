@@ -6,26 +6,18 @@ License:       GPL-3.0-or-later
 URL:           https://github.com/ctc-oss/fapolicy-analyzer
 Source0:       %{url}/releases/download/v%{version}/%{name}-%{version}.tar.gz
 
-# this tarball contains documentation used to generate help docs
+# vendored documentation sources, used to generate help docs
 Source1:       %{url}/releases/download/v%{version}/vendor-docs-%{version}.tar.gz
 
-# vendored dependencies for el9
+# vendored rust dependencies
 Source2:       %{url}/releases/download/v%{version}/vendor-rs-%{version}.tar.gz
 
-# Build-time python dependencies
+# Build-time python dependencies for setuptools-rust
 Source10:      %{pypi_source setuptools-rust 1.1.2}
-Source11:      %{pypi_source pip 21.3.1}
 Source12:      %{pypi_source setuptools 59.6.0}
 Source13:      %{pypi_source wheel 0.37.0}
 Source14:      %{pypi_source setuptools_scm 6.4.2}
 Source15:      %{pypi_source semantic_version 2.8.2}
-Source16:      %{pypi_source packaging 21.3}
-Source17:      %{pypi_source pyparsing 2.1.0}
-Source18:      %{pypi_source tomli 1.2.3}
-Source19:      %{pypi_source flit_core 3.7.1}
-Source20:      %{pypi_source typing_extensions 3.7.4.3}
-Source21:      %{pypi_source pytz 2022.7.1}
-
 
 BuildRequires: python3-devel
 BuildRequires: python3dist(babel)
@@ -69,7 +61,7 @@ ExcludeArch:   s390x %{power64}
 %global venv_dir        %{_builddir}/vendor-py
 %global venv_py3        %{venv_dir}/bin/python3
 %global venv_lib        %{venv_dir}/lib/python3.9/site-packages
-%global venv_install    %{venv_py3} -m pip install --find-links=%{_sourcedir} --no-index --quiet
+%global venv_install    %{venv_py3} -m pip install --find-links=%{_sourcedir} --quiet
 
 # pep440 versions handle dev and rc differently, so we call them out explicitly here
 %global module_version  %{lua: v = string.gsub(rpm.expand("%{?version}"), "~dev", ".dev"); \
@@ -85,31 +77,22 @@ Tools to assist with the configuration and management of fapolicyd.
 # define venv_py3 for accessing the venv python3 interpreter.
 %{python3} -m venv %{venv_dir}
 
-ln -sf  %{python3_sitelib}/tomli* %{venv_lib}
-
 # there exists a circular dependency between setuptools <-> wheel,
 # by calling setuptools/setup.py before pip'ing we can bypass that
 mkdir -p %{_builddir}/setuptools
 tar -xzf %{SOURCE12} -C %{_builddir}/setuptools --strip-components=1
 %{venv_py3} %{_builddir}/setuptools/setup.py -q install
-# now pip wheel, and setuptools again
+
+# now pip install wheel, and setuptools again
 %{venv_install} %{SOURCE13}
 %{venv_install} %{SOURCE12}
 
-# now pip install setuptools-rust and direct dependencies
+# install setuptools-rust
 %{venv_install} %{SOURCE10}
 
-# pip install other dependencies
-%{venv_install} %{SOURCE20}
-%{venv_install} %{SOURCE21}
-
-# babel can be linked from the system install
+# babel will be called directly by compile_catalog
+# link it to the venv from the system site-packages
 ln -sf  %{python3_sitelib}/{Babel*,babel} %{venv_lib}
-
-# now that installs are completed we can switch the venv back to the original pip
-# switching back will ensure the correct (patched) wheel packaging for use in our rpm
-rm -rf %{venv_lib}/pip*
-cp -r  %{python3_sitelib}/pip* %{venv_lib}
 
 # An issue with unpacking the vendored crates is that an unprivileged user
 # cannot write to the default registry at /usr/share/cargo/registry
