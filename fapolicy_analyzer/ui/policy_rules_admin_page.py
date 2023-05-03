@@ -50,7 +50,6 @@ from fapolicy_analyzer.util import acl, fs
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
-import datetime
 import time
 
 
