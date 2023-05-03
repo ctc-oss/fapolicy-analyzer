@@ -60,6 +60,7 @@ jobs:
           make -f .copr/Makefile vendor-app
 
       - name: Tag archive with version number
+        run: |
           tag="${{ steps.tag_name.outputs.VERSION }}"
           tag_version="${tag#v}"
           mv fapolicy-analyzer.tar.gz "fapolicy-analyzer-$tag_version.tar.gz"
