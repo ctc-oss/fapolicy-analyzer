@@ -212,3 +212,11 @@ UNKNOWN_TOOLTIP = _("File trust is unknown")
 ACCESS_ALLOWED_TOOLTIP = _("File access fully allowed")
 ACCESS_PARTIAL_TOOLTIP = _("File access partially allowed")
 ACCESS_DENIED_TOOLTIP = _("File access denied")
+TIME_FORMAT_CONFIG_TITLE = _("Syslog Format Check")
+SYSLOG_FORMAT_WARNING = _(
+    """
+No event time found. Please update /etc/rsyslog.conf then restart the syslog service
+regexp: "RSYSLOG_TraditionalFileFormat"
+replace: "RSYSLOG_FileFormat"
+    """
+)
