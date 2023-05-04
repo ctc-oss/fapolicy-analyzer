@@ -64,7 +64,7 @@ def time_format_config_dlg():
 
     label = Gtk.Label(label=SYSLOG_FORMAT_WARNING)
     hbox = dlgTimeFormatConfig.get_content_area()
-    label.set_justify(Gtk.Justification.CENTER)
+    label.set_justify(Gtk.Justification.LEFT)
     hbox.add(label)
     dlgTimeFormatConfig.show_all()
     dlgTimeFormatConfig.run()
@@ -154,7 +154,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         self._time_delay = -1
         self.__time_unit = "2"
         self.__time_number = 1
-
+        self.when_none = 0
         self.__switchers = [
             self.Switcher(
                 self.get_object("userPanel"),
@@ -402,9 +402,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             or self.__selection_state["group"] is not None
         ):
             last_subject = self.__selection_state["subjects"][-1]
-            when_none = sum([True for e in self.__log.by_subject(last_subject) if e.when() is None])
-            if when_none > 0 and self.__use_syslog:
-                time_format_config_dlg()
+            self.when_none = sum([True for e in self.__log.by_subject(last_subject) if e.when() is None])
             data = list(
                 {
                     e.object.file: {e.rule_id: e.object}
@@ -575,6 +573,9 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
     def on_timeSelectBtn_clicked(self, *args):
         def plural(count):
             return "s" if count > 1 else ""
+
+        if self.when_none:
+            time_format_config_dlg()
 
         time_dialog = TimeSelectDialog()
         time_dialog.set_time_unit(self.__time_unit)

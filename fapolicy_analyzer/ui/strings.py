@@ -215,7 +215,9 @@ ACCESS_DENIED_TOOLTIP = _("File access denied")
 TIME_FORMAT_CONFIG_TITLE = _("Syslog Format Check")
 SYSLOG_FORMAT_WARNING = _(
     """
-No event time found. Please update /etc/rsyslog.conf then restart the syslog service
+No event time found, time filtering will not work.
+Please update /etc/rsyslog.conf then restart the syslog service.
+
 regexp: "RSYSLOG_TraditionalFileFormat"
 replace: "RSYSLOG_FileFormat"
     """
