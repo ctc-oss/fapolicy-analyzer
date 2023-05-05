@@ -402,7 +402,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             or self.__selection_state["group"] is not None
         ):
             last_subject = self.__selection_state["subjects"][-1]
-            self.when_none = sum([True for e in self.__log.by_subject(last_subject) if e.when() is None])
+            self.when_none = any([e.when() is None for e in self.__log.by_subject(last_subject)])
             data = list(
                 {
                     e.object.file: {e.rule_id: e.object}
