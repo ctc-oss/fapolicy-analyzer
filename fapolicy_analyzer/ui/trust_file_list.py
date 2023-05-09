@@ -69,6 +69,7 @@ class TrustFileList(SearchableList):
             defaultSortDirection=Gtk.SortType.ASCENDING,
             selection_type="multi",
         )
+
         self.trust_func = trust_func
         self.markup_func = markup_func
         self.__executor = ThreadPoolExecutor(max_workers=100)
@@ -181,16 +182,19 @@ class TrustFileList(SearchableList):
 
             count = self._get_tree_count()
             if count < self.total:
-                pct = int(count / self.total * 100)
+                if self.show_trusted:
+                    pct = int(count / self.total * 100)
+                else:
+                    pct = int((1 - self.total / total) * 100)
                 self._update_loading_status(f(_("Loading trust {pct}% complete...")))
                 self._update_progress(pct)
                 return True
             else:
                 super(TrustFileList, self).load_store(store)
                 self._update_progress(100)
-                self.loading_sensitive = True
                 self.search.set_sensitive(True)
                 self.search.set_tooltip_text(None)
+                self.loading_sensitive = True
                 self.refresh_toolbar()
                 return False
 
@@ -217,9 +221,10 @@ class TrustFileList(SearchableList):
             for data in trust:
                 if event.is_set():
                     return
-                if self.show_trusted or data.status.lower() == "u":
+
+                if self.show_trusted or not data.status.lower() == "t":
                     self.__queue.put(self._row_data(data))
-                elif data.status.lower() == "t":
+                elif not self.show_trusted and data.status.lower() == "t":
                     self.total -= 1
 
         if not self.__event.is_set():

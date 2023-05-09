@@ -205,9 +205,6 @@ class MainWindow(UIConnectedWidget):
 
     def on_start(self, *args):
         logging.info("MainWindow::on_start()")
-        page = router(PAGE_SELECTION.TRUST_DATABASE_ADMIN)
-        page.systemTrustDbAdmin.trust_file_list.refresh_toolbar += self._refresh_toolbar
-        self.__pack_main_content(page)
         # On startup check for the existing of a tmp session file
         # If detected, alert the user, enable the File|Restore menu item
         if sessionManager.detect_previous_session():

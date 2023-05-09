@@ -14,6 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import gi
+from events import Events
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 
 import fapolicy_analyzer.ui.strings as strings
@@ -27,10 +28,12 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
 
 
-class DatabaseAdminPage(UIWidget, UIPage):
+class DatabaseAdminPage(UIWidget, UIPage, Events):
+
     def __init__(self):
         self.notebook = Gtk.Notebook()
         UIWidget.__init__(self, self.notebook)
+        Events.__init__(self)
         actions = {
             "toggle": [
                 UIAction(
@@ -43,13 +46,11 @@ class DatabaseAdminPage(UIWidget, UIPage):
             ],
         }
         UIPage.__init__(self, actions)
-
         self.ancillaryTrustDbAdmin = AncillaryTrustDatabaseAdmin()
         self.systemTrustDbAdmin = SystemTrustDatabaseAdmin()
         self.systemTrustDbAdmin.file_added_to_ancillary_trust += (
             self.on_added_to_ancillary_trust
         )
-
         self.notebook.append_page(
             self.systemTrustDbAdmin.get_ref(),
             Gtk.Label(label=strings.SYSTEM_TRUST_TAB_LABEL),
@@ -68,6 +69,7 @@ class DatabaseAdminPage(UIWidget, UIPage):
     def on_trust_toggle_clicked(self, *args):
         self.systemTrustDbAdmin.trust_file_list.show_trusted ^= True
         self.systemTrustDbAdmin.trust_file_list.loading_sensitive ^= True
+        self.systemTrustDbAdmin.trustFileDetails.clear()
         self.systemTrustDbAdmin.trust_file_list.refresh()
 
     def trust_toggle_sensitivity(self):

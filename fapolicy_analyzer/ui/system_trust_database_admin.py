@@ -125,7 +125,7 @@ class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
             self.__loading = False
             self.__loading_percent = 100
             if not self.trust_file_list.show_trusted:
-                n_entries = len([data for data in trust_state.trust if data.status.lower() == "u"])
+                n_entries = len([data for data in trust_state.trust if not data.status.lower() == "t"])
                 self.trust_file_list.total = n_entries
                 if n_entries == 0:
                     self.set_label_display()
