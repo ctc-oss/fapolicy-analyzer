@@ -67,7 +67,7 @@ def test_get_entry_dict(widget):
 
 def test_make_profiling_args(widget):
     widget.update_input_fields("ls", "root", "/tmp", "FOO=BAR,BAZ=BOO")
-    profiling_args = widget.make_profiling_args()
+    profiling_args = widget._make_profiling_args()
     assert profiling_args.get("cmd") == "ls"
     assert profiling_args.get("uid") == "root"
     assert profiling_args.get("pwd") == "/tmp"
@@ -107,7 +107,7 @@ def test_on_tick(widget):
 
 def test_start_click(widget, mock_dispatch):
     widget.update_input_fields("ls", "root", "/tmp", None)
-    profiling_args = widget.make_profiling_args()
+    profiling_args = widget._make_profiling_args()
 
     widget.on_start_clicked()
     mock_dispatch.assert_called_with(
@@ -118,7 +118,7 @@ def test_start_click(widget, mock_dispatch):
 
 def test_start_click_with_env(widget, mock_dispatch):
     widget.update_input_fields("ls", "root", "/tmp", "FOO=BAR,BAZ=BOO")
-    profiling_args = widget.make_profiling_args()
+    profiling_args = widget._make_profiling_args()
 
     widget.on_start_clicked()
     mock_dispatch.assert_called_with(
