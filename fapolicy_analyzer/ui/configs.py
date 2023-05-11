@@ -34,5 +34,5 @@ class FontWeights:
 
 
 class Sizing:
-    POLICY_BOTTOM_BOX = 0.2
+    POLICY_BOTTOM_BOX = 0.3
     PROFILER_TEXT_ENTRY = 0.7
