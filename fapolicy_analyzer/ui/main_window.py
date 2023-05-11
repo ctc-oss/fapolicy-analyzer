@@ -388,10 +388,6 @@ class MainWindow(UIConnectedWidget):
 
     def on_syslogMenu_activate(self, *args):
         page = router(PAGE_SELECTION.ANALYZE_SYSLOG, True)
-        height = self.get_object("mainWindow").get_size()[1]
-        page.get_object("botBox").set_property(
-            "height_request", int(height * Sizing.POLICY_BOTTOM_BOX)
-        )
         self.__pack_main_content(page)
 
     def on_analyzeMenu_activate(self, *args):
@@ -404,10 +400,6 @@ class MainWindow(UIConnectedWidget):
         if path.isfile(_file):
             page = router(PAGE_SELECTION.ANALYZE_FROM_DEBUG, False, _file)
             page.object_list.rule_view_activate += self.on_rulesAdminMenu_activate
-            height = self.get_object("mainWindow").get_size()[1]
-            page.get_object("botBox").set_property(
-                "height_request", int(height * Sizing.POLICY_BOTTOM_BOX)
-            )
             self.__pack_main_content(page)
 
         fcd.destroy()
