@@ -39,6 +39,8 @@ from fapolicy_analyzer.ui.strings import (
     GROUPS_LABEL,
     OPEN_FILE_LABEL,
     PARSE_EVENT_LOG_ERROR_MSG,
+    SYSLOG_FORMAT_WARNING,
+    TIME_FORMAT_CONFIG_TITLE,
     USER_LABEL,
     USERS_LABEL,
 )
@@ -50,8 +52,23 @@ from fapolicy_analyzer.util import acl, fs
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
-import datetime
 import time
+
+
+def time_format_config_dlg():
+
+    dlgTimeFormatConfig = Gtk.Dialog(
+        title=TIME_FORMAT_CONFIG_TITLE
+    )
+    dlgTimeFormatConfig.add_buttons(Gtk.STOCK_OK, Gtk.ResponseType.OK)
+
+    label = Gtk.Label(label=SYSLOG_FORMAT_WARNING)
+    hbox = dlgTimeFormatConfig.get_content_area()
+    label.set_justify(Gtk.Justification.LEFT)
+    hbox.add(label)
+    dlgTimeFormatConfig.show_all()
+    dlgTimeFormatConfig.run()
+    dlgTimeFormatConfig.destroy()
 
 
 class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
@@ -137,7 +154,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         self._time_delay = -1
         self.__time_unit = "2"
         self.__time_number = 1
-
+        self.when_none = 0
         self.__switchers = [
             self.Switcher(
                 self.get_object("userPanel"),
@@ -385,6 +402,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             or self.__selection_state["group"] is not None
         ):
             last_subject = self.__selection_state["subjects"][-1]
+            self.when_none = any([e.when() is None for e in self.__log.by_subject(last_subject)])
             data = list(
                 {
                     e.object.file: {e.rule_id: e.object}
@@ -447,8 +465,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         ):
             self.__events_loading = False
             self.__log = eventsState.log
-            utc = int(datetime.datetime.utcnow().timestamp())
-            tzdelta = int(time.time()) - utc
+            tzdelta = int(time.localtime().tm_gmtoff)
             if self._time_delay < 0:
                 self.__log.begin(int(time.time()) + tzdelta - 3600)
             else:
@@ -556,6 +573,9 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
     def on_timeSelectBtn_clicked(self, *args):
         def plural(count):
             return "s" if count > 1 else ""
+
+        if self.when_none:
+            time_format_config_dlg()
 
         time_dialog = TimeSelectDialog()
         time_dialog.set_time_unit(self.__time_unit)
