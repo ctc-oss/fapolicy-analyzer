@@ -78,12 +78,6 @@ def EnumErrorPairs2Str(dictStatusEnums):
 # ProfilerPage methods
 class ProfilerPage(UIConnectedWidget, UIPage, Events):
     def __init__(self, fapd_manager):
-        # Profiler Page expanded atributes
-        self._cmd = None
-        self._arg = None
-        self._uid = None
-        self._pwd = None
-        self._env = None
 
         UIConnectedWidget.__init__(
             self, get_profiling_feature(), on_next=self.on_event
@@ -237,17 +231,17 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
     def get_entry_dict(self):
         """ Get Profiler UI field contents and set object attributes
         """
-        self._cmd = self.get_cmd_text()
-        self._arg = self.get_arg_text()
-        self._uid = self.get_uid_text()
-        self._pwd = self.get_pwd_text()
-        self._env = self.get_env_text()
+        cmd = self.get_cmd_text()
+        arg = self.get_arg_text()
+        uid = self.get_uid_text()
+        pwd = self.get_pwd_text()
+        env = self.get_env_text()
         return {
-            "cmd": self._cmd if self._cmd else None,
-            "arg": self._arg if self._arg else None,
-            "uid": self._uid if self._uid else None,
-            "pwd": self._pwd if self._pwd else None,
-            "env": self._env if self._env else None,
+            "cmd": cmd if cmd else None,
+            "arg": arg if arg else None,
+            "uid": uid if uid else None,
+            "pwd": pwd if pwd else None,
+            "env": env if env else None,
         }
 
     def get_entry_dict_markup(self):
@@ -415,7 +409,7 @@ class FaProfArgs:
                 )
         else:
             # If valid user is specified and working dir is not, use user's HOME
-            if user_pw_record:
+            if user_pw_record and user_pw_record.pw_dir:
                 exec_pwd = user_pw_record.pw_dir
             else:
                 exec_pwd = os.getcwd()
@@ -493,16 +487,17 @@ def _expand_user_home(str_in, user, home):
     """Expand $HOME and $USER strings in the str_in string"""
     logging.debug(f"_expand_user_home({str_in}, {user}, {home})")
     if user:
-        str_in = re.sub(r"\$USER", user, str_in)
+        str_in = re.sub(r"\$USER|\${USER}", user, str_in)
     if home:
-        str_in = re.sub(r"\$HOME", home, str_in)
+        str_in = re.sub(r"\$HOME|\${HOME}", home, str_in)
     logging.debug(f"Return: {str_in}")
     return str_in
 
 
-def _args_user_home_expansion(dict_args):
+def _args_user_home_expansion(dict_args_in):
     """Expand $HOME and $USER strings in the pwd, env, and arg fields"""
-    logging.debug(f"_args_user_home_expansion(in): {dict_args}")
+    logging.debug(f"_args_user_home_expansion(in): {dict_args_in}")
+    dict_args = dict(dict_args_in)
     if dict_args["uid"]:
         # Use specified user and verify it is valid
         username = dict_args["uid"]
