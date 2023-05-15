@@ -56,9 +56,11 @@ jobs:
         with:
           python-version: 3.6
       - name: Format check with black
-        uses: rickstaa/action-black@v1
+        uses: psf/black@stable
         with:
-          black_args: "fapolicy_analyzer/ --check --diff -t py36"
+          options: "--check --diff -t py36"
+          src: "./fapolicy_analyzer"
+          version: "~= 22.0"
 
   ui_lint:
     name: UI Lint
