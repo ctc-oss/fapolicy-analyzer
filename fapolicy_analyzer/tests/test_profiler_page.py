@@ -23,13 +23,14 @@ from fapolicy_analyzer.ui.actions import (
     PROFILING_KILL_REQUEST,
     PROFILER_CLEAR_STATE_CMD,
     START_PROFILING_REQUEST,
-    ADD_NOTIFICATION
+    ADD_NOTIFICATION,
 )
 from fapolicy_analyzer.ui.reducers.profiler_reducer import profiler_state, ProfilerState
 from fapolicy_analyzer.ui.store import init_store
 from mocks import mock_System
 from fapolicy_analyzer.ui.profiler_page import ProfilerPage
 from fapolicy_analyzer.ui.fapd_manager import FapdManager
+
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
 
@@ -79,8 +80,7 @@ def test_stop_profiling_click(widget, mock_dispatch):
     widget.on_stop_clicked()
     assert widget.can_stop is False
     mock_dispatch.assert_called_with(
-        InstanceOf(Action)
-        & Attrs(type=PROFILING_KILL_REQUEST, payload=None)
+        InstanceOf(Action) & Attrs(type=PROFILING_KILL_REQUEST, payload=None)
     )
 
 
@@ -92,8 +92,7 @@ def test_clear_state_click(widget, mock_dispatch):
     assert widget.get_pwd_text() is None
     assert widget.get_env_text() is None
     mock_dispatch.assert_called_with(
-        InstanceOf(Action)
-        & Attrs(type=PROFILER_CLEAR_STATE_CMD, payload=None)
+        InstanceOf(Action) & Attrs(type=PROFILER_CLEAR_STATE_CMD, payload=None)
     )
 
 
@@ -111,8 +110,7 @@ def test_start_click(widget, mock_dispatch):
 
     widget.on_start_clicked()
     mock_dispatch.assert_called_with(
-        InstanceOf(Action)
-        & Attrs(type=START_PROFILING_REQUEST, payload=profiling_args)
+        InstanceOf(Action) & Attrs(type=START_PROFILING_REQUEST, payload=profiling_args)
     )
 
 
@@ -122,33 +120,23 @@ def test_start_click_with_env(widget, mock_dispatch):
 
     widget.on_start_clicked()
     mock_dispatch.assert_called_with(
-        InstanceOf(Action)
-        & Attrs(type=START_PROFILING_REQUEST, payload=profiling_args)
+        InstanceOf(Action) & Attrs(type=START_PROFILING_REQUEST, payload=profiling_args)
     )
 
 
 def test_start_click_with_bad_cmd(widget, mock_dispatch):
     widget.update_input_fields("xX_Xx", "root", "/tmp", "FOO=BAR,BAZ=BOO")
     widget.on_start_clicked()
-    mock_dispatch.assert_called_with(
-        InstanceOf(Action)
-        & Attrs(type=ADD_NOTIFICATION)
-    )
+    mock_dispatch.assert_called_with(InstanceOf(Action) & Attrs(type=ADD_NOTIFICATION))
 
 
 def test_start_click_with_bad_env(widget, mock_dispatch):
     widget.update_input_fields("ls", "root", "/tmp", "FOO")
     widget.on_start_clicked()
-    mock_dispatch.assert_called_with(
-        InstanceOf(Action)
-        & Attrs(type=ADD_NOTIFICATION)
-    )
+    mock_dispatch.assert_called_with(InstanceOf(Action) & Attrs(type=ADD_NOTIFICATION))
 
 
 def test_start_click_with_bad_uid(widget, mock_dispatch):
     widget.update_input_fields("ls", "foooooo", "/tmp", "FOO")
     widget.on_start_clicked()
-    mock_dispatch.assert_called_with(
-        InstanceOf(Action)
-        & Attrs(type=ADD_NOTIFICATION)
-    )
+    mock_dispatch.assert_called_with(InstanceOf(Action) & Attrs(type=ADD_NOTIFICATION))

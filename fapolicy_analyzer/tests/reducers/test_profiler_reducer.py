@@ -36,30 +36,34 @@ def test_handle_profiler_exec():
 def test_handle_profiler_tick():
     original = profiler_state(ProfilerState, cmd="foo")
     res = handle_profiler_tick(original, MagicMock(payload=999))
-    assert res == derive_profiler_state(ProfilerState, original, cmd="foo", duration=999)
+    assert res == derive_profiler_state(
+        ProfilerState, original, cmd="foo", duration=999
+    )
 
 
 def test_handle_clear_profiler_state():
     original = profiler_state(ProfilerState, cmd="foo", uid="root", pwd="/")
     res = handle_clear_profiler_state(original, MagicMock())
-    assert res == derive_profiler_state(ProfilerState, original, cmd=None, uid=None, pwd=None)
+    assert res == derive_profiler_state(
+        ProfilerState, original, cmd=None, uid=None, pwd=None
+    )
 
 
 def test_handle_start_profiling_request():
     args = {"cmd": "foo", "uid": "root"}
-    res = handle_start_profiling_request(empty_profiler_state(), MagicMock(payload=args))
+    res = handle_start_profiling_request(
+        empty_profiler_state(), MagicMock(payload=args)
+    )
     assert res == profiler_state(ProfilerState, uid="root")
 
     args = {"cmd": "foo", "pwd": "/"}
     res = handle_start_profiling_request(
-        empty_profiler_state(),
-        MagicMock(payload=args)
+        empty_profiler_state(), MagicMock(payload=args)
     )
     assert res == profiler_state(ProfilerState, pwd="/")
 
     args = {"cmd": "foo", "uid": "root", "pwd": "/"}
     res = handle_start_profiling_request(
-        empty_profiler_state(),
-        MagicMock(payload=args)
+        empty_profiler_state(), MagicMock(payload=args)
     )
     assert res == profiler_state(ProfilerState, uid="root", pwd="/")

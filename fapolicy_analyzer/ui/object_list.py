@@ -44,16 +44,12 @@ class ObjectList(SubjectList, Events):
         columns = super()._columns()
 
         rule_cell = Gtk.CellRendererText(background=Colors.LIGHT_GRAY)
-        rule_column = Gtk.TreeViewColumn(
-            FILE_LIST_RULE_ID_HEADER, rule_cell, markup=7
-        )
+        rule_column = Gtk.TreeViewColumn(FILE_LIST_RULE_ID_HEADER, rule_cell, markup=7)
         rule_column.set_sort_column_id(7)
         columns.insert(0, rule_column)
 
         perm_cell = Gtk.CellRendererText(background=Colors.LIGHT_GRAY, xalign=0.5)
-        perm_column = Gtk.TreeViewColumn(
-            FILE_LIST_PERM_HEADER, perm_cell, markup=6
-        )
+        perm_column = Gtk.TreeViewColumn(FILE_LIST_PERM_HEADER, perm_cell, markup=6)
         perm_column.set_sort_column_id(6)
         columns.insert(2, perm_column)
         return columns
@@ -102,9 +98,13 @@ class ObjectList(SubjectList, Events):
                 [o.perm],
             )
             access = self.__markup(o.access.upper(), ["A", "D"])
-            bg_color, txt_color, access_tooltip = self.__colors(o.access, o.trust_status, o.trust)
+            bg_color, txt_color, access_tooltip = self.__colors(
+                o.access, o.trust_status, o.trust
+            )
             tooltip = status_tooltip + "\n" + access_tooltip
-            store.append([status, access, o.file, o, bg_color, txt_color, perm, i, tooltip])
+            store.append(
+                [status, access, o.file, o, bg_color, txt_color, perm, i, tooltip]
+            )
 
         # call grandfather SearchableList's load_store method
         super(SubjectList, self).load_store(store)

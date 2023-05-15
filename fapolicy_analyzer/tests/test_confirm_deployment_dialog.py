@@ -73,7 +73,11 @@ def test_load_rules(mocker):
         "fapolicy_analyzer.ui.rules.rules_difference_dialog.rules_difference",
         return_value="+allow perm=any all : all\n-deny perm=any all : all",
     )
-    widget = ConfirmDeploymentDialog([changeset], MagicMock(), MagicMock(), Gtk.Window())
+    widget = ConfirmDeploymentDialog(
+        [changeset], MagicMock(), MagicMock(), Gtk.Window()
+    )
     view = widget.get_object("changesTreeView")
     rows = [x for x in view.get_model()]
-    assert (CHANGESET_ACTION_RULES, "1 addition and 1 removal made") in [(r[0], r[1]) for r in rows]
+    assert (CHANGESET_ACTION_RULES, "1 addition and 1 removal made") in [
+        (r[0], r[1]) for r in rows
+    ]

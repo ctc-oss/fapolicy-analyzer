@@ -45,7 +45,7 @@ select_init_feature_module = select_feature(INIT_FEATURE)
 
 def create_init_feature() -> ReduxFeatureModule:
     """
-        Constructs a new sample feature
+    Constructs a new sample feature
     """
 
     def handle_init_action(state: Any, action: Action) -> Any:
@@ -53,10 +53,14 @@ def create_init_feature() -> ReduxFeatureModule:
 
     sample_reducer = handle_actions({ADD_INIT_ACTION: handle_init_action})
 
-    add_epic = pipe(of_type(ADD_INIT_ACTION), ignore_elements(),)
+    add_epic = pipe(
+        of_type(ADD_INIT_ACTION),
+        ignore_elements(),
+    )
 
     init_epic = pipe(
-        of_init_feature(INIT_FEATURE), map(lambda x: add_init_action("init")),
+        of_init_feature(INIT_FEATURE),
+        map(lambda x: add_init_action("init")),
     )
 
     sample_epic = combine_epics(add_epic, init_epic)

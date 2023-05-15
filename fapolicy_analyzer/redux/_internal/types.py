@@ -21,8 +21,7 @@
 """
     Module doc
 """
-from typing import (Any, Callable, Iterable, Mapping, NamedTuple, Optional,
-                    TypeVar)
+from typing import Any, Callable, Iterable, Mapping, NamedTuple, Optional, TypeVar
 
 from rx import Observable
 from rx.core.typing import OnCompleted
@@ -35,7 +34,7 @@ ReduxRootState = Mapping[str, StateType]
 
 
 class Action(NamedTuple):
-    """ Action implementation that takes a payload """
+    """Action implementation that takes a payload"""
 
     type: str
     """Identifier for the action, must be globally unique."""
@@ -50,12 +49,12 @@ Reducer = Callable[[StateType, Action], StateType]
 
 
 class ReduxFeatureModule(NamedTuple):
-    """ Defines the feature module. The ID identifies the section in the state and
-        is also used to globally discriminate features.
+    """Defines the feature module. The ID identifies the section in the state and
+    is also used to globally discriminate features.
 
-        After instantiating a feature store the store will fire an initialization action
-        for that feature. Use :py:meth:`~redux.of_init_feature` to
-        register for these initialization actions.
+    After instantiating a feature store the store will fire an initialization action
+    for that feature. Use :py:meth:`~redux.of_init_feature` to
+    register for these initialization actions.
     """
 
     id: str
@@ -72,8 +71,8 @@ class ReduxFeatureModule(NamedTuple):
 
 
 class ReduxRootStore(NamedTuple):
-    """ Implementation of a store that manages sub-state as features. Features are added
-        to the store automatically, when required by the select method.
+    """Implementation of a store that manages sub-state as features. Features are added
+    to the store automatically, when required by the select method.
     """
 
     as_observable: Callable[[], Observable]

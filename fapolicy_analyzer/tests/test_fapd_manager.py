@@ -57,9 +57,7 @@ def test_stop_online(fapdManager, mocker):
 
 
 def test_stop_online_w_exception(fapdManager, mocker):
-    mockDispatch = mocker.patch(
-        "fapolicy_analyzer.ui.fapd_manager.dispatch"
-    )
+    mockDispatch = mocker.patch("fapolicy_analyzer.ui.fapd_manager.dispatch")
 
     mockFapdHandle = MagicMock()
     fapdManager._fapd_ref = mockFapdHandle
@@ -99,8 +97,7 @@ def test_start_profiling(fapdManager, mocker):
     fapdManager._fapd_ref.is_active.return_value = True
     mockProcess = MagicMock()
     mocker.patch(
-        "fapolicy_analyzer.ui.fapd_manager.subprocess.Popen",
-        return_value=mockProcess
+        "fapolicy_analyzer.ui.fapd_manager.subprocess.Popen", return_value=mockProcess
     )
     fapdManager.mode = FapdMode.ONLINE
     fapdManager.start(FapdMode.PROFILING)
@@ -155,8 +152,7 @@ def test_initial_daemon_status(fapdManager, mocker):
 
 def test_initial_daemon_status_w_exception(mocker):
     mocker.patch(
-        "fapolicy_analyzer.ui.fapd_manager.Handle.is_valid",
-        side_effect=IOError()
+        "fapolicy_analyzer.ui.fapd_manager.Handle.is_valid", side_effect=IOError()
     )
 
     with pytest.raises(IOError):
@@ -165,8 +161,7 @@ def test_initial_daemon_status_w_exception(mocker):
 
 def test_initial_daemon_status_w_invalid_handle(mocker):
     mocker.patch(
-        "fapolicy_analyzer.ui.fapd_manager.Handle.is_valid",
-        return_value=False
+        "fapolicy_analyzer.ui.fapd_manager.Handle.is_valid", return_value=False
     )
 
     fapdManager = FapdManager(True)

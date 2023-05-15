@@ -35,8 +35,9 @@ from .types import Epic
 logger = getLogger(__name__)
 
 
-def _wrapped_epic(epic: Mapper[Observable, Observable],
-                  action_: Observable, _: Observable) -> Observable:
+def _wrapped_epic(
+    epic: Mapper[Observable, Observable], action_: Observable, _: Observable
+) -> Observable:
     return epic(action_)
 
 
@@ -59,14 +60,14 @@ def _run_epic(action_: Observable, state_: Observable, epic: Epic) -> Observable
 
 
 def run_epic(action_: Observable, state_: Observable) -> Mapper[Epic, Observable]:
-    """ Runs a single epic agains the given action and state observables
+    """Runs a single epic agains the given action and state observables
 
-        Args:
-            action_: the action observable
-            state_: the state observable
+    Args:
+        action_: the action observable
+        state_: the state observable
 
-        Returns:
-            A callback function that will run the given epic on the observables
+    Returns:
+        A callback function that will run the given epic on the observables
     """
 
     assert isinstance(action_, Observable)
@@ -76,28 +77,27 @@ def run_epic(action_: Observable, state_: Observable) -> Mapper[Epic, Observable
 
 
 def _combine_epics(
-    norm_epics: Iterable[Epic],
-    action_: Observable, state_: Observable
+    norm_epics: Iterable[Epic], action_: Observable, state_: Observable
 ) -> Observable:
-    """ Merges the epics into one
+    """Merges the epics into one
 
-        Args:
-            action_: the action observable
-            state_: the state observable
+    Args:
+        action_: the action observable
+        state_: the state observable
 
-        Returns:
-            the merged epic
+    Returns:
+        the merged epic
     """
     return merge(*map(run_epic(action_, state_), norm_epics))
 
 
 def combine_epics(*epics: Iterable[Epic]) -> Epic:
-    """ Combines a sequence of epics into one single epic by merging them
+    """Combines a sequence of epics into one single epic by merging them
 
-        Args:
-            epics: the epics to merge
+    Args:
+        epics: the epics to merge
 
-        Returns:
-            The merged epic
+    Returns:
+        The merged epic
     """
     return partial(_combine_epics, tuple(map(normalize_epic, epics)))
