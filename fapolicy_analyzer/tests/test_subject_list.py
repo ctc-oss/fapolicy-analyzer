@@ -27,8 +27,7 @@ from fapolicy_analyzer.ui.actions import APPLY_CHANGESETS
 from fapolicy_analyzer.ui.changeset_wrapper import TrustChangeset
 from fapolicy_analyzer.ui.configs import Colors
 from fapolicy_analyzer.ui.strings import FILE_LABEL, FILES_LABEL
-from fapolicy_analyzer.ui.subject_list import (_TRUST_RESP, _UNTRUST_RESP,
-                                               SubjectList)
+from fapolicy_analyzer.ui.subject_list import _TRUST_RESP, _UNTRUST_RESP, SubjectList
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gdk, Gtk  # isort: skip

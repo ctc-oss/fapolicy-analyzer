@@ -29,7 +29,7 @@ from fapolicy_analyzer.redux import (
     create_feature_module,
     ReduxFeatureModule,
     combine_epics,
-    of_type
+    of_type,
 )
 from fapolicy_analyzer.ui.actions import (
     profiling_started,
@@ -42,7 +42,7 @@ from fapolicy_analyzer.ui.actions import (
     profiler_initialization_error,
     START_PROFILING_REQUEST,
     PROFILING_KILL_REQUEST,
-    profiler_termination_error
+    profiler_termination_error,
 )
 from fapolicy_analyzer.ui.reducers import profiler_reducer
 from fapolicy_analyzer.ui.strings import PROFILER_EXEC_ERROR, PROFILER_INIT_ERROR
@@ -150,13 +150,13 @@ def create_profiler_feature(dispatch: Callable) -> ReduxFeatureModule:
     start_profiling_epic = pipe(
         of_type(START_PROFILING_REQUEST),
         map(_start_profiling),
-        catch(lambda e, source: of(profiler_initialization_error(str(e))))
+        catch(lambda e, source: of(profiler_initialization_error(str(e)))),
     )
 
     kill_profiler_epic = pipe(
         of_type(PROFILING_KILL_REQUEST),
         map(_kill_profiler),
-        catch(lambda e, source: of(profiler_termination_error(str(e))))
+        catch(lambda e, source: of(profiler_termination_error(str(e)))),
     )
 
     profiler_epic = combine_epics(
@@ -164,4 +164,6 @@ def create_profiler_feature(dispatch: Callable) -> ReduxFeatureModule:
         kill_profiler_epic,
     )
 
-    return create_feature_module(PROFILING_FEATURE, profiler_reducer, epic=profiler_epic)
+    return create_feature_module(
+        PROFILING_FEATURE, profiler_reducer, epic=profiler_epic
+    )

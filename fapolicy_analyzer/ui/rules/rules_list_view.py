@@ -151,7 +151,10 @@ class RulesListView(SearchableList):
 
     def restore_row_collapse(self):
         def toggle_collapse(store, treepath, treeiter):
-            self.treeView.collapse_row(treepath) if store[treeiter][7] else self.treeView.expand_row(treepath, False)
+            self.treeView.collapse_row(treepath) if store[treeiter][
+                7
+            ] else self.treeView.expand_row(treepath, False)
+
         if self.model is not None:
             self.model.foreach(toggle_collapse)
 
@@ -190,4 +193,6 @@ class RulesListView(SearchableList):
                         self.__append_info(store, rule, info, rule_row)
 
         self.load_store(store)
-        self.__set_default_view(store) if self.reset_default_view else self.restore_row_collapse()
+        self.__set_default_view(
+            store
+        ) if self.reset_default_view else self.restore_row_collapse()
