@@ -46,6 +46,16 @@ jobs:
           pipenv run python setup.py bdist_wheel
           echo ::set-output name=virt_env::$(pipenv --venv)
 
+  ui_format_check:
+    name: UI formatter check
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: Format check with black
+        uses: rickstaa/action-black@v1
+        with:
+          black_args: ". --check --diff"
+
   ui_lint:
     name: UI Lint
     runs-on: ubuntu-20.04
