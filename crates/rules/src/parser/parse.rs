@@ -50,7 +50,7 @@ pub(crate) fn dir_type(i: StrTrace) -> TraceResult<DirType> {
         Ok((r, v)) if v.current == "systemdirs" => Ok((r, DirType::SystemDirs)),
         Ok((r, v)) if v.current == "untrusted" => Ok((r, DirType::Untrusted)),
         Ok((r, v)) if v.current.starts_with("/") => Ok((r, DirType::Path(v.current.to_string()))),
-        Ok((_, _)) => Err(nom::Err::Error(ExpectedAbsoluteDirPath(i))),
+        Ok((_, _)) => Err(nom::Err::Error(ExpectedDirPath(i))),
         Err(e) => Err(e),
     }
 }
@@ -131,12 +131,12 @@ mod tests {
 
         assert_matches!(
             dir_type("reldir/".into()),
-            Err(nom::Err::Error(ExpectedAbsoluteDirPath(_)))
+            Err(nom::Err::Error(ExpectedDirPath(_)))
         );
 
         assert_matches!(
             dir_type("./reldir/".into()),
-            Err(nom::Err::Error(ExpectedAbsoluteDirPath(_)))
+            Err(nom::Err::Error(ExpectedDirPath(_)))
         );
     }
 }
