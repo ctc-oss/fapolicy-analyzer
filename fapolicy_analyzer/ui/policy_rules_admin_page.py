@@ -627,6 +627,17 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             return self.__primary
 
         def set_as_primary(self):
+            parent = self.__panel.get_parent().get_parent()
+            child1 = parent.get_child1()
+            child2 = parent.get_child2()
+            parent.remove(child1)
+            parent.remove(child2)
+            parent.pack1(child2)
+            parent.pack2(child1)
+            parent.get_parent().set_position(700)
+            parent.set_position(250)
+            parent.show_all()
+           # self.__panel.get_children()[0].get_parent().reorder_child(self.__panel, 0)
             self.__primary = True
             for x in self.__lists:
                 lst = x["list"]

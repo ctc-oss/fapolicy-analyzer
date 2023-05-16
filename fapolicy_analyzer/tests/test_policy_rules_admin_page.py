@@ -147,7 +147,7 @@ def activeSwitcherButton(widget):
 
 
 def test_creates_widget(widget):
-    assert type(widget.get_ref()) is Gtk.Paned
+    assert type(widget.get_ref()) is Gtk.Box
 
 
 def test_loads_debug_file(mock_dispatch):
@@ -193,9 +193,10 @@ def test_adds_object_tabs(widget):
 def test_switches_acl_subject_columns(widget, activeSwitcherButton):
     aclColumn = widget.get_object("userPanel")
     subjectColumn = widget.get_object("subjectPanel")
-    children = widget.get_ref().get_children()[0].get_children()[1].get_children()
-    assert children[0] == aclColumn
-    assert children[1] == subjectColumn
+    children = widget.get_ref().get_children()[1].get_children()[0].get_children()
+    print(children)
+    assert children[0].get_children()[0] == aclColumn
+    assert children[1].get_children()[0] == subjectColumn
     activeSwitcherButton.clicked()
     children = widget.get_ref().get_children()[0].get_children()[1].get_children()
     assert children[0] == subjectColumn
