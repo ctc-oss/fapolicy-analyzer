@@ -11,6 +11,7 @@ use nom::bytes::complete::tag;
 
 use nom::character::complete::{alpha1, multispace0};
 
+use crate::dir_type::DirType;
 use nom::sequence::{delimited, terminated};
 
 use crate::object::Part as ObjPart;
@@ -33,7 +34,7 @@ fn obj_part(i: StrTrace) -> TraceResult<ObjPart> {
             .map_err(|_: nom::Err<TraceError>| nom::Err::Error(ExpectedFilePath(i))),
 
         "dir" => filepath(ii)
-            .map(|(ii, d)| (ii, ObjPart::Dir(d.current.to_string())))
+            .map(|(ii, d)| (ii, ObjPart::Dir(DirType::Path(d.current.to_string()))))
             .map_err(|_: nom::Err<TraceError>| nom::Err::Error(ExpectedDirPath(i))),
 
         "ftype" => filetype(ii)
