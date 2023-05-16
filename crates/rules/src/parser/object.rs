@@ -11,7 +11,6 @@ use nom::bytes::complete::tag;
 
 use nom::character::complete::{alpha1, multispace0};
 
-use crate::dir_type::DirType;
 use nom::sequence::{delimited, terminated};
 
 use crate::object::Part as ObjPart;
@@ -76,6 +75,7 @@ pub(crate) fn parse(i: StrTrace) -> TraceResult<Object> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::dir_type::DirType;
     use assert_matches::assert_matches;
 
     #[test]

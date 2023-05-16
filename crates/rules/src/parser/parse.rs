@@ -49,7 +49,7 @@ pub(crate) fn dir_type(i: StrTrace) -> TraceResult<DirType> {
         Ok((r, v)) if v.current == "execdirs" => Ok((r, DirType::ExecDirs)),
         Ok((r, v)) if v.current == "systemdirs" => Ok((r, DirType::SystemDirs)),
         Ok((r, v)) if v.current == "untrusted" => Ok((r, DirType::Untrusted)),
-        Ok((r, v)) if v.current.starts_with("/") => Ok((r, DirType::Path(v.current.to_string()))),
+        Ok((r, v)) if v.current.starts_with('/') => Ok((r, DirType::Path(v.current.to_string()))),
         Ok((_, _)) => Err(nom::Err::Error(ExpectedDirPath(i))),
         Err(e) => Err(e),
     }
