@@ -634,10 +634,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             parent.remove(child2)
             parent.pack1(child2)
             parent.pack2(child1)
-            parent.get_parent().set_position(700)
-            parent.set_position(250)
             parent.show_all()
-           # self.__panel.get_children()[0].get_parent().reorder_child(self.__panel, 0)
             self.__primary = True
             for x in self.__lists:
                 lst = x["list"]
@@ -657,3 +654,5 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
                 lst.get_ref().set_sensitive(False)
                 lst.load_store([])
                 self.__switch_change_handlers(lst, x["event"], x["secondaryHandler"])
+
+        
