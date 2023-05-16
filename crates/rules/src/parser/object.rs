@@ -19,7 +19,9 @@ use crate::parser::error::RuleParseError::*;
 
 use crate::Object;
 
-use crate::parser::parse::{filepath, filetype, trust_flag, StrTrace, TraceError, TraceResult};
+use crate::parser::parse::{
+    dir_type, filepath, filetype, trust_flag, StrTrace, TraceError, TraceResult,
+};
 
 fn obj_part(i: StrTrace) -> TraceResult<ObjPart> {
     let (ii, x) = alt((tag("all"), terminated(alpha1, tag("="))))(i)
@@ -32,8 +34,8 @@ fn obj_part(i: StrTrace) -> TraceResult<ObjPart> {
             .map(|(ii, d)| (ii, ObjPart::Device(d.current.to_string())))
             .map_err(|_: nom::Err<TraceError>| nom::Err::Error(ExpectedFilePath(i))),
 
-        "dir" => filepath(ii)
-            .map(|(ii, d)| (ii, ObjPart::Dir(d.current.to_string())))
+        "dir" => dir_type(ii)
+            .map(|(ii, d)| (ii, ObjPart::Dir(d)))
             .map_err(|_: nom::Err<TraceError>| nom::Err::Error(ExpectedDirPath(i))),
 
         "ftype" => filetype(ii)
@@ -73,6 +75,7 @@ pub(crate) fn parse(i: StrTrace) -> TraceResult<Object> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::dir_type::DirType;
     use assert_matches::assert_matches;
 
     #[test]
@@ -108,6 +111,18 @@ mod tests {
         assert_matches!(
             obj_part("foo=/tmp".into()).err(),
             Some(nom::Err::Error(UnknownObjectPart(_)))
+        );
+    }
+
+    #[test]
+    fn dir_types() {
+        assert_matches!(
+            obj_part("dir=/tmp".into()).ok().map(|f| f.1),
+            Some(ObjPart::Dir(DirType::Path(_)))
+        );
+        assert_matches!(
+            obj_part("dir=tmp".into()).err(),
+            Some(nom::Err::Error(ExpectedDirPath(_)))
         );
     }
 }
