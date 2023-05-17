@@ -654,5 +654,3 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
                 lst.get_ref().set_sensitive(False)
                 lst.load_store([])
                 self.__switch_change_handlers(lst, x["event"], x["secondaryHandler"])
-
-
