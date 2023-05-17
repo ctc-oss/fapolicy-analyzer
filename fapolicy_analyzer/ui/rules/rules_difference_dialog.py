@@ -26,19 +26,23 @@ def filter_rule_diff(previous_system, current_system):
     diffs = rules_difference(previous_system, current_system).split("\n")
     for d in diffs:
         if (
-           (d.startswith("+") and d.split("+")[-1] + "\n" in previous_system.rules_text())
-           or (d.startswith("-") and d.split("-")[-1].split("\n")[0] in current_system.rules_text())
-           ):
+            d.startswith("+")
+            and d.split("+")[-1] + "\n" in previous_system.rules_text()
+        ) or (
+            d.startswith("-")
+            and d.split("-")[-1].split("\n")[0] in current_system.rules_text()
+        ):
             diffs.remove(d)
     return diffs
 
 
 class RulesDifferenceDialog(UIBuilderWidget):
-    def __init__(self,
-                 current_system: System,
-                 previous_system: System,
-                 parent=None,
-                 ):
+    def __init__(
+        self,
+        current_system: System,
+        previous_system: System,
+        parent=None,
+    ):
         super().__init__()
         if parent:
             self.get_ref().set_transient_for(parent)

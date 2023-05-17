@@ -32,8 +32,8 @@ class ProfSessionArgsStatus(Enum):
     EXEC_NOT_FOUND = 4
     USER_DOESNT_EXIST = 5
     PWD_DOESNT_EXIST = 6
-    PWD_ISNT_DIR = 7,
-    ENV_VARS_FORMATING = 8,
+    PWD_ISNT_DIR = (7,)
+    ENV_VARS_FORMATING = (8,)
     UNKNOWN = 9
 
 
@@ -53,8 +53,7 @@ def expand_path(colon_separated_str, cwd="."):
     logging.debug(f"expand_path({colon_separated_str}, {cwd})")
 
     # Expand native PATH env var if in user provided PATH env var string
-    expanded_path = re.sub(r"\$\{?PATH\}?",
-                           os.environ.get("PATH"), colon_separated_str)
+    expanded_path = re.sub(r"\$\{?PATH\}?", os.environ.get("PATH"), colon_separated_str)
 
     # Expand implied and explicit '.' notation to supplied cwd argument
     expanded_path = re.sub(r":\.{0,1}$", f":{cwd}", expanded_path)
@@ -73,8 +72,7 @@ def expand_path(colon_separated_str, cwd="."):
 
 
 class ProfSessionException(RuntimeError):
-    def __init__(self, msg="Unknown error",
-                 enumError=ProfSessionArgsStatus.UNKNOWN):
+    def __init__(self, msg="Unknown error", enumError=ProfSessionArgsStatus.UNKNOWN):
         self.error_msg = f"Profiler Session: {msg}"
         self.error_enum = enumError
 
@@ -87,7 +85,7 @@ class FaProfSession:
         return FaProfSession._rel_tgt_which(
             dictProfTgt.get("cmd", ""),
             FaProfSession.comma_delimited_kv_string_to_dict(dictProfTgt.get("env", "")),
-            dictProfTgt.get("pwd", "")
+            dictProfTgt.get("pwd", ""),
         )
 
     @staticmethod
@@ -194,7 +192,9 @@ class FaProfSession:
             dictReturn[ProfSessionArgsStatus.ENV_VARS_FORMATING] = e
         except Exception as e:
             exec_env = None
-            dictReturn[ProfSessionArgsStatus.ENV_VARS_FORMATING] = s.PROF_ARG_ENV_VARS_FORMATING + f", {e}"
+            dictReturn[ProfSessionArgsStatus.ENV_VARS_FORMATING] = (
+                s.PROF_ARG_ENV_VARS_FORMATING + f", {e}"
+            )
 
         # exec empty?
         if not exec_path:
@@ -217,9 +217,7 @@ class FaProfSession:
                         )
             else:
                 # relative exec path
-                new_path = FaProfSession._rel_tgt_which(exec_path,
-                                                        exec_env,
-                                                        exec_pwd)
+                new_path = FaProfSession._rel_tgt_which(exec_path, exec_env, exec_pwd)
                 if not new_path:
                     dictReturn[ProfSessionArgsStatus.EXEC_NOT_FOUND] = (
                         exec_path + s.PROF_ARG_EXEC_NOT_FOUND

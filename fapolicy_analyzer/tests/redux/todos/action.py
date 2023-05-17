@@ -39,7 +39,8 @@ class VisibilityFilters(Enum):
 
 
 class TodoPayload(NamedTuple):
-    """ Todo payload """
+    """Todo payload"""
+
     id: int
     text: str
 
@@ -55,8 +56,8 @@ def add_todo(text: str) -> Action:
 
 # pylint: disable=unsubscriptable-object
 set_visibility_filter: Callable[[VisibilityFilters], Action] = create_action(
-    ACTION_SET_VISIBILITY_FILTER)
+    ACTION_SET_VISIBILITY_FILTER
+)
 
 # pylint: disable=unsubscriptable-object
-toggle_todo: Callable[[int], Action] = create_action(
-    ACTION_TOGGLE_TODO)
+toggle_todo: Callable[[int], Action] = create_action(ACTION_TOGGLE_TODO)

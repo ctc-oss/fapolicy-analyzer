@@ -419,7 +419,7 @@ def test_preserve_list_row_collapse(widget):
             origin="Rule File 1",
             is_valid=True,
             info=[MagicMock(category="i", message="info message")],
-        )
+        ),
     ]
     widget._list_view.render_rules(mock_rules)
     model = widget._list_view.get_object("treeView").get_model()

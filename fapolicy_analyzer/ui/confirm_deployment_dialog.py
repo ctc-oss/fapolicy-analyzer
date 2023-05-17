@@ -18,7 +18,10 @@ from typing import Sequence, Tuple
 
 import gi
 from fapolicy_analyzer import System
-from fapolicy_analyzer.ui.rules.rules_difference_dialog import RulesDifferenceDialog, filter_rule_diff
+from fapolicy_analyzer.ui.rules.rules_difference_dialog import (
+    RulesDifferenceDialog,
+    filter_rule_diff,
+)
 from fapolicy_analyzer.ui.changeset_wrapper import Changeset, TrustChangeset
 from fapolicy_analyzer.ui.configs import Colors
 from fapolicy_analyzer.ui.strings import (
@@ -108,7 +111,9 @@ class ConfirmDeploymentDialog(UIBuilderWidget):
 
         rule_messages, rule_diff = rules_changes()
         expand_btn = self.get_object("expandButton")
-        expand_btn.set_visible(True) if [*rule_messages] else expand_btn.set_visible(False)
+        expand_btn.set_visible(True) if [*rule_messages] else expand_btn.set_visible(
+            False
+        )
 
         return ([*trust_changes(), *rule_messages], rule_diff)
 
@@ -137,6 +142,8 @@ class ConfirmDeploymentDialog(UIBuilderWidget):
         return self.get_object("saveStateCbn").get_active()
 
     def on_expandButton_clicked(self, *args):
-        diff_dialog = RulesDifferenceDialog(self.__current_system, self.__previous_system).get_ref()
+        diff_dialog = RulesDifferenceDialog(
+            self.__current_system, self.__previous_system
+        ).get_ref()
         diff_dialog.run()
         diff_dialog.destroy()

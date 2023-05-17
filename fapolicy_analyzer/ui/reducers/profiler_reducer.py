@@ -41,6 +41,7 @@ class ProfilerState(NamedTuple):
     stdout_log: Optional[str]
     stderr_log: Optional[str]
 
+
 #
 # About these state subtypes:
 #
@@ -79,20 +80,24 @@ class ProfilerDone(ProfilerState):
 
 
 def empty_profiler_state():
-    return ProfilerState(cmd=None,
-                         pwd=None,
-                         env=None,
-                         uid=None,
-                         pid=None,
-                         duration=None,
-                         running=False,
-                         killing=False,
-                         events_log=None,
-                         stdout_log=None,
-                         stderr_log=None, )
+    return ProfilerState(
+        cmd=None,
+        pwd=None,
+        env=None,
+        uid=None,
+        pid=None,
+        duration=None,
+        running=False,
+        killing=False,
+        events_log=None,
+        stdout_log=None,
+        stderr_log=None,
+    )
 
 
-def derive_profiler_state(target, source: ProfilerState, **kwargs: Optional[Any]) -> ProfilerState:
+def derive_profiler_state(
+    target, source: ProfilerState, **kwargs: Optional[Any]
+) -> ProfilerState:
     return target(**{**source._asdict(), **kwargs})
 
 
@@ -100,7 +105,9 @@ def profiler_state(target, **kwargs: Optional[Any]) -> ProfilerState:
     return target(**{**empty_profiler_state()._asdict(), **kwargs})
 
 
-def handle_start_profiling_request(state: ProfilerState, action: Action) -> ProfilerState:
+def handle_start_profiling_request(
+    state: ProfilerState, action: Action
+) -> ProfilerState:
     args: Dict[str, str] = action.payload
     uid = args.get("uid", None)
     pwd = args.get("pwd", None)
@@ -108,18 +115,24 @@ def handle_start_profiling_request(state: ProfilerState, action: Action) -> Prof
     return derive_profiler_state(ProfilerState, state, uid=uid, pwd=pwd, env=env)
 
 
-def handle_start_profiling_response(state: ProfilerState, action: Action) -> ProfilerState:
+def handle_start_profiling_response(
+    state: ProfilerState, action: Action
+) -> ProfilerState:
     cmd = action.payload
     return derive_profiler_state(ProfilerState, state, cmd=cmd, running=True)
 
 
 def handle_set_profiler_output(state: ProfilerState, action: Action) -> ProfilerState:
     (ev, so, se) = action.payload
-    return derive_profiler_state(ProfilerState, state, events_log=ev, stdout_log=so, stderr_log=se)
+    return derive_profiler_state(
+        ProfilerState, state, events_log=ev, stdout_log=so, stderr_log=se
+    )
 
 
 def handle_clear_profiler_state(state: ProfilerState, action: Action) -> ProfilerState:
-    return derive_profiler_state(ProfilerState, state, cmd=None, pwd=None, env=None, uid=None)
+    return derive_profiler_state(
+        ProfilerState, state, cmd=None, pwd=None, env=None, uid=None
+    )
 
 
 def handle_profiler_exec(state: ProfilerState, action: Action) -> ProfilerState:
@@ -151,5 +164,5 @@ profiler_reducer: Reducer = handle_actions(
         PROFILING_DONE_EVENT: handle_profiler_done,
         PROFILING_KILL_RESPONSE: handle_profiler_kill,
     },
-    empty_profiler_state()
+    empty_profiler_state(),
 )
