@@ -91,8 +91,7 @@ def test_make_profiling_args_w_path_env_var(widget):
     assert profiling_args.get("uid") == "root"
     assert profiling_args.get("pwd") == "/tmp"
     assert profiling_args.get("env") == "FOO=BAR, PATH=$PATH:."
-    assert profiling_args.get("env_dict") == {"FOO": "BAR",
-                                              "PATH": expected_path}
+    assert profiling_args.get("env_dict") == {"FOO": "BAR", "PATH": expected_path}
 
 
 def test_stop_profiling_click(widget, mock_dispatch):
@@ -158,10 +157,7 @@ def test_start_click_with_bad_env(widget, mock_dispatch):
 def test_start_click_with_bad_uid(widget, mock_dispatch):
     widget.update_input_fields("ls", "foooooo", "/tmp", "FOO")
     widget.on_start_clicked()
-    mock_dispatch.assert_called_with(
-        InstanceOf(Action)
-        & Attrs(type=ADD_NOTIFICATION)
-    )
+    mock_dispatch.assert_called_with(InstanceOf(Action) & Attrs(type=ADD_NOTIFICATION))
 
 
 ###########################################################################
@@ -335,7 +331,8 @@ def test_args_user_home_expansion():
 
 
 @pytest.mark.parametrize(
-    "dictArgs", [
+    "dictArgs",
+    [
         # Populate target dictionary w/unexpected keys
         {
             "cmd": "Now.sh",
@@ -350,7 +347,7 @@ def test_args_user_home_expansion():
             "uid": os.getenv("USER"),
             "env": "",
         },
-    ]
+    ],
 )
 def test_invalid_session_args_w_bad_keys(dictArgs):
     with pytest.raises(KeyError):
@@ -360,9 +357,6 @@ def test_invalid_session_args_w_bad_keys(dictArgs):
 def test_comma_delimited_kv_string_to_dict():
     # Test w/good sequence of comma separated k=v pairs
     str_in = "A=a, B=b, C=c"
-    dict_expected = {"A": "a",
-                     "B": "b",
-                     "C": "c"
-                     }
+    dict_expected = {"A": "a", "B": "b", "C": "c"}
     dict_out = FaProfArgs.comma_delimited_kv_string_to_dict(str_in)
     assert dict_expected == dict_out

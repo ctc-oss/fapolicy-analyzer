@@ -61,8 +61,7 @@ class ProfArgsStatus(Enum):
 
 
 class ProfArgsException(RuntimeError):
-    def __init__(self, msg="Unknown error",
-                 enumError=ProfArgsStatus.UNKNOWN):
+    def __init__(self, msg="Unknown error", enumError=ProfArgsStatus.UNKNOWN):
         self.error_msg = f"Profiler Args: {msg}"
         self.error_enum = enumError
 
@@ -236,8 +235,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         return self._get_opt_text("envText")
 
     def get_entry_dict(self):
-        """ Get Profiler UI field contents and set object attributes
-        """
+        """Get Profiler UI field contents and set object attributes"""
         cmd = self.get_cmd_text()
         arg = self.get_arg_text()
         uid = self.get_uid_text()
@@ -334,7 +332,7 @@ class FaProfArgs:
         return FaProfArgs._rel_tgt_which(
             dictProfTgt.get("cmd", ""),
             FaProfArgs.comma_delimited_kv_string_to_dict(dictProfTgt.get("env", "")),
-            dictProfTgt.get("pwd", "")
+            dictProfTgt.get("pwd", ""),
         )
 
     @staticmethod
@@ -443,7 +441,9 @@ class FaProfArgs:
             dictReturn[ProfArgsStatus.ENV_VARS_FORMATING] = e
         except Exception as e:
             exec_env = None
-            dictReturn[ProfArgsStatus.ENV_VARS_FORMATING] = s.PROF_ARG_ENV_VARS_FORMATING + f", {e}"
+            dictReturn[ProfArgsStatus.ENV_VARS_FORMATING] = (
+                s.PROF_ARG_ENV_VARS_FORMATING + f", {e}"
+            )
 
         # exec empty?
         if not exec_path:
@@ -466,9 +466,7 @@ class FaProfArgs:
                         )
             else:
                 # relative exec path
-                new_path = FaProfArgs._rel_tgt_which(exec_path,
-                                                     exec_env,
-                                                     exec_pwd)
+                new_path = FaProfArgs._rel_tgt_which(exec_path, exec_env, exec_pwd)
                 if not new_path:
                     dictReturn[ProfArgsStatus.EXEC_NOT_FOUND] = (
                         exec_path + s.PROF_ARG_EXEC_NOT_FOUND
@@ -548,8 +546,7 @@ def expand_path(colon_separated_str, cwd="."):
     logging.debug(f"expand_path({colon_separated_str}, {cwd})")
 
     # Expand native PATH env var if in user provided PATH env var string
-    expanded_path = re.sub(r"\$\{?PATH\}?",
-                           os.environ.get("PATH"), colon_separated_str)
+    expanded_path = re.sub(r"\$\{?PATH\}?", os.environ.get("PATH"), colon_separated_str)
 
     # Expand implied and explicit '.' notation to supplied cwd argument
     expanded_path = re.sub(r":\.{0,1}$", f":{cwd}", expanded_path)
