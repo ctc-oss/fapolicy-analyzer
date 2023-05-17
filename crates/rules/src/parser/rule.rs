@@ -45,6 +45,7 @@ pub fn parse_with_error_message(i: StrTrace) -> Result<Rule, String> {
 
 #[cfg(test)]
 mod tests {
+    use crate::dir_type::DirType;
     use crate::{Decision, ObjPart, Object, Permission, Rvalue, SubjPart, Subject};
 
     use super::*;
@@ -101,7 +102,10 @@ mod tests {
         assert_eq!(Decision::DenyAudit, r.dec);
         assert_eq!(Permission::Open, r.perm);
         assert_eq!(Subject::from(SubjPart::Exe("/usr/bin/ssh".into())), r.subj);
-        assert_eq!(Object::from(ObjPart::Dir("/opt".into())), r.obj);
+        assert_eq!(
+            Object::from(ObjPart::Dir(DirType::Path("/opt".into()))),
+            r.obj
+        );
         assert!(rem.is_empty());
 
         let (rem, r) = parse("deny_audit perm=any all : ftype=application/x-bad-elf".into())

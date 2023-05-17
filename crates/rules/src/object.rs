@@ -8,6 +8,7 @@
 
 use std::fmt::{Display, Formatter};
 
+use crate::dir_type::DirType;
 use crate::{bool_to_c, ObjPart, Rvalue};
 
 /// # Object
@@ -66,7 +67,7 @@ pub enum Part {
     ///    - `untrusted`
     ///
     /// ### See the `dir` option under Subject for an explanation of these keywords.
-    Dir(String),
+    Dir(DirType),
     /// This option matches against the mime type of the file being accessed. See `ftype` under Subject for more information on determining the mime type.
     FileType(Rvalue),
     /// This is the full path to the file that will be accessed. Globbing is not supported. You may also use the special keyword `untrusted` to match on the subject not being listed in the rpm database.
@@ -122,7 +123,10 @@ mod tests {
     #[test]
     fn display() {
         assert_eq!(format!("{}", Part::All), "all");
-        assert_eq!(format!("{}", Part::Dir("/foo".into())), "dir=/foo");
+        assert_eq!(
+            format!("{}", Part::Dir(DirType::Path("/foo".into()))),
+            "dir=/foo"
+        );
         assert_eq!(
             format!("{}", Part::Device("/dev/cdrom".into())),
             "device=/dev/cdrom"
@@ -145,7 +149,10 @@ mod tests {
         assert_eq!(
             format!(
                 "{}",
-                Object::new(vec![Part::Dir("/foo".into()), Part::Trust(true)])
+                Object::new(vec![
+                    Part::Dir(DirType::Path("/foo".into())),
+                    Part::Trust(true)
+                ])
             ),
             "dir=/foo trust=1"
         );
