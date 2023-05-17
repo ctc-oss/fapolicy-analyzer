@@ -32,7 +32,6 @@ from .action import (
 
 
 class TestAction(TestCase):
-
     def test_add_todo(self):
 
         text = "My Action"

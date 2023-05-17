@@ -51,7 +51,8 @@ class TestReduxStore(TestCase):
         )
 
         test_ = init_state_.pipe(
-            map(lambda state: self.assertEqual(state, "init")), first(),
+            map(lambda state: self.assertEqual(state, "init")),
+            first(),
         )
 
         store.add_feature_module(create_init_feature())

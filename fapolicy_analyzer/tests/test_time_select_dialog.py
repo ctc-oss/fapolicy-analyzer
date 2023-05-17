@@ -19,6 +19,7 @@ import pytest
 from fapolicy_analyzer.ui.time_select_dialog import (
     TimeSelectDialog,
 )
+
 gi.require_version("GtkSource", "3.0")
 from gi.repository import Gtk
 

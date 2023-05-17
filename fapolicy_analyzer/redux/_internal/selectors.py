@@ -33,16 +33,15 @@ T2 = TypeVar("T2")
 Mapper = Callable[[T1], T2]
 
 
-def select(selector: Mapper[T1, T2]
-           ) -> Callable[[Observable], Observable]:
-    """ Reactive operator that applies a selector
-        and shares the result across multiple subscribers
+def select(selector: Mapper[T1, T2]) -> Callable[[Observable], Observable]:
+    """Reactive operator that applies a selector
+    and shares the result across multiple subscribers
 
-        Args:
-            selector: the selector function
+    Args:
+        selector: the selector function
 
-        Returns:
-            The reactive operator
+    Returns:
+        The reactive operator
     """
     return pipe(
         op.map(selector),

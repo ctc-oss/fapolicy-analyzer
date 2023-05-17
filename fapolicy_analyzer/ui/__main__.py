@@ -20,8 +20,7 @@ from fapolicy_analyzer.util.xdg_utils import (
     xdg_data_dir_prefix,
 )
 
-gf_handler = logging.FileHandler(xdg_data_dir_prefix("fapolicy-analyzer.log"),
-                                 mode="w")
+gf_handler = logging.FileHandler(xdg_data_dir_prefix("fapolicy-analyzer.log"), mode="w")
 gs_handler = logging.StreamHandler()
 logging.basicConfig(level=logging.DEBUG, handlers=[gf_handler, gs_handler])
 gs_handler.setLevel(logging.WARNING)
@@ -43,12 +42,15 @@ from gi.repository import Gtk, GtkSource, GObject  # isort: skip
 def _parse_cmdline():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-v", "--verbose", action="count", default=0,
+        "-v",
+        "--verbose",
+        action="count",
+        default=0,
         help="""
         Enable verbose output to stderr. A single `v` option will set the
         loglevel to INFO. Multiple 'v' options will set the level to DEBUG.
         Note that the '--loglevel' option overrides the default verbose levels
-        """
+        """,
     )
     parser.add_argument(
         "-a",
@@ -63,11 +65,12 @@ def _parse_cmdline():
         "-c", "--count", help="Specify the max number of session tmp files"
     )
     parser.add_argument(
-        "-l", "--loglevel",
+        "-l",
+        "--loglevel",
         choices=["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"],
         help="""Specify the log level. [Default: WARNING.]
         This option overrides the loglevels associated with the '-v' and '-vv'
-        options"""
+        options""",
     )
     args = parser.parse_args()
 
@@ -91,12 +94,13 @@ def _parse_cmdline():
 
     # Enable edit session max autosave file count
     if args.loglevel:
-        dictOption2LogLevel = {"CRITICAL": logging.CRITICAL,
-                               "ERROR": logging.ERROR,
-                               "WARNING": logging.WARNING,
-                               "INFO": logging.INFO,
-                               "DEBUG": logging.DEBUG
-                               }
+        dictOption2LogLevel = {
+            "CRITICAL": logging.CRITICAL,
+            "ERROR": logging.ERROR,
+            "WARNING": logging.WARNING,
+            "INFO": logging.INFO,
+            "DEBUG": logging.DEBUG,
+        }
 
         gf_handler.setLevel(dictOption2LogLevel[args.loglevel])
 

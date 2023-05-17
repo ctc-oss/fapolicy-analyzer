@@ -31,9 +31,7 @@ from .feature import create_counter_feature, select_counter_feature
 
 
 class TestCounter(TestCase):
-
     def test_type(self):
-
         def reduce_to_list(dst: Iterable[int], src: int) -> Iterable:
             return (*dst, src)
 
@@ -46,7 +44,7 @@ class TestCounter(TestCase):
         store_.pipe(
             operators.map(select_counter_feature),
             operators.reduce(reduce_to_list, ()),
-            operators.first()
+            operators.first(),
         ).subscribe(result)
 
         store.dispatch(INCREMENT_ACTION)

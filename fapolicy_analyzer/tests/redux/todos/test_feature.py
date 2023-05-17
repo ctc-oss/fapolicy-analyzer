@@ -28,7 +28,6 @@ from fapolicy_analyzer.redux import create_store
 
 
 class TestTodoReducer(TestCase):
-
     def test_add_todo(self):
 
         store = create_store()

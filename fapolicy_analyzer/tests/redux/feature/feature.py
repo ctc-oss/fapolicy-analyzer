@@ -44,7 +44,7 @@ select_sample_feature_module = select_feature(SAMPLE_FEATURE)
 
 def create_sample_feature() -> ReduxFeatureModule:
     """
-        Constructs a new sample feature
+    Constructs a new sample feature
     """
 
     def handle_sample_action(state: Any, action: Action) -> Any:
@@ -52,7 +52,10 @@ def create_sample_feature() -> ReduxFeatureModule:
 
     sample_reducer = handle_actions({ADD_SAMPLE_ACTION: handle_sample_action})
 
-    add_epic = pipe(of_type(ADD_SAMPLE_ACTION), ignore_elements(),)
+    add_epic = pipe(
+        of_type(ADD_SAMPLE_ACTION),
+        ignore_elements(),
+    )
 
     sample_epic = combine_epics(add_epic)
 

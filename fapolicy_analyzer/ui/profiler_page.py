@@ -34,6 +34,10 @@ from fapolicy_analyzer.ui.actions import (
     stop_profiling,
 )
 from fapolicy_analyzer.ui.actions import NotificationType, add_notification
+from fapolicy_analyzer.ui.faprofiler import (
+    EnumErrorPairs2Str,
+    FaProfSession,
+)
 from fapolicy_analyzer.ui.reducers.profiler_reducer import (
     ProfilerState,
     ProfilerTick,
@@ -78,10 +82,7 @@ def EnumErrorPairs2Str(dictStatusEnums):
 # ProfilerPage methods
 class ProfilerPage(UIConnectedWidget, UIPage, Events):
     def __init__(self, fapd_manager):
-
-        UIConnectedWidget.__init__(
-            self, get_profiling_feature(), on_next=self.on_event
-        )
+        UIConnectedWidget.__init__(self, get_profiling_feature(), on_next=self.on_event)
         self.__events__ = [
             "analyze_button_pushed",
             "refresh_toolbar",
@@ -116,7 +117,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
                     "edit-clear",
                     {"clicked": self.on_clear_button_clicked},
                     sensitivity_func=self.clear_button_sensitivity,
-                )
+                ),
             ],
         }
 
@@ -149,16 +150,26 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
             self.set_output_text(self.markup)
 
     def handle_done(self, state: ProfilerState):
-        self.display_log_output([
-            (f"`{state.cmd}` stdout", state.stdout_log),
-            (f"`{state.cmd}` stderr", state.stderr_log),
-            ("fapolicyd", state.events_log),
-        ])
+        self.display_log_output(
+            [
+                (f"`{state.cmd}` stdout", state.stdout_log),
+                (f"`{state.cmd}` stderr", state.stderr_log),
+                ("fapolicyd", state.events_log),
+            ]
+        )
         self.analysis_file = state.events_log
         self.terminating = False
 
-    def update_input_fields(self, cmd_args: Optional[str], uid: Optional[str], pwd: Optional[str], env: Optional[str]):
-        (cmd, args) = cmd_args.split(" ", 1) if cmd_args and " " in cmd_args else [cmd_args, None]
+    def update_input_fields(
+        self,
+        cmd_args: Optional[str],
+        uid: Optional[str],
+        pwd: Optional[str],
+        env: Optional[str],
+    ):
+        (cmd, args) = (
+            cmd_args.split(" ", 1) if cmd_args and " " in cmd_args else [cmd_args, None]
+        )
         self.get_object("argText").set_text(args if args else "")
         self.get_object("executeText").set_text(cmd if cmd else "")
         self.get_object("userText").set_text(uid if uid else "")
@@ -245,8 +256,12 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         }
 
     def get_entry_dict_markup(self):
-        return "<span size='x-large' underline='single'><b>Target</b></span>\n" + \
-            "\n".join([f"{key}: {value}" for key, value in self.get_entry_dict().items()])
+        return (
+            "<span size='x-large' underline='single'><b>Target</b></span>\n"
+            + "\n".join(
+                [f"{key}: {value}" for key, value in self.get_entry_dict().items()]
+            )
+        )
 
     def display_log_output(self, logs):
         markup = self.get_entry_dict_markup() + "\n\n"
@@ -267,7 +282,9 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         self.can_stop = False
         self.terminating = True
         self.refresh_toolbar()
-        self.update_output_text("\n<span size='large'><b>Profiler terminating...</b></span>")
+        self.update_output_text(
+            "\n<span size='large'><b>Profiler terminating...</b></span>"
+        )
         dispatch(stop_profiling())
 
     def on_start_clicked(self, *args):
@@ -292,7 +309,9 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
             self.terminating = False
             self.refresh_toolbar()
 
-            self.set_output_text("<span size='large'><b>Profiler starting...</b></span>")
+            self.set_output_text(
+                "<span size='large'><b>Profiler starting...</b></span>"
+            )
 
             profiling_args = self._make_profiling_args()
 

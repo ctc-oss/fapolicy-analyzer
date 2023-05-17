@@ -57,9 +57,7 @@ import time
 
 def time_format_config_dlg():
 
-    dlgTimeFormatConfig = Gtk.Dialog(
-        title=TIME_FORMAT_CONFIG_TITLE
-    )
+    dlgTimeFormatConfig = Gtk.Dialog(title=TIME_FORMAT_CONFIG_TITLE)
     dlgTimeFormatConfig.add_buttons(Gtk.STOCK_OK, Gtk.ResponseType.OK)
 
     label = Gtk.Label(label=SYSLOG_FORMAT_WARNING)
@@ -402,7 +400,9 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
             or self.__selection_state["group"] is not None
         ):
             last_subject = self.__selection_state["subjects"][-1]
-            self.when_none = any([e.when() is None for e in self.__log.by_subject(last_subject)])
+            self.when_none = any(
+                [e.when() is None for e in self.__log.by_subject(last_subject)]
+            )
             data = list(
                 {
                     e.object.file: {e.rule_id: e.object}
