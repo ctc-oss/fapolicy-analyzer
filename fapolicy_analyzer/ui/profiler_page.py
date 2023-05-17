@@ -34,10 +34,6 @@ from fapolicy_analyzer.ui.actions import (
     stop_profiling,
 )
 from fapolicy_analyzer.ui.actions import NotificationType, add_notification
-from fapolicy_analyzer.ui.faprofiler import (
-    EnumErrorPairs2Str,
-    FaProfSession,
-)
 from fapolicy_analyzer.ui.reducers.profiler_reducer import (
     ProfilerState,
     ProfilerTick,
@@ -59,8 +55,8 @@ class ProfArgsStatus(Enum):
     EXEC_NOT_FOUND = 4
     USER_DOESNT_EXIST = 5
     PWD_DOESNT_EXIST = 6
-    PWD_ISNT_DIR = 7,
-    ENV_VARS_FORMATING = 8,
+    PWD_ISNT_DIR = 7
+    ENV_VARS_FORMATING = 8
     UNKNOWN = 9
 
 
