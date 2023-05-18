@@ -34,4 +34,9 @@ def handle_decrement_action(state: int, action: Action) -> int:
 
 
 COUNTER_REDUCER = handle_actions(
-    {ACTION_INCREMENT: handle_increment_action, ACTION_DECREMENT: handle_decrement_action}, 0)
+    {
+        ACTION_INCREMENT: handle_increment_action,
+        ACTION_DECREMENT: handle_decrement_action,
+    },
+    0,
+)

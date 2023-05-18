@@ -42,7 +42,8 @@ def faProfSession(scope="session"):
 
 
 @pytest.mark.parametrize(
-    "dictArgs", [
+    "dictArgs",
+    [
         # Populate target dictionary w/unexpected keys
         {
             "cmd": "Now.sh",
@@ -57,7 +58,7 @@ def faProfSession(scope="session"):
             "uid": os.getenv("USER"),
             "env": "",
         },
-    ]
+    ],
 )
 def test_faprofsession_init_w_bad_keys(dictArgs):
     with pytest.raises(KeyError):
@@ -67,8 +68,7 @@ def test_faprofsession_init_w_bad_keys(dictArgs):
 def test_faprofsession_getpwnam_exception(mocker):
     # Emulate a getpwnam() exception
     mocker.patch(
-        "fapolicy_analyzer.ui.faprofiler.pwd.getpwnam",
-        side_effect=Exception()
+        "fapolicy_analyzer.ui.faprofiler.pwd.getpwnam", side_effect=Exception()
     )
 
     dictArgs = {
@@ -168,7 +168,8 @@ def test_validateArgs():
 
 
 @pytest.mark.parametrize(
-    "dictArgs, expected_status", [
+    "dictArgs, expected_status",
+    [
         (
             # Verify non-existent relative exec path is detected
             {
@@ -191,7 +192,7 @@ def test_validateArgs():
             },
             ProfSessionArgsStatus.OK,
         ),
-    ]
+    ],
 )
 def test_validateArgs_relative_exec(dictArgs, expected_status):
     dict_valid_args_return = FaProfSession.validateArgs(dictArgs)
@@ -200,7 +201,8 @@ def test_validateArgs_relative_exec(dictArgs, expected_status):
 
 
 @pytest.mark.parametrize(
-    "dictArgs, expected_status", [
+    "dictArgs, expected_status",
+    [
         (
             # Test w/good env var string; only OK key is in returned dict
             {
@@ -256,7 +258,7 @@ def test_validateArgs_relative_exec(dictArgs, expected_status):
             },
             ProfSessionArgsStatus.ENV_VARS_FORMATING,
         ),
-    ]
+    ],
 )
 def test_validateArgs_env_vars(dictArgs, expected_status):
     dict_valid_args_return = FaProfSession.validateArgs(dictArgs)

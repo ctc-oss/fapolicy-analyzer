@@ -22,10 +22,12 @@ import subprocess
 from datetime import datetime as DT
 from enum import Enum
 from fapolicy_analyzer import Handle
-from fapolicy_analyzer.ui.actions import (NotificationType, add_notification)
+from fapolicy_analyzer.ui.actions import NotificationType, add_notification
 from fapolicy_analyzer.ui.store import dispatch
-from fapolicy_analyzer.ui.strings import (FAPD_DBUS_STOP_ERROR_MSG,
-                                          FAPD_DBUS_START_ERROR_MSG)
+from fapolicy_analyzer.ui.strings import (
+    FAPD_DBUS_STOP_ERROR_MSG,
+    FAPD_DBUS_START_ERROR_MSG,
+)
 from threading import Lock
 from time import time, sleep
 
@@ -46,10 +48,11 @@ def _promote():
     def result():
         os.setgid(0)
         os.setuid(0)
+
     return result
 
 
-class FapdManager():
+class FapdManager:
     def __init__(self, fapd_control_enabled=True):
         logging.info(f"FapdManager constructed, control:{fapd_control_enabled}")
 
@@ -138,16 +141,20 @@ class FapdManager():
 
         if instance == FapdMode.ONLINE:
             logging.debug("fapd is initiating an ONLINE session")
-            if (self._fapd_status != ServiceStatus.UNKNOWN):
+            if self._fapd_status != ServiceStatus.UNKNOWN:
                 try:
                     with self._fapd_lock:
                         self._fapd_ref.start()
                         self.mode = FapdMode.ONLINE
 
                 except Exception:
+                    self._fapd_status = ServiceStatus.UNKNOWN
                     logging.error(FAPD_DBUS_START_ERROR_MSG)
-                    dispatch(add_notification(FAPD_DBUS_START_ERROR_MSG,
-                                              NotificationType.ERROR))
+                    dispatch(
+                        add_notification(
+                            FAPD_DBUS_START_ERROR_MSG, NotificationType.ERROR
+                        )
+                    )
 
         else:
             # PROFILING
@@ -169,14 +176,12 @@ class FapdManager():
                 self._previous_instance = self._fapd_status
                 self._stop(FapdMode.ONLINE)
 
-            self.procProfile = subprocess.Popen(["/usr/sbin/fapolicyd",
-                                                 "--permissive",
-                                                 "--debug",
-                                                 "--no-details"],
-                                                stdout=fdStdoutPath,
-                                                stderr=fdStderrPath,
-                                                preexec_fn=_promote()
-                                                )
+            self.procProfile = subprocess.Popen(
+                ["/usr/sbin/fapolicyd", "--permissive", "--debug", "--no-details"],
+                stdout=fdStdoutPath,
+                stderr=fdStderrPath,
+                preexec_fn=_promote(),
+            )
             self._active_instance = FapdMode.PROFILING
             self._fapd_profiler_pid = self.procProfile.pid
             self.mode = FapdMode.PROFILING
@@ -201,15 +206,18 @@ class FapdManager():
 
         if instance == FapdMode.ONLINE:
             logging.debug("fapd is terminating an ONLINE session")
-            if (self._fapd_status != ServiceStatus.UNKNOWN):
+            if self._fapd_status != ServiceStatus.UNKNOWN:
                 try:
                     with self._fapd_lock:
                         self._fapd_ref.stop()
 
                 except Exception:
                     logging.error(FAPD_DBUS_STOP_ERROR_MSG)
-                    dispatch(add_notification(FAPD_DBUS_STOP_ERROR_MSG,
-                                              NotificationType.ERROR))
+                    dispatch(
+                        add_notification(
+                            FAPD_DBUS_STOP_ERROR_MSG, NotificationType.ERROR
+                        )
+                    )
 
         else:
             logging.debug("fapd is terminating a PROFILING session")
@@ -229,7 +237,12 @@ class FapdManager():
         elif self.mode == FapdMode.ONLINE:
             if self._fapd_lock.acquire(blocking=False):
                 try:
-                    bStatus = ServiceStatus(self._fapd_ref.is_active())
+                    valid = self._fapd_ref.is_valid()
+                    bStatus = (
+                        ServiceStatus(self._fapd_ref.is_active())
+                        if valid
+                        else ServiceStatus(None)
+                    )
                     if bStatus != self._fapd_status:
                         logging.debug(f"_status({bStatus} updated")
                         self._fapd_status = bStatus
@@ -271,6 +284,8 @@ class FapdManager():
                 else:
                     self._fapd_status = ServiceStatus.UNKNOWN
             except Exception as e:
-                print(f"Fapd Handle is_valid() or is_active() exception: {e}",
-                      file=sys.stderr)
+                print(
+                    f"Fapd Handle is_valid() or is_active() exception: {e}",
+                    file=sys.stderr,
+                )
                 raise

@@ -22,6 +22,7 @@ pub mod ops;
 pub mod parser;
 
 mod decision;
+mod dir_type;
 mod file_type;
 mod linter;
 mod object;

@@ -17,7 +17,6 @@ from fapolicy_analyzer.ui.ui_widget import UIBuilderWidget
 
 
 class TimeSelectDialog(UIBuilderWidget):
-
     def __init__(self, parent=None):
         super().__init__()
         if parent:

@@ -75,7 +75,6 @@ impl<'a> From<RuleParseError<StrTrace<'a>>> for ErrorAt<StrTrace<'a>> {
                 return ErrorAt::<StrTrace<'a>>::new_with_len(e, t, v.current.len())
             }
             ExpectedFileType(t) => t,
-
             Nom(t, _) => t,
         };
         ErrorAt::<StrTrace<'a>>::new(e, t)

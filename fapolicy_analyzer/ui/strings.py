@@ -223,4 +223,13 @@ ANCILLARY_TRUST_NO_ENTRIES = _(
 No entries found in the Ancillary Trust Database.
 Use the search bar or add untrusted files from the System Trust Database tab.
     """
+TIME_FORMAT_CONFIG_TITLE = _("Syslog Format Check")
+SYSLOG_FORMAT_WARNING = _(
+    """
+No event time found, time filtering will not work.
+Please update /etc/rsyslog.conf then restart the syslog service.
+
+regexp: "RSYSLOG_TraditionalFileFormat"
+replace: "RSYSLOG_FileFormat"
+    """
 )

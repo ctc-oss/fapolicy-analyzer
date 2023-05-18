@@ -466,8 +466,8 @@ class MainWindow(UIConnectedWidget):
 
     def _update_fapd_status(self, status: ServiceStatus):
         logging.debug(f"_update_fapd_status({status})")
-
         # Enable/Disable fapd menu items
+
         self._enable_fapd_menu_items(status)
         if status is ServiceStatus.TRUE:
             self.fapdStatusLight.set_from_icon_name("emblem-default", size=4)

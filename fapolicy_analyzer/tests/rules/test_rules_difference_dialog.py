@@ -1,4 +1,4 @@
-# Copyright Concurrent Technologies Corporation 2022
+# Copyright Concurrent Technologies Corporation 2023
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,26 +14,17 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import gi
-import pytest
-
-from fapolicy_analyzer.ui.time_select_dialog import (
-    TimeSelectDialog,
-)
+from fapolicy_analyzer.ui.rules.rules_difference_dialog import RulesDifferenceDialog
+from unittest.mock import MagicMock
 
 gi.require_version("GtkSource", "3.0")
-from gi.repository import Gtk
+from gi.repository import Gtk  # isort: skip
 
 
-@pytest.fixture
-def widget():
-    return TimeSelectDialog(Gtk.Window())
-
-
-def test_creates_widget(widget):
-    assert type(widget.get_ref()) is Gtk.Dialog
-
-
-def test_adds_dialog_to_parent():
-    parent = Gtk.Window()
-    widget = TimeSelectDialog(parent)
-    assert widget.get_ref().get_transient_for() == parent
+def test_creates_widget(mocker):
+    mocker.patch(
+        "fapolicy_analyzer.ui.rules.rules_difference_dialog.rules_difference",
+        return_value="",
+    )
+    widget = RulesDifferenceDialog(MagicMock(), MagicMock(), parent=Gtk.Window())
+    assert type(widget) is RulesDifferenceDialog

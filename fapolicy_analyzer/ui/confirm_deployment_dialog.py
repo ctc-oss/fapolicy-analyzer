@@ -17,7 +17,11 @@ from locale import gettext as _
 from typing import Sequence, Tuple
 
 import gi
-from fapolicy_analyzer import System, rules_difference
+from fapolicy_analyzer import System
+from fapolicy_analyzer.ui.rules.rules_difference_dialog import (
+    RulesDifferenceDialog,
+    filter_rule_diff,
+)
 from fapolicy_analyzer.ui.changeset_wrapper import Changeset, TrustChangeset
 from fapolicy_analyzer.ui.configs import Colors
 from fapolicy_analyzer.ui.strings import (
@@ -48,6 +52,8 @@ class ConfirmDeploymentDialog(UIBuilderWidget):
 
         changes_view = self.get_object("changesTreeView")
         self.__config_changes_view(changes_view)
+        self.__current_system = current_system
+        self.__previous_system = previous_system
         store = self.__load_store(changesets, current_system, previous_system)
         changes_view.set_model(store)
 
@@ -74,17 +80,26 @@ class ConfirmDeploymentDialog(UIBuilderWidget):
     ) -> Sequence[Tuple[str, str]]:
         def rules_changes():
             if not previous_system or not current_system:
-                return []
-            diffs = rules_difference(previous_system, current_system).split("\n")
-            adds = len([d for d in diffs if d.startswith("+")])
-            dels = len([d for d in diffs if d.startswith("-")])
+                return ([], "")
+            diffs = ""
+            diffs = filter_rule_diff(previous_system, current_system)
+            adds_list = []
+            dels_list = []
+            for d in diffs:
+                if d.startswith("+"):
+                    adds_list += [d]
+                elif d.startswith("-"):
+                    dels_list += [d]
+
+            adds = len(adds_list)
+            dels = len(dels_list)
             if (adds + dels) == 0:
-                return []
+                return ([], "")
 
             add_text = f"{adds} addition{'s' if adds > 1 else ''}" if adds else None
             del_text = f"{dels} removal{'s' if dels > 1 else ''}" if dels else None
             message = " and ".join((m for m in [add_text, del_text] if m)) + " made"
-            return [(_(message), "Rules")]
+            return ([(_(message), "Rules")], diffs)
 
         def trust_changes():
             return [
@@ -94,7 +109,13 @@ class ConfirmDeploymentDialog(UIBuilderWidget):
                 for t in e.serialize().items()
             ]
 
-        return [*trust_changes(), *rules_changes()]
+        rule_messages, rule_diff = rules_changes()
+        expand_btn = self.get_object("expandButton")
+        expand_btn.set_visible(True) if [*rule_messages] else expand_btn.set_visible(
+            False
+        )
+
+        return ([*trust_changes(), *rule_messages], rule_diff)
 
     def __load_store(
         self,
@@ -108,7 +129,7 @@ class ConfirmDeploymentDialog(UIBuilderWidget):
             "Rules": CHANGESET_ACTION_RULES,
         }
         store = Gtk.ListStore(str, str)
-        pathActionPairs = self.__to_path_action_pairs(
+        pathActionPairs, _ = self.__to_path_action_pairs(
             changesets, current_system, previous_system
         )
         for e in pathActionPairs:
@@ -119,3 +140,10 @@ class ConfirmDeploymentDialog(UIBuilderWidget):
 
     def get_save_state(self) -> bool:
         return self.get_object("saveStateCbn").get_active()
+
+    def on_expandButton_clicked(self, *args):
+        diff_dialog = RulesDifferenceDialog(
+            self.__current_system, self.__previous_system
+        ).get_ref()
+        diff_dialog.run()
+        diff_dialog.destroy()

@@ -7,6 +7,7 @@
  */
 
 use crate::db::{Entry, DB};
+use crate::dir_type::DirType;
 use crate::Rule;
 use is_executable::IsExecutable;
 use std::path::PathBuf;
@@ -86,8 +87,10 @@ pub fn l003_object_path_missing(_: usize, r: &Rule, _db: &DB) -> Option<String> 
         .filter_map(|p| match p {
             Part::Device(p) if is_missing(p) => Some(path_does_not_exist_message("device", p)),
             Part::Path(p) if is_missing(p) => Some(path_does_not_exist_message("file", p)),
-            Part::Dir(p) if is_missing(p) => Some(path_does_not_exist_message("dir", p)),
-            Part::Dir(p) if !is_dir(p) => Some(wrong_type_message("dir")),
+            Part::Dir(DirType::Path(p)) if is_missing(p) => {
+                Some(path_does_not_exist_message("dir", p))
+            }
+            Part::Dir(DirType::Path(p)) if !is_dir(p) => Some(wrong_type_message("dir")),
             Part::Device(p) | Part::Path(p) if !is_file(p) => Some(wrong_type_message("file")),
             _ => None,
         })
@@ -117,7 +120,7 @@ pub fn l005_object_dir_missing_trailing_slash(_: usize, r: &Rule, _db: &DB) -> O
         .parts
         .iter()
         .filter_map(|p| match p {
-            Part::Dir(p) if !p.ends_with('/') => Some(L005_MESSAGE.to_string()),
+            Part::Dir(DirType::Path(p)) if !p.ends_with('/') => Some(L005_MESSAGE.to_string()),
             _ => None,
         })
         .collect::<Vec<String>>()

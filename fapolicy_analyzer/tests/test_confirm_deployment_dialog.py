@@ -16,13 +16,14 @@
 import context  # noqa: F401 # isort: skip
 
 import gi
-from fapolicy_analyzer.ui.changeset_wrapper import TrustChangeset
+from fapolicy_analyzer.ui.changeset_wrapper import TrustChangeset, RuleChangeset
 from fapolicy_analyzer.ui.confirm_deployment_dialog import ConfirmDeploymentDialog
 from fapolicy_analyzer.ui.strings import (
     CHANGESET_ACTION_ADD_TRUST,
     CHANGESET_ACTION_DEL_TRUST,
+    CHANGESET_ACTION_RULES,
 )
-
+from unittest.mock import MagicMock
 from helpers import delayed_gui_action
 
 gi.require_version("GtkSource", "3.0")
@@ -63,3 +64,20 @@ def test_load_path_action_list():
     rows = [x for x in view.get_model()]
     assert (CHANGESET_ACTION_ADD_TRUST, "/tmp/add.txt") in [(r[0], r[1]) for r in rows]
     assert (CHANGESET_ACTION_DEL_TRUST, "/tmp/del.txt") in [(r[0], r[1]) for r in rows]
+
+
+def test_load_rules(mocker):
+    changeset = RuleChangeset()
+    changeset.parse("allow perm=any all : all")
+    mocker.patch(
+        "fapolicy_analyzer.ui.rules.rules_difference_dialog.rules_difference",
+        return_value="+allow perm=any all : all\n-deny perm=any all : all",
+    )
+    widget = ConfirmDeploymentDialog(
+        [changeset], MagicMock(), MagicMock(), Gtk.Window()
+    )
+    view = widget.get_object("changesTreeView")
+    rows = [x for x in view.get_model()]
+    assert (CHANGESET_ACTION_RULES, "1 addition and 1 removal made") in [
+        (r[0], r[1]) for r in rows
+    ]

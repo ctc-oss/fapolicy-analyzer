@@ -27,7 +27,6 @@ from .todo_reducer import todos
 
 
 class TestTodoReducer(TestCase):
-
     def test_initial_state(self):
         result = todos(None, Action("sample", None))
         assert result == ()

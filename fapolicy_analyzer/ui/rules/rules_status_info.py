@@ -76,7 +76,10 @@ class RulesStatusInfo(UIBuilderWidget):
 
     def restore_row_collapse(self):
         def toggle_collapse(store, path, treeiter):
-            self.__status_list.collapse_row(path) if store[treeiter][3] else self.__status_list.expand_row(path, False)
+            self.__status_list.collapse_row(path) if store[treeiter][
+                3
+            ] else self.__status_list.expand_row(path, False)
+
         if self.__model is not None:
             self.__model.foreach(toggle_collapse)
 
@@ -91,7 +94,14 @@ class RulesStatusInfo(UIBuilderWidget):
         for cat, messages in stats.items():
             count = len(messages)
             style = self.__status_text_style(count, cat)
-            parent = store.append(None, [f"{count} {_STATUS_HEADERS[cat]}", *style, self.get_row_collapsed(cat)])
+            parent = store.append(
+                None,
+                [
+                    f"{count} {_STATUS_HEADERS[cat]}",
+                    *style,
+                    self.get_row_collapsed(cat),
+                ],
+            )
             for m in messages:
                 store.append(parent, [m, *style, True])
 

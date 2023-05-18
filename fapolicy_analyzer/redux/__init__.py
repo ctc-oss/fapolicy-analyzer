@@ -30,13 +30,18 @@ from typing import Tuple
 
 from ._internal.action import create_action, of_type, select_action_payload
 from ._internal.epic import combine_epics
-from ._internal.feature import (create_feature_module, of_init_feature,
-                                select_feature)
+from ._internal.feature import create_feature_module, of_init_feature, select_feature
 from ._internal.reducer import combine_reducers, handle_actions
 from ._internal.selectors import select
 from ._internal.store import create_store
-from ._internal.types import (Action, Epic, Reducer, ReduxFeatureModule,
-                              ReduxRootStore, StateType)
+from ._internal.types import (
+    Action,
+    Epic,
+    Reducer,
+    ReduxFeatureModule,
+    ReduxRootStore,
+    StateType,
+)
 
 __all__: Tuple[str, ...] = (
     "Action",
