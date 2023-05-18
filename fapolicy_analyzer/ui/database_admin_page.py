@@ -29,7 +29,6 @@ from gi.repository import Gtk  # isort: skip
 
 
 class DatabaseAdminPage(UIWidget, UIPage, Events):
-
     def __init__(self):
         self.notebook = Gtk.Notebook()
         UIWidget.__init__(self, self.notebook)

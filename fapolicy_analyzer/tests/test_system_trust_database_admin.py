@@ -209,4 +209,10 @@ def test_load_trust_w_exception(mock_dispatch, mock_system_feature):
 
 def test_set_label_view(widget):
     widget.set_label_display()
-    assert isinstance(widget.trust_file_list.get_object("viewScroll").get_child().get_child(), Gtk.Label) is True
+    assert (
+        isinstance(
+            widget.trust_file_list.get_object("viewScroll").get_child().get_child(),
+            Gtk.Label,
+        )
+        is True
+    )

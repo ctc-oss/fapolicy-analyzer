@@ -29,7 +29,9 @@ from fapolicy_analyzer.ui.trust_file_list import TrustFileList, epoch_to_string
 _trust = [
     MagicMock(status="u", path="/tmp/bar", actual=MagicMock(last_modified=123456789)),
     MagicMock(status="t", path="/tmp/foo", actual=MagicMock(last_modified=123456789)),
-    MagicMock(status="u", path="/tmp/foobar", actual=MagicMock(last_modified=123456789)),
+    MagicMock(
+        status="u", path="/tmp/foobar", actual=MagicMock(last_modified=123456789)
+    ),
 ]
 
 
