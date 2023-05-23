@@ -242,11 +242,11 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         pwd = self.get_pwd_text()
         env = self.get_env_text()
         return {
-            "cmd": cmd if cmd else None,
-            "arg": arg if arg else None,
-            "uid": uid if uid else None,
-            "pwd": pwd if pwd else None,
-            "env": env if env else None,
+            "cmd": cmd.strip() if cmd else None,
+            "arg": arg.strip() if arg else None,
+            "uid": uid.strip() if uid else None,
+            "pwd": pwd.strip() if pwd else None,
+            "env": env.strip() if env else None,
         }
 
     def get_entry_dict_markup(self):
@@ -315,13 +315,15 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
     def _make_profiling_args(self):
         res = dict(self.get_entry_dict())
         logging.debug(f"make_profiling_args(): form args = {res}")
-        res = _args_user_home_expansion(res)
-        logging.debug(f"make_profiling_args(): expanded form args = {res}")
-        d = FaProfArgs.comma_delimited_kv_string_to_dict(res.get("env", ""))
+        ex_res = _args_user_home_expansion(res)
+        logging.debug(f"make_profiling_args(): expanded form args = {ex_res}")
+        d = FaProfArgs.comma_delimited_kv_string_to_dict(ex_res.get("env", ""))
         if d and "PATH" in d:
-            d["PATH"] = expand_path(d.get("PATH"), res.get("pwd", ".") or ".")
+            d["PATH"] = expand_path(d.get("PATH"), ex_res.get("pwd", ".") or ".")
         res["env_dict"] = d
-        logging.debug(f"_make_profiling_args(): args w/env dict = {res}")
+        res["raw_pwd"] = res["pwd"]
+        res["pwd"] = ex_res["pwd"]
+        logging.debug(f"_make_profiling_args(): expanded w/env dict = {res}")
         return res
 
 
@@ -394,7 +396,8 @@ class FaProfArgs:
         exec_user = dictProfTgt.get("uid", "")
         orig_pwd = dictProfTgt.get("pwd", "")
         exec_pwd = dict_expanded_args.get("pwd", "")
-
+        orig_env = dictProfTgt.get("env", "")
+        
         # user?
         user_pw_record = None  # passwd file record associated with a user
         try:
@@ -433,7 +436,7 @@ class FaProfArgs:
         # Validate, convert CSV  env string of "K=V" substrings to dict
         try:
             exec_env = FaProfArgs.comma_delimited_kv_string_to_dict(
-                dictProfTgt.get("env", "")
+                dict_expanded_args.get("env", "")
             )
 
         except RuntimeError as e:
