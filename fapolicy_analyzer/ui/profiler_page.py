@@ -396,8 +396,7 @@ class FaProfArgs:
         exec_user = dictProfTgt.get("uid", "")
         orig_pwd = dictProfTgt.get("pwd", "")
         exec_pwd = dict_expanded_args.get("pwd", "")
-        orig_env = dictProfTgt.get("env", "")
-        
+
         # user?
         user_pw_record = None  # passwd file record associated with a user
         try:
