@@ -77,3 +77,4 @@ class DatabaseAdminPage(UIWidget, UIPage, Events):
     def _dispose(self):
         self.ancillaryTrustDbAdmin.dispose()
         self.systemTrustDbAdmin.dispose()
+        self.notebook.destroy()
