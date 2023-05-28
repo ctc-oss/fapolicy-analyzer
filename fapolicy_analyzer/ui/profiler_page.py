@@ -192,7 +192,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         self.can_stop = state.running
         if self.needs_state:
             self.needs_state = False
-            self.update_input_fields(state.cmd, state.uid, state.pwd, state.env)
+            self.update_input_fields(state.cmd, state.uid, state.pwd_ui, state.env)
 
     def on_analyzer_button_clicked(self, *args):
         self.analyze_button_pushed(self.analysis_file)
@@ -315,13 +315,17 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
     def _make_profiling_args(self):
         res = dict(self.get_entry_dict())
         logging.debug(f"make_profiling_args(): form args = {res}")
+
+        # Pack raw UI field data to save in redux
+        res["pwd_ui"] = res["pwd"]
+
+        # expand $HOME and $USER if used.
         ex_res = _args_user_home_expansion(res)
         logging.debug(f"make_profiling_args(): expanded form args = {ex_res}")
         d = FaProfArgs.comma_delimited_kv_string_to_dict(ex_res.get("env", ""))
         if d and "PATH" in d:
             d["PATH"] = expand_path(d.get("PATH"), ex_res.get("pwd", ".") or ".")
         res["env_dict"] = d
-        res["raw_pwd"] = res["pwd"]
         res["pwd"] = ex_res["pwd"]
         logging.debug(f"_make_profiling_args(): expanded w/env dict = {res}")
         return res
