@@ -75,7 +75,9 @@ def handle_received_trust_update(state: TrustState, action: Action) -> TrustStat
 
     return _create_state(
         state,
-        percent_complete=running_count / state.trust_count * 100,
+        percent_complete=running_count / state.trust_count * 100
+        if state.trust_count != 0
+        else 100,
         trust=[*state.trust, *update],
         last_set_completed=update,
         error=None,
