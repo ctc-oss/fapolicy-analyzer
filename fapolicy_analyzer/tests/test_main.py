@@ -22,7 +22,7 @@ from unittest.mock import patch
 import pytest
 from fapolicy_analyzer.ui.__main__ import main
 from fapolicy_analyzer.ui.session_manager import sessionManager
-from fapolicy_analyzer.util.xdg_utils import xdg_state_dir_prefix
+from fapolicy_analyzer.util.xdg_utils import app_state_dir_prefix
 
 import context  # noqa: F401
 
@@ -64,26 +64,6 @@ def test_parse_args_no_options():
 
 
 @pytest.mark.usefixtures("mocks", "session")
-def test_parse_args_no_options_w_xdg_env():
-    testargs = ["prog"]
-    xdg_state_home = "/tmp"
-    expectTmpPath = xdg_state_home + "/fapolicy-analyzer/FaCurrentSession.tmp"
-
-    with patch.object(sys, "argv", testargs):
-        os.environ["XDG_STATE_HOME"] = xdg_state_home
-        main()
-
-        assert logging.getLogger().level == logging.WARNING
-        assert not sessionManager._SessionManager__bAutosaveEnabled
-        assert sessionManager._SessionManager__iTmpFileCount == 2
-        assert sessionManager._SessionManager__tmpFileBasename == expectTmpPath
-        del os.environ["XDG_STATE_HOME"]
-
-        # Tear down
-        shutil.rmtree(xdg_state_home + "/fapolicy-analyzer/")
-
-
-@pytest.mark.usefixtures("mocks", "session")
 def test_parse_args_all_options():
     testargs = ["prog", "-v", "-a", "-s", "/tmp/TmpFileTemplate.tmp", "-c", "3"]
     with patch.object(sys, "argv", testargs):
@@ -96,25 +76,6 @@ def test_parse_args_all_options():
             sessionManager._SessionManager__tmpFileBasename
             == "/tmp/TmpFileTemplate.tmp"
         )
-
-
-@pytest.mark.usefixtures("mocks", "session")
-def test_parse_args_all_options_w_xdg_env():
-    """The '-s' option should overide the XDG_STATE_HOME env"""
-    testargs = ["prog", "-v", "-a", "-s", "/tmp/TmpFileTemplate.tmp", "-c", "3"]
-
-    with patch.object(sys, "argv", testargs):
-        os.environ["XDG_STATE_HOME"] = "/tmp"
-        main()
-
-        assert logging.getLogger().level == logging.WARNING
-        assert sessionManager._SessionManager__bAutosaveEnabled
-        assert sessionManager._SessionManager__iTmpFileCount == 3
-        assert (
-            sessionManager._SessionManager__tmpFileBasename
-            == "/tmp/TmpFileTemplate.tmp"
-        )
-        del os.environ["XDG_STATE_HOME"]
 
 
 @pytest.mark.usefixtures("session")
@@ -171,15 +132,6 @@ def test_xdg_state_dir_prefix_w_exception(mocker):
     handling code.
     """
     mockMakeDirs = mocker.patch("os.makedirs", side_effect=IOError)
-    generatedFullPath = xdg_state_dir_prefix("FapTestTmp")
+    generatedFullPath = app_state_dir_prefix("FapTestTmp")
     mockMakeDirs.assert_called()
     assert generatedFullPath == "/tmp/FapTestTmp"
-
-
-def test_xdg_state_dir_prefix_w_xdg_env():
-    os.environ["XDG_STATE_HOME"] = "/tmp"
-    expectedFullPath = "/tmp/fapolicy-analyzer/FapTestTmp"
-    generatedFullPath = xdg_state_dir_prefix("FapTestTmp")
-    del os.environ["XDG_STATE_HOME"]
-
-    assert expectedFullPath == generatedFullPath
