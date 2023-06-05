@@ -158,6 +158,7 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
 %files -n %{name} -f %{name}.lang
 %doc scripts/srpm/README
 %license LICENSE
+about_template
 %{python3_sitearch}/%{module}
 %{python3_sitearch}/%{module}-%{module_version}*
 %attr(755,root,root) %{_sbindir}/%{name}
