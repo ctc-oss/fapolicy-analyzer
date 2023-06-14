@@ -2,6 +2,7 @@
 members = [
     "crates/analyzer",
     "crates/app",
+    "crates/auparse",
     "crates/daemon",
     "crates/pyo3",
     "crates/rules",

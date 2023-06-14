@@ -1,0 +1,11 @@
+[package]
+name = "fapolicy-auparse"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+thiserror = "1"
+
+[dependencies.auparse-sys]
+package = "fapolicy-auparse-sys"
+path = "sys"
