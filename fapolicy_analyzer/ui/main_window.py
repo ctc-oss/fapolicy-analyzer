@@ -15,6 +15,7 @@
 
 import logging
 import os
+import subprocess
 from locale import gettext as _
 from os import getenv, geteuid, path
 from threading import Thread
@@ -359,6 +360,8 @@ class MainWindow(UIConnectedWidget):
 
     def on_aboutMenu_activate(self, *args):
         aboutDialog = self.get_object("aboutDialog")
+        os_info = subprocess.call(["uname", "-nr"])
+        git_info = subprocess.call(["git" ,"log", "-n", "1"])
         aboutDialog.set_transient_for(self.window)
         aboutDialog.set_version(f"v{app_version}")
         aboutDialog.run()
