@@ -7,3 +7,7 @@ pub use bindings::*;
 
 include!("bindings.rs");
 mod bindings;
+
+pub mod error;
+pub mod event;
+mod util;

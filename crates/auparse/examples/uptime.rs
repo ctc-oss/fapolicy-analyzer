@@ -1,14 +1,22 @@
+use auparse_sys::event::Event;
 use chrono::{DateTime, Local};
 use fapolicy_auparse::error::Error;
 use fapolicy_auparse::error::Error::GeneralFail;
 use fapolicy_auparse::logs::Logs;
 use fapolicy_auparse::record::Type::SystemBoot;
-use std::alloc::System;
 use std::time::SystemTime;
+
+struct BootEvent {
+    time: SystemTime,
+}
+
+fn parse(e: Event) -> Option<BootEvent> {
+    Some(BootEvent { time: e.time() })
+}
 
 /// Example that behaves like the ubiquitous uptime command
 fn main() -> Result<(), Error> {
-    let log = Logs::filtered(|t| t == SystemBoot)?;
+    let log = Logs::filtered(parse, |t| t == SystemBoot)?;
 
     // filter the log to boots and take the last one
     let then = log.last().expect("[fail] no boot entries");

@@ -331,6 +331,7 @@ name = "fapolicy-auparse-sys"
 version = "0.1.0"
 dependencies = [
  "bindgen",
+ "thiserror",
 ]
 
 [[package]]

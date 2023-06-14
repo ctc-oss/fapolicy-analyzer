@@ -13,6 +13,6 @@ pub enum Error {
     #[error("Failed to init auparse")]
     NativeInitFail,
 
-    #[error("Failed to get field {0}")]
-    GetAuditFieldFail(String),
+    #[error("Native error {0}")]
+    AuditParseError(#[from] auparse_sys::error::Error),
 }
