@@ -9,3 +9,6 @@ thiserror = "1"
 [dependencies.auparse-sys]
 package = "fapolicy-auparse-sys"
 path = "sys"
+
+[dev-dependencies]
+chrono = "0.4"
