@@ -152,6 +152,7 @@ el9-rpm:
 	podman build -t fapolicy-analyzer:el9 -f scripts/srpm/Containerfile.el9 .
 	podman run --rm -it --network=none -v /tmp:/v fapolicy-analyzer:el9 /v
 
+# Update embedded help documentation
 help-docs:
 	python3 help update
 	python3 help build
