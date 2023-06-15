@@ -319,12 +319,6 @@ jobs:
         run: |
           dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-${{ matrix.props.version }}.noarch.rpm
 
-      - name: Enable EPEL Testing
-        if: startsWith(matrix.props.dist, 'el9')
-        run: |
-          dnf install -y yum-utils
-          yum-config-manager --enable epel-testing
-
       - name: Install RPM
         run: |
           dnf install -y /tmp/src/fapolicy-analyzer-*.${{ matrix.props.dist }}.x86_64.rpm
