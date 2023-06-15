@@ -385,12 +385,24 @@ class MainWindow(UIConnectedWidget):
             self.__help.connect("destroy", handle_destroy)
         self.__help.show()
 
-    def on_syslogMenu_activate(self, *args):
-        page = router(PAGE_SELECTION.ANALYZE_SYSLOG, True)
-        height = self.get_object("mainWindow").get_size()[1]
-        page.get_object("botBox").set_property(
+    def resize_analysis_page(self, page):
+        [height, width] = self.get_object("mainWindow").get_size()
+        page.get_object("userDetailScroll").set_property(
             "height_request", int(height * Sizing.POLICY_BOTTOM_BOX)
         )
+        page.get_object("subjectDetailScroll").set_property(
+            "height_request", int(height * Sizing.POLICY_BOTTOM_BOX)
+        )
+        page.get_object("objectDetailScroll").set_property(
+            "height_request", int(height * Sizing.POLICY_BOTTOM_BOX)
+        )
+        page.get_object("mainPane").set_position(
+            int(width * Sizing.POLICY_OBJECT_WIDTH)
+        )
+
+    def on_syslogMenu_activate(self, *args):
+        page = router(PAGE_SELECTION.ANALYZE_SYSLOG, True)
+        self.resize_analysis_page(page)
         self.__pack_main_content(page)
 
     def on_analyzeMenu_activate(self, *args):
@@ -403,10 +415,7 @@ class MainWindow(UIConnectedWidget):
         if path.isfile(_file):
             page = router(PAGE_SELECTION.ANALYZE_FROM_DEBUG, False, _file)
             page.object_list.rule_view_activate += self.on_rulesAdminMenu_activate
-            height = self.get_object("mainWindow").get_size()[1]
-            page.get_object("botBox").set_property(
-                "height_request", int(height * Sizing.POLICY_BOTTOM_BOX)
-            )
+            self.resize_analysis_page(page)
             self.__pack_main_content(page)
 
         fcd.destroy()
@@ -414,6 +423,7 @@ class MainWindow(UIConnectedWidget):
     def activate_file_analyzer(self, file):
         page = router(PAGE_SELECTION.ANALYZE_FROM_DEBUG, False, file)
         page.object_list.rule_view_activate += self.on_rulesAdminMenu_activate
+        self.resize_analysis_page(page)
         self.__pack_main_content(page)
 
     def on_trustDbMenu_activate(self, menuitem, *args):
