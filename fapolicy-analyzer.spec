@@ -163,6 +163,8 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
 %attr(755,root,root) %{_sbindir}/%{name}
 %attr(644,root,root) %{_mandir}/man8/%{name}.8*
 %attr(755,root,root) %{_datadir}/applications/%{name}.desktop
+%config(noreplace) %attr(644,root,root) %{_sysconfdir}/%{name}/config.toml
+%ghost %attr(640,root,root) %verify(not md5 size mtime) %{_localstatedir}/log/%{name}/%{name}.log
 
 %changelog
 * Mon May 29 2023 John Wass <jwass3@gmail.com> 1.0.3-1
