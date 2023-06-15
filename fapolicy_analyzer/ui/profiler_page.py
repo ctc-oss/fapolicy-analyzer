@@ -17,7 +17,14 @@ import html
 import logging
 import datetime
 import pwd
+import os
+import re
+
+import pathlib
+import shutil
+from enum import Enum
 from typing import Optional
+import fapolicy_analyzer.ui.strings as s
 
 import gi
 from events import Events
@@ -27,10 +34,6 @@ from fapolicy_analyzer.ui.actions import (
     stop_profiling,
 )
 from fapolicy_analyzer.ui.actions import NotificationType, add_notification
-from fapolicy_analyzer.ui.faprofiler import (
-    EnumErrorPairs2Str,
-    FaProfSession,
-)
 from fapolicy_analyzer.ui.reducers.profiler_reducer import (
     ProfilerState,
     ProfilerTick,
@@ -44,6 +47,34 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
 
 
+class ProfArgsStatus(Enum):
+    OK = 0
+    EXEC_EMPTY = 1
+    EXEC_DOESNT_EXIST = 2
+    EXEC_NOT_EXEC = 3
+    EXEC_NOT_FOUND = 4
+    USER_DOESNT_EXIST = 5
+    PWD_DOESNT_EXIST = 6
+    PWD_ISNT_DIR = 7
+    ENV_VARS_FORMATING = 8
+    UNKNOWN = 9
+
+
+class ProfArgsException(RuntimeError):
+    def __init__(self, msg="Unknown error", enumError=ProfArgsStatus.UNKNOWN):
+        self.error_msg = f"Profiler Args: {msg}"
+        self.error_enum = enumError
+
+
+def EnumErrorPairs2Str(dictStatusEnums):
+    """Converts the dict collection of profiler argument error to a string for
+    displaying in the pop-up notification.
+    """
+    return "\n  ".join([f"Error: {r}" for r in (dictStatusEnums or {}).values()])
+
+
+###########################################################################
+# ProfilerPage methods
 class ProfilerPage(UIConnectedWidget, UIPage, Events):
     def __init__(self, fapd_manager):
         UIConnectedWidget.__init__(self, get_profiling_feature(), on_next=self.on_event)
@@ -161,7 +192,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         self.can_stop = state.running
         if self.needs_state:
             self.needs_state = False
-            self.update_input_fields(state.cmd, state.uid, state.pwd, state.env)
+            self.update_input_fields(state.cmd, state.uid, state.pwd_ui, state.env)
 
     def on_analyzer_button_clicked(self, *args):
         self.analyze_button_pushed(self.analysis_file)
@@ -204,12 +235,18 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         return self._get_opt_text("envText")
 
     def get_entry_dict(self):
+        """Get Profiler UI field contents and set object attributes"""
+        cmd = self.get_cmd_text()
+        arg = self.get_arg_text()
+        uid = self.get_uid_text()
+        pwd = self.get_pwd_text()
+        env = self.get_env_text()
         return {
-            "cmd": self.get_cmd_text(),
-            "arg": self.get_arg_text(),
-            "uid": self.get_uid_text(),
-            "pwd": self.get_pwd_text(),
-            "env": self.get_env_text(),
+            "cmd": cmd.strip() if cmd else None,
+            "arg": arg.strip() if arg else None,
+            "uid": uid.strip() if uid else None,
+            "pwd": pwd.strip() if pwd else None,
+            "env": env.strip() if env else None,
         }
 
     def get_entry_dict_markup(self):
@@ -246,9 +283,9 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
 
     def on_start_clicked(self, *args):
         profiling_args = self.get_entry_dict()
-        if not FaProfSession.validSessionArgs(profiling_args):
+        if not FaProfArgs.validSessionArgs(profiling_args):
             logging.info("Invalid Profiler arguments")
-            dictInvalidEnums = FaProfSession.validateArgs(profiling_args)
+            dictInvalidEnums = FaProfArgs.validateArgs(profiling_args)
             strStatusEnums = "\n  " + EnumErrorPairs2Str(dictInvalidEnums)
             dispatch(
                 add_notification(
@@ -270,21 +307,264 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
                 "<span size='large'><b>Profiler starting...</b></span>"
             )
 
-            profiling_args = self.make_profiling_args()
+            profiling_args = self._make_profiling_args()
 
             logging.debug(f"Entry text = {profiling_args}")
             dispatch(start_profiling(profiling_args))
 
-    def make_profiling_args(self):
+    def _make_profiling_args(self):
         res = dict(self.get_entry_dict())
-        res["env_dict"] = FaProfSession.comma_delimited_kv_string_to_dict(
-            res.get("env", "")
+        logging.debug(f"make_profiling_args(): form args = {res}")
+
+        # Pack raw UI field data to save in redux
+        res["pwd_ui"] = res["pwd"]
+
+        # expand $HOME and $USER if used.
+        ex_res = _args_user_home_expansion(res)
+        logging.debug(f"make_profiling_args(): expanded form args = {ex_res}")
+        d = FaProfArgs.comma_delimited_kv_string_to_dict(ex_res.get("env", ""))
+        if d and "PATH" in d:
+            d["PATH"] = expand_path(d.get("PATH"), ex_res.get("pwd", ".") or ".")
+        res["env_dict"] = d
+        res["pwd"] = ex_res["pwd"]
+        logging.debug(f"_make_profiling_args(): expanded w/env dict = {res}")
+        return res
+
+
+class FaProfArgs:
+    @staticmethod
+    def which(dictProfTgt):
+        FaProfArgs.throwOnInvalidSessionArgs(dictProfTgt)
+        return FaProfArgs._rel_tgt_which(
+            dictProfTgt.get("cmd", ""),
+            FaProfArgs.comma_delimited_kv_string_to_dict(dictProfTgt.get("env", "")),
+            dictProfTgt.get("pwd", ""),
         )
 
-        # If the user is specified but a working dir is not, use the user's HOME
-        if res["uid"] and not res["pwd"]:
-            # We don't catch exception here because args previously validated
-            user_pw_record = pwd.getpwnam(res["uid"])
-            res["pwd"] = user_pw_record.pw_dir
+    @staticmethod
+    def _rel_tgt_which(relative_exec, user_provided_env, working_dir):
+        """
+        Given a specified relative executable and a colon separated PATH string
+        or the environment PATH variable return the absolute path of executable
+        """
 
-        return res
+        # Use user provided PATH otherwise use env var PATH, also expand periods
+        # with specified cwd arg value or the default current working dir.
+        if user_provided_env and "PATH" in user_provided_env:
+            search_path = user_provided_env.get("PATH")
+        else:
+            search_path = os.getenv("PATH")
+
+        # Substitute the current working dir for any periods or colons in  path
+        search_path = expand_path(search_path, working_dir)
+        logging.debug(f"exec={relative_exec}, Profiling PATH = {search_path}")
+
+        # If exec path exist, convert to absolute path if needed
+        discovered_exec_path = shutil.which(relative_exec, path=search_path)
+        if discovered_exec_path and not os.path.isabs(discovered_exec_path):
+            discovered_exec_path = os.path.abspath(discovered_exec_path)
+        logging.info(f"_rel_tgt_which() - return value:{discovered_exec_path}")
+        return discovered_exec_path
+
+    @staticmethod
+    def validSessionArgs(dictProfTgt):
+        """Determine Profiler session argument status. Return bool"""
+        return ProfArgsStatus.OK in FaProfArgs.validateArgs(dictProfTgt)
+
+    @staticmethod
+    def throwOnInvalidSessionArgs(dictProfTgt):
+        """Throw exception on first invalid Profiler session argument."""
+        dictInvalidEnums = FaProfArgs.validateArgs(dictProfTgt)
+        if ProfArgsStatus.OK not in dictInvalidEnums:
+            error_enum = next(iter(dictInvalidEnums))
+            error_msg = dictInvalidEnums.get(error_enum)
+            raise ProfArgsException(error_msg, error_enum)
+
+    @staticmethod
+    def validateArgs(dictProfTgt):
+        """
+        Validates the Profiler Args object's user, target, pwd parameters.
+        Returns a dictionary mapping enums to error msgs w/original entry text
+        """
+        logging.info("validateArgs()")
+        # Verify all keys are in dictProfTgt; delta_keys should be empty.
+        expected_keys = {"cmd", "arg", "uid", "pwd", "env"}
+        delta_keys = expected_keys.difference(dictProfTgt.keys())
+        if delta_keys:
+            raise KeyError(f"Missing {delta_keys} key(s) from Profiler Page")
+
+        dictReturn = {}
+        logging.debug(f"validateArgs({dictProfTgt}")
+        dict_expanded_args = _args_user_home_expansion(dictProfTgt)
+        exec_path = dictProfTgt.get("cmd", "")
+        exec_user = dictProfTgt.get("uid", "")
+        orig_pwd = dictProfTgt.get("pwd", "")
+        exec_pwd = dict_expanded_args.get("pwd", "")
+
+        # user?
+        user_pw_record = None  # passwd file record associated with a user
+        try:
+            if exec_user:
+                user_pw_record = pwd.getpwnam(exec_user)
+        except KeyError as e:
+            logging.debug(f"User {exec_user} does not exist: {e}")
+            dictReturn[ProfArgsStatus.USER_DOESNT_EXIST] = (
+                exec_user + s.PROF_ARG_USER_DOESNT_EXIST
+            )
+
+        # working dir?
+        # Verify expanded pwd up-front  because it is used with relative exec
+        # paths as the current working dir
+        if exec_pwd:
+            logging.debug(f"Processing current working dir: {exec_pwd}")
+            if not os.path.exists(exec_pwd):
+                dictReturn[ProfArgsStatus.PWD_DOESNT_EXIST] = (
+                    orig_pwd + s.PROF_ARG_PWD_DOESNT_EXIST
+                )
+
+            elif not os.path.isdir(exec_pwd):
+                dictReturn[ProfArgsStatus.PWD_ISNT_DIR] = (
+                    orig_pwd + s.PROF_ARG_PWD_ISNT_DIR
+                )
+        else:
+            # If valid user is specified and working dir is not, use user's HOME
+            if user_pw_record and user_pw_record.pw_dir:
+                exec_pwd = user_pw_record.pw_dir
+            else:
+                exec_pwd = os.getcwd()
+
+        if not dictReturn:
+            logging.debug("FaProfArgs::validateArgs() --> pwd verified")
+
+        # Validate, convert CSV  env string of "K=V" substrings to dict
+        try:
+            exec_env = FaProfArgs.comma_delimited_kv_string_to_dict(
+                dict_expanded_args.get("env", "")
+            )
+
+        except RuntimeError as e:
+            exec_env = None
+            dictReturn[ProfArgsStatus.ENV_VARS_FORMATING] = e
+        except Exception as e:
+            exec_env = None
+            dictReturn[ProfArgsStatus.ENV_VARS_FORMATING] = (
+                s.PROF_ARG_ENV_VARS_FORMATING + f", {e}"
+            )
+
+        # exec empty?
+        if not exec_path:
+            dictReturn[ProfArgsStatus.EXEC_EMPTY] = s.PROF_ARG_EXEC_EMPTY
+
+        else:
+            # If absolute path
+            if os.path.isabs(exec_path):
+                # absolute and exists?
+                if not os.path.exists(exec_path):
+                    dictReturn[ProfArgsStatus.EXEC_DOESNT_EXIST] = (
+                        exec_path + s.PROF_ARG_EXEC_DOESNT_EXIST
+                    )
+
+                else:
+                    # absolute and executable?
+                    if not os.access(exec_path, os.X_OK):
+                        dictReturn[ProfArgsStatus.EXEC_NOT_EXEC] = (
+                            exec_path + s.PROF_ARG_EXEC_NOT_EXEC
+                        )
+            else:
+                # relative exec path
+                new_path = FaProfArgs._rel_tgt_which(exec_path, exec_env, exec_pwd)
+                if not new_path:
+                    dictReturn[ProfArgsStatus.EXEC_NOT_FOUND] = (
+                        exec_path + s.PROF_ARG_EXEC_NOT_FOUND
+                    )
+                else:
+                    # Convert relative exec path to absolute exec path
+                    exec_path = new_path
+
+        return dictReturn or {ProfArgsStatus.OK: s.PROF_ARG_OK}
+
+    @staticmethod
+    def comma_delimited_kv_string_to_dict(string_in):
+        """Generates dictionary from comma separated string of k=v pairs"""
+        if not string_in:
+            return None
+
+        dictReturn = {
+            k: v.strip('"')
+            for k, v in dict(x.strip().split("=") for x in string_in.split(",")).items()
+        }
+        # Verify keys are only letters and underscores
+        for k in dictReturn.keys():
+            if not re.match("^[a-zA-Z_][a-zA-Z0-9_]*$", k):
+                raise RuntimeError(s.PROF_ARG_ENV_VARS_NAME_BAD + f": ' {k} '")
+        return dictReturn
+
+
+###########################################################################
+#                            Utility Functions
+def _expand_user_home(str_in, user, home):
+    """Expand $HOME and $USER strings in the str_in string"""
+    logging.debug(f"_expand_user_home({str_in}, {user}, {home})")
+    if user:
+        str_in = re.sub(r"\$USER|\${USER}", user, str_in)
+    if home:
+        str_in = re.sub(r"\$HOME|\${HOME}", home, str_in)
+    logging.debug(f"Return: {str_in}")
+    return str_in
+
+
+def _args_user_home_expansion(dict_args_in):
+    """Expand $HOME and $USER strings in the pwd, env, and arg fields"""
+    logging.debug(f"_args_user_home_expansion(in): {dict_args_in}")
+    dict_args = dict(dict_args_in)
+    if dict_args["uid"]:
+        # Use specified user and verify it is valid
+        username = dict_args["uid"]
+        try:
+            user_pw_record = pwd.getpwnam(username)
+        except Exception:
+            user_id = os.getuid()
+            user_pw_record = pwd.getpwuid(user_id)
+    else:
+        # Otherwise use effective user
+        user_id = os.getuid()
+        user_pw_record = pwd.getpwuid(user_id)
+    username = user_pw_record.pw_name
+    homedir = user_pw_record.pw_dir
+
+    for k in dict_args:
+        if (k == "pwd" or k == "env" or k == "arg") and dict_args[k]:
+            dict_args[k] = _expand_user_home(dict_args[k], username, homedir)
+
+    # Populate pwd field w/user home if uid specified and pwd empty
+    if not dict_args["pwd"]:
+        dict_args["pwd"] = homedir
+
+    logging.debug(f"_args_user_home_expansion(out): {dict_args}")
+    return dict_args
+
+
+def expand_path(colon_separated_str, cwd="."):
+    """Expands user supplied PATH argument that contains embedded 'PATH'
+    variable, leading colon, terminating colon, or an intermediate double colon.
+    These final three colon notations map to the user supplied working dir.
+    """
+    logging.debug(f"expand_path({colon_separated_str}, {cwd})")
+
+    # Expand native PATH env var if in user provided PATH env var string
+    expanded_path = re.sub(r"\$\{?PATH\}?", os.environ.get("PATH"), colon_separated_str)
+
+    # Expand implied and explicit '.' notation to supplied cwd argument
+    expanded_path = re.sub(r":\.{0,1}$", f":{cwd}", expanded_path)
+    expanded_path = re.sub(r"^\.{0,1}:", f"{cwd}:", expanded_path)
+    expanded_path = re.sub(r":\.{0,1}:", "f:{cwd}:", expanded_path)
+    expanded_path = re.sub(r"^\.$", f"{cwd}", expanded_path)
+
+    # Similarly substitute parent of cwd for double periods when possible
+    path_cwd = pathlib.Path(cwd)
+    ppath_cwd = path_cwd.parent
+    if ppath_cwd != path_cwd:
+        expanded_path = re.sub(r"\.\.", f"{ppath_cwd}", expanded_path)
+
+    logging.debug(f"expand_path::path = {expanded_path}")
+    return expanded_path
