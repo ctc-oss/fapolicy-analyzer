@@ -31,6 +31,7 @@ from fapolicy_analyzer.ui.actions import (
 class ProfilerState(NamedTuple):
     cmd: Optional[str]
     pwd: Optional[str]
+    pwd_ui: Optional[str]
     env: Optional[str]
     uid: Optional[str]
     pid: Optional[int]
@@ -83,6 +84,7 @@ def empty_profiler_state():
     return ProfilerState(
         cmd=None,
         pwd=None,
+        pwd_ui=None,
         env=None,
         uid=None,
         pid=None,
@@ -111,8 +113,11 @@ def handle_start_profiling_request(
     args: Dict[str, str] = action.payload
     uid = args.get("uid", None)
     pwd = args.get("pwd", None)
+    pwd_ui = args.get("pwd_ui", None)
     env = args.get("env", None)
-    return derive_profiler_state(ProfilerState, state, uid=uid, pwd=pwd, env=env)
+    return derive_profiler_state(
+        ProfilerState, state, uid=uid, pwd=pwd, pwd_ui=pwd_ui, env=env
+    )
 
 
 def handle_start_profiling_response(
@@ -131,7 +136,7 @@ def handle_set_profiler_output(state: ProfilerState, action: Action) -> Profiler
 
 def handle_clear_profiler_state(state: ProfilerState, action: Action) -> ProfilerState:
     return derive_profiler_state(
-        ProfilerState, state, cmd=None, pwd=None, env=None, uid=None
+        ProfilerState, state, cmd=None, pwd=None, pwd_ui=None, env=None, uid=None
     )
 
 
