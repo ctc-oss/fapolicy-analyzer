@@ -15,6 +15,7 @@
 
 import logging
 import os
+import json
 import subprocess
 from locale import gettext as _
 from os import getenv, geteuid, path
@@ -27,6 +28,7 @@ import gi
 import fapolicy_analyzer.ui.strings as strings
 from fapolicy_analyzer import System
 from fapolicy_analyzer import __version__ as app_version
+from fapolicy_analyzer.ui.about_dialog import AboutDialog
 from fapolicy_analyzer.ui.action_toolbar import ActionToolbar
 from fapolicy_analyzer.ui.actions import (
     NotificationType,
@@ -359,13 +361,34 @@ class MainWindow(UIConnectedWidget):
         fcd.destroy()
 
     def on_aboutMenu_activate(self, *args):
-        aboutDialog = self.get_object("aboutDialog")
-        os_info = subprocess.call(["uname", "-nr"])
-        git_info = subprocess.call(["git" ,"log", "-n", "1"])
-        aboutDialog.set_transient_for(self.window)
-        aboutDialog.set_version(f"v{app_version}")
-        aboutDialog.run()
-        aboutDialog.hide()
+        aboutDialog = AboutDialog()
+        abspath = path.abspath("./data/fapolicy-analyzer-about.json")
+        if path.isfile(abspath):
+            try:
+                os_info = subprocess.getoutput(["uname -nr"])
+                git_info = subprocess.getoutput(["git log -n 1"])
+                time_info = subprocess.getoutput("date")
+                f = open(abspath, "r")
+                data = json.load(f)
+                f.close()
+
+                if "OS_UNKNOWN" in data["os_info"]:
+                    print(os_info)
+                    data["os_info"] = os_info
+                if "GIT_UNKNOWN" in data["git_info"]:
+                    data["git_info"] = git_info
+                if "TIME_UNKNOWN" in data["time_info"]:
+                    data["time_info"] = time_info
+
+            except Exception:
+                logging.debug("About JSON could not be opened")
+
+        aboutDialog.get_object("version_label").set_text(f"v{app_version}")
+        aboutDialog.get_object("time_label").set_text(f"Build Time: {data['time_info']}")
+        aboutDialog.get_object("git_label").set_text(f"Git Build: {data['git_info']}")
+        aboutDialog.get_object("os_label").set_text(f"Build Environment: {data['os_info']}")
+        aboutDialog.get_ref().run()
+        aboutDialog.get_ref().hide()
 
     def on_helpMenu_activate(self, *args):
         def handle_destroy(*args):
