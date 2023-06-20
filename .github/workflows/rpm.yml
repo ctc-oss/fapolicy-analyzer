@@ -155,9 +155,7 @@ jobs:
 
       - name: Generate about page information
         run: |
-          sed -i 's/OS_UNKNOWN/${uname -nr}' data/fapolicy-analyzer-about.json
-          sed -i 's/GIT_UNKNOWN/${git log -n 1}' data/fapolicy-analyzer-about.json
-          sed -i 's/TIME_UNKNOWN/${date}' data/fapolicy-analyzer-about.json
+          /bin/python3 scripts/about.py
 
       - name: Mark as git safe
         run: |
