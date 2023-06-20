@@ -154,11 +154,9 @@ jobs:
           path: /tmp/rpmbuild/SOURCES/
 
       - name: Generate about page information
-      - run: |
+        run: |
           sed -i 's/OS_UNKNOWN/${uname -nr}' data/fapolicy-analyzer-about.json
-      - run: |
           sed -i 's/GIT_UNKNOWN/${git log -n 1}' data/fapolicy-analyzer-about.json
-      - run: |
           sed -i 's/TIME_UNKNOWN/${date}' data/fapolicy-analyzer-about.json
 
       - name: Mark as git safe
