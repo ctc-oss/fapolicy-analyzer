@@ -15,6 +15,7 @@
 
 from fapolicy_analyzer.ui.ui_widget import UIBuilderWidget
 
+
 class AboutDialog(UIBuilderWidget):
     def __init__(self, parent=None):
         super().__init__()

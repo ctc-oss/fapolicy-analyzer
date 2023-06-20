@@ -106,6 +106,7 @@ class MainWindow(UIConnectedWidget):
         self.__application = None
         self.__page = None
         self.__help = None
+        self.aboutDialog = AboutDialog()
 
         toaster = Notification(timer_duration=5)
         self.get_object("overlay").add_overlay(toaster.get_ref())
@@ -361,7 +362,6 @@ class MainWindow(UIConnectedWidget):
         fcd.destroy()
 
     def on_aboutMenu_activate(self, *args):
-        aboutDialog = AboutDialog()
         abspath = path.abspath("./data/fapolicy-analyzer-about.json")
         if path.isfile(abspath):
             try:
@@ -373,7 +373,6 @@ class MainWindow(UIConnectedWidget):
                 f.close()
 
                 if "OS_UNKNOWN" in data["os_info"]:
-                    print(os_info)
                     data["os_info"] = os_info
                 if "GIT_UNKNOWN" in data["git_info"]:
                     data["git_info"] = git_info
@@ -383,12 +382,16 @@ class MainWindow(UIConnectedWidget):
             except Exception:
                 logging.debug("About JSON could not be opened")
 
-        aboutDialog.get_object("version_label").set_text(f"v{app_version}")
-        aboutDialog.get_object("time_label").set_text(f"Build Time: {data['time_info']}")
-        aboutDialog.get_object("git_label").set_text(f"Git Build: {data['git_info']}")
-        aboutDialog.get_object("os_label").set_text(f"Build Environment: {data['os_info']}")
-        aboutDialog.get_ref().run()
-        aboutDialog.get_ref().hide()
+        self.aboutDialog.get_object("version_label").set_text(f"v{app_version}")
+        self.aboutDialog.get_object("time_label").set_text(
+            f"Build Time: {data['time_info']}"
+        )
+        self.aboutDialog.get_object("git_label").set_text(f"Git Build: {data['git_info']}")
+        self.aboutDialog.get_object("os_label").set_text(
+            f"Build Environment: {data['os_info']}"
+        )
+        self.aboutDialog.get_ref().run()
+        self.aboutDialog.get_ref().hide()
 
     def on_helpMenu_activate(self, *args):
         def handle_destroy(*args):
