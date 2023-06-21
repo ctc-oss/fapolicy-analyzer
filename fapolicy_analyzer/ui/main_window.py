@@ -362,7 +362,14 @@ class MainWindow(UIConnectedWidget):
         fcd.destroy()
 
     def on_aboutMenu_activate(self, *args):
-        abspath = path.abspath("./data/fapolicy-analyzer-about.json")
+        rpm_path = ""
+        try:
+            rpm_path = subprocess.getoutput(
+                "rpm -ql fapolicy-analyzer | grep fapolicy-analyzer-about"
+            )
+        except Exception:
+            logging.debug("Failed to query for an rpm install")
+        abspath = rpm_path if not rpm_path == "" else path.abspath("./data/fapolicy-analyzer-about.json") 
         if path.isfile(abspath):
             try:
                 os_info = subprocess.getoutput(["uname -nr"])

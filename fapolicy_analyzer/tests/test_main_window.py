@@ -161,9 +161,10 @@ def test_does_not_show_confirm_if_no_unapplied_changes(mainWindow, mocker):
 
 def test_displays_about_dialog(mainWindow, mocker):
     menuItem = mainWindow.get_object("aboutMenu")
-    mocker.patch.object(mainWindow.aboutDialog.get_ref(), "run", return_value=Gtk.ResponseType.OK)
+    mocker.patch.object(
+        mainWindow.aboutDialog.get_ref(), "run", return_value=Gtk.ResponseType.OK
+    )
     menuItem.activate()
-    #mainWindow.aboutDialog.get_object("button1").clicked()
     mainWindow.aboutDialog.get_ref().run.assert_called()
 
 
