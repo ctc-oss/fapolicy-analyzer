@@ -369,7 +369,11 @@ class MainWindow(UIConnectedWidget):
             )
         except Exception:
             logging.debug("Failed to query for an rpm install")
-        abspath = rpm_path if not rpm_path == "" else path.abspath("./data/fapolicy-analyzer-about.json") 
+        abspath = (
+            rpm_path
+            if not rpm_path == ""
+            else path.abspath("./data/fapolicy-analyzer-about.json")
+        )
         if path.isfile(abspath):
             try:
                 os_info = subprocess.getoutput(["uname -nr"])
@@ -393,7 +397,9 @@ class MainWindow(UIConnectedWidget):
         self.aboutDialog.get_object("time_label").set_text(
             f"Build Time: {data['time_info']}"
         )
-        self.aboutDialog.get_object("git_label").set_text(f"Git Build: {data['git_info']}")
+        self.aboutDialog.get_object("git_label").set_text(
+            f"Git Build: {data['git_info']}"
+        )
         self.aboutDialog.get_object("os_label").set_text(
             f"Build Environment: {data['os_info']}"
         )
