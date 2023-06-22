@@ -16,7 +16,6 @@
 import logging
 import os
 import json
-import subprocess
 from locale import gettext as _
 from os import getenv, geteuid, path
 from threading import Thread
@@ -28,6 +27,7 @@ import gi
 import fapolicy_analyzer.ui.strings as strings
 from fapolicy_analyzer import System
 from fapolicy_analyzer import __version__ as app_version
+from fapolicy_analyzer.ui import get_resource
 from fapolicy_analyzer.ui.about_dialog import AboutDialog
 from fapolicy_analyzer.ui.action_toolbar import ActionToolbar
 from fapolicy_analyzer.ui.actions import (
@@ -362,24 +362,20 @@ class MainWindow(UIConnectedWidget):
         fcd.destroy()
 
     def on_aboutMenu_activate(self, *args):
-        rpm_path = ""
-        try:
-            rpm_path = subprocess.getoutput(
-                "rpm -ql fapolicy-analyzer | grep fapolicy-analyzer-about"
-            )
-        except Exception:
-            logging.debug("Failed to query for an rpm install")
-        abspath = (
-            rpm_path
-            if not rpm_path == ""
-            else path.abspath("./data/fapolicy-analyzer-about.json")
-        )
-        if path.isfile(abspath):
+        rpm_path = get_resource(f"build-info.json")
+
+        data = {
+                  "os_info" : "OS_UNKNOWN",
+                  "git_info" : "GIT_UNKNOWN",
+                  "time_info" : "TIME_UNKNOWN",
+                }
+
+        if rpm_path:
             try:
                 os_info = subprocess.getoutput(["uname -nr"])
                 git_info = subprocess.getoutput(["git log -n 1"])
                 time_info = subprocess.getoutput("date")
-                f = open(abspath, "r")
+                f = open(rpm_path, "r")
                 data = json.load(f)
                 f.close()
 

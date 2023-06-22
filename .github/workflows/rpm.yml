@@ -55,6 +55,10 @@ jobs:
         run: |
           git config --global --add safe.directory $GITHUB_WORKSPACE
 
+      - name: Generate build info
+        run: |
+          /bin/python3 scripts/build-info.py
+
       - name: Vendor
         run: |
           make -f .copr/Makefile vendor-app
@@ -152,10 +156,6 @@ jobs:
         with:
           name: source0
           path: /tmp/rpmbuild/SOURCES/
-
-      - name: Generate about page information
-        run: |
-          /bin/python3 scripts/about.py
 
       - name: Mark as git safe
         run: |
