@@ -20,18 +20,20 @@ from os import path
 
 parse = argparse.ArgumentParser()
 parse.add_argument("path")
-args = parser.parse_args()
+args = parse.parse_args()
 
 
 os_info = subprocess.getoutput(["uname -nr"])
 git_info = subprocess.getoutput(["git log -n 1"])
 time_info = subprocess.getoutput("date")
 
-if isfile(args.path):
+
+if path.isfile(args.path):
     try:
         f = open(args.path, "r")
         data = json.load(f)
         f.close()
+        print(data)
         if "OS_UNKNOWN" in data["os_info"]:
             data["os_info"] = os_info
         if "GIT_UNKNOWN" in data["git_info"]:
@@ -39,12 +41,12 @@ if isfile(args.path):
         if "TIME_UNKNOWN" in data["time_info"]:
             data["time_info"] = time_info
 
-        f = open(abspath, "w")
+        f = open(args.path, "w")
         json.dump(data, f, indent=4)
         f.close()
 
     except Exception:
-        print("Could not open f{args.path}")
+        print(f"Could not open {args.path}")
 
 
 
