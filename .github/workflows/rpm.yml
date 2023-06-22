@@ -57,7 +57,7 @@ jobs:
 
       - name: Generate build info
         run: |
-          /bin/python3 scripts/build-info.py
+          /bin/python3 scripts/build-info.py ./data/build-info.json
 
       - name: Vendor
         run: |

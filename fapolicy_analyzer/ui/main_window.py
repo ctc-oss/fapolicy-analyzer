@@ -362,29 +362,19 @@ class MainWindow(UIConnectedWidget):
         fcd.destroy()
 
     def on_aboutMenu_activate(self, *args):
-        rpm_path = get_resource(f"build-info.json")
+        rpm_path = get_resource("build-info.json")
 
         data = {
-                  "os_info" : "OS_UNKNOWN",
-                  "git_info" : "GIT_UNKNOWN",
-                  "time_info" : "TIME_UNKNOWN",
-                }
+          "os_info" : "OS_UNKNOWN",
+          "git_info" : "GIT_UNKNOWN",
+          "time_info" : "TIME_UNKNOWN",
+        }
 
         if rpm_path:
             try:
-                os_info = subprocess.getoutput(["uname -nr"])
-                git_info = subprocess.getoutput(["git log -n 1"])
-                time_info = subprocess.getoutput("date")
                 f = open(rpm_path, "r")
                 data = json.load(f)
                 f.close()
-
-                if "OS_UNKNOWN" in data["os_info"]:
-                    data["os_info"] = os_info
-                if "GIT_UNKNOWN" in data["git_info"]:
-                    data["git_info"] = git_info
-                if "TIME_UNKNOWN" in data["time_info"]:
-                    data["time_info"] = time_info
 
             except Exception:
                 logging.debug("About JSON could not be opened")
