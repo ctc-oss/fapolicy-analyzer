@@ -32,17 +32,19 @@ if isfile(args.path):
         f = open(args.path, "r")
         data = json.load(f)
         f.close()
+        if "OS_UNKNOWN" in data["os_info"]:
+            data["os_info"] = os_info
+        if "GIT_UNKNOWN" in data["git_info"]:
+            data["git_info"] = git_info
+        if "TIME_UNKNOWN" in data["time_info"]:
+            data["time_info"] = time_info
+
+        f = open(abspath, "w")
+        json.dump(data, f, indent=4)
+        f.close()
+
     except Exception:
-        return
+        print("Could not open f{args.path}")
 
-    if "OS_UNKNOWN" in data["os_info"]:
-        data["os_info"] = os_info
-    if "GIT_UNKNOWN" in data["git_info"]:
-        data["git_info"] = git_info
-    if "TIME_UNKNOWN" in data["time_info"]:
-        data["time_info"] = time_info
 
-    f = open(abspath, "w")
-    json.dump(data, f, indent=4)
-    f.close()
 
