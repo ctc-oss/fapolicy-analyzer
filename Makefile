@@ -133,8 +133,8 @@ check: header-check format lint test
 
 # Execute the commands to generate the build information for display
 build-info:
-	@echo -e "${GRN}--- Build info created${NC}"
-	python3 scripts/build-info.py fapolicy_analyzer/resources/build-info.json
+	@echo -e "${GRN}-  |--- Build info created${NC}"
+  python3 scripts/build-info.py fapolicy_analyzer/resources/build-info.json
 
 # Generate Fedora rawhide rpms
 fc-rpm:

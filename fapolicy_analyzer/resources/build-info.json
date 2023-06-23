@@ -1,5 +1,5 @@
 {
-    "os_info": "fedora 5.11.12-300.fc34.x86_64",
-    "git_info": "commit 8ec79686646d14fa1171b12b2521c12ea46303a8\nAuthor: elliot <elliotbicker@gmail.com>\nDate:   Fri Jun 23 10:49:25 2023 -0700\n\n    rpm to use make",
-    "time_info": "Fri Jun 23 10:52:08 AM PDT 2023"
+    "os_info" : "OS_UNKNOWN",
+    "git_info" : "GIT_UNKNOWN",
+    "time_info" : "TIME_UNKNOWN"
 }
