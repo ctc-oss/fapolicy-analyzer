@@ -51,13 +51,13 @@ jobs:
           ref: ${{ github.ref }}
           fetch-depth: 0
 
-      - name: Generate build info
-        run: |
-          make build-info
-
       - name: Mark as git safe
         run: |
           git config --global --add safe.directory $GITHUB_WORKSPACE
+
+      - name: Generate build info
+        run: |
+          make build-info
 
       - name: Vendor
         run: |
