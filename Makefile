@@ -143,13 +143,21 @@ fc-rpm:
 	podman build -t fapolicy-analyzer:38 -f Containerfile .
 	podman run --rm -it --network=none -v /tmp:/v fapolicy-analyzer:38 /v
 
-# Generate RHEL rpms
-el-rpm:
-	@echo -e "${GRN}--- Rhel RPM generation...${NC}"
-	make -f .copr/Makefile vendor OS_ID=rhel
-	podman build -t fapolicy-analyzer:el -f scripts/srpm/Containerfile.el .
-	podman run --rm -it --network=none -v /tmp:/v fapolicy-analyzer:el /v
+# Generate RHEL 8 rpms
+el8-rpm:
+	@echo -e "${GRN}--- el8 RPM generation...${NC}"
+	make -f .copr/Makefile vendor OS_ID=rhel DIST=.el8 spec=scripts/srpm/fapolicy-analyzer.el8.spec
+	podman build -t fapolicy-analyzer:el8 -f scripts/srpm/Containerfile.el8 .
+	podman run --rm -it --network=none -v /tmp:/v fapolicy-analyzer:el8 /v
 
+# Generate RHEL 9 rpms
+el9-rpm:
+	@echo -e "${GRN}--- el9 RPM generation...${NC}"
+	make -f .copr/Makefile vendor OS_ID=rhel DIST=.el9 spec=scripts/srpm/fapolicy-analyzer.el9.spec
+	podman build -t fapolicy-analyzer:el9 -f scripts/srpm/Containerfile.el9 .
+	podman run --rm -it --network=none -v /tmp:/v fapolicy-analyzer:el9 /v
+
+# Update embedded help documentation
 help-docs:
 	python3 help update
 	python3 help build

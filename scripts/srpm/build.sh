@@ -20,7 +20,7 @@ rpmbuild_dir=/tmp/rpmbuild
 
 if [[ "$ONLINE" -eq 1 ]]; then
   cd ${rpmbuild_dir}/SOURCES
-  spectool -gf "../SPECS/$spec_file"
+  spectool -g "../SPECS/$spec_file"
   cd ${rpmbuild_dir}/SPECS
   dnf builddep "$spec_file" -y
 fi
