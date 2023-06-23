@@ -62,7 +62,7 @@ jobs:
       - name: Rename source0 with prerelease version
         if: endsWith(github.ref, '/master')
         run: |
-          spec_version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
+          spec_version=$(grep "Version:" fapolicy-analyzer.spec | tr -s ' ' | cut -d' ' -f2)
           commit_number=$(git rev-list HEAD --count)
           patched_version="$spec_version~dev${commit_number}"
           mv fapolicy-analyzer-${spec_version}.tar.gz fapolicy-analyzer-${patched_version}.tar.gz
@@ -70,7 +70,7 @@ jobs:
       - name: Rename source0 with pull request version
         if: github.event_name == 'pull_request'
         run: |
-          spec_version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
+          spec_version=$(grep "Version:" fapolicy-analyzer.spec | tr -s ' ' | cut -d' ' -f2)
           pr_number=${{ github.event.pull_request.number }}
           patched_version="0.0.${pr_number}"
           mv fapolicy-analyzer-${spec_version}.tar.gz fapolicy-analyzer-${patched_version}.tar.gz
