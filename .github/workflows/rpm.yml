@@ -53,7 +53,7 @@ jobs:
 
       - name: Generate build info
         run: |
-          /bin/python3 scripts/build-info.py data/build-info.json
+          /bin/python3 scripts/build-info.py fapolicy-analyzer/resources/build-info.json
 
       - name: Mark as git safe
         run: |
