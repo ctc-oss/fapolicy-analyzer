@@ -59,6 +59,22 @@ jobs:
         run: |
           make -f .copr/Makefile vendor-app spec=fapolicy-analyzer.spec
 
+      - name: Rename source0 with prerelease version
+        if: endsWith(github.ref, '/master') && github.event_name != 'pull_request_target'
+        run: |
+          spec_version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
+          commit_number=$(git rev-list HEAD --count)
+          patched_version="$spec_version~dev${commit_number}"
+          mv fapolicy-analyzer-${spec_version}.tar.gz fapolicy-analyzer-${patched_version}.tar.gz
+
+      - name: Rename source0 with pull request version
+        if: github.event_name == 'pull_request_target'
+        run: |
+          spec_version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
+          pr_number=${{ github.event.pull_request.number }}
+          patched_version="0.0.${pr_number}"
+          mv fapolicy-analyzer-${spec_version}.tar.gz fapolicy-analyzer-${patched_version}.tar.gz
+
       - name: Upload
         uses: actions/upload-artifact@v3
         with:
