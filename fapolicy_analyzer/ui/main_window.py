@@ -365,9 +365,9 @@ class MainWindow(UIConnectedWidget):
         rpm_path = get_resource("build-info.json")
 
         data = {
-            "os_info": "OS_UNKNOWN",
-            "git_info": "GIT_UNKNOWN",
-            "time_info": "TIME_UNKNOWN",
+            "os_info": "Unknown",
+            "git_info": "Unknown",
+            "time_info": "Unknown",
         }
 
         if rpm_path:

@@ -30,18 +30,11 @@ time_info = subprocess.getoutput("date")
 
 if path.isfile(args.path):
     try:
-        f = open(args.path, "r")
-        data = json.load(f)
-        f.close()
-        if "OS_UNKNOWN" in data["os_info"]:
-            data["os_info"] = os_info
-        if "GIT_UNKNOWN" in data["git_info"]:
-            data["git_info"] = git_info
-        if "TIME_UNKNOWN" in data["time_info"]:
-            data["time_info"] = time_info
-
-        print(data)
-
+        data{
+            "os_info" : os_info,
+            "git_info" : git_info,
+            "time_info" : time_info,
+        }
         f = open(args.path, "w")
         json.dump(data, f, indent=4)
         f.close()
