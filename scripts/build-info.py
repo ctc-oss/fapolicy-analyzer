@@ -30,7 +30,7 @@ time_info = subprocess.getoutput("date")
 
 if path.isfile(args.path):
     try:
-        data{
+        data = {
             "os_info" : os_info,
             "git_info" : git_info,
             "time_info" : time_info,
