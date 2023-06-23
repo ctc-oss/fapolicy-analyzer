@@ -30,11 +30,11 @@ impl Event {
     pub fn int(&self, name: &str) -> Result<i32, Error> {
         unsafe { audit_get_int(self.au.as_ptr(), name) }
     }
+
     pub fn str(&self, name: &str) -> Result<String, Error> {
         unsafe { audit_get_str(self.au.as_ptr(), name) }
     }
 
-    // todo;; pass in Parser<T>, return Option<T>
     pub fn from(ptr: *mut auparse_state_t) -> Option<Event> {
         unsafe {
             match auparse_next_event(ptr) {
