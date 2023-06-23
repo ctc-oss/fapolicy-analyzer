@@ -29,12 +29,14 @@ time_info = subprocess.getoutput("date")
 
 
 if path.isfile(args.path):
+
     try:
         data = {
             "os_info" : os_info,
             "git_info" : git_info,
             "time_info" : time_info,
         }
+        print(data)
         with open(args.path, "w") as f:
             json.dump(data, f, indent=4)
 
