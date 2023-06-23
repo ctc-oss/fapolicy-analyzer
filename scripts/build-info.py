@@ -35,9 +35,9 @@ if path.isfile(args.path):
             "git_info" : git_info,
             "time_info" : time_info,
         }
-        f = open(args.path, "w")
-        json.dump(data, f, indent=4)
-        f.close()
+        with open(args.path, "w") as f:
+            json.dump(data, f, indent=4)
+
 
     except Exception:
         print(f"Could not open {args.path}")

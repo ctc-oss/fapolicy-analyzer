@@ -372,9 +372,8 @@ class MainWindow(UIConnectedWidget):
 
         if rpm_path:
             try:
-                f = open(rpm_path, "r")
-                data = json.load(f)
-                f.close()
+                with open(rpm_path, "r") as f:
+                  data = json.load(f)
 
             except Exception:
                 logging.debug("About JSON could not be opened")
