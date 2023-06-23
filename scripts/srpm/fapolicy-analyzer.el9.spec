@@ -25,6 +25,7 @@ Source19:      %{pypi_source flit_core 3.7.1}
 Source20:      %{pypi_source typing_extensions 3.7.4.3}
 
 BuildRequires: python3-devel
+BuildRequires: python3dist(pip)
 BuildRequires: python3dist(babel)
 BuildRequires: python3dist(packaging)
 BuildRequires: python3dist(pyparsing)
