@@ -377,7 +377,7 @@ class MainWindow(UIConnectedWidget):
                 f.close()
 
             except Exception:
-                logging.debug("About JSON could not be opened")
+                logging.debug("Build info JSON could not be opened")
 
         self.aboutDialog.get_object("version_label").set_text(f"v{app_version}")
         self.aboutDialog.get_object("time_label").set_text(
