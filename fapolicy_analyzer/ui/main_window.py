@@ -362,21 +362,13 @@ class MainWindow(UIConnectedWidget):
         fcd.destroy()
 
     def on_aboutMenu_activate(self, *args):
-        rpm_path = get_resource("build-info.json")
 
         data = {
             "os_info": "Unknown",
             "git_info": "Unknown",
             "time_info": "Unknown",
         }
-
-        if rpm_path:
-            try:
-                with open(rpm_path, "r") as f:
-                    data = json.load(f)
-
-            except Exception:
-                logging.debug("About JSON could not be opened")
+        data = json.loads(get_resource("build-info.json"))
 
         self.aboutDialog.get_object("version_label").set_text(f"v{app_version}")
         self.aboutDialog.get_object("time_label").set_text(

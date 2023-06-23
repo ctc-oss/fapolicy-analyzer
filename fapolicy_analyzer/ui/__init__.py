@@ -46,7 +46,7 @@ _RESOURCES: Dict[str, str] = {}
 _RESOURCE_PKG_TYPES = {
     "fapolicy_analyzer.glade": [".glade"],
     "fapolicy_analyzer.css": [".css"],
-    "fapolicy_analyzer.json": [".json"],
+    "fapolicy_analyzer.resources": [".json"],
 }
 
 
