@@ -4,14 +4,16 @@ use fapolicy_auparse::error::Error;
 use fapolicy_auparse::error::Error::GeneralFail;
 use fapolicy_auparse::logs::Logs;
 use fapolicy_auparse::record::Type::SystemBoot;
-use std::time::SystemTime;
+use std::time::{Duration, SystemTime};
 
 struct BootEvent {
-    time: SystemTime,
+    time: u64,
 }
 
 fn parse(e: Event) -> Option<BootEvent> {
-    Some(BootEvent { time: e.time() })
+    Some(BootEvent {
+        time: e.ts() as u64,
+    })
 }
 
 /// Example that behaves like the ubiquitous uptime command
@@ -23,7 +25,7 @@ fn main() -> Result<(), Error> {
 
     // uptime from then till now
     let now = SystemTime::now();
-    let uptime = now.duration_since(then.time)?;
+    let uptime = now.duration_since(std::time::UNIX_EPOCH + Duration::from_secs(then.time))?;
 
     let datetime: DateTime<Local> = now.into();
     let duration = chrono::Duration::from_std(uptime)
