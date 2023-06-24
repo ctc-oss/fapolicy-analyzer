@@ -21,7 +21,6 @@ dist
 src/bin
 target
 venvs
-fapolicy-analyzer/resources/build-info.json
 
 *.tar.gz
 /vendor*/
