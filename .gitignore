@@ -25,4 +25,4 @@ venvs
 *.tar.gz
 /vendor*/
 
-fapolicy-analyzer/resources/build-info.json
+fapolicy_analyzer/resources/build-info.json
