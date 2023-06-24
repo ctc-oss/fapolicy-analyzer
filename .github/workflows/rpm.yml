@@ -58,7 +58,7 @@ jobs:
       - name: Generate build info
         run: |
           make build-info
-          git add fapolicy_analyzer/resources/build-info.json
+          git add -f fapolicy_analyzer/resources/build-info.json
           git commit -m build-info
 
       - name: Vendor
