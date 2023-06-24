@@ -58,6 +58,8 @@ jobs:
       - name: Generate build info
         run: |
           make build-info
+          git add fapolicy_analyzer/resources/build-info.json
+          git commit -m build-info
 
       - name: Vendor
         run: |
@@ -67,7 +69,7 @@ jobs:
         if: endsWith(github.ref, '/master')
         run: |
           spec_version=$(grep "Version:" fapolicy-analyzer.spec | tr -s ' ' | cut -d' ' -f2)
-          commit_number=$(git rev-list HEAD --count)
+          commit_number=$(git rev-list HEAD~1 --count)
           patched_version="$spec_version~dev${commit_number}"
           mv fapolicy-analyzer-${spec_version}.tar.gz fapolicy-analyzer-${patched_version}.tar.gz
 
