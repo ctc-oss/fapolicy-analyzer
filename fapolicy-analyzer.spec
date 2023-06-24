@@ -135,6 +135,8 @@ tar xvzf %{SOURCE1}
 # this overrides that check to use the RPM version
 echo %{module_version} > VERSION
 
+%{python3} scripts/build-info.py --os --time
+
 %build
 # ensure standard Rust compiler flags are set
 export RUSTFLAGS="%{build_rustflags}"
@@ -142,8 +144,6 @@ export RUSTFLAGS="%{build_rustflags}"
 %{python3} setup.py compile_catalog -f
 %{python3} help build
 %{python3} setup.py bdist_wheel
-
-%{python3} scripts/build-info.py ./fapolicy_analyzer/resources/build-info.json
 
 %install
 %{py3_install_wheel %{module}-%{module_version}*%{_target_cpu}.whl}
