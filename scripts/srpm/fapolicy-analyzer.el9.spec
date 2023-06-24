@@ -208,6 +208,8 @@ export RUSTFLAGS="%{build_rustflags}"
 %{venv_py3} help build
 %{venv_py3} setup.py bdist_wheel
 
+%{python3} scripts/build-info.py ./fapolicy_analyzer/resources/build-info.json
+
 %install
 %{py3_install_wheel %{module}-%{module_version}*%{_target_cpu}.whl}
 %{python3} help install --dest %{buildroot}/%{_datadir}/help

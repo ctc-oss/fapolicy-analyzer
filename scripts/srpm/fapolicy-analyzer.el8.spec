@@ -124,6 +124,8 @@ sed -i '/tools/d' Cargo.toml
 # this overrides that check to the RPM version
 echo %{module_version} > VERSION
 
+%{python3} scripts/build-info.py ./fapolicy_analyzer/resources/build-info.json
+
 %build
 # ensure standard Rust compiler flags are set
 export RUSTFLAGS="%{build_rustflags}"
