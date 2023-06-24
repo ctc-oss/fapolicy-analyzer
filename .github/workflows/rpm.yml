@@ -59,6 +59,8 @@ jobs:
         run: |
           make build-info
           git add -f fapolicy_analyzer/resources/build-info.json
+          git config user.name 'CI'
+          git config user.email '<>'
           git commit -m build-info
 
       - name: Vendor
