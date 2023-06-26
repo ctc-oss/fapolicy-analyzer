@@ -368,7 +368,9 @@ class MainWindow(UIConnectedWidget):
             "git_info": "Unknown",
             "time_info": "Unknown",
         }
-        data = json.loads(get_resource("build-info.json"))
+        res = get_resource("build-info.json")
+
+        data = json.loads(res) if len(res) > 0 else data
 
         self.aboutDialog.get_object("version_label").set_text(f"v{app_version}")
         self.aboutDialog.get_object("time_label").set_text(
