@@ -40,8 +40,8 @@ jobs:
 
   source0:
     name: Vendor Source0
-    runs-on: ubuntu-20.04
     container: registry.fedoraproject.org/fedora:rawhide
+    runs-on: ubuntu-20.04
     steps:
       - name: Install deps
         run: dnf install -y git make
@@ -57,18 +57,34 @@ jobs:
 
       - name: Vendor
         run: |
-          make -f .copr/Makefile vendor-app
+          make -f .copr/Makefile vendor-app spec=fapolicy-analyzer.spec
+
+      - name: Rename source0 with prerelease version
+        if: endsWith(github.ref, '/master')
+        run: |
+          spec_version=$(grep "Version:" fapolicy-analyzer.spec | tr -s ' ' | cut -d' ' -f2)
+          commit_number=$(git rev-list HEAD --count)
+          patched_version="$spec_version~dev${commit_number}"
+          mv fapolicy-analyzer-${spec_version}.tar.gz fapolicy-analyzer-${patched_version}.tar.gz
+
+      - name: Rename source0 with pull request version
+        if: github.event_name == 'pull_request'
+        run: |
+          spec_version=$(grep "Version:" fapolicy-analyzer.spec | tr -s ' ' | cut -d' ' -f2)
+          pr_number=${{ github.event.pull_request.number }}
+          patched_version="0.0.${pr_number}"
+          mv fapolicy-analyzer-${spec_version}.tar.gz fapolicy-analyzer-${patched_version}.tar.gz
 
       - name: Upload
         uses: actions/upload-artifact@v3
         with:
           name: source0
           path: |
-            fapolicy-analyzer.tar.gz
+            fapolicy-analyzer-*.tar.gz
 
       - name: Checksum
         run: |
-          sha256sum fapolicy-analyzer.tar.gz
+          sha256sum fapolicy-analyzer-*.tar.gz
 
   srpm:
     needs: [ config, source0 ]
@@ -81,7 +97,7 @@ jobs:
       - name: Enable EPEL
         if: startsWith(matrix.props.dist, 'el')
         run: |
-          dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+          dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-${{ matrix.props.version }}.noarch.rpm
 
       - name: Install Git
         run: dnf install -y git
@@ -122,7 +138,7 @@ jobs:
           echo "The spec version $spec_version is correct based on git tag $tag"
 
       - name: Patch spec with prerelease version
-        if: endsWith(github.ref, '/master') && github.event_name != 'pull_request_target'
+        if: endsWith(github.ref, '/master')
         run: |
           spec_version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
           commit_number=$(git rev-list HEAD --count)
@@ -131,7 +147,7 @@ jobs:
           grep Version ${{ matrix.props.spec }}
 
       - name: Patch spec with pull request version
-        if: github.event_name == 'pull_request_target'
+        if: github.event_name == 'pull_request'
         run: |
           spec_version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
           pr_number=${{ github.event.pull_request.number }}
@@ -174,16 +190,15 @@ jobs:
       - name: Export common tarballs
         run: |
           mkdir -p /tmp/archives
-          mv vendor-docs.tar.gz /tmp/archives
+          mv vendor-docs-*.tar.gz /tmp/archives
         env:
           PLATFORM: ${{ matrix.props.dist }}
 
       - name: Export el tarballs
         if: startsWith(matrix.props.dist, 'el')
         run: |
-          mv vendor-rs.tar.gz /tmp/archives/vendor-rs.tar.gz
-        env:
-          PLATFORM: ${{ matrix.props.dist }}
+          version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
+          mv vendor-rs-${version}.tar.gz /tmp/archives/
 
       - name: Upload SourceX
         uses: actions/upload-artifact@v3
@@ -269,7 +284,7 @@ jobs:
       - name: Enable EPEL
         if: startsWith(matrix.props.dist, 'el')
         run: |
-          dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+          dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-${{ matrix.props.version }}.noarch.rpm
 
       - name: Install RPM build dependencies
         run: |
@@ -318,7 +333,7 @@ jobs:
       - name: Enable EPEL
         if: startsWith(matrix.props.dist, 'el')
         run: |
-          dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+          dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-${{ matrix.props.version }}.noarch.rpm
 
       - name: Install RPM
         run: |
