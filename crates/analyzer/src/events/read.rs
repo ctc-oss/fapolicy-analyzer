@@ -24,7 +24,7 @@ pub fn from_syslog(path: &str) -> Result<Vec<Event>, Error> {
 }
 
 pub fn from_auditlog() -> Result<Vec<Event>, Error> {
-    audit::events(Some("/tmp/audit.log".to_string()))
+    audit::events(None)
 }
 
 pub fn from_auditlog_file(path: &str) -> Result<Vec<Event>, Error> {
