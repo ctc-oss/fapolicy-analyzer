@@ -328,6 +328,7 @@ name = "fapolicy-auparse"
 version = "0.1.0"
 dependencies = [
  "chrono",
+ "clap",
  "fapolicy-auparse-sys",
  "thiserror",
 ]

@@ -12,3 +12,4 @@ path = "sys"
 
 [dev-dependencies]
 chrono = "0.4"
+clap = { version = "3.2.20", features = ["derive"] }
