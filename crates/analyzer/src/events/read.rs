@@ -11,6 +11,7 @@ use std::io;
 use std::io::{BufRead, BufReader};
 
 use crate::error::Error;
+use crate::events::audit;
 use crate::events::event::Event;
 use crate::events::parse::parse_event;
 
@@ -20,6 +21,10 @@ pub fn from_debug(path: &str) -> Result<Vec<Event>, Error> {
 
 pub fn from_syslog(path: &str) -> Result<Vec<Event>, Error> {
     from_file(path, |s| s.contains("fapolicyd") && s.contains("rule="))
+}
+
+pub fn from_auditlog(path: &str) -> Result<Vec<Event>, Error> {
+    audit::events(Some(path.to_string()))
 }
 
 fn from_file<P>(path: &str, predicate: P) -> Result<Vec<Event>, Error>

@@ -4,21 +4,19 @@ use chrono::{DateTime, NaiveDateTime, Utc};
 use clap::Parser;
 use fapolicy_auparse::error::Error;
 use fapolicy_auparse::logs::Logs;
-use fapolicy_auparse::record;
 use fapolicy_auparse::record::Type;
 use fapolicy_auparse::record::Type::Fanotify;
 use std::convert::{TryFrom, TryInto};
 use std::path::PathBuf;
-use std::time::SystemTime;
 
 #[derive(Debug)]
-enum Perm {
+pub enum Perm {
     Open,
     Execute,
 }
 
 #[derive(Debug)]
-enum Decision {
+pub enum Decision {
     Unknown,
     Allow,
     Deny,
@@ -50,7 +48,7 @@ impl TryFrom<i32> for Decision {
 }
 
 #[derive(Debug)]
-struct FanEvent {
+pub struct FanEvent {
     pub rule_id: i32,
     pub dec: Decision,
     pub perm: Perm,

@@ -301,6 +301,8 @@ name = "fapolicy-analyzer"
 version = "0.4.1"
 dependencies = [
  "chrono",
+ "fapolicy-auparse",
+ "fapolicy-auparse-sys",
  "fapolicy-daemon",
  "fapolicy-rules",
  "fapolicy-trust",
@@ -362,6 +364,7 @@ dependencies = [
  "chrono",
  "fapolicy-analyzer",
  "fapolicy-app",
+ "fapolicy-auparse",
  "fapolicy-daemon",
  "fapolicy-rules",
  "fapolicy-trust",

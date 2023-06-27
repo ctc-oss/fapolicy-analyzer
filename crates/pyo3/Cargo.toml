@@ -17,6 +17,7 @@ log = "0.4"
 pyo3-log = "0.8"
 
 fapolicy-analyzer = { version = "*", path = "../analyzer" }
+fapolicy-auparse = { version = "*", path = "../auparse" }
 fapolicy-app = { version = "*", path = "../app" }
 fapolicy-daemon = { version = "*", path = "../daemon" }
 fapolicy-rules = { version = "*", path = "../rules" }
