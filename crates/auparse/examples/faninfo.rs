@@ -1,16 +1,59 @@
 use auparse_sys::event::Event;
 use chrono::{DateTime, NaiveDateTime, Utc};
+
+use clap::Parser;
 use fapolicy_auparse::error::Error;
 use fapolicy_auparse::logs::Logs;
 use fapolicy_auparse::record;
+use fapolicy_auparse::record::Type;
 use fapolicy_auparse::record::Type::Fanotify;
+use std::convert::{TryFrom, TryInto};
+use std::path::PathBuf;
 use std::time::SystemTime;
 
 #[derive(Debug)]
-pub struct FanEvent {
+enum Perm {
+    Open,
+    Execute,
+}
+
+#[derive(Debug)]
+enum Decision {
+    Unknown,
+    Allow,
+    Deny,
+}
+
+impl TryFrom<i32> for Perm {
+    type Error = ();
+
+    fn try_from(value: i32) -> Result<Self, Self::Error> {
+        match value {
+            59 => Ok(Perm::Execute),
+            257 => Ok(Perm::Open),
+            _ => Err(()),
+        }
+    }
+}
+
+impl TryFrom<i32> for Decision {
+    type Error = ();
+
+    fn try_from(value: i32) -> Result<Self, Self::Error> {
+        match value {
+            0 => Ok(Decision::Unknown),
+            1 => Ok(Decision::Allow),
+            2 => Ok(Decision::Deny),
+            _ => Err(()),
+        }
+    }
+}
+
+#[derive(Debug)]
+struct FanEvent {
     pub rule_id: i32,
-    pub dec: String,
-    pub perm: String,
+    pub dec: Decision,
+    pub perm: Perm,
     pub uid: i32,
     pub gid: Vec<i32>,
     pub pid: i32,
@@ -36,13 +79,29 @@ pub struct FanEvent {
 fn parse(e: Event) -> Option<FanEvent> {
     Some(FanEvent {
         rule_id: e.int("fan_info").expect("fan_info"),
-        dec: e.str("resp").expect("resp"),
+        dec: e.int("resp").expect("resp").try_into().expect("dec"),
         uid: e.int("uid").expect("uid"),
         gid: vec![e.int("gid").expect("gid")],
         pid: e.int("pid").expect("pid"),
-        subj: e.str("exe").expect("exe"),
-        perm: "-".to_string(),
-        obj: e.str("name").expect("name"),
+        subj: e
+            .str("exe")
+            .expect("exe")
+            .strip_prefix("\"")
+            .map(|s| s.to_string())
+            .unwrap()
+            .strip_suffix("\"")
+            .map(|s| s.to_string())
+            .unwrap(),
+        perm: e.int("syscall").expect("syscall").try_into().expect("perm"),
+        obj: e
+            .str("name")
+            .expect("name")
+            .strip_prefix("\"")
+            .map(|s| s.to_string())
+            .unwrap()
+            .strip_suffix("\"")
+            .map(|s| s.to_string())
+            .unwrap(),
         when: Some(DateTime::from_utc(
             NaiveDateTime::from_timestamp(e.ts(), 0),
             Utc,
@@ -50,7 +109,23 @@ fn parse(e: Event) -> Option<FanEvent> {
     })
 }
 
+#[derive(Parser)]
+#[clap(name = "Example audit log parser")]
+struct Opts {
+    /// Use a file rather than default audit log
+    pub file: Option<String>,
+}
+
+fn fanotify_only(x: Type) -> bool {
+    x == Fanotify
+}
+
 fn main() -> Result<(), Error> {
-    Logs::filtered(parse, |x| x == Fanotify)?.for_each(|e| println!("{:?}", e));
+    let opts = Opts::parse();
+    let logs = match opts.file {
+        Some(p) => Logs::filtered_from(&PathBuf::from(p), parse, fanotify_only),
+        None => Logs::filtered(parse, fanotify_only),
+    };
+    logs?.for_each(|e| println!("{:?}", e));
     Ok(())
 }
