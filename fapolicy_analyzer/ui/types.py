@@ -22,4 +22,5 @@ class PAGE_SELECTION(Enum):
     RULES_ADMIN = "rules"
     ANALYZE_FROM_DEBUG = "debug log"
     ANALYZE_SYSLOG = "syslog"
+    ANALYZE_AUDIT = "audit log"
     PROFILER = "profiler"

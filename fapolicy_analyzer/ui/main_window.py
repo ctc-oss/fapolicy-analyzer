@@ -67,6 +67,7 @@ def router(page: PAGE_SELECTION, *data) -> UIPage:
         PAGE_SELECTION.TRUST_DATABASE_ADMIN: DatabaseAdminPage,
         PAGE_SELECTION.ANALYZE_FROM_DEBUG: PolicyRulesAdminPage,
         PAGE_SELECTION.ANALYZE_SYSLOG: PolicyRulesAdminPage,
+        PAGE_SELECTION.ANALYZE_AUDIT: PolicyRulesAdminPage,
         PAGE_SELECTION.RULES_ADMIN: RulesAdminPage,
         PAGE_SELECTION.PROFILER: ProfilerPage,
     }.get(page, RulesAdminPage)
@@ -403,6 +404,11 @@ class MainWindow(UIConnectedWidget):
 
     def on_syslogMenu_activate(self, *args):
         page = router(PAGE_SELECTION.ANALYZE_SYSLOG, True)
+        self.resize_analysis_page(page)
+        self.__pack_main_content(page)
+
+    def on_auditlogMenu_activate(self, *args):
+        page = router(PAGE_SELECTION.ANALYZE_AUDIT, True)
         self.resize_analysis_page(page)
         self.__pack_main_content(page)
 

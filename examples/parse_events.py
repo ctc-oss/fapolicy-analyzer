@@ -28,7 +28,7 @@ def main():
     parser.add_argument("--starting", type=int, required=False, help="Bound results to this starting point, as seconds since epoch. Negative numbers will be treated as relative to now.")
     parser.add_argument("--until", type=int, required=False, help="Bound results to this ending point, as seconds since epoch. Negative numbers will be treated as relative to now.")
     parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose mode")
-    parser.add_argument("-i", "--input", default="syslog", help="Specify the fapolicyd event debug source. Use 'syslog' or a path to debug log. [default: 'syslog']")
+    parser.add_argument("-i", "--input", default="syslog", help="Specify the fapolicyd event debug source. Use 'syslog', 'audit', or a path to debug log. [default: 'syslog']")
 
     args = parser.parse_args()
 
@@ -55,7 +55,9 @@ def main():
         for g in gmap:
             logging.debug(f"{g}:\t{gmap[g]}")
 
-    if args.input == "syslog":
+    if args.input == "audit":
+        event_log = s1.load_auditlog()
+    elif args.input == "syslog":
         event_log = s1.load_syslog()
     else:
         event_log = s1.load_debuglog(args.input)
@@ -81,8 +83,8 @@ def main():
     for s in event_log.subjects():
         logging.debug(f" - Getting all events associated with subject: {s}")
         for e in event_log.by_subject(s):
-            print({"u": umap[e.uid],
-                   "g": gmap[e.gid], 
+            print({"u": umap[e.uid] if e.uid in umap else e.uid,
+                   "g": gmap[e.gid] if e.gid in gmap else e.gid,
                    "s": {
                        "file": e.subject.file,
                        "trust": e.subject.trust,
@@ -92,7 +94,7 @@ def main():
                        "file": e.object.file,
                        "trust": e.object.trust,
                        "access": e.object.access,
-                       "mode": e.object.mode
+                       "status": e.object.trust_status
                    },
                    "when": e.when()
                    })

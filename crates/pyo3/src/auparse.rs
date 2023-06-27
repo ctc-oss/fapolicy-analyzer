@@ -12,7 +12,7 @@ fn is_audit_available() -> bool {
 
 #[pyfunction]
 fn parse_audit_log(path: String) -> Vec<String> {
-    events::read::from_auditlog(&path)
+    events::read::from_auditlog_file(&path)
         .expect("parse_audit_log pyo3")
         .into_iter()
         .map(|e| format!("{e:?}"))
