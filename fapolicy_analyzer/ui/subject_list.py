@@ -14,6 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import gi
+import re
 from more_itertools import first_true
 
 import fapolicy_analyzer.ui.strings as strings
@@ -187,7 +188,19 @@ class SubjectList(SearchableList):
         )
 
     def __handle_selection_changed(self, data):
-        fileObjs = [datum[3] for datum in data] if data else None
+        if data:
+            fileObjs = []
+            for datum in data:
+                fileObjs.append(datum[3])
+                sort_model = datum.model
+                filter_iter = sort_model.convert_iter_to_child_iter(datum.iter)
+                filter_model = sort_model.get_model()
+                model_iter = filter_model.convert_iter_to_child_iter(filter_iter)
+                model = filter_model.get_model()
+                model.set(model_iter,0, re.sub("#([A-F0-9]{6})","#FFFFFF",datum[0]))
+        else:
+            fileObjs = None
+
         self.file_selection_changed(fileObjs)
 
     def __find_db_trust(self, subject):
