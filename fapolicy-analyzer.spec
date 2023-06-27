@@ -27,6 +27,7 @@ BuildRequires: python3dist(setuptools-rust)
 
 BuildRequires: rust-assert_matches-devel
 BuildRequires: rust-autocfg-devel
+BuildRequires: rust-bindgen-devel
 BuildRequires: rust-bitflags-devel
 BuildRequires: rust-bumpalo-devel
 BuildRequires: rust-byteorder-devel
@@ -48,6 +49,7 @@ BuildRequires: rust-getrandom-devel
 BuildRequires: rust-iana-time-zone-devel
 BuildRequires: rust-is_executable-devel
 BuildRequires: rust-instant-devel
+BuildRequires: rust-libloading-devel
 BuildRequires: rust-lazy_static-devel
 BuildRequires: rust-libc-devel
 BuildRequires: rust-libdbus-sys-devel
@@ -92,6 +94,7 @@ BuildRequires: rust-toml-devel
 BuildRequires: rust-unicode-xid-devel
 BuildRequires: rust-unindent-devel
 BuildRequires: rust-untrusted-devel
+BuildRequires: rust-which-devel
 BuildRequires: rust-paste-devel
 BuildRequires: rust-indoc-devel
 
