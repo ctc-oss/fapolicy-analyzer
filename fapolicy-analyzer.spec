@@ -19,6 +19,9 @@ BuildRequires: gettext
 BuildRequires: itstool
 BuildRequires: desktop-file-utils
 
+BuildRequires: clang
+BuildRequires: audit-libs-devel
+
 BuildRequires: rust-packaging
 BuildRequires: python3dist(setuptools-rust)
 
