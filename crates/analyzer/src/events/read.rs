@@ -23,7 +23,11 @@ pub fn from_syslog(path: &str) -> Result<Vec<Event>, Error> {
     from_file(path, |s| s.contains("fapolicyd") && s.contains("rule="))
 }
 
-pub fn from_auditlog(path: &str) -> Result<Vec<Event>, Error> {
+pub fn from_auditlog() -> Result<Vec<Event>, Error> {
+    audit::events(Some("/tmp/audit.log".to_string()))
+}
+
+pub fn from_auditlog_file(path: &str) -> Result<Vec<Event>, Error> {
     audit::events(Some(path.to_string()))
 }
 
