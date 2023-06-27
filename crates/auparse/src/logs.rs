@@ -3,6 +3,8 @@ use crate::error::Error::NativeInitFail;
 use crate::record::Type;
 use auparse_sys::event::{Event, Parser};
 use auparse_sys::*;
+use std::ffi::c_void;
+use std::path::Path;
 use std::ptr;
 use std::ptr::NonNull;
 
@@ -50,13 +52,21 @@ impl<T> Drop for Logs<T> {
 
 impl<T> Logs<T> {
     pub fn all(p: Parser<T>) -> Result<Self, Error> {
-        Self::new(p, None)
+        Self::new(p, None, None)
     }
     pub fn filtered(p: Parser<T>, filter: Filter) -> Result<Self, Error> {
-        Self::new(p, Some(filter))
+        Self::new(p, Some(filter), None)
     }
-    fn new(p: Parser<T>, f: Option<Filter>) -> Result<Self, Error> {
-        let au = unsafe { auparse_init(ausource_t_AUSOURCE_LOGS, ptr::null()) };
+    fn new(p: Parser<T>, f: Option<Filter>, path: Option<&Path>) -> Result<Self, Error> {
+        let au = match path {
+            None => unsafe { auparse_init(ausource_t_AUSOURCE_LOGS, ptr::null()) },
+            Some(p) => unsafe {
+                auparse_init(
+                    ausource_t_AUSOURCE_FILE,
+                    p.display().to_string().as_str().as_ptr() as *mut c_void,
+                )
+            },
+        };
         if au.is_null() {
             Err(NativeInitFail)
         } else {
@@ -66,5 +76,12 @@ impl<T> Logs<T> {
                 f,
             })
         }
+    }
+
+    pub fn all_from(path: &Path, p: Parser<T>) -> Result<Self, Error> {
+        Self::new(p, None, Some(path))
+    }
+    pub fn filtered_from(path: &Path, p: Parser<T>, filter: Filter) -> Result<Self, Error> {
+        Self::new(p, Some(filter), Some(path))
     }
 }
