@@ -11,7 +11,6 @@ use std::convert::TryFrom;
 use std::path::PathBuf;
 
 pub fn events(path: Option<String>) -> Result<Vec<Event>, Error> {
-    println!("loading log from {path:?}");
     let logs = match path {
         Some(p) => Logs::filtered_from(&PathBuf::from(p), parse, fanotify_only),
         None => Logs::filtered(parse, fanotify_only),
