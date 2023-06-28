@@ -70,12 +70,12 @@ def time_format_config_dlg():
 
 
 class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
-    def __init__(self, use_syslog: bool = False, audit_file: Optional[str] = None):
+    def __init__(self, which_log: str = "debug", audit_file: Optional[str] = None):
         UIConnectedWidget.__init__(
             self, get_system_feature(), on_next=self.on_next_system
         )
 
-        self.__use_syslog = use_syslog
+        self.__which_log = which_log
         self.__audit_file = audit_file
 
         actions = {
@@ -88,7 +88,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
                 )
             ]
         }
-        if use_syslog:
+        if which_log in ["syslog", "audit"]:
             actions["analyze"] = [
                 *actions["analyze"],
                 UIAction(
@@ -214,9 +214,13 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         self.__groups_loading = True
         dispatch(request_users())
         dispatch(request_groups())
-        if self.__use_syslog:
+        if self.__which_log == "syslog":
             self.__events_loading = True
             dispatch(request_events("syslog"))
+            self.get_object("time_bar").set_visible(True)
+        elif self.__which_log == "audit":
+            self.__events_loading = True
+            dispatch(request_events("audit"))
             self.get_object("time_bar").set_visible(True)
         elif self.__audit_file:
             self.__events_loading = True
