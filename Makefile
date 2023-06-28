@@ -112,8 +112,9 @@ lint: pylint clippy
 
 # Ensure header exists on required files
 header-check:
-	grep -R -L --exclude-dir=vendor \
+	@ grep -R -L --exclude-dir=vendor \
         --include='*.py' --include='*.rs' --include='*.glade' --include='*.sh' \
+        --exclude-dir 'target' \
         'Copyright Concurrent Technologies Corporation' *
 
 # Perform linting on the Python source code
