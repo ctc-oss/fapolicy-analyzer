@@ -188,19 +188,31 @@ class SubjectList(SearchableList):
         )
 
     def __handle_selection_changed(self, data):
-        if data:
-            fileObjs = []
-            for datum in data:
-                fileObjs.append(datum[3])
-                sort_model = datum.model
-                filter_iter = sort_model.convert_iter_to_child_iter(datum.iter)
-                filter_model = sort_model.get_model()
-                model_iter = filter_model.convert_iter_to_child_iter(filter_iter)
-                model = filter_model.get_model()
-                model.set(model_iter,0, re.sub("#([A-F0-9]{6})","#FFFFFF",datum[0]))
-        else:
-            fileObjs = None
+        print(data)
 
+        def text_color_selection(store, treepath, treeiter):
+            filter_model = store.get_model()
+            filter_iter = store.convert_iter_to_child_iter(treeiter)
+            model_iter = filter_model.convert_iter_to_child_iter(filter_iter)
+            model = filter_model.get_model()
+
+            _, paths = self.treeView.get_selection().get_selected_rows()
+            indices = [path.get_indices() for path in paths]
+            indices = [i for sub in indices for i in sub]
+            if next(iter(treepath.get_indices())) in indices:
+                model.set(
+                    model_iter,
+                    0,
+                    re.sub("#([A-F0-9]{6})", "#FFFFFF", store[treeiter][0]),
+                )
+            else:
+                pass
+                # markup, _ = self._trust_markup(model[model_iter])
+                # model.set(model_iter, 0, markup)
+
+        fileObjs = [datum[3] for datum in data] if data else None
+        model = self.treeView.get_model()
+        model.foreach(text_color_selection)
         self.file_selection_changed(fileObjs)
 
     def __find_db_trust(self, subject):
