@@ -403,12 +403,12 @@ class MainWindow(UIConnectedWidget):
         )
 
     def on_syslogMenu_activate(self, *args):
-        page = router(PAGE_SELECTION.ANALYZE_SYSLOG, True)
+        page = router(PAGE_SELECTION.ANALYZE_SYSLOG, "syslog")
         self.resize_analysis_page(page)
         self.__pack_main_content(page)
 
     def on_auditlogMenu_activate(self, *args):
-        page = router(PAGE_SELECTION.ANALYZE_AUDIT, True)
+        page = router(PAGE_SELECTION.ANALYZE_AUDIT, "audit")
         self.resize_analysis_page(page)
         self.__pack_main_content(page)
 
@@ -420,7 +420,7 @@ class MainWindow(UIConnectedWidget):
         _file = fcd.get_filename() or ""
 
         if path.isfile(_file):
-            page = router(PAGE_SELECTION.ANALYZE_FROM_DEBUG, False, _file)
+            page = router(PAGE_SELECTION.ANALYZE_FROM_DEBUG, "debug", _file)
             page.object_list.rule_view_activate += self.on_rulesAdminMenu_activate
             self.resize_analysis_page(page)
             self.__pack_main_content(page)

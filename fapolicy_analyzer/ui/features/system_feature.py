@@ -277,6 +277,8 @@ def create_system_feature(
         log_type, file = action.payload
         if log_type == "debug":
             events = _system.load_debuglog(file)
+        elif log_type == "audit":
+            events = _system.load_auditlog()
         elif log_type == "syslog":
             events = _system.load_syslog()
         else:
