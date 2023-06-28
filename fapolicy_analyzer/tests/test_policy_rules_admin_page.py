@@ -160,7 +160,7 @@ def test_loads_debug_file(mock_dispatch):
 
 def test_loads_syslog(mock_dispatch):
     init_store(mock_System())
-    PolicyRulesAdminPage(use_syslog=True)
+    PolicyRulesAdminPage(which_log="syslog")
     mock_dispatch.assert_any_call(
         InstanceOf(Action) & Attrs(type=REQUEST_EVENTS, payload=("syslog", None))
     )
@@ -634,7 +634,7 @@ def test_clears_selection_when_switching_acl_tabs(widget, userListView, groupLis
 
 def test_event_loading_w_exception(mock_system_features, states, mock_dispatch):
     init_store(mock_System())
-    PolicyRulesAdminPage(_mock_file)
+    PolicyRulesAdminPage("debug", _mock_file)
     mock_system_features.on_next(
         {**states[0], **{"events": MagicMock(error="foo", loading=False)}}
     )
@@ -684,7 +684,7 @@ def test_time_not_displayed(mocker, widget):
 
 
 def test_time_select_button_clicked(mocker):
-    page = PolicyRulesAdminPage(use_syslog=True)
+    page = PolicyRulesAdminPage(which_log="syslog")
     mockDialog = MagicMock()
     mockDialog.run.return_value = 1
     mockDialog.get_seconds.return_value = 3600
