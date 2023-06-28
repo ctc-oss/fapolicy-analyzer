@@ -15,7 +15,7 @@ impl Iterator for Event {
     type Item = Event;
 
     fn next(&mut self) -> Option<Self::Item> {
-        unsafe { Event::from(self.au.as_ptr()) }
+        unsafe { Event::from(self.au) }
     }
 }
 
@@ -35,12 +35,10 @@ impl Event {
         unsafe { audit_get_str(self.au.as_ptr(), name) }
     }
 
-    pub fn from(ptr: *mut auparse_state_t) -> Option<Event> {
+    pub fn from(au: NonNull<auparse_state_t>) -> Option<Event> {
         unsafe {
-            match auparse_next_event(ptr) {
-                1 => Some(Self {
-                    au: NonNull::new(ptr).expect("non null au"),
-                }),
+            match auparse_next_event(au.as_ptr()) {
+                1 => Some(Self { au }),
                 _ => None,
             }
         }

@@ -20,25 +20,23 @@ impl<T> Iterator for Logs<T> {
     type Item = T;
 
     fn next(&mut self) -> Option<Self::Item> {
-        Event::from(self.au.as_ptr())
-            .map(|mut e| {
-                if let Some(f) = self.f {
-                    loop {
-                        if let Some(e) = e.next() {
-                            if f(e.t0().into()) {
-                                return (self.p)(e);
-                            } else {
-                                continue;
-                            }
+        Event::from(self.au).and_then(|mut e| {
+            if let Some(f) = self.f {
+                loop {
+                    if let Some(e) = e.next() {
+                        if f(e.t0().into()) {
+                            return (self.p)(e);
                         } else {
-                            return None;
+                            continue;
                         }
+                    } else {
+                        return None;
                     }
-                } else {
-                    return (self.p)(e);
                 }
-            })
-            .flatten()
+            } else {
+                (self.p)(e)
+            }
+        })
     }
 }
 

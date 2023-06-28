@@ -5,7 +5,8 @@ use crate::{
     auparse_get_field_num, auparse_get_field_str, auparse_get_record_num, auparse_goto_field_num,
     auparse_goto_record_num, auparse_next_field, auparse_state_t,
 };
-use std::ffi::{c_uint, CStr, CString};
+use std::ffi::{CStr, CString};
+use std::os::raw::c_uint;
 
 pub unsafe fn audit_get_int(au: *mut auparse_state_t, field: &str) -> Result<i32, Error> {
     if let Ok((rec, field)) = find_last_field(au, field) {
@@ -29,7 +30,7 @@ pub unsafe fn audit_get_str(au: *mut auparse_state_t, field: &str) -> Result<Str
         if !res.is_null() {
             let str = CStr::from_ptr(res);
             let str = str.to_str().unwrap();
-            Ok(String::from(str.to_owned()))
+            Ok(String::from(str))
         } else {
             Err(GetAuditFieldFail(field.to_string()))
         }

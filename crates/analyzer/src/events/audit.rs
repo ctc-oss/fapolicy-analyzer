@@ -7,7 +7,6 @@ use fapolicy_auparse::record::Type;
 use fapolicy_auparse::record::Type::Fanotify;
 use fapolicy_auparse_sys::event::Event as AuditEvent;
 use fapolicy_rules::{Decision, Object, Permission, Subject};
-use std::convert::TryFrom;
 use std::path::PathBuf;
 
 pub fn events(path: Option<String>) -> Result<Vec<Event>, Error> {
@@ -32,18 +31,18 @@ fn parse(e: AuditEvent) -> Option<Event> {
         subj: Subject::from_exe(
             e.str("exe")
                 .expect("exe")
-                .strip_prefix("\"")
+                .strip_prefix('\"')
                 .unwrap()
-                .strip_suffix("\"")
+                .strip_suffix('\"')
                 .unwrap(),
         ),
         perm: perm_from_i32(e.int("syscall").expect("syscall")).expect("perm"),
         obj: Object::from_path(
             e.str("name")
                 .expect("name")
-                .strip_prefix("\"")
+                .strip_prefix('\"')
                 .unwrap()
-                .strip_suffix("\"")
+                .strip_suffix('\"')
                 .unwrap(),
         ),
         when: Some(DateTime::from_utc(
