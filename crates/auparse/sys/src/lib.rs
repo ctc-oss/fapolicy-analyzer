@@ -12,10 +12,8 @@
 #![allow(unused)]
 #![allow(clippy::missing_safety_doc)]
 
-pub use bindings::*;
-
-include!("bindings.rs");
 mod bindings;
+pub use bindings::*;
 
 pub mod error;
 pub mod event;
