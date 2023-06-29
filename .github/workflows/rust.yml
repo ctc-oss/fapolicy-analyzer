@@ -21,6 +21,7 @@ jobs:
           components: rustfmt
           toolchain: 1.62.1
       - run: rustup component add rustfmt
+      - run: touch crates/auparse/sys/src/bindings.rs
       - uses: actions-rs/cargo@v1
         with:
           command: fmt
