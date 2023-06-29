@@ -51,7 +51,7 @@ from fapolicy_analyzer.ui.store import (
     get_application_feature,
     get_system_feature,
 )
-from fapolicy_analyzer.ui.types import PAGE_SELECTION
+from fapolicy_analyzer.ui.types import PAGE_SELECTION, LogType
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 from fapolicy_analyzer.ui.unapplied_changes_dialog import UnappliedChangesDialog
@@ -404,12 +404,12 @@ class MainWindow(UIConnectedWidget):
         )
 
     def on_syslogMenu_activate(self, *args):
-        page = router(PAGE_SELECTION.ANALYZE_SYSLOG, "syslog")
+        page = router(PAGE_SELECTION.ANALYZE_SYSLOG, LogType.syslog)
         self.resize_analysis_page(page)
         self.__pack_main_content(page)
 
     def on_auditlogMenu_activate(self, *args):
-        page = router(PAGE_SELECTION.ANALYZE_AUDIT, "audit")
+        page = router(PAGE_SELECTION.ANALYZE_AUDIT, LogType.audit)
         self.resize_analysis_page(page)
         self.__pack_main_content(page)
 
@@ -421,7 +421,7 @@ class MainWindow(UIConnectedWidget):
         _file = fcd.get_filename() or ""
 
         if path.isfile(_file):
-            page = router(PAGE_SELECTION.ANALYZE_FROM_DEBUG, "debug", _file)
+            page = router(PAGE_SELECTION.ANALYZE_FROM_DEBUG, LogType.debug, _file)
             page.object_list.rule_view_activate += self.on_rulesAdminMenu_activate
             self.resize_analysis_page(page)
             self.__pack_main_content(page)

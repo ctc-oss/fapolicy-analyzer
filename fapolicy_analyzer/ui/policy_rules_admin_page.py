@@ -46,6 +46,7 @@ from fapolicy_analyzer.ui.strings import (
 )
 from fapolicy_analyzer.ui.subject_list import SubjectList
 from fapolicy_analyzer.ui.time_select_dialog import TimeSelectDialog
+from fapolicy_analyzer.ui.types import LogType
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 from fapolicy_analyzer.util import acl, fs
@@ -70,7 +71,9 @@ def time_format_config_dlg():
 
 
 class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
-    def __init__(self, which_log: str = "debug", audit_file: Optional[str] = None):
+    def __init__(
+        self, which_log: LogType = LogType.debug, audit_file: Optional[str] = None
+    ):
         UIConnectedWidget.__init__(
             self, get_system_feature(), on_next=self.on_next_system
         )
@@ -88,7 +91,7 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
                 )
             ]
         }
-        if which_log in ["syslog", "audit"]:
+        if which_log in [LogType.audit, LogType.syslog]:
             actions["analyze"] = [
                 *actions["analyze"],
                 UIAction(
@@ -214,17 +217,17 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         self.__groups_loading = True
         dispatch(request_users())
         dispatch(request_groups())
-        if self.__which_log == "syslog":
+        if self.__which_log == LogType.syslog:
             self.__events_loading = True
-            dispatch(request_events("syslog"))
+            dispatch(request_events(LogType.syslog))
             self.get_object("time_bar").set_visible(True)
-        elif self.__which_log == "audit":
+        elif self.__which_log == LogType.audit:
             self.__events_loading = True
-            dispatch(request_events("audit"))
+            dispatch(request_events(LogType.audit))
             self.get_object("time_bar").set_visible(True)
         elif self.__audit_file:
             self.__events_loading = True
-            dispatch(request_events("debug", self.__audit_file))
+            dispatch(request_events(LogType.debug, self.__audit_file))
 
     def __populate_list(
         self,

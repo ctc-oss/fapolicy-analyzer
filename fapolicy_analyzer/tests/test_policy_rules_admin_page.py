@@ -19,6 +19,8 @@ from unittest.mock import MagicMock
 import gi
 import pytest
 from callee import Attrs, InstanceOf
+
+from fapolicy_analyzer.ui.types import LogType
 from mocks import mock_events, mock_groups, mock_log, mock_System, mock_users
 from rx.subject import Subject
 
@@ -154,15 +156,16 @@ def test_loads_debug_file(mock_dispatch):
     init_store(mock_System())
     PolicyRulesAdminPage(audit_file=_mock_file)
     mock_dispatch.assert_any_call(
-        InstanceOf(Action) & Attrs(type=REQUEST_EVENTS, payload=("debug", _mock_file))
+        InstanceOf(Action)
+        & Attrs(type=REQUEST_EVENTS, payload=(LogType.debug, _mock_file))
     )
 
 
 def test_loads_syslog(mock_dispatch):
     init_store(mock_System())
-    PolicyRulesAdminPage(which_log="syslog")
+    PolicyRulesAdminPage(which_log=LogType.syslog)
     mock_dispatch.assert_any_call(
-        InstanceOf(Action) & Attrs(type=REQUEST_EVENTS, payload=("syslog", None))
+        InstanceOf(Action) & Attrs(type=REQUEST_EVENTS, payload=(LogType.syslog, None))
     )
 
 
@@ -634,7 +637,7 @@ def test_clears_selection_when_switching_acl_tabs(widget, userListView, groupLis
 
 def test_event_loading_w_exception(mock_system_features, states, mock_dispatch):
     init_store(mock_System())
-    PolicyRulesAdminPage("debug", _mock_file)
+    PolicyRulesAdminPage(LogType.debug, _mock_file)
     mock_system_features.on_next(
         {**states[0], **{"events": MagicMock(error="foo", loading=False)}}
     )
@@ -684,7 +687,7 @@ def test_time_not_displayed(mocker, widget):
 
 
 def test_time_select_button_clicked(mocker):
-    page = PolicyRulesAdminPage(which_log="syslog")
+    page = PolicyRulesAdminPage(which_log=LogType.syslog)
     mockDialog = MagicMock()
     mockDialog.run.return_value = 1
     mockDialog.get_seconds.return_value = 3600
@@ -722,5 +725,5 @@ def test_open_file_button_clicked(widget, mock_dispatch, mocker):
     on_click()
     mock_get_Filename.assert_called()
     mock_dispatch.assert_any_call(
-        InstanceOf(Action) & Attrs(type=REQUEST_EVENTS, payload=("debug", "foo"))
+        InstanceOf(Action) & Attrs(type=REQUEST_EVENTS, payload=(LogType.debug, "foo"))
     )
