@@ -22,7 +22,7 @@ jobs:
       - name: Install build deps
         run: |
           dnf groupinstall -y "Development Tools"
-          dnf install -y dbus-devel
+          dnf install -y dbus-devel audit-libs-devel
 
       - name: Install toolchain
         uses: dtolnay/rust-toolchain@v1
