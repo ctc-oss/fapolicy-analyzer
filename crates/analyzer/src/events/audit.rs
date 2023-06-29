@@ -29,6 +29,7 @@ fn fanotify_only(x: Type) -> bool {
     x == Fanotify
 }
 
+// todo;; return result and handle errors in the parser
 fn parse(e: AuditEvent) -> Option<Event> {
     Some(Event {
         rule_id: e.int("fan_info").expect("fan_info"),
@@ -36,23 +37,9 @@ fn parse(e: AuditEvent) -> Option<Event> {
         uid: e.int("uid").expect("uid"),
         gid: vec![e.int("gid").expect("gid")],
         pid: e.int("pid").expect("pid"),
-        subj: Subject::from_exe(
-            e.str("exe")
-                .expect("exe")
-                .strip_prefix('\"')
-                .unwrap()
-                .strip_suffix('\"')
-                .unwrap(),
-        ),
+        subj: Subject::from_exe(&e.str("exe").map(strip_escaped_quotes).expect("exe")),
         perm: perm_from_i32(e.int("syscall").expect("syscall")).expect("perm"),
-        obj: Object::from_path(
-            e.str("name")
-                .expect("name")
-                .strip_prefix('\"')
-                .unwrap()
-                .strip_suffix('\"')
-                .unwrap(),
-        ),
+        obj: Object::from_path(&e.str("name").map(strip_escaped_quotes).expect("name")),
         when: Some(DateTime::from_utc(
             NaiveDateTime::from_timestamp(e.ts(), 0),
             Utc,
@@ -60,6 +47,14 @@ fn parse(e: AuditEvent) -> Option<Event> {
     })
 }
 
+// string values returned from fanotify have been observed to contain escaped quotes
+fn strip_escaped_quotes(s: String) -> String {
+    const PATTERN: char = '\"';
+    let s = s.strip_prefix(PATTERN).unwrap_or(&s);
+    s.strip_suffix(PATTERN).unwrap_or(s).to_string()
+}
+
+// parses the permission from the syscall id
 fn perm_from_i32(value: i32) -> Result<Permission, Error> {
     match value {
         59 => Ok(Permission::Execute),
@@ -68,6 +63,7 @@ fn perm_from_i32(value: i32) -> Result<Permission, Error> {
     }
 }
 
+// parses the decision from the fanotify decision value
 fn dec_from_i32(value: i32) -> Result<Decision, Error> {
     match value {
         0 => Err(MetaError("unknown decision 0".to_string())),
