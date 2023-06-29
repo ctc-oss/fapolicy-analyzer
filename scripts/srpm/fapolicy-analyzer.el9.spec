@@ -190,8 +190,9 @@ sed -i "s#%{cargo_registry}#${CARGO_REG_DIR}#g" .cargo/config
 
 rm Cargo.lock
 
-# disable dev-tools crate
+# disable dev-tools and audit crate
 sed -i '/tools/d' Cargo.toml
+sed -i '/auparse/d' Cargo.toml
 
 # extract our doc sourcs
 tar xvzf %{SOURCE1}

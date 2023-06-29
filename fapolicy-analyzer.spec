@@ -141,9 +141,11 @@ tar xvzf %{SOURCE1}
 # this overrides that check to use the RPM version
 echo %{module_version} > VERSION
 
-# enable the audit feature
+# enable the audit feature for 39 and up
 %if 0%{?fedora} >= 39
 echo "audit" > FEATURES
+%else
+sed -i '/auparse/d' Cargo.toml
 %endif
 
 %build

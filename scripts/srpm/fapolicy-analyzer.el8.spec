@@ -117,8 +117,9 @@ cp -r  %{python3_sitelib}/pip* %{venv_lib}
 
 tar -xzf %{SOURCE1}
 
-# disable dev-tools crate
+# disable dev-tools and audit crate
 sed -i '/tools/d' Cargo.toml
+sed -i '/auparse/d' Cargo.toml
 
 # setup.py looks up the version from git describe
 # this overrides that check to the RPM version
