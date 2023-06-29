@@ -47,6 +47,12 @@ pub unsafe fn audit_get_str(au: *mut auparse_state_t, field: &str) -> Result<Str
     }
 }
 
+// field names are unique within a record
+// an event may contain multple records
+// thus an even may contain non-unique field names
+// this provides coordinates for the last appearance of a field in an event
+// todo;; this is fragile, parsing each record into a structure and querying
+//        for fields that can be indentified by sibling fields would be better
 unsafe fn find_last_field(
     au: *mut auparse_state_t,
     field: &str,
