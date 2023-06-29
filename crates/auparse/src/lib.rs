@@ -6,6 +6,9 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+#[cfg(feature = "bindings")]
 pub mod error;
+#[cfg(feature = "bindings")]
 pub mod logs;
+#[cfg(feature = "bindings")]
 pub mod record;

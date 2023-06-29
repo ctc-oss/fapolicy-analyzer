@@ -22,4 +22,4 @@ fapolicy-trust = { version = "*", path = "../trust" }
 
 [features]
 default = []
-audit = ["fapolicy-auparse", "fapolicy-auparse-sys"]
+audit = ["dep:fapolicy-auparse", "dep:fapolicy-auparse-sys"]
