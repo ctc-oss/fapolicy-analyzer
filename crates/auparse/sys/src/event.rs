@@ -13,7 +13,11 @@ use std::ptr::NonNull;
 use std::time::{Duration, SystemTime};
 
 pub type Filter = fn(u32) -> bool;
-pub type Parser<T> = fn(Event) -> Option<T>;
+pub trait Parser<T> {
+    type Error;
+
+    fn parse(&self, e: Event) -> Result<T, Self::Error>;
+}
 
 pub struct Event {
     au: NonNull<auparse_state_t>,

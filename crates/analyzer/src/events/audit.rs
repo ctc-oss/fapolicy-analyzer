@@ -13,14 +13,14 @@ use chrono::{DateTime, NaiveDateTime, Utc};
 use fapolicy_auparse::logs::Logs;
 use fapolicy_auparse::record::Type;
 use fapolicy_auparse::record::Type::Fanotify;
-use fapolicy_auparse_sys::event::Event as AuditEvent;
+use fapolicy_auparse_sys::event::{Event as AuditEvent, Parser};
 use fapolicy_rules::{Decision, Object, Permission, Subject};
 use std::path::PathBuf;
 
 pub fn events(path: Option<String>) -> Result<Vec<Event>, Error> {
     let logs = match path {
-        Some(p) => Logs::filtered_from(&PathBuf::from(p), parse, fanotify_only),
-        None => Logs::filtered(parse, fanotify_only),
+        Some(p) => Logs::filtered_from(&PathBuf::from(p), Box::new(Parse), fanotify_only),
+        None => Logs::filtered(Box::new(Parse), fanotify_only),
     };
     Ok(logs.expect("failed to read audit log").collect())
 }
@@ -29,22 +29,27 @@ fn fanotify_only(x: Type) -> bool {
     x == Fanotify
 }
 
-// todo;; return result and handle errors in the parser
-fn parse(e: AuditEvent) -> Option<Event> {
-    Some(Event {
-        rule_id: e.int("fan_info").expect("fan_info"),
-        dec: dec_from_i32(e.int("resp").expect("resp")).expect("dec"),
-        uid: e.int("uid").expect("uid"),
-        gid: vec![e.int("gid").expect("gid")],
-        pid: e.int("pid").expect("pid"),
-        subj: Subject::from_exe(&e.str("exe").map(strip_escaped_quotes).expect("exe")),
-        perm: perm_from_i32(e.int("syscall").expect("syscall")).expect("perm"),
-        obj: Object::from_path(&e.str("name").map(strip_escaped_quotes).expect("name")),
-        when: Some(DateTime::from_utc(
-            NaiveDateTime::from_timestamp(e.ts(), 0),
-            Utc,
-        )),
-    })
+// todo;; could add parse metrics here
+struct Parse;
+impl Parser<Event> for Parse {
+    type Error = Error;
+
+    fn parse(&self, e: AuditEvent) -> Result<Event, Self::Error> {
+        Ok(Event {
+            rule_id: e.int("fan_info").expect("fan_info"),
+            dec: dec_from_i32(e.int("resp").expect("resp")).expect("dec"),
+            uid: e.int("uid").expect("uid"),
+            gid: vec![e.int("gid").expect("gid")],
+            pid: e.int("pid").expect("pid"),
+            subj: Subject::from_exe(&e.str("exe").map(strip_escaped_quotes).expect("exe")),
+            perm: perm_from_i32(e.int("syscall").expect("syscall")).expect("perm"),
+            obj: Object::from_path(&e.str("name").map(strip_escaped_quotes).expect("name")),
+            when: Some(DateTime::from_utc(
+                NaiveDateTime::from_timestamp(e.ts(), 0),
+                Utc,
+            )),
+        })
+    }
 }
 
 // string values returned from fanotify have been observed to contain escaped quotes
@@ -81,6 +86,9 @@ mod tests {
     use super::*;
     use fapolicy_rules::Decision::{Allow, Deny};
     use fapolicy_rules::Permission::{Execute, Open};
+
+    #[test]
+    fn test_parse() {}
 
     #[test]
     fn test_perm() -> Result<(), Error> {
