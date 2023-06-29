@@ -16,7 +16,6 @@ pub enum Type {
     Path,
     Proctitle,
     Syscall,
-    SystemBoot,
 }
 
 impl From<u32> for Type {
@@ -28,7 +27,6 @@ impl From<u32> for Type {
             AUDIT_FANOTIFY => Fanotify,
             AUDIT_PATH => Path,
             AUDIT_PROCTITLE => Proctitle,
-            AUDIT_SYSTEM_BOOT => SystemBoot,
             _ => Unknown(v),
         }
     }
@@ -44,7 +42,6 @@ impl From<Type> for u32 {
             Path => AUDIT_PATH,
             Proctitle => AUDIT_PROCTITLE,
             Syscall => AUDIT_SYSCALL,
-            SystemBoot => AUDIT_SYSTEM_BOOT,
         }
     }
 }
