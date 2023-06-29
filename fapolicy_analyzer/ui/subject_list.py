@@ -71,6 +71,7 @@ class SubjectList(SearchableList):
         )
         self.get_object("treeView").set_tooltip_column(6)
         self.selection = []
+        self.status_backup = 7
 
     def _build_reconcile_context_menu(self):
         menu = Gtk.Menu()
@@ -188,8 +189,6 @@ class SubjectList(SearchableList):
         )
 
     def __handle_selection_changed(self, data):
-        print(data)
-
         def text_color_selection(store, treepath, treeiter):
             filter_model = store.get_model()
             filter_iter = store.convert_iter_to_child_iter(treeiter)
@@ -206,9 +205,7 @@ class SubjectList(SearchableList):
                     re.sub("#([A-F0-9]{6})", "#FFFFFF", store[treeiter][0]),
                 )
             else:
-                pass
-                # markup, _ = self._trust_markup(model[model_iter])
-                # model.set(model_iter, 0, markup)
+                model.set(model_iter, 0, model[model_iter][self.status_backup])
 
         fileObjs = [datum[3] for datum in data] if data else None
         model = self.treeView.get_model()
@@ -268,13 +265,15 @@ class SubjectList(SearchableList):
     def load_store(self, subjects, **kwargs):
         self._systemTrust = kwargs.get("systemTrust", [])
         self._ancillaryTrust = kwargs.get("ancillaryTrust", [])
-        store = Gtk.ListStore(str, str, str, object, str, str, str)
+        store = Gtk.ListStore(str, str, str, object, str, str, str, str)
         for s in subjects:
             status, status_tooltip = self._trust_markup(s)
             access = self.__markup(s.access.upper(), ["A", "P", "D"])
             bg_color, txt_color, access_tooltip = self.__colors(s.access)
             tooltip = status_tooltip + "\n" + access_tooltip
-            store.append([status, access, s.file, s, bg_color, txt_color, tooltip])
+            store.append(
+                [status, access, s.file, s, bg_color, txt_color, tooltip, status]
+            )
         super().load_store(store)
 
     def get_selected_row_by_file(self, file: str) -> Gtk.TreePath:

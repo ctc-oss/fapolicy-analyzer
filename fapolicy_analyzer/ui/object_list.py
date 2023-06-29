@@ -39,6 +39,7 @@ class ObjectList(SubjectList, Events):
         Events.__init__(self)
         self.reconcileContextMenu = self._build_reconcile_context_menu()
         self.get_object("treeView").set_tooltip_column(8)
+        self.status_backup = 9
 
     def _columns(self):
         columns = super()._columns()
@@ -89,7 +90,7 @@ class ObjectList(SubjectList, Events):
     def load_store(self, objects, **kwargs):
         self._systemTrust = kwargs.get("systemTrust", [])
         self._ancillaryTrust = kwargs.get("ancillaryTrust", [])
-        store = Gtk.ListStore(str, str, str, object, str, str, str, int, str)
+        store = Gtk.ListStore(str, str, str, object, str, str, str, int, str, str)
         for ob in objects:
             i, o = next(iter(ob.items()))
             status, status_tooltip = self._trust_markup(o)
@@ -103,7 +104,18 @@ class ObjectList(SubjectList, Events):
             )
             tooltip = status_tooltip + "\n" + access_tooltip
             store.append(
-                [status, access, o.file, o, bg_color, txt_color, perm, i, tooltip]
+                [
+                    status,
+                    access,
+                    o.file,
+                    o,
+                    bg_color,
+                    txt_color,
+                    perm,
+                    i,
+                    tooltip,
+                    status,
+                ]
             )
 
         # call grandfather SearchableList's load_store method
