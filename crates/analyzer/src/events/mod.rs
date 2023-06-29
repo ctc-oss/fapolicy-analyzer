@@ -7,8 +7,10 @@
  */
 
 pub mod analysis;
-mod audit;
 pub mod db;
 pub mod event;
 pub mod parse;
 pub mod read;
+
+#[cfg(feature = "audit")]
+mod audit;

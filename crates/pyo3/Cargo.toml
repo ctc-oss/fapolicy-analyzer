@@ -17,8 +17,12 @@ log = "0.4"
 pyo3-log = "0.8"
 
 fapolicy-analyzer = { version = "*", path = "../analyzer" }
-fapolicy-auparse = { version = "*", path = "../auparse" }
+fapolicy-auparse = { version = "*", path = "../auparse", optional = true }
 fapolicy-app = { version = "*", path = "../app" }
 fapolicy-daemon = { version = "*", path = "../daemon" }
 fapolicy-rules = { version = "*", path = "../rules" }
 fapolicy-trust = { version = "*", path = "../trust" }
+
+[features]
+default = []
+audit = ["fapolicy-auparse"]
