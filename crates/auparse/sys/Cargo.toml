@@ -1,5 +1,7 @@
 [package]
 name = "fapolicy-auparse-sys"
+description = "Native bindings for audit parsing"
+license = "MPL-2.0"
 version = "0.1.0"
 edition = "2018"
 
