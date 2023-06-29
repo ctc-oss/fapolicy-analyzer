@@ -36,7 +36,7 @@ You can install the Policy Analyzer in one of the following ways
 
 <a href="https://packages.fedoraproject.org/pkgs/fapolicy-analyzer/fapolicy-analyzer/"><img src="https://img.shields.io/fedora/v/fapolicy-analyzer?logo=fedora&label=Fedora&color=3c6eb4"></a>
 
-This installation method is currently available for Fedora EPEL 8, and Fedora 37 or later, including Rawhide.
+This installation method is currently available for Fedora EPEL 8, EPEL 9, and Fedora 37 or later, including Rawhide.
 
 ```sh
 dnf install fapolicy-analyzer
