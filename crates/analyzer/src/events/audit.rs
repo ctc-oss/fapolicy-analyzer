@@ -54,12 +54,15 @@ fn strip_escaped_quotes(s: String) -> String {
     s.strip_suffix(PATTERN).unwrap_or(s).to_string()
 }
 
+const EXECVE: i32 = 59;
+const OPENAT: i32 = 257;
+
 // parses the permission from the syscall id
 fn perm_from_i32(value: i32) -> Result<Permission, Error> {
     match value {
-        59 => Ok(Permission::Execute),
-        257 => Ok(Permission::Open),
-        _ => Err(MetaError("unsupported value".to_string())),
+        EXECVE => Ok(Permission::Execute),
+        OPENAT => Ok(Permission::Open),
+        _ => Err(MetaError("unsupported permission".to_string())),
     }
 }
 
@@ -69,6 +72,42 @@ fn dec_from_i32(value: i32) -> Result<Decision, Error> {
         0 => Err(MetaError("unknown decision 0".to_string())),
         1 => Ok(Decision::Allow),
         2 => Ok(Decision::Deny),
-        _ => Err(MetaError("unsupported value".to_string())),
+        _ => Err(MetaError("unsupported decision".to_string())),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use fapolicy_rules::Decision::{Allow, Deny};
+    use fapolicy_rules::Permission::{Execute, Open};
+
+    #[test]
+    fn test_perm() -> Result<(), Error> {
+        assert!(perm_from_i32(0).is_err());
+        assert_eq!(perm_from_i32(EXECVE)?, Execute);
+        assert_eq!(perm_from_i32(OPENAT)?, Open);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_dec() -> Result<(), Error> {
+        assert!(dec_from_i32(0).is_err());
+        assert!(dec_from_i32(3).is_err());
+        assert_eq!(dec_from_i32(1)?, Allow);
+        assert_eq!(dec_from_i32(2)?, Deny);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_strip() {
+        assert_eq!(strip_escaped_quotes("".into()), "");
+        assert_eq!(strip_escaped_quotes("123".into()), "123");
+        assert_eq!(strip_escaped_quotes("\"123".into()), "123");
+        assert_eq!(strip_escaped_quotes("123\"".into()), "123");
+        assert_eq!(strip_escaped_quotes("\"123\"".into()), "123");
+        assert_eq!(strip_escaped_quotes("\"1\"2\"3\"".into()), "1\"2\"3");
     }
 }
