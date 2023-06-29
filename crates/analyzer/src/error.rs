@@ -33,4 +33,10 @@ pub enum Error {
 
     #[error("Failed to parse getent output")]
     UserGroupDatabaseParseFailure(#[from] FromUtf8Error),
+
+    #[error("Audit parse error {0}")]
+    AuditError(#[from] fapolicy_auparse::error::Error),
+
+    #[error("Audit parse sys error {0}")]
+    AuditError2(#[from] fapolicy_auparse_sys::error::Error),
 }

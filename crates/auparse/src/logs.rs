@@ -28,35 +28,27 @@ impl<T, E> Iterator for Logs<T, E> {
     type Item = T;
 
     fn next(&mut self) -> Option<Self::Item> {
-        Event::from(self.au).and_then(|mut e| {
-            if let Some(f) = self.f {
-                loop {
-                    if let Some(e) = e.next() {
-                        if f(e.t0().into()) {
-                            match self.p.parse(e) {
-                                Ok(i) => return Some(i),
-                                Err(_) => continue, // todo;; log
+        loop {
+            match Event::from(self.au) {
+                Some(next) => {
+                    let e = match self.f {
+                        Some(filter) => {
+                            if filter(next.t0().into()) {
+                                next
+                            } else {
+                                continue;
                             }
-                        } else {
-                            continue;
                         }
-                    } else {
-                        return None;
+                        None => next,
+                    };
+                    match self.p.parse(e) {
+                        Ok(i) => return Some(i),
+                        Err(_) => continue,
                     }
                 }
-            } else {
-                loop {
-                    if let Some(e) = e.next() {
-                        match self.p.parse(e) {
-                            Ok(i) => return Some(i),
-                            Err(_) => continue, // todo;; log
-                        }
-                    } else {
-                        return None;
-                    }
-                }
+                None => return None,
             }
-        })
+        }
     }
 }
 

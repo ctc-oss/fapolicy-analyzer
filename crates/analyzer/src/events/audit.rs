@@ -22,7 +22,7 @@ pub fn events(path: Option<String>) -> Result<Vec<Event>, Error> {
         Some(p) => Logs::filtered_from(&PathBuf::from(p), Box::new(Parse), fanotify_only),
         None => Logs::filtered(Box::new(Parse), fanotify_only),
     };
-    Ok(logs.expect("failed to read audit log").collect())
+    Ok(logs?.collect())
 }
 
 fn fanotify_only(x: Type) -> bool {
@@ -30,20 +30,20 @@ fn fanotify_only(x: Type) -> bool {
 }
 
 // todo;; could add parse metrics here
-struct Parse;
+pub struct Parse;
 impl Parser<Event> for Parse {
     type Error = Error;
 
     fn parse(&self, e: AuditEvent) -> Result<Event, Self::Error> {
         Ok(Event {
-            rule_id: e.int("fan_info").expect("fan_info"),
-            dec: dec_from_i32(e.int("resp").expect("resp")).expect("dec"),
-            uid: e.int("uid").expect("uid"),
-            gid: vec![e.int("gid").expect("gid")],
-            pid: e.int("pid").expect("pid"),
-            subj: Subject::from_exe(&e.str("exe").map(strip_escaped_quotes).expect("exe")),
-            perm: perm_from_i32(e.int("syscall").expect("syscall")).expect("perm"),
-            obj: Object::from_path(&e.str("name").map(strip_escaped_quotes).expect("name")),
+            rule_id: e.int("fan_info")?,
+            dec: dec_from_i32(e.int("resp")?)?,
+            uid: e.int("uid")?,
+            gid: vec![e.int("gid")?],
+            pid: e.int("pid")?,
+            subj: Subject::from_exe(&e.str("exe").map(strip_escaped_quotes)?),
+            perm: perm_from_i32(e.int("syscall")?)?,
+            obj: Object::from_path(&e.str("name").map(strip_escaped_quotes)?),
             when: Some(DateTime::from_utc(
                 NaiveDateTime::from_timestamp(e.ts(), 0),
                 Utc,
