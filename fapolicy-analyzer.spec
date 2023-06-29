@@ -141,6 +141,11 @@ tar xvzf %{SOURCE1}
 # this overrides that check to use the RPM version
 echo %{module_version} > VERSION
 
+# enable the audit feature
+%if 0%{?fedora} >= 39
+echo "audit" > FEATURES
+%endif
+
 %build
 # ensure standard Rust compiler flags are set
 export RUSTFLAGS="%{build_rustflags}"
