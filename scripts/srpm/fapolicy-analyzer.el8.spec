@@ -36,6 +36,9 @@ BuildRequires: gettext
 BuildRequires: itstool
 BuildRequires: desktop-file-utils
 
+BuildRequires: clang
+BuildRequires: audit-libs-devel
+
 BuildRequires: rust-toolset
 BuildRequires: python3dist(toml)
 BuildRequires: python3dist(typing-extensions)

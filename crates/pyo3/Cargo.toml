@@ -25,4 +25,4 @@ fapolicy-trust = { version = "*", path = "../trust" }
 
 [features]
 default = []
-audit = ["fapolicy-auparse/bindings", "fapolicy-analyzer/audit"]
+audit = []

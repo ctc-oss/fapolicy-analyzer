@@ -9,8 +9,3 @@ thiserror = "1"
 [dependencies.auparse-sys]
 package = "fapolicy-auparse-sys"
 path = "sys"
-optional = true
-
-[features]
-default = []
-bindings = ["dep:auparse-sys"]

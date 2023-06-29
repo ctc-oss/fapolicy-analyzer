@@ -148,7 +148,6 @@ impl PySystem {
         Ok(PyEventLog::new(EventDB::from(xs), self.rs.trust_db.clone()))
     }
 
-    #[cfg(feature = "audit")]
     /// Parse events from the kernel audit log
     fn load_auditlog(&self) -> PyResult<PyEventLog> {
         log::debug!("load_auditlog");

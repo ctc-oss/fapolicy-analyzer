@@ -22,13 +22,11 @@ pub fn from_syslog(path: &str) -> Result<Vec<Event>, Error> {
     from_file(path, |s| s.contains("fapolicyd") && s.contains("rule="))
 }
 
-#[cfg(feature = "audit")]
 pub fn from_auditlog() -> Result<Vec<Event>, Error> {
     use crate::events::audit;
     audit::events(None)
 }
 
-#[cfg(feature = "audit")]
 pub fn from_auditlog_file(path: &str) -> Result<Vec<Event>, Error> {
     use crate::events::audit;
     audit::events(Some(path.to_string()))
