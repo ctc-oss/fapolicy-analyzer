@@ -75,9 +75,10 @@ impl<T, E> Logs<T, E> {
         let au = match path {
             None => unsafe { auparse_init(ausource_t_AUSOURCE_LOGS, ptr::null()) },
             Some(p) => unsafe {
+                let file_path = p.display().to_string();
                 auparse_init(
                     ausource_t_AUSOURCE_FILE,
-                    p.display().to_string().as_str().as_ptr() as *mut c_void,
+                    file_path.as_ptr() as *const c_void,
                 )
             },
         };
