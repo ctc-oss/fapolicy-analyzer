@@ -7,7 +7,7 @@
  */
 
 use crate::error::Error;
-use crate::error::Error::GetAuditFieldFail;
+use crate::error::Error::{AuditFieldInvalid, AuditFieldNotFound, GetAuditFieldFail};
 use crate::{
     auparse_find_field, auparse_find_field_next, auparse_first_record, auparse_get_field_int,
     auparse_get_field_num, auparse_get_field_str, auparse_get_record_num, auparse_goto_field_num,
@@ -36,14 +36,15 @@ pub unsafe fn audit_get_str(au: *mut auparse_state_t, field: &str) -> Result<Str
         auparse_first_record(au);
 
         if !res.is_null() {
-            let str = CStr::from_ptr(res);
-            let str = str.to_str().unwrap();
-            Ok(String::from(str))
+            CStr::from_ptr(res)
+                .to_str()
+                .map_err(|_| AuditFieldInvalid(field.to_string()))
+                .map(|s| s.to_owned())
         } else {
             Err(GetAuditFieldFail(field.to_string()))
         }
     } else {
-        Err(GetAuditFieldFail(field.to_string()))
+        Err(AuditFieldNotFound(field.to_string()))
     }
 }
 

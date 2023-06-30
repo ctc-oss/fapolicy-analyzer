@@ -12,6 +12,12 @@ use thiserror::Error;
 /// An error that can occur
 #[derive(Error, Debug)]
 pub enum Error {
-    #[error("Failed to get field {0}")]
+    #[error("Failed to read audit field {0}")]
     GetAuditFieldFail(String),
+
+    #[error("Audit field not found {0}")]
+    AuditFieldNotFound(String),
+
+    #[error("Failed to read field {0}")]
+    AuditFieldInvalid(String),
 }
