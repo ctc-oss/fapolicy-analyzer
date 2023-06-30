@@ -15,7 +15,6 @@ thiserror = "1.0"
 chrono = "0.4"
 
 fapolicy-auparse = { version = "*", path = "../auparse" }
-fapolicy-auparse-sys = { version = "*", path = "../auparse/sys" }
 fapolicy-daemon = { version = "*", path = "../daemon" }
 fapolicy-rules = { version = "*", path = "../rules" }
 fapolicy-trust = { version = "*", path = "../trust" }
