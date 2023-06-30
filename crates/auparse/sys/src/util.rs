@@ -57,7 +57,7 @@ unsafe fn find_last_field(
     au: *mut auparse_state_t,
     field: &str,
 ) -> Result<(c_uint, c_uint), Error> {
-    let str = CString::new(field).expect("CString field");
+    let str = CString::new(field).map_err(|_| GetAuditFieldFail(field.to_string()))?;
     let tpid = auparse_find_field(au, str.as_ptr());
     let mut coords = None;
     if !tpid.is_null() {

@@ -81,14 +81,9 @@ impl<T, E> Logs<T, E> {
                 )
             },
         };
-        if au.is_null() {
-            Err(NativeInitFail)
-        } else {
-            Ok(Self {
-                au: NonNull::new(au).expect("non null au"),
-                p,
-                f,
-            })
+        match NonNull::new(au) {
+            Some(au) => Ok(Self { au, p, f }),
+            None => Err(NativeInitFail),
         }
     }
 
