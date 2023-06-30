@@ -40,7 +40,10 @@ impl<T, E> Iterator for Logs<T, E> {
                     };
                     match self.p.parse(e) {
                         Ok(i) => return Some(i),
-                        Err(_) => continue,
+                        Err(e) => {
+                            self.p.on_error(e);
+                            continue;
+                        }
                     }
                 }
                 None => return None,
