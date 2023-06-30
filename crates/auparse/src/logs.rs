@@ -8,8 +8,8 @@
 
 use crate::error::Error;
 use crate::error::Error::NativeInitFail;
+use crate::event::{Event, Parser};
 use crate::record::Type;
-use auparse_sys::event::{Event, Parser};
 use auparse_sys::*;
 use std::ffi::c_void;
 use std::path::Path;

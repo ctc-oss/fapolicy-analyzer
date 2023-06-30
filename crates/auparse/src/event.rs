@@ -7,8 +7,8 @@
  */
 
 use crate::error::Error;
-use crate::util::{audit_get_int, audit_get_str};
-use crate::{auparse_get_time, auparse_get_type, auparse_next_event, auparse_state_t};
+use auparse_sys::util::{audit_get_int, audit_get_str};
+use auparse_sys::{auparse_get_time, auparse_get_type, auparse_next_event, auparse_state_t};
 use std::ptr::NonNull;
 use std::time::{Duration, SystemTime};
 

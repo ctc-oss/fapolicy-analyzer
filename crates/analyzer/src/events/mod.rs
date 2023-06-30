@@ -7,7 +7,7 @@
  */
 
 pub mod analysis;
-mod audit;
+pub mod audit;
 pub mod db;
 pub mod event;
 pub mod parse;

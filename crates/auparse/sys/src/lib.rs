@@ -16,5 +16,4 @@ mod bindings;
 pub use bindings::*;
 
 pub mod error;
-pub mod event;
-mod util;
+pub mod util;

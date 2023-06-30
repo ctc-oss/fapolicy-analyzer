@@ -10,10 +10,10 @@ use crate::error::Error;
 use crate::error::Error::MetaError;
 use crate::events::event::Event;
 use chrono::{DateTime, NaiveDateTime, Utc};
+use fapolicy_auparse::event::{Event as AuditEvent, Parser};
 use fapolicy_auparse::logs::Logs;
 use fapolicy_auparse::record::Type;
 use fapolicy_auparse::record::Type::Fanotify;
-use fapolicy_auparse_sys::event::{Event as AuditEvent, Parser};
 use fapolicy_rules::{Decision, Object, Permission, Subject};
 use std::path::PathBuf;
 
