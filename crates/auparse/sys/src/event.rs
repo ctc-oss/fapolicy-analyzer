@@ -23,14 +23,6 @@ pub struct Event {
     au: NonNull<auparse_state_t>,
 }
 
-// impl Iterator for Event {
-//     type Item = Event;
-//
-//     fn next(&mut self) -> Option<Self::Item> {
-//         unsafe { Event::from(self.au) }
-//     }
-// }
-
 impl Event {
     pub fn t0(&self) -> u32 {
         unsafe { auparse_get_type(self.au.as_ptr()) as u32 }
