@@ -9,8 +9,9 @@
 use crate::error::Error;
 use crate::error::Error::MetaError;
 use crate::events::event::Event;
+use audit::Parser;
 use chrono::{DateTime, NaiveDateTime, Utc};
-use fapolicy_auparse::event::{Event as AuditEvent, Parser};
+use fapolicy_auparse::audit;
 use fapolicy_auparse::logs::Logs;
 use fapolicy_auparse::record::Type;
 use fapolicy_auparse::record::Type::Fanotify;
@@ -34,7 +35,7 @@ pub struct Parse;
 impl Parser<Event> for Parse {
     type Error = Error;
 
-    fn parse(&self, e: AuditEvent) -> Result<Event, Self::Error> {
+    fn parse(&self, e: audit::Event) -> Result<Event, Self::Error> {
         Ok(Event {
             rule_id: e.int("fan_info")?,
             dec: dec_from_i32(e.int("resp")?)?,

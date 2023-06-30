@@ -6,20 +6,17 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use crate::error::Error;
-use crate::error::Error::NativeInitFail;
-use crate::event::{Event, Parser};
+use crate::audit::Parser;
 use crate::record::Type;
-use auparse_sys::*;
-use std::ffi::c_void;
+use auparse_sys::cursor::Cursor;
+use auparse_sys::error::Error;
+use auparse_sys::source;
 use std::path::Path;
-use std::ptr;
-use std::ptr::NonNull;
 
 pub type Filter = fn(Type) -> bool;
 
 pub struct Logs<T, E> {
-    au: NonNull<auparse_state_t>,
+    c: Cursor,
     p: Box<dyn Parser<T, Error = E>>,
     f: Option<Filter>,
 }
@@ -29,7 +26,7 @@ impl<T, E> Iterator for Logs<T, E> {
 
     fn next(&mut self) -> Option<Self::Item> {
         loop {
-            match Event::from(self.au) {
+            match self.c.next() {
                 Some(next) => {
                     let e = match self.f {
                         Some(filter) => {
@@ -52,14 +49,6 @@ impl<T, E> Iterator for Logs<T, E> {
     }
 }
 
-impl<T, E> Drop for Logs<T, E> {
-    fn drop(&mut self) {
-        unsafe {
-            auparse_destroy(self.au.as_ptr());
-        }
-    }
-}
-
 impl<T, E> Logs<T, E> {
     pub fn all(p: Box<dyn Parser<T, Error = E>>) -> Result<Self, Error> {
         Self::new(p, None, None)
@@ -72,20 +61,11 @@ impl<T, E> Logs<T, E> {
         f: Option<Filter>,
         path: Option<&Path>,
     ) -> Result<Self, Error> {
-        let au = match path {
-            None => unsafe { auparse_init(ausource_t_AUSOURCE_LOGS, ptr::null()) },
-            Some(p) => unsafe {
-                let file_path = p.display().to_string();
-                auparse_init(
-                    ausource_t_AUSOURCE_FILE,
-                    file_path.as_ptr() as *const c_void,
-                )
-            },
-        };
-        match NonNull::new(au) {
-            Some(au) => Ok(Self { au, p, f }),
-            None => Err(NativeInitFail),
-        }
+        let c = match path {
+            None => source::logs(),
+            Some(p) => source::file(p),
+        }?;
+        Ok(Self { c, p, f })
     }
 
     pub fn all_from(path: &Path, p: Box<dyn Parser<T, Error = E>>) -> Result<Self, Error> {

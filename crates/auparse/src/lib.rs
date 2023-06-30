@@ -6,8 +6,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-pub mod event;
+pub mod audit;
 pub mod logs;
 pub mod record;
-
-pub use auparse_sys::error;

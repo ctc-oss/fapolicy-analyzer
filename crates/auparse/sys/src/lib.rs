@@ -15,5 +15,8 @@
 mod bindings;
 pub use bindings::*;
 
+pub mod cursor;
 pub mod error;
-pub mod util;
+pub mod event;
+pub mod source;
+pub(crate) mod util;
