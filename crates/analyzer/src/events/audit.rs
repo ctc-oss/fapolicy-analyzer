@@ -35,7 +35,7 @@ pub struct Parse;
 impl Parser<Event> for Parse {
     type Error = Error;
 
-    fn parse(&self, e: audit::Event) -> Result<Event, Self::Error> {
+    fn parse(&self, e: &audit::Event) -> Result<Event, Self::Error> {
         Ok(Event {
             rule_id: e.int("fan_info")?,
             dec: dec_from_i32(e.int("resp")?)?,

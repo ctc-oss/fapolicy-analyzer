@@ -16,6 +16,6 @@ pub type Filter = fn(u32) -> bool;
 pub trait Parser<T> {
     type Error;
 
-    fn parse(&self, e: Event) -> Result<T, Self::Error>;
+    fn parse(&self, e: &Event) -> Result<T, Self::Error>;
     fn on_error(&mut self, _e: Self::Error) {}
 }
