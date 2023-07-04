@@ -59,7 +59,7 @@ jobs:
 
       - name: Generate build info
         run: |
-          scripts/build-info.py --git
+          python scripts/build-info.py --git
           git add -f fapolicy_analyzer/resources/build-info.json
           git config user.name 'CI'
           git config user.email '<>'
