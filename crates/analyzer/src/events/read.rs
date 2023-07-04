@@ -11,6 +11,7 @@ use std::io;
 use std::io::{BufRead, BufReader};
 
 use crate::error::Error;
+use crate::events::audit;
 use crate::events::event::Event;
 use crate::events::parse::parse_event;
 
@@ -23,12 +24,10 @@ pub fn from_syslog(path: &str) -> Result<Vec<Event>, Error> {
 }
 
 pub fn from_auditlog() -> Result<Vec<Event>, Error> {
-    use crate::events::audit;
     audit::events(None)
 }
 
 pub fn from_auditlog_file(path: &str) -> Result<Vec<Event>, Error> {
-    use crate::events::audit;
     audit::events(Some(path.to_string()))
 }
 
