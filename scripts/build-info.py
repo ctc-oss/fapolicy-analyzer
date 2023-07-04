@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # Copyright Concurrent Technologies Corporation 2023
 #
 # This program is free software: you can redistribute it and/or modify
