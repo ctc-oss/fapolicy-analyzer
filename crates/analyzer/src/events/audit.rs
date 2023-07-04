@@ -41,9 +41,9 @@ impl Parser<Event> for Parse {
             uid: e.int("uid")?,
             gid: vec![e.int("gid")?],
             pid: e.int("pid")?,
-            subj: Subject::from_exe(&e.str("exe").map(strip_escaped_quotes)?),
+            subj: Subject::from_exe(&e.str("exe").map(strip_outer_quotes)?),
             perm: perm_from_i32(e.int("syscall")?)?,
-            obj: Object::from_path(&e.str("name").map(strip_escaped_quotes)?),
+            obj: Object::from_path(&e.str("name").map(strip_outer_quotes)?),
             when: Some(DateTime::from_utc(
                 NaiveDateTime::from_timestamp(e.ts(), 0),
                 Utc,
@@ -56,8 +56,8 @@ impl Parser<Event> for Parse {
     }
 }
 
-// string values returned from fanotify have been observed to contain escaped quotes
-fn strip_escaped_quotes(s: String) -> String {
+// auparse string values are quoted
+fn strip_outer_quotes(s: String) -> String {
     const PATTERN: char = '\"';
     let s = s.strip_prefix(PATTERN).unwrap_or(&s);
     s.strip_suffix(PATTERN).unwrap_or(s).to_string()
@@ -115,11 +115,11 @@ mod tests {
 
     #[test]
     fn test_strip() {
-        assert_eq!(strip_escaped_quotes("".into()), "");
-        assert_eq!(strip_escaped_quotes("123".into()), "123");
-        assert_eq!(strip_escaped_quotes("\"123".into()), "123");
-        assert_eq!(strip_escaped_quotes("123\"".into()), "123");
-        assert_eq!(strip_escaped_quotes("\"123\"".into()), "123");
-        assert_eq!(strip_escaped_quotes("\"1\"2\"3\"".into()), "1\"2\"3");
+        assert_eq!(strip_outer_quotes("".into()), "");
+        assert_eq!(strip_outer_quotes("123".into()), "123");
+        assert_eq!(strip_outer_quotes("\"123".into()), "123");
+        assert_eq!(strip_outer_quotes("123\"".into()), "123");
+        assert_eq!(strip_outer_quotes("\"123\"".into()), "123");
+        assert_eq!(strip_outer_quotes("\"1\"2\"3\"".into()), "1\"2\"3");
     }
 }
