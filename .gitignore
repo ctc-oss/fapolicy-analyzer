@@ -26,3 +26,5 @@ venvs
 /vendor*/
 
 fapolicy_analyzer/resources/build-info.json
+VERSION
+FEATURES
