@@ -30,7 +30,6 @@ fn fanotify_only(x: Type) -> bool {
     x == Fanotify
 }
 
-// todo;; could add parse metrics here
 pub struct Parse;
 impl Parser<Event> for Parse {
     type Error = Error;
@@ -50,6 +49,10 @@ impl Parser<Event> for Parse {
                 Utc,
             )),
         })
+    }
+
+    fn on_error(&mut self, e: Self::Error) {
+        log::warn!("audit parse error: {e:?}");
     }
 }
 

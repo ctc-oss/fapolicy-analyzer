@@ -298,6 +298,7 @@ dependencies = [
  "fapolicy-daemon",
  "fapolicy-rules",
  "fapolicy-trust",
+ "log",
  "nom",
  "serde",
  "thiserror",
