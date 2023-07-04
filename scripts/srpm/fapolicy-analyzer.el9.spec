@@ -39,6 +39,9 @@ BuildRequires: gettext
 BuildRequires: itstool
 BuildRequires: desktop-file-utils
 
+BuildRequires: clang
+BuildRequires: audit-libs-devel
+
 BuildRequires: rust-packaging
 
 BuildRequires: rust-assert_matches-devel
@@ -190,7 +193,7 @@ sed -i "s#%{cargo_registry}#${CARGO_REG_DIR}#g" .cargo/config
 
 rm Cargo.lock
 
-# disable dev-tools crate
+# disable the dev-tools crate
 sed -i '/tools/d' Cargo.toml
 
 # extract our doc sourcs

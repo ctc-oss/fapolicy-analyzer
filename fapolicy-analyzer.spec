@@ -19,11 +19,15 @@ BuildRequires: gettext
 BuildRequires: itstool
 BuildRequires: desktop-file-utils
 
+BuildRequires: clang
+BuildRequires: audit-libs-devel
+
 BuildRequires: rust-packaging
 BuildRequires: python3dist(setuptools-rust)
 
 BuildRequires: rust-assert_matches-devel
 BuildRequires: rust-autocfg-devel
+BuildRequires: rust-bindgen-devel
 BuildRequires: rust-bitflags-devel
 BuildRequires: rust-bumpalo-devel
 BuildRequires: rust-byteorder-devel
@@ -45,6 +49,7 @@ BuildRequires: rust-getrandom-devel
 BuildRequires: rust-iana-time-zone-devel
 BuildRequires: rust-is_executable-devel
 BuildRequires: rust-instant-devel
+BuildRequires: rust-libloading-devel
 BuildRequires: rust-lazy_static-devel
 BuildRequires: rust-libc-devel
 BuildRequires: rust-libdbus-sys-devel
@@ -89,6 +94,7 @@ BuildRequires: rust-toml-devel
 BuildRequires: rust-unicode-xid-devel
 BuildRequires: rust-unindent-devel
 BuildRequires: rust-untrusted-devel
+BuildRequires: rust-which-devel
 BuildRequires: rust-paste-devel
 BuildRequires: rust-indoc-devel
 
@@ -134,6 +140,11 @@ tar xvzf %{SOURCE1}
 # our setup.py looks up the version from git describe
 # this overrides that check to use the RPM version
 echo %{module_version} > VERSION
+
+# enable the audit feature for 39 and up
+%if 0%{?fedora} >= 39
+echo "audit" > FEATURES
+%endif
 
 %build
 # ensure standard Rust compiler flags are set

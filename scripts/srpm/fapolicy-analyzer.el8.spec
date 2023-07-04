@@ -36,6 +36,9 @@ BuildRequires: gettext
 BuildRequires: itstool
 BuildRequires: desktop-file-utils
 
+BuildRequires: clang
+BuildRequires: audit-libs-devel
+
 BuildRequires: rust-toolset
 BuildRequires: python3dist(toml)
 BuildRequires: python3dist(typing-extensions)
@@ -117,7 +120,7 @@ cp -r  %{python3_sitelib}/pip* %{venv_lib}
 
 tar -xzf %{SOURCE1}
 
-# disable dev-tools crate
+# disable the dev-tools crate
 sed -i '/tools/d' Cargo.toml
 
 # setup.py looks up the version from git describe

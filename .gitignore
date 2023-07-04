@@ -22,6 +22,8 @@ src/bin
 target
 venvs
 
-
 *.tar.gz
 /vendor*/
+
+VERSION
+FEATURES

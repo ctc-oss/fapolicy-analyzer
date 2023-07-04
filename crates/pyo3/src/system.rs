@@ -148,6 +148,14 @@ impl PySystem {
         Ok(PyEventLog::new(EventDB::from(xs), self.rs.trust_db.clone()))
     }
 
+    /// Parse events from the kernel audit log
+    fn load_auditlog(&self) -> PyResult<PyEventLog> {
+        log::debug!("load_auditlog");
+        let xs = events::read::from_auditlog()
+            .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))?;
+        Ok(PyEventLog::new(EventDB::from(xs), self.rs.trust_db.clone()))
+    }
+
     fn rules(&self) -> Vec<PyRule> {
         log::debug!("rules");
         rules::to_vec(&self.rs.rules_db)
