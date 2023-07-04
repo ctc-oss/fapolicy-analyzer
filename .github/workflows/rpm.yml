@@ -43,6 +43,8 @@ jobs:
     container: registry.fedoraproject.org/fedora:rawhide
     runs-on: ubuntu-20.04
     steps:
+      - uses: actions/setup-python@v4
+
       - name: Install deps
         run: dnf install -y git make
 
