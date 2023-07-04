@@ -178,6 +178,7 @@ def test_apply_changset_epic_error(mocker):
             received_events,
         ),
         (request_events, (LogType.syslog, None), "load_syslog", received_events),
+        (request_events, (LogType.audit, None), "load_auditlog", received_events),
         (request_users, None, "users", received_users),
         (request_groups, None, "groups", received_groups),
         (request_rules, None, "rules", received_rules),
@@ -205,6 +206,7 @@ def test_request_epic(
     "action_to_dispatch, payload, system_fn_to_mock, error_action_to_mock",
     [
         (request_events, (LogType.debug, MagicMock()), "load_debuglog", error_events),
+        (request_events, (LogType.audit, MagicMock()), "load_auditlog", error_events),
         (request_events, (LogType.syslog, None), "load_syslog", error_events),
         (request_users, None, "users", error_users),
         (request_groups, None, "groups", error_groups),

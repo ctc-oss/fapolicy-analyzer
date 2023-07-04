@@ -169,6 +169,13 @@ def test_loads_syslog(mock_dispatch):
     )
 
 
+def test_loads_auditlog(mock_dispatch):
+    init_store(mock_System())
+    PolicyRulesAdminPage(which_log=LogType.audit)
+    mock_dispatch.assert_any_call(
+        InstanceOf(Action) & Attrs(type=REQUEST_EVENTS, payload=(LogType.audit, None))
+    )
+
 def test_adds_user_tabs(widget):
     tabs = widget.get_object("userTabs")
     page = tabs.get_nth_page(0)
