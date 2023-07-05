@@ -15,8 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from datetime import datetime
 import json
 import os
+import platform
 import subprocess
 import argparse
 
@@ -39,11 +41,12 @@ if not args.overwrite and os.path.exists(args.output):
         data = json.load(f)
 
 if args.os:
-    data["os_info"] = subprocess.getoutput("uname -nr")
+    uname = platform.uname()
+    data["os_info"] = f"{uname.node}-{uname.machine}"
 if args.git:
     data["git_info"] = subprocess.getoutput("git rev-list HEAD -n1")
 if args.time:
-    data["time_info"] = subprocess.getoutput("date")
+    data["time_info"] = f"{datetime.now()}".split(".")[0]
 
 with open(args.output, "w") as f:
     json.dump(data, f, indent=4)
