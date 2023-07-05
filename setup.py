@@ -37,6 +37,19 @@ def get_version():
     return meta["version"]
 
 
+# comma separated list of features that should be enabled in the rust build
+def get_features():
+    enabling = None
+    if "FEATURES" in os.environ:
+        enabling = os.getenv("FEATURES")
+    if os.path.exists("FEATURES"):
+        with open("FEATURES", "r") as features:
+            v = features.readline().strip().split(",")
+            if len(v):
+                enabling = v
+    print(f"Enabled Rust features: {enabling}")
+    return enabling
+
 #
 # rm -rf fapolicy_analyzer.egg-info/ build/ dist/ && python setup.py bdist_wheel
 #
@@ -58,7 +71,7 @@ setup(
     setup_requires=["setuptools", "setuptools_rust"],
     zip_safe=False,
     rust_extensions=[
-        RustExtension("fapolicy_analyzer.rust", path="crates/pyo3/Cargo.toml")
+        RustExtension("fapolicy_analyzer.rust", path="crates/pyo3/Cargo.toml", features=get_features())
     ],
     include_package_data=True,
     package_data={
