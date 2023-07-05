@@ -354,3 +354,12 @@ def test_get_selected_row_by_file(widget):
     _, paths = view.get_selection().get_selected_rows()
     expected = paths[0]
     assert expected.compare(actual)
+
+
+def test_selection_text_color(widget):
+    widget.load_store(_subjects)
+    view = widget.get_object("treeView")
+    view.get_selection().select_path(Gtk.TreePath.new_first())
+    model, paths = view.get_selection().get_selected_rows()
+    assert "#FFFFFF" in model[0][0]
+    assert "#FFFFFF" not in model[1][0]
