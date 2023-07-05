@@ -182,7 +182,7 @@
                       </object>
                     </child>
                   </object>
-                </child>
+                </child>     
                 <child>
                   <object class="GtkMenuItem">
                     <property name="visible">True</property>
