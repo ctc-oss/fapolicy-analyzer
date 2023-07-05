@@ -203,7 +203,8 @@ tar xvzf %{SOURCE1}
 # this overrides that check to use the RPM version
 echo %{module_version} > VERSION
 
-%{python3} scripts/build-info.py --os --time
+# capture build info
+scripts/build-info.py --os --time
 
 %build
 # ensure standard Rust compiler flags are set
