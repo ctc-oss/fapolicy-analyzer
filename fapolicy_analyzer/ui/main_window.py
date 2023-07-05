@@ -28,7 +28,6 @@ import fapolicy_analyzer.ui.strings as strings
 from fapolicy_analyzer import System, is_audit_available
 from fapolicy_analyzer import __version__ as app_version
 from fapolicy_analyzer.ui import get_resource
-from fapolicy_analyzer.ui.about_dialog import AboutDialog
 from fapolicy_analyzer.ui.action_toolbar import ActionToolbar
 from fapolicy_analyzer.ui.actions import (
     NotificationType,
@@ -107,7 +106,6 @@ class MainWindow(UIConnectedWidget):
         self.__application = None
         self.__page = None
         self.__help = None
-        self.aboutDialog = AboutDialog()
 
         toaster = Notification(timer_duration=5)
         self.get_object("overlay").add_overlay(toaster.get_ref())
@@ -364,28 +362,21 @@ class MainWindow(UIConnectedWidget):
         fcd.destroy()
 
     def on_aboutMenu_activate(self, *args):
+        aboutDialog = self.get_object("aboutDialog")
+        aboutDialog.set_transient_for(self.window)
+        aboutDialog.set_version(f"v{app_version}")
 
-        data = {
-            "os_info": "Unknown",
-            "git_info": "Unknown",
-            "time_info": "Unknown",
-        }
-        res = get_resource("build-info.json")
+        try:
+            res = get_resource("build-info.json")
+            info: dict = json.loads(res) if res else {}
+            os = info["os_info"] if "os_info" in info else "?"
+            time = info["time_info"] if "time_info" in info else "?"
+            aboutDialog.set_comments(f"""{os} {time}""")
+        except Exception as e:
+            logging.warning(f"about menu failed to load build info {e}")
 
-        data = json.loads(res) if len(res) > 0 else data
-
-        self.aboutDialog.get_object("version_label").set_text(f"v{app_version}")
-        self.aboutDialog.get_object("time_label").set_text(
-            f"Build Time: {data['time_info']}"
-        )
-        self.aboutDialog.get_object("git_label").set_text(
-            f"Git Build: {data['git_info']}"
-        )
-        self.aboutDialog.get_object("os_label").set_text(
-            f"Build Environment: {data['os_info']}"
-        )
-        self.aboutDialog.get_ref().run()
-        self.aboutDialog.get_ref().hide()
+        aboutDialog.run()
+        aboutDialog.hide()
 
     def on_helpMenu_activate(self, *args):
         def handle_destroy(*args):

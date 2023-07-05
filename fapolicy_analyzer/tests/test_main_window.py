@@ -160,12 +160,11 @@ def test_does_not_show_confirm_if_no_unapplied_changes(mainWindow, mocker):
 
 
 def test_displays_about_dialog(mainWindow, mocker):
+    aboutDialog = mainWindow.get_object("aboutDialog")
     menuItem = mainWindow.get_object("aboutMenu")
-    mocker.patch.object(
-        mainWindow.aboutDialog.get_ref(), "run", return_value=Gtk.ResponseType.OK
-    )
+    mocker.patch.object(aboutDialog, "run", return_value=0)
     menuItem.activate()
-    mainWindow.aboutDialog.get_ref().run.assert_called()
+    aboutDialog.run.assert_called()
 
 
 @pytest.mark.parametrize(

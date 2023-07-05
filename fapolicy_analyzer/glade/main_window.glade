@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.38.2 -->
+<!-- Generated with glade 3.22.2 -->
 <!--
      Copyright Concurrent Technologies Corporation 2021
      
@@ -18,7 +18,7 @@
 -->
 <interface>
   <requires lib="gtk+" version="3.22"/>
-  <object class="GtkAboutDialog">
+  <object class="GtkAboutDialog" id="aboutDialog">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">About File Acccess Policy Analyzer</property>
     <property name="type_hint">dialog</property>
@@ -28,6 +28,9 @@
     <property name="website_label" translatable="yes">Visit our Wiki for more information</property>
     <property name="logo_icon_name">changes-prevent</property>
     <property name="license_type">gpl-3-0</property>
+    <child type="titlebar">
+      <placeholder/>
+    </child>
     <child internal-child="vbox">
       <object class="GtkBox">
         <property name="can_focus">False</property>
@@ -56,9 +59,12 @@
     <property name="window_position">center</property>
     <property name="default_width">1024</property>
     <property name="default_height">768</property>
-    <signal name="delete_event" handler="on_delete_event" swapped="no"/>
+    <signal name="delete-event" handler="on_delete_event" swapped="no"/>
     <signal name="destroy" handler="on_destroy" swapped="no"/>
     <signal name="show" handler="on_start" swapped="no"/>
+    <child type="titlebar">
+      <placeholder/>
+    </child>
     <child>
       <object class="GtkOverlay" id="overlay">
         <property name="visible">True</property>
@@ -241,7 +247,7 @@
                         </child>
                         <child>
                           <object class="GtkImageMenuItem" id="saveMenu">
-                            <property name="label">gtk_save</property>
+                            <property name="label">gtk-save</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="use_underline">True</property>
