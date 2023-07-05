@@ -15,6 +15,7 @@
 
 import logging
 import os
+import json
 from locale import gettext as _
 from os import getenv, geteuid, path
 from threading import Thread
@@ -26,6 +27,7 @@ import gi
 import fapolicy_analyzer.ui.strings as strings
 from fapolicy_analyzer import System, is_audit_available
 from fapolicy_analyzer import __version__ as app_version
+from fapolicy_analyzer.ui import get_resource
 from fapolicy_analyzer.ui.action_toolbar import ActionToolbar
 from fapolicy_analyzer.ui.actions import (
     NotificationType,
@@ -363,6 +365,16 @@ class MainWindow(UIConnectedWidget):
         aboutDialog = self.get_object("aboutDialog")
         aboutDialog.set_transient_for(self.window)
         aboutDialog.set_version(f"v{app_version}")
+
+        try:
+            res = get_resource("build-info.json")
+            info: dict = json.loads(res) if res else {}
+            os = info["os_info"] if "os_info" in info else "?"
+            time = info["time_info"] if "time_info" in info else "?"
+            aboutDialog.set_comments(f"""{os} {time}""")
+        except Exception as e:
+            logging.warning(f"about menu failed to load build info {e}")
+
         aboutDialog.run()
         aboutDialog.hide()
 

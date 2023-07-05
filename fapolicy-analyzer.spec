@@ -105,7 +105,7 @@ Requires:      python3-configargparse
 Requires:      python3-more-itertools
 Requires:      python3-rx
 Requires:      python3-importlib-metadata
-Requires:      python3-toml 
+Requires:      python3-toml
 
 Requires:      gtk3
 Requires:      gtksourceview3
@@ -140,6 +140,9 @@ tar xvzf %{SOURCE1}
 # our setup.py looks up the version from git describe
 # this overrides that check to use the RPM version
 echo %{module_version} > VERSION
+
+# capture build info
+scripts/build-info.py --os --time
 
 # enable the audit feature for 39 and up
 %if 0%{?fedora} >= 39

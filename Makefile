@@ -132,6 +132,11 @@ check: header-check format lint test
 	@echo -e "${GRN}--- Pre-Push checks complete${NC}"
 	git status
 
+# Execute the commands to generate the build information for display
+build-info:
+	@echo -e "${GRN}-  |--- Build info created${NC}"
+	scripts/build-info.py --overwrite --git --os --time
+
 # Generate Fedora rawhide rpms
 fc-rpm:
 	@echo -e "${GRN}--- Fedora RPM generation...${NC}"

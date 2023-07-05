@@ -203,6 +203,9 @@ tar xvzf %{SOURCE1}
 # this overrides that check to use the RPM version
 echo %{module_version} > VERSION
 
+# capture build info
+scripts/build-info.py --os --time
+
 %build
 # ensure standard Rust compiler flags are set
 export RUSTFLAGS="%{build_rustflags}"
