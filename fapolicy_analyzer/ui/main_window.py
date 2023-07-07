@@ -35,6 +35,7 @@ from fapolicy_analyzer.ui.actions import (
     request_system_trust,
 )
 from fapolicy_analyzer.ui.changeset_wrapper import Changeset
+from fapolicy_analyzer.ui.config_admin_page import ConfigAdminPage
 from fapolicy_analyzer.ui.configs import Sizing
 from fapolicy_analyzer.ui.database_admin_page import DatabaseAdminPage
 from fapolicy_analyzer.ui.fapd_manager import FapdManager, ServiceStatus
@@ -69,6 +70,7 @@ def router(page: PAGE_SELECTION, *data) -> UIPage:
         PAGE_SELECTION.ANALYZE_SYSLOG: PolicyRulesAdminPage,
         PAGE_SELECTION.RULES_ADMIN: RulesAdminPage,
         PAGE_SELECTION.PROFILER: ProfilerPage,
+        PAGE_SELECTION.CONFIG: ConfigAdminPage,
     }.get(page, RulesAdminPage)
     return route(*data)
 
@@ -429,6 +431,9 @@ class MainWindow(UIConnectedWidget):
 
     def on_trustDbMenu_activate(self, menuitem, *args):
         self.__pack_main_content(router(PAGE_SELECTION.TRUST_DATABASE_ADMIN))
+
+    def on_configAdminMenu_activate(self, *args):
+        self.__pack_main_content(router(PAGE_SELECTION.CONFIG))
 
     def on_rulesAdminMenu_activate(self, *args, **kwargs):
         rulesPage = router(PAGE_SELECTION.RULES_ADMIN)
