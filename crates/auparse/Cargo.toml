@@ -1,0 +1,13 @@
+[package]
+name = "fapolicy-auparse"
+description = "Pasrsing for kernel audit logs"
+license = "MPL-2.0"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+thiserror = "1"
+
+[dependencies.auparse-sys]
+package = "fapolicy-auparse-sys"
+path = "sys"
