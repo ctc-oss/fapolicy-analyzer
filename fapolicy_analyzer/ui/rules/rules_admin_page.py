@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import gi
 import logging
 from typing import Any, Optional, Sequence, Tuple
 
@@ -43,9 +44,14 @@ from fapolicy_analyzer.ui.strings import (
     RULES_TEXT_LOAD_ERROR,
     RULES_VALIDATION_ERROR,
     RULES_VALIDATION_WARNING,
+    RULES_OVERRIDE_MESSAGE,
 )
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk  # isort: skip
+
 
 VALIDATION_NOTE_CATEGORY = "invalid rules"
 
@@ -206,7 +212,15 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
             self.__saving = True
             dispatch(apply_changesets(changeset))
         else:
-            self.__status_info.render_rule_status(changeset.rules())
+            overrideDialog = self.get_object("saveOverrideDialog")
+            self.get_object("overrideText").set_text(RULES_OVERRIDE_MESSAGE)
+            resp = overrideDialog.run()
+            if resp == Gtk.ResponseType.OK:
+                self.__saving = True
+                dispatch(apply_changesets(changeset))
+            else:
+                self.__status_info.render_rule_status(changeset.rules())
+            overrideDialog.hide()
 
     def on_validate_clicked(self, *args):
         changeset, _ = self.__build_and_validate_changeset(show_notifications=False)
