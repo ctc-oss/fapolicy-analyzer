@@ -223,7 +223,7 @@ replace: "RSYSLOG_FileFormat"
     """
 )
 RULES_OVERRIDE_MESSAGE = _(
-    """The ruleset you are attempting to save is invalid. 
+    """The rules you are attempting to save are invalid.
 
 Are you sure you wish to continue?"""
 )
