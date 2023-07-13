@@ -18,13 +18,19 @@ import logging
 from fapolicy_analyzer.util.xdg_utils import (
     app_state_dir_prefix,
     app_data_dir_prefix,
+    app_config_dir_prefix,
 )
+
+from fapolicy_analyzer import set_config_file_path
 
 gf_handler = logging.FileHandler(app_data_dir_prefix("fapolicy-analyzer.log"), mode="w")
 gs_handler = logging.StreamHandler()
 logging.basicConfig(level=logging.DEBUG, handlers=[gf_handler, gs_handler])
 gs_handler.setLevel(logging.WARNING)
 gf_handler.setLevel(logging.INFO)
+
+
+set_config_file_path(app_config_dir_prefix("fapolicy-analyzer.toml"))
 
 import argparse
 import gi

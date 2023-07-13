@@ -19,7 +19,15 @@ fn config_file_path() -> PyResult<String> {
         .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
 }
 
+/// Provide path to the application config file
+#[pyfunction]
+fn set_config_file_path(p: String) -> String {
+   let config_file_path_msg = String::from("Loading config from: ") + &p;
+   return config_file_path_msg;
+}
+
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(config_file_path, m)?)?;
+    m.add_function(wrap_pyfunction!(set_config_file_path, m)?)?;
     Ok(())
 }
