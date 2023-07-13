@@ -22,8 +22,8 @@ fn config_file_path() -> PyResult<String> {
 /// Provide path to the application config file
 #[pyfunction]
 fn set_config_file_path(p: String) -> String {
-   let config_file_path_msg = String::from("Loading config from: ") + &p;
-   return config_file_path_msg;
+    let config_file_path_msg = String::from("Loading config from: ") + &p;
+    return config_file_path_msg;
 }
 
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
