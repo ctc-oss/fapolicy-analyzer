@@ -80,7 +80,7 @@ fn dir(db: &DB, dir: &Path) -> Result<(), io::Error> {
 
 fn file(db: &DB, to: &Path) -> Result<(), io::Error> {
     // write file trust db
-    let mut tf = File::create(&to)?;
+    let mut tf = File::create(to)?;
     for (_, rec) in db.iter() {
         match rec.source {
             None | Some(TrustSource::Ancillary) => {

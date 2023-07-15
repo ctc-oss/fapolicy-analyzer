@@ -61,8 +61,7 @@ impl PyEvent {
     /// The group id parsed from the log event
     #[getter]
     fn gid(&self) -> i32 {
-        // todo;; unhack this
-        *self.rs.event.gid.get(0).unwrap()
+        *self.rs.event.gid.first().unwrap_or(&-1)
     }
 
     /// The fapolicyd subject parsed from the log event
