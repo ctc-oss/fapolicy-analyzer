@@ -27,7 +27,7 @@ end
 
 Vagrant.configure("2") do |config|
   config.vm.box = "alvistack/fedora-rawhide"
-  config.vm.box_version = "20220910.1.1"
+  config.vm.box_version = "20230618.1.1"
 
   config.ssh.forward_agent = true
   config.ssh.forward_x11 = true

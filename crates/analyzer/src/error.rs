@@ -8,6 +8,7 @@
 
 use std::io;
 
+use fapolicy_auparse::audit;
 use std::string::FromUtf8Error;
 use thiserror::Error;
 
@@ -33,4 +34,7 @@ pub enum Error {
 
     #[error("Failed to parse getent output")]
     UserGroupDatabaseParseFailure(#[from] FromUtf8Error),
+
+    #[error("Audit parse error {0}")]
+    AuditError(#[from] audit::Error),
 }

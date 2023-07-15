@@ -18,7 +18,12 @@ pyo3-log = "0.8"
 crossbeam-channel = "0.5"
 
 fapolicy-analyzer = { version = "*", path = "../analyzer" }
+fapolicy-auparse = { version = "*", path = "../auparse" }
 fapolicy-app = { version = "*", path = "../app" }
 fapolicy-daemon = { version = "*", path = "../daemon" }
 fapolicy-rules = { version = "*", path = "../rules" }
 fapolicy-trust = { version = "*", path = "../trust" }
+
+[features]
+default = []
+audit = []

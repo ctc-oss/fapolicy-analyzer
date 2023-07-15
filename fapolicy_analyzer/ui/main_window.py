@@ -15,6 +15,7 @@
 
 import logging
 import os
+import json
 from locale import gettext as _
 from os import getenv, geteuid, path
 from threading import Thread
@@ -24,8 +25,9 @@ from typing import Sequence
 import gi
 
 import fapolicy_analyzer.ui.strings as strings
-from fapolicy_analyzer import System
+from fapolicy_analyzer import System, is_audit_available
 from fapolicy_analyzer import __version__ as app_version
+from fapolicy_analyzer.ui import get_resource
 from fapolicy_analyzer.ui.action_toolbar import ActionToolbar
 from fapolicy_analyzer.ui.actions import (
     NotificationType,
@@ -51,7 +53,7 @@ from fapolicy_analyzer.ui.store import (
     get_application_feature,
     get_system_feature,
 )
-from fapolicy_analyzer.ui.types import PAGE_SELECTION
+from fapolicy_analyzer.ui.types import PAGE_SELECTION, LogType
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 from fapolicy_analyzer.ui.unapplied_changes_dialog import UnappliedChangesDialog
@@ -67,6 +69,7 @@ def router(page: PAGE_SELECTION, *data) -> UIPage:
         PAGE_SELECTION.TRUST_DATABASE_ADMIN: DatabaseAdminPage,
         PAGE_SELECTION.ANALYZE_FROM_DEBUG: PolicyRulesAdminPage,
         PAGE_SELECTION.ANALYZE_SYSLOG: PolicyRulesAdminPage,
+        PAGE_SELECTION.ANALYZE_AUDIT: PolicyRulesAdminPage,
         PAGE_SELECTION.RULES_ADMIN: RulesAdminPage,
         PAGE_SELECTION.PROFILER: ProfilerPage,
     }.get(page, RulesAdminPage)
@@ -124,6 +127,7 @@ class MainWindow(UIConnectedWidget):
             or path.exists("/tmp/prof_ui_enable")
         )
         self.get_object("profileExecMenu").set_sensitive(prof_ui_enable)
+        self.get_object("auditlogMenu").set_sensitive(is_audit_available())
 
         self.__add_toolbar()
 
@@ -361,6 +365,16 @@ class MainWindow(UIConnectedWidget):
         aboutDialog = self.get_object("aboutDialog")
         aboutDialog.set_transient_for(self.window)
         aboutDialog.set_version(f"v{app_version}")
+
+        try:
+            res = get_resource("build-info.json")
+            info: dict = json.loads(res) if res else {}
+            os = info["os_info"] if "os_info" in info else "?"
+            time = info["time_info"] if "time_info" in info else "?"
+            aboutDialog.set_comments(f"""{os} {time}""")
+        except Exception as e:
+            logging.warning(f"about menu failed to load build info {e}")
+
         aboutDialog.run()
         aboutDialog.hide()
 
@@ -402,7 +416,12 @@ class MainWindow(UIConnectedWidget):
         )
 
     def on_syslogMenu_activate(self, *args):
-        page = router(PAGE_SELECTION.ANALYZE_SYSLOG, True)
+        page = router(PAGE_SELECTION.ANALYZE_SYSLOG, LogType.syslog)
+        self.resize_analysis_page(page)
+        self.__pack_main_content(page)
+
+    def on_auditlogMenu_activate(self, *args):
+        page = router(PAGE_SELECTION.ANALYZE_AUDIT, LogType.audit)
         self.resize_analysis_page(page)
         self.__pack_main_content(page)
 
@@ -414,7 +433,7 @@ class MainWindow(UIConnectedWidget):
         _file = fcd.get_filename() or ""
 
         if path.isfile(_file):
-            page = router(PAGE_SELECTION.ANALYZE_FROM_DEBUG, False, _file)
+            page = router(PAGE_SELECTION.ANALYZE_FROM_DEBUG, LogType.debug, _file)
             page.object_list.rule_view_activate += self.on_rulesAdminMenu_activate
             self.resize_analysis_page(page)
             self.__pack_main_content(page)
