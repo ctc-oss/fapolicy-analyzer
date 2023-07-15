@@ -49,6 +49,11 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
+
+      # disable lint on pyo3 due to
+      # https://github.com/rust-lang/rust-clippy/issues/8971
+      - run: sed -i '/pyo3/d' Cargo.toml
+
       - name: Install requirements
         run: |
           sudo apt-get update
