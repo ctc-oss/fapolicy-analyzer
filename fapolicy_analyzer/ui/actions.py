@@ -19,6 +19,7 @@ from typing import Any, Dict, Iterator, NamedTuple, Optional, Sequence
 
 from fapolicy_analyzer import Changeset, Event, Group, Rule, System, Trust, User
 from fapolicy_analyzer.redux import Action, create_action
+from fapolicy_analyzer.ui.types import LogType
 
 INIT_SYSTEM = "INIT_SYSTEM"
 SYSTEM_RECEIVED = "SYSTEM_RECEIVED"
@@ -209,7 +210,7 @@ def restore_system_checkpoint() -> Action:
     return _create_action(RESTORE_SYSTEM_CHECKPOINT)
 
 
-def request_events(log_type: str, file: str = None) -> Action:
+def request_events(log_type: LogType, file: str = None) -> Action:
     return _create_action(REQUEST_EVENTS, (log_type, file))
 
 

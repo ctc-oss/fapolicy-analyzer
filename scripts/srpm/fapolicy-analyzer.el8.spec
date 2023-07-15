@@ -1,6 +1,6 @@
 Summary:       File Access Policy Analyzer
 Name:          fapolicy-analyzer
-Version:       1.0.3
+Version:       1.1.0
 Release:       1%{?dist}
 License:       GPL-3.0-or-later
 URL:           https://github.com/ctc-oss/fapolicy-analyzer
@@ -35,6 +35,9 @@ BuildRequires: dbus-devel
 BuildRequires: gettext
 BuildRequires: itstool
 BuildRequires: desktop-file-utils
+
+BuildRequires: clang
+BuildRequires: audit-libs-devel
 
 BuildRequires: rust-toolset
 BuildRequires: python3dist(toml)
@@ -117,12 +120,15 @@ cp -r  %{python3_sitelib}/pip* %{venv_lib}
 
 tar -xzf %{SOURCE1}
 
-# disable dev-tools crate
+# disable the dev-tools crate
 sed -i '/tools/d' Cargo.toml
 
 # setup.py looks up the version from git describe
 # this overrides that check to the RPM version
 echo %{module_version} > VERSION
+
+# capture build info
+scripts/build-info.py --os --time
 
 %build
 # ensure standard Rust compiler flags are set
@@ -155,5 +161,5 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
 %attr(755,root,root) %{_datadir}/applications/%{name}.desktop
 
 %changelog
-* Mon May 29 2023 John Wass <jwass3@gmail.com> 1.0.3-1
+* Tue Jul 11 2023 John Wass <jwass3@gmail.com> 1.1.0-1
 - New release

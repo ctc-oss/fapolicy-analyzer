@@ -133,6 +133,7 @@ from fapolicy_analyzer.ui.actions import (
 )
 
 import context  # noqa: F401 # isort: skip
+from fapolicy_analyzer.ui.types import LogType
 
 
 @pytest.mark.parametrize("notification_type", [t for t in list(NotificationType)])
@@ -306,18 +307,25 @@ def test_restore_system_checkpoint():
     assert not action.payload
 
 
-def test_request_sys_log_events():
-    action = request_events("syslog")
+def test_request_audit_log_events():
+    action = request_events(LogType.audit)
     assert type(action) is Action
     assert action.type == REQUEST_EVENTS
-    assert action.payload == ("syslog", None)
+    assert action.payload == (LogType.audit, None)
+
+
+def test_request_sys_log_events():
+    action = request_events(LogType.syslog)
+    assert type(action) is Action
+    assert action.type == REQUEST_EVENTS
+    assert action.payload == (LogType.syslog, None)
 
 
 def test_request_debug_log_events():
-    action = request_events("debug", "foo")
+    action = request_events(LogType.debug, "foo")
     assert type(action) is Action
     assert action.type == REQUEST_EVENTS
-    assert action.payload == ("debug", "foo")
+    assert action.payload == (LogType.debug, "foo")
 
 
 def test_received_events():

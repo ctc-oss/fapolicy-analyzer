@@ -112,8 +112,9 @@ lint: pylint clippy
 
 # Ensure header exists on required files
 header-check:
-	grep -R -L --exclude-dir=vendor \
+	@ grep -R -L --exclude-dir=vendor \
         --include='*.py' --include='*.rs' --include='*.glade' --include='*.sh' \
+        --exclude-dir 'target' \
         'Copyright Concurrent Technologies Corporation' *
 
 # Perform linting on the Python source code
@@ -131,12 +132,17 @@ check: header-check format lint test
 	@echo -e "${GRN}--- Pre-Push checks complete${NC}"
 	git status
 
+# Execute the commands to generate the build information for display
+build-info:
+	@echo -e "${GRN}-  |--- Build info created${NC}"
+	scripts/build-info.py --overwrite --git --os --time
+
 # Generate Fedora rawhide rpms
 fc-rpm:
 	@echo -e "${GRN}--- Fedora RPM generation...${NC}"
 	make -f .copr/Makefile vendor OS_ID=fedora
-	podman build -t fapolicy-analyzer:38 -f Containerfile .
-	podman run --rm -it --network=none -v /tmp:/v fapolicy-analyzer:38 /v
+	podman build -t fapolicy-analyzer:39 -f Containerfile .
+	podman run --rm -it --network=none -v /tmp:/v fapolicy-analyzer:39 /v
 
 # Generate RHEL 8 rpms
 el8-rpm:

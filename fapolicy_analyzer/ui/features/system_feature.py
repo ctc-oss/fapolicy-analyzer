@@ -81,6 +81,7 @@ from fapolicy_analyzer.ui.actions import (
 )
 from fapolicy_analyzer.ui.reducers import system_reducer
 from fapolicy_analyzer.ui.strings import SYSTEM_INITIALIZATION_ERROR
+from fapolicy_analyzer.ui.types import LogType
 from fapolicy_analyzer.util.fapd_dbase import fapd_dbase_snapshot
 
 gi.require_version("Gtk", "3.0")
@@ -275,9 +276,11 @@ def create_system_feature(
 
     def _get_events(action: Action) -> Action:
         log_type, file = action.payload
-        if log_type == "debug":
+        if log_type == LogType.debug:
             events = _system.load_debuglog(file)
-        elif log_type == "syslog":
+        elif log_type == LogType.audit:
+            events = _system.load_auditlog()
+        elif log_type == LogType.syslog:
             events = _system.load_syslog()
         else:
             events = []

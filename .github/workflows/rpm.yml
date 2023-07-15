@@ -44,7 +44,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Install deps
-        run: dnf install -y git make
+        run: dnf install -y git make python3
 
       - uses: actions/checkout@v3
         with:
@@ -55,6 +55,14 @@ jobs:
         run: |
           git config --global --add safe.directory $GITHUB_WORKSPACE
 
+      - name: Generate build info
+        run: |
+          scripts/build-info.py --git
+          git add -f fapolicy_analyzer/resources/build-info.json
+          git config user.name 'CI'
+          git config user.email '<>'
+          git commit -m build-info
+
       - name: Vendor
         run: |
           make -f .copr/Makefile vendor-app spec=fapolicy-analyzer.spec
@@ -63,7 +71,7 @@ jobs:
         if: endsWith(github.ref, '/master')
         run: |
           spec_version=$(grep "Version:" fapolicy-analyzer.spec | tr -s ' ' | cut -d' ' -f2)
-          commit_number=$(git rev-list HEAD --count)
+          commit_number=$(git rev-list HEAD~1 --count)
           patched_version="$spec_version~dev${commit_number}"
           mv fapolicy-analyzer-${spec_version}.tar.gz fapolicy-analyzer-${patched_version}.tar.gz
 
