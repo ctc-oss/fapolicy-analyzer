@@ -11,6 +11,7 @@ jobs:
     steps:
       - name: install deps
         run: |
+          sudo apt update
           sudo apt install git pandoc texlive-latex-recommended texlive-latex-extra
 
       - uses: actions/checkout@v3
