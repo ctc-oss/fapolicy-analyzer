@@ -12,8 +12,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-from typing import Any
+import logging
+from typing import Any, Union
 
 import gi
 
@@ -70,7 +70,9 @@ class SearchableList(UIBuilderWidget, Events):
             self.progress_bar
         )  # progress bar only show when needed
         self.set_action_buttons(*actionButtons)
-        self.search.set_icon_from_icon_name(0, self.__lookup_icon_name(self.search.get_icon_name(0)))
+        self.search.set_icon_from_icon_name(
+            0, self.__lookup_icon_name(self.search.get_icon_name(0))
+        )
 
     def __lookup_icon_name(self, icon_name: str) -> Union[str, None]:
         """
