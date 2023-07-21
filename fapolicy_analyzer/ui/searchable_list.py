@@ -70,6 +70,35 @@ class SearchableList(UIBuilderWidget, Events):
             self.progress_bar
         )  # progress bar only show when needed
         self.set_action_buttons(*actionButtons)
+        self.search.set_icon_from_icon_name(0, self.__lookup_icon_name(self.search.get_icon_name(0)))
+
+    def __lookup_icon_name(self, icon_name: str) -> Union[str, None]:
+        """
+        Attempts to verify that the icon can be loaded from the icon theme.
+
+        Returns: the icon_name if it can be loaded or None
+        """
+        size = Gtk.IconSize.SMALL_TOOLBAR
+        fallback = "image-missing"
+        try:
+            info = Gtk.IconTheme.get_default().lookup_icon(icon_name, size, 0)
+            info.load_icon()
+            return icon_name
+        except Exception as ex1:
+            logging.warning(
+                f"Unable to load image {icon_name} falling back to '{fallback}' icon."
+            )
+            logging.debug(ex1)
+            try:
+                info = Gtk.IconTheme.get_default().lookup_icon(fallback, size, 0)
+                info.load_icon()
+                return fallback
+            except Exception as ex2:
+                logging.warning(
+                    f"Unable to load image '{fallback}' falling back to text only."
+                )
+                logging.debug(ex2)
+                return None
 
     def _filter_view(self, model, iter, data):
         filter = self.get_object("search").get_text()
