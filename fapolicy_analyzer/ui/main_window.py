@@ -171,7 +171,7 @@ class MainWindow(UIConnectedWidget):
         return response != Gtk.ResponseType.OK
 
     def __pack_main_content(self, page: UIPage):
-        if self.__page:
+        if self.__page is not None:
             self.__page.dispose()
         self.__page = page
         self.mainContent.pack_start(page.get_ref(), True, True, 0)
@@ -209,7 +209,6 @@ class MainWindow(UIConnectedWidget):
 
     def on_start(self, *args):
         logging.info("MainWindow::on_start()")
-
         # On startup check for the existing of a tmp session file
         # If detected, alert the user, enable the File|Restore menu item
         if sessionManager.detect_previous_session():
@@ -447,7 +446,9 @@ class MainWindow(UIConnectedWidget):
         self.__pack_main_content(page)
 
     def on_trustDbMenu_activate(self, menuitem, *args):
-        self.__pack_main_content(router(PAGE_SELECTION.TRUST_DATABASE_ADMIN))
+        page = router(PAGE_SELECTION.TRUST_DATABASE_ADMIN)
+        page.systemTrustDbAdmin.trust_file_list.refresh_toolbar += self._refresh_toolbar
+        self.__pack_main_content(page)
 
     def on_rulesAdminMenu_activate(self, *args, **kwargs):
         rulesPage = router(PAGE_SELECTION.RULES_ADMIN)

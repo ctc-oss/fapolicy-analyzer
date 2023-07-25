@@ -29,6 +29,9 @@ from fapolicy_analyzer.ui.trust_file_list import TrustFileList, epoch_to_string
 _trust = [
     MagicMock(status="u", path="/tmp/bar", actual=MagicMock(last_modified=123456789)),
     MagicMock(status="t", path="/tmp/foo", actual=MagicMock(last_modified=123456789)),
+    MagicMock(
+        status="u", path="/tmp/foobar", actual=MagicMock(last_modified=123456789)
+    ),
 ]
 
 
@@ -55,9 +58,9 @@ def test_uses_custom_markup_func(mocker):
     )
     markup_func = MagicMock(return_value="t")
     widget = TrustFileList(trust_func=MagicMock(), markup_func=markup_func)
-    widget.init_list(2)
+    widget.init_list(3)
     widget.append_trust(_trust)
-    markup_func.assert_called_with("t")
+    markup_func.assert_called_with("u")
 
 
 def test_loads_trust_store(widget, mocker):
@@ -69,7 +72,8 @@ def test_loads_trust_store(widget, mocker):
         "fapolicy_analyzer.ui.trust_file_list.GLib.idle_add",
         side_effect=lambda x, args: x(args),
     )
-    widget.init_list(2)
+    widget.init_list(3)
+    widget.show_trusted = True
     widget.append_trust(_trust)
     refresh_gui(delay=0.5)
     view = widget.get_object("treeView")
@@ -83,7 +87,7 @@ def test_cancels_load_trust_store(widget, mocker):
         return_value=MagicMock(submit=lambda x: x()),
     )
     mockIdleAdd = mocker.patch("fapolicy_analyzer.ui.trust_file_list.GLib.idle_add")
-    widget.init_list(2)
+    widget.init_list(3)
     # trust_file_list._executorCanceled = True
     widget.on_destroy()
 
@@ -130,7 +134,7 @@ def test_tree_count_full(widget, mocker):
         "fapolicy_analyzer.ui.trust_file_list.GLib.idle_add",
         side_effect=lambda x, args: x(args),
     )
-    widget.init_list(2)
+    widget.init_list(3)
     widget.append_trust(_trust)
     refresh_gui(delay=0.5)
     assert widget.treeCount.get_text() == "2  files"
@@ -160,9 +164,10 @@ def test_tree_count_partial(widget, mocker):
         "fapolicy_analyzer.ui.trust_file_list.GLib.idle_add",
         side_effect=lambda x, args: x(args),
     )
-    widget.init_list(2)
+    widget.init_list(3)
     widget.append_trust(_trust)
     refresh_gui(delay=0.5)
+    assert widget.treeCount.get_text() == "2  files"
     viewFilter = widget.get_object("search")
     viewFilter.set_text("foo")
     widget.on_search_activate()

@@ -212,6 +212,18 @@ UNKNOWN_TOOLTIP = _("File trust is unknown")
 ACCESS_ALLOWED_TOOLTIP = _("File access fully allowed")
 ACCESS_PARTIAL_TOOLTIP = _("File access partially allowed")
 ACCESS_DENIED_TOOLTIP = _("File access denied")
+SYSTEM_TRUST_NO_DISCREPANCIES = _(
+    """
+No discrepancies found within the System Trust Database.
+Click the toggle button on the action bar above to show all trusted files.
+    """
+)
+ANCILLARY_TRUST_NO_ENTRIES = _(
+    """
+No entries found in the Ancillary Trust Database.
+Use the search bar or add untrusted files from the System Trust Database tab.
+    """
+)
 TIME_FORMAT_CONFIG_TITLE = _("Syslog Format Check")
 SYSLOG_FORMAT_WARNING = _(
     """

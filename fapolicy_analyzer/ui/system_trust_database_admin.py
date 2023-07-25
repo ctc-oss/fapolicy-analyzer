@@ -31,6 +31,10 @@ from fapolicy_analyzer.ui.trust_file_list import TrustFileList
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 from fapolicy_analyzer.util import fs  # noqa: F401
 from fapolicy_analyzer.util.format import f
+import gi
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk  # isort: skip
 
 
 class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
@@ -58,6 +62,7 @@ class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
         self.get_object("rightBox").pack_start(
             self.trustFileDetails.get_ref(), True, True, 0
         )
+        self.show_label = False
 
     def __status_markup(self, status):
         return (
@@ -94,7 +99,6 @@ class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
             )
 
         trust_state = system.get("system_trust")
-
         if not trust_state.loading and self.__error != trust_state.error:
             self.__error = trust_state.error
             self.__loading = False
@@ -110,6 +114,7 @@ class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
                 trust_state.percent_complete if trust_state.percent_complete >= 0 else 0
             )
             self.trust_file_list.set_loading(True)
+            self.set_treeview_display() if self.show_label else None
             self.trust_file_list.init_list(trust_state.trust_count)
             self.trust_file_list.append_trust(trust_state.trust)
         elif still_loading(trust_state):
@@ -120,6 +125,31 @@ class SystemTrustDatabaseAdmin(UIConnectedWidget, Events):
             self.__error = None
             self.__loading = False
             self.__loading_percent = 100
+            if not self.trust_file_list.show_trusted:
+                n_entries = len(
+                    [
+                        data
+                        for data in trust_state.trust
+                        if not data.status.lower() == "t"
+                    ]
+                )
+                self.trust_file_list.total = n_entries
+                if n_entries == 0:
+                    self.set_label_display()
+
+    def set_label_display(self):
+        scroll_window = self.trust_file_list.get_object("viewScroll")
+        scroll_window.remove(scroll_window.get_child())
+        scroll_window.add(Gtk.Label(label=strings.SYSTEM_TRUST_NO_DISCREPANCIES))
+        self.show_label = True
+        scroll_window.show_all()
+
+    def set_treeview_display(self):
+        scroll_window = self.trust_file_list.get_object("viewScroll")
+        scroll_window.remove(scroll_window.get_child())
+        scroll_window.add(self.trust_file_list.treeView)
+        self.show_label = False
+        scroll_window.show_all()
 
     def on_trust_selection_changed(self, trusts):
         self.selectedFiles = trusts

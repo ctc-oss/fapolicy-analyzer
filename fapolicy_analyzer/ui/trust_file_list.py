@@ -58,6 +58,7 @@ class TrustFileList(SearchableList):
             "files_added",
             "files_deleted",
             "trust_selection_changed",
+            "refresh_toolbar",
         ]
 
         super().__init__(
@@ -68,6 +69,7 @@ class TrustFileList(SearchableList):
             defaultSortDirection=Gtk.SortType.ASCENDING,
             selection_type="multi",
         )
+
         self.trust_func = trust_func
         self.markup_func = markup_func
         self.__executor = ThreadPoolExecutor(max_workers=100)
@@ -75,6 +77,8 @@ class TrustFileList(SearchableList):
         self.refresh()
         self.selection_changed += self.__handle_selection_changed
         self.get_ref().connect("destroy", self.on_destroy)
+        self.show_trusted = False
+        self.loading_sensitive = True
         self.total = 0
 
     def __handle_selection_changed(self, data):
@@ -147,6 +151,22 @@ class TrustFileList(SearchableList):
     def refresh(self):
         self.trust_func()
 
+    def swap_overlay(self, sysdb=True):
+        label = Gtk.Label(
+            label=strings.SYSTEM_TRUST_NO_DISCREPANCIES
+            if sysdb
+            else strings.ANCILLARY_TRUST_NO_ENTRIES
+        )
+        scrolled_window = self.get_object("viewScrolledWindow")
+        children = scrolled_window.get_children()
+        if isinstance(next(iter(children)), Gtk.TreeView):
+            scrolled_window.remove(self.treeView)
+            scrolled_window.add(label)
+        elif isinstance(next(iter(children)), Gtk.Label):
+            scrolled_window.remove(next(iter(children)))
+            scrolled_window.add(self.treeView)
+        scrolled_window.show_all()
+
     def init_list(self, count_of_trust_entries):
         store = Gtk.ListStore(str, str, str, object, str, str)
         self.load_store(count_of_trust_entries, store)
@@ -165,8 +185,11 @@ class TrustFileList(SearchableList):
                 return False
 
             count = self._get_tree_count()
-            if count < total:
-                pct = int(count / total * 100)
+            if count < self.total:
+                if self.show_trusted:
+                    pct = int(count / self.total * 100)
+                else:
+                    pct = int((1 - self.total / total) * 100)
                 self._update_loading_status(f(_("Loading trust {pct}% complete...")))
                 self._update_progress(pct)
                 return True
@@ -175,6 +198,8 @@ class TrustFileList(SearchableList):
                 self._update_progress(100)
                 self.search.set_sensitive(True)
                 self.search.set_tooltip_text(None)
+                self.loading_sensitive = True
+                self.refresh_toolbar()
                 return False
 
         self.__event.set()  # cancel any processing currently running
@@ -200,7 +225,11 @@ class TrustFileList(SearchableList):
             for data in trust:
                 if event.is_set():
                     return
-                self.__queue.put(self._row_data(data))
+
+                if self.show_trusted or not data.status.lower() == "t":
+                    self.__queue.put(self._row_data(data))
+                elif not self.show_trusted and data.status.lower() == "t":
+                    self.total -= 1
 
         if not self.__event.is_set():
             self.__executor.submit(process_trust, trust, self.__event)
