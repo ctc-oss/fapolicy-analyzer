@@ -16,4 +16,4 @@ thiserror = "1.0"
 nom = "7.1"
 log = "0.4"
 
-fapolicy-util = { version = "*", path = "../util" }
+fapolicy-util = { path = "../util" }

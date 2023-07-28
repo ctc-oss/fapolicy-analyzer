@@ -12,6 +12,6 @@ dbus = "0.9"
 tempfile = "3.3"
 log = "0.4"
 
-fapolicy-trust = { version = "*", path = "../trust" }
-fapolicy-rules = { version = "*", path = "../rules" }
-fapolicy-util = { version = "*", path = "../util" }
+fapolicy-trust = { path = "../trust" }
+fapolicy-rules = { path = "../rules" }
+fapolicy-util = { path = "../util" }
