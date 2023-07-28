@@ -3,7 +3,7 @@ name = "fapolicy-analyzer"
 description = "Analyzer support for fapolicyd"
 license = "MPL-2.0"
 version = "0.4.1"
-edition = "2018"
+edition = "2021"
 
 [lib]
 path = "src/lib.rs"
