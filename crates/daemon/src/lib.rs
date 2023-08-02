@@ -13,4 +13,5 @@ pub mod profiler;
 pub mod svc;
 pub mod version;
 
+pub use conf::config::Config;
 pub use version::fapolicyd_version as version;

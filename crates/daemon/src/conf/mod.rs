@@ -1,3 +1,4 @@
+pub mod config;
 mod error;
 mod lint;
 mod load;
