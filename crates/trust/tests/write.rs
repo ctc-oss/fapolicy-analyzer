@@ -159,7 +159,7 @@ fn test_dir_and_file_overwrite_2() -> Result<(), Box<dyn Error>> {
 }
 
 fn read_string(from: &Path) -> Result<String, io::Error> {
-    let mut reader = File::open(&from).map(BufReader::new)?;
+    let mut reader = File::open(from).map(BufReader::new)?;
     let mut actual = String::new();
     reader.read_to_string(&mut actual)?;
     Ok(actual)

@@ -20,7 +20,7 @@ pub unsafe fn audit_get_int(au: *mut auparse_state_t, field: &str) -> Result<i32
     if let Ok((rec, field)) = find_last_field(au, field) {
         auparse_goto_record_num(au, rec);
         auparse_goto_field_num(au, field);
-        let res = auparse_get_field_int(au) as i32;
+        let res = auparse_get_field_int(au);
         auparse_first_record(au);
         Ok(res)
     } else {
