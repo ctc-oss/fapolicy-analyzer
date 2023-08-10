@@ -40,7 +40,7 @@ jobs:
 
   source0:
     name: Vendor Source0
-    container: registry.fedoraproject.org/fedora:rawhide
+    container: registry.fedoraproject.org/fedora:38
     runs-on: ubuntu-20.04
     steps:
       - name: Install deps
