@@ -338,6 +338,7 @@ dependencies = [
 name = "fapolicy-daemon"
 version = "0.5.0"
 dependencies = [
+ "assert_matches",
  "dbus",
  "fapolicy-rules",
  "fapolicy-trust",
