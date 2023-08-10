@@ -18,7 +18,11 @@ import os
 
 def _app_dir_prefix(key):
     _home = os.path.expanduser("~")
-    root_user = os.geteuid() == 0
+    if "RUNASROOT" in os.environ:
+        root_user = os.getenv("RUNASROOT") == "1"
+    else:
+        root_user = os.geteuid() == 0
+
     dictXdgDefaults = {
         "_DATA_DIR_PREFIX": os.path.join(_home, ".local", "share"),
         "_STATE_DIR_PREFIX": os.path.join(_home, ".local", "state"),
