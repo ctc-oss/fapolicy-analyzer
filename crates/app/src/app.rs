@@ -6,7 +6,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use directories::ProjectDirs;
 use serde::Deserialize;
 use serde::Serialize;
 use std::path::PathBuf;
@@ -20,8 +19,8 @@ use fapolicy_trust::db::DB as TrustDB;
 use fapolicy_trust::ops::Changeset as TrustChanges;
 use fapolicy_trust::{check, load};
 
-use crate::cfg::All;
 use crate::cfg::PROJECT_NAME;
+use crate::cfg::{data_dir, All};
 use crate::error::Error;
 
 /// Represents an immutable view of the application state.
@@ -110,14 +109,4 @@ impl Default for Config {
             data_dir: data_dir(),
         }
     }
-}
-
-//
-// private helpers for serde
-//
-
-fn data_dir() -> String {
-    let proj_dirs = ProjectDirs::from("rs", "", PROJECT_NAME).expect("failed to init project dirs");
-    let dd = proj_dirs.data_dir();
-    dd.to_path_buf().into_os_string().into_string().unwrap()
 }

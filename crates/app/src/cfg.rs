@@ -7,7 +7,6 @@
  */
 
 use confy::ConfyError;
-use directories::ProjectDirs;
 use serde::Deserialize;
 use serde::Serialize;
 use std::path::PathBuf;
@@ -32,10 +31,7 @@ impl All {
     }
 
     pub fn config_file() -> Result<PathBuf, Error> {
-        // this matches the default confy impl
-        let project =
-            ProjectDirs::from("rs", "", PROJECT_NAME).ok_or(ConfyError::BadConfigDirectoryStr)?;
-        let mut config = project.config_dir().to_path_buf();
+        let mut config = PathBuf::from(config_dir());
         config.push("config.toml");
         Ok(config)
     }
@@ -43,6 +39,45 @@ impl All {
     pub fn data_dir(&self) -> &str {
         self.application.data_dir.as_str()
     }
+}
+
+#[cfg(not(feature = "xdg"))]
+pub fn data_dir() -> String {
+    format!("/var/lib/{}", PROJECT_NAME)
+}
+
+#[cfg(feature = "xdg")]
+pub fn data_dir() -> String {
+    let proj_dirs = directories::ProjectDirs::from("rs", "", PROJECT_NAME)
+        .expect("failed to init project dirs");
+    let dd = proj_dirs.data_dir();
+    dd.to_path_buf().into_os_string().into_string().unwrap()
+}
+
+#[cfg(not(feature = "xdg"))]
+pub fn config_dir() -> String {
+    format!("/etc/{}", PROJECT_NAME)
+}
+
+#[cfg(feature = "xdg")]
+pub fn config_dir() -> String {
+    let proj_dirs = directories::ProjectDirs::from("rs", "", PROJECT_NAME)
+        .expect("failed to init project dirs");
+    let dd = proj_dirs.config_dir();
+    dd.to_path_buf().into_os_string().into_string().unwrap()
+}
+
+#[cfg(not(feature = "xdg"))]
+pub fn log_dir() -> String {
+    format!("/var/log/{}", PROJECT_NAME)
+}
+
+#[cfg(feature = "xdg")]
+pub fn log_dir() -> String {
+    let proj_dirs = directories::ProjectDirs::from("rs", "", PROJECT_NAME)
+        .expect("failed to init project dirs");
+    let dd = proj_dirs.state_dir().unwrap();
+    dd.to_path_buf().into_os_string().into_string().unwrap()
 }
 
 #[cfg(test)]
