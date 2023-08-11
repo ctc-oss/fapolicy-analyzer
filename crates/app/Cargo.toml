@@ -7,7 +7,7 @@ edition = "2018"
 
 [dependencies]
 confy = "0.4"
-directories = "4.0"
+directories = { version = "4.0", optional = true }
 serde = { version = "1.0", features = ["derive"] }
 thiserror = "1.0"
 
@@ -15,3 +15,7 @@ fapolicy-analyzer = { version = "*", path = "../analyzer" }
 fapolicy-daemon = { version = "*", path = "../daemon" }
 fapolicy-rules = { version = "*", path = "../rules" }
 fapolicy-trust = { version = "*", path = "../trust" }
+
+[features]
+default = []
+xdg = ["directories"]
