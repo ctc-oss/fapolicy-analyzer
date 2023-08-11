@@ -42,5 +42,8 @@ fn app_config_dir() -> String {
 
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(config_file_path, m)?)?;
+    m.add_function(wrap_pyfunction!(app_log_dir, m)?)?;
+    m.add_function(wrap_pyfunction!(app_data_dir, m)?)?;
+    m.add_function(wrap_pyfunction!(app_config_dir, m)?)?;
     Ok(())
 }
