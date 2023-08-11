@@ -157,7 +157,7 @@ mod tests {
         let expected = make_default_trust();
 
         let mut xs = Changeset::new();
-        xs.ins(&*expected.path, expected.size, &*expected.hash);
+        xs.ins(&expected.path, expected.size, &expected.hash);
         assert_eq!(xs.len(), 1);
 
         let store = xs.apply(DB::default());
@@ -215,9 +215,9 @@ mod tests {
         let expected = make_default_trust();
 
         let mut xs = Changeset::new();
-        xs.ins(&*expected.path, 1000, "12345");
+        xs.ins(&expected.path, 1000, "12345");
         assert_eq!(xs.len(), 1);
-        xs.ins(&*expected.path, expected.size, &*expected.hash);
+        xs.ins(&expected.path, expected.size, &expected.hash);
 
         let store = xs.apply(DB::default());
         assert_eq!(store.len(), 1);

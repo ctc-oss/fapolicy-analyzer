@@ -348,7 +348,7 @@ fn dump(opts: DumpDbOpts, cfg: &cfg::All) -> Result<(), Error> {
             }
         }
         Some(path) => {
-            let mut f = File::create(&path)?;
+            let mut f = File::create(path)?;
             for (_, v) in db.iter() {
                 f.write_all(format!("{}\n", v.trusted).as_bytes())?;
             }

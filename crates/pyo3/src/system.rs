@@ -9,12 +9,14 @@
 use pyo3::prelude::*;
 use pyo3::{exceptions, PyResult};
 use similar::{ChangeTag, TextDiff};
+use std::fs;
 
 use fapolicy_analyzer::events;
 use fapolicy_analyzer::events::db::DB as EventDB;
 use fapolicy_app::app::State;
 use fapolicy_app::cfg;
 use fapolicy_app::sys::deploy_app_state;
+use fapolicy_daemon::fapolicyd;
 use fapolicy_trust::stat::Status::*;
 
 use crate::acl::{PyGroup, PyUser};
@@ -164,6 +166,17 @@ impl PySystem {
     fn rules_text(&self) -> String {
         log::debug!("rules_text");
         rules::to_text(&self.rs.rules_db)
+    }
+
+    // todo;; will not throw once the config backend is available
+    fn config_text(&self) -> PyResult<String> {
+        fs::read_to_string(fapolicyd::CONFIG_FILE_PATH).map_err(|e| {
+            exceptions::PyRuntimeError::new_err(format!(
+                "Failed to static load conf from {} {:?}",
+                fapolicyd::CONFIG_FILE_PATH,
+                e
+            ))
+        })
     }
 
     // we rely on the gil to keep this synced up

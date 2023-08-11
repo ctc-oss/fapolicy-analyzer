@@ -21,7 +21,7 @@ use crate::source::{TrustSource, TrustSourceEntry};
 use crate::{parse, Trust};
 
 pub fn from_file(from: &Path) -> Result<Vec<TrustSourceEntry>, io::Error> {
-    let r = BufReader::new(File::open(&from)?);
+    let r = BufReader::new(File::open(from)?);
     let lines: Result<Vec<String>, io::Error> = r.lines().collect();
     Ok(lines?
         .iter()
