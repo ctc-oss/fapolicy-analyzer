@@ -19,7 +19,6 @@ use fapolicy_trust::db::DB as TrustDB;
 use fapolicy_trust::ops::Changeset as TrustChanges;
 use fapolicy_trust::{check, load};
 
-use crate::cfg::PROJECT_NAME;
 use crate::cfg::{data_dir, All};
 use crate::error::Error;
 

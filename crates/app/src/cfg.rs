@@ -6,7 +6,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use confy::ConfyError;
 use serde::Deserialize;
 use serde::Serialize;
 use std::path::PathBuf;
@@ -48,9 +47,7 @@ pub fn data_dir() -> String {
 
 #[cfg(feature = "xdg")]
 pub fn data_dir() -> String {
-    let proj_dirs = directories::ProjectDirs::from("rs", "", PROJECT_NAME)
-        .expect("failed to init project dirs");
-    let dd = proj_dirs.data_dir();
+    let dd = project_dirs().data_dir();
     dd.to_path_buf().into_os_string().into_string().unwrap()
 }
 
@@ -61,9 +58,7 @@ pub fn config_dir() -> String {
 
 #[cfg(feature = "xdg")]
 pub fn config_dir() -> String {
-    let proj_dirs = directories::ProjectDirs::from("rs", "", PROJECT_NAME)
-        .expect("failed to init project dirs");
-    let dd = proj_dirs.config_dir();
+    let dd = project_dirs().config_dir();
     dd.to_path_buf().into_os_string().into_string().unwrap()
 }
 
@@ -74,10 +69,13 @@ pub fn log_dir() -> String {
 
 #[cfg(feature = "xdg")]
 pub fn log_dir() -> String {
-    let proj_dirs = directories::ProjectDirs::from("rs", "", PROJECT_NAME)
-        .expect("failed to init project dirs");
-    let dd = proj_dirs.state_dir().unwrap();
+    let dd = project_dirs().state_dir().unwrap();
     dd.to_path_buf().into_os_string().into_string().unwrap()
+}
+
+#[cfg(feature = "xdg")]
+fn project_dirs() -> directories::ProjectDirs {
+    directories::ProjectDirs::from("rs", "", PROJECT_NAME).expect("failed to init project dirs")
 }
 
 #[cfg(test)]
