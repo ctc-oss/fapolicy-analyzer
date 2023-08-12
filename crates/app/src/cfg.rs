@@ -47,8 +47,12 @@ pub fn data_dir() -> String {
 
 #[cfg(feature = "xdg")]
 pub fn data_dir() -> String {
-    let dd = project_dirs().data_dir();
-    dd.to_path_buf().into_os_string().into_string().unwrap()
+    let pd = project_dirs();
+    pd.data_dir()
+        .to_path_buf()
+        .into_os_string()
+        .into_string()
+        .unwrap()
 }
 
 #[cfg(not(feature = "xdg"))]
@@ -58,8 +62,12 @@ pub fn config_dir() -> String {
 
 #[cfg(feature = "xdg")]
 pub fn config_dir() -> String {
-    let dd = project_dirs().config_dir();
-    dd.to_path_buf().into_os_string().into_string().unwrap()
+    let pd = project_dirs();
+    pd.config_dir()
+        .to_path_buf()
+        .into_os_string()
+        .into_string()
+        .unwrap()
 }
 
 #[cfg(not(feature = "xdg"))]
@@ -69,8 +77,13 @@ pub fn log_dir() -> String {
 
 #[cfg(feature = "xdg")]
 pub fn log_dir() -> String {
-    let dd = project_dirs().state_dir().unwrap();
-    dd.to_path_buf().into_os_string().into_string().unwrap()
+    let pd = project_dirs();
+    pd.state_dir()
+        .unwrap()
+        .to_path_buf()
+        .into_os_string()
+        .into_string()
+        .unwrap()
 }
 
 #[cfg(feature = "xdg")]
