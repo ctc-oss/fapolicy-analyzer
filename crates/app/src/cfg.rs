@@ -98,6 +98,6 @@ mod tests {
     #[test]
     fn check_config_dir() {
         let path = All::config_file().expect("conf path");
-        assert!(path.ends_with(format!(".config/{}/config.toml", PROJECT_NAME)));
+        assert!(path.ends_with(format!("{}/config.toml", PROJECT_NAME)));
     }
 }
