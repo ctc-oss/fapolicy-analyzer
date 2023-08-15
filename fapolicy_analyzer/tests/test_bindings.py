@@ -17,4 +17,4 @@ from fapolicy_analyzer import config_file_path
 
 
 def test_config_file_path():
-    assert config_file_path().endswith(".config/fapolicy-analyzer/config.toml")
+    assert config_file_path().endswith("fapolicy-analyzer/config.toml")
