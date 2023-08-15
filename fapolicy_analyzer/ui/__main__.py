@@ -12,24 +12,20 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
+import os.path
 import sys
 import logging
-from fapolicy_analyzer.util.xdg_utils import (
-    app_state_dir_prefix,
-    app_data_dir_prefix,
-    app_config_dir_prefix,
+
+from fapolicy_analyzer import app_log_dir, app_data_dir, init_native_logging
+
+gf_handler = logging.FileHandler(
+    os.path.join(app_log_dir(), "fapolicy-analyzer.log"), mode="w"
 )
-
-from fapolicy_analyzer import set_config_file_path
-
-set_config_file_path(app_config_dir_prefix("fapolicy-analyzer.toml"))
-
-gf_handler = logging.FileHandler(app_data_dir_prefix("fapolicy-analyzer.log"), mode="w")
 gs_handler = logging.StreamHandler()
 logging.basicConfig(level=logging.DEBUG, handlers=[gf_handler, gs_handler])
 gs_handler.setLevel(logging.WARNING)
 gf_handler.setLevel(logging.INFO)
+init_native_logging()
 
 import argparse
 import gi
@@ -118,7 +114,7 @@ def _parse_cmdline():
         sessionManager.set_autosave_filename(args.session)
     else:
         sessionManager.set_autosave_filename(
-            app_state_dir_prefix("FaCurrentSession.tmp")
+            os.path.join(app_data_dir(), "fapolicy-analyzer.tmp")
         )
 
 
