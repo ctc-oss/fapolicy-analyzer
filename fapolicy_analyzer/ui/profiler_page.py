@@ -259,7 +259,7 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
 
     def display_log_output(self, logs):
         markup = self.get_entry_dict_markup() + "\n\n"
-        for (description, log) in logs:
+        for description, log in logs:
             if log:
                 markup += f"<span size='x-large' underline='single'><b>{description}</b></span> (<b>{log}</b>)\n"
                 try:

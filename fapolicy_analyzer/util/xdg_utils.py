@@ -14,35 +14,19 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os
+from fapolicy_analyzer import app_log_dir, app_data_dir, app_config_dir
 
 
 def _app_dir_prefix(key):
-    _home = os.path.expanduser("~")
-    if "RUNASROOT" in os.environ:
-        root_user = os.getenv("RUNASROOT") == "1"
-    else:
-        root_user = os.geteuid() == 0
-
-    dictXdgDefaults = {
-        "_DATA_DIR_PREFIX": os.path.join(_home, ".local", "share"),
-        "_STATE_DIR_PREFIX": os.path.join(_home, ".local", "state"),
-        "_CONFIG_DIR_PREFIX": os.path.join(_home, ".config"),
+    # Use default xdg locations if rust bindings built w/optional 'xdg' FEATURE.
+    # i.e. FEATURES file contains 'xdg' string.
+    dictSysFapaDefaults = {
+        "_DATA_DIR_PREFIX": app_log_dir(),
+        "_STATE_DIR_PREFIX": app_data_dir(),
+        "_CONFIG_DIR_PREFIX": app_config_dir(),
     }
 
-    dictSysDefaults = {
-        "_DATA_DIR_PREFIX": os.path.join("/var", "log"),
-        "_STATE_DIR_PREFIX": os.path.join("/var", "lib"),
-        "_CONFIG_DIR_PREFIX": os.path.join("/etc"),
-    }
-
-    # Use default xdg locations if non root user
-    if not root_user:
-        dictPrefix = dictXdgDefaults
-    else:
-        dictPrefix = dictSysDefaults
-
-    tmp_parent_dir = dictPrefix[key]
-    app_tmp_dir = os.path.join(tmp_parent_dir, "fapolicy-analyzer/")
+    app_tmp_dir = dictSysFapaDefaults[key]
 
     try:
         # Create if needed
@@ -51,7 +35,7 @@ def _app_dir_prefix(key):
             os.makedirs(app_tmp_dir, 0o700)
     except Exception as e:
         print(
-            "Warning: Xdg directory creation of '{}' failed."
+            "Warning: Directory creation of '{}' failed."
             "Using /tmp/".format(app_tmp_dir),
             e,
         )
@@ -64,7 +48,7 @@ def app_state_dir_prefix(strBaseName):
     """Prefixes the file basename, strBaseName, with the XDG_STATE_HOME
     directory, creates the directory if needed.
     """
-    strAbsolutePath = _app_dir_prefix("_STATE_DIR_PREFIX") + strBaseName
+    strAbsolutePath = os.path.join(_app_dir_prefix("_STATE_DIR_PREFIX"), strBaseName)
     return strAbsolutePath
 
 
@@ -72,7 +56,7 @@ def app_data_dir_prefix(strBaseName):
     """Prefixes the file basename, strBaseName, with the XDG_DATA_HOME
     directory, creates the directory if needed.
     """
-    strAbsolutePath = _app_dir_prefix("_DATA_DIR_PREFIX") + strBaseName
+    strAbsolutePath = os.path.join(_app_dir_prefix("_DATA_DIR_PREFIX"), strBaseName)
     return strAbsolutePath
 
 

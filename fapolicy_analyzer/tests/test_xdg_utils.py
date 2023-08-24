@@ -25,7 +25,7 @@ from fapolicy_analyzer.util.xdg_utils import (
 def test_app_state_dir_prefix():
     strBasename = "Arbitrary.txt"
     strHomeDir = os.environ.get("HOME")
-    strStateDefaultDir = strHomeDir + "/.local/state/"
+    strStateDefaultDir = strHomeDir + "/.local/share/"
     strExpected = strStateDefaultDir + "fapolicy-analyzer/" + strBasename
 
     assert app_state_dir_prefix(strBasename) == strExpected
@@ -34,7 +34,7 @@ def test_app_state_dir_prefix():
 def test_app_data_dir_prefix():
     strBasename = "Arbitrary.txt"
     strHomeDir = os.environ.get("HOME")
-    strDataDefaultDir = strHomeDir + "/.local/share/"
+    strDataDefaultDir = strHomeDir + "/.local/state/"
     strExpected = strDataDefaultDir + "fapolicy-analyzer/" + strBasename
 
     assert app_data_dir_prefix(strBasename) == strExpected
@@ -45,34 +45,5 @@ def test_app_config_dir_prefix():
     strHomeDir = os.environ.get("HOME")
     strConfigDefaultDir = strHomeDir + "/.config/"
     strExpected = strConfigDefaultDir + "fapolicy-analyzer/" + strBasename
-
-    assert app_config_dir_prefix(strBasename) == strExpected
-
-
-def test_app_state_dir_prefix_as_root(mocker):
-    mocker.patch("os.geteuid", return_value=0)
-    mocker.patch("os.path.exists", return_value=True)
-
-    strBasename = "Arbitrary.txt"
-    strExpected = os.path.join("/var", "lib", "fapolicy-analyzer/", strBasename)
-    assert app_state_dir_prefix(strBasename) == strExpected
-
-
-def test_app_data_dir_prefix_as_root(mocker):
-    mocker.patch("os.geteuid", return_value=0)
-    mocker.patch("os.path.exists", return_value=True)
-
-    strBasename = "Arbitrary.txt"
-    strExpected = os.path.join("/var", "log", "fapolicy-analyzer", strBasename)
-
-    assert app_data_dir_prefix(strBasename) == strExpected
-
-
-def test_app_config_dir_prefix_as_root(mocker):
-    mocker.patch("os.geteuid", return_value=0)
-    mocker.patch("os.path.exists", return_value=True)
-
-    strBasename = "Arbitrary.txt"
-    strExpected = os.path.join("/etc", "fapolicy-analyzer", strBasename)
 
     assert app_config_dir_prefix(strBasename) == strExpected

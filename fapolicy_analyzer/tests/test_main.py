@@ -50,7 +50,7 @@ def test_parse_args_no_options():
     testargs = ["prog"]
     _home = os.path.expanduser("~")
     xdg_state_home = os.path.join(_home, ".local", "state")
-    expectTmpPath = xdg_state_home + "/fapolicy-analyzer/FaCurrentSession.tmp"
+    expectTmpPath = xdg_state_home + "/fapolicy-analyzer/fapolicy-analyzer.tmp"
     with patch.object(sys, "argv", testargs):
         main()
 
@@ -84,7 +84,7 @@ def test_main_no_options(mocker):
     testargs = ["prog"]
     _home = os.path.expanduser("~")
     xdg_state_home = os.path.join(_home, ".local", "state")
-    expectTmpPath = xdg_state_home + "/fapolicy-analyzer/FaCurrentSession.tmp"
+    expectTmpPath = xdg_state_home + "/fapolicy-analyzer/fapolicy-analyzer.tmp"
 
     with patch.object(sys, "argv", testargs):
         mockSplash = mocker.patch("fapolicy_analyzer.ui.__main__.SplashScreen")
@@ -131,6 +131,7 @@ def test_xdg_state_dir_prefix_w_exception(mocker):
     """Simulate a directory creation failure to execute the exception
     handling code.
     """
+    mocker.patch("os.path.exists", return_value=False)
     mockMakeDirs = mocker.patch("os.makedirs", side_effect=IOError)
     generatedFullPath = app_state_dir_prefix("FapTestTmp")
     mockMakeDirs.assert_called()
