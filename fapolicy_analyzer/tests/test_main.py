@@ -20,10 +20,10 @@ import sys
 from unittest.mock import patch
 
 import pytest
+
 from fapolicy_analyzer.ui.__main__ import main
 from fapolicy_analyzer.ui.session_manager import sessionManager
 from fapolicy_analyzer.util.xdg_utils import app_state_dir_prefix
-from fapolicy_analyzer import app_log_dir
 
 import context  # noqa: F401
 
@@ -46,13 +46,49 @@ def mocks(mocker):
     mocker.patch("fapolicy_analyzer.ui.__main__.init_store")
 
 
-@pytest.mark.usefixtures("mocks", "session")
-def test_parse_args_no_options():
+@pytest.fixture
+def feature_xdg(mocker):
+    _home = os.path.expanduser("~")
+    fapa = "fapolicy-analyzer"
+    mocker.patch(
+        "fapolicy_analyzer.util.xdg_utils.app_log_dir",
+        return_value=os.path.join(_home, ".local", "state", fapa),
+    )
+    mocker.patch(
+        "fapolicy_analyzer.util.xdg_utils.app_data_dir",
+        return_value=os.path.join(_home, ".local", ".share", fapa),
+    )
+    mocker.patch(
+        "fapolicy_analyzer.util.xdg_utils.app_config_dir",
+        return_value=os.path.join(_home, ".config", fapa),
+    )
+
+
+@pytest.fixture
+def feature_no_xdg(mocker):
+    fapa = "fapolicy-analyzer"
+    mocker.patch(
+        "fapolicy_analyzer.util.xdg_utils.app_log_dir",
+        return_value=os.path.join("/var", "log", fapa),
+    )
+    mocker.patch(
+        "fapolicy_analyzer.util.xdg_utils.app_data_dir",
+        return_value=os.path.join("/usr", "lib", fapa),
+    )
+    mocker.patch(
+        "fapolicy_analyzer.util.xdg_utils.app_config_dir",
+        return_value=os.path.join("/etc", fapa),
+    )
+
+
+@pytest.mark.usefixtures("mocks", "session", "feature_xdg")
+def test_parse_args_no_options_w_xdg():
+    """Create and use the ~/.local/ directory for tmp session files"""
     testargs = ["prog"]
     _home = os.path.expanduser("~")
 
     xdg_state_home = os.path.join(_home, ".local", "state")
-    expectTmpPath = app_log_dir() + "/fapolicy-analyzer.tmp"
+    expectTmpPath = xdg_state_home + "/fapolicy-analyzer/fapolicy-analyzer.tmp"
     with patch.object(sys, "argv", testargs):
         main()
 
@@ -63,6 +99,24 @@ def test_parse_args_no_options():
 
         # Tear down
         shutil.rmtree(xdg_state_home + "/fapolicy-analyzer/")
+
+
+@pytest.mark.usefixtures("mocks", "session", "feature_no_xdg")
+def test_parse_args_no_options_wo_xdg():
+    """Attempt to create and use the /usr/lib/fapolicy-analyzer/ directory for
+    tmp session files, however process does not have privileges. Fall back to
+    /tmp/"""
+
+    testargs = ["prog"]
+
+    expectTmpPath = "/tmp/fapolicy-analyzer.tmp"
+    with patch.object(sys, "argv", testargs):
+        main()
+
+        assert logging.getLogger().level == logging.WARNING
+        assert not sessionManager._SessionManager__bAutosaveEnabled
+        assert sessionManager._SessionManager__iTmpFileCount == 2
+        assert sessionManager._SessionManager__tmpFileBasename == expectTmpPath
 
 
 @pytest.mark.usefixtures("mocks", "session")
@@ -80,13 +134,12 @@ def test_parse_args_all_options():
         )
 
 
-@pytest.mark.usefixtures("session")
-def test_main_no_options(mocker):
-    testargs = ["prog"]
+@pytest.mark.usefixtures("session", "feature_xdg")
+def test_main_no_options_w_xdg(mocker):
     testargs = ["prog"]
     _home = os.path.expanduser("~")
     xdg_state_home = os.path.join(_home, ".local", "state")
-    expectTmpPath = app_log_dir() + "/fapolicy-analyzer.tmp"
+    expectTmpPath = xdg_state_home + "/fapolicy-analyzer/fapolicy-analyzer.tmp"
 
     with patch.object(sys, "argv", testargs):
         mockSplash = mocker.patch("fapolicy_analyzer.ui.__main__.SplashScreen")
@@ -104,6 +157,30 @@ def test_main_no_options(mocker):
 
         # Tear down
         shutil.rmtree(xdg_state_home + "/fapolicy-analyzer/")
+
+
+@pytest.mark.usefixtures("session", "feature_no_xdg")
+def test_main_no_options_wo_xdg(mocker):
+    """Attempt to create and use the /usr/lib/fapolicy-analyzer/ directory for
+    tmp session files, however process does not have privileges. Fall back to
+    /tmp/"""
+
+    testargs = ["prog"]
+    expectTmpPath = "/tmp/fapolicy-analyzer.tmp"
+
+    with patch.object(sys, "argv", testargs):
+        mockSplash = mocker.patch("fapolicy_analyzer.ui.__main__.SplashScreen")
+        mockGtk = mocker.patch("fapolicy_analyzer.ui.__main__.Gtk")
+        mockStore = mocker.patch("fapolicy_analyzer.ui.__main__.init_store")
+        main()
+
+        assert logging.getLogger().level == logging.WARNING
+        assert not sessionManager._SessionManager__bAutosaveEnabled
+        assert sessionManager._SessionManager__iTmpFileCount == 2
+        assert sessionManager._SessionManager__tmpFileBasename == expectTmpPath
+        mockSplash.assert_called_once()
+        mockGtk.main.assert_called_once()
+        mockStore.assert_called_once()
 
 
 @pytest.mark.usefixtures("session")
