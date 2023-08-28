@@ -23,6 +23,7 @@ import pytest
 from fapolicy_analyzer.ui.__main__ import main
 from fapolicy_analyzer.ui.session_manager import sessionManager
 from fapolicy_analyzer.util.xdg_utils import app_state_dir_prefix
+from fapolicy_analyzer import app_log_dir, app_data_dir, app_config_dir
 
 import context  # noqa: F401
 
@@ -49,8 +50,9 @@ def mocks(mocker):
 def test_parse_args_no_options():
     testargs = ["prog"]
     _home = os.path.expanduser("~")
+    
     xdg_state_home = os.path.join(_home, ".local", "state")
-    expectTmpPath = xdg_state_home + "/fapolicy-analyzer/fapolicy-analyzer.tmp"
+    expectTmpPath = app_log_dir() + "/fapolicy-analyzer.tmp"
     with patch.object(sys, "argv", testargs):
         main()
 
@@ -84,7 +86,7 @@ def test_main_no_options(mocker):
     testargs = ["prog"]
     _home = os.path.expanduser("~")
     xdg_state_home = os.path.join(_home, ".local", "state")
-    expectTmpPath = xdg_state_home + "/fapolicy-analyzer/fapolicy-analyzer.tmp"
+    expectTmpPath = app_log_dir() + "/fapolicy-analyzer.tmp"
 
     with patch.object(sys, "argv", testargs):
         mockSplash = mocker.patch("fapolicy_analyzer.ui.__main__.SplashScreen")
