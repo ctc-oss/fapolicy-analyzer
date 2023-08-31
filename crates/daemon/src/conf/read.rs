@@ -1,5 +1,29 @@
 use crate::conf::error::Error;
+use crate::conf::parse;
+use crate::Config;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
+use std::path::PathBuf;
 
-pub fn load_conf(path: &str) -> Result<(), Error> {
-    Ok(())
+fn lines(path: PathBuf) -> Result<Vec<String>, Error> {
+    let reader = File::open(&path)
+        .map(BufReader::new)
+        .map_err(|_| Error::General)?;
+    let lines = reader.lines().flatten().collect();
+    Ok(lines)
+}
+
+pub fn file(path: PathBuf) -> Result<Config, Error> {
+    let mut config = Config::empty();
+    for s in lines(path)? {
+        if s.trim().is_empty() || s.trim_start().starts_with("#") {
+            continue;
+        }
+
+        match parse::token(&s) {
+            Ok(v) => config.apply_ok(v),
+            Err((k, v, _)) => config.apply_err(k, v),
+        };
+    }
+    Ok(config)
 }

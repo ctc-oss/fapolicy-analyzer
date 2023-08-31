@@ -1,6 +1,6 @@
 pub mod config;
 mod error;
 mod lint;
-mod load;
+pub mod load;
 mod parse;
 mod read;
