@@ -205,7 +205,7 @@ mod tests {
     fn test_p2_nice_val() {
         assert_matches!(
             token("nice_val="),
-            Err(("nice_val", "", Error::MalformedConfig))
+            Err(("nice_val", "", Error::ExpectedNumber))
         );
         assert_matches!(token("nice_val=0"), Ok(NiceVal(0)));
         assert_matches!(token("nice_val=14"), Ok(NiceVal(14)));
@@ -228,7 +228,7 @@ mod tests {
     #[test]
     fn test_p2_trust_sources() {
         // assert_matches!(p2("trust="), Ok(Trust(v)) if v.is_empty());
-        assert_matches!(token("trust=rpm"), Ok(Trust(v)) if v.len() == 1);
-        assert_matches!(token("trust=rpm,file"), Ok(Trust(v)) if v.len() == 2);
+        assert_matches!(token("trust=rpmdb"), Ok(Trust(v)) if v.len() == 1);
+        assert_matches!(token("trust=rpmdb,file"), Ok(Trust(v)) if v.len() == 2);
     }
 }
