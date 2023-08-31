@@ -11,8 +11,8 @@ use fapolicy_daemon::conf::load;
 
 #[test]
 fn parse_default_config() -> Result<(), ()> {
-    let x = load::config("tests/data/default.conf".into()).expect("load");
-    assert_eq!(*x.permissive.get()?, false);
+    let x = load::config("tests/data/default.conf").expect("load");
+    assert!(!*x.permissive.get()?);
     assert_eq!(*x.nice_val.get()?, 14);
     assert_eq!(*x.q_size.get()?, 800);
     assert_eq!(*x.uid.get()?, "fapolicyd");

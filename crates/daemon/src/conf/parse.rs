@@ -103,7 +103,7 @@ fn nom_syslog_list(i: &str) -> IResult<&str, Vec<&str>> {
 
 pub(crate) fn token(i: &str) -> Result<ConfigToken, (&str, &str, Error)> {
     use ConfigToken::*;
-    match i.split_once("=") {
+    match i.split_once('=') {
         None | Some(("", _)) => Err(("", "", Error::MalformedConfig)),
         Some((lhs, rhs)) => {
             let rhs = rhs.trim();
@@ -185,25 +185,34 @@ mod tests {
 
     #[test]
     fn test_p2_malformed_config() {
-        assert_matches!(token(""), Err(Error::MalformedConfig));
-        assert_matches!(token("foo"), Err(Error::MalformedConfig));
-        assert_matches!(token("foo="), Err(Error::MalformedConfig));
-        assert_matches!(token("=foo"), Err(Error::MalformedConfig));
+        assert_matches!(token(""), Err(("", "", Error::MalformedConfig)));
+        assert_matches!(token("foo"), Err(("", "", Error::MalformedConfig)));
+        assert_matches!(token("foo="), Err(("foo", "", Error::InvalidLhs(_))));
+        assert_matches!(token("=foo"), Err(("", "", Error::MalformedConfig)));
     }
 
     #[test]
     fn test_p2_permissive() {
         assert_matches!(token("permissive=0"), Ok(Permissive(false)));
         assert_matches!(token("permissive=1"), Ok(Permissive(true)));
-        assert_matches!(token("permissive=foo"), Err(Error::ExpectedBool));
+        assert_matches!(
+            token("permissive=foo"),
+            Err(("permissive", "foo", Error::ExpectedBool))
+        );
     }
 
     #[test]
     fn test_p2_nice_val() {
-        assert_matches!(token("nice_val="), Err(Error::MalformedConfig));
+        assert_matches!(
+            token("nice_val="),
+            Err(("nice_val", "", Error::MalformedConfig))
+        );
         assert_matches!(token("nice_val=0"), Ok(NiceVal(0)));
         assert_matches!(token("nice_val=14"), Ok(NiceVal(14)));
-        assert_matches!(token("nice_val=foo"), Err(Error::ExpectedNumber));
+        assert_matches!(
+            token("nice_val=foo"),
+            Err(("nice_val", "foo", Error::ExpectedNumber))
+        );
     }
 
     #[test]

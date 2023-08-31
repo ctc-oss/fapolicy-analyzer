@@ -14,7 +14,7 @@ use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 
 fn lines(path: PathBuf) -> Result<Vec<String>, Error> {
-    let reader = File::open(&path)
+    let reader = File::open(path)
         .map(BufReader::new)
         .map_err(|_| Error::General)?;
     let lines = reader.lines().flatten().collect();
@@ -24,7 +24,7 @@ fn lines(path: PathBuf) -> Result<Vec<String>, Error> {
 pub fn file(path: PathBuf) -> Result<Config, Error> {
     let mut config = Config::empty();
     for s in lines(path)? {
-        if s.trim().is_empty() || s.trim_start().starts_with("#") {
+        if s.trim().is_empty() || s.trim_start().starts_with('#') {
             continue;
         }
 

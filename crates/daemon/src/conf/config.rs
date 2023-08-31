@@ -136,6 +136,7 @@ impl<T> Val<T> {
     }
 }
 
+#[derive(Debug)]
 pub enum ConfigToken {
     Permissive(bool),
     NiceVal(usize),
@@ -170,7 +171,7 @@ impl Default for Config {
             obj_cache_size: Valid(8191),
             watch_fs: Valid(
                 "ext2,ext3,ext4,tmpfs,xfs,vfat,iso9660,btrfs"
-                    .split(",")
+                    .split(',')
                     .map(|s| s.to_string())
                     .collect(),
             ),
@@ -178,7 +179,7 @@ impl Default for Config {
             integrity: Valid(IntegritySource::None),
             syslog_format: Valid(
                 "rule,dec,perm,auid,pid,exe,:,path,ftype,trust"
-                    .split(",")
+                    .split(',')
                     .map(|s| s.to_string())
                     .collect(),
             ),
