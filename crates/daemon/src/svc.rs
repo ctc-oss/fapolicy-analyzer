@@ -61,7 +61,7 @@ pub fn daemon_reload() -> Result<(), Error> {
 /// a handle to a service that can be signalled by dbus
 #[derive(Clone)]
 pub struct Handle {
-    name: String,
+    pub name: String,
     unit: String,
 }
 

@@ -7,11 +7,14 @@
  */
 
 use crate::system::PySystem;
+use crossbeam_channel::Sender;
 use fapolicy_daemon::fapolicyd::Version;
 use fapolicy_daemon::svc::State::{Active, Inactive};
 use fapolicy_daemon::svc::{wait_for_service, Handle};
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
+use std::thread;
+use std::time::Duration;
 
 #[pyclass(module = "svc", name = "Handle")]
 #[derive(Clone, Default)]
@@ -37,6 +40,10 @@ impl PyHandle {
         Ok(PyHandle {
             rs: Handle::new(&unit),
         })
+    }
+
+    pub fn name(&self) -> &str {
+        &self.rs.name
     }
 
     pub fn start(&self) -> PyResult<()> {
@@ -134,12 +141,61 @@ fn is_fapolicyd_active() -> PyResult<bool> {
         .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
 }
 
+#[pyclass(module = "svc", name = "WatchHandle")]
+struct PyWatchHandle {
+    tx: Sender<()>,
+}
+
+#[pymethods]
+impl PyWatchHandle {
+    fn kill(&self) {
+        self.tx.send(());
+    }
+}
+
+/// Returns
+#[pyfunction]
+fn watch_service_status(handle: PyHandle, done: PyObject) -> PyResult<PyWatchHandle> {
+    if !handle.is_valid()? {
+        return Err(PyRuntimeError::new_err(format!("invalid service handle",)));
+    }
+
+    let now = handle.is_active()?;
+    let (tx, rx) = crossbeam_channel::unbounded();
+
+    thread::spawn(move || {
+        loop {
+            if rx.try_recv().is_ok() {
+                println!("Watcher is shutting down...");
+                break;
+            }
+
+            println!(
+                "{} is active? {}",
+                handle.name(),
+                handle.is_active().expect("active check")
+            );
+
+            thread::sleep(Duration::from_secs(2));
+        }
+        Python::with_gil(|py| {
+            if done.call0(py).is_err() {
+                log::error!("failed to make 'done' callback");
+            }
+        })
+    });
+
+    Ok(PyWatchHandle { tx })
+}
+
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyHandle>()?;
+    m.add_class::<PyWatchHandle>()?;
     m.add_function(wrap_pyfunction!(fapolicyd_version, m)?)?;
     m.add_function(wrap_pyfunction!(start_fapolicyd, m)?)?;
     m.add_function(wrap_pyfunction!(stop_fapolicyd, m)?)?;
     m.add_function(wrap_pyfunction!(rollback_fapolicyd, m)?)?;
     m.add_function(wrap_pyfunction!(is_fapolicyd_active, m)?)?;
+    m.add_function(wrap_pyfunction!(watch_service_status, m)?)?;
     Ok(())
 }
