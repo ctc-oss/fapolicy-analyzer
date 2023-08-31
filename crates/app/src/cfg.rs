@@ -6,8 +6,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use confy::ConfyError;
-use directories::ProjectDirs;
 use serde::Deserialize;
 use serde::Serialize;
 use std::path::PathBuf;
@@ -32,10 +30,7 @@ impl All {
     }
 
     pub fn config_file() -> Result<PathBuf, Error> {
-        // this matches the default confy impl
-        let project =
-            ProjectDirs::from("rs", "", PROJECT_NAME).ok_or(ConfyError::BadConfigDirectoryStr)?;
-        let mut config = project.config_dir().to_path_buf();
+        let mut config = PathBuf::from(config_dir());
         config.push("config.toml");
         Ok(config)
     }
@@ -45,6 +40,57 @@ impl All {
     }
 }
 
+#[cfg(not(feature = "xdg"))]
+pub fn data_dir() -> String {
+    format!("/var/lib/{}", PROJECT_NAME)
+}
+
+#[cfg(feature = "xdg")]
+pub fn data_dir() -> String {
+    let pd = project_dirs();
+    pd.data_dir()
+        .to_path_buf()
+        .into_os_string()
+        .into_string()
+        .unwrap()
+}
+
+#[cfg(not(feature = "xdg"))]
+pub fn config_dir() -> String {
+    format!("/etc/{}", PROJECT_NAME)
+}
+
+#[cfg(feature = "xdg")]
+pub fn config_dir() -> String {
+    let pd = project_dirs();
+    pd.config_dir()
+        .to_path_buf()
+        .into_os_string()
+        .into_string()
+        .unwrap()
+}
+
+#[cfg(not(feature = "xdg"))]
+pub fn log_dir() -> String {
+    format!("/var/log/{}", PROJECT_NAME)
+}
+
+#[cfg(feature = "xdg")]
+pub fn log_dir() -> String {
+    let pd = project_dirs();
+    pd.state_dir()
+        .unwrap()
+        .to_path_buf()
+        .into_os_string()
+        .into_string()
+        .unwrap()
+}
+
+#[cfg(feature = "xdg")]
+fn project_dirs() -> directories::ProjectDirs {
+    directories::ProjectDirs::from("rs", "", PROJECT_NAME).expect("failed to init project dirs")
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -52,6 +98,6 @@ mod tests {
     #[test]
     fn check_config_dir() {
         let path = All::config_file().expect("conf path");
-        assert!(path.ends_with(format!(".config/{}/config.toml", PROJECT_NAME)));
+        assert!(path.ends_with(format!("{}/config.toml", PROJECT_NAME)));
     }
 }
