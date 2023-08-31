@@ -6,7 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use crate::conf::config::Val::{Invalid, Valid};
+use crate::conf::config::ValError::{InvalidValue, MisssingValue};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum TrustBackend {
@@ -77,6 +77,7 @@ impl Config {
     }
 
     pub fn apply_ok(&mut self, tok: ConfigToken) {
+        use Val::Valid;
         match tok {
             ConfigToken::Permissive(v) => self.permissive = Valid(v),
             ConfigToken::NiceVal(v) => self.nice_val = Valid(v),
@@ -98,6 +99,7 @@ impl Config {
     }
 
     pub fn apply_err(&mut self, tok: &str, txt: &str) {
+        use Val::Invalid;
         match tok {
             "permissive" => self.permissive = Invalid(txt.to_string()),
             "nice_val" => self.nice_val = Invalid(txt.to_string()),
@@ -120,6 +122,12 @@ impl Config {
     }
 }
 
+#[derive(Debug)]
+pub enum ValError {
+    InvalidValue,
+    MisssingValue,
+}
+
 #[derive(Clone)]
 pub enum Val<T> {
     Valid(T),
@@ -128,10 +136,11 @@ pub enum Val<T> {
 }
 
 impl<T> Val<T> {
-    pub fn get(&self) -> Result<&T, ()> {
+    pub fn get(&self) -> Result<&T, ValError> {
         match self {
-            Valid(t) => Ok(t),
-            _ => Err(()),
+            Self::Valid(t) => Ok(t),
+            Self::Invalid(_) => Err(InvalidValue),
+            Self::Missing => Err(MisssingValue),
         }
     }
 }
@@ -158,6 +167,7 @@ pub enum ConfigToken {
 
 impl Default for Config {
     fn default() -> Self {
+        use Val::Valid;
         Self {
             permissive: Valid(false),
             nice_val: Valid(14),
