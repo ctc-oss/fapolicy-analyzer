@@ -25,7 +25,7 @@ impl Event {
     }
 
     pub fn ts(&self) -> i64 {
-        unsafe { auparse_get_time(self.au.as_ptr()) as i64 }
+        unsafe { auparse_get_time(self.au.as_ptr()) }
     }
     pub fn int(&self, name: &str) -> Result<i32, Error> {
         unsafe { audit_get_int(self.au.as_ptr(), name) }

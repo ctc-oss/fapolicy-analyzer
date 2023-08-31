@@ -1,6 +1,6 @@
 # Copyright Concurrent Technologies Corporation 2023
 #
-# This aogram is free software: you can redistribute it and/or modify
+# This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
@@ -13,8 +13,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fapolicy_analyzer import config_file_path
+from fapolicy_analyzer import *
+import sys
 
 
-def test_config_file_path():
-    assert config_file_path().endswith("fapolicy-analyzer/config.toml")
+def main(*argv):
+    s1 = System()
+    print(s1.config_text())
+
+
+if __name__ == "__main__":
+    main(*sys.argv[1:])
