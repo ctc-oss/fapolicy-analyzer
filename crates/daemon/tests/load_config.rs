@@ -6,34 +6,39 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use fapolicy_daemon::conf::config::{EntryError, IntegritySource, TrustBackend};
+use fapolicy_daemon::conf::config::{IntegritySource, TrustBackend};
 use fapolicy_daemon::conf::load;
+use std::error::Error;
+use std::ops::Deref;
 
 #[test]
-fn parse_default_config() -> Result<(), EntryError> {
-    let x = load::config("tests/data/default.conf").expect("load");
-    assert!(!*x.permissive.get()?);
-    assert_eq!(*x.nice_val.get()?, 14);
-    assert_eq!(*x.q_size.get()?, 800);
-    assert_eq!(*x.uid.get()?, "fapolicyd");
-    assert_eq!(*x.gid.get()?, "fapolicyd");
-    assert!(*x.do_stat_report.get()?);
-    assert!(*x.detailed_report.get()?);
-    assert_eq!(*x.db_max_size.get()?, 50);
-    assert_eq!(*x.subj_cache_size.get()?, 1549);
-    assert_eq!(*x.obj_cache_size.get()?, 8191);
+fn parse_default_config() -> Result<(), Box<dyn Error>> {
+    let x = load::file("tests/data/default.conf").expect("load");
+    assert!(!x.permissive.get().unwrap().deref());
+    assert_eq!(*x.nice_val.get().unwrap(), 14);
+    assert_eq!(*x.q_size.get().unwrap(), 800);
+    assert_eq!(*x.uid.get().unwrap(), "fapolicyd");
+    assert_eq!(*x.gid.get().unwrap(), "fapolicyd");
+    assert!(*x.do_stat_report.get().unwrap());
+    assert!(*x.detailed_report.get().unwrap());
+    assert_eq!(*x.db_max_size.get().unwrap(), 50);
+    assert_eq!(*x.subj_cache_size.get().unwrap(), 1549);
+    assert_eq!(*x.obj_cache_size.get().unwrap(), 8191);
     assert_eq!(
-        *x.watch_fs.get()?,
+        *x.watch_fs.get().unwrap(),
         splits("ext2,ext3,ext4,tmpfs,xfs,vfat,iso9660,btrfs")
     );
-    assert_eq!(*x.trust.get()?, vec![TrustBackend::Rpm, TrustBackend::File]);
-    assert_eq!(*x.integrity.get()?, IntegritySource::None);
     assert_eq!(
-        *x.syslog_format.get()?,
+        *x.trust.get().unwrap(),
+        vec![TrustBackend::Rpm, TrustBackend::File]
+    );
+    assert_eq!(*x.integrity.get().unwrap(), IntegritySource::None);
+    assert_eq!(
+        *x.syslog_format.get().unwrap(),
         splits("rule,dec,perm,auid,pid,exe,:,path,ftype,trust")
     );
-    assert!(!*x.rpm_sha256_only.get()?);
-    assert!(!*x.allow_filesystem_mark.get()?);
+    assert!(!x.rpm_sha256_only.get().unwrap());
+    assert!(!x.allow_filesystem_mark.get().unwrap());
 
     Ok(())
 }

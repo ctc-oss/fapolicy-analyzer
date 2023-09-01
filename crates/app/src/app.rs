@@ -62,7 +62,7 @@ impl State {
             rules_db,
             users: read_users()?,
             groups: read_groups()?,
-            daemon_config: fapolicy_daemon::Config::default(),
+            daemon_config: fapolicy_daemon::conf::load::file(&cfg.system.config_file_path)?,
             daemon_version: fapolicy_daemon::version(),
         })
     }

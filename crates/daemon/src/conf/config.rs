@@ -6,8 +6,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use crate::conf::config::EntryError::{InvalidValue, MisssingValue};
-
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum TrustBackend {
     Rpm,
@@ -116,25 +114,19 @@ impl Config {
     }
 }
 
-#[derive(Debug)]
-pub enum EntryError {
-    InvalidValue,
-    MisssingValue,
-}
-
 #[derive(Clone)]
 pub enum Entry<T> {
     Valid(T),
     Invalid(String),
     Missing,
+    Duplicated,
 }
 
 impl<T> Entry<T> {
-    pub fn get(&self) -> Result<&T, EntryError> {
+    pub fn get(&self) -> Option<&T> {
         match self {
-            Self::Valid(t) => Ok(t),
-            Self::Invalid(_) => Err(InvalidValue),
-            Self::Missing => Err(MisssingValue),
+            Entry::Valid(v) => Some(v),
+            _ => None,
         }
     }
 }

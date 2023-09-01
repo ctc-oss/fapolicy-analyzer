@@ -7,7 +7,7 @@
  */
 
 pub mod config;
-mod error;
+pub mod error;
 pub mod load;
 mod parse;
 mod read;
