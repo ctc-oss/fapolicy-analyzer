@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from typing import Any
-
+from fapolicy_analyzer import System
 from fapolicy_analyzer.ui.config_text_view import ConfigTextView
 from fapolicy_analyzer.ui.config_status_info import ConfigStatusInfo
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
@@ -28,9 +28,10 @@ from fapolicy_analyzer.ui.store import (
 
 class ConfigAdminPage(UIConnectedWidget):
     def __init__(self):
-        UIConnectedWidget.__init__(
-            self, get_system_feature(), on_next=self.on_next_system
-        )
+        features = [
+            {get_system_feature(): {"on_next": self.on_next_system}},
+        ]
+        UIConnectedWidget.__init__(self, features=features)
         actions = {}
         UIPage.__init__(self, actions)
 
@@ -50,7 +51,9 @@ class ConfigAdminPage(UIConnectedWidget):
         self.get_object("configStatusFrame").add(self.__status_info.get_ref())
 
     def on_next_system(self, system: Any):
-        system_state = system.get("system")
+        config_text = system.get("system").system.config_text()
+        self._text_view.render_text(config_text)
+        self.__status_info.render_config_status(config_text)
 
     def on_text_view_config_changed(self, config: str):
         self.__modified_config_text = config
