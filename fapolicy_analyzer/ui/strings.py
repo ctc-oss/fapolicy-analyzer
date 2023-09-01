@@ -222,8 +222,4 @@ regexp: "RSYSLOG_TraditionalFileFormat"
 replace: "RSYSLOG_FileFormat"
     """
 )
-RULES_OVERRIDE_MESSAGE = _(
-    """The rules you are attempting to save are invalid.
-
-Are you sure you wish to continue?"""
-)
+RULES_OVERRIDE_MESSAGE = _("""There are syntax errors in the rule editor.""")
