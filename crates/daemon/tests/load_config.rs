@@ -6,11 +6,11 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use fapolicy_daemon::conf::config::{IntegritySource, TrustBackend, ValError};
+use fapolicy_daemon::conf::config::{EntryError, IntegritySource, TrustBackend};
 use fapolicy_daemon::conf::load;
 
 #[test]
-fn parse_default_config() -> Result<(), ValError> {
+fn parse_default_config() -> Result<(), EntryError> {
     let x = load::config("tests/data/default.conf").expect("load");
     assert!(!*x.permissive.get()?);
     assert_eq!(*x.nice_val.get()?, 14);

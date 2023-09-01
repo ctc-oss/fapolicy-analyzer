@@ -6,7 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use crate::conf::config::ValError::{InvalidValue, MisssingValue};
+use crate::conf::config::EntryError::{InvalidValue, MisssingValue};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum TrustBackend {
@@ -29,55 +29,49 @@ pub enum IntegritySource {
 }
 
 #[derive(Clone)]
-pub enum Entry {
-    Valid(),
-    Invalid,
-}
-
-#[derive(Clone)]
 pub struct Config {
-    pub permissive: Val<bool>,
-    pub nice_val: Val<usize>,
-    pub q_size: Val<usize>,
-    pub uid: Val<String>,
-    pub gid: Val<String>,
-    pub do_stat_report: Val<bool>,
-    pub detailed_report: Val<bool>,
-    pub db_max_size: Val<usize>,
-    pub subj_cache_size: Val<usize>,
-    pub obj_cache_size: Val<usize>,
-    pub watch_fs: Val<Vec<String>>,
-    pub trust: Val<Vec<TrustBackend>>,
-    pub integrity: Val<IntegritySource>,
-    pub syslog_format: Val<Vec<String>>,
-    pub rpm_sha256_only: Val<bool>,
-    pub allow_filesystem_mark: Val<bool>,
+    pub permissive: Entry<bool>,
+    pub nice_val: Entry<usize>,
+    pub q_size: Entry<usize>,
+    pub uid: Entry<String>,
+    pub gid: Entry<String>,
+    pub do_stat_report: Entry<bool>,
+    pub detailed_report: Entry<bool>,
+    pub db_max_size: Entry<usize>,
+    pub subj_cache_size: Entry<usize>,
+    pub obj_cache_size: Entry<usize>,
+    pub watch_fs: Entry<Vec<String>>,
+    pub trust: Entry<Vec<TrustBackend>>,
+    pub integrity: Entry<IntegritySource>,
+    pub syslog_format: Entry<Vec<String>>,
+    pub rpm_sha256_only: Entry<bool>,
+    pub allow_filesystem_mark: Entry<bool>,
 }
 
 impl Config {
     pub fn empty() -> Self {
         Self {
-            permissive: Val::Missing,
-            nice_val: Val::Missing,
-            q_size: Val::Missing,
-            uid: Val::Missing,
-            gid: Val::Missing,
-            do_stat_report: Val::Missing,
-            detailed_report: Val::Missing,
-            db_max_size: Val::Missing,
-            subj_cache_size: Val::Missing,
-            obj_cache_size: Val::Missing,
-            watch_fs: Val::Missing,
-            trust: Val::Missing,
-            integrity: Val::Missing,
-            syslog_format: Val::Missing,
-            rpm_sha256_only: Val::Missing,
-            allow_filesystem_mark: Val::Missing,
+            permissive: Entry::Missing,
+            nice_val: Entry::Missing,
+            q_size: Entry::Missing,
+            uid: Entry::Missing,
+            gid: Entry::Missing,
+            do_stat_report: Entry::Missing,
+            detailed_report: Entry::Missing,
+            db_max_size: Entry::Missing,
+            subj_cache_size: Entry::Missing,
+            obj_cache_size: Entry::Missing,
+            watch_fs: Entry::Missing,
+            trust: Entry::Missing,
+            integrity: Entry::Missing,
+            syslog_format: Entry::Missing,
+            rpm_sha256_only: Entry::Missing,
+            allow_filesystem_mark: Entry::Missing,
         }
     }
 
     pub fn apply_ok(&mut self, tok: ConfigToken) {
-        use Val::Valid;
+        use Entry::Valid;
         match tok {
             ConfigToken::Permissive(v) => self.permissive = Valid(v),
             ConfigToken::NiceVal(v) => self.nice_val = Valid(v),
@@ -99,7 +93,7 @@ impl Config {
     }
 
     pub fn apply_err(&mut self, tok: &str, txt: &str) {
-        use Val::Invalid;
+        use Entry::Invalid;
         match tok {
             "permissive" => self.permissive = Invalid(txt.to_string()),
             "nice_val" => self.nice_val = Invalid(txt.to_string()),
@@ -123,20 +117,20 @@ impl Config {
 }
 
 #[derive(Debug)]
-pub enum ValError {
+pub enum EntryError {
     InvalidValue,
     MisssingValue,
 }
 
 #[derive(Clone)]
-pub enum Val<T> {
+pub enum Entry<T> {
     Valid(T),
     Invalid(String),
     Missing,
 }
 
-impl<T> Val<T> {
-    pub fn get(&self) -> Result<&T, ValError> {
+impl<T> Entry<T> {
+    pub fn get(&self) -> Result<&T, EntryError> {
         match self {
             Self::Valid(t) => Ok(t),
             Self::Invalid(_) => Err(InvalidValue),
@@ -167,7 +161,7 @@ pub enum ConfigToken {
 
 impl Default for Config {
     fn default() -> Self {
-        use Val::Valid;
+        use Entry::Valid;
         Self {
             permissive: Valid(false),
             nice_val: Valid(14),
