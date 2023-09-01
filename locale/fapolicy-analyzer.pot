@@ -7,9 +7,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: fapolicy-analyzer 0.0.0+371.g14d3f45.dirty\n"
+"Project-Id-Version: fapolicy-analyzer 1.1.0+12.g70e1681.dirty\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-05-04 09:04-0700\n"
+"POT-Creation-Date: 2023-09-01 09:07-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -56,7 +56,7 @@ msgstr ""
 msgid "Reverting to previous settings in {i+1} seconds"
 msgstr ""
 
-#: fapolicy_analyzer/ui/main_window.py:302
+#: fapolicy_analyzer/ui/main_window.py:306
 msgid ""
 "An error occurred trying to open the session file, "
 "{self.strSessionFilename}"
@@ -120,7 +120,7 @@ msgstr ""
 msgid "Rule"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:159
+#: fapolicy_analyzer/glade/main_window.glade:168
 #: fapolicy_analyzer/ui/strings.py:37
 msgid "Rules"
 msgstr ""
@@ -194,7 +194,7 @@ msgid "Ancillary Trust Database"
 msgstr ""
 
 #: fapolicy_analyzer/glade/ancillary_trust_database_admin.glade:60
-#: fapolicy_analyzer/glade/main_window.glade:150
+#: fapolicy_analyzer/glade/main_window.glade:159
 #: fapolicy_analyzer/glade/trust_reconciliation_dialog.glade:41
 #: fapolicy_analyzer/ui/strings.py:74
 msgid "Trust"
@@ -515,6 +515,10 @@ msgid ""
 "    "
 msgstr ""
 
+#: fapolicy_analyzer/ui/strings.py:225
+msgid "There are syntax errors in the rule editor."
+msgstr ""
+
 #: fapolicy_analyzer/ui/trust_file_list.py:170
 #, python-format
 msgid "Loading trust {pct}% complete..."
@@ -554,6 +558,7 @@ msgid "No"
 msgstr ""
 
 #: fapolicy_analyzer/glade/confirm_change_dialog.glade:63
+#: fapolicy_analyzer/glade/rules_admin_page.glade:141
 #: fapolicy_analyzer/glade/time_select_dialog.glade:57
 #: fapolicy_analyzer/glade/trust_reconciliation_dialog.glade:67
 msgid "Cancel"
@@ -612,36 +617,40 @@ msgstr ""
 msgid "Debug Log"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:140
+#: fapolicy_analyzer/glade/main_window.glade:136
+msgid "Audit Log"
+msgstr ""
+
+#: fapolicy_analyzer/glade/main_window.glade:149
 msgid "_Tool"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:168
+#: fapolicy_analyzer/glade/main_window.glade:177
 msgid "Profiler"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:181
+#: fapolicy_analyzer/glade/main_window.glade:190
 msgid "Daemon"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:213
+#: fapolicy_analyzer/glade/main_window.glade:222
 msgid "Session"
 msgstr ""
 
 #. Presents option to load prior sessions tmp file (if it exists.)
-#: fapolicy_analyzer/glade/main_window.glade:233
+#: fapolicy_analyzer/glade/main_window.glade:242
 msgid "Restore"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:266
+#: fapolicy_analyzer/glade/main_window.glade:275
 msgid "_Help"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:276
+#: fapolicy_analyzer/glade/main_window.glade:285
 msgid "User Guide"
 msgstr ""
 
-#: fapolicy_analyzer/glade/main_window.glade:339
+#: fapolicy_analyzer/glade/main_window.glade:348
 msgid "fapolicyd:"
 msgstr ""
 
@@ -649,7 +658,7 @@ msgstr ""
 msgid "x"
 msgstr ""
 
-#: fapolicy_analyzer/glade/policy_rules_admin_page.glade:41
+#: fapolicy_analyzer/glade/policy_rules_admin_page.glade:36
 msgid "Showing events since "
 msgstr ""
 
@@ -691,6 +700,14 @@ msgstr ""
 
 #: fapolicy_analyzer/glade/rules_admin_page.glade:73
 msgid "Rules View"
+msgstr ""
+
+#: fapolicy_analyzer/glade/rules_admin_page.glade:115
+msgid "Confirm Rule Save"
+msgstr ""
+
+#: fapolicy_analyzer/glade/rules_admin_page.glade:128
+msgid "Proceed"
 msgstr ""
 
 #: fapolicy_analyzer/glade/rules_difference_dialog.glade:23
