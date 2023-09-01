@@ -48,45 +48,47 @@ pub struct Config {
 
 impl Config {
     pub fn empty() -> Self {
+        use Entry::Missing;
         Self {
-            permissive: Entry::Missing,
-            nice_val: Entry::Missing,
-            q_size: Entry::Missing,
-            uid: Entry::Missing,
-            gid: Entry::Missing,
-            do_stat_report: Entry::Missing,
-            detailed_report: Entry::Missing,
-            db_max_size: Entry::Missing,
-            subj_cache_size: Entry::Missing,
-            obj_cache_size: Entry::Missing,
-            watch_fs: Entry::Missing,
-            trust: Entry::Missing,
-            integrity: Entry::Missing,
-            syslog_format: Entry::Missing,
-            rpm_sha256_only: Entry::Missing,
-            allow_filesystem_mark: Entry::Missing,
+            permissive: Missing,
+            nice_val: Missing,
+            q_size: Missing,
+            uid: Missing,
+            gid: Missing,
+            do_stat_report: Missing,
+            detailed_report: Missing,
+            db_max_size: Missing,
+            subj_cache_size: Missing,
+            obj_cache_size: Missing,
+            watch_fs: Missing,
+            trust: Missing,
+            integrity: Missing,
+            syslog_format: Missing,
+            rpm_sha256_only: Missing,
+            allow_filesystem_mark: Missing,
         }
     }
 
     pub fn apply_ok(&mut self, tok: ConfigToken) {
+        use ConfigToken::*;
         use Entry::Valid;
         match tok {
-            ConfigToken::Permissive(v) => self.permissive = Valid(v),
-            ConfigToken::NiceVal(v) => self.nice_val = Valid(v),
-            ConfigToken::QSize(v) => self.q_size = Valid(v),
-            ConfigToken::UID(v) => self.uid = Valid(v),
-            ConfigToken::GID(v) => self.gid = Valid(v),
-            ConfigToken::DoStatReport(v) => self.do_stat_report = Valid(v),
-            ConfigToken::DetailedReport(v) => self.detailed_report = Valid(v),
-            ConfigToken::DbMaxSize(v) => self.db_max_size = Valid(v),
-            ConfigToken::SubjCacheSize(v) => self.subj_cache_size = Valid(v),
-            ConfigToken::ObjCacheSize(v) => self.obj_cache_size = Valid(v),
-            ConfigToken::WatchFs(v) => self.watch_fs = Valid(v),
-            ConfigToken::Trust(v) => self.trust = Valid(v),
-            ConfigToken::Integrity(v) => self.integrity = Valid(v),
-            ConfigToken::SyslogFormat(v) => self.syslog_format = Valid(v),
-            ConfigToken::RpmSha256Only(v) => self.rpm_sha256_only = Valid(v),
-            ConfigToken::AllowFsMark(v) => self.allow_filesystem_mark = Valid(v),
+            Permissive(v) => self.permissive = Valid(v),
+            NiceVal(v) => self.nice_val = Valid(v),
+            QSize(v) => self.q_size = Valid(v),
+            UID(v) => self.uid = Valid(v),
+            GID(v) => self.gid = Valid(v),
+            DoStatReport(v) => self.do_stat_report = Valid(v),
+            DetailedReport(v) => self.detailed_report = Valid(v),
+            DbMaxSize(v) => self.db_max_size = Valid(v),
+            SubjCacheSize(v) => self.subj_cache_size = Valid(v),
+            ObjCacheSize(v) => self.obj_cache_size = Valid(v),
+            WatchFs(v) => self.watch_fs = Valid(v),
+            Trust(v) => self.trust = Valid(v),
+            Integrity(v) => self.integrity = Valid(v),
+            SyslogFormat(v) => self.syslog_format = Valid(v),
+            RpmSha256Only(v) => self.rpm_sha256_only = Valid(v),
+            AllowFsMark(v) => self.allow_filesystem_mark = Valid(v),
         }
     }
 
