@@ -206,7 +206,7 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         )
 
     def on_save_clicked(self, *args):
-        changeset, valid = self.__build_and_validate_changeset()
+        changeset, valid = self.__build_and_validate_changeset(show_notifications=False)
         self.__update_list_view(changeset)
         if valid:
             self.__saving = True
