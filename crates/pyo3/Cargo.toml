@@ -26,3 +26,4 @@ fapolicy-trust = { path = "../trust" }
 [features]
 default = []
 audit = []
+xdg = ["fapolicy-app/xdg"]

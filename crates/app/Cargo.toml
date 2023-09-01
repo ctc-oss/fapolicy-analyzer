@@ -15,3 +15,7 @@ fapolicy-analyzer = { path = "../analyzer" }
 fapolicy-daemon = { path = "../daemon" }
 fapolicy-rules = { path = "../rules" }
 fapolicy-trust = { path = "../trust" }
+
+[features]
+default = []
+xdg = []
