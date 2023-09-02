@@ -87,7 +87,7 @@ def test_parse_args_no_options_w_xdg():
     testargs = ["prog"]
     _home = os.path.expanduser("~")
 
-    xdg_state_home = os.path.join(_home, ".local", "state")
+    xdg_state_home = os.path.join(_home, ".local", ".share")
     expectTmpPath = xdg_state_home + "/fapolicy-analyzer/fapolicy-analyzer.tmp"
     with patch.object(sys, "argv", testargs):
         main()
@@ -138,7 +138,7 @@ def test_parse_args_all_options():
 def test_main_no_options_w_xdg(mocker):
     testargs = ["prog"]
     _home = os.path.expanduser("~")
-    xdg_state_home = os.path.join(_home, ".local", "state")
+    xdg_state_home = os.path.join(_home, ".local", ".share")
     expectTmpPath = xdg_state_home + "/fapolicy-analyzer/fapolicy-analyzer.tmp"
 
     with patch.object(sys, "argv", testargs):

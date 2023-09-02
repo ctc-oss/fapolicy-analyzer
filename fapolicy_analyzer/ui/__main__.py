@@ -17,7 +17,10 @@ import sys
 import logging
 
 from fapolicy_analyzer import init_native_logging
-from fapolicy_analyzer.util.xdg_utils import app_data_dir_prefix
+from fapolicy_analyzer.util.xdg_utils import (
+    app_data_dir_prefix,
+    app_state_dir_prefix,
+)
 
 gf_handler = logging.FileHandler(app_data_dir_prefix("fapolicy-analyzer.log"), mode="w")
 gs_handler = logging.StreamHandler()
@@ -113,7 +116,7 @@ def _parse_cmdline():
         sessionManager.set_autosave_filename(args.session)
     else:
         sessionManager.set_autosave_filename(
-            app_data_dir_prefix("fapolicy-analyzer.tmp")
+            app_state_dir_prefix("fapolicy-analyzer.tmp")
         )
 
 

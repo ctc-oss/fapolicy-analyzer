@@ -20,7 +20,7 @@ import glob
 import logging
 from datetime import datetime as DT
 from fapolicy_analyzer.util.xdg_utils import (
-    app_data_dir_prefix,
+    app_state_dir_prefix,
     app_config_dir_prefix,
 )
 
@@ -67,7 +67,7 @@ def fapd_dbase_snapshot(strArchiveFile=None, strListFile=None):
 
     # Set the backup archive's name, if not specified, set to the default
     if not strArchiveFile:
-        strArchiveBasename = app_data_dir_prefix(gstrBackupBasename)
+        strArchiveBasename = app_state_dir_prefix(gstrBackupBasename)
         timestamp = DT.fromtimestamp(time.time()).strftime("%Y%m%d_%H%M%S_%f")
         strArchiveFile = strArchiveBasename + "_" + timestamp + ".tgz"
         print("Fapolicyd backup to: {}".format(strArchiveFile))
