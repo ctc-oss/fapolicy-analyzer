@@ -225,3 +225,4 @@ regexp: "RSYSLOG_TraditionalFileFormat"
 replace: "RSYSLOG_FileFormat"
     """
 )
+RULES_OVERRIDE_MESSAGE = _("""There are syntax errors in the rule editor.""")

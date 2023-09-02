@@ -256,7 +256,6 @@ def test_clears_validation_notifications(
     # valid to clear notification
     widget._text_view.rules_changed("allow perm=open all : all")
     widget.on_validate_clicked()
-    print(mock_dispatch.call_args_list)
     mock_dispatch.assert_any_call(
         InstanceOf(Action)
         & Attrs(
@@ -301,9 +300,12 @@ def test_save_click_valid(widget, mock_dispatch):
     mock_dispatch.assert_called_with(InstanceOf(Action) & Attrs(type=APPLY_CHANGESETS))
 
 
-def test_save_click_invalid(widget, mock_dispatch):
+def test_save_click_invalid(widget, mock_dispatch, mocker):
     widget._text_view.rules_changed("bar baz bah")
+    overrideDialog = widget.get_object("saveOverrideDialog")
+    mocker.patch.object(overrideDialog, "run", return_value=Gtk.ResponseType.CANCEL)
     widget.on_save_clicked()
+
     mock_dispatch.assert_not_any_call(InstanceOf(Action) & Attrs(type=APPLY_CHANGESETS))
 
 
@@ -313,6 +315,8 @@ def test_changeset_parse_error(widget, mock_dispatch, mocker):
         side_effect=Exception,
     )
     widget._text_view.rules_changed("allow perm=any all : all")
+    overrideDialog = widget.get_object("saveOverrideDialog")
+    mocker.patch.object(overrideDialog, "run", return_value=Gtk.ResponseType.CANCEL)
     widget.on_save_clicked()
     mock_dispatch.assert_called_with(
         InstanceOf(Action)
@@ -338,6 +342,8 @@ def test_apply_changeset_error(mock_dispatch, mocker):
     init_store(mock_System())
     widget = RulesAdminPage()
     widget._text_view.rules_changed("allow perm=any all : all")
+    overrideDialog = widget.get_object("saveOverrideDialog")
+    mocker.patch.object(overrideDialog, "run", return_value=Gtk.ResponseType.OK)
     widget.on_save_clicked()  # need to set the saving flag to true
 
     mockSystemFeature.on_next(
