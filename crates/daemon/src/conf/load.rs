@@ -6,10 +6,10 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+use crate::conf;
 use crate::conf::error::Error;
 use crate::conf::read;
-use crate::{conf, Config};
 
-pub fn file(path: &str) -> Result<conf::file::File, Error> {
+pub fn file(path: &str) -> Result<conf::db::DB, Error> {
     read::file(path.into())
 }

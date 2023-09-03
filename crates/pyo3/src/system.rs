@@ -9,14 +9,12 @@
 use pyo3::prelude::*;
 use pyo3::{exceptions, PyResult};
 use similar::{ChangeTag, TextDiff};
-use std::fs;
 
 use fapolicy_analyzer::events;
 use fapolicy_analyzer::events::db::DB as EventDB;
 use fapolicy_app::app::State;
 use fapolicy_app::cfg;
 use fapolicy_app::sys::deploy_app_state;
-use fapolicy_daemon::fapolicyd;
 use fapolicy_trust::stat::Status::*;
 
 use crate::acl::{PyGroup, PyUser};

@@ -7,9 +7,11 @@
  */
 
 pub mod config;
+mod db;
 pub mod error;
-pub mod file;
 pub mod key;
 pub mod load;
 mod parse;
 mod read;
+
+pub use db::*;

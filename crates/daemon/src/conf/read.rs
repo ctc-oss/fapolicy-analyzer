@@ -6,10 +6,10 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+use crate::conf;
+use crate::conf::db::Line;
 use crate::conf::error::Error;
-use crate::conf::file::Line;
 use crate::conf::parse;
-use crate::{conf, Config};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
@@ -22,7 +22,7 @@ fn lines_in_file(path: PathBuf) -> Result<Vec<String>, Error> {
     Ok(lines)
 }
 
-pub fn file(path: PathBuf) -> Result<conf::file::File, Error> {
+pub fn file(path: PathBuf) -> Result<conf::db::DB, Error> {
     let mut lines = vec![];
     let mut skip_blank = true;
 

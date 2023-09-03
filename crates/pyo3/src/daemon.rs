@@ -8,7 +8,7 @@
 
 use crate::system::PySystem;
 use fapolicy_daemon::conf;
-use fapolicy_daemon::conf::file::Line;
+use fapolicy_daemon::conf::Line;
 use fapolicy_daemon::fapolicyd::Version;
 use fapolicy_daemon::svc::State::{Active, Inactive};
 use fapolicy_daemon::svc::{wait_for_service, Handle};
@@ -136,7 +136,7 @@ fn is_fapolicyd_active() -> PyResult<bool> {
         .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
 }
 
-pub(crate) fn conf_to_text(db: &conf::file::File) -> String {
+pub(crate) fn conf_to_text(db: &conf::DB) -> String {
     println!("-=======-");
     db.iter().fold(String::new(), |x, y| {
         let txt = match y {
@@ -168,8 +168,8 @@ pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
 mod tests {
     use crate::daemon::conf_to_text;
     use fapolicy_daemon::conf::config::ConfigToken::{DoStatReport, Permissive};
-    use fapolicy_daemon::conf::file::File;
-    use fapolicy_daemon::conf::file::Line::*;
+    use fapolicy_daemon::conf::db::File;
+    use fapolicy_daemon::conf::db::Line::*;
 
     #[test]
     fn test_conf_to_text_blank_lines() {
