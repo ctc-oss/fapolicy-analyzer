@@ -14,6 +14,7 @@ use fapolicy_daemon::svc::State::{Active, Inactive};
 use fapolicy_daemon::svc::{wait_for_service, Handle};
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
+use std::fmt::Display;
 
 #[pyclass(module = "svc", name = "Handle")]
 #[derive(Clone, Default)]
@@ -137,14 +138,14 @@ fn is_fapolicyd_active() -> PyResult<bool> {
 }
 
 pub(crate) fn conf_to_text(db: &conf::DB) -> String {
-    println!("-=======-");
+    let empty = "".to_string();
     db.iter().fold(String::new(), |x, y| {
-        let txt = match y {
-            Line::Valid(tok) => tok.to_string(),
-            Line::Invalid(txt) => txt.clone(),
-            Line::Duplicate(tok) => tok.to_string(),
-            Line::Comment(txt) => txt.clone(),
-            Line::BlankLine => "\n".to_string(),
+        let txt: &dyn Display = match y {
+            Line::Valid(tok) => tok,
+            Line::Invalid(txt) => txt,
+            Line::Duplicate(tok) => tok,
+            Line::Comment(txt) => txt,
+            Line::BlankLine => &empty,
         };
         if x.is_empty() {
             format!("{}", txt)

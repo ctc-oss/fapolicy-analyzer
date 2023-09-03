@@ -27,11 +27,15 @@ pub fn file(path: PathBuf) -> Result<conf::db::DB, Error> {
     let mut skip_blank = true;
 
     for s in lines_in_file(path)? {
-        if s.trim().is_empty() && !skip_blank {
+        let s = s.trim();
+        if s.is_empty() {
+            if skip_blank {
+                continue;
+            }
             lines.push(Line::BlankLine);
             skip_blank = true;
-        } else if s.trim_start().starts_with('#') {
-            lines.push(Line::Comment(s));
+        } else if s.starts_with('#') {
+            lines.push(Line::Comment(s.to_string()));
             skip_blank = false;
         } else {
             match parse::token(&s) {
