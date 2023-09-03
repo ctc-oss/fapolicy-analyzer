@@ -9,7 +9,6 @@
 use fapolicy_daemon::conf::config::{IntegritySource, TrustBackend};
 use fapolicy_daemon::conf::load;
 use std::error::Error;
-use std::ops::Deref;
 
 #[test]
 fn parse_default_config() -> Result<(), Box<dyn Error>> {

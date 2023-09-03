@@ -38,7 +38,7 @@ pub fn file(path: PathBuf) -> Result<conf::db::DB, Error> {
             lines.push(Line::Comment(s.to_string()));
             skip_blank = false;
         } else {
-            match parse::token(&s) {
+            match parse::token(s) {
                 Ok(v) => lines.push(Line::Valid(v)),
                 Err((lhs, rhs, Error::InvalidLhs(_))) => {
                     lines.push(Line::Invalid(format!("{lhs}={rhs}")))

@@ -10,7 +10,7 @@ pub enum Line {
     BlankLine,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct DB {
     lines: Vec<Line>,
 }
@@ -25,11 +25,5 @@ impl DB {
 impl From<Vec<Line>> for DB {
     fn from(lines: Vec<Line>) -> Self {
         Self { lines }
-    }
-}
-
-impl Default for DB {
-    fn default() -> Self {
-        DB { lines: vec![] }
     }
 }
