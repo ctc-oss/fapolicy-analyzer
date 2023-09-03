@@ -6,11 +6,24 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+use crate::conf::key::Key;
+use std::fmt::{Display, Formatter};
+
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum TrustBackend {
     Rpm,
     File,
     Deb,
+}
+
+impl Display for TrustBackend {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            TrustBackend::Rpm => f.write_str("rpmdb"),
+            TrustBackend::File => f.write_str("file"),
+            TrustBackend::Deb => f.write_str("deb"),
+        }
+    }
 }
 
 impl TrustBackend {
@@ -24,6 +37,16 @@ pub enum IntegritySource {
     None,
     Size,
     Hash,
+}
+
+impl Display for IntegritySource {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            IntegritySource::None => f.write_str("none"),
+            IntegritySource::Size => f.write_str("size"),
+            IntegritySource::Hash => f.write_str("hash"),
+        }
+    }
 }
 
 #[derive(Clone)]
@@ -133,7 +156,7 @@ impl<T> Entry<T> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum ConfigToken {
     Permissive(bool),
     NiceVal(usize),
@@ -183,6 +206,45 @@ impl Default for Config {
             ),
             rpm_sha256_only: Valid(false),
             allow_filesystem_mark: Valid(false),
+        }
+    }
+}
+
+fn bstr(b: &bool) -> &str {
+    if *b {
+        "1"
+    } else {
+        "0"
+    }
+}
+
+impl Display for ConfigToken {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        use ConfigToken::*;
+        match self {
+            Permissive(v) => f.write_fmt(format_args!("{}={}", Key::Permissive, bstr(v))),
+            NiceVal(v) => f.write_fmt(format_args!("{}={}", Key::NiceVal, v)),
+            QSize(v) => f.write_fmt(format_args!("{}={}", Key::QSize, v)),
+            UID(v) => f.write_fmt(format_args!("{}={}", Key::UID, v)),
+            GID(v) => f.write_fmt(format_args!("{}={}", Key::GID, v)),
+            DoStatReport(v) => f.write_fmt(format_args!("{}={}", Key::DoStatReport, bstr(v))),
+            DetailedReport(v) => f.write_fmt(format_args!("{}={}", Key::DetailedReport, bstr(v))),
+            DbMaxSize(v) => f.write_fmt(format_args!("{}={}", Key::DbMaxSize, v)),
+            SubjCacheSize(v) => f.write_fmt(format_args!("{}={}", Key::SubjCacheSize, v)),
+            ObjCacheSize(v) => f.write_fmt(format_args!("{}={}", Key::ObjCacheSize, v)),
+            WatchFs(v) => f.write_fmt(format_args!("{}={}", Key::WatchFs, v.join(","))),
+            Trust(v) => f.write_fmt(format_args!(
+                "{}={}",
+                Key::Trust,
+                v.iter()
+                    .map(|v| v.to_string())
+                    .collect::<Vec<String>>()
+                    .join(",")
+            )),
+            Integrity(v) => f.write_fmt(format_args!("{}={}", Key::Integrity, v)),
+            SyslogFormat(v) => f.write_fmt(format_args!("{}={}", Key::SyslogFormat, v.join(","))),
+            RpmSha256Only(v) => f.write_fmt(format_args!("{}={}", Key::RpmSha256Only, bstr(v))),
+            AllowFsMark(v) => f.write_fmt(format_args!("{}={}", Key::AllowFsMark, bstr(v))),
         }
     }
 }

@@ -12,6 +12,7 @@ use std::path::PathBuf;
 
 use fapolicy_analyzer::users::{read_groups, read_users, Group, User};
 use fapolicy_daemon as daemon;
+use fapolicy_daemon::conf;
 use fapolicy_daemon::fapolicyd::Version;
 use fapolicy_rules::db::DB as RulesDB;
 use fapolicy_rules::ops::Changeset as RuleChanges;
@@ -32,7 +33,7 @@ pub struct State {
     pub rules_db: RulesDB,
     pub users: Vec<User>,
     pub groups: Vec<Group>,
-    pub daemon_config: daemon::Config,
+    pub daemon_config: conf::file::File,
     pub daemon_version: Version,
 }
 
@@ -44,7 +45,7 @@ impl State {
             rules_db: RulesDB::default(),
             users: vec![],
             groups: vec![],
-            daemon_config: daemon::Config::default(),
+            daemon_config: conf::file::File::default(),
             daemon_version: fapolicy_daemon::version(),
         }
     }

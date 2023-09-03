@@ -8,6 +8,8 @@
 
 pub mod config;
 pub mod error;
+pub mod file;
+pub mod key;
 pub mod load;
 mod parse;
 mod read;

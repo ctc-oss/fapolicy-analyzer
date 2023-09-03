@@ -8,8 +8,8 @@
 
 use crate::conf::error::Error;
 use crate::conf::read;
-use crate::Config;
+use crate::{conf, Config};
 
-pub fn file(path: &str) -> Result<Config, Error> {
+pub fn file(path: &str) -> Result<conf::file::File, Error> {
     read::file(path.into())
 }

@@ -7,13 +7,14 @@
  */
 
 use crate::conf::error::Error;
+use crate::conf::file::Line;
 use crate::conf::parse;
-use crate::Config;
+use crate::{conf, Config};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 
-fn lines(path: PathBuf) -> Result<Vec<String>, Error> {
+fn lines_in_file(path: PathBuf) -> Result<Vec<String>, Error> {
     let reader = File::open(path)
         .map(BufReader::new)
         .map_err(|_| Error::General)?;
@@ -21,17 +22,28 @@ fn lines(path: PathBuf) -> Result<Vec<String>, Error> {
     Ok(lines)
 }
 
-pub fn file(path: PathBuf) -> Result<Config, Error> {
-    let mut config = Config::empty();
-    for s in lines(path)? {
-        if s.trim().is_empty() || s.trim_start().starts_with('#') {
-            continue;
-        }
+pub fn file(path: PathBuf) -> Result<conf::file::File, Error> {
+    let mut lines = vec![];
+    let mut skip_blank = true;
 
-        match parse::token(&s) {
-            Ok(v) => config.apply_ok(v),
-            Err((k, v, _)) => config.apply_err(k, v),
-        };
+    for s in lines_in_file(path)? {
+        if s.trim().is_empty() && !skip_blank {
+            lines.push(Line::BlankLine);
+            skip_blank = true;
+        } else if s.trim_start().starts_with('#') {
+            lines.push(Line::Comment(s));
+            skip_blank = false;
+        } else {
+            match parse::token(&s) {
+                Ok(v) => lines.push(Line::Valid(v)),
+                Err((lhs, rhs, Error::InvalidLhs(_))) => {
+                    lines.push(Line::Invalid(format!("{lhs}={rhs}")))
+                }
+                Err((v, _, Error::MalformedConfig)) => lines.push(Line::Invalid(v.to_string())),
+                Err((lhs, rhs, _)) => lines.push(Line::Invalid(format!("{lhs}={rhs}"))),
+            };
+            skip_blank = false;
+        }
     }
-    Ok(config)
+    Ok(lines.into())
 }

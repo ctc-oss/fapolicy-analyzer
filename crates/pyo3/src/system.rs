@@ -168,15 +168,8 @@ impl PySystem {
         rules::to_text(&self.rs.rules_db)
     }
 
-    // todo;; will not throw once the config backend is available
-    fn config_text(&self) -> PyResult<String> {
-        fs::read_to_string(fapolicyd::CONFIG_FILE_PATH).map_err(|e| {
-            exceptions::PyRuntimeError::new_err(format!(
-                "Failed to static load conf from {} {:?}",
-                fapolicyd::CONFIG_FILE_PATH,
-                e
-            ))
-        })
+    fn config_text(&self) -> String {
+        daemon::conf_to_text(&self.rs.daemon_config)
     }
 
     // we rely on the gil to keep this synced up

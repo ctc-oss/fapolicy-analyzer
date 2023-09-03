@@ -7,6 +7,8 @@
  */
 
 use crate::system::PySystem;
+use fapolicy_daemon::conf;
+use fapolicy_daemon::conf::file::Line;
 use fapolicy_daemon::fapolicyd::Version;
 use fapolicy_daemon::svc::State::{Active, Inactive};
 use fapolicy_daemon::svc::{wait_for_service, Handle};
@@ -134,6 +136,24 @@ fn is_fapolicyd_active() -> PyResult<bool> {
         .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
 }
 
+pub(crate) fn conf_to_text(db: &conf::file::File) -> String {
+    println!("-=======-");
+    db.iter().fold(String::new(), |x, y| {
+        let txt = match y {
+            Line::Valid(tok) => tok.to_string(),
+            Line::Invalid(txt) => txt.clone(),
+            Line::Duplicate(tok) => tok.to_string(),
+            Line::Comment(txt) => txt.clone(),
+            Line::BlankLine => "\n".to_string(),
+        };
+        if x.is_empty() {
+            format!("{}", txt)
+        } else {
+            format!("{}\n{}", x, txt)
+        }
+    })
+}
+
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyHandle>()?;
     m.add_function(wrap_pyfunction!(fapolicyd_version, m)?)?;
@@ -142,4 +162,42 @@ pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(rollback_fapolicyd, m)?)?;
     m.add_function(wrap_pyfunction!(is_fapolicyd_active, m)?)?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::daemon::conf_to_text;
+    use fapolicy_daemon::conf::config::ConfigToken::{DoStatReport, Permissive};
+    use fapolicy_daemon::conf::file::File;
+    use fapolicy_daemon::conf::file::Line::*;
+
+    #[test]
+    fn test_conf_to_text_blank_lines() {
+        let f: File = vec![BlankLine].into();
+        assert_eq!(conf_to_text(&f), "\n".to_string())
+    }
+
+    #[test]
+    fn test_conf_to_text_blank_invalid_single() {
+        let f: File = vec![Invalid("Foo".to_string())].into();
+        assert_eq!(conf_to_text(&f), "Foo".to_string())
+    }
+
+    #[test]
+    fn test_conf_to_text_blank_invalid_multi() {
+        let s = "Foo".to_string();
+        let f: File = vec![Invalid(s.clone()), Invalid(s)].into();
+        assert_eq!(conf_to_text(&f), "Foo\nFoo".to_string())
+    }
+
+    #[test]
+    fn test_conf_to_text_blank_valid_multi() {
+        let a = Valid(Permissive(true));
+        let b = Valid(DoStatReport(false));
+        let f: File = vec![a, b].into();
+        assert_eq!(
+            conf_to_text(&f),
+            "permissive=1\ndo_stat_report=0".to_string()
+        )
+    }
 }
