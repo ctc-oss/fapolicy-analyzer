@@ -10,8 +10,9 @@ pub mod config;
 mod db;
 pub mod error;
 pub mod key;
-pub mod load;
+mod load;
 mod parse;
 mod read;
 
 pub use db::*;
+pub use load::file as from_file;
