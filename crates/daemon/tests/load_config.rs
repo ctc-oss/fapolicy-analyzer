@@ -8,12 +8,12 @@
 
 use assert_matches::assert_matches;
 use fapolicy_daemon::conf::config::{Entry, IntegritySource, TrustBackend};
-use fapolicy_daemon::conf::load;
+use fapolicy_daemon::conf::from_file;
 use fapolicy_daemon::Config;
 
 #[test]
 fn parse_default_config() {
-    let db = &load::file("tests/data/default.conf").expect("load");
+    let db = &from_file("tests/data/default.conf").expect("load");
     let x: Config = db.into();
     assert!(!x.permissive.get().unwrap());
     assert_eq!(*x.nice_val.get().unwrap(), 14);
@@ -44,7 +44,7 @@ fn parse_default_config() {
 
 #[test]
 fn parse_empty_config() {
-    let db = &load::file("tests/data/empty.conf").expect("load");
+    let db = &from_file("tests/data/empty.conf").expect("load");
     assert!(db.is_empty());
 
     let x: Config = db.into();
@@ -69,7 +69,7 @@ fn parse_empty_config() {
 
 #[test]
 fn parse_bad_config() {
-    let db = &load::file("tests/data/bad-values.conf").expect("load");
+    let db = &from_file("tests/data/bad-values.conf").expect("load");
     let x: Config = db.into();
     assert_matches!(x.permissive, Entry::Invalid(str) if str == "true")
 }
