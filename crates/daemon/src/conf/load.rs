@@ -6,10 +6,55 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use crate::conf;
+use crate::conf::db::DB;
 use crate::conf::error::Error;
 use crate::conf::read;
+use std::path::PathBuf;
 
-pub fn file(path: &str) -> Result<conf::db::DB, Error> {
+pub(crate) enum ConfFrom {
+    Disk(PathBuf),
+    Mem(String),
+}
+
+pub(crate) fn conf_from(src: ConfFrom) -> Result<DB, Error> {
+    let r = match src {
+        ConfFrom::Disk(path) => read::file(path)?,
+        ConfFrom::Mem(txt) => read::mem(&txt)?,
+    };
+    Ok(r)
+}
+
+pub fn file(path: &str) -> Result<DB, Error> {
     read::file(path.into())
+}
+
+pub fn mem(txt: &str) -> Result<DB, Error> {
+    read::mem(txt)
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::conf::config::Entry;
+    use crate::Config;
+    use assert_matches::assert_matches;
+
+    #[test]
+    fn parse_good_txt_config() {
+        let db = &mem("permissive=0\nuid=fapolicyd").expect("parse");
+        let x: Config = db.into();
+        assert_matches!(x.permissive, Entry::Valid(false));
+        assert_matches!(x.uid, Entry::Valid(uid) if uid == "fapolicyd");
+        assert_matches!(x.gid, Entry::Missing);
+    }
+
+    #[test]
+    fn parse_bad_txt_config() -> Result<(), Box<dyn std::error::Error>> {
+        let db = &mem("permissive=true")?;
+        let x: Config = db.into();
+        assert_matches!(x.permissive, Entry::Invalid(p) if p == "true");
+        assert_matches!(x.gid, Entry::Missing);
+
+        Ok(())
+    }
 }
