@@ -25,6 +25,10 @@ pub struct DB {
 }
 
 impl DB {
+    pub fn is_empty(&self) -> bool {
+        self.lines.is_empty()
+    }
+
     pub fn iter(&self) -> Iter<'_, Line> {
         self.lines.iter()
     }

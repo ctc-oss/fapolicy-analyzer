@@ -6,13 +6,13 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use fapolicy_daemon::conf::config::{IntegritySource, TrustBackend};
+use assert_matches::assert_matches;
+use fapolicy_daemon::conf::config::{Entry, IntegritySource, TrustBackend};
 use fapolicy_daemon::conf::load;
 use fapolicy_daemon::Config;
-use std::error::Error;
 
 #[test]
-fn parse_default_config() -> Result<(), Box<dyn Error>> {
+fn parse_default_config() {
     let db = &load::file("tests/data/default.conf").expect("load");
     let x: Config = db.into();
     assert!(!x.permissive.get().unwrap());
@@ -40,8 +40,38 @@ fn parse_default_config() -> Result<(), Box<dyn Error>> {
     );
     assert!(!x.rpm_sha256_only.get().unwrap());
     assert!(!x.allow_filesystem_mark.get().unwrap());
+}
 
-    Ok(())
+#[test]
+fn parse_empty_config() {
+    let db = &load::file("tests/data/empty.conf").expect("load");
+    assert!(db.is_empty());
+
+    let x: Config = db.into();
+    assert!(x.permissive.get().is_none());
+    assert!(x.nice_val.get().is_none());
+    assert!(x.q_size.get().is_none());
+    assert!(x.uid.get().is_none());
+    assert!(x.gid.get().is_none());
+    assert!(x.do_stat_report.get().is_none());
+    assert!(x.detailed_report.get().is_none());
+    assert!(x.db_max_size.get().is_none());
+    assert!(x.subj_cache_size.get().is_none());
+    assert!(x.obj_cache_size.get().is_none());
+    assert!(x.detailed_report.get().is_none());
+    assert!(x.watch_fs.get().is_none());
+    assert!(x.trust.get().is_none());
+    assert!(x.integrity.get().is_none());
+    assert!(x.syslog_format.get().is_none());
+    assert!(x.rpm_sha256_only.get().is_none());
+    assert!(x.allow_filesystem_mark.get().is_none());
+}
+
+#[test]
+fn parse_bad_config() {
+    let db = &load::file("tests/data/bad-values.conf").expect("load");
+    let x: Config = db.into();
+    assert_matches!(x.permissive, Entry::Invalid(str) if str == "true")
 }
 
 fn splits(s: &str) -> Vec<String> {

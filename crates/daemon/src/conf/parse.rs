@@ -104,7 +104,7 @@ fn nom_syslog_list(i: &str) -> IResult<&str, Vec<&str>> {
 pub(crate) fn token(i: &str) -> Result<ConfigToken, (&str, &str, Error)> {
     use ConfigToken::*;
     match i.split_once('=') {
-        None | Some(("", _)) => Err((i, "", Error::MalformedConfig)),
+        None | Some(("", _)) => Err(("", i, Error::MalformedConfig)),
         Some((lhs, rhs)) => {
             let lhs = lhs.trim();
             let rhs = rhs.trim();
@@ -187,9 +187,9 @@ mod tests {
     #[test]
     fn test_p2_malformed_config() {
         assert_matches!(token(""), Err(("", "", Error::MalformedConfig)));
-        assert_matches!(token("foo"), Err(("", "", Error::MalformedConfig)));
+        assert_matches!(token("foo"), Err(("", "foo", Error::MalformedConfig)));
         assert_matches!(token("foo="), Err(("foo", "", Error::InvalidLhs(_))));
-        assert_matches!(token("=foo"), Err(("", "", Error::MalformedConfig)));
+        assert_matches!(token("=foo"), Err(("", "=foo", Error::MalformedConfig)));
     }
 
     #[test]

@@ -155,7 +155,7 @@ impl Config {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Entry<T> {
     Valid(T),
     Invalid(String),
