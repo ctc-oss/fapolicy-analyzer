@@ -142,7 +142,8 @@ pub(crate) fn conf_to_text(db: &conf::DB) -> String {
     db.iter().fold(String::new(), |x, y| {
         let txt: &dyn Display = match y {
             Line::Valid(tok) => tok,
-            Line::Invalid(txt) => txt,
+            Line::Invalid(_, txt) => txt,
+            Line::Malformed(txt) => txt,
             Line::Duplicate(tok) => tok,
             Line::Comment(txt) => txt,
             Line::BlankLine => &empty,
@@ -169,33 +170,36 @@ pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
 mod tests {
     use crate::daemon::conf_to_text;
     use fapolicy_daemon::conf::config::ConfigToken::{DoStatReport, Permissive};
-    use fapolicy_daemon::conf::db::File;
-    use fapolicy_daemon::conf::db::Line::*;
+    use fapolicy_daemon::conf::Line::*;
+    use fapolicy_daemon::conf::DB;
 
     #[test]
     fn test_conf_to_text_blank_lines() {
-        let f: File = vec![BlankLine].into();
-        assert_eq!(conf_to_text(&f), "\n".to_string())
+        let f: DB = vec![BlankLine].into();
+        assert_eq!(conf_to_text(&f), "".to_string());
+
+        let f: DB = vec![Comment("foo".to_string()), BlankLine].into();
+        assert_eq!(conf_to_text(&f), "foo\n".to_string());
     }
 
     #[test]
-    fn test_conf_to_text_blank_invalid_single() {
-        let f: File = vec![Invalid("Foo".to_string())].into();
+    fn test_conf_to_text_malformed_single() {
+        let f: DB = vec![Malformed("Foo".to_string())].into();
         assert_eq!(conf_to_text(&f), "Foo".to_string())
     }
 
     #[test]
-    fn test_conf_to_text_blank_invalid_multi() {
+    fn test_conf_to_text_malformed_multi() {
         let s = "Foo".to_string();
-        let f: File = vec![Invalid(s.clone()), Invalid(s)].into();
+        let f: DB = vec![Malformed(s.clone()), Malformed(s)].into();
         assert_eq!(conf_to_text(&f), "Foo\nFoo".to_string())
     }
 
     #[test]
-    fn test_conf_to_text_blank_valid_multi() {
+    fn test_conf_to_text_valid_multi() {
         let a = Valid(Permissive(true));
         let b = Valid(DoStatReport(false));
-        let f: File = vec![a, b].into();
+        let f: DB = vec![a, b].into();
         assert_eq!(
             conf_to_text(&f),
             "permissive=1\ndo_stat_report=0".to_string()

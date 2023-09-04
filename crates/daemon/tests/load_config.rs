@@ -8,12 +8,14 @@
 
 use fapolicy_daemon::conf::config::{IntegritySource, TrustBackend};
 use fapolicy_daemon::conf::load;
+use fapolicy_daemon::Config;
 use std::error::Error;
 
 #[test]
 fn parse_default_config() -> Result<(), Box<dyn Error>> {
-    let x = load::file("tests/data/default.conf").expect("load");
-    assert!(!x.permissive.get().unwrap().deref());
+    let db = &load::file("tests/data/default.conf").expect("load");
+    let x: Config = db.into();
+    assert!(!x.permissive.get().unwrap());
     assert_eq!(*x.nice_val.get().unwrap(), 14);
     assert_eq!(*x.q_size.get().unwrap(), 800);
     assert_eq!(*x.uid.get().unwrap(), "fapolicyd");

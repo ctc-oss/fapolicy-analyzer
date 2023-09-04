@@ -4,7 +4,8 @@ use std::slice::Iter;
 #[derive(Clone, Debug)]
 pub enum Line {
     Valid(ConfigToken),
-    Invalid(String),
+    Invalid(String, String),
+    Malformed(String),
     Duplicate(ConfigToken),
     Comment(String),
     BlankLine,

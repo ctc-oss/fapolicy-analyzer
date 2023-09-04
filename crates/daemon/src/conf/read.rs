@@ -41,10 +41,12 @@ pub fn file(path: PathBuf) -> Result<conf::db::DB, Error> {
             match parse::token(s) {
                 Ok(v) => lines.push(Line::Valid(v)),
                 Err((lhs, rhs, Error::InvalidLhs(_))) => {
-                    lines.push(Line::Invalid(format!("{lhs}={rhs}")))
+                    lines.push(Line::Invalid(lhs.to_string(), format!("{lhs}={rhs}")))
                 }
-                Err((v, _, Error::MalformedConfig)) => lines.push(Line::Invalid(v.to_string())),
-                Err((lhs, rhs, _)) => lines.push(Line::Invalid(format!("{lhs}={rhs}"))),
+                Err((v, _, Error::MalformedConfig)) => lines.push(Line::Malformed(v.to_string())),
+                Err((lhs, rhs, _)) => {
+                    lines.push(Line::Invalid(lhs.to_string(), format!("{lhs}={rhs}")))
+                }
             };
             skip_blank = false;
         }

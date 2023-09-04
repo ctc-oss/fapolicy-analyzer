@@ -7,6 +7,7 @@
  */
 
 use crate::conf::key::Key;
+use crate::conf::{Line, DB};
 use std::fmt::{Display, Formatter};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -67,6 +68,21 @@ pub struct Config {
     pub syslog_format: Entry<Vec<String>>,
     pub rpm_sha256_only: Entry<bool>,
     pub allow_filesystem_mark: Entry<bool>,
+}
+
+impl From<&DB> for Config {
+    fn from(value: &DB) -> Self {
+        let mut cfg = Config::empty();
+        for line in value.iter() {
+            match line {
+                Line::Valid(tok) => cfg.apply_ok(tok.clone()),
+                Line::Invalid(tok, txt) => cfg.apply_err(tok, txt),
+                Line::Duplicate(tok) => cfg.apply_ok(tok.clone()),
+                _ => {}
+            }
+        }
+        cfg
+    }
 }
 
 impl Config {
