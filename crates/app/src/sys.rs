@@ -19,7 +19,6 @@ use fapolicy_daemon::fapolicyd::{
 };
 
 use crate::app::State;
-use crate::sys::Error::{WriteAncillaryFail, WriteRulesFail};
 
 #[derive(Error, Debug)]
 pub enum Error {
@@ -27,11 +26,22 @@ pub enum Error {
     WriteAncillaryFail(io::Error),
     #[error("Failed to write rules; {0}")]
     WriteRulesFail(io::Error),
+    #[error("Failed to write fapolicyd.conf; {0}")]
+    WriteConfFail(io::Error),
     #[error("{0}")]
     DaemonError(#[from] fapolicy_daemon::error::Error),
 }
 
 pub fn deploy_app_state(state: &State) -> Result<(), Error> {
+    use Error::*;
+
+    // write fapolicyd conf
+    fapolicy_daemon::conf::write::db(
+        &state.daemon_config,
+        &PathBuf::from(&state.config.system.config_file_path),
+    )
+    .map_err(WriteConfFail)?;
+
     // write rules model
     fapolicy_rules::write::db(
         &state.rules_db,
