@@ -7,11 +7,14 @@
  */
 
 use crate::system::PySystem;
+use fapolicy_daemon::conf;
+use fapolicy_daemon::conf::Line;
 use fapolicy_daemon::fapolicyd::Version;
 use fapolicy_daemon::svc::State::{Active, Inactive};
 use fapolicy_daemon::svc::{wait_for_service, Handle};
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
+use std::fmt::Display;
 
 #[pyclass(module = "svc", name = "Handle")]
 #[derive(Clone, Default)]
@@ -134,6 +137,25 @@ fn is_fapolicyd_active() -> PyResult<bool> {
         .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
 }
 
+pub(crate) fn conf_to_text(db: &conf::DB) -> String {
+    let empty = "".to_string();
+    db.iter().fold(String::new(), |x, y| {
+        let txt: &dyn Display = match y {
+            Line::Valid(tok) => tok,
+            Line::Invalid(_, txt) => txt,
+            Line::Malformed(txt) => txt,
+            Line::Duplicate(tok) => tok,
+            Line::Comment(txt) => txt,
+            Line::BlankLine => &empty,
+        };
+        if x.is_empty() {
+            format!("{}", txt)
+        } else {
+            format!("{}\n{}", x, txt)
+        }
+    })
+}
+
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyHandle>()?;
     m.add_function(wrap_pyfunction!(fapolicyd_version, m)?)?;
@@ -142,4 +164,45 @@ pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(rollback_fapolicyd, m)?)?;
     m.add_function(wrap_pyfunction!(is_fapolicyd_active, m)?)?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::daemon::conf_to_text;
+    use fapolicy_daemon::conf::config::ConfigToken::{DoStatReport, Permissive};
+    use fapolicy_daemon::conf::Line::*;
+    use fapolicy_daemon::conf::DB;
+
+    #[test]
+    fn test_conf_to_text_blank_lines() {
+        let f: DB = vec![BlankLine].into();
+        assert_eq!(conf_to_text(&f), "".to_string());
+
+        let f: DB = vec![Comment("foo".to_string()), BlankLine].into();
+        assert_eq!(conf_to_text(&f), "foo\n".to_string());
+    }
+
+    #[test]
+    fn test_conf_to_text_malformed_single() {
+        let f: DB = vec![Malformed("Foo".to_string())].into();
+        assert_eq!(conf_to_text(&f), "Foo".to_string())
+    }
+
+    #[test]
+    fn test_conf_to_text_malformed_multi() {
+        let s = "Foo".to_string();
+        let f: DB = vec![Malformed(s.clone()), Malformed(s)].into();
+        assert_eq!(conf_to_text(&f), "Foo\nFoo".to_string())
+    }
+
+    #[test]
+    fn test_conf_to_text_valid_multi() {
+        let a = Valid(Permissive(true));
+        let b = Valid(DoStatReport(false));
+        let f: DB = vec![a, b].into();
+        assert_eq!(
+            conf_to_text(&f),
+            "permissive=1\ndo_stat_report=0".to_string()
+        )
+    }
 }
