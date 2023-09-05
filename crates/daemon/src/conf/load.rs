@@ -9,20 +9,6 @@
 use crate::conf::db::DB;
 use crate::conf::error::Error;
 use crate::conf::read;
-use std::path::PathBuf;
-
-pub(crate) enum ConfFrom {
-    Disk(PathBuf),
-    Mem(String),
-}
-
-pub(crate) fn conf_from(src: ConfFrom) -> Result<DB, Error> {
-    let r = match src {
-        ConfFrom::Disk(path) => read::file(path)?,
-        ConfFrom::Mem(txt) => read::mem(&txt)?,
-    };
-    Ok(r)
-}
 
 pub fn file(path: &str) -> Result<DB, Error> {
     read::file(path.into())
