@@ -13,6 +13,7 @@ pub mod key;
 mod load;
 mod parse;
 mod read;
+pub mod write;
 
 pub use db::*;
 pub use load::file as from_file;

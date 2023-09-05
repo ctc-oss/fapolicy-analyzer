@@ -8,13 +8,11 @@
 
 use crate::system::PySystem;
 use fapolicy_daemon::conf;
-use fapolicy_daemon::conf::Line;
 use fapolicy_daemon::fapolicyd::Version;
 use fapolicy_daemon::svc::State::{Active, Inactive};
 use fapolicy_daemon::svc::{wait_for_service, Handle};
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
-use std::fmt::Display;
 
 #[pyclass(module = "svc", name = "Handle")]
 #[derive(Clone, Default)]
@@ -138,22 +136,11 @@ fn is_fapolicyd_active() -> PyResult<bool> {
 }
 
 pub(crate) fn conf_to_text(db: &conf::DB) -> String {
-    let empty = "".to_string();
-    db.iter().fold(String::new(), |x, y| {
-        let txt: &dyn Display = match y {
-            Line::Valid(tok) => tok,
-            Line::Invalid(_, txt) => txt,
-            Line::Malformed(txt) => txt,
-            Line::Duplicate(tok) => tok,
-            Line::Comment(txt) => txt,
-            Line::BlankLine => &empty,
-        };
-        if x.is_empty() {
-            format!("{}", txt)
-        } else {
-            format!("{}\n{}", x, txt)
-        }
-    })
+    db.iter()
+        .fold(String::new(), |acc, line| match acc.as_str() {
+            "" => format!("{line}"),
+            _ => format!("{acc}\n{line}"),
+        })
 }
 
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {

@@ -47,11 +47,15 @@ fn lines(src: Vec<String>) -> Result<DB, Error> {
         } else {
             match parse::token(s) {
                 Ok(v) => lines.push(Line::Valid(v)),
-                Err((lhs, rhs, Error::InvalidLhs(_))) => {
-                    lines.push(Line::Invalid(lhs.to_string(), rhs.to_string()))
-                }
+                Err((lhs, rhs, Error::InvalidLhs(_))) => lines.push(Line::Invalid {
+                    k: lhs.to_string(),
+                    v: rhs.to_string(),
+                }),
                 Err((v, _, Error::MalformedConfig)) => lines.push(Line::Malformed(v.to_string())),
-                Err((lhs, rhs, _)) => lines.push(Line::Invalid(lhs.to_string(), rhs.to_string())),
+                Err((lhs, rhs, _)) => lines.push(Line::Invalid {
+                    k: lhs.to_string(),
+                    v: rhs.to_string(),
+                }),
             };
             skip_blank = false;
         }
