@@ -26,7 +26,7 @@ pub fn file(path: PathBuf) -> Result<DB, Error> {
 }
 
 pub fn mem(txt: &str) -> Result<DB, Error> {
-    lines(txt.split("\n").map(|s| s.to_string()).collect())
+    lines(txt.split('\n').map(|s| s.to_string()).collect())
 }
 
 fn lines(src: Vec<String>) -> Result<DB, Error> {
