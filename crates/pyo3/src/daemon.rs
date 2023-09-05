@@ -8,9 +8,12 @@
 
 use crate::system::PySystem;
 use fapolicy_daemon::conf;
+use fapolicy_daemon::conf::ops::Changeset;
+use fapolicy_daemon::conf::with_error_message;
 use fapolicy_daemon::fapolicyd::Version;
 use fapolicy_daemon::svc::State::{Active, Inactive};
 use fapolicy_daemon::svc::{wait_for_service, Handle};
+use pyo3::exceptions;
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
 
@@ -143,6 +146,52 @@ pub(crate) fn conf_to_text(db: &conf::DB) -> String {
         })
 }
 
+/// A mutable collection of rule changes
+#[pyclass(module = "daemon", name = "ConfigChangeset")]
+#[derive(Default, Clone)]
+pub struct PyChangeset {
+    rs: Changeset,
+}
+
+impl From<Changeset> for PyChangeset {
+    fn from(rs: Changeset) -> Self {
+        Self { rs }
+    }
+}
+
+impl From<PyChangeset> for Changeset {
+    fn from(py: PyChangeset) -> Self {
+        py.rs
+    }
+}
+
+#[pymethods]
+impl PyChangeset {
+    #[new]
+    pub fn new() -> Self {
+        PyChangeset::default()
+    }
+
+    pub fn parse(&mut self, text: &str) -> PyResult<()> {
+        match self.rs.set(text.trim()) {
+            Ok(_) => Ok(()),
+            Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{:?}", e))),
+        }
+    }
+
+    pub fn text(&self) -> Option<&str> {
+        self.rs.src().map(|s| &**s)
+    }
+}
+
+#[pyfunction]
+fn conf_text_error_check(txt: &str) -> Option<String> {
+    match with_error_message(txt) {
+        Ok(_) => None,
+        Err(s) => Some(s),
+    }
+}
+
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyHandle>()?;
     m.add_function(wrap_pyfunction!(fapolicyd_version, m)?)?;
@@ -150,6 +199,7 @@ pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(stop_fapolicyd, m)?)?;
     m.add_function(wrap_pyfunction!(rollback_fapolicyd, m)?)?;
     m.add_function(wrap_pyfunction!(is_fapolicyd_active, m)?)?;
+    m.add_function(wrap_pyfunction!(conf_text_error_check, m)?)?;
     Ok(())
 }
 

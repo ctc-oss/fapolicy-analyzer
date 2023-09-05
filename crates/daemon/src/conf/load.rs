@@ -18,6 +18,10 @@ pub fn mem(txt: &str) -> Result<DB, Error> {
     read::mem(txt)
 }
 
+pub fn with_error_message(txt: &str) -> Result<DB, String> {
+    mem(txt).map_err(|e| e.to_string())
+}
+
 #[cfg(test)]
 mod test {
     use super::*;

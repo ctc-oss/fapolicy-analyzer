@@ -11,9 +11,11 @@ mod db;
 pub mod error;
 pub mod key;
 mod load;
+pub mod ops;
 mod parse;
 mod read;
 pub mod write;
 
 pub use db::*;
 pub use load::file as from_file;
+pub use load::with_error_message;
