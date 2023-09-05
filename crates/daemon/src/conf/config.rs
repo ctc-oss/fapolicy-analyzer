@@ -76,7 +76,7 @@ impl From<&DB> for Config {
         for line in value.iter() {
             match line {
                 Line::Valid(tok) => cfg.apply_ok(tok.clone()),
-                Line::Invalid(tok, txt) => cfg.apply_err(tok, txt),
+                Line::Invalid { k, v } => cfg.apply_err(k, v),
                 Line::Duplicate(tok) => cfg.apply_ok(tok.clone()),
                 _ => {}
             }
@@ -131,25 +131,25 @@ impl Config {
         }
     }
 
-    pub fn apply_err(&mut self, tok: &str, txt: &str) {
+    pub fn apply_err(&mut self, k: &str, v: &str) {
         use Entry::Invalid;
-        match tok {
-            "permissive" => self.permissive = Invalid(txt.to_string()),
-            "nice_val" => self.nice_val = Invalid(txt.to_string()),
-            "q_size" => self.q_size = Invalid(txt.to_string()),
-            "uid" => self.uid = Invalid(txt.to_string()),
-            "gid" => self.gid = Invalid(txt.to_string()),
-            "do_stat_report" => self.do_stat_report = Invalid(txt.to_string()),
-            "detailed_report" => self.detailed_report = Invalid(txt.to_string()),
-            "db_max_size" => self.db_max_size = Invalid(txt.to_string()),
-            "subj_cache_size" => self.subj_cache_size = Invalid(txt.to_string()),
-            "obj_cache_size" => self.obj_cache_size = Invalid(txt.to_string()),
-            "watch_fs" => self.watch_fs = Invalid(txt.to_string()),
-            "trust" => self.trust = Invalid(txt.to_string()),
-            "integrity" => self.integrity = Invalid(txt.to_string()),
-            "syslog_format" => self.syslog_format = Invalid(txt.to_string()),
-            "rpm_sha256_only" => self.rpm_sha256_only = Invalid(txt.to_string()),
-            "allow_filesystem_mark" => self.allow_filesystem_mark = Invalid(txt.to_string()),
+        match k {
+            "permissive" => self.permissive = Invalid(v.to_string()),
+            "nice_val" => self.nice_val = Invalid(v.to_string()),
+            "q_size" => self.q_size = Invalid(v.to_string()),
+            "uid" => self.uid = Invalid(v.to_string()),
+            "gid" => self.gid = Invalid(v.to_string()),
+            "do_stat_report" => self.do_stat_report = Invalid(v.to_string()),
+            "detailed_report" => self.detailed_report = Invalid(v.to_string()),
+            "db_max_size" => self.db_max_size = Invalid(v.to_string()),
+            "subj_cache_size" => self.subj_cache_size = Invalid(v.to_string()),
+            "obj_cache_size" => self.obj_cache_size = Invalid(v.to_string()),
+            "watch_fs" => self.watch_fs = Invalid(v.to_string()),
+            "trust" => self.trust = Invalid(v.to_string()),
+            "integrity" => self.integrity = Invalid(v.to_string()),
+            "syslog_format" => self.syslog_format = Invalid(v.to_string()),
+            "rpm_sha256_only" => self.rpm_sha256_only = Invalid(v.to_string()),
+            "allow_filesystem_mark" => self.allow_filesystem_mark = Invalid(v.to_string()),
             _unsupported => {}
         }
     }

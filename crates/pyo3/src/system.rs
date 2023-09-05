@@ -101,6 +101,12 @@ impl PySystem {
         self.rs.apply_rule_changes(change.into()).into()
     }
 
+    /// Apply the changeset to the state of this System, produces a new System
+    fn apply_config_changes(&self, change: daemon::PyChangeset) -> PySystem {
+        log::debug!("apply_rule_changes");
+        self.rs.apply_config_changes(change.into()).into()
+    }
+
     /// Update the host system with this state of this System and signal fapolicyd to reload trust
     pub fn deploy(&self) -> PyResult<()> {
         log::debug!("deploy");
@@ -167,6 +173,7 @@ impl PySystem {
     }
 
     fn config_text(&self) -> String {
+        log::debug!("config_text");
         daemon::conf_to_text(&self.rs.daemon_config)
     }
 
