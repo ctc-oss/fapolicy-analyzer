@@ -6,10 +6,12 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+pub mod conf;
 pub mod error;
 pub mod fapolicyd;
 pub mod profiler;
 pub mod svc;
 pub mod version;
 
+pub use conf::config::Config;
 pub use version::fapolicyd_version as version;

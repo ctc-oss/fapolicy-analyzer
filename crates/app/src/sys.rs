@@ -14,11 +14,11 @@ use serde::Serialize;
 use thiserror::Error;
 
 use fapolicy_daemon::fapolicyd::{
-    RPM_DB_PATH, RULES_FILE_PATH, TRUST_DIR_PATH, TRUST_FILE_PATH, TRUST_LMDB_PATH,
+    CONFIG_FILE_PATH, RPM_DB_PATH, RULES_FILE_PATH, TRUST_DIR_PATH, TRUST_FILE_PATH,
+    TRUST_LMDB_PATH,
 };
 
 use crate::app::State;
-use crate::sys::Error::{WriteAncillaryFail, WriteRulesFail};
 
 #[derive(Error, Debug)]
 pub enum Error {
@@ -26,11 +26,22 @@ pub enum Error {
     WriteAncillaryFail(io::Error),
     #[error("Failed to write rules; {0}")]
     WriteRulesFail(io::Error),
+    #[error("Failed to write fapolicyd.conf; {0}")]
+    WriteConfFail(io::Error),
     #[error("{0}")]
     DaemonError(#[from] fapolicy_daemon::error::Error),
 }
 
 pub fn deploy_app_state(state: &State) -> Result<(), Error> {
+    use Error::*;
+
+    // write fapolicyd conf
+    fapolicy_daemon::conf::write::db(
+        &state.daemon_config,
+        &PathBuf::from(&state.config.system.config_file_path),
+    )
+    .map_err(WriteConfFail)?;
+
     // write rules model
     fapolicy_rules::write::db(
         &state.rules_db,
@@ -79,6 +90,10 @@ pub struct Config {
     // syslog messages file path
     #[serde(default = "syslog_file_path")]
     pub syslog_file_path: String,
+
+    // fapolicyd.conf path
+    #[serde(default = "daemon_conf_path")]
+    pub config_file_path: String,
 }
 
 impl Default for Config {
@@ -90,6 +105,7 @@ impl Default for Config {
             trust_dir_path: TRUST_DIR_PATH.to_string(),
             trust_file_path: TRUST_FILE_PATH.to_string(),
             syslog_file_path: RHEL_SYSLOG_LOG_FILE_PATH.to_string(),
+            config_file_path: CONFIG_FILE_PATH.to_string(),
         }
     }
 }
@@ -120,4 +136,8 @@ fn trust_file_path() -> String {
 
 fn syslog_file_path() -> String {
     RHEL_SYSLOG_LOG_FILE_PATH.into()
+}
+
+fn daemon_conf_path() -> String {
+    CONFIG_FILE_PATH.into()
 }

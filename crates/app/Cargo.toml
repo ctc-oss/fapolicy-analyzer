@@ -2,7 +2,7 @@
 name = "fapolicy-app"
 description = "Application state management components"
 license = "MPL-2.0"
-version = "0.4.1"
+version = "0.4.2"
 edition = "2018"
 
 [dependencies]
@@ -15,3 +15,7 @@ fapolicy-analyzer = { version = "*", path = "../analyzer" }
 fapolicy-daemon = { version = "*", path = "../daemon" }
 fapolicy-rules = { version = "*", path = "../rules" }
 fapolicy-trust = { version = "*", path = "../trust" }
+
+[features]
+default = []
+xdg = []

@@ -7,9 +7,13 @@
  */
 
 use crate::system::PySystem;
+use fapolicy_daemon::conf;
+use fapolicy_daemon::conf::ops::Changeset;
+use fapolicy_daemon::conf::with_error_message;
 use fapolicy_daemon::fapolicyd::Version;
 use fapolicy_daemon::svc::State::{Active, Inactive};
 use fapolicy_daemon::svc::{wait_for_service, Handle};
+use pyo3::exceptions;
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
 
@@ -134,6 +138,60 @@ fn is_fapolicyd_active() -> PyResult<bool> {
         .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
 }
 
+pub(crate) fn conf_to_text(db: &conf::DB) -> String {
+    db.iter()
+        .fold(String::new(), |acc, line| match acc.as_str() {
+            "" => format!("{line}"),
+            _ => format!("{acc}\n{line}"),
+        })
+}
+
+/// A mutable collection of rule changes
+#[pyclass(module = "daemon", name = "ConfigChangeset")]
+#[derive(Default, Clone)]
+pub struct PyChangeset {
+    rs: Changeset,
+}
+
+impl From<Changeset> for PyChangeset {
+    fn from(rs: Changeset) -> Self {
+        Self { rs }
+    }
+}
+
+impl From<PyChangeset> for Changeset {
+    fn from(py: PyChangeset) -> Self {
+        py.rs
+    }
+}
+
+#[pymethods]
+impl PyChangeset {
+    #[new]
+    pub fn new() -> Self {
+        PyChangeset::default()
+    }
+
+    pub fn parse(&mut self, text: &str) -> PyResult<()> {
+        match self.rs.set(text.trim()) {
+            Ok(_) => Ok(()),
+            Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{:?}", e))),
+        }
+    }
+
+    pub fn text(&self) -> Option<&str> {
+        self.rs.src().map(|s| &**s)
+    }
+}
+
+#[pyfunction]
+fn conf_text_error_check(txt: &str) -> Option<String> {
+    match with_error_message(txt) {
+        Ok(_) => None,
+        Err(s) => Some(s),
+    }
+}
+
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyHandle>()?;
     m.add_function(wrap_pyfunction!(fapolicyd_version, m)?)?;
@@ -141,5 +199,47 @@ pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(stop_fapolicyd, m)?)?;
     m.add_function(wrap_pyfunction!(rollback_fapolicyd, m)?)?;
     m.add_function(wrap_pyfunction!(is_fapolicyd_active, m)?)?;
+    m.add_function(wrap_pyfunction!(conf_text_error_check, m)?)?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::daemon::conf_to_text;
+    use fapolicy_daemon::conf::config::ConfigToken::{DoStatReport, Permissive};
+    use fapolicy_daemon::conf::Line::*;
+    use fapolicy_daemon::conf::DB;
+
+    #[test]
+    fn test_conf_to_text_blank_lines() {
+        let f: DB = vec![BlankLine].into();
+        assert_eq!(conf_to_text(&f), "".to_string());
+
+        let f: DB = vec![Comment("foo".to_string()), BlankLine].into();
+        assert_eq!(conf_to_text(&f), "foo\n".to_string());
+    }
+
+    #[test]
+    fn test_conf_to_text_malformed_single() {
+        let f: DB = vec![Malformed("Foo".to_string())].into();
+        assert_eq!(conf_to_text(&f), "Foo".to_string())
+    }
+
+    #[test]
+    fn test_conf_to_text_malformed_multi() {
+        let s = "Foo".to_string();
+        let f: DB = vec![Malformed(s.clone()), Malformed(s)].into();
+        assert_eq!(conf_to_text(&f), "Foo\nFoo".to_string())
+    }
+
+    #[test]
+    fn test_conf_to_text_valid_multi() {
+        let a = Valid(Permissive(true));
+        let b = Valid(DoStatReport(false));
+        let f: DB = vec![a, b].into();
+        assert_eq!(
+            conf_to_text(&f),
+            "permissive=1\ndo_stat_report=0".to_string()
+        )
+    }
 }

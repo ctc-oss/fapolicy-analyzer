@@ -24,4 +24,6 @@ pub enum Error {
     AnalyzerError(#[from] fapolicy_analyzer::error::Error),
     #[error("XDG config error: {0}")]
     ConfigError(#[from] ConfyError),
+    #[error("fapolicyd config error: {0}")]
+    DaemonConfigError(#[from] fapolicy_daemon::conf::error::Error),
 }

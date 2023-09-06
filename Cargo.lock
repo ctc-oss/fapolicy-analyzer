@@ -306,7 +306,7 @@ dependencies = [
 
 [[package]]
 name = "fapolicy-app"
-version = "0.4.1"
+version = "0.4.2"
 dependencies = [
  "confy",
  "directories 4.0.1",
@@ -336,8 +336,9 @@ dependencies = [
 
 [[package]]
 name = "fapolicy-daemon"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
+ "assert_matches",
  "dbus",
  "fapolicy-rules",
  "fapolicy-trust",
@@ -350,7 +351,7 @@ dependencies = [
 
 [[package]]
 name = "fapolicy-pyo3"
-version = "0.4.2"
+version = "0.4.3"
 dependencies = [
  "chrono",
  "fapolicy-analyzer",
