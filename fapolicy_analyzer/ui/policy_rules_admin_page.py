@@ -57,7 +57,6 @@ import time
 
 
 def time_format_config_dlg():
-
     dlgTimeFormatConfig = Gtk.Dialog(title=TIME_FORMAT_CONFIG_TITLE)
     dlgTimeFormatConfig.add_buttons(Gtk.STOCK_OK, Gtk.ResponseType.OK)
 
@@ -298,7 +297,6 @@ class PolicyRulesAdminPage(UIConnectedWidget, UIPage):
         return self.__users_loading or self.__groups_loading or self.__events_loading
 
     def __populate_acls(self, users=None, groups=None):
-
         if self.__is_any_data_loading() or not self.__log:
             return
 

@@ -117,7 +117,6 @@ class SubjectList(SearchableList):
         return [trustColumn, accessColumn, fileColumn]
 
     def _trust_markup(self, subject):
-
         status = subject.trust_status.lower()
         trust = subject.trust.lower()
         if not status == "t":
@@ -170,7 +169,6 @@ class SubjectList(SearchableList):
         )
 
     def __markup(self, value, options):
-
         idx = options.index(value) if value in options else -1
         return " / ".join(
             [f"<u><b>{o}</b></u>" if i == idx else o for i, o in enumerate(options)]

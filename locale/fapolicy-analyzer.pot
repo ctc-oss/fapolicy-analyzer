@@ -7,18 +7,18 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: fapolicy-analyzer 1.1.0+12.g70e1681.dirty\n"
+"Project-Id-Version: fapolicy-analyzer 0.0.0+403.g6c629a6.dirty\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-09-01 09:07-0400\n"
+"POT-Creation-Date: 2023-09-02 18:23-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.11.0\n"
+"Generated-By: Babel 2.12.1\n"
 
-#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:116
+#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:115
 #: fapolicy_analyzer/ui/system_trust_database_admin.py:138
 msgid ""
 "File: {trust.path}\n"
@@ -26,7 +26,7 @@ msgid ""
 "SHA256: {trust.hash}"
 msgstr ""
 
-#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:126
+#: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:125
 #: fapolicy_analyzer/ui/system_trust_database_admin.py:147
 msgid ""
 "{fs.stat(trust.path)}\n"
@@ -56,7 +56,7 @@ msgstr ""
 msgid "Reverting to previous settings in {i+1} seconds"
 msgstr ""
 
-#: fapolicy_analyzer/ui/main_window.py:306
+#: fapolicy_analyzer/ui/main_window.py:305
 msgid ""
 "An error occurred trying to open the session file, "
 "{self.strSessionFilename}"
@@ -66,7 +66,7 @@ msgstr ""
 msgid "{len(deleted)} file{plural(len(deleted))[0]} cannot be found on disk"
 msgstr ""
 
-#: fapolicy_analyzer/ui/session_manager.py:138
+#: fapolicy_analyzer/ui/session_manager.py:137
 msgid "Failed to load edit session from file {strJsonFile}"
 msgstr ""
 
@@ -445,18 +445,21 @@ msgid ""
 "\n"
 "3. The rule file(s) location is incorrectly specified in\n"
 "$(HOME)/.config/fapolicy-analyzer/fapolicy-analyzer.toml\n"
+"\n"
+"4. The user does not have appropriate privileges to\n"
+"access or create the log or config file.\n"
 "    "
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:195
+#: fapolicy_analyzer/ui/strings.py:198
 msgid "Error applying changes"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:196
+#: fapolicy_analyzer/ui/strings.py:199
 msgid "Unsaved Rules Changes"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:197
+#: fapolicy_analyzer/ui/strings.py:200
 msgid ""
 "You have unsaved changes to the rules. If you deploy, your changes will "
 "be lost.\n"
@@ -464,47 +467,47 @@ msgid ""
 "Would you like to continue deploying?"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:203
+#: fapolicy_analyzer/ui/strings.py:206
 msgid "Filtering is disabled during trust loading"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:207
+#: fapolicy_analyzer/ui/strings.py:210
 msgid "File is untrusted in the Ancillary Trust Database"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:208
+#: fapolicy_analyzer/ui/strings.py:211
 msgid "File is untrusted in the System Trust Database"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:209
+#: fapolicy_analyzer/ui/strings.py:212
 msgid "File is trusted in the Ancillary Trust Database"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:210
+#: fapolicy_analyzer/ui/strings.py:213
 msgid "File is trusted in the System Trust Database"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:211
+#: fapolicy_analyzer/ui/strings.py:214
 msgid "File trust is unknown"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:212
+#: fapolicy_analyzer/ui/strings.py:215
 msgid "File access fully allowed"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:213
+#: fapolicy_analyzer/ui/strings.py:216
 msgid "File access partially allowed"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:214
+#: fapolicy_analyzer/ui/strings.py:217
 msgid "File access denied"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:215
+#: fapolicy_analyzer/ui/strings.py:218
 msgid "Syslog Format Check"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:216
+#: fapolicy_analyzer/ui/strings.py:219
 msgid ""
 "\n"
 "No event time found, time filtering will not work.\n"
@@ -515,11 +518,11 @@ msgid ""
 "    "
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:225
+#: fapolicy_analyzer/ui/strings.py:228
 msgid "There are syntax errors in the rule editor."
 msgstr ""
 
-#: fapolicy_analyzer/ui/trust_file_list.py:170
+#: fapolicy_analyzer/ui/trust_file_list.py:169
 #, python-format
 msgid "Loading trust {pct}% complete..."
 msgstr ""

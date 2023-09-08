@@ -32,7 +32,6 @@ def handle_add_todo(state: Sequence[TodoItem], action: Action) -> Sequence[TodoI
 
 
 def handle_toggle_todo(state: Sequence[TodoItem], action: Action) -> Sequence[TodoItem]:
-
     key = cast(int, action.payload)
 
     return [
