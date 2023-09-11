@@ -39,12 +39,16 @@ def handle_request_config_text(state: ConfigTextState, _: Action) -> ConfigTextS
     return _create_state(state, loading=True, error=None)
 
 
-def handle_received_config_text(state: ConfigTextState, action: Action) -> ConfigTextState:
+def handle_received_config_text(
+    state: ConfigTextState, action: Action
+) -> ConfigTextState:
     payload = cast(str, action.payload)
     return _create_state(state, config_text=payload, error=None, loading=False)
 
 
-def handle_modify_config_text(state: ConfigTextState, action: Action) -> ConfigTextState:
+def handle_modify_config_text(
+    state: ConfigTextState, action: Action
+) -> ConfigTextState:
     payload = cast(str, action.payload)
     return _create_state(state, modified_config_text=payload, error=None, loading=False)
 

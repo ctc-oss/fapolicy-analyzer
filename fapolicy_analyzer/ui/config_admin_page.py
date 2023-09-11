@@ -12,15 +12,15 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from typing import Any
-from fapolicy_analyzer import System
+from typing import Any, Sequence
 from fapolicy_analyzer.ui.actions import (
     modify_config_text,
     request_config_text,
 )
+from fapolicy_analyzer.ui.changeset_wrapper import Changeset
 from fapolicy_analyzer.ui.config_text_view import ConfigTextView
 from fapolicy_analyzer.ui.config_status_info import ConfigStatusInfo
-from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
+from fapolicy_analyzer.ui.ui_page import UIPage
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 
 # from fapolicy_analyzer.ui.actions import ()
@@ -58,8 +58,8 @@ class ConfigAdminPage(UIConnectedWidget):
         self.__load_config()
 
     def __load_config(self):
-            self.__loading_text = True
-            dispatch(request_config_text())
+        self.__loading_text = True
+        dispatch(request_config_text())
 
     def on_next_system(self, system: Any):
         changesetState = system.get("changesets")
