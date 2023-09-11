@@ -94,6 +94,3 @@ class EditableTextView(UIBuilderWidget, Events):
         self._buffer.begin_not_undoable_action()
         self._buffer.set_text(text)
         self._buffer.end_not_undoable_action()
-
-    # def get_rules(self) -> str:
-    #     return self.__get_text()

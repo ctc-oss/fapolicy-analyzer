@@ -14,6 +14,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from typing import Any
 from fapolicy_analyzer import System
+from fapolicy_analyzer.ui.actions import (
+    modify_config_text,
+    request_config_text,
+)
 from fapolicy_analyzer.ui.config_text_view import ConfigTextView
 from fapolicy_analyzer.ui.config_status_info import ConfigStatusInfo
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
@@ -34,11 +38,12 @@ class ConfigAdminPage(UIConnectedWidget):
         UIConnectedWidget.__init__(self, features=features)
         actions = {}
         UIPage.__init__(self, actions)
-
+        self.__loading_text: bool = False
+        self.__config_text: str = ""
+        self.__changesets: Sequence[Changeset] = []
         self.__modified_config_text: str = ""
         self.__config_validated: bool = True
         self.__init_child_widgets()
-        self._text_view.config_changed += self.on_text_view_config_changed
 
     def __init_child_widgets(self):
         self._text_view: ConfigTextView = ConfigTextView()
@@ -50,12 +55,32 @@ class ConfigAdminPage(UIConnectedWidget):
         self.__status_info = ConfigStatusInfo()
         self.get_object("configStatusFrame").add(self.__status_info.get_ref())
 
+        self.__load_config()
+
+    def __load_config(self):
+            self.__loading_text = True
+            dispatch(request_config_text())
+
     def on_next_system(self, system: Any):
-        config_text = system.get("system").system.config_text()
-        self._text_view.render_text(config_text)
-        self.__status_info.render_config_status(config_text)
+        changesetState = system.get("changesets")
+        text_state = system.get("config_text")
+        if self.__changesets != changesetState.changesets:
+            self.__changesets = changesetState.changesets
+            self.__config_text = ""
+            self.__load_config()
+
+        if (
+            self.__loading_text
+            and not text_state.loading
+            and self.__config_text != text_state.config_text
+        ):
+
+            self.__loading_text = False
+            self.__config_text = text_state.config_text
+            self._text_view.render_text(self.__config_text)
+            self.__rules_validated = True
 
     def on_text_view_config_changed(self, config: str):
         self.__modified_config_text = config
         self.__config_validated = False
-        # dispatch(modify_config_text(config))
+        dispatch(modify_config_text(config))
