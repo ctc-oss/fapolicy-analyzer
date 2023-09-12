@@ -12,15 +12,16 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from typing import Any, Sequence
+from typing import Any, Sequence, Tuple
 from fapolicy_analyzer.ui.actions import (
+    apply_changesets,
     modify_config_text,
     request_config_text,
 )
-from fapolicy_analyzer.ui.changeset_wrapper import Changeset
+from fapolicy_analyzer.ui.changeset_wrapper import Changeset, ConfigChangeset
 from fapolicy_analyzer.ui.config_text_view import ConfigTextView
 from fapolicy_analyzer.ui.config_status_info import ConfigStatusInfo
-from fapolicy_analyzer.ui.ui_page import UIPage
+from fapolicy_analyzer.ui.ui_page import UIPage, UIAction
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 
 # from fapolicy_analyzer.ui.actions import ()
@@ -36,7 +37,17 @@ class ConfigAdminPage(UIConnectedWidget):
             {get_system_feature(): {"on_next": self.on_next_system}},
         ]
         UIConnectedWidget.__init__(self, features=features)
-        actions = {}
+        actions = {
+            "config": [
+                UIAction(
+                    name="Save",
+                    tooltip="Save Config",
+                    icon="document-save",
+                    signals={"clicked": self.on_save_clicked},
+                    sensitivity_func=self.__config_dirty,
+                ),
+            ],
+        }
         UIPage.__init__(self, actions)
         self.__loading_text: bool = False
         self.__config_text: str = ""
@@ -61,6 +72,57 @@ class ConfigAdminPage(UIConnectedWidget):
         self.__loading_text = True
         dispatch(request_config_text())
 
+    def on_save_clicked(self, *args):
+        changeset, valid = self.__build_and_validate_changeset(show_notifications=False)
+        print(changeset, valid)
+        if valid:
+            self.__saving = True
+            dispatch(apply_changesets(changeset))
+        else:
+            overrideDialog = self.get_object("saveOverrideDialog")
+            self.get_object("overrideText").set_text(RULES_OVERRIDE_MESSAGE)
+            resp = overrideDialog.run()
+            if resp == Gtk.ResponseType.OK:
+                self.__saving = True
+                dispatch(apply_changesets(changeset))
+            else:
+                self.__status_info.render_text_status(changeset.text())
+            overrideDialog.hide()
+
+    def __config_dirty(self) -> bool:
+        print (
+            bool(self.__modified_config_text)
+            and self.__modified_config_text != self.__config_text
+        )
+        return (
+            bool(self.__modified_config_text)
+            and self.__modified_config_text != self.__config_text
+        )
+
+
+    def __build_and_validate_changeset(
+        self, show_notifications=True
+    ) -> Tuple[ConfigChangeset, bool]:
+        changeset = ConfigChangeset()
+        valid = True
+
+        try:
+            changeset.parse(self.__modified_config_text)
+        except Exception as e:
+            logging.error("Error setting changeset config: %s", e)
+            dispatch(
+                add_notification(
+                    CONFIG_CHANGESET_PARSE_ERROR,
+                    NotificationType.ERROR,
+                )
+            )
+            return changeset, False
+
+        self.__config_validated = True
+        #self.__clear_validation_notifications()
+
+        return changeset, valid
+
     def on_next_system(self, system: Any):
         changesetState = system.get("changesets")
         text_state = system.get("config_text")
@@ -78,7 +140,7 @@ class ConfigAdminPage(UIConnectedWidget):
             self.__loading_text = False
             self.__config_text = text_state.config_text
             self._text_view.render_text(self.__config_text)
-            self.__rules_validated = True
+            self.__config_validated = True
 
     def on_text_view_config_changed(self, config: str):
         self.__modified_config_text = config

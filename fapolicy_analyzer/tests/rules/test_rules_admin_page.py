@@ -176,7 +176,7 @@ def test_handles_rules_exception(mock_dispatch, mock_system_feature):
 def test_populates_text_editor(mock_system_feature, mocker):
     mock_text_renderer = MagicMock()
     mocker.patch(
-        "fapolicy_analyzer.ui.rules.rules_admin_page.RulesTextView.render_rules",
+        "fapolicy_analyzer.ui.rules.rules_admin_page.RulesTextView.render_text",
         mock_text_renderer,
     )
     mock_system_feature.on_next(
