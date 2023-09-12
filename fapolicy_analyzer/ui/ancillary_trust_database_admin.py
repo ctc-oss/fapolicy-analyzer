@@ -110,7 +110,6 @@ class AncillaryTrustDatabaseAdmin(UIConnectedWidget):
 
         trust = trusts[-1]
         if isinstance(trust, Trust):
-
             self.trustFileDetails.set_in_database_view(
                 f(
                     _(

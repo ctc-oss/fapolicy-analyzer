@@ -189,6 +189,9 @@ populate the trust database.
 
 3. The rule file(s) location is incorrectly specified in
 $(HOME)/.config/fapolicy-analyzer/fapolicy-analyzer.toml
+
+4. The user does not have appropriate privileges to
+access or create the log or config file.
     """
 )
 

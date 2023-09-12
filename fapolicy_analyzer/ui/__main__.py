@@ -15,16 +15,19 @@
 
 import sys
 import logging
+
+from fapolicy_analyzer import init_native_logging
 from fapolicy_analyzer.util.xdg_utils import (
-    xdg_state_dir_prefix,
-    xdg_data_dir_prefix,
+    app_data_dir_prefix,
+    app_state_dir_prefix,
 )
 
-gf_handler = logging.FileHandler(xdg_data_dir_prefix("fapolicy-analyzer.log"), mode="w")
+gf_handler = logging.FileHandler(app_data_dir_prefix("fapolicy-analyzer.log"), mode="w")
 gs_handler = logging.StreamHandler()
 logging.basicConfig(level=logging.DEBUG, handlers=[gf_handler, gs_handler])
 gs_handler.setLevel(logging.WARNING)
 gf_handler.setLevel(logging.INFO)
+init_native_logging()
 
 import argparse
 import gi
@@ -113,7 +116,7 @@ def _parse_cmdline():
         sessionManager.set_autosave_filename(args.session)
     else:
         sessionManager.set_autosave_filename(
-            xdg_state_dir_prefix("FaCurrentSession.tmp")
+            app_state_dir_prefix("fapolicy-analyzer.tmp")
         )
 
 

@@ -114,7 +114,6 @@ class SessionManager:
 
     # ######################## Edit Session Mgmt ############################
     def save_edit_session(self, data: Sequence[Changeset], strJsonFile: str):
-
         # Convert changeset list to list of dicts containing path/action pairs
         dictPA = [c.serialize() for c in data]
         logging.debug("Path/Action Dict: {}".format(dictPA))
