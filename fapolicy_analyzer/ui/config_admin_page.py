@@ -74,7 +74,6 @@ class ConfigAdminPage(UIConnectedWidget):
 
     def on_save_clicked(self, *args):
         changeset, valid = self.__build_and_validate_changeset(show_notifications=False)
-        print(changeset, valid)
         if valid:
             self.__saving = True
             dispatch(apply_changesets(changeset))
@@ -90,10 +89,6 @@ class ConfigAdminPage(UIConnectedWidget):
             overrideDialog.hide()
 
     def __config_dirty(self) -> bool:
-        print (
-            bool(self.__modified_config_text)
-            and self.__modified_config_text != self.__config_text
-        )
         return (
             bool(self.__modified_config_text)
             and self.__modified_config_text != self.__config_text
