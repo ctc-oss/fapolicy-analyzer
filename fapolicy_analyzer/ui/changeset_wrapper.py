@@ -57,6 +57,7 @@ class Changeset(ABC, Generic[T]):
 
             except TypeError:
                 print("Invalid changeset type to deserialize")
+        raise TypeError("Invalid changeset type to deserialize")
 
 
 class ConfigChangeset(Changeset[str]):

@@ -12,8 +12,15 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+import gi
+import logging
+
+
 from typing import Any, Sequence, Tuple
 from fapolicy_analyzer.ui.actions import (
+    NotificationType,
+    add_notification,
     apply_changesets,
     modify_config_text,
     request_config_text,
@@ -21,6 +28,10 @@ from fapolicy_analyzer.ui.actions import (
 from fapolicy_analyzer.ui.changeset_wrapper import Changeset, ConfigChangeset
 from fapolicy_analyzer.ui.config_text_view import ConfigTextView
 from fapolicy_analyzer.ui.config_status_info import ConfigStatusInfo
+from fapolicy_analyzer.ui.strings import (
+    CONFIG_CHANGESET_PARSE_ERROR,
+    CONFIG_OVERRIDE_MESSAGE,
+)
 from fapolicy_analyzer.ui.ui_page import UIPage, UIAction
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 
@@ -29,6 +40,9 @@ from fapolicy_analyzer.ui.store import (
     dispatch,
     get_system_feature,
 )
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk  # isort: skip
 
 
 class ConfigAdminPage(UIConnectedWidget):
@@ -79,7 +93,7 @@ class ConfigAdminPage(UIConnectedWidget):
             dispatch(apply_changesets(changeset))
         else:
             overrideDialog = self.get_object("saveOverrideDialog")
-            self.get_object("overrideText").set_text(RULES_OVERRIDE_MESSAGE)
+            self.get_object("overrideText").set_text(CONFIG_OVERRIDE_MESSAGE)
             resp = overrideDialog.run()
             if resp == Gtk.ResponseType.OK:
                 self.__saving = True
@@ -93,7 +107,6 @@ class ConfigAdminPage(UIConnectedWidget):
             bool(self.__modified_config_text)
             and self.__modified_config_text != self.__config_text
         )
-
 
     def __build_and_validate_changeset(
         self, show_notifications=True
@@ -114,7 +127,7 @@ class ConfigAdminPage(UIConnectedWidget):
             return changeset, False
 
         self.__config_validated = True
-        #self.__clear_validation_notifications()
+        # self.__clear_validation_notifications()
 
         return changeset, valid
 

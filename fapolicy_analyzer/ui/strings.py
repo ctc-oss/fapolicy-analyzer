@@ -226,3 +226,7 @@ replace: "RSYSLOG_FileFormat"
     """
 )
 RULES_OVERRIDE_MESSAGE = _("""There are syntax errors in the rule editor.""")
+CONFIG_OVERRIDE_MESSAGE = _("""There are syntax errors in the config editor.""")
+CONFIG_CHANGESET_PARSE_ERROR = _(
+    "Error parsing the config text. See log for more details."
+)

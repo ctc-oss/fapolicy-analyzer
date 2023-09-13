@@ -53,7 +53,7 @@ def test_handles_bad_language_file(mocker):
         "fapolicy_analyzer.ui.editable_text_view.resources.path",
         return_value="bad path",
     )
-    mock_logger = mocker.patch("fapolicy_analyzer.ui.rules.rules_text_view.logging")
+    mock_logger = mocker.patch("fapolicy_analyzer.ui.editable_text_view.logging")
     widget = RulesTextView()
     assert widget is not None
     mock_logger.warning.assert_has_calls(
