@@ -45,7 +45,7 @@ impl Display for Line {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Line::Valid(tok) => f.write_fmt(format_args!("{tok}")),
-            Line::Invalid { k, v } => f.write_fmt(format_args!("{k}={v}")),
+            Line::Invalid { k, v } => f.write_fmt(format_args!("{k} = {v}")),
             Line::Malformed(txt) => f.write_str(txt),
             Line::Duplicate(tok) => f.write_fmt(format_args!("{tok}")),
             Line::Comment(txt) => f.write_str(txt),
