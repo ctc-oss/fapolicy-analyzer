@@ -13,11 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import gi
 import logging
 
 
-from typing import Any, Sequence, Tuple
+from typing import Any, Optional, Sequence, Tuple
 from fapolicy_analyzer.ui.actions import (
     NotificationType,
     add_notification,
@@ -29,8 +28,9 @@ from fapolicy_analyzer.ui.changeset_wrapper import Changeset, ConfigChangeset
 from fapolicy_analyzer.ui.config_text_view import ConfigTextView
 from fapolicy_analyzer.ui.config_status_info import ConfigStatusInfo
 from fapolicy_analyzer.ui.strings import (
+    APPLY_CHANGESETS_ERROR_MESSAGE,
     CONFIG_CHANGESET_PARSE_ERROR,
-    CONFIG_OVERRIDE_MESSAGE,
+    CONFIG_TEXT_LOAD_ERROR,
 )
 from fapolicy_analyzer.ui.ui_page import UIPage, UIAction
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
@@ -40,9 +40,6 @@ from fapolicy_analyzer.ui.store import (
     dispatch,
     get_system_feature,
 )
-
-gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk  # isort: skip
 
 
 class ConfigAdminPage(UIConnectedWidget):
@@ -69,6 +66,9 @@ class ConfigAdminPage(UIConnectedWidget):
         self.__modified_config_text: str = ""
         self.__config_validated: bool = True
         self.__init_child_widgets()
+        self.__error_text: Optional[str] = None
+        self.__error_config: Optional[str] = None
+        self.__saving: bool = False
 
     def __init_child_widgets(self):
         self._text_view: ConfigTextView = ConfigTextView()
@@ -91,16 +91,6 @@ class ConfigAdminPage(UIConnectedWidget):
         if valid:
             self.__saving = True
             dispatch(apply_changesets(changeset))
-        else:
-            overrideDialog = self.get_object("saveOverrideDialog")
-            self.get_object("overrideText").set_text(CONFIG_OVERRIDE_MESSAGE)
-            resp = overrideDialog.run()
-            if resp == Gtk.ResponseType.OK:
-                self.__saving = True
-                dispatch(apply_changesets(changeset))
-            else:
-                self.__status_info.render_text_status(changeset.text())
-            overrideDialog.hide()
 
     def __config_dirty(self) -> bool:
         return (
@@ -134,12 +124,26 @@ class ConfigAdminPage(UIConnectedWidget):
     def on_next_system(self, system: Any):
         changesetState = system.get("changesets")
         text_state = system.get("config_text")
-        if self.__changesets != changesetState.changesets:
+
+        if self.__saving and changesetState.error:
+            self.__saving = False
+            logging.error(
+                "%s: %s", APPLY_CHANGESETS_ERROR_MESSAGE, changesetState.error
+            )
+            dispatch(
+                add_notification(APPLY_CHANGESETS_ERROR_MESSAGE, NotificationType.ERROR)
+            )
+        elif self.__changesets != changesetState.changesets:
             self.__changesets = changesetState.changesets
             self.__config_text = ""
             self.__load_config()
 
-        if (
+        if not text_state.loading and self.__error_text != text_state.error:
+            self.__error_text = text_state.error
+            self.__loading_text = False
+            logging.error("%s: %s", CONFIG_TEXT_LOAD_ERROR, self.__error_text)
+            dispatch(add_notification(CONFIG_TEXT_LOAD_ERROR, NotificationType.ERROR))
+        elif (
             self.__loading_text
             and not text_state.loading
             and self.__config_text != text_state.config_text
