@@ -240,7 +240,7 @@ mod tests {
         let f: DB = vec![a, b].into();
         assert_eq!(
             conf_to_text(&f),
-            "permissive=1\ndo_stat_report=0".to_string()
+            "permissive = 1\ndo_stat_report = 0".to_string()
         )
     }
 }
