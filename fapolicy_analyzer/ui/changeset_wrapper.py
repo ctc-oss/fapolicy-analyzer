@@ -46,7 +46,7 @@ class Changeset(ABC, Generic[T]):
                 rcs = RuleChangeset()
                 rcs.parse(data)
                 return rcs
-
+            except TypeError:
                 try:
                     ccs = ConfigChangeset()
                     ccs.parse(data)
@@ -54,10 +54,7 @@ class Changeset(ABC, Generic[T]):
 
                 except TypeError:
                     print("Invalid changeset type to deserialize")
-
-            except TypeError:
-                print("Invalid changeset type to deserialize")
-        raise TypeError("Invalid changeset type to deserialize")
+                    raise
 
 
 class ConfigChangeset(Changeset[str]):
