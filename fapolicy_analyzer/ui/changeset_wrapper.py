@@ -56,6 +56,8 @@ class Changeset(ABC, Generic[T]):
                     print("Invalid changeset type to deserialize")
                     raise
 
+        raise TypeError("Invalid changeset type to deserialize")
+
 
 class ConfigChangeset(Changeset[str]):
     def __init__(self):
