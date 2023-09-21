@@ -34,3 +34,5 @@ xs1.parse(txt)
 s2 = s1.apply_config_changes(xs1)
 
 print(s2.config_text())
+
+print(config_difference(s1, s2))
