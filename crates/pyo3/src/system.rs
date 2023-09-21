@@ -193,6 +193,28 @@ impl PySystem {
     }
 }
 
+// todo;; this will become more advanced and based on the config object rather than text
+#[pyfunction]
+fn config_difference(lhs: &PySystem, rhs: &PySystem) -> String {
+    log::debug!("config_difference");
+
+    let ltxt = lhs.config_text();
+    let rtxt = rhs.config_text();
+    let diff = TextDiff::from_lines(&ltxt, &rtxt);
+
+    let mut diff_lines = vec![];
+    for line in diff.iter_all_changes() {
+        let sign = match line.tag() {
+            ChangeTag::Delete => "-",
+            ChangeTag::Insert => "+",
+            ChangeTag::Equal => " ",
+        };
+        diff_lines.push(format!("{}{}", sign, line));
+    }
+    diff_lines.join("")
+}
+
+// todo;; this should become more advanced and be based on rule db rather than text
 #[pyfunction]
 fn rules_difference(lhs: &PySystem, rhs: &PySystem) -> String {
     log::debug!("rules_difference");
@@ -228,6 +250,7 @@ fn checked_system(py: Python) -> PyResult<PySystem> {
 
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PySystem>()?;
+    m.add_function(wrap_pyfunction!(config_difference, m)?)?;
     m.add_function(wrap_pyfunction!(rules_difference, m)?)?;
     m.add_function(wrap_pyfunction!(checked_system, m)?)?;
     Ok(())
