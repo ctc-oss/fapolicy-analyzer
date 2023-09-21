@@ -52,7 +52,6 @@ def epoch_to_string(secsEpoch):
 
 class TrustFileList(SearchableList):
     def __init__(self, trust_func, markup_func=None, *args):
-
         self.__events__ = [
             *super().__events__,
             "files_added",

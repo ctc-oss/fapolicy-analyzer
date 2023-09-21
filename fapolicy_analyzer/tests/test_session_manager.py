@@ -105,18 +105,12 @@ def test_open_edit_session(uut, mock_dispatch, mocker):
     mocker.patch("builtins.open", mock_open(read_data=test_json))
     uut.open_edit_session("foo")
 
-    mock_dispatch.assert_has_calls(
-        [
-            call(InstanceOf(Action) & Attr(type=RESTORE_SYSTEM_CHECKPOINT)),
-            call(InstanceOf(Action) & Attr(type=CLEAR_CHANGESETS)),
-            call(InstanceOf(Action) & Attr(type=APPLY_CHANGESETS)),
-        ]
-    )
+    mock_dispatch.assert_called_with(Attr(type=APPLY_CHANGESETS))
 
     # verify changesets
     expected = test_changes
     # parse changesets to json string to compare
-    args, _ = mock_dispatch.call_args_list[2]
+    args, _ = mock_dispatch.call_args
     actual = [
         {path: action for path, action in c.serialize().items()}
         if isinstance(c, TrustChangeset)
@@ -276,18 +270,12 @@ def test_restore_previous_session(uut_autosave_enabled, autosaved_files, mock_di
     # Convert to sets so that ordering is irrelevant
     assert set(listTmpFiles) == set(autosaved_files)
     assert uut_autosave_enabled.restore_previous_session()
-    mock_dispatch.assert_has_calls(
-        [
-            call(InstanceOf(Action) & Attr(type=RESTORE_SYSTEM_CHECKPOINT)),
-            call(InstanceOf(Action) & Attr(type=CLEAR_CHANGESETS)),
-            call(InstanceOf(Action) & Attr(type=APPLY_CHANGESETS)),
-        ]
-    )
+    mock_dispatch.assert_called_with(Attr(type=APPLY_CHANGESETS))
 
     # verify changesets
     expected = test_changes
     # parse changesets to json string to compare
-    args, _ = mock_dispatch.call_args_list[2]
+    args, _ = mock_dispatch.call_args
     actual = [
         {path: action for path, action in c.serialize().items()}
         if isinstance(c, TrustChangeset)

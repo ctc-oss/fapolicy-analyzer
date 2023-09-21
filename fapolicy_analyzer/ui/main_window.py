@@ -77,7 +77,6 @@ def router(page: PAGE_SELECTION, *data) -> UIPage:
 
 
 class MainWindow(UIConnectedWidget):
-
     __JSON_FILE_FILTERS = [
         (strings.FA_SESSION_FILES_FILTER_LABEL, "*.json"),
         (strings.ANY_FILES_FILTER_LABEL, "*"),

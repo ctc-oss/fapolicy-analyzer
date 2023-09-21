@@ -28,8 +28,6 @@ from fapolicy_analyzer.ui.actions import (
     NotificationType,
     add_notification,
     apply_changesets,
-    clear_changesets,
-    restore_system_checkpoint,
 )
 from fapolicy_analyzer.ui.changeset_wrapper import Changeset
 from fapolicy_analyzer.ui.store import dispatch, get_system_feature
@@ -114,7 +112,6 @@ class SessionManager:
 
     # ######################## Edit Session Mgmt ############################
     def save_edit_session(self, data: Sequence[Changeset], strJsonFile: str):
-
         # Convert changeset list to list of dicts containing path/action pairs
         dictPA = [c.serialize() for c in data]
         logging.debug("Path/Action Dict: {}".format(dictPA))
