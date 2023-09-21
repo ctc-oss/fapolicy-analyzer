@@ -141,14 +141,12 @@ class SessionManager:
                 )
                 return False
 
-        logging.debug("Loaded dict = ", data)
+        logging.debug(f"Loaded dict = {data}")
         changesets = [Changeset.deserialize(d) for d in data]
         logging.debug("SessionManager::open_edit_session():{}".format(changesets))
 
         if changesets:
-            # Deleting current edit session history prior to replacing it.
-            dispatch(restore_system_checkpoint())
-            dispatch(clear_changesets())
+            # Layer changeset on top of existing system changeset (if any)
             dispatch(apply_changesets(*changesets))
         return True
 
