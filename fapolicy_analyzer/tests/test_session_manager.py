@@ -18,16 +18,13 @@ import json
 import os
 import time
 from datetime import datetime as DT
-from unittest.mock import MagicMock, call, mock_open
+from unittest.mock import MagicMock, mock_open
 
 import pytest
-from callee import Attr, EndsWith, InstanceOf, StartsWith
-from fapolicy_analyzer.redux import Action
+from callee import Attr, EndsWith, StartsWith
 from fapolicy_analyzer.ui.actions import (
     ADD_NOTIFICATION,
     APPLY_CHANGESETS,
-    CLEAR_CHANGESETS,
-    RESTORE_SYSTEM_CHECKPOINT,
 )
 from fapolicy_analyzer.ui.changeset_wrapper import RuleChangeset, TrustChangeset
 from fapolicy_analyzer.ui.session_manager import SessionManager
