@@ -71,7 +71,10 @@ fn parse_empty_config() {
 fn parse_bad_config() {
     let db = &from_file("tests/data/bad-values.conf").expect("load");
     let x: Config = db.into();
-    assert_matches!(x.permissive, Entry::Invalid(str) if str == "true")
+    assert_matches!(x.permissive, Entry::Invalid(str) if str == "true");
+
+    // valid values will be parsed even with bad data present
+    assert_matches!(x.db_max_size, Entry::Valid(50));
 }
 
 fn splits(s: &str) -> Vec<String> {

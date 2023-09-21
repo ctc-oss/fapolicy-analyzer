@@ -7,12 +7,13 @@
  */
 
 use crate::conf::config::ConfigToken;
+use std::fmt::{Display, Formatter};
 use std::slice::Iter;
 
 #[derive(Clone, Debug)]
 pub enum Line {
     Valid(ConfigToken),
-    Invalid(String, String),
+    Invalid { k: String, v: String },
     Malformed(String),
     Duplicate(ConfigToken),
     Comment(String),
@@ -37,5 +38,18 @@ impl DB {
 impl From<Vec<Line>> for DB {
     fn from(lines: Vec<Line>) -> Self {
         Self { lines }
+    }
+}
+
+impl Display for Line {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Line::Valid(tok) => f.write_fmt(format_args!("{tok}")),
+            Line::Invalid { k, v } => f.write_fmt(format_args!("{k} = {v}")),
+            Line::Malformed(txt) => f.write_str(txt),
+            Line::Duplicate(tok) => f.write_fmt(format_args!("{tok}")),
+            Line::Comment(txt) => f.write_str(txt),
+            Line::BlankLine => f.write_str(""),
+        }
     }
 }

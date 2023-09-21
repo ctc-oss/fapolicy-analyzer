@@ -1,0 +1,10 @@
+[system]
+rules_file_path = '/etc/fapolicyd/rules.d'
+trust_lmdb_path = '/var/lib/fapolicyd'
+system_trust_path = '/var/lib/rpm'
+trust_dir_path = '/etc/fapolicyd/trust.d'
+trust_file_path = '/etc/fapolicyd/fapolicyd.trust'
+syslog_file_path = '/var/log/messages'
+
+[application]
+data_dir = '/var/lib/fapolicy-analyzer'

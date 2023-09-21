@@ -76,7 +76,7 @@ impl From<&DB> for Config {
         for line in value.iter() {
             match line {
                 Line::Valid(tok) => cfg.apply_ok(tok.clone()),
-                Line::Invalid(tok, txt) => cfg.apply_err(tok, txt),
+                Line::Invalid { k, v } => cfg.apply_err(k, v),
                 Line::Duplicate(tok) => cfg.apply_ok(tok.clone()),
                 _ => {}
             }
@@ -131,25 +131,25 @@ impl Config {
         }
     }
 
-    pub fn apply_err(&mut self, tok: &str, txt: &str) {
+    pub fn apply_err(&mut self, k: &str, v: &str) {
         use Entry::Invalid;
-        match tok {
-            "permissive" => self.permissive = Invalid(txt.to_string()),
-            "nice_val" => self.nice_val = Invalid(txt.to_string()),
-            "q_size" => self.q_size = Invalid(txt.to_string()),
-            "uid" => self.uid = Invalid(txt.to_string()),
-            "gid" => self.gid = Invalid(txt.to_string()),
-            "do_stat_report" => self.do_stat_report = Invalid(txt.to_string()),
-            "detailed_report" => self.detailed_report = Invalid(txt.to_string()),
-            "db_max_size" => self.db_max_size = Invalid(txt.to_string()),
-            "subj_cache_size" => self.subj_cache_size = Invalid(txt.to_string()),
-            "obj_cache_size" => self.obj_cache_size = Invalid(txt.to_string()),
-            "watch_fs" => self.watch_fs = Invalid(txt.to_string()),
-            "trust" => self.trust = Invalid(txt.to_string()),
-            "integrity" => self.integrity = Invalid(txt.to_string()),
-            "syslog_format" => self.syslog_format = Invalid(txt.to_string()),
-            "rpm_sha256_only" => self.rpm_sha256_only = Invalid(txt.to_string()),
-            "allow_filesystem_mark" => self.allow_filesystem_mark = Invalid(txt.to_string()),
+        match k {
+            "permissive" => self.permissive = Invalid(v.to_string()),
+            "nice_val" => self.nice_val = Invalid(v.to_string()),
+            "q_size" => self.q_size = Invalid(v.to_string()),
+            "uid" => self.uid = Invalid(v.to_string()),
+            "gid" => self.gid = Invalid(v.to_string()),
+            "do_stat_report" => self.do_stat_report = Invalid(v.to_string()),
+            "detailed_report" => self.detailed_report = Invalid(v.to_string()),
+            "db_max_size" => self.db_max_size = Invalid(v.to_string()),
+            "subj_cache_size" => self.subj_cache_size = Invalid(v.to_string()),
+            "obj_cache_size" => self.obj_cache_size = Invalid(v.to_string()),
+            "watch_fs" => self.watch_fs = Invalid(v.to_string()),
+            "trust" => self.trust = Invalid(v.to_string()),
+            "integrity" => self.integrity = Invalid(v.to_string()),
+            "syslog_format" => self.syslog_format = Invalid(v.to_string()),
+            "rpm_sha256_only" => self.rpm_sha256_only = Invalid(v.to_string()),
+            "allow_filesystem_mark" => self.allow_filesystem_mark = Invalid(v.to_string()),
             _unsupported => {}
         }
     }
@@ -238,29 +238,130 @@ impl Display for ConfigToken {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         use ConfigToken::*;
         match self {
-            Permissive(v) => f.write_fmt(format_args!("{}={}", Key::Permissive, bstr(v))),
-            NiceVal(v) => f.write_fmt(format_args!("{}={}", Key::NiceVal, v)),
-            QSize(v) => f.write_fmt(format_args!("{}={}", Key::QSize, v)),
-            UID(v) => f.write_fmt(format_args!("{}={}", Key::UID, v)),
-            GID(v) => f.write_fmt(format_args!("{}={}", Key::GID, v)),
-            DoStatReport(v) => f.write_fmt(format_args!("{}={}", Key::DoStatReport, bstr(v))),
-            DetailedReport(v) => f.write_fmt(format_args!("{}={}", Key::DetailedReport, bstr(v))),
-            DbMaxSize(v) => f.write_fmt(format_args!("{}={}", Key::DbMaxSize, v)),
-            SubjCacheSize(v) => f.write_fmt(format_args!("{}={}", Key::SubjCacheSize, v)),
-            ObjCacheSize(v) => f.write_fmt(format_args!("{}={}", Key::ObjCacheSize, v)),
-            WatchFs(v) => f.write_fmt(format_args!("{}={}", Key::WatchFs, v.join(","))),
+            Permissive(v) => f.write_fmt(format_args!("{} = {}", Key::Permissive, bstr(v))),
+            NiceVal(v) => f.write_fmt(format_args!("{} = {}", Key::NiceVal, v)),
+            QSize(v) => f.write_fmt(format_args!("{} = {}", Key::QSize, v)),
+            UID(v) => f.write_fmt(format_args!("{} = {}", Key::UID, v)),
+            GID(v) => f.write_fmt(format_args!("{} = {}", Key::GID, v)),
+            DoStatReport(v) => f.write_fmt(format_args!("{} = {}", Key::DoStatReport, bstr(v))),
+            DetailedReport(v) => f.write_fmt(format_args!("{} = {}", Key::DetailedReport, bstr(v))),
+            DbMaxSize(v) => f.write_fmt(format_args!("{} = {}", Key::DbMaxSize, v)),
+            SubjCacheSize(v) => f.write_fmt(format_args!("{} = {}", Key::SubjCacheSize, v)),
+            ObjCacheSize(v) => f.write_fmt(format_args!("{} = {}", Key::ObjCacheSize, v)),
+            WatchFs(v) => f.write_fmt(format_args!("{} = {}", Key::WatchFs, v.join(","))),
             Trust(v) => f.write_fmt(format_args!(
-                "{}={}",
+                "{} = {}",
                 Key::Trust,
                 v.iter()
                     .map(|v| v.to_string())
                     .collect::<Vec<String>>()
                     .join(",")
             )),
-            Integrity(v) => f.write_fmt(format_args!("{}={}", Key::Integrity, v)),
-            SyslogFormat(v) => f.write_fmt(format_args!("{}={}", Key::SyslogFormat, v.join(","))),
-            RpmSha256Only(v) => f.write_fmt(format_args!("{}={}", Key::RpmSha256Only, bstr(v))),
-            AllowFsMark(v) => f.write_fmt(format_args!("{}={}", Key::AllowFsMark, bstr(v))),
+            Integrity(v) => f.write_fmt(format_args!("{} = {}", Key::Integrity, v)),
+            SyslogFormat(v) => f.write_fmt(format_args!("{} = {}", Key::SyslogFormat, v.join(","))),
+            RpmSha256Only(v) => f.write_fmt(format_args!("{} = {}", Key::RpmSha256Only, bstr(v))),
+            AllowFsMark(v) => f.write_fmt(format_args!("{} = {}", Key::AllowFsMark, bstr(v))),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::conf::config::ConfigToken::*;
+    use crate::conf::config::{IntegritySource, TrustBackend};
+
+    #[test]
+    fn permissive_format() {
+        assert_eq!(Permissive(false).to_string(), "permissive = 0");
+        assert_eq!(Permissive(true).to_string(), "permissive = 1");
+    }
+
+    #[test]
+    fn nice_val_format() {
+        assert_eq!(NiceVal(123).to_string(), "nice_val = 123");
+    }
+
+    #[test]
+    fn q_size_format() {
+        assert_eq!(QSize(123).to_string(), "q_size = 123");
+    }
+
+    #[test]
+    fn uid_format() {
+        assert_eq!(UID("foo".to_string()).to_string(), "uid = foo");
+    }
+
+    #[test]
+    fn gid_format() {
+        assert_eq!(GID("foo".to_string()).to_string(), "gid = foo");
+    }
+
+    #[test]
+    fn do_stat_report_format() {
+        assert_eq!(DoStatReport(false).to_string(), "do_stat_report = 0");
+        assert_eq!(DoStatReport(true).to_string(), "do_stat_report = 1");
+    }
+
+    #[test]
+    fn detailed_report_format() {
+        assert_eq!(DetailedReport(false).to_string(), "detailed_report = 0");
+        assert_eq!(DetailedReport(true).to_string(), "detailed_report = 1");
+    }
+
+    #[test]
+    fn db_max_size_format() {
+        assert_eq!(DbMaxSize(123).to_string(), "db_max_size = 123");
+    }
+
+    #[test]
+    fn subj_cache_format() {
+        assert_eq!(SubjCacheSize(123).to_string(), "subj_cache_size = 123");
+    }
+
+    #[test]
+    fn obj_cache_format() {
+        assert_eq!(ObjCacheSize(123).to_string(), "obj_cache_size = 123");
+    }
+
+    #[test]
+    fn watchfs_format() {
+        assert_eq!(
+            WatchFs(vec!["a,b,c".to_string()]).to_string(),
+            "watch_fs = a,b,c"
+        );
+    }
+
+    #[test]
+    fn trust_format() {
+        use TrustBackend::*;
+        assert_eq!(Trust(vec![File, Rpm]).to_string(), "trust = file,rpmdb");
+    }
+
+    #[test]
+    fn integrity_format() {
+        assert_eq!(
+            Integrity(IntegritySource::Hash).to_string(),
+            "integrity = hash"
+        );
+    }
+
+    #[test]
+    fn syslogformat_format() {
+        assert_eq!(
+            SyslogFormat(vec!["a,b,c".to_string()]).to_string(),
+            "syslog_format = a,b,c"
+        );
+    }
+
+    #[test]
+    fn rpmsha256only_format() {
+        assert_eq!(RpmSha256Only(false).to_string(), "rpm_sha256_only = 0");
+        assert_eq!(RpmSha256Only(true).to_string(), "rpm_sha256_only = 1");
+    }
+
+    #[test]
+    fn allow_fsmark_format() {
+        assert_eq!(AllowFsMark(false).to_string(), "allow_filesystem_mark = 0");
+        assert_eq!(AllowFsMark(true).to_string(), "allow_filesystem_mark = 1");
     }
 }
