@@ -16,12 +16,17 @@
 import context  # noqa: F401 # isort: skip
 
 import gi
-from fapolicy_analyzer.ui.changeset_wrapper import TrustChangeset, RuleChangeset
+from fapolicy_analyzer.ui.changeset_wrapper import (
+    TrustChangeset,
+    RuleChangeset,
+    ConfigChangeset,
+)
 from fapolicy_analyzer.ui.confirm_deployment_dialog import ConfirmDeploymentDialog
 from fapolicy_analyzer.ui.strings import (
     CHANGESET_ACTION_ADD_TRUST,
     CHANGESET_ACTION_DEL_TRUST,
     CHANGESET_ACTION_RULES,
+    CHANGESET_ACTION_CONFIG,
 )
 from unittest.mock import MagicMock
 from helpers import delayed_gui_action
@@ -73,11 +78,20 @@ def test_load_rules(mocker):
         "fapolicy_analyzer.ui.rules.rules_difference_dialog.rules_difference",
         return_value="+allow perm=any all : all\n-deny perm=any all : all",
     )
+    config_changeset = ConfigChangeset()
+    config_changeset.parse("permissive = 0")
+    mocker.patch(
+        "fapolicy_analyzer.ui.config_difference_dialog.config_difference",
+        return_value="+permissive = 0\n-nice_val = 14",
+    )
     widget = ConfirmDeploymentDialog(
-        [changeset], MagicMock(), MagicMock(), Gtk.Window()
+        [changeset, config_changeset], MagicMock(), MagicMock(), Gtk.Window()
     )
     view = widget.get_object("changesTreeView")
     rows = [x for x in view.get_model()]
     assert (CHANGESET_ACTION_RULES, "1 addition and 1 removal made") in [
+        (r[0], r[1]) for r in rows
+    ]
+    assert (CHANGESET_ACTION_CONFIG, "1 addition and 1 removal made") in [
         (r[0], r[1]) for r in rows
     ]

@@ -84,6 +84,7 @@ CHANGESET_ACTION_DEL = _("Delete")
 CHANGESET_ACTION_ADD_TRUST = _("Add Trust")
 CHANGESET_ACTION_DEL_TRUST = _("Delete Trust")
 CHANGESET_ACTION_RULES = _("Edit Rules")
+CHANGESET_ACTION_CONFIG = _("Edit Config")
 
 ADD_FILE_LABEL = _("Add File")
 OPEN_FILE_LABEL = _("Open File")

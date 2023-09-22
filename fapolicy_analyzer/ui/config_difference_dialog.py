@@ -60,7 +60,9 @@ class ConfigDifferenceDialog(UIBuilderWidget):
                 new_store.append([d])
             elif d.startswith("-") and d.split("-")[-1] in current_system.config_text():
                 new_store.append([d])
-            elif d.startswith("-") and d.split("-")[-1] in previous_system.config_text():
+            elif (
+                d.startswith("-") and d.split("-")[-1] in previous_system.config_text()
+            ):
                 prev_store.append([d])
 
         self.new_list.load_store(new_store)
