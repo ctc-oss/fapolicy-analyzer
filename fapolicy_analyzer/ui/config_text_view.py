@@ -12,17 +12,15 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-
 from fapolicy_analyzer.ui.editable_text_view import EditableTextView
 
 
-class RulesTextView(EditableTextView):
+class ConfigTextView(EditableTextView):
     def __init__(self):
-        self.__events__ = ["rules_changed"]
+        self.__events__ = ["config_changed"]
         super().__init__()
 
-        self._buffer.connect("changed", self.on_rules_changed)
+        self._buffer.connect("changed", self.on_config_changed)
 
-    def on_rules_changed(self, buffer):
-        self.rules_changed(self._get_text())
+    def on_config_changed(self, buffer):
+        self.config_changed(self._get_text())

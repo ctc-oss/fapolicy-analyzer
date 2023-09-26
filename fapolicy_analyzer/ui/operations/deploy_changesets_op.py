@@ -111,11 +111,16 @@ class DeployChangesetsOp(UIOperation):
 
     def __on_next(self, system: Any):
         systemState = system.get("system")
-        text_state = system.get("rules_text")
+        rules_text_state = system.get("rules_text")
+        config_text_state = system.get("config_text")
         changesetState = system.get("changesets")
-        self.__rules_text = text_state.rules_text if text_state else ""
+        self.__rules_text = rules_text_state.rules_text if rules_text_state else ""
         self.__modified_rules_text = (
-            text_state.modified_rules_text if text_state else ""
+            rules_text_state.modified_rules_text if rules_text_state else ""
+        )
+        self.__config_text = config_text_state.config_text if config_text_state else ""
+        self.__modified_config_text = (
+            config_text_state.modified_config_text if config_text_state else ""
         )
         if systemState.error and self.__deploying:
             self.__deploying = False

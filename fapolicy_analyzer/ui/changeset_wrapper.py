@@ -42,11 +42,35 @@ class Changeset(ABC, Generic[T]):
                     tcs.delete(path)
             return tcs
         elif isinstance(data, str):
-            rcs = RuleChangeset()
-            rcs.parse(data)
-            return rcs
+            try:
+                rcs = RuleChangeset()
+                rcs.parse(data)
+                return rcs
+            except TypeError:
+                try:
+                    ccs = ConfigChangeset()
+                    ccs.parse(data)
+                    return ccs
+
+                except TypeError:
+                    print("Invalid changeset type to deserialize")
+                    raise
 
         raise TypeError("Invalid changeset type to deserialize")
+
+
+class ConfigChangeset(Changeset[str]):
+    def __init__(self):
+        self.__wrapped = fapolicy_analyzer.ConfigChangeset()
+
+    def parse(self, change: str):
+        self.__wrapped.parse(change)
+
+    def apply_to_system(self, system: System) -> System:
+        return system.apply_config_changes(self.__wrapped)
+
+    def serialize(self) -> str:
+        return self.__wrapped.text()
 
 
 class RuleChangeset(Changeset[str]):
