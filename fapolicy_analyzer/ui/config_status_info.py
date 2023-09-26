@@ -22,7 +22,7 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
 
 
-class RulesStatusInfo(EditorStatusInfo):
+class ConfigStatusInfo(EditorStatusInfo):
     def __init__(self):
         super().__init__()
         self._status_list.append_column(
@@ -36,16 +36,19 @@ class RulesStatusInfo(EditorStatusInfo):
         )
 
         self._STATUS_HEADERS = {
-            "e": _("invalid rule(s) found"),
+            "e": _("invalid config(s) found"),
             "w": _("warning(s) found"),
             "i": _("informational message(s)"),
         }
 
-    def render_rule_status(self, rules):
+    def render_config_status(self, config):
         stats = {"e": [], "w": [], "i": []}
-        for r in rules:
-            for i in r.info:
-                stats.get(i.category, []).append(f"rule {r.id}: {i.message}")
+        config_list = config.split("\n")
+        for c in config_list:
+            pass
+            # for i in c.info:
+            # pass
+            # stats.get(i.category, []).append(f"config line {c.id}: {i.message}")
 
         store = Gtk.TreeStore(str, str, int, bool)
 

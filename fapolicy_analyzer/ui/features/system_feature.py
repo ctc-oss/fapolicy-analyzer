@@ -44,6 +44,7 @@ from fapolicy_analyzer.ui.actions import (
     APPLY_CHANGESETS,
     DEPLOY_SYSTEM,
     REQUEST_ANCILLARY_TRUST,
+    REQUEST_CONFIG_TEXT,
     REQUEST_EVENTS,
     REQUEST_GROUPS,
     REQUEST_RULES,
@@ -57,6 +58,7 @@ from fapolicy_analyzer.ui.actions import (
     ancillary_trust_load_started,
     error_ancillary_trust,
     error_apply_changesets,
+    error_config_text,
     error_deploying_system,
     error_events,
     error_groups,
@@ -66,6 +68,7 @@ from fapolicy_analyzer.ui.actions import (
     error_users,
     init_system,
     received_ancillary_trust_update,
+    received_config_text,
     received_events,
     received_groups,
     received_rules,
@@ -302,6 +305,10 @@ def create_system_feature(
         text = _system.rules_text()
         return received_rules_text(text)
 
+    def _get_config_text(_: Action) -> Action:
+        text = _system.config_text()
+        return received_config_text(text)
+
     init_epic = pipe(
         of_init_feature(SYSTEM_FEATURE),
         map(lambda _: _init_system()),
@@ -373,11 +380,18 @@ def create_system_feature(
         catch(lambda ex, source: of(error_rules_text(str(ex)))),
     )
 
+    request_config_text_epic = pipe(
+        of_type(REQUEST_CONFIG_TEXT),
+        map(_get_config_text),
+        catch(lambda ex, source: of(error_config_text(str(ex)))),
+    )
+
     system_epic = combine_epics(
         init_epic,
         apply_changesets_epic,
         deploy_system_epic,
         request_ancillary_trust_epic,
+        request_config_text_epic,
         request_events_epic,
         request_groups_epic,
         request_rules_epic,

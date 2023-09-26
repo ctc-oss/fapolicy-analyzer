@@ -77,6 +77,10 @@ def mock_rule():
     return MagicMock(id=1, text="Mock Rule Number 1", is_valid=True, info=[])
 
 
+def mock_config():
+    return MagicMock(config_text="Config Text", is_valid=True)
+
+
 class mock_System:
     def ancillary_trust(self):
         return [mock_trust()]

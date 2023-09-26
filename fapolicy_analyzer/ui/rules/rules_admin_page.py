@@ -296,7 +296,7 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
             self.__error_text = None
             self.__loading_text = False
             self.__rules_text = text_state.rules_text
-            self._text_view.render_rules(self.__rules_text)
+            self._text_view.render_text(self.__rules_text)
             self.__rules_validated = True
 
     def on_next_notifications(self, notifications: Sequence[Notification]):

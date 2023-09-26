@@ -84,6 +84,7 @@ CHANGESET_ACTION_DEL = _("Delete")
 CHANGESET_ACTION_ADD_TRUST = _("Add Trust")
 CHANGESET_ACTION_DEL_TRUST = _("Delete Trust")
 CHANGESET_ACTION_RULES = _("Edit Rules")
+CHANGESET_ACTION_CONFIG = _("Edit Config")
 
 ADD_FILE_LABEL = _("Add File")
 OPEN_FILE_LABEL = _("Open File")
@@ -226,3 +227,7 @@ replace: "RSYSLOG_FileFormat"
     """
 )
 RULES_OVERRIDE_MESSAGE = _("""There are syntax errors in the rule editor.""")
+CONFIG_TEXT_LOAD_ERROR = _("Error loading Config text")
+CONFIG_CHANGESET_PARSE_ERROR = _(
+    "Error parsing the config text. See log for more details."
+)
