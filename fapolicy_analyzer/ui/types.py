@@ -24,6 +24,7 @@ class PAGE_SELECTION(Enum):
     ANALYZE_FROM_DEBUG = "debug log"
     ANALYZE_SYSLOG = "syslog"
     PROFILER = "profiler"
+    CONFIG = "config"
 
 
 class LogType(Enum):

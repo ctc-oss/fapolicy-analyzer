@@ -27,6 +27,7 @@ from fapolicy_analyzer.ui.actions import (
     SYSTEM_RECEIVED,
 )
 from fapolicy_analyzer.ui.reducers.changeset_reducer import changeset_reducer
+from fapolicy_analyzer.ui.reducers.config_text_reducer import config_text_reducer
 from fapolicy_analyzer.ui.reducers.event_reducer import event_reducer
 from fapolicy_analyzer.ui.reducers.group_reducer import group_reducer
 from fapolicy_analyzer.ui.reducers.profiler_reducer import profiler_reducer
@@ -100,6 +101,7 @@ system_reducer: Reducer = combine_reducers(
         ),
         "ancillary_trust": ancillary_trust_reducer,
         "changesets": changeset_reducer,
+        "config_text": config_text_reducer,
         "events": event_reducer,
         "groups": group_reducer,
         "profiler": profiler_reducer,

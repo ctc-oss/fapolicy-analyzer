@@ -36,7 +36,7 @@ def test_creates_widget(widget):
 
 
 def test_renders_rules(widget):
-    widget.render_rules("foo/")
+    widget.render_text("foo/")
 
     textView = widget.get_object("textView")
     textBuffer = textView.get_buffer()
@@ -50,10 +50,10 @@ def test_renders_rules(widget):
 
 def test_handles_bad_language_file(mocker):
     mocker.patch(
-        "fapolicy_analyzer.ui.rules.rules_text_view.resources.path",
+        "fapolicy_analyzer.ui.editable_text_view.resources.path",
         return_value="bad path",
     )
-    mock_logger = mocker.patch("fapolicy_analyzer.ui.rules.rules_text_view.logging")
+    mock_logger = mocker.patch("fapolicy_analyzer.ui.editable_text_view.logging")
     widget = RulesTextView()
     assert widget is not None
     mock_logger.warning.assert_has_calls(

@@ -74,6 +74,12 @@ RECEIVED_RULES_TEXT = "RECEIVED_RULES_TEXT"
 MODIFY_RULES_TEXT = "MODIFY_RULES_TEXT"
 ERROR_RULES_TEXT = "ERROR_RULES_TEXT"
 
+REQUEST_CONFIG_TEXT = "REQUEST_CONFIG_TEXT"
+RECEIVED_CONFIG_TEXT = "RECEIVED_CONFIG_TEXT"
+MODIFY_CONFIG_TEXT = "MODIFY_CONFIG_TEXT"
+ERROR_CONFIG_TEXT = "ERROR_CONFIG_TEXT"
+
+
 PROFILING_INIT_EVENT = "PROFILING_INIT"
 START_PROFILING_REQUEST = "START_PROFILING_REQUEST"
 START_PROFILING_RESPONSE = "START_PROFILING_RESPONSE"
@@ -272,6 +278,22 @@ def modify_rules_text(rules_text: str) -> Action:
 
 def error_rules_text(error: str) -> Action:
     return _create_action(ERROR_RULES_TEXT, error)
+
+
+def request_config_text() -> Action:
+    return _create_action(REQUEST_CONFIG_TEXT)
+
+
+def received_config_text(config_text: str) -> Action:
+    return _create_action(RECEIVED_CONFIG_TEXT, config_text)
+
+
+def modify_config_text(config_text: str) -> Action:
+    return _create_action(MODIFY_CONFIG_TEXT, config_text)
+
+
+def error_config_text(error: str) -> Action:
+    return _create_action(ERROR_CONFIG_TEXT, error)
 
 
 def profiler_init() -> Action:
