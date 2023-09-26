@@ -27,7 +27,7 @@ BuildRequires: python3dist(setuptools-rust)
 
 BuildRequires: rust-assert_matches-devel
 BuildRequires: rust-autocfg-devel
-BuildRequires: rust-bindgen-devel
+BuildRequires: (crate(bindgen/default) = 0.63.0)
 BuildRequires: rust-bitflags-devel
 BuildRequires: rust-bumpalo-devel
 BuildRequires: rust-byteorder-devel
