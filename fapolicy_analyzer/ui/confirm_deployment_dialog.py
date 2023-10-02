@@ -22,7 +22,7 @@ from fapolicy_analyzer.ui.rules.rules_difference_dialog import (
     RulesDifferenceDialog,
     filter_rule_diff,
 )
-from fapolicy_analyzer.ui.config_difference_dialog import (
+from fapolicy_analyzer.ui.config.config_difference_dialog import (
     ConfigDifferenceDialog,
     filter_config_diff,
 )

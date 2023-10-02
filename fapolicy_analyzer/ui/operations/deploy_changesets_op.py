@@ -168,7 +168,13 @@ class DeployChangesetsOp(UIOperation):
             bool(self.__modified_rules_text)
             and self.__modified_rules_text != self.__rules_text
         )
-        if rules:
+
+        config = (
+            bool(self.__modified_config_text)
+            and self.__modified_config_text != self.__config_text
+        )
+
+        if rules or config:
             unsaved_rule_dialog = Gtk.MessageDialog(
                 transient_for=self.__window,
                 message_type=Gtk.MessageType.INFO,

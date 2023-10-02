@@ -29,7 +29,7 @@ from fapolicy_analyzer.ui.actions import (
     APPLY_CHANGESETS,
     MODIFY_CONFIG_TEXT,
 )
-from fapolicy_analyzer.ui.config_admin_page import ConfigAdminPage
+from fapolicy_analyzer.ui.config.config_admin_page import ConfigAdminPage
 from fapolicy_analyzer.ui.store import init_store
 from fapolicy_analyzer.ui.strings import (
     CONFIG_TEXT_LOAD_ERROR,
@@ -48,14 +48,14 @@ initial_system = {
 
 @pytest.fixture()
 def mock_dispatch(mocker):
-    return mocker.patch("fapolicy_analyzer.ui.config_admin_page.dispatch")
+    return mocker.patch("fapolicy_analyzer.ui.config.config_admin_page.dispatch")
 
 
 @pytest.fixture()
 def mock_system_feature(mocker):
     mockSystemFeature = Subject()
     mocker.patch(
-        "fapolicy_analyzer.ui.config_admin_page.get_system_feature",
+        "fapolicy_analyzer.ui.config.config_admin_page.get_system_feature",
         return_value=mockSystemFeature,
     )
     yield mockSystemFeature
@@ -76,7 +76,7 @@ def test_creates_widget(widget):
 def test_populates_text_editor(mock_system_feature, mocker):
     mock_text_renderer = MagicMock()
     mocker.patch(
-        "fapolicy_analyzer.ui.config_admin_page.ConfigTextView.render_text",
+        "fapolicy_analyzer.ui.config.config_admin_page.ConfigTextView.render_text",
         mock_text_renderer,
     )
     mock_system_feature.on_next(

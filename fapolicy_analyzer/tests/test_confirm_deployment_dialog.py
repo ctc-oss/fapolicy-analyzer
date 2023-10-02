@@ -81,7 +81,7 @@ def test_load_rules(mocker):
     config_changeset = ConfigChangeset()
     config_changeset.parse("permissive = 0")
     mocker.patch(
-        "fapolicy_analyzer.ui.config_difference_dialog.config_difference",
+        "fapolicy_analyzer.ui.config.config_difference_dialog.config_difference",
         return_value="+permissive = 0\n-nice_val = 14",
     )
     widget = ConfirmDeploymentDialog(

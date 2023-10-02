@@ -37,7 +37,7 @@ from fapolicy_analyzer.ui.actions import (
     request_system_trust,
 )
 from fapolicy_analyzer.ui.changeset_wrapper import Changeset
-from fapolicy_analyzer.ui.config_admin_page import ConfigAdminPage
+from fapolicy_analyzer.ui.config.config_admin_page import ConfigAdminPage
 from fapolicy_analyzer.ui.configs import Sizing
 from fapolicy_analyzer.ui.database_admin_page import DatabaseAdminPage
 from fapolicy_analyzer.ui.fapd_manager import FapdManager, ServiceStatus
@@ -53,6 +53,10 @@ from fapolicy_analyzer.ui.store import (
     dispatch,
     get_application_feature,
     get_system_feature,
+)
+from fapolicy_analyzer.ui.strings import (
+    UNSAVED_DIALOG_TEXT,
+    UNSAVED_DIALOG_TITLE,
 )
 from fapolicy_analyzer.ui.types import PAGE_SELECTION, LogType
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
@@ -172,6 +176,21 @@ class MainWindow(UIConnectedWidget):
         return response != Gtk.ResponseType.OK
 
     def __pack_main_content(self, page: UIPage):
+        if hasattr(self.__page, "_unsaved_changes") and self.__page._unsaved_changes:
+            unsaved_dialog = Gtk.MessageDialog(
+                transient_for=self.window,
+                message_type=Gtk.MessageType.INFO,
+                buttons=Gtk.ButtonsType.OK_CANCEL,
+                title=UNSAVED_DIALOG_TITLE,
+                text=UNSAVED_DIALOG_TEXT,
+            )
+
+            unsaved_resp = unsaved_dialog.run()
+            unsaved_dialog.destroy()
+            if unsaved_resp == Gtk.ResponseType.CANCEL:
+                page.dispose()
+                return
+
         if self.__page:
             self.__page.dispose()
         self.__page = page
