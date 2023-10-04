@@ -189,8 +189,8 @@ the database directory or its contents.
 [Default: /var/lib/fapolicyd]
 
 3. The rule file(s) location is incorrectly specified in
-/etc/fapolicy-analyzer/fapolicy-analyzer.toml or
-$(HOME)/.config/fapolicy-analyzer/fapolicy-analyzer.toml
+/etc/fapolicy-analyzer/config.toml or
+$(HOME)/.config/fapolicy-analyzer/config.toml
 
 4. The user does not have appropriate privileges to
 access or create the log or config file.
