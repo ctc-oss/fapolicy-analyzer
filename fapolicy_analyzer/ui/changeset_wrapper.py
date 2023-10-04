@@ -14,7 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import json
 from abc import ABC, abstractmethod
-from typing import Dict, Generic, TypeVar, Union
+from typing import Dict, Generic, TypeVar
 
 import fapolicy_analyzer
 from fapolicy_analyzer import System
@@ -71,7 +71,7 @@ class ConfigChangeset(Changeset[str]):
         }
 
     @staticmethod
-    def deserialize(d) -> T:
+    def deserialize(d) -> "ConfigChangeset":
         ccs = ConfigChangeset()
         ccs.parse(d)
         return ccs
