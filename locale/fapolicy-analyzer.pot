@@ -7,16 +7,16 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: fapolicy-analyzer 0.0.0+408.g0d7f296.dirty\n"
+"Project-Id-Version: fapolicy-analyzer 0.0.0+390.g3679fb0.dirty\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-09-22 13:53-0700\n"
+"POT-Creation-Date: 2023-10-04 12:11-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.11.0\n"
+"Generated-By: Babel 2.12.1\n"
 
 #: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:115
 #: fapolicy_analyzer/ui/system_trust_database_admin.py:138
@@ -80,7 +80,7 @@ msgstr ""
 msgid "{len(deleted)} file{plural(len(deleted))[0]} cannot be found on disk"
 msgstr ""
 
-#: fapolicy_analyzer/ui/session_manager.py:137
+#: fapolicy_analyzer/ui/session_manager.py:135
 msgid "Failed to load edit session from file {strJsonFile}"
 msgstr ""
 
@@ -445,23 +445,24 @@ msgstr ""
 msgid ""
 "\n"
 "The fapolicyd trusted resources database\n"
-"could not be opened and/or read or the rule file(s)\n"
-"location is incorrectly specified.\n"
+"could not be opened and/or read, or the rule file(s)\n"
+"location is incorrectly specified in the config file.\n"
 "\n"
 "Typical reasons for this failure:\n"
 "\n"
-"1. The user does not have read permissions to access\n"
-"the database directory or its contents.\n"
-"[Default: /var/lib/fapolicyd]\n"
-"\n"
-"2. The database does not exist or was not initialized.\n"
+"1. The database does not exist or was not initialized.\n"
 "\n"
 "Either the fapolicyd daemon package has not been\n"
 "installed or if installed, has not been executed. The first\n"
 "execution of the fapolicyd daemon will create and\n"
 "populate the trust database.\n"
 "\n"
+"2. The user does not have read permission to access\n"
+"the database directory or its contents.\n"
+"[Default: /var/lib/fapolicyd]\n"
+"\n"
 "3. The rule file(s) location is incorrectly specified in\n"
+"/etc/fapolicy-analyzer/fapolicy-analyzer.toml or\n"
 "$(HOME)/.config/fapolicy-analyzer/fapolicy-analyzer.toml\n"
 "\n"
 "4. The user does not have appropriate privileges to\n"
@@ -469,15 +470,15 @@ msgid ""
 "    "
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:199
+#: fapolicy_analyzer/ui/strings.py:200
 msgid "Error applying changes"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:200
+#: fapolicy_analyzer/ui/strings.py:201
 msgid "Unsaved Rules Changes"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:201
+#: fapolicy_analyzer/ui/strings.py:202
 msgid ""
 "You have unsaved changes to the rules. If you deploy, your changes will "
 "be lost.\n"
@@ -485,47 +486,47 @@ msgid ""
 "Would you like to continue deploying?"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:207
+#: fapolicy_analyzer/ui/strings.py:208
 msgid "Filtering is disabled during trust loading"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:211
+#: fapolicy_analyzer/ui/strings.py:212
 msgid "File is untrusted in the Ancillary Trust Database"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:212
+#: fapolicy_analyzer/ui/strings.py:213
 msgid "File is untrusted in the System Trust Database"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:213
+#: fapolicy_analyzer/ui/strings.py:214
 msgid "File is trusted in the Ancillary Trust Database"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:214
+#: fapolicy_analyzer/ui/strings.py:215
 msgid "File is trusted in the System Trust Database"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:215
+#: fapolicy_analyzer/ui/strings.py:216
 msgid "File trust is unknown"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:216
+#: fapolicy_analyzer/ui/strings.py:217
 msgid "File access fully allowed"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:217
+#: fapolicy_analyzer/ui/strings.py:218
 msgid "File access partially allowed"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:218
+#: fapolicy_analyzer/ui/strings.py:219
 msgid "File access denied"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:219
+#: fapolicy_analyzer/ui/strings.py:220
 msgid "Syslog Format Check"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:220
+#: fapolicy_analyzer/ui/strings.py:221
 msgid ""
 "\n"
 "No event time found, time filtering will not work.\n"
@@ -536,15 +537,15 @@ msgid ""
 "    "
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:229
+#: fapolicy_analyzer/ui/strings.py:230
 msgid "There are syntax errors in the rule editor."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:230
+#: fapolicy_analyzer/ui/strings.py:231
 msgid "Error loading Config text"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:231
+#: fapolicy_analyzer/ui/strings.py:232
 msgid "Error parsing the config text. See log for more details."
 msgstr ""
 
