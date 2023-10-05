@@ -132,8 +132,6 @@ class TrustChangeset(Changeset[Dict[str, str]]):
     @staticmethod
     def deserialize(d) -> "TrustChangeset":
         tcs = TrustChangeset()
-        # s = '{"/data_space/this/is/a/longer/path/now_is_the_time.txt": "Del","/data_space/Integration.json": "Add",}'
-        # json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 103 (char 102)
         if isinstance(d, str):
             d = json.loads(d)
         for path, action in d.items():
