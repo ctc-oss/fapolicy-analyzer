@@ -22,6 +22,10 @@ from fapolicy_analyzer import System
 T = TypeVar("T", Dict[str, str], str)
 
 
+def changeset_dict_to_json(d: dict) -> str:
+    return json.dumps(d, sort_keys=True, separators=(",", ":"))
+
+
 class Changeset(ABC, Generic[T]):
     @abstractmethod
     def apply_to_system(self, system: System) -> System:
@@ -33,11 +37,14 @@ class Changeset(ABC, Generic[T]):
 
     @staticmethod
     @abstractmethod
-    def deserialize(d) -> T:
+    def deserialize(d: str) -> T:
         """Deserialize this changeset from serialized data"""
 
     @staticmethod
     def load(dd: dict) -> "Changeset":
+        if not dd:
+            raise TypeError("Invalid changeset type to deserialize")
+
         if "type" not in dd:
             raise TypeError("Changeset does not indicate type")
 
@@ -71,7 +78,7 @@ class ConfigChangeset(Changeset[str]):
         }
 
     @staticmethod
-    def deserialize(d) -> "ConfigChangeset":
+    def deserialize(d: str) -> "ConfigChangeset":
         ccs = ConfigChangeset()
         ccs.parse(d)
         return ccs
@@ -94,7 +101,7 @@ class RuleChangeset(Changeset[str]):
         return {"type": "rules", "data": self.__wrapped.text()}
 
     @staticmethod
-    def deserialize(d) -> "RuleChangeset":
+    def deserialize(d: str) -> "RuleChangeset":
         rcs = RuleChangeset()
         rcs.parse(d)
         return rcs
@@ -110,20 +117,26 @@ class TrustChangeset(Changeset[Dict[str, str]]):
     def delete(self, change: str):
         self.__wrapped.del_trust(change)
 
+    def action_map(self) -> dict:
+        return self.__wrapped.get_path_action_map()
+
     def apply_to_system(self, system: System) -> System:
         return system.apply_changeset(self.__wrapped)
 
     def serialize(self) -> Dict[str, str]:
         return {
             "type": "trust",
-            "data": json.dumps(self.__wrapped.get_path_action_map()),
+            "data": changeset_dict_to_json(self.__wrapped.get_path_action_map()),
         }
 
     @staticmethod
     def deserialize(d) -> "TrustChangeset":
         tcs = TrustChangeset()
-        dd = json.loads(d)
-        for path, action in dd.items():
+        # s = '{"/data_space/this/is/a/longer/path/now_is_the_time.txt": "Del","/data_space/Integration.json": "Add",}'
+        # json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 103 (char 102)
+        if isinstance(d, str):
+            d = json.loads(d)
+        for path, action in d.items():
             if action == "Add":
                 tcs.add(path)
             elif action == "Del":

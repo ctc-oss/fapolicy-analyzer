@@ -26,16 +26,23 @@ from fapolicy_analyzer.ui.actions import (
     ADD_NOTIFICATION,
     APPLY_CHANGESETS,
 )
-from fapolicy_analyzer.ui.changeset_wrapper import RuleChangeset, TrustChangeset
+from fapolicy_analyzer.ui.changeset_wrapper import (
+    RuleChangeset,
+    TrustChangeset,
+    ConfigChangeset,
+)
 from fapolicy_analyzer.ui.session_manager import SessionManager
 
 import context  # noqa: F401
 
 test_changes = [
-    "foo rules",
     {
-        "/data_space/this/is/a/longer/path/now_is_the_time.txt": "Del",
-        "/data_space/Integration.json": "Add",
+        "type": "rules",
+        "data": "foo rules",
+    },
+    {
+        "type": "trust",
+        "data": """{"/data_space/Integration.json":"Add","/data_space/this/is/a/longer/path/now_is_the_time.txt":"Del"}""",
     },
 ]
 
@@ -76,10 +83,10 @@ def uut_autosave_enabled():
 @pytest.fixture
 def autosaved_files():
     with open("/tmp/FaCurrentSession.tmp_20210803_130622_059045.json", "w") as fp0:
-        fp0.write(f"""[{json.dumps(test_changes[0], sort_keys=True, indent=4)}]""")
+        fp0.write(f"""[{json.dumps(test_changes[0], sort_keys=True)}]""")
 
     with open("/tmp/FaCurrentSession.tmp_20210803_130622_065690.json", "w") as fp1:
-        fp1.write(json.dumps(test_changes, sort_keys=True, indent=4))
+        fp1.write(json.dumps(test_changes, sort_keys=True))
 
     # yields  a list of the autosaved files
     yield [
@@ -273,6 +280,7 @@ def test_restore_previous_session(uut_autosave_enabled, autosaved_files, mock_di
     expected = test_changes
     # parse changesets to json string to compare
     args, _ = mock_dispatch.call_args
+
     actual = [
         {path: action for path, action in c.serialize().items()}
         if isinstance(c, TrustChangeset)
