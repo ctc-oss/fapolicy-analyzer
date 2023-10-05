@@ -29,7 +29,6 @@ from fapolicy_analyzer.ui.actions import (
 from fapolicy_analyzer.ui.changeset_wrapper import (
     RuleChangeset,
     TrustChangeset,
-    ConfigChangeset,
 )
 from fapolicy_analyzer.ui.session_manager import SessionManager
 
@@ -42,7 +41,7 @@ test_changes = [
     },
     {
         "type": "trust",
-        "data": """{"/data_space/Integration.json":"Add","/data_space/this/is/a/longer/path/now_is_the_time.txt":"Del"}""",
+        "data": """{"/data_space/Integration.json":"Add","/data_space/this/is/a/longer/path/now_time.txt":"Del"}""",
     },
 ]
 
@@ -55,7 +54,7 @@ test_json = json.dumps(
 
 test_changesets = [RuleChangeset(), TrustChangeset()]
 test_changesets[0].parse("foo rules")
-test_changesets[1].delete("/data_space/this/is/a/longer/path/now_is_the_time.txt")
+test_changesets[1].delete("/data_space/this/is/a/longer/path/now_time.txt")
 test_changesets[1].add("/data_space/Integration.json")
 
 
