@@ -71,7 +71,7 @@ class ConfigChangeset(Changeset[str]):
     def apply_to_system(self, system: System) -> System:
         return system.apply_config_changes(self.__wrapped)
 
-    def serialize(self) -> dict[str, str]:
+    def serialize(self) -> Dict[str, str]:
         return {
             "type": "config",
             "data": self.__wrapped.text(),
@@ -97,7 +97,7 @@ class RuleChangeset(Changeset[str]):
     def apply_to_system(self, system: System) -> System:
         return system.apply_rule_changes(self.__wrapped)
 
-    def serialize(self) -> dict[str, str]:
+    def serialize(self) -> Dict[str, str]:
         return {"type": "rules", "data": self.__wrapped.text()}
 
     @staticmethod
@@ -117,7 +117,7 @@ class TrustChangeset(Changeset[Dict[str, str]]):
     def delete(self, change: str):
         self.__wrapped.del_trust(change)
 
-    def action_map(self) -> dict:
+    def action_map(self) -> Dict[str, str]:
         return self.__wrapped.get_path_action_map()
 
     def apply_to_system(self, system: System) -> System:
