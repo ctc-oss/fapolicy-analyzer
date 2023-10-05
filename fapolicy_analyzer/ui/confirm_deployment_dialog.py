@@ -12,7 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
+import json
 from locale import gettext as _
 from typing import Sequence, Tuple
 
@@ -134,7 +134,7 @@ class ConfirmDeploymentDialog(UIBuilderWidget):
                 t
                 for e in changesets
                 if isinstance(e, TrustChangeset)
-                for t in e.serialize().items()
+                for t in json.loads(e.serialize()["data"]).items()
             ]
 
         rule_messages, rule_diff = rules_changes()
