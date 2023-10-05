@@ -139,7 +139,7 @@ class SessionManager:
                 return False
 
         logging.debug(f"Loaded dict = {data}")
-        changesets = [Changeset.deserialize(d) for d in data]
+        changesets = [Changeset.load(d) for d in data]
         logging.debug("SessionManager::open_edit_session():{}".format(changesets))
 
         if changesets:

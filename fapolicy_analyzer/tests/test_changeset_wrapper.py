@@ -20,25 +20,36 @@ from fapolicy_analyzer.ui.changeset_wrapper import (
     Changeset,
     RuleChangeset,
     TrustChangeset,
+    changeset_dict_to_json,
+    ConfigChangeset,
 )
 
 
 def test_deserialize_RuleChangeset():
-    result = Changeset.deserialize("rules")
-    assert type(result) == RuleChangeset
-    assert result.serialize() == "rules"
+    expected = {"type": "rules", "data": "rules"}
+    actual = Changeset.load(expected)
+    assert type(actual) == RuleChangeset
+    assert actual.serialize() == expected
 
 
 @pytest.mark.parametrize("action", ["Add", "Del"])
 def test_deserialize_TrustChangeset(action):
-    result = Changeset.deserialize({"addition": action})
-    assert type(result) == TrustChangeset
-    assert result.serialize() == {"addition": action}
+    expected = {"type": "trust", "data": changeset_dict_to_json({"addition": action})}
+    actual = Changeset.load(expected)
+    assert type(actual) == TrustChangeset
+    assert actual.serialize() == expected
+
+
+def test_deserialize_ConfigChangeset():
+    expected = {"type": "config", "data": "config"}
+    actual = Changeset.load(expected)
+    assert type(actual) == ConfigChangeset
+    assert actual.serialize() == expected
 
 
 def test_bad_deserialize():
     with pytest.raises(TypeError) as ex_info:
-        Changeset.deserialize(None)
+        Changeset.load(None)
     assert str(ex_info.value) == "Invalid changeset type to deserialize"
 
 
@@ -70,7 +81,7 @@ def test_RuleChangeset_rules(mocker):
 def test_RuleChangeset_serialize():
     sut = RuleChangeset()
     sut.parse("foo")
-    assert sut.serialize() == "foo"
+    assert sut.serialize() == {"type": "rules", "data": "foo"}
 
 
 def test_TrustChangeset_apply():
@@ -102,4 +113,29 @@ def test_TrustChangeset_serialize():
     sut = TrustChangeset()
     sut.add("addition")
     sut.delete("deletion")
-    assert sut.serialize() == {"addition": "Add", "deletion": "Del"}
+    assert sut.serialize() == {
+        "type": "trust",
+        "data": changeset_dict_to_json({"addition": "Add", "deletion": "Del"}),
+    }
+
+
+def test_ConfigChangeset_apply():
+    mock_system_apply = MagicMock()
+    sut = ConfigChangeset()
+    sut.apply_to_system(MagicMock(apply_config_changes=mock_system_apply))
+    mock_system_apply.assert_called_with(sut._ConfigChangeset__wrapped)
+
+
+def test_ConfigChangeset_parse(mocker):
+    mock = mocker.patch(
+        "fapolicy_analyzer.ui.changeset_wrapper.fapolicy_analyzer.ConfigChangeset"
+    )
+    sut = ConfigChangeset()
+    sut.parse("foo")
+    mock().parse.assert_called_with("foo")
+
+
+def test_ConfigChangeset_serialize():
+    sut = ConfigChangeset()
+    sut.parse("foo")
+    assert sut.serialize() == {"type": "config", "data": "foo"}
