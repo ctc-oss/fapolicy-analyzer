@@ -172,24 +172,25 @@ TRUST_DB_READ_FAILURE_DIALOG_TITLE = _("Trust Database")
 TRUST_DB_READ_FAILURE_DIALOG_TEXT = _(
     """
 The fapolicyd trusted resources database
-could not be opened and/or read or the rule file(s)
-location is incorrectly specified.
+could not be opened and/or read, or the rule file(s)
+location is incorrectly specified in the config file.
 
 Typical reasons for this failure:
 
-1. The user does not have read permissions to access
-the database directory or its contents.
-[Default: /var/lib/fapolicyd]
-
-2. The database does not exist or was not initialized.
+1. The database does not exist or was not initialized.
 
 Either the fapolicyd daemon package has not been
 installed or if installed, has not been executed. The first
 execution of the fapolicyd daemon will create and
 populate the trust database.
 
+2. The user does not have read permission to access
+the database directory or its contents.
+[Default: /var/lib/fapolicyd]
+
 3. The rule file(s) location is incorrectly specified in
-$(HOME)/.config/fapolicy-analyzer/fapolicy-analyzer.toml
+/etc/fapolicy-analyzer/config.toml or
+$(HOME)/.config/fapolicy-analyzer/config.toml
 
 4. The user does not have appropriate privileges to
 access or create the log or config file.
