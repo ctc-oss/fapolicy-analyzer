@@ -42,7 +42,8 @@ from fapolicy_analyzer.ui.strings import (
     FA_ARCHIVE_FILES_FILTER_LABEL,
     REVERT_SYSTEM_SUCCESSFUL_MSG,
     SAVE_AS_FILE_LABEL,
-    UNSAVED_DIALOG_TEXT,
+    UNSAVED_CONFIG_DIALOG_DEPLOY_TEXT,
+    UNSAVED_RULES_DIALOG_DEPLOY_TEXT,
     UNSAVED_DIALOG_TITLE,
 )
 from fapolicy_analyzer.util.fapd_dbase import fapd_dbase_snapshot
@@ -175,12 +176,17 @@ class DeployChangesetsOp(UIOperation):
         )
 
         if rules or config:
+            txt = (
+                UNSAVED_RULES_DIALOG_DEPLOY_TEXT
+                if rules
+                else UNSAVED_CONFIG_DIALOG_DEPLOY_TEXT
+            )
             unsaved_rule_dialog = Gtk.MessageDialog(
                 transient_for=self.__window,
                 message_type=Gtk.MessageType.INFO,
                 buttons=Gtk.ButtonsType.OK_CANCEL,
                 title=UNSAVED_DIALOG_TITLE,
-                text=UNSAVED_DIALOG_TEXT,
+                text=txt,
             )
 
             unsaved_resp = unsaved_rule_dialog.run()

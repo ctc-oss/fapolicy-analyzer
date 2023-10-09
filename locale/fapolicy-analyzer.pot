@@ -7,16 +7,16 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: fapolicy-analyzer 0.0.0+391.g13e821a.dirty\n"
+"Project-Id-Version: fapolicy-analyzer 0.0.0+401.g679ca23.dirty\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-10-04 15:07-0400\n"
+"POT-Creation-Date: 2023-10-09 11:20-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.12.1\n"
+"Generated-By: Babel 2.11.0\n"
 
 #: fapolicy_analyzer/ui/ancillary_trust_database_admin.py:115
 #: fapolicy_analyzer/ui/system_trust_database_admin.py:138
@@ -31,20 +31,6 @@ msgstr ""
 msgid ""
 "{fs.stat(trust.path)}\n"
 "SHA256: {fs.sha(trust.path)}"
-msgstr ""
-
-#: fapolicy_analyzer/ui/config_status_info.py:39
-msgid "invalid config(s) found"
-msgstr ""
-
-#: fapolicy_analyzer/ui/config_status_info.py:40
-#: fapolicy_analyzer/ui/rules/rules_status_info.py:40
-msgid "warning(s) found"
-msgstr ""
-
-#: fapolicy_analyzer/ui/config_status_info.py:41
-#: fapolicy_analyzer/ui/rules/rules_status_info.py:41
-msgid "informational message(s)"
 msgstr ""
 
 #: fapolicy_analyzer/ui/confirm_change_dialog.py:37
@@ -70,7 +56,7 @@ msgstr ""
 msgid "Reverting to previous settings in {i+1} seconds"
 msgstr ""
 
-#: fapolicy_analyzer/ui/main_window.py:307
+#: fapolicy_analyzer/ui/main_window.py:332
 msgid ""
 "An error occurred trying to open the session file, "
 "{self.strSessionFilename}"
@@ -475,7 +461,7 @@ msgid "Error applying changes"
 msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:201
-msgid "Unsaved Rules Changes"
+msgid "Unsaved Changes"
 msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:202
@@ -486,47 +472,71 @@ msgid ""
 "Would you like to continue deploying?"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:208
-msgid "Filtering is disabled during trust loading"
+#: fapolicy_analyzer/ui/strings.py:207
+msgid ""
+"You have unsaved changes to the config. If you deploy, your changes will "
+"be lost.\n"
+"\n"
+"Would you like to continue deploying?"
 msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:212
-msgid "File is untrusted in the Ancillary Trust Database"
-msgstr ""
-
-#: fapolicy_analyzer/ui/strings.py:213
-msgid "File is untrusted in the System Trust Database"
-msgstr ""
-
-#: fapolicy_analyzer/ui/strings.py:214
-msgid "File is trusted in the Ancillary Trust Database"
-msgstr ""
-
-#: fapolicy_analyzer/ui/strings.py:215
-msgid "File is trusted in the System Trust Database"
-msgstr ""
-
-#: fapolicy_analyzer/ui/strings.py:216
-msgid "File trust is unknown"
+msgid ""
+"You have unsaved changes to the rules. If you navigate away, your changes"
+" will be lost.\n"
+"\n"
+"Would you like to continue?"
 msgstr ""
 
 #: fapolicy_analyzer/ui/strings.py:217
+msgid ""
+"You have unsaved changes to the config. If you navigate away, your "
+"changes will be lost.\n"
+"\n"
+"Would you like to continue?"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:222
+msgid "Filtering is disabled during trust loading"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:226
+msgid "File is untrusted in the Ancillary Trust Database"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:227
+msgid "File is untrusted in the System Trust Database"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:228
+msgid "File is trusted in the Ancillary Trust Database"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:229
+msgid "File is trusted in the System Trust Database"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:230
+msgid "File trust is unknown"
+msgstr ""
+
+#: fapolicy_analyzer/ui/strings.py:231
 msgid "File access fully allowed"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:218
+#: fapolicy_analyzer/ui/strings.py:232
 msgid "File access partially allowed"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:219
+#: fapolicy_analyzer/ui/strings.py:233
 msgid "File access denied"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:220
+#: fapolicy_analyzer/ui/strings.py:234
 msgid "Syslog Format Check"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:221
+#: fapolicy_analyzer/ui/strings.py:235
 msgid ""
 "\n"
 "No event time found, time filtering will not work.\n"
@@ -537,15 +547,15 @@ msgid ""
 "    "
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:230
+#: fapolicy_analyzer/ui/strings.py:244
 msgid "There are syntax errors in the rule editor."
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:231
+#: fapolicy_analyzer/ui/strings.py:245
 msgid "Error loading Config text"
 msgstr ""
 
-#: fapolicy_analyzer/ui/strings.py:232
+#: fapolicy_analyzer/ui/strings.py:246
 msgid "Error parsing the config text. See log for more details."
 msgstr ""
 
@@ -554,7 +564,21 @@ msgstr ""
 msgid "Loading trust {pct}% complete..."
 msgstr ""
 
-#: fapolicy_analyzer/ui/operations/deploy_changesets_op.py:148
+#: fapolicy_analyzer/ui/config/config_status_info.py:39
+msgid "invalid config(s) found"
+msgstr ""
+
+#: fapolicy_analyzer/ui/config/config_status_info.py:40
+#: fapolicy_analyzer/ui/rules/rules_status_info.py:40
+msgid "warning(s) found"
+msgstr ""
+
+#: fapolicy_analyzer/ui/config/config_status_info.py:41
+#: fapolicy_analyzer/ui/rules/rules_status_info.py:41
+msgid "informational message(s)"
+msgstr ""
+
+#: fapolicy_analyzer/ui/operations/deploy_changesets_op.py:149
 msgid "Deploy Changes"
 msgstr ""
 

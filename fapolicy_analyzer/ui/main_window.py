@@ -55,8 +55,9 @@ from fapolicy_analyzer.ui.store import (
     get_system_feature,
 )
 from fapolicy_analyzer.ui.strings import (
-    UNSAVED_DIALOG_TEXT,
     UNSAVED_DIALOG_TITLE,
+    UNSAVED_RULES_DIALOG_NAVIGATE_TEXT,
+    UNSAVED_CONFIG_DIALOG_NAVIGATE_TEXT,
 )
 from fapolicy_analyzer.ui.types import PAGE_SELECTION, LogType
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
@@ -177,12 +178,17 @@ class MainWindow(UIConnectedWidget):
 
     def __pack_main_content(self, page: UIPage):
         if hasattr(self.__page, "_unsaved_changes") and self.__page._unsaved_changes:
+            txt = (
+                UNSAVED_RULES_DIALOG_NAVIGATE_TEXT
+                if isinstance(self.__page, RulesAdminPage)
+                else UNSAVED_CONFIG_DIALOG_NAVIGATE_TEXT
+            )
             unsaved_dialog = Gtk.MessageDialog(
                 transient_for=self.window,
                 message_type=Gtk.MessageType.INFO,
                 buttons=Gtk.ButtonsType.OK_CANCEL,
                 title=UNSAVED_DIALOG_TITLE,
-                text=UNSAVED_DIALOG_TEXT,
+                text=txt,
             )
 
             unsaved_resp = unsaved_dialog.run()

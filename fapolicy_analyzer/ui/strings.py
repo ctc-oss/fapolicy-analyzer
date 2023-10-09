@@ -198,13 +198,27 @@ access or create the log or config file.
 )
 
 APPLY_CHANGESETS_ERROR_MESSAGE = _("Error applying changes")
-UNSAVED_DIALOG_TITLE = _("Unsaved Rules Changes")
-UNSAVED_DIALOG_TEXT = _(
+UNSAVED_DIALOG_TITLE = _("Unsaved Changes")
+UNSAVED_RULES_DIALOG_DEPLOY_TEXT = _(
     """You have unsaved changes to the rules. If you deploy, your changes will be lost.
 
 Would you like to continue deploying?"""
 )
+UNSAVED_CONFIG_DIALOG_DEPLOY_TEXT = _(
+    """You have unsaved changes to the config. If you deploy, your changes will be lost.
 
+Would you like to continue deploying?"""
+)
+UNSAVED_RULES_DIALOG_NAVIGATE_TEXT = _(
+    """You have unsaved changes to the rules. If you navigate away, your changes will be lost.
+
+Would you like to continue?"""
+)
+UNSAVED_CONFIG_DIALOG_NAVIGATE_TEXT = _(
+    """You have unsaved changes to the config. If you navigate away, your changes will be lost.
+
+Would you like to continue?"""
+)
 FILTERING_DISABLED_DURING_LOADING_MESSAGE = _(
     "Filtering is disabled during trust loading"
 )
