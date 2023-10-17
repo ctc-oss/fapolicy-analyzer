@@ -104,12 +104,11 @@ class ConfigAdminPage(UIConnectedWidget):
         self, show_notifications=True
     ) -> Tuple[ConfigChangeset, bool]:
         changeset = ConfigChangeset()
-        valid = True
+        valid = False
 
         try:
             changeset.parse(self.__modified_config_text)
             valid = changeset.is_valid()
-            print(f"============= {valid} ============")
         except Exception as e:
             logging.error("Error setting changeset config: %s", e)
             dispatch(
@@ -118,7 +117,7 @@ class ConfigAdminPage(UIConnectedWidget):
                     NotificationType.ERROR,
                 )
             )
-            return changeset, False
+            return changeset, valid
 
         self.__config_validated = True
         # self.__clear_validation_notifications()
