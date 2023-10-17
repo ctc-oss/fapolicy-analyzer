@@ -14,7 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import json
 from abc import ABC, abstractmethod
-from typing import Dict, Generic, TypeVar
+from typing import Dict, Generic, TypeVar, List
 
 import fapolicy_analyzer
 from fapolicy_analyzer import System, ConfigInfo
@@ -71,7 +71,7 @@ class ConfigChangeset(Changeset[str]):
     def is_valid(self) -> bool:
         return self.__wrapped.is_valid()
 
-    def info(self) -> list[ConfigInfo]:
+    def info(self) -> List[ConfigInfo]:
         return self.__wrapped.config_info()
 
     def apply_to_system(self, system: System) -> System:
