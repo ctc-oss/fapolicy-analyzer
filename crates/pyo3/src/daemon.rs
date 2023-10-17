@@ -233,6 +233,7 @@ fn conf_text_error_check(txt: &str) -> Option<String> {
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyHandle>()?;
     m.add_class::<PyChangeset>()?;
+    m.add_class::<PyConfigInfo>()?;
     m.add_function(wrap_pyfunction!(fapolicyd_version, m)?)?;
     m.add_function(wrap_pyfunction!(start_fapolicyd, m)?)?;
     m.add_function(wrap_pyfunction!(stop_fapolicyd, m)?)?;
