@@ -9,7 +9,7 @@
 use crate::system::PySystem;
 use fapolicy_daemon::conf;
 use fapolicy_daemon::conf::ops::Changeset;
-use fapolicy_daemon::conf::with_error_message;
+use fapolicy_daemon::conf::{with_error_message, Line};
 use fapolicy_daemon::fapolicyd::Version;
 use fapolicy_daemon::svc::State::{Active, Inactive};
 use fapolicy_daemon::svc::{wait_for_service, Handle};
@@ -140,10 +140,21 @@ fn is_fapolicyd_active() -> PyResult<bool> {
 
 pub(crate) fn conf_to_text(db: &conf::DB) -> String {
     db.iter()
-        .fold(String::new(), |acc, line| match acc.as_str() {
-            "" => format!("{line}"),
-            _ => format!("{acc}\n{line}"),
+        .fold(String::new(), |acc, line| format!("{acc}\n{line}"))
+        .trim_start()
+        .to_owned()
+}
+
+pub(crate) fn conf_to_error_text(db: &conf::DB) -> String {
+    db.iter()
+        .fold(String::new(), |acc, line| match line {
+            Line::Invalid { k, v } => format!("{acc}\nInvalid: {k}={v}"),
+            Line::Malformed(s) => format!("{acc}\nMalformed: {s}"),
+            Line::Duplicate(s) => format!("{acc}\nDuplicated: {s}"),
+            _ => acc,
         })
+        .trim_start()
+        .to_owned()
 }
 
 /// A mutable collection of rule changes
@@ -206,7 +217,7 @@ pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
 
 #[cfg(test)]
 mod tests {
-    use crate::daemon::conf_to_text;
+    use crate::daemon::{conf_to_error_text, conf_to_text};
     use fapolicy_daemon::conf::config::ConfigToken::{DoStatReport, Permissive};
     use fapolicy_daemon::conf::Line::*;
     use fapolicy_daemon::conf::DB;
@@ -241,6 +252,56 @@ mod tests {
         assert_eq!(
             conf_to_text(&f),
             "permissive = 1\ndo_stat_report = 0".to_string()
+        )
+    }
+
+    #[test]
+    fn test_conf_to_error_text_empty() {
+        let b = BlankLine;
+        let c = Comment("Foo".to_owned());
+        let v = Valid(DoStatReport(false));
+        let f: DB = vec![b, c, v].into();
+        assert_eq!(conf_to_error_text(&f), "".to_string())
+    }
+
+    #[test]
+    fn test_conf_to_error_text_invalid() {
+        let a = Invalid {
+            k: "x".to_owned(),
+            v: "y".to_owned(),
+        };
+        let f: DB = vec![a].into();
+        assert_eq!(conf_to_error_text(&f), "Invalid: x=y".to_string())
+    }
+
+    #[test]
+    fn test_conf_to_error_text_malformed() {
+        let a = Malformed("googlygak".to_owned());
+        let f: DB = vec![a].into();
+        assert_eq!(conf_to_error_text(&f), "Malformed: googlygak".to_string())
+    }
+
+    #[test]
+    fn test_conf_to_error_text_duplicated() {
+        let a = Duplicate(Permissive(true));
+        let f: DB = vec![a].into();
+        assert_eq!(
+            conf_to_error_text(&f),
+            "Duplicated: permissive = 1".to_string()
+        )
+    }
+
+    #[test]
+    fn test_conf_to_error_text_mixed() {
+        let a = Invalid {
+            k: "x".to_owned(),
+            v: "y".to_owned(),
+        };
+        let b = Malformed("googlygak".to_owned());
+        let f: DB = vec![a, b].into();
+        assert_eq!(
+            conf_to_error_text(&f),
+            "Invalid: x=y\nMalformed: googlygak".to_string()
         )
     }
 }
