@@ -119,7 +119,7 @@ class ConfigAdminPage(UIConnectedWidget):
             )
             return changeset, valid
 
-        self.__config_validated = True
+        self.__config_validated = valid
         # self.__clear_validation_notifications()
 
         return changeset, valid
