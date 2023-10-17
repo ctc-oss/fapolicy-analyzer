@@ -91,6 +91,8 @@ class ConfigAdminPage(UIConnectedWidget):
         if valid:
             self.__saving = True
             dispatch(apply_changesets(changeset))
+        else:
+            self.__status_info.render_config_status(changeset.info())
 
     def __config_dirty(self) -> bool:
         return (
@@ -102,10 +104,11 @@ class ConfigAdminPage(UIConnectedWidget):
         self, show_notifications=True
     ) -> Tuple[ConfigChangeset, bool]:
         changeset = ConfigChangeset()
-        valid = True
+        valid = False
 
         try:
             changeset.parse(self.__modified_config_text)
+            valid = changeset.is_valid()
         except Exception as e:
             logging.error("Error setting changeset config: %s", e)
             dispatch(
@@ -114,9 +117,9 @@ class ConfigAdminPage(UIConnectedWidget):
                     NotificationType.ERROR,
                 )
             )
-            return changeset, False
+            return changeset, valid
 
-        self.__config_validated = True
+        self.__config_validated = valid
         # self.__clear_validation_notifications()
 
         return changeset, valid
@@ -124,6 +127,7 @@ class ConfigAdminPage(UIConnectedWidget):
     def on_next_system(self, system: Any):
         changesetState = system.get("changesets")
         text_state = system.get("config_text")
+        system_state = system.get("system")
 
         if self.__saving and changesetState.error:
             self.__saving = False
@@ -153,6 +157,7 @@ class ConfigAdminPage(UIConnectedWidget):
             self.__config_text = text_state.config_text
             self._text_view.render_text(self.__config_text)
             self.__config_validated = True
+            self.__status_info.render_config_status(system_state.system.config_info())
 
     def on_text_view_config_changed(self, config: str):
         self.__modified_config_text = config

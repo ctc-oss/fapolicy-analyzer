@@ -41,14 +41,10 @@ class ConfigStatusInfo(EditorStatusInfo):
             "i": _("informational message(s)"),
         }
 
-    def render_config_status(self, config):
+    def render_config_status(self, info):
         stats = {"e": [], "w": [], "i": []}
-        config_list = config.split("\n")
-        for c in config_list:
-            pass
-            # for i in c.info:
-            # pass
-            # stats.get(i.category, []).append(f"config line {c.id}: {i.message}")
+        for i in info:
+            stats.get(i.category, []).append(i.message)
 
         store = Gtk.TreeStore(str, str, int, bool)
 

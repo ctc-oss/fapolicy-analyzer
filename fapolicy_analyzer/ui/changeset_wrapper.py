@@ -14,10 +14,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import json
 from abc import ABC, abstractmethod
-from typing import Dict, Generic, TypeVar
+from typing import Dict, Generic, TypeVar, List
 
 import fapolicy_analyzer
-from fapolicy_analyzer import System
+from fapolicy_analyzer import System, ConfigInfo
 
 T = TypeVar("T", Dict[str, str], str)
 
@@ -67,6 +67,12 @@ class ConfigChangeset(Changeset[str]):
 
     def parse(self, change: str):
         self.__wrapped.parse(change)
+
+    def is_valid(self) -> bool:
+        return self.__wrapped.is_valid()
+
+    def info(self) -> List[ConfigInfo]:
+        return self.__wrapped.config_info()
 
     def apply_to_system(self, system: System) -> System:
         return system.apply_config_changes(self.__wrapped)
