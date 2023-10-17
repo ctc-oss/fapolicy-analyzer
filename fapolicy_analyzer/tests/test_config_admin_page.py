@@ -118,6 +118,12 @@ def test_handles_config_text_change(widget, mock_dispatch):
 
 
 def test_save_click_valid(widget, mock_dispatch):
-    widget._text_view.config_changed("allow perm=any all : all")
+    widget._text_view.config_changed("permissive = 1")
     widget.on_save_clicked()
     mock_dispatch.assert_called_with(InstanceOf(Action) & Attrs(type=APPLY_CHANGESETS))
+
+
+def test_save_click_invalid(widget, mock_dispatch, mocker):
+    widget._text_view.config_changed("permissive = foo")
+    widget.on_save_clicked()
+    mock_dispatch.assert_not_any_call(InstanceOf(Action) & Attrs(type=APPLY_CHANGESETS))
