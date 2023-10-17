@@ -9,6 +9,7 @@
 use crate::conf::config::ConfigToken;
 use std::fmt::{Display, Formatter};
 use std::slice::Iter;
+use Line::*;
 
 #[derive(Clone, Debug)]
 pub enum Line {
@@ -35,12 +36,10 @@ impl DB {
     }
 
     pub fn is_valid(&self) -> bool {
-        !self.lines.iter().any(|l| {
-            matches!(
-                l,
-                Line::Invalid { .. } | Line::Malformed(_) | Line::Duplicate(_)
-            )
-        })
+        !self
+            .lines
+            .iter()
+            .any(|l| matches!(l, Invalid { .. } | Malformed(_) | Duplicate(_)))
     }
 }
 
@@ -53,12 +52,12 @@ impl From<Vec<Line>> for DB {
 impl Display for Line {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            Line::Valid(tok) => f.write_fmt(format_args!("{tok}")),
-            Line::Invalid { k, v } => f.write_fmt(format_args!("{k} = {v}")),
-            Line::Malformed(txt) => f.write_str(txt),
-            Line::Duplicate(tok) => f.write_fmt(format_args!("{tok}")),
-            Line::Comment(txt) => f.write_str(txt),
-            Line::BlankLine => f.write_str(""),
+            Valid(tok) => f.write_fmt(format_args!("{tok}")),
+            Invalid { k, v } => f.write_fmt(format_args!("{k} = {v}")),
+            Malformed(txt) => f.write_str(txt),
+            Duplicate(tok) => f.write_fmt(format_args!("{tok}")),
+            Comment(txt) => f.write_str(txt),
+            BlankLine => f.write_str(""),
         }
     }
 }
