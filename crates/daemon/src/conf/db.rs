@@ -35,9 +35,11 @@ impl DB {
     }
 
     pub fn is_valid(&self) -> bool {
-        !self.lines.iter().any(|l| match l {
-            Line::Invalid { .. } | Line::Malformed(_) | Line::Duplicate(_) => true,
-            _ => false,
+        !self.lines.iter().any(|l| {
+            matches!(
+                l,
+                Line::Invalid { .. } | Line::Malformed(_) | Line::Duplicate(_)
+            )
         })
     }
 }

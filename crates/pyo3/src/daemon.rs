@@ -222,7 +222,7 @@ impl PyChangeset {
     }
 
     fn config_info(&self) -> Vec<PyConfigInfo> {
-        conf_info(&self.rs.get())
+        conf_info(self.rs.get())
     }
 
     fn is_valid(&self) -> bool {
