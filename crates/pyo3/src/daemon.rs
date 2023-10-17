@@ -145,16 +145,43 @@ pub(crate) fn conf_to_text(db: &conf::DB) -> String {
         .to_owned()
 }
 
-pub(crate) fn conf_to_error_text(db: &conf::DB) -> String {
-    db.iter()
-        .fold(String::new(), |acc, line| match line {
-            Line::Invalid { k, v } => format!("{acc}\nInvalid: {k}={v}"),
-            Line::Malformed(s) => format!("{acc}\nMalformed: {s}"),
-            Line::Duplicate(s) => format!("{acc}\nDuplicated: {s}"),
-            _ => acc,
-        })
-        .trim_start()
-        .to_owned()
+#[pyclass(module = "daemon", name = "ConfigInfo")]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct PyConfigInfo {
+    pub category: String,
+    pub message: String,
+}
+
+#[pymethods]
+impl PyConfigInfo {
+    #[getter]
+    fn get_category(&self) -> String {
+        self.category.clone()
+    }
+
+    #[getter]
+    fn get_message(&self) -> String {
+        self.message.clone()
+    }
+}
+
+pub(crate) fn conf_info(db: &conf::DB) -> Vec<PyConfigInfo> {
+    let e = "e";
+    db.iter().fold(vec![], |mut acc, line| {
+        let message = match line {
+            Line::Invalid { k, v } => Some(format!("Invalid: {k}={v}")),
+            Line::Malformed(s) => Some(format!("Malformed: {s}")),
+            Line::Duplicate(s) => Some(format!("Duplicated: {s}")),
+            _ => None,
+        };
+        if let Some(message) = message {
+            acc.push(PyConfigInfo {
+                category: e.to_owned(),
+                message,
+            });
+        };
+        acc
+    })
 }
 
 /// A mutable collection of rule changes
@@ -217,7 +244,7 @@ pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
 
 #[cfg(test)]
 mod tests {
-    use crate::daemon::{conf_to_error_text, conf_to_text};
+    use crate::daemon::{conf_info, conf_to_text, PyConfigInfo};
     use fapolicy_daemon::conf::config::ConfigToken::{DoStatReport, Permissive};
     use fapolicy_daemon::conf::Line::*;
     use fapolicy_daemon::conf::DB;
@@ -261,7 +288,7 @@ mod tests {
         let c = Comment("Foo".to_owned());
         let v = Valid(DoStatReport(false));
         let f: DB = vec![b, c, v].into();
-        assert_eq!(conf_to_error_text(&f), "".to_string())
+        assert_eq!(conf_info(&f), vec![])
     }
 
     #[test]
@@ -271,14 +298,26 @@ mod tests {
             v: "y".to_owned(),
         };
         let f: DB = vec![a].into();
-        assert_eq!(conf_to_error_text(&f), "Invalid: x=y".to_string())
+        assert_eq!(
+            conf_info(&f),
+            vec![PyConfigInfo {
+                category: "e".to_owned(),
+                message: "Invalid: x=y".to_owned(),
+            }]
+        )
     }
 
     #[test]
     fn test_conf_to_error_text_malformed() {
         let a = Malformed("googlygak".to_owned());
         let f: DB = vec![a].into();
-        assert_eq!(conf_to_error_text(&f), "Malformed: googlygak".to_string())
+        assert_eq!(
+            conf_info(&f),
+            vec![PyConfigInfo {
+                category: "e".to_owned(),
+                message: "Malformed: googlygak".to_owned(),
+            }]
+        )
     }
 
     #[test]
@@ -286,8 +325,11 @@ mod tests {
         let a = Duplicate(Permissive(true));
         let f: DB = vec![a].into();
         assert_eq!(
-            conf_to_error_text(&f),
-            "Duplicated: permissive = 1".to_string()
+            conf_info(&f),
+            vec![PyConfigInfo {
+                category: "e".to_string(),
+                message: "Duplicated: permissive = 1".to_string(),
+            }]
         )
     }
 
@@ -300,8 +342,17 @@ mod tests {
         let b = Malformed("googlygak".to_owned());
         let f: DB = vec![a, b].into();
         assert_eq!(
-            conf_to_error_text(&f),
-            "Invalid: x=y\nMalformed: googlygak".to_string()
+            conf_info(&f),
+            vec![
+                PyConfigInfo {
+                    category: "e".to_string(),
+                    message: "Invalid: x=y".to_string(),
+                },
+                PyConfigInfo {
+                    category: "e".to_string(),
+                    message: "Malformed: googlygak".to_string(),
+                }
+            ]
         )
     }
 }
