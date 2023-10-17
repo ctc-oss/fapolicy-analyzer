@@ -104,7 +104,7 @@ fn nom_syslog_list(i: &str) -> IResult<&str, Vec<&str>> {
 pub(crate) fn token(i: &str) -> Result<ConfigToken, (&str, &str, Error)> {
     use ConfigToken::*;
     match i.split_once('=') {
-        None | Some(("", _)) => Err(("", i, Error::MalformedConfig)),
+        None | Some(("", _)) => Err((i, i, Error::MalformedConfig)),
         Some((lhs, rhs)) => {
             let lhs = lhs.trim();
             let rhs = rhs.trim();
