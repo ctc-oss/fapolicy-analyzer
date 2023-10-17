@@ -187,9 +187,9 @@ mod tests {
     #[test]
     fn test_p2_malformed_config() {
         assert_matches!(token(""), Err(("", "", Error::MalformedConfig)));
-        assert_matches!(token("foo"), Err(("", "foo", Error::MalformedConfig)));
+        assert_matches!(token("foo"), Err(("foo", "foo", Error::MalformedConfig)));
         assert_matches!(token("foo="), Err(("foo", "", Error::InvalidLhs(_))));
-        assert_matches!(token("=foo"), Err(("", "=foo", Error::MalformedConfig)));
+        assert_matches!(token("=foo"), Err(("=foo", "=foo", Error::MalformedConfig)));
     }
 
     #[test]
