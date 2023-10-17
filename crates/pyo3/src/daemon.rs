@@ -210,15 +210,23 @@ impl PyChangeset {
         PyChangeset::default()
     }
 
-    pub fn parse(&mut self, text: &str) -> PyResult<()> {
+    fn parse(&mut self, text: &str) -> PyResult<()> {
         match self.rs.set(text.trim()) {
             Ok(_) => Ok(()),
             Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{:?}", e))),
         }
     }
 
-    pub fn text(&self) -> Option<&str> {
+    fn text(&self) -> Option<&str> {
         self.rs.src().map(|s| &**s)
+    }
+
+    fn config_info(&self) -> Vec<PyConfigInfo> {
+        conf_info(&self.rs.get())
+    }
+
+    fn is_valid(&self) -> bool {
+        self.rs.get().is_valid()
     }
 }
 

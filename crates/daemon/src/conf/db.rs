@@ -33,6 +33,13 @@ impl DB {
     pub fn iter(&self) -> Iter<'_, Line> {
         self.lines.iter()
     }
+
+    pub fn is_valid(&self) -> bool {
+        !self.lines.iter().any(|l| match l {
+            Line::Invalid { .. } | Line::Malformed(_) | Line::Duplicate(_) => true,
+            _ => false,
+        })
+    }
 }
 
 impl From<Vec<Line>> for DB {
