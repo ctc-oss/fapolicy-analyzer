@@ -96,6 +96,8 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         self.__loading_text: bool = False
         self.__changesets: Sequence[Changeset] = []
         self.__saving: bool = False
+        self._unsaved_changes = False
+        self._first_pass = True
         self.__system: System = None
         self.__validation_notifications: Sequence[Notification] = []
 
@@ -210,6 +212,7 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         self.__update_list_view(changeset)
         if valid:
             self.__saving = True
+            self._unsaved_changes = False
             dispatch(apply_changesets(changeset))
         else:
             overrideDialog = self.get_object("saveOverrideDialog")
@@ -233,6 +236,9 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
     def on_text_view_rules_changed(self, rules: str):
         self.__modified_rules_text = rules
         self.__rules_validated = False
+        self._unsaved_changes = True if not self._first_pass else False
+        if self._first_pass:
+            self._first_pass = False
         text = "Rules Editor *" if self.__rules_dirty() else "Rules Editor"
         self.get_object("editorView").set_text(text)
         dispatch(modify_rules_text(rules))

@@ -25,8 +25,8 @@ from fapolicy_analyzer.ui.actions import (
     request_config_text,
 )
 from fapolicy_analyzer.ui.changeset_wrapper import Changeset, ConfigChangeset
-from fapolicy_analyzer.ui.config_text_view import ConfigTextView
-from fapolicy_analyzer.ui.config_status_info import ConfigStatusInfo
+from fapolicy_analyzer.ui.config.config_text_view import ConfigTextView
+from fapolicy_analyzer.ui.config.config_status_info import ConfigStatusInfo
 from fapolicy_analyzer.ui.strings import (
     APPLY_CHANGESETS_ERROR_MESSAGE,
     CONFIG_CHANGESET_PARSE_ERROR,
@@ -69,6 +69,8 @@ class ConfigAdminPage(UIConnectedWidget):
         self.__error_text: Optional[str] = None
         self.__error_config: Optional[str] = None
         self.__saving: bool = False
+        self._unsaved_changes = False
+        self._first_pass = True
 
     def __init_child_widgets(self):
         self._text_view: ConfigTextView = ConfigTextView()
@@ -90,6 +92,7 @@ class ConfigAdminPage(UIConnectedWidget):
         changeset, valid = self.__build_and_validate_changeset(show_notifications=False)
         if valid:
             self.__saving = True
+            self._unsaved_changes = False
             dispatch(apply_changesets(changeset))
         else:
             self.__status_info.render_config_status(changeset.info())
@@ -162,4 +165,7 @@ class ConfigAdminPage(UIConnectedWidget):
     def on_text_view_config_changed(self, config: str):
         self.__modified_config_text = config
         self.__config_validated = False
+        self._unsaved_changes = True if not self._first_pass else False
+        if self._first_pass:
+            self._first_pass = False
         dispatch(modify_config_text(config))
