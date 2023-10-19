@@ -92,8 +92,8 @@ class ConfigAdminPage(UIConnectedWidget):
         changeset, valid = self.__build_and_validate_changeset(show_notifications=False)
         if valid:
             self.__saving = True
-            self._unsaved_changes = False
             dispatch(apply_changesets(changeset))
+            self._unsaved_changes = False
         else:
             self.__status_info.render_config_status(changeset.info())
 
@@ -165,7 +165,8 @@ class ConfigAdminPage(UIConnectedWidget):
     def on_text_view_config_changed(self, config: str):
         self.__modified_config_text = config
         self.__config_validated = False
-        self._unsaved_changes = True if not self._first_pass else False
+        # print(self._unsaved_changes, self._first_pass)
+        self._unsaved_changes = True  # if not self._first_pass else False
         if self._first_pass:
             self._first_pass = False
         dispatch(modify_config_text(config))
