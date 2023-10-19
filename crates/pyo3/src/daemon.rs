@@ -9,7 +9,7 @@
 use crate::system::PySystem;
 use fapolicy_daemon::conf;
 use fapolicy_daemon::conf::ops::Changeset;
-use fapolicy_daemon::conf::with_error_message;
+use fapolicy_daemon::conf::{with_error_message, Line};
 use fapolicy_daemon::fapolicyd::Version;
 use fapolicy_daemon::svc::State::{Active, Inactive};
 use fapolicy_daemon::svc::{wait_for_service, Handle};
@@ -140,10 +140,48 @@ fn is_fapolicyd_active() -> PyResult<bool> {
 
 pub(crate) fn conf_to_text(db: &conf::DB) -> String {
     db.iter()
-        .fold(String::new(), |acc, line| match acc.as_str() {
-            "" => format!("{line}"),
-            _ => format!("{acc}\n{line}"),
-        })
+        .fold(String::new(), |acc, line| format!("{acc}\n{line}"))
+        .trim_start()
+        .to_owned()
+}
+
+#[pyclass(module = "daemon", name = "ConfigInfo")]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct PyConfigInfo {
+    pub category: String,
+    pub message: String,
+}
+
+#[pymethods]
+impl PyConfigInfo {
+    #[getter]
+    fn get_category(&self) -> String {
+        self.category.clone()
+    }
+
+    #[getter]
+    fn get_message(&self) -> String {
+        self.message.clone()
+    }
+}
+
+pub(crate) fn conf_info(db: &conf::DB) -> Vec<PyConfigInfo> {
+    let e = "e";
+    db.iter().fold(vec![], |mut acc, line| {
+        let message = match line {
+            Line::Invalid { k, v } => Some(format!("Invalid: {k}={v}")),
+            Line::Malformed(s) => Some(format!("Malformed: {s}")),
+            Line::Duplicate(s) => Some(format!("Duplicated: {s}")),
+            _ => None,
+        };
+        if let Some(message) = message {
+            acc.push(PyConfigInfo {
+                category: e.to_owned(),
+                message,
+            });
+        };
+        acc
+    })
 }
 
 /// A mutable collection of rule changes
@@ -172,15 +210,23 @@ impl PyChangeset {
         PyChangeset::default()
     }
 
-    pub fn parse(&mut self, text: &str) -> PyResult<()> {
+    fn parse(&mut self, text: &str) -> PyResult<()> {
         match self.rs.set(text.trim()) {
             Ok(_) => Ok(()),
             Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{:?}", e))),
         }
     }
 
-    pub fn text(&self) -> Option<&str> {
+    fn text(&self) -> Option<&str> {
         self.rs.src().map(|s| &**s)
+    }
+
+    fn config_info(&self) -> Vec<PyConfigInfo> {
+        conf_info(self.rs.get())
+    }
+
+    fn is_valid(&self) -> bool {
+        self.rs.get().is_valid()
     }
 }
 
@@ -195,6 +241,7 @@ fn conf_text_error_check(txt: &str) -> Option<String> {
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyHandle>()?;
     m.add_class::<PyChangeset>()?;
+    m.add_class::<PyConfigInfo>()?;
     m.add_function(wrap_pyfunction!(fapolicyd_version, m)?)?;
     m.add_function(wrap_pyfunction!(start_fapolicyd, m)?)?;
     m.add_function(wrap_pyfunction!(stop_fapolicyd, m)?)?;
@@ -206,7 +253,7 @@ pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
 
 #[cfg(test)]
 mod tests {
-    use crate::daemon::conf_to_text;
+    use crate::daemon::{conf_info, conf_to_text, PyConfigInfo};
     use fapolicy_daemon::conf::config::ConfigToken::{DoStatReport, Permissive};
     use fapolicy_daemon::conf::Line::*;
     use fapolicy_daemon::conf::DB;
@@ -241,6 +288,80 @@ mod tests {
         assert_eq!(
             conf_to_text(&f),
             "permissive = 1\ndo_stat_report = 0".to_string()
+        )
+    }
+
+    #[test]
+    fn test_conf_to_error_text_empty() {
+        let b = BlankLine;
+        let c = Comment("Foo".to_owned());
+        let v = Valid(DoStatReport(false));
+        let f: DB = vec![b, c, v].into();
+        assert_eq!(conf_info(&f), vec![])
+    }
+
+    #[test]
+    fn test_conf_to_error_text_invalid() {
+        let a = Invalid {
+            k: "x".to_owned(),
+            v: "y".to_owned(),
+        };
+        let f: DB = vec![a].into();
+        assert_eq!(
+            conf_info(&f),
+            vec![PyConfigInfo {
+                category: "e".to_owned(),
+                message: "Invalid: x=y".to_owned(),
+            }]
+        )
+    }
+
+    #[test]
+    fn test_conf_to_error_text_malformed() {
+        let a = Malformed("googlygak".to_owned());
+        let f: DB = vec![a].into();
+        assert_eq!(
+            conf_info(&f),
+            vec![PyConfigInfo {
+                category: "e".to_owned(),
+                message: "Malformed: googlygak".to_owned(),
+            }]
+        )
+    }
+
+    #[test]
+    fn test_conf_to_error_text_duplicated() {
+        let a = Duplicate(Permissive(true));
+        let f: DB = vec![a].into();
+        assert_eq!(
+            conf_info(&f),
+            vec![PyConfigInfo {
+                category: "e".to_string(),
+                message: "Duplicated: permissive = 1".to_string(),
+            }]
+        )
+    }
+
+    #[test]
+    fn test_conf_to_error_text_mixed() {
+        let a = Invalid {
+            k: "x".to_owned(),
+            v: "y".to_owned(),
+        };
+        let b = Malformed("googlygak".to_owned());
+        let f: DB = vec![a, b].into();
+        assert_eq!(
+            conf_info(&f),
+            vec![
+                PyConfigInfo {
+                    category: "e".to_string(),
+                    message: "Invalid: x=y".to_string(),
+                },
+                PyConfigInfo {
+                    category: "e".to_string(),
+                    message: "Malformed: googlygak".to_string(),
+                }
+            ]
         )
     }
 }

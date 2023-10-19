@@ -19,6 +19,7 @@ use fapolicy_trust::stat::Status::*;
 
 use crate::acl::{PyGroup, PyUser};
 use crate::analysis::PyEventLog;
+use crate::daemon::PyConfigInfo;
 use crate::rules::PyRule;
 use crate::trust;
 use crate::{daemon, rules};
@@ -175,6 +176,11 @@ impl PySystem {
     fn config_text(&self) -> String {
         log::debug!("config_text");
         daemon::conf_to_text(&self.rs.daemon_config)
+    }
+
+    fn config_info(&self) -> Vec<PyConfigInfo> {
+        log::debug!("config_info");
+        daemon::conf_info(&self.rs.daemon_config)
     }
 
     // we rely on the gil to keep this synced up
