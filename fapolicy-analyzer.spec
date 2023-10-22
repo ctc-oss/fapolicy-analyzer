@@ -41,7 +41,11 @@ BuildRequires: rust-crossbeam-epoch-devel
 BuildRequires: rust-crossbeam-utils-devel
 BuildRequires: rust-data-encoding-devel
 BuildRequires: rust-dbus-devel
+%if 0%{?fedora} < 39
 BuildRequires: (crate(directories/default) >= 0.4.0 with crate(directories/default) < 0.5.0)
+%else
+BuildRequires: rust-directories-devel
+%endif
 BuildRequires: rust-dirs-sys-devel
 BuildRequires: rust-either-devel
 BuildRequires: rust-fastrand-devel
