@@ -212,8 +212,8 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         self.__update_list_view(changeset)
         if valid:
             self.__saving = True
-            self._unsaved_changes = False
             dispatch(apply_changesets(changeset))
+            self._unsaved_changes = False
         else:
             overrideDialog = self.get_object("saveOverrideDialog")
             self.get_object("overrideText").set_text(RULES_OVERRIDE_MESSAGE)
