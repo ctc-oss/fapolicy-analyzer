@@ -41,7 +41,7 @@ BuildRequires: rust-crossbeam-epoch-devel
 BuildRequires: rust-crossbeam-utils-devel
 BuildRequires: rust-data-encoding-devel
 BuildRequires: rust-dbus-devel
-BuildRequires: rust-directories-devel
+BuildRequires: (crate(directories/default) >= 0.4.0 with crate(directories/default) < 0.5.0)
 BuildRequires: rust-dirs-sys-devel
 BuildRequires: rust-either-devel
 BuildRequires: rust-fastrand-devel
