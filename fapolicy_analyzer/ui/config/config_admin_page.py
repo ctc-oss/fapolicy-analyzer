@@ -106,6 +106,7 @@ class ConfigAdminPage(UIConnectedWidget):
             if resp == Gtk.ResponseType.OK:
                 self.__saving = True
                 dispatch(apply_changesets(changeset))
+                self._unsaved_changes = False
             else:
                 self.__status_info.render_config_status(changeset.info())
             overrideDialog.hide()
@@ -179,7 +180,7 @@ class ConfigAdminPage(UIConnectedWidget):
         self.__modified_config_text = config
         self.__config_validated = False
         # print(self._unsaved_changes, self._first_pass)
-        self._unsaved_changes = True  # if not self._first_pass else False
+        self._unsaved_changes = True if not self._first_pass else False
         if self._first_pass:
             self._first_pass = False
         dispatch(modify_config_text(config))
