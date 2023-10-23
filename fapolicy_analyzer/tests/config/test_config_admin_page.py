@@ -125,5 +125,7 @@ def test_save_click_valid(widget, mock_dispatch):
 
 def test_save_click_invalid(widget, mock_dispatch, mocker):
     widget._text_view.config_changed("permissive = foo")
+    overrideDialog = widget.get_object("saveOverrideDialog")
+    mocker.patch.object(overrideDialog, "run", return_value=Gtk.ResponseType.CANCEL)
     widget.on_save_clicked()
     mock_dispatch.assert_not_any_call(InstanceOf(Action) & Attrs(type=APPLY_CHANGESETS))
