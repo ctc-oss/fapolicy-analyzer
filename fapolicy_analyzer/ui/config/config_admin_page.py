@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import gi
 import logging
 
 
@@ -31,6 +32,7 @@ from fapolicy_analyzer.ui.strings import (
     APPLY_CHANGESETS_ERROR_MESSAGE,
     CONFIG_CHANGESET_PARSE_ERROR,
     CONFIG_TEXT_LOAD_ERROR,
+    RULES_OVERRIDE_MESSAGE,
 )
 from fapolicy_analyzer.ui.ui_page import UIPage, UIAction
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
@@ -40,6 +42,9 @@ from fapolicy_analyzer.ui.store import (
     dispatch,
     get_system_feature,
 )
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk  # isort: skip
 
 
 class ConfigAdminPage(UIConnectedWidget):
@@ -95,7 +100,16 @@ class ConfigAdminPage(UIConnectedWidget):
             dispatch(apply_changesets(changeset))
             self._unsaved_changes = False
         else:
-            self.__status_info.render_config_status(changeset.info())
+            overrideDialog = self.get_object("saveOverrideDialog")
+            self.get_object("overrideText").set_text(RULES_OVERRIDE_MESSAGE)
+            resp = overrideDialog.run()
+            if resp == Gtk.ResponseType.OK:
+                self.__saving = True
+                dispatch(apply_changesets(changeset))
+                self._unsaved_changes = False
+            else:
+                self.__status_info.render_config_status(changeset.info())
+            overrideDialog.hide()
 
     def __config_dirty(self) -> bool:
         return (
@@ -166,7 +180,7 @@ class ConfigAdminPage(UIConnectedWidget):
         self.__modified_config_text = config
         self.__config_validated = False
         # print(self._unsaved_changes, self._first_pass)
-        self._unsaved_changes = True  # if not self._first_pass else False
+        self._unsaved_changes = True if not self._first_pass else False
         if self._first_pass:
             self._first_pass = False
         dispatch(modify_config_text(config))

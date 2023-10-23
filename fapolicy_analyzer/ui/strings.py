@@ -241,7 +241,9 @@ regexp: "RSYSLOG_TraditionalFileFormat"
 replace: "RSYSLOG_FileFormat"
     """
 )
-RULES_OVERRIDE_MESSAGE = _("""There are syntax errors in the rule editor.""")
+RULES_OVERRIDE_MESSAGE = _(
+    """There are syntax errors in the text editor.\n\nProceed only if you are sure you know what you are doing."""
+)
 CONFIG_TEXT_LOAD_ERROR = _("Error loading Config text")
 CONFIG_CHANGESET_PARSE_ERROR = _(
     "Error parsing the config text. See log for more details."
