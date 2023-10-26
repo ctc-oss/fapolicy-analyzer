@@ -44,7 +44,7 @@ BuildRequires: rust-dbus-devel
 %if 0%{?fedora} < 39
 BuildRequires: rust-directories-devel
 %else
-BuildRequires: (crate(directories/default) >= 0.4.0 with crate(directories/default) < 0.5.0)
+BuildRequires: rust-directories4-devel
 %endif
 BuildRequires: rust-dirs-sys-devel
 BuildRequires: rust-either-devel
