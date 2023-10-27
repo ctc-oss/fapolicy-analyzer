@@ -161,5 +161,5 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
 %attr(755,root,root) %{_datadir}/applications/%{name}.desktop
 
 %changelog
-* Thu Oct 21 2023 John Wass <jwass3@gmail.com> 1.2.0~rc3-1
+* Fri Oct 27 2023 John Wass <jwass3@gmail.com> 1.2.0~rc3-1
 - New release
