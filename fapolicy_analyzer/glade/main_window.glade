@@ -212,6 +212,16 @@
                             <signal name="activate" handler="on_fapdStartMenu_activate" swapped="no"/>
                           </object>
                         </child>
+                        <child>
+                          <object class="GtkImageMenuItem" id="configMenuItem">
+                            <property name="label">Config</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="use_underline">True</property>
+                            <property name="use_stock">True</property>
+                            <signal name="activate" handler="on_configAdminMenu_activate" swapped="no"/>
+                          </object>
+                        </child>
                       </object>
                     </child>
                   </object>

@@ -37,6 +37,7 @@ from fapolicy_analyzer.ui.actions import (
     request_system_trust,
 )
 from fapolicy_analyzer.ui.changeset_wrapper import Changeset
+from fapolicy_analyzer.ui.config.config_admin_page import ConfigAdminPage
 from fapolicy_analyzer.ui.configs import Sizing
 from fapolicy_analyzer.ui.database_admin_page import DatabaseAdminPage
 from fapolicy_analyzer.ui.fapd_manager import FapdManager, ServiceStatus
@@ -52,6 +53,11 @@ from fapolicy_analyzer.ui.store import (
     dispatch,
     get_application_feature,
     get_system_feature,
+)
+from fapolicy_analyzer.ui.strings import (
+    UNSAVED_DIALOG_TITLE,
+    UNSAVED_RULES_DIALOG_NAVIGATE_TEXT,
+    UNSAVED_CONFIG_DIALOG_NAVIGATE_TEXT,
 )
 from fapolicy_analyzer.ui.types import PAGE_SELECTION, LogType
 from fapolicy_analyzer.ui.ui_page import UIAction, UIPage
@@ -72,12 +78,12 @@ def router(page: PAGE_SELECTION, *data) -> UIPage:
         PAGE_SELECTION.ANALYZE_AUDIT: PolicyRulesAdminPage,
         PAGE_SELECTION.RULES_ADMIN: RulesAdminPage,
         PAGE_SELECTION.PROFILER: ProfilerPage,
+        PAGE_SELECTION.CONFIG: ConfigAdminPage,
     }.get(page, RulesAdminPage)
     return route(*data)
 
 
 class MainWindow(UIConnectedWidget):
-
     __JSON_FILE_FILTERS = [
         (strings.FA_SESSION_FILES_FILTER_LABEL, "*.json"),
         (strings.ANY_FILES_FILTER_LABEL, "*"),
@@ -171,6 +177,26 @@ class MainWindow(UIConnectedWidget):
         return response != Gtk.ResponseType.OK
 
     def __pack_main_content(self, page: UIPage):
+        if hasattr(self.__page, "_unsaved_changes") and self.__page._unsaved_changes:
+            txt = (
+                UNSAVED_RULES_DIALOG_NAVIGATE_TEXT
+                if isinstance(self.__page, RulesAdminPage)
+                else UNSAVED_CONFIG_DIALOG_NAVIGATE_TEXT
+            )
+            unsaved_dialog = Gtk.MessageDialog(
+                transient_for=self.window,
+                message_type=Gtk.MessageType.INFO,
+                buttons=Gtk.ButtonsType.OK_CANCEL,
+                title=UNSAVED_DIALOG_TITLE,
+                text=txt,
+            )
+
+            unsaved_resp = unsaved_dialog.run()
+            unsaved_dialog.destroy()
+            if unsaved_resp == Gtk.ResponseType.CANCEL:
+                page.dispose()
+                return
+
         if self.__page:
             self.__page.dispose()
         self.__page = page
@@ -448,6 +474,9 @@ class MainWindow(UIConnectedWidget):
 
     def on_trustDbMenu_activate(self, menuitem, *args):
         self.__pack_main_content(router(PAGE_SELECTION.TRUST_DATABASE_ADMIN))
+
+    def on_configAdminMenu_activate(self, *args):
+        self.__pack_main_content(router(PAGE_SELECTION.CONFIG))
 
     def on_rulesAdminMenu_activate(self, *args, **kwargs):
         rulesPage = router(PAGE_SELECTION.RULES_ADMIN)

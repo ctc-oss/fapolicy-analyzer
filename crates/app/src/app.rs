@@ -11,6 +11,8 @@ use serde::Serialize;
 use std::path::PathBuf;
 
 use fapolicy_analyzer::users::{read_groups, read_users, Group, User};
+use fapolicy_daemon::conf::ops::Changeset as ConfigChanges;
+use fapolicy_daemon::conf::DB as ConfDB;
 use fapolicy_daemon::fapolicyd::Version;
 use fapolicy_rules::db::DB as RulesDB;
 use fapolicy_rules::ops::Changeset as RuleChanges;
@@ -31,6 +33,7 @@ pub struct State {
     pub rules_db: RulesDB,
     pub users: Vec<User>,
     pub groups: Vec<Group>,
+    pub daemon_config: ConfDB,
     pub daemon_version: Version,
 }
 
@@ -42,6 +45,7 @@ impl State {
             rules_db: RulesDB::default(),
             users: vec![],
             groups: vec![],
+            daemon_config: ConfDB::default(),
             daemon_version: fapolicy_daemon::version(),
         }
     }
@@ -59,6 +63,7 @@ impl State {
             rules_db,
             users: read_users()?,
             groups: read_groups()?,
+            daemon_config: fapolicy_daemon::conf::from_file(&cfg.system.config_file_path)?,
             daemon_version: fapolicy_daemon::version(),
         })
     }
@@ -78,6 +83,7 @@ impl State {
             rules_db: self.rules_db.clone(),
             users: self.users.clone(),
             groups: self.groups.clone(),
+            daemon_config: self.daemon_config.clone(),
             daemon_version: self.daemon_version.clone(),
         }
     }
@@ -91,6 +97,21 @@ impl State {
             rules_db: modified.clone(),
             users: self.users.clone(),
             groups: self.groups.clone(),
+            daemon_config: self.daemon_config.clone(),
+            daemon_version: self.daemon_version.clone(),
+        }
+    }
+
+    /// Apply a config changeset to this state, results in a new immutable state
+    pub fn apply_config_changes(&self, changes: ConfigChanges) -> Self {
+        let modified = changes.apply();
+        Self {
+            config: self.config.clone(),
+            trust_db: self.trust_db.clone(),
+            rules_db: self.rules_db.clone(),
+            users: self.users.clone(),
+            groups: self.groups.clone(),
+            daemon_config: modified.clone(),
             daemon_version: self.daemon_version.clone(),
         }
     }

@@ -2,8 +2,12 @@
 name = "fapolicy-daemon"
 description = "Bindings to fapolicyd"
 license = "MPL-2.0"
+
 version = "0.5.0"
 edition = "2021"
+
+[dev-dependencies]
+assert_matches = "1.5"
 
 [dependencies]
 nom = "7.1"

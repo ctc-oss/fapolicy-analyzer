@@ -32,7 +32,6 @@ class TestTodoReducer(TestCase):
         assert result == ()
 
     def test_add_todo(self):
-
         r1 = todos((), add_todo("todo1"))
         assert len(r1) == 1
 

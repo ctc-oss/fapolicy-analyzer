@@ -67,18 +67,33 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="expandButton">
+              <object class="GtkButton" id="expandRuleButton">
                 <property name="label">Rule Details</property>
                 <property name="visible">False</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_expandButton_clicked" swapped="no"/>
+                <signal name="clicked" handler="on_expandRuleButton_clicked" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
                 <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="expandConfigButton">
+                <property name="label">Config Details</property>
+                <property name="visible">False</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+                <signal name="clicked" handler="on_expandConfigButton_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
               </packing>
             </child>
           </object>

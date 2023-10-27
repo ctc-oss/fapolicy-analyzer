@@ -84,6 +84,7 @@ CHANGESET_ACTION_DEL = _("Delete")
 CHANGESET_ACTION_ADD_TRUST = _("Add Trust")
 CHANGESET_ACTION_DEL_TRUST = _("Delete Trust")
 CHANGESET_ACTION_RULES = _("Edit Rules")
+CHANGESET_ACTION_CONFIG = _("Edit Config")
 
 ADD_FILE_LABEL = _("Add File")
 OPEN_FILE_LABEL = _("Open File")
@@ -171,35 +172,53 @@ TRUST_DB_READ_FAILURE_DIALOG_TITLE = _("Trust Database")
 TRUST_DB_READ_FAILURE_DIALOG_TEXT = _(
     """
 The fapolicyd trusted resources database
-could not be opened and/or read or the rule file(s)
-location is incorrectly specified.
+could not be opened and/or read, or the rule file(s)
+location is incorrectly specified in the config file.
 
 Typical reasons for this failure:
 
-1. The user does not have read permissions to access
-the database directory or its contents.
-[Default: /var/lib/fapolicyd]
-
-2. The database does not exist or was not initialized.
+1. The database does not exist or was not initialized.
 
 Either the fapolicyd daemon package has not been
 installed or if installed, has not been executed. The first
 execution of the fapolicyd daemon will create and
 populate the trust database.
 
+2. The user does not have read permission to access
+the database directory or its contents.
+[Default: /var/lib/fapolicyd]
+
 3. The rule file(s) location is incorrectly specified in
-$(HOME)/.config/fapolicy-analyzer/fapolicy-analyzer.toml
+/etc/fapolicy-analyzer/config.toml or
+$(HOME)/.config/fapolicy-analyzer/config.toml
+
+4. The user does not have appropriate privileges to
+access or create the log or config file.
     """
 )
 
 APPLY_CHANGESETS_ERROR_MESSAGE = _("Error applying changes")
-UNSAVED_DIALOG_TITLE = _("Unsaved Rules Changes")
-UNSAVED_DIALOG_TEXT = _(
+UNSAVED_DIALOG_TITLE = _("Unsaved Changes")
+UNSAVED_RULES_DIALOG_DEPLOY_TEXT = _(
     """You have unsaved changes to the rules. If you deploy, your changes will be lost.
 
 Would you like to continue deploying?"""
 )
+UNSAVED_CONFIG_DIALOG_DEPLOY_TEXT = _(
+    """You have unsaved changes to the config. If you deploy, your changes will be lost.
 
+Would you like to continue deploying?"""
+)
+UNSAVED_RULES_DIALOG_NAVIGATE_TEXT = _(
+    """You have unsaved changes to the rules. If you navigate away, your changes will be lost.
+
+Would you like to continue?"""
+)
+UNSAVED_CONFIG_DIALOG_NAVIGATE_TEXT = _(
+    """You have unsaved changes to the config. If you navigate away, your changes will be lost.
+
+Would you like to continue?"""
+)
 FILTERING_DISABLED_DURING_LOADING_MESSAGE = _(
     "Filtering is disabled during trust loading"
 )
@@ -222,4 +241,10 @@ regexp: "RSYSLOG_TraditionalFileFormat"
 replace: "RSYSLOG_FileFormat"
     """
 )
-RULES_OVERRIDE_MESSAGE = _("""There are syntax errors in the rule editor.""")
+RULES_OVERRIDE_MESSAGE = _(
+    """There are syntax errors in the text editor.\n\nProceed only if you are sure you know what you are doing."""
+)
+CONFIG_TEXT_LOAD_ERROR = _("Error loading Config text")
+CONFIG_CHANGESET_PARSE_ERROR = _(
+    "Error parsing the config text. See log for more details."
+)

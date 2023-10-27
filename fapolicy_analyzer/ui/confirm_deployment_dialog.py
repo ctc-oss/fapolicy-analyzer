@@ -12,7 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
+import json
 from locale import gettext as _
 from typing import Sequence, Tuple
 
@@ -22,12 +22,17 @@ from fapolicy_analyzer.ui.rules.rules_difference_dialog import (
     RulesDifferenceDialog,
     filter_rule_diff,
 )
+from fapolicy_analyzer.ui.config.config_difference_dialog import (
+    ConfigDifferenceDialog,
+    filter_config_diff,
+)
 from fapolicy_analyzer.ui.changeset_wrapper import Changeset, TrustChangeset
 from fapolicy_analyzer.ui.configs import Colors
 from fapolicy_analyzer.ui.strings import (
     CHANGESET_ACTION_ADD_TRUST,
     CHANGESET_ACTION_DEL_TRUST,
     CHANGESET_ACTION_RULES,
+    CHANGESET_ACTION_CONFIG,
     DEPLOY_ANCILLARY_CONFIRM_DLG_ACTION_COL_HDR,
     DEPLOY_ANCILLARY_CONFIRM_DLG_CHANGE_COL_HDR,
 )
@@ -101,21 +106,53 @@ class ConfirmDeploymentDialog(UIBuilderWidget):
             message = " and ".join((m for m in [add_text, del_text] if m)) + " made"
             return ([(_(message), "Rules")], diffs)
 
+        def config_changes():
+            if not previous_system or not current_system:
+                return ([], "")
+            diffs = ""
+            diffs = filter_config_diff(previous_system, current_system)
+            adds_list = []
+            dels_list = []
+            for d in diffs:
+                if d.startswith("+"):
+                    adds_list += [d]
+                elif d.startswith("-"):
+                    dels_list += [d]
+
+            adds = len(adds_list)
+            dels = len(dels_list)
+            if (adds + dels) == 0:
+                return ([], "")
+
+            add_text = f"{adds} addition{'s' if adds > 1 else ''}" if adds else None
+            del_text = f"{dels} removal{'s' if dels > 1 else ''}" if dels else None
+            message = " and ".join((m for m in [add_text, del_text] if m)) + " made"
+            return ([(_(message), "Config")], diffs)
+
         def trust_changes():
             return [
                 t
                 for e in changesets
                 if isinstance(e, TrustChangeset)
-                for t in e.serialize().items()
+                for t in json.loads(e.serialize()["data"]).items()
             ]
 
         rule_messages, rule_diff = rules_changes()
-        expand_btn = self.get_object("expandButton")
-        expand_btn.set_visible(True) if [*rule_messages] else expand_btn.set_visible(
-            False
-        )
+        config_messages, config_diff = config_changes()
+        expand_rule_btn = self.get_object("expandRuleButton")
+        expand_rule_btn.set_visible(True) if [
+            *rule_messages
+        ] else expand_rule_btn.set_visible(False)
+        expand_config_btn = self.get_object("expandConfigButton")
+        expand_config_btn.set_visible(True) if [
+            *config_messages
+        ] else expand_config_btn.set_visible(False)
 
-        return ([*trust_changes(), *rule_messages], rule_diff)
+        return (
+            [*trust_changes(), *rule_messages, *config_messages],
+            rule_diff,
+            config_diff,
+        )
 
     def __load_store(
         self,
@@ -127,9 +164,10 @@ class ConfirmDeploymentDialog(UIBuilderWidget):
             "Add": CHANGESET_ACTION_ADD_TRUST,
             "Del": CHANGESET_ACTION_DEL_TRUST,
             "Rules": CHANGESET_ACTION_RULES,
+            "Config": CHANGESET_ACTION_CONFIG,
         }
         store = Gtk.ListStore(str, str)
-        pathActionPairs, _ = self.__to_path_action_pairs(
+        pathActionPairs, _, _ = self.__to_path_action_pairs(
             changesets, current_system, previous_system
         )
         for e in pathActionPairs:
@@ -141,8 +179,15 @@ class ConfirmDeploymentDialog(UIBuilderWidget):
     def get_save_state(self) -> bool:
         return self.get_object("saveStateCbn").get_active()
 
-    def on_expandButton_clicked(self, *args):
+    def on_expandRuleButton_clicked(self, *args):
         diff_dialog = RulesDifferenceDialog(
+            self.__current_system, self.__previous_system
+        ).get_ref()
+        diff_dialog.run()
+        diff_dialog.destroy()
+
+    def on_expandConfigButton_clicked(self, *args):
+        diff_dialog = ConfigDifferenceDialog(
             self.__current_system, self.__previous_system
         ).get_ref()
         diff_dialog.run()

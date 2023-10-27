@@ -9,18 +9,17 @@
 use pyo3::prelude::*;
 use pyo3::{exceptions, PyResult};
 use similar::{ChangeTag, TextDiff};
-use std::fs;
 
 use fapolicy_analyzer::events;
 use fapolicy_analyzer::events::db::DB as EventDB;
 use fapolicy_app::app::State;
 use fapolicy_app::cfg;
 use fapolicy_app::sys::deploy_app_state;
-use fapolicy_daemon::fapolicyd;
 use fapolicy_trust::stat::Status::*;
 
 use crate::acl::{PyGroup, PyUser};
 use crate::analysis::PyEventLog;
+use crate::daemon::PyConfigInfo;
 use crate::rules::PyRule;
 use crate::trust;
 use crate::{daemon, rules};
@@ -103,6 +102,12 @@ impl PySystem {
         self.rs.apply_rule_changes(change.into()).into()
     }
 
+    /// Apply the changeset to the state of this System, produces a new System
+    fn apply_config_changes(&self, change: daemon::PyChangeset) -> PySystem {
+        log::debug!("apply_rule_changes");
+        self.rs.apply_config_changes(change.into()).into()
+    }
+
     /// Update the host system with this state of this System and signal fapolicyd to reload trust
     pub fn deploy(&self) -> PyResult<()> {
         log::debug!("deploy");
@@ -168,15 +173,14 @@ impl PySystem {
         rules::to_text(&self.rs.rules_db)
     }
 
-    // todo;; will not throw once the config backend is available
-    fn config_text(&self) -> PyResult<String> {
-        fs::read_to_string(fapolicyd::CONFIG_FILE_PATH).map_err(|e| {
-            exceptions::PyRuntimeError::new_err(format!(
-                "Failed to static load conf from {} {:?}",
-                fapolicyd::CONFIG_FILE_PATH,
-                e
-            ))
-        })
+    fn config_text(&self) -> String {
+        log::debug!("config_text");
+        daemon::conf_to_text(&self.rs.daemon_config)
+    }
+
+    fn config_info(&self) -> Vec<PyConfigInfo> {
+        log::debug!("config_info");
+        daemon::conf_info(&self.rs.daemon_config)
     }
 
     // we rely on the gil to keep this synced up
@@ -195,6 +199,28 @@ impl PySystem {
     }
 }
 
+// todo;; this will become more advanced and based on the config object rather than text
+#[pyfunction]
+fn config_difference(lhs: &PySystem, rhs: &PySystem) -> String {
+    log::debug!("config_difference");
+
+    let ltxt = lhs.config_text();
+    let rtxt = rhs.config_text();
+    let diff = TextDiff::from_lines(&ltxt, &rtxt);
+
+    let mut diff_lines = vec![];
+    for line in diff.iter_all_changes() {
+        let sign = match line.tag() {
+            ChangeTag::Delete => "-",
+            ChangeTag::Insert => "+",
+            ChangeTag::Equal => " ",
+        };
+        diff_lines.push(format!("{}{}", sign, line));
+    }
+    diff_lines.join("")
+}
+
+// todo;; this should become more advanced and be based on rule db rather than text
 #[pyfunction]
 fn rules_difference(lhs: &PySystem, rhs: &PySystem) -> String {
     log::debug!("rules_difference");
@@ -230,6 +256,7 @@ fn checked_system(py: Python) -> PyResult<PySystem> {
 
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PySystem>()?;
+    m.add_function(wrap_pyfunction!(config_difference, m)?)?;
     m.add_function(wrap_pyfunction!(rules_difference, m)?)?;
     m.add_function(wrap_pyfunction!(checked_system, m)?)?;
     Ok(())

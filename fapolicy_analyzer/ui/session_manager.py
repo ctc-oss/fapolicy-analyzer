@@ -28,8 +28,6 @@ from fapolicy_analyzer.ui.actions import (
     NotificationType,
     add_notification,
     apply_changesets,
-    clear_changesets,
-    restore_system_checkpoint,
 )
 from fapolicy_analyzer.ui.changeset_wrapper import Changeset
 from fapolicy_analyzer.ui.store import dispatch, get_system_feature
@@ -114,7 +112,6 @@ class SessionManager:
 
     # ######################## Edit Session Mgmt ############################
     def save_edit_session(self, data: Sequence[Changeset], strJsonFile: str):
-
         # Convert changeset list to list of dicts containing path/action pairs
         dictPA = [c.serialize() for c in data]
         logging.debug("Path/Action Dict: {}".format(dictPA))
@@ -141,14 +138,12 @@ class SessionManager:
                 )
                 return False
 
-        logging.debug("Loaded dict = ", data)
-        changesets = [Changeset.deserialize(d) for d in data]
+        logging.debug(f"Loaded dict = {data}")
+        changesets = [Changeset.load(d) for d in data]
         logging.debug("SessionManager::open_edit_session():{}".format(changesets))
 
         if changesets:
-            # Deleting current edit session history prior to replacing it.
-            dispatch(restore_system_checkpoint())
-            dispatch(clear_changesets())
+            # Layer changeset on top of existing system changeset (if any)
             dispatch(apply_changesets(*changesets))
         return True
 

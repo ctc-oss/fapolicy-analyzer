@@ -18,27 +18,30 @@ import json
 import os
 import time
 from datetime import datetime as DT
-from unittest.mock import MagicMock, call, mock_open
+from unittest.mock import MagicMock, mock_open
 
 import pytest
-from callee import Attr, EndsWith, InstanceOf, StartsWith
-from fapolicy_analyzer.redux import Action
+from callee import Attr, EndsWith, StartsWith
 from fapolicy_analyzer.ui.actions import (
     ADD_NOTIFICATION,
     APPLY_CHANGESETS,
-    CLEAR_CHANGESETS,
-    RESTORE_SYSTEM_CHECKPOINT,
 )
-from fapolicy_analyzer.ui.changeset_wrapper import RuleChangeset, TrustChangeset
+from fapolicy_analyzer.ui.changeset_wrapper import (
+    RuleChangeset,
+    TrustChangeset,
+)
 from fapolicy_analyzer.ui.session_manager import SessionManager
 
 import context  # noqa: F401
 
 test_changes = [
-    "foo rules",
     {
-        "/data_space/this/is/a/longer/path/now_is_the_time.txt": "Del",
-        "/data_space/Integration.json": "Add",
+        "type": "rules",
+        "data": "foo rules",
+    },
+    {
+        "type": "trust",
+        "data": """{"/data_space/Integration.json":"Add","/data_space/this/is/a/longer/path/now_time.txt":"Del"}""",
     },
 ]
 
@@ -51,7 +54,7 @@ test_json = json.dumps(
 
 test_changesets = [RuleChangeset(), TrustChangeset()]
 test_changesets[0].parse("foo rules")
-test_changesets[1].delete("/data_space/this/is/a/longer/path/now_is_the_time.txt")
+test_changesets[1].delete("/data_space/this/is/a/longer/path/now_time.txt")
 test_changesets[1].add("/data_space/Integration.json")
 
 
@@ -79,10 +82,10 @@ def uut_autosave_enabled():
 @pytest.fixture
 def autosaved_files():
     with open("/tmp/FaCurrentSession.tmp_20210803_130622_059045.json", "w") as fp0:
-        fp0.write(f"""[{json.dumps(test_changes[0], sort_keys=True, indent=4)}]""")
+        fp0.write(f"""[{json.dumps(test_changes[0], sort_keys=True)}]""")
 
     with open("/tmp/FaCurrentSession.tmp_20210803_130622_065690.json", "w") as fp1:
-        fp1.write(json.dumps(test_changes, sort_keys=True, indent=4))
+        fp1.write(json.dumps(test_changes, sort_keys=True))
 
     # yields  a list of the autosaved files
     yield [
@@ -105,18 +108,12 @@ def test_open_edit_session(uut, mock_dispatch, mocker):
     mocker.patch("builtins.open", mock_open(read_data=test_json))
     uut.open_edit_session("foo")
 
-    mock_dispatch.assert_has_calls(
-        [
-            call(InstanceOf(Action) & Attr(type=RESTORE_SYSTEM_CHECKPOINT)),
-            call(InstanceOf(Action) & Attr(type=CLEAR_CHANGESETS)),
-            call(InstanceOf(Action) & Attr(type=APPLY_CHANGESETS)),
-        ]
-    )
+    mock_dispatch.assert_called_with(Attr(type=APPLY_CHANGESETS))
 
     # verify changesets
     expected = test_changes
     # parse changesets to json string to compare
-    args, _ = mock_dispatch.call_args_list[2]
+    args, _ = mock_dispatch.call_args
     actual = [
         {path: action for path, action in c.serialize().items()}
         if isinstance(c, TrustChangeset)
@@ -276,18 +273,13 @@ def test_restore_previous_session(uut_autosave_enabled, autosaved_files, mock_di
     # Convert to sets so that ordering is irrelevant
     assert set(listTmpFiles) == set(autosaved_files)
     assert uut_autosave_enabled.restore_previous_session()
-    mock_dispatch.assert_has_calls(
-        [
-            call(InstanceOf(Action) & Attr(type=RESTORE_SYSTEM_CHECKPOINT)),
-            call(InstanceOf(Action) & Attr(type=CLEAR_CHANGESETS)),
-            call(InstanceOf(Action) & Attr(type=APPLY_CHANGESETS)),
-        ]
-    )
+    mock_dispatch.assert_called_with(Attr(type=APPLY_CHANGESETS))
 
     # verify changesets
     expected = test_changes
     # parse changesets to json string to compare
-    args, _ = mock_dispatch.call_args_list[2]
+    args, _ = mock_dispatch.call_args
+
     actual = [
         {path: action for path, action in c.serialize().items()}
         if isinstance(c, TrustChangeset)

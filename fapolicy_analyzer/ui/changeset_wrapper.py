@@ -12,14 +12,18 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
+import json
 from abc import ABC, abstractmethod
-from typing import Dict, Generic, TypeVar, Union
+from typing import Dict, Generic, TypeVar, List
 
 import fapolicy_analyzer
-from fapolicy_analyzer import System
+from fapolicy_analyzer import System, ConfigInfo
 
 T = TypeVar("T", Dict[str, str], str)
+
+
+def changeset_dict_to_json(d: dict) -> str:
+    return json.dumps(d, sort_keys=True, separators=(",", ":"))
 
 
 class Changeset(ABC, Generic[T]):
@@ -31,22 +35,59 @@ class Changeset(ABC, Generic[T]):
     def serialize(self) -> T:
         """Serialize this changeset to a serializable object"""
 
-    @classmethod
-    def deserialize(cls, data: Union[Dict[str, str], str]) -> "Changeset":
-        if isinstance(data, dict):
-            tcs = TrustChangeset()
-            for path, action in data.items():
-                if action == "Add":
-                    tcs.add(path)
-                elif action == "Del":
-                    tcs.delete(path)
-            return tcs
-        elif isinstance(data, str):
-            rcs = RuleChangeset()
-            rcs.parse(data)
-            return rcs
+    @staticmethod
+    @abstractmethod
+    def deserialize(d: str) -> T:
+        """Deserialize this changeset from serialized data"""
 
-        raise TypeError("Invalid changeset type to deserialize")
+    @staticmethod
+    def load(dd: dict) -> "Changeset":
+        if not dd:
+            raise TypeError("Invalid changeset type to deserialize")
+
+        if "type" not in dd:
+            raise TypeError("Changeset does not indicate type")
+
+        t = dd["type"]
+        d = dd["data"]
+
+        if t == "trust":
+            return TrustChangeset.deserialize(d)
+        elif t == "rules":
+            return RuleChangeset.deserialize(d)
+        elif t == "config":
+            return ConfigChangeset.deserialize(d)
+        else:
+            raise TypeError(f"Invalid changeset type {t}")
+
+
+class ConfigChangeset(Changeset[str]):
+    def __init__(self):
+        self.__wrapped = fapolicy_analyzer.ConfigChangeset()
+
+    def parse(self, change: str):
+        self.__wrapped.parse(change)
+
+    def is_valid(self) -> bool:
+        return self.__wrapped.is_valid()
+
+    def info(self) -> List[ConfigInfo]:
+        return self.__wrapped.config_info()
+
+    def apply_to_system(self, system: System) -> System:
+        return system.apply_config_changes(self.__wrapped)
+
+    def serialize(self) -> Dict[str, str]:
+        return {
+            "type": "config",
+            "data": self.__wrapped.text(),
+        }
+
+    @staticmethod
+    def deserialize(d: str) -> "ConfigChangeset":
+        ccs = ConfigChangeset()
+        ccs.parse(d)
+        return ccs
 
 
 class RuleChangeset(Changeset[str]):
@@ -62,8 +103,14 @@ class RuleChangeset(Changeset[str]):
     def apply_to_system(self, system: System) -> System:
         return system.apply_rule_changes(self.__wrapped)
 
-    def serialize(self) -> str:
-        return self.__wrapped.text()
+    def serialize(self) -> Dict[str, str]:
+        return {"type": "rules", "data": self.__wrapped.text()}
+
+    @staticmethod
+    def deserialize(d: str) -> "RuleChangeset":
+        rcs = RuleChangeset()
+        rcs.parse(d)
+        return rcs
 
 
 class TrustChangeset(Changeset[Dict[str, str]]):
@@ -76,8 +123,27 @@ class TrustChangeset(Changeset[Dict[str, str]]):
     def delete(self, change: str):
         self.__wrapped.del_trust(change)
 
+    def action_map(self) -> Dict[str, str]:
+        return self.__wrapped.get_path_action_map()
+
     def apply_to_system(self, system: System) -> System:
         return system.apply_changeset(self.__wrapped)
 
     def serialize(self) -> Dict[str, str]:
-        return self.__wrapped.get_path_action_map()
+        return {
+            "type": "trust",
+            "data": changeset_dict_to_json(self.__wrapped.get_path_action_map()),
+        }
+
+    @staticmethod
+    def deserialize(d) -> "TrustChangeset":
+        tcs = TrustChangeset()
+        if isinstance(d, str):
+            d = json.loads(d)
+        for path, action in d.items():
+            if action == "Add":
+                tcs.add(path)
+            elif action == "Del":
+                tcs.delete(path)
+
+        return tcs

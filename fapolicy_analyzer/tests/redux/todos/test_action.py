@@ -33,7 +33,6 @@ from .action import (
 
 class TestAction(TestCase):
     def test_add_todo(self):
-
         text = "My Action"
 
         action = add_todo(text)
@@ -41,7 +40,6 @@ class TestAction(TestCase):
         assert action.payload.text == text
 
     def test_visibility_filter(self):
-
         fltr = VisibilityFilters.SHOW_ALL
 
         action = set_visibility_filter(fltr)
@@ -49,7 +47,6 @@ class TestAction(TestCase):
         assert action.payload == fltr
 
     def test_toggle_todo(self):
-
         item_id = 10
 
         action = toggle_todo(item_id)

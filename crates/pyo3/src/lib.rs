@@ -21,7 +21,6 @@ pub mod trust;
 
 #[pymodule]
 fn rust(_py: Python, m: &PyModule) -> PyResult<()> {
-    pyo3_log::init();
     auparse::init_module(_py, m)?;
     acl::init_module(_py, m)?;
     analysis::init_module(_py, m)?;
@@ -32,5 +31,11 @@ fn rust(_py: Python, m: &PyModule) -> PyResult<()> {
     rules::init_module(_py, m)?;
     system::init_module(_py, m)?;
     trust::init_module(_py, m)?;
+    m.add_function(wrap_pyfunction!(init_native_logging, m)?)?;
     Ok(())
+}
+
+#[pyfunction]
+fn init_native_logging() {
+    pyo3_log::init();
 }
