@@ -19,10 +19,12 @@
 
 ## Features
 
-1. Edit rules with validation and syntax highlighting
-2. Diff trust between fapolicyd trust db and disk
-3. Analyze fapolicyd logs and fix trust discrepancies
-4. Profile application disk access in fapolicy permissive mode
+1. Editing of rules, with validation and syntax highlighting
+2. Analysis of trust differences between what fapolicyd believes and what exists on disk
+3. Analysis of fapolicyd logs to understand fapolicyd runtime behavior
+4. Analysis of disk access by profiling application execution in permissive mode
+5. Editing the fapolicyd configuration with syntax validation
+6. Control of the fapolicyd daemon via DBUS signals
 
 See the [**User Guide**][1] for details.
 
