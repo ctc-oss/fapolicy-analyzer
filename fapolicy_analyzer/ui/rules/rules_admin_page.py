@@ -270,6 +270,7 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
             self.__rules_text = ""
             self.__rules = []
             self.__load_rules()
+            self._unsaved_changes = False
 
         # Handle return from loading parsed rules object
         if not rules_state.loading and self.__error_rules != rules_state.error:
