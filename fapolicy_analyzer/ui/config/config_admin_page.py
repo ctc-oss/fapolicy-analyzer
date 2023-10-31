@@ -158,6 +158,7 @@ class ConfigAdminPage(UIConnectedWidget):
             self.__changesets = changesetState.changesets
             self.__config_text = ""
             self.__load_config()
+            self._unsaved_changes = False
 
         if not text_state.loading and self.__error_text != text_state.error:
             self.__error_text = text_state.error
