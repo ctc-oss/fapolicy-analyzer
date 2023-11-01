@@ -81,6 +81,8 @@ class ProfilerPage(UIConnectedWidget, UIPage, Events):
         self.__events__ = [
             "analyze_button_pushed",
             "refresh_toolbar",
+            # fixes https://github.com/ctc-oss/fapolicy-analyzer/issues/940
+            "_unsaved_changes",
         ]
         Events.__init__(self)
         actions = {
