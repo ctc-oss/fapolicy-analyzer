@@ -18,11 +18,11 @@
     },
     {
       "platform": "rhel",
-      "dist": "el8",
-      "spec": "scripts/srpm/fapolicy-analyzer.el8.spec",
-      "image": "rockylinux:8",
-      "chroot": "epel-8-x86_64",
-      "version": "8"
+      "dist": "el9",
+      "spec": "scripts/srpm/fapolicy-analyzer.el9.spec",
+      "image": "rockylinux:9",
+      "chroot": "epel-9-x86_64",
+      "version": "9"
     }
   ]
 }
