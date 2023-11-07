@@ -7,6 +7,6 @@ edition = "2021"
 
 [dependencies]
 data-encoding = "2.3.1"
-ring = "0.16.19"
+ring = "0.17"
 thiserror = "1.0"
 nom = "7.1"

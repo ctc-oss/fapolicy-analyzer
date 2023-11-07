@@ -12,6 +12,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from typing import Optional
+
 from fapolicy_analyzer.ui.editable_text_view import EditableTextView
 
 
@@ -24,3 +26,6 @@ class ConfigTextView(EditableTextView):
 
     def on_config_changed(self, buffer):
         self.config_changed(self._get_text())
+
+    def _get_view_lang_id(self) -> Optional[str]:
+        return None
