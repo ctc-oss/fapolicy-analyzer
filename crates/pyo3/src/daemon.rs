@@ -79,13 +79,13 @@ impl PyHandle {
         self.rs.valid().unwrap_or(false)
     }
 
-    #[args(timeout = 15)]
+    #[pyo3(signature = (timeout = 15))]
     pub fn wait_until_active(&self, timeout: usize) -> PyResult<()> {
         wait_for_service(&self.rs, Active, timeout)
             .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
     }
 
-    #[args(timeout = 15)]
+    #[pyo3(signature = (timeout = 15))]
     pub fn wait_until_inactive(&self, timeout: usize) -> PyResult<()> {
         wait_for_service(&self.rs, Inactive, timeout)
             .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
