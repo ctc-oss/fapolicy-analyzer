@@ -28,7 +28,7 @@ from fapolicy_analyzer.ui.changeset_wrapper import (
 def test_deserialize_RuleChangeset():
     expected = {"type": "rules", "data": "rules"}
     actual = Changeset.load(expected)
-    assert type(actual) == RuleChangeset
+    assert type(actual) is RuleChangeset
     assert actual.serialize() == expected
 
 
@@ -36,14 +36,14 @@ def test_deserialize_RuleChangeset():
 def test_deserialize_TrustChangeset(action):
     expected = {"type": "trust", "data": changeset_dict_to_json({"addition": action})}
     actual = Changeset.load(expected)
-    assert type(actual) == TrustChangeset
+    assert type(actual) is TrustChangeset
     assert actual.serialize() == expected
 
 
 def test_deserialize_ConfigChangeset():
     expected = {"type": "config", "data": "config"}
     actual = Changeset.load(expected)
-    assert type(actual) == ConfigChangeset
+    assert type(actual) is ConfigChangeset
     assert actual.serialize() == expected
 
 
