@@ -1,8 +1,24 @@
+%bcond_without check
+
 Summary:       File Access Policy Analyzer
 Name:          fapolicy-analyzer
 Version:       1.2.0
 Release:       1%{?dist}
-License:       GPL-3.0-or-later
+
+SourceLicense: GPL-3.0-or-later
+# Apache-2.0
+# Apache-2.0 OR MIT
+# Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT
+# BSD-3-Clause
+# ISC
+# ISC AND OpenSSL AND MIT
+# MIT
+# MIT OR Apache-2.0
+# MIT OR X11 OR Apache-2.0
+# MPL-2.0
+# Unlicense OR MIT
+License:       GPL-3.0-or-later AND Apache-2.0 AND BSD-3-Clause AND ISC AND MIT AND MPL-2.0 AND OpenSSL AND (Apache-2.0 OR MIT) AND (Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT) AND (MIT OR X11 OR Apache-2.0) AND (Unlicense OR MIT)
+
 URL:           https://github.com/ctc-oss/fapolicy-analyzer
 Source0:       %{url}/releases/download/v%{version}/%{name}-%{version}.tar.gz
 
@@ -22,81 +38,8 @@ BuildRequires: desktop-file-utils
 BuildRequires: clang
 BuildRequires: audit-libs-devel
 
-BuildRequires: rust-packaging
+BuildRequires: cargo-rpm-macros
 BuildRequires: python3dist(setuptools-rust)
-
-BuildRequires: rust-assert_matches-devel
-BuildRequires: rust-autocfg-devel
-BuildRequires: (crate(bindgen/default) = 0.63.0)
-BuildRequires: rust-bitflags-devel
-BuildRequires: rust-bumpalo-devel
-BuildRequires: rust-byteorder-devel
-BuildRequires: rust-cc-devel
-BuildRequires: rust-cfg-if-devel
-BuildRequires: rust-chrono-devel
-BuildRequires: rust-confy-devel
-BuildRequires: rust-crossbeam-channel-devel
-BuildRequires: rust-crossbeam-deque-devel
-BuildRequires: rust-crossbeam-epoch-devel
-BuildRequires: rust-crossbeam-utils-devel
-BuildRequires: rust-data-encoding-devel
-BuildRequires: rust-dbus-devel
-BuildRequires: rust-directories-devel
-BuildRequires: rust-dirs-sys-devel
-BuildRequires: rust-either-devel
-BuildRequires: rust-fastrand-devel
-BuildRequires: rust-getrandom-devel
-BuildRequires: rust-iana-time-zone-devel
-BuildRequires: rust-is_executable-devel
-BuildRequires: rust-instant-devel
-BuildRequires: rust-libloading-devel
-BuildRequires: rust-lazy_static-devel
-BuildRequires: rust-libc-devel
-BuildRequires: rust-libdbus-sys-devel
-BuildRequires: rust-lmdb-devel
-BuildRequires: rust-lock_api-devel
-BuildRequires: rust-log-devel
-BuildRequires: rust-memchr-devel
-BuildRequires: rust-memoffset-devel
-BuildRequires: rust-minimal-lexical-devel
-BuildRequires: rust-nom-devel
-BuildRequires: rust-num-integer-devel
-BuildRequires: rust-num-traits-devel
-BuildRequires: rust-num_cpus-devel
-BuildRequires: rust-once_cell-devel
-BuildRequires: rust-parking_lot-devel
-BuildRequires: rust-parking_lot_core-devel
-BuildRequires: rust-pkg-config-devel
-BuildRequires: rust-proc-macro-hack-devel
-BuildRequires: rust-proc-macro2-devel
-BuildRequires: (crate(pyo3/default) >= 0.15.0 with crate(pyo3/default) < 0.16.0)
-BuildRequires: (crate(pyo3-macros/default) >= 0.15.0 with crate(pyo3-macros/default) < 0.16.0)
-BuildRequires: (crate(pyo3-build-config/default) >= 0.15.0 with crate(pyo3-build-config/default) < 0.16.0)
-BuildRequires: (crate(pyo3-macros-backend/default) >= 0.15.0 with crate(pyo3-macros-backend/default) < 0.16.0)
-BuildRequires: rust-pyo3-log-devel
-BuildRequires: rust-quote-devel
-BuildRequires: rust-rayon-devel
-BuildRequires: rust-rayon-core-devel
-BuildRequires: rust-remove_dir_all-devel
-BuildRequires: rust-ring-devel
-BuildRequires: rust-scopeguard-devel
-BuildRequires: rust-serde-devel
-BuildRequires: rust-serde_derive-devel
-BuildRequires: rust-similar-devel
-BuildRequires: rust-smallvec-devel
-BuildRequires: rust-spin-devel
-BuildRequires: rust-syn-devel
-BuildRequires: rust-tempfile-devel
-BuildRequires: rust-thiserror-devel
-BuildRequires: rust-thiserror-impl-devel
-BuildRequires: rust-time0.1-devel
-BuildRequires: rust-toml-devel
-BuildRequires: rust-unicode-xid-devel
-BuildRequires: rust-unindent-devel
-BuildRequires: rust-untrusted-devel
-BuildRequires: rust-which-devel
-BuildRequires: rust-paste-devel
-BuildRequires: rust-indoc-devel
 
 Requires:      python3
 Requires:      python3-gobject
@@ -149,6 +92,9 @@ scripts/build-info.py --os --time
 echo "audit" > FEATURES
 %endif
 
+%generate_buildrequires
+%cargo_generate_buildrequires -a
+
 %build
 # ensure standard Rust compiler flags are set
 export RUSTFLAGS="%{build_rustflags}"
@@ -156,6 +102,9 @@ export RUSTFLAGS="%{build_rustflags}"
 %{python3} setup.py compile_catalog -f
 %{python3} help build
 %{python3} setup.py bdist_wheel
+
+%{cargo_license_summary}
+%{cargo_license} > LICENSE.dependencies
 
 %install
 %{py3_install_wheel %{module}-%{module_version}*%{_target_cpu}.whl}
@@ -173,6 +122,7 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
 %files -n %{name} -f %{name}.lang
 %doc scripts/srpm/README
 %license LICENSE
+%license LICENSE.dependencies
 %{python3_sitearch}/%{module}
 %{python3_sitearch}/%{module}-%{module_version}*
 %attr(755,root,root) %{_sbindir}/%{name}
