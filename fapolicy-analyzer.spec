@@ -58,7 +58,6 @@ Requires:      gnome-icon-theme
 Requires:      webkit2gtk3
 Requires:      mesa-dri-drivers
 
-# https://github.com/ctc-oss/fapolicy-analyzer/issues/947
 # rust-ring-devel does not support s390x and ppc64le:
 # https://bugzilla.redhat.com/show_bug.cgi?id=1869980
 ExcludeArch:   s390x %{power64}
