@@ -2,26 +2,27 @@
 name = "fapolicy-pyo3"
 description = "Python bindings for the fapolicy-analyzer"
 license = "MPL-2.0"
-version = "0.4.3"
-edition = "2018"
+
+version = "0.4.2"
+edition = "2021"
 
 [lib]
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = { version = "0.15", features = ["abi3-py36", "auto-initialize"] }
+pyo3 = { version = "0.19", features = ["abi3", "auto-initialize"] }
 similar = "2.1"
 chrono = "0.4"
 tempfile = "3.3"
 log = "0.4"
 pyo3-log = "0.8"
 
-fapolicy-analyzer = { version = "*", path = "../analyzer" }
-fapolicy-auparse = { version = "*", path = "../auparse" }
-fapolicy-app = { version = "*", path = "../app" }
-fapolicy-daemon = { version = "*", path = "../daemon" }
-fapolicy-rules = { version = "*", path = "../rules" }
-fapolicy-trust = { version = "*", path = "../trust" }
+fapolicy-analyzer = { path = "../analyzer" }
+fapolicy-auparse = { path = "../auparse" }
+fapolicy-app = { path = "../app" }
+fapolicy-daemon = { path = "../daemon" }
+fapolicy-rules = { path = "../rules" }
+fapolicy-trust = { path = "../trust" }
 
 [features]
 default = []

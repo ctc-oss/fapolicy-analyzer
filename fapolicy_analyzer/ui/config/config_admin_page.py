@@ -170,7 +170,6 @@ class ConfigAdminPage(UIConnectedWidget):
             and not text_state.loading
             and self.__config_text != text_state.config_text
         ):
-
             self.__loading_text = False
             self.__config_text = text_state.config_text
             self._text_view.render_text(self.__config_text)

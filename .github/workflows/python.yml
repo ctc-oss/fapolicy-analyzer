@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        python-version: ["3.6", "3.9"]
+        python-version: ["3.9", "3.10", "3.11"]
     steps:
       - uses: actions/checkout@v3
       - name: Install requirements
@@ -51,14 +51,14 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
-      - name: Set up Python 3.6
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.6
+          python-version: 3.9
       - name: Format check with black
         uses: psf/black@stable
         with:
-          options: "--check --diff -t py36"
+          options: "--check --diff -t py39"
           src: "./fapolicy_analyzer"
           version: "~= 22.0"
 
@@ -67,10 +67,10 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
-      - name: Set up Python 3.6
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.6
+          python-version: 3.9
       - name: Install dependencies
         id: install_deps
         run: |
@@ -84,7 +84,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        python-version: ["3.6", "3.9"]
+        python-version: ["3.9", "3.10", "3.11"]
     steps:
       - uses: actions/checkout@v3
       - name: Install requirements

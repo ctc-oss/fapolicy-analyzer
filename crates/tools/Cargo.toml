@@ -3,7 +3,7 @@ name = "fapolicy-tools"
 description = "Tools to assist with the configuration and maintenance of fapolicyd"
 license = "GPL-3.0-or-later"
 version = "0.5.0"
-edition = "2018"
+edition = "2021"
 
 [[bin]]
 name = "tdb"
@@ -26,9 +26,9 @@ thiserror = "1.0"
 ariadne = "0.1"
 log = "0.4"
 
-fapolicy-analyzer = { version = "*", path = "../analyzer" }
-fapolicy-app = { version = "*", path = "../app" }
-fapolicy-daemon = { version = "*", path = "../daemon" }
-fapolicy-rules = { version = "*", path = "../rules" }
-fapolicy-trust = { version = "*", path = "../trust" }
-fapolicy-util = { version = "*", path = "../util" }
+fapolicy-analyzer = { path = "../analyzer" }
+fapolicy-app = { path = "../app" }
+fapolicy-daemon = { path = "../daemon" }
+fapolicy-rules = { path = "../rules" }
+fapolicy-trust = { path = "../trust" }
+fapolicy-util = { path = "../util" }

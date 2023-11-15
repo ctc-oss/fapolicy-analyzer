@@ -2,8 +2,9 @@
 name = "fapolicy-daemon"
 description = "Bindings to fapolicyd"
 license = "MPL-2.0"
-version = "0.5.1"
-edition = "2018"
+
+version = "0.5.0"
+edition = "2021"
 
 [dev-dependencies]
 assert_matches = "1.5"
@@ -15,6 +16,6 @@ dbus = "0.9"
 tempfile = "3.3"
 log = "0.4"
 
-fapolicy-trust = { version = "*", path = "../trust" }
-fapolicy-rules = { version = "*", path = "../rules" }
-fapolicy-util = { version = "*", path = "../util" }
+fapolicy-trust = { path = "../trust" }
+fapolicy-rules = { path = "../rules" }
+fapolicy-util = { path = "../util" }
