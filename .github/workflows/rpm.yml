@@ -190,7 +190,7 @@ jobs:
       - name: Build SRPM
         run: |
           make -f .copr/Makefile             \
-               vendor build export           \
+               vendor           \
                outdir=/tmp/archives          \
                spec=${{ matrix.props.spec }} \
                OS_ID=${{ matrix.props.platform }}
@@ -215,145 +215,12 @@ jobs:
           path: |
             /tmp/archives/*.tar.gz
 
-      - name: Upload SRPMs
-        uses: actions/upload-artifact@v3
-        with:
-          name: srpm-artifacts
-          path: |
-            /tmp/archives/*.src.rpm
-
       - name: Checksum artifacts
         run: |
           sha256sum /tmp/archives/* || true
 
-  copr:
-    needs: [ config, srpm ]
-    name: Copr Build ${{ matrix.props.dist }}
-    if: needs.config.outputs.is-copr-enabled == 'true'
-    container: 'rockylinux:8.6'
-    runs-on: ubuntu-20.04
-    strategy:
-      matrix: ${{ fromJson(needs.config.outputs.matrix) }}
-    steps:
-      - name: Install Copr CLI
-        run: |
-          dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
-          dnf install -y copr-cli
-
-      - name: Download srpm artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: srpm-artifacts
-          path: /tmp/
-
-      - name: Checksum artifacts
-        run: |
-          sha256sum /tmp/*.src.rpm
-
-      - name: Install Config
-        run: |
-          mkdir -p $HOME/.config
-          echo "[copr-cli]" > $HOME/.config/copr 
-          echo "username = ${COPR_USER}" >> $HOME/.config/copr
-          echo "login = ${COPR_LOGIN}" >> $HOME/.config/copr
-          echo "token = ${COPR_TOKEN}" >> $HOME/.config/copr
-          echo "copr_url = https://copr.fedorainfracloud.org" >> $HOME/.config/copr
-        env:
-          COPR_USER:  ${{ secrets.COPR_API_USER }}
-          COPR_LOGIN: ${{ secrets.COPR_API_LOGIN }}
-          COPR_TOKEN: ${{ secrets.COPR_API_TOKEN }}
-
-      - name: build
-        run: |
-          copr-cli build --chroot ${{ matrix.props.chroot }} fapolicy-analyzer /tmp/fapolicy-analyzer-*.${{ matrix.props.dist }}.src.rpm
-
-  rpm:
-    needs: [ config, srpm ]
-    name: Rebuild ${{ matrix.props.dist }}
-    container: ${{ matrix.props.image }}
-    runs-on: ubuntu-20.04
-    strategy:
-      matrix: ${{ fromJson(needs.config.outputs.matrix )}}
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.ref }}
-
-      - name: Download srpm artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: srpm-artifacts
-          path: /tmp/src/
-
-      - name: Checksum artifacts
-        run: |
-          sha256sum /tmp/src/*
-
-      - name: Enable EPEL
-        if: startsWith(matrix.props.dist, 'el')
-        run: |
-          dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-${{ matrix.props.version }}.noarch.rpm
-
-      - name: Install RPM build dependencies
-        run: |
-          dnf install -y make rpm rpmdevtools dnf-plugins-core
-
-      - name: Rebuild SRPM
-        run: |
-          dnf builddep -y ${{ matrix.props.spec }}
-          rpmbuild --rebuild /tmp/src/fapolicy-analyzer-*.${{ matrix.props.dist }}.src.rpm
-
-      - name: Export RPMs
-        run: |
-          mkdir -p /tmp/archives
-          ls | grep -v debug | xargs mv -t /tmp/archives
-        working-directory: /github/home/rpmbuild/RPMS/x86_64
-
-      - name: Upload RPMs
-        uses: actions/upload-artifact@v3
-        with:
-          name: rpm-artifacts
-          path: |
-            /tmp/archives/*.x86_64.rpm
-
-  install:
-    needs: [ config, srpm, rpm ]
-    name: Install ${{ matrix.props.dist }}
-    container: ${{ matrix.props.image }}
-    runs-on: ubuntu-20.04
-    strategy:
-      matrix: ${{ fromJson(needs.config.outputs.matrix )}}
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.ref }}
-
-      - name: Download rpm artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: rpm-artifacts
-          path: /tmp/src/
-
-      - name: Checksum artifacts
-        run: |
-          sha256sum /tmp/src/*
-
-      - name: Enable EPEL
-        if: startsWith(matrix.props.dist, 'el')
-        run: |
-          dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-${{ matrix.props.version }}.noarch.rpm
-
-      - name: Install RPM
-        run: |
-          dnf install -y /tmp/src/fapolicy-analyzer-*.${{ matrix.props.dist }}.x86_64.rpm
-
-      - name: Check RPM
-        run: |
-          rpm -qa --dump fapolicy-analyzer
-          rpm -q fapolicy-analyzer
-
   publish:
-    needs: [ srpm, rpm, install, copr ]
+    needs: [ srpm ]
     name: Publish
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-20.04
