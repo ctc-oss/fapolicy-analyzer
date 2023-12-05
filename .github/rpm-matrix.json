@@ -1,13 +1,6 @@
 {
   "props": [
-    {
-      "platform": "fedora",
-      "dist": "fc40",
-      "spec": "fapolicy-analyzer.spec",
-      "image": "registry.fedoraproject.org/fedora:40",
-      "chroot": "fedora-40-x86_64",
-      "version": "40"
-    },
+
     {
       "platform": "fedora",
       "dist": "fc39",
