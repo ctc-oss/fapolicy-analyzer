@@ -291,7 +291,7 @@ jobs:
       - name: Prepare build container
         run: |
           sudo apt install -y podman
-          ct=$(podman run -dt --privileged rockylinux:8.6)
+          ct=$(podman run -dt --privileged fedora:39)
           podman exec $ct dnf install -y mock
           podman exec $ct mock -r ${{ matrix.props.chroot }} --init
 
