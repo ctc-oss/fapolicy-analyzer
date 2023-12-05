@@ -291,13 +291,13 @@ jobs:
       - name: Prepare build container
         run: |
           sudo apt install -y podman
-          ct=$(podman run -dt --name ${{ github.run_id }} --privileged fedora:39)
+          ct=$(podman run -dt --name ${{ github.job_id }} --privileged fedora:39)
           podman exec $ct dnf install -y mock
           podman exec $ct mock -r ${{ matrix.props.chroot }} --init
 
       - name: Build with Mock
         run: |
-          ct=${{ github.run_id }}
+          ct=${{ github.job_id }}
           srpm=$(find . -name *.${{ matrix.props.dist }}.src.rpm)
           podman cp $srpm $ct:/tmp/$srpm
           podman exec $ct mock -r ${{ matrix.props.chroot }} rebuild /tmp/$srpm --resultdir /tmp/rpmbuild
