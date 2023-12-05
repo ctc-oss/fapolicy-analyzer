@@ -16,7 +16,7 @@ name: foo
 jobs:
   config:
     name: Install mock
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
-      - run: curl -LO https://launchpadlibrarian.net/317625959/mock_1.3.2-2_all.deb
-      - run: sudo dpkg -i mock_1.3.2-2_all.deb
+      - run: sudo apt install -y dnf
+      - run: sudn dnf install -y mock
