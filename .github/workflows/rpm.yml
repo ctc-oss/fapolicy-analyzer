@@ -304,6 +304,12 @@ jobs:
           podman exec $ct mock -r ${{ matrix.props.chroot }} rebuild /tmp/$srpm --resultdir /tmp/rpmbuild
         working-directory: /tmp/src/
 
+      - name: Show logs
+        if: always()
+        run: |
+          ct="${{ matrix.props.dist }}-${{ github.run_id }}"
+          podman exec $ct gzip -d /tmp/rpmbuild/*.log.gzip && cat /tmp/rpmbuild/*.log
+
       - name: Export RPMs
         run: |
           mkdir -p /tmp/rpmbuild /tmp/archives
