@@ -19,4 +19,4 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - run: sudo apt install -y dnf
-      - run: sudn dnf install -y mock
+      - run: sudo dnf install -y mock
