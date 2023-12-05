@@ -309,7 +309,7 @@ jobs:
         run: |
           ct="${{ matrix.props.dist }}-${{ github.run_id }}"
           podman exec $ct ls -R /tmp/rpmbuild
-          podman exec $ct gzip -d cat /tmp/rpmbuild/*.log
+          podman exec $ct cat /tmp/rpmbuild/*.log
 
       - name: Export RPMs
         run: |
