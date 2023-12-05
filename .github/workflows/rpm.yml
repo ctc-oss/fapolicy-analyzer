@@ -291,12 +291,13 @@ jobs:
       - name: Prepare build container
         run: |
           sudo apt install -y podman
-          ct=$(podman run -dt --privileged fedora:39)
+          ct=$(podman run -dt --name ${{ github.run_id }} --privileged fedora:39)
           podman exec $ct dnf install -y mock
           podman exec $ct mock -r ${{ matrix.props.chroot }} --init
 
       - name: Build with Mock
         run: |
+          ct=${{ github.run_id }}
           srpm=fapolicy-analyzer-*.${{ matrix.props.dist }}.src.rpm
           podman cp /tmp/src/$srpm $ct:/tmp
           podman exec $ct mock -r ${{ matrix.props.chroot }} rebuild /tmp/$srpm --resultdir /tmp/rpmbuild
