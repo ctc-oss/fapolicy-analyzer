@@ -1,0 +1,21 @@
+on:
+  push:
+    branches:
+      - 'master'
+      - 'release/*'
+      - 'rpm/test/*'
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - 'master'
+      - 'release/*'
+
+name: foo
+
+jobs:
+  config:
+    name: Load configuration
+    runs-on: ubuntu-20.04
+    steps:
+      - run: sudo apt install mock -y
