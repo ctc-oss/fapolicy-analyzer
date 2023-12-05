@@ -299,7 +299,7 @@ jobs:
         run: |
           srpm=fapolicy-analyzer-*.${{ matrix.props.dist }}.src.rpm
           podman cp /tmp/src/$srpm $ct:/tmp
-          podman exec $ct mock -r fedora-39-x86_64 rebuild /tmp/$srpm --resultdir /tmp/rpmbuild
+          podman exec $ct mock -r ${{ matrix.props.chroot }} rebuild /tmp/$srpm --resultdir /tmp/rpmbuild
 
       - name: Export RPMs
         run: |
