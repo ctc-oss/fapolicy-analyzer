@@ -298,9 +298,10 @@ jobs:
       - name: Build with Mock
         run: |
           ct=${{ github.run_id }}
-          srpm=$(find /tmp/src -name *.${{ matrix.props.dist }}.src.rpm)
-          podman cp /tmp/src/$srpm $ct:/tmp
+          srpm=$(find . -name *.${{ matrix.props.dist }}.src.rpm)
+          podman cp $srpm $ct:/tmp/$srpm
           podman exec $ct mock -r ${{ matrix.props.chroot }} rebuild /tmp/$srpm --resultdir /tmp/rpmbuild
+        working-directory: /tmp/src/
 
       - name: Export RPMs
         run: |
