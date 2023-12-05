@@ -298,8 +298,9 @@ jobs:
       - name: Build with Mock
         run: |
           ct=${{ github.run_id }}
-          srpm=fapolicy-analyzer-*.${{ matrix.props.dist }}.src.rpm
+          srpm=fapolicy-analyzer-${{ steps.tag_name.outputs.VERSION }}-1.${{ matrix.props.dist }}.src.rpm
           podman cp /tmp/src/$srpm $ct:/tmp
+          podman exec $ct ls /tmp -alh
           podman exec $ct mock -r ${{ matrix.props.chroot }} rebuild /tmp/$srpm --resultdir /tmp/rpmbuild
 
       - name: Export RPMs
