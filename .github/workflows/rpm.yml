@@ -270,7 +270,6 @@ jobs:
   rpm:
     needs: [ config, srpm ]
     name: Rebuild ${{ matrix.props.dist }}
-    container: ${{ matrix.props.image }}
     runs-on: ubuntu-20.04
     strategy:
       matrix: ${{ fromJson(needs.config.outputs.matrix )}}
@@ -289,25 +288,24 @@ jobs:
         run: |
           sha256sum /tmp/src/*
 
-      - name: Enable EPEL
-        if: startsWith(matrix.props.dist, 'el')
+      - name: Prepare build container
         run: |
-          dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-${{ matrix.props.version }}.noarch.rpm
+          sudo apt install -y podman
+          ct=$(podman run -dt --privileged rockylinux:8.6)
+          podman exec $ct dnf install -y mock
+          podman exec $ct mock -r ${{ matrix.props.chroot }} --init
 
-      - name: Install RPM build dependencies
+      - name: Build with Mock
         run: |
-          dnf install -y make rpm rpmdevtools dnf-plugins-core
-
-      - name: Rebuild SRPM
-        run: |
-          dnf builddep -y ${{ matrix.props.spec }}
-          rpmbuild --rebuild /tmp/src/fapolicy-analyzer-*.${{ matrix.props.dist }}.src.rpm
+          srpm=fapolicy-analyzer-*.${{ matrix.props.dist }}.src.rpm
+          podman cp /tmp/src/$srpm $ct:/tmp
+          podman exec $ct mock -r fedora-39-x86_64 rebuild /tmp/$srpm --resultdir /tmp/rpmbuild
 
       - name: Export RPMs
         run: |
-          mkdir -p /tmp/archives
-          ls | grep -v debug | xargs mv -t /tmp/archives
-        working-directory: /github/home/rpmbuild/RPMS/x86_64
+          mkdir -p /tmp/rpmbuild /tmp/archives
+          podman cp $ct:/tmp/rpmbuild/* /tmp/rpmbuild
+          ls /tmp/rpmbuild | grep -v -e debug -e log | xargs mv -t /tmp/archives
 
       - name: Upload RPMs
         uses: actions/upload-artifact@v3
