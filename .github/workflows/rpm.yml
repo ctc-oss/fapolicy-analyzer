@@ -308,6 +308,7 @@ jobs:
         if: always()
         run: |
           ct="${{ matrix.props.dist }}-${{ github.run_id }}"
+          podman exec $ct ls -R /tmp/rpmbuild
           podman exec $ct gzip -d /tmp/rpmbuild/*.log.gzip && cat /tmp/rpmbuild/*.log
 
       - name: Export RPMs
