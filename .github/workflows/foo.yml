@@ -19,4 +19,4 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - run: curl -LO https://launchpadlibrarian.net/317625959/mock_1.3.2-2_all.deb
-      - run: dpkg -i mock_1.3.2-2_all.deb
+      - run: sudo dpkg -i mock_1.3.2-2_all.deb
