@@ -278,6 +278,12 @@ jobs:
         with:
           ref: ${{ github.ref }}
 
+      - name: Fetch Source0 tarball
+        uses: actions/download-artifact@v3
+        with:
+          name: source0
+          path: /tmp/source0/
+
       - name: Download srpm artifacts
         uses: actions/download-artifact@v3
         with:
@@ -298,7 +304,7 @@ jobs:
       - name: Build with Mock
         run: |
           ct=${{ github.run_id }}
-          spec_version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
+          spec_version=$(grep "Version:" /tmp/source0/${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
           srpm=fapolicy-analyzer-$spec_version-1.${{ matrix.props.dist }}.src.rpm
           podman cp /tmp/src/$srpm $ct:/tmp
           podman exec $ct ls /tmp -alh
