@@ -298,7 +298,8 @@ jobs:
       - name: Build with Mock
         run: |
           ct=${{ github.run_id }}
-          srpm=fapolicy-analyzer-${{ steps.tag_name.outputs.VERSION }}-1.${{ matrix.props.dist }}.src.rpm
+          spec_version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
+          srpm=fapolicy-analyzer-$spec_version-1.${{ matrix.props.dist }}.src.rpm
           podman cp /tmp/src/$srpm $ct:/tmp
           podman exec $ct ls /tmp -alh
           podman exec $ct mock -r ${{ matrix.props.chroot }} rebuild /tmp/$srpm --resultdir /tmp/rpmbuild
