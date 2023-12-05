@@ -18,5 +18,8 @@ jobs:
     name: Install mock
     runs-on: ubuntu-22.04
     steps:
-      - run: sudo apt install -y podman
-      - run: podman run --privileged fedora:39
+      - run: |
+          sudo apt install -y podman
+          ct=$(podman run -dt --privileged fedora:39)
+          podman exec $ct dnf install -y mock
+          podman exec $ct mock -r fedora-39-x86_64 --init
