@@ -265,7 +265,8 @@ jobs:
 
       - name: build
         run: |
-          copr-cli build --chroot ${{ matrix.props.chroot }} fapolicy-analyzer /tmp/fapolicy-analyzer-*.${{ matrix.props.dist }}.src.rpm
+          chroot=$(echo ${{ matrix.props.chroot }} | cut -d+ -f2)
+          copr-cli build --chroot $chroot fapolicy-analyzer /tmp/fapolicy-analyzer-*.${{ matrix.props.dist }}.src.rpm
 
   rpm:
     needs: [ config, srpm ]
