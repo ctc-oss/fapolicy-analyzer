@@ -17,6 +17,14 @@
       "version": "39"
     },
     {
+      "platform": "fedora",
+      "dist": "fc38",
+      "spec": "fapolicy-analyzer.spec",
+      "image": "registry.fedoraproject.org/fedora:38",
+      "chroot": "fedora-38-x86_64",
+      "version": "38"
+    },
+    {
       "platform": "rhel",
       "dist": "el9",
       "spec": "scripts/srpm/fapolicy-analyzer.el9.spec",
