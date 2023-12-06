@@ -292,30 +292,30 @@ jobs:
       - name: Prepare build container
         run: |
           sudo apt install -y podman
-          ct="${{ matrix.props.dist }}-${{ github.run_id }}"
-          podman run -dt --name $ct --privileged fedora:39
-          podman exec $ct dnf install -y mock
-          podman exec $ct mock -r ${{ matrix.props.chroot }} --init
+          cid="${{ matrix.props.dist }}-${{ github.run_id }}"
+          podman run -dt --name $cid --privileged fedora:39
+          podman exec $cid dnf install -y mock
+          podman exec $cid mock -r ${{ matrix.props.chroot }} --init
 
       - name: Build with Mock
         run: |
-          ct="${{ matrix.props.dist }}-${{ github.run_id }}"
+          cid="${{ matrix.props.dist }}-${{ github.run_id }}"
           srpm=$(find . -name *.${{ matrix.props.dist }}.src.rpm)
-          podman cp $srpm $ct:/tmp/$srpm
-          podman exec $ct mock -r ${{ matrix.props.chroot }} rebuild /tmp/$srpm --resultdir /tmp/rpmbuild
+          podman cp $srpm $cid:/tmp/$srpm
+          podman exec $cid mock -r ${{ matrix.props.chroot }} rebuild /tmp/$srpm --resultdir /tmp/rpmbuild
         working-directory: /tmp/src/
 
       - name: Show logs
         if: always()
         run: |
-          ct="${{ matrix.props.dist }}-${{ github.run_id }}"
-          podman exec $ct ls -R /tmp/rpmbuild
-          podman exec $ct cat /tmp/rpmbuild/build.log
+          cid="${{ matrix.props.dist }}-${{ github.run_id }}"
+          podman exec $cid ls -R /tmp/rpmbuild
+          podman exec $cid cat /tmp/rpmbuild/build.log
 
       - name: Export RPMs
         run: |
-          ct="${{ matrix.props.dist }}-${{ github.run_id }}"
-          podman cp $ct:/tmp/rpmbuild/ /tmp/rpmbuild
+          cid="${{ matrix.props.dist }}-${{ github.run_id }}"
+          podman cp $cid:/tmp/rpmbuild/ /tmp/rpmbuild
           mkdir -p /tmp/archives
           cd /tmp/rpmbuild
           ls | grep -v -e debug -e log | xargs mv -t /tmp/archives
