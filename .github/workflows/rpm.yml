@@ -314,8 +314,8 @@ jobs:
       - name: Export RPMs
         run: |
           ct="${{ matrix.props.dist }}-${{ github.run_id }}"
-          mkdir -p /tmp/rpmbuild /tmp/archives
-          podman cp $ct:/tmp/rpmbuild/* /tmp/rpmbuild
+          podman cp $ct:/tmp/rpmbuild/ /tmp/rpmbuild
+          mkdir -p /tmp/archives
           ls /tmp/rpmbuild | grep -v -e debug -e log | xargs mv -t /tmp/archives
 
       - name: Upload RPMs
