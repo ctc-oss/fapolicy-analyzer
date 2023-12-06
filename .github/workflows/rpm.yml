@@ -316,8 +316,8 @@ jobs:
           ct="${{ matrix.props.dist }}-${{ github.run_id }}"
           podman cp $ct:/tmp/rpmbuild/ /tmp/rpmbuild
           mkdir -p /tmp/archives
+          cd /tmp/rpmbuild
           ls | grep -v -e debug -e log | xargs mv -t /tmp/archives
-        working-directory: /tmp/rpmbuild
 
       - name: Upload RPMs
         uses: actions/upload-artifact@v3
