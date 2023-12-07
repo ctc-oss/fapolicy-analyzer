@@ -229,6 +229,7 @@ jobs:
   copr:
     needs: [ config, srpm ]
     name: Copr Build ${{ matrix.props.dist }}
+    if: needs.config.outputs.is-copr-enabled == 'true'
     container: 'rockylinux:8.6'
     runs-on: ubuntu-20.04
     strategy:
