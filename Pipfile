@@ -26,6 +26,7 @@ autoflake = "*"
 markdown2 = "*"
 beautifulsoup4 = "*"
 flake8-black = "*"
+wheel = "*"
 
 [packages]
 pycairo = "1.20.0"

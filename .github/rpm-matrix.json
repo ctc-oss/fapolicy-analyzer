@@ -5,7 +5,7 @@
       "dist": "fc40",
       "spec": "fapolicy-analyzer.spec",
       "image": "registry.fedoraproject.org/fedora:40",
-      "chroot": "fedora-40-x86_64",
+      "chroot": "fedora-rawhide-x86_64",
       "version": "40"
     },
     {
