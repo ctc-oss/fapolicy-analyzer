@@ -21,24 +21,12 @@ clean:
 	rm -f fapolicy-analyzer-${VERSION}.tar.gz
 	rm -f vendor-rs-${VERSION}.tar.gz
 
-ifeq ($(OS_ID),rhel)
-dnf: dnf-common dnf-el
-else
-dnf: dnf-common dnf-fc
-endif
+dnf: dnf-common
 
 dnf-common:
 	dnf install -y git which openssl-devel dbus-devel audit-libs-devel clang python3-devel python3-pip python3-toml python3-beautifulsoup4 python3-requests python3-babel itstool
 	dnf install -y python3-markdown2 || python3 -m pip install markdown2
-
-dnf-fc:
 	dnf install -y rust-packaging
-
-dnf-el:
-	dnf install -y rpmdevtools
-	dnf install -y rust-toolset
-	# v0.5.9 requires rust 1.64
-	cargo install cargo-vendor-filterer@0.5.8
 
 ifeq ($(OS_ID),rhel)
 # we only need to vendor rust and python on rhel
