@@ -94,14 +94,46 @@ jobs:
         run: |
           sha256sum fapolicy-analyzer-*.tar.gz
 
+  crates0:
+    name: Vendor Crates0
+    container: registry.fedoraproject.org/fedora:rawhide
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: Install deps
+        run: dnf -y builddep fapolicy-analyzer.spec
+
+      - name: Tar crates
+        run:  scripts/srpm/vendor-rs.sh
+
+      - name: Upload tarball
+        uses: actions/upload-artifact@v3
+        with:
+          name: crates0
+          path: |
+            vendor-rs.tar.gz
+
+      - name: Checksum
+        run: |
+          sha256sum fapolicy-analyzer-*.tar.gz
+
   srpm:
     needs: [ config, source0 ]
     name: SRPM Build ${{ matrix.props.dist }}
-    container: fedora:rawhide
+    container: ${{ matrix.props.image }}
     runs-on: ubuntu-20.04
     strategy:
       matrix: ${{ fromJson(needs.config.outputs.matrix) }}
     steps:
+      - name: Enable EPEL
+        if: startsWith(matrix.props.dist, 'el')
+        run: |
+          dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-${{ matrix.props.version }}.noarch.rpm
+
       - name: Install Git
         run: dnf install -y git
 
@@ -171,6 +203,19 @@ jobs:
         with:
           name: source0
           path: /tmp/rpmbuild/SOURCES/
+
+      - name: Fetch Crates0 tarball
+        if: startsWith(matrix.props.dist, 'el')
+        uses: actions/download-artifact@v3
+        with:
+          name: crates0
+          path: /tmp/rpmbuild/SOURCES/
+
+      - name: Tag Crates0 tarball
+        run: |
+          spec_version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
+          mv vendor-rs.tar.gz vendor-rs-${spec_version}.tar.gz
+        working-directory: /tmp/rpmbuild/SOURCES/
 
       - name: Mark as git safe
         run: |

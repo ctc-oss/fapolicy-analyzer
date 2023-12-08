@@ -45,6 +45,13 @@ case $id in
 esac
 
 
+vendor_tar=vendor-rs.tar.gz
 vendor_root=$(dirname ${vendor_dest})
-tar czf vendor-rs-${1}.tar.gz -C ${vendor_root} .
-du -sh vendor-rs-${1}.tar.gz
+tar czf ${vendor_tar} -C ${vendor_root} .
+
+if [[ ! -z "$1" ]]; then
+  vendor_tar=vendor-rs-${1}.tar.gz
+  mv vendor-rs.tar.gz ${vendor_tar}
+fi
+
+du -sh ${vendor_tar}
