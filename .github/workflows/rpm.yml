@@ -97,7 +97,7 @@ jobs:
   srpm:
     needs: [ config, source0 ]
     name: SRPM Build ${{ matrix.props.dist }}
-    container: ${{ matrix.props.image }}
+    container: fedora:rawhide
     runs-on: ubuntu-20.04
     strategy:
       matrix: ${{ fromJson(needs.config.outputs.matrix) }}
