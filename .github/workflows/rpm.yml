@@ -251,7 +251,7 @@ jobs:
         if: startsWith(matrix.props.dist, 'el')
         run: |
           version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
-          mv vendor-rs-${version}.tar.gz /tmp/archives/
+          mv /tmp/rpmbuild/SOURCES/vendor-rs-${version}.tar.gz /tmp/archives/
 
       - name: Upload SourceX
         uses: actions/upload-artifact@v3
