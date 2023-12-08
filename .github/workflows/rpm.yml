@@ -99,6 +99,10 @@ jobs:
     container: registry.fedoraproject.org/fedora:rawhide
     runs-on: ubuntu-20.04
     steps:
+      - name: Install RPM build dependencies
+        run: |
+          dnf install -y git dnf-plugins-core
+
       - uses: actions/checkout@v3
         with:
           ref: ${{ github.ref }}
