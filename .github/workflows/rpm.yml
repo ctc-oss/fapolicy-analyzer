@@ -102,11 +102,6 @@ jobs:
     strategy:
       matrix: ${{ fromJson(needs.config.outputs.matrix) }}
     steps:
-      - name: Enable EPEL
-        if: startsWith(matrix.props.dist, 'el')
-        run: |
-          dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-${{ matrix.props.version }}.noarch.rpm
-
       - name: Install Git
         run: dnf install -y git
 
