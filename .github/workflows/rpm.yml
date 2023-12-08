@@ -219,8 +219,8 @@ jobs:
         if: startsWith(matrix.props.dist, 'el')
         run: |
           spec_version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
+          cd /tmp/rpmbuild/SOURCES/
           mv vendor-rs.tar.gz vendor-rs-${spec_version}.tar.gz
-        working-directory: /tmp/rpmbuild/SOURCES/
 
       - name: Mark as git safe
         run: |
