@@ -30,7 +30,7 @@ dnf-common:
 
 ifeq ($(OS_ID),rhel)
 # we only need to vendor rust and python on rhel
-vendor: prep_rpmbuild_dir vendor-app vendor-doc vendor-rs vendor-py
+vendor: prep_rpmbuild_dir vendor-app vendor-doc vendor-py
 else
 vendor: prep_rpmbuild_dir vendor-app vendor-doc
 endif
