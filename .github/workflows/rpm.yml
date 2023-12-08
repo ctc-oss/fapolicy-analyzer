@@ -123,7 +123,7 @@ jobs:
 
       - name: Checksum
         run: |
-          sha256sum fapolicy-analyzer-*.tar.gz
+          sha256sum vendor-rs.tar.gz
 
   srpm:
     needs: [ config, source0 ]
