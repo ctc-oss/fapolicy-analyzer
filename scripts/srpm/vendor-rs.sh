@@ -34,6 +34,7 @@ case $id in
 
   ubuntu)
     echo "ubuntu: vendoring crates.io"
+    cargo check
     cargo vendor-filterer --platform=x86_64-unknown-linux-gnu ${vendor_dest} &> /dev/null
     python3 scripts/srpm/lock2spec.py --vendor_all
     ;;

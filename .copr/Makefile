@@ -42,7 +42,6 @@ vendor-py:
 	which spectool && spectool -g -C /tmp/rpmbuild/SOURCES/ \$(spec) || true
 
 vendor-rs:
-	cargo check
 	./scripts/srpm/vendor-rs.sh ${VERSION}
 	cp vendor-rs-${VERSION}.tar.gz /tmp/rpmbuild/SOURCES/vendor-rs-${VERSION}.tar.gz
 
