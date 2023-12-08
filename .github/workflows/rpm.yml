@@ -216,6 +216,7 @@ jobs:
           path: /tmp/rpmbuild/SOURCES/
 
       - name: Tag Crates0 tarball
+        if: startsWith(matrix.props.dist, 'el')
         run: |
           spec_version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
           mv vendor-rs.tar.gz vendor-rs-${spec_version}.tar.gz
