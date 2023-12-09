@@ -109,7 +109,13 @@ jobs:
           fetch-depth: 0
 
       - name: Install deps
-        run: dnf -y builddep fapolicy-analyzer.spec
+        run: |
+          # need to generate build deps with cargo2rpm
+          for d in $(cargo2rpm -p Cargo.toml buildrequires); do
+            grep -n "BuildRequires:" fapolicy-analyzer.spec | head -n1 | cut -d: -f1 | xargs -I{} sed -i "{}iBuildRequires: $d" fapolicy-analyzer.spec
+          done
+          cat fapolicy-analyzer.spec
+          dnf -y builddep fapolicy-analyzer.spec
 
       - name: Tar crates
         run:  scripts/srpm/vendor-rs.sh
