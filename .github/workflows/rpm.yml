@@ -116,12 +116,14 @@ jobs:
             grep -n "BuildRequires:" fapolicy-analyzer.spec | head -n1 | cut -d: -f1 | xargs -I{} sed -i "{}iBuildRequires: $line" fapolicy-analyzer.spec
           done
 
-      - name: Install deps
+      - name: Install build dependencies
         run: |
           dnf -y builddep fapolicy-analyzer.spec
 
       - name: Tar crates
-        run:  scripts/srpm/vendor-rs.sh
+        run: |
+          ls -l /usr/share/cargo/registry
+          scripts/srpm/vendor-rs.sh
 
       - name: Upload tarball
         uses: actions/upload-artifact@v3
@@ -344,13 +346,13 @@ jobs:
         run: |
           sha256sum /tmp/src/*
 
-      - name: Create build container
+      - name: Create container
         run: |
           sudo apt install -y podman
           cid="${{ matrix.props.dist }}-${{ github.run_id }}"
           podman run -dt --name $cid --privileged fedora:39
 
-      - name: Create container
+      - name: Init container
         run: |
           cid="${{ matrix.props.dist }}-${{ github.run_id }}"
           podman exec $cid dnf install -y mock

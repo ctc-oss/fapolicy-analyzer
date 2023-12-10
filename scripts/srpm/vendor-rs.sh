@@ -47,7 +47,7 @@ esac
 
 vendor_tar=vendor-rs.tar.gz
 vendor_root=$(dirname ${vendor_dest})
-tar cvzf ${vendor_tar} -C ${vendor_root} .
+tar czf ${vendor_tar} -C ${vendor_root} .
 
 if [[ ! -z "$1" ]]; then
   vendor_tar=vendor-rs-${1}.tar.gz
