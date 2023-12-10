@@ -29,7 +29,7 @@ case $id in
   fedora)
     echo "fedora: vendoring packages"
     mkdir -p ${vendor_dest}
-    cp -r /usr/share/cargo/registry ${vendor_dest}
+    cp -r /usr/share/cargo/registry/* ${vendor_dest}
     ;;
 
   ubuntu)
