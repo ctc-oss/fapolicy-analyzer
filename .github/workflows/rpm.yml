@@ -101,7 +101,7 @@ jobs:
     steps:
       - name: Install RPM build dependencies
         run: |
-          dnf install -y git dnf-plugins-core
+          dnf install -y git dnf-plugins-core cargo2rpm
 
       - uses: actions/checkout@v3
         with:
