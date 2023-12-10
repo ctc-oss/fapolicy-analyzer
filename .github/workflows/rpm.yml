@@ -262,7 +262,7 @@ jobs:
           version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
           mv /tmp/rpmbuild/SOURCES/vendor-rs-${version}.tar.gz /tmp/archives/
 
-      - name: Upload SourceX
+      - name: Upload Tarballs
         uses: actions/upload-artifact@v3
         with:
           name: tarball-artifacts
@@ -339,6 +339,13 @@ jobs:
           name: srpm-artifacts
           path: /tmp/src/
 
+      - name: Download tarball artifacts
+        if: startsWith(matrix.props.dist, 'el')
+        uses: actions/download-artifact@v3
+        with:
+          name: tarball-artifacts
+          path: /tmp/src/
+
       - name: Checksum artifacts
         run: |
           sha256sum /tmp/src/*
@@ -350,12 +357,14 @@ jobs:
           podman run -dt --name $cid --privileged fedora:39
           podman exec $cid dnf install -y mock
           podman exec $cid mock -r ${{ matrix.props.chroot }} --init
+          podman exec $cid mkdir -p /tmp/rpmbuild
 
       - name: Build with Mock
         run: |
           cid="${{ matrix.props.dist }}-${{ github.run_id }}"
           srpm=$(find . -name *.${{ matrix.props.dist }}.src.rpm)
           podman cp $srpm $cid:/tmp/$srpm
+          podman cp vendor-rs-*.tar.gz $cid:/tmp/rpmbuild/SOURCES
           podman exec $cid mock -r ${{ matrix.props.chroot }} rebuild /tmp/$srpm --resultdir /tmp/rpmbuild
         working-directory: /tmp/src/
 
