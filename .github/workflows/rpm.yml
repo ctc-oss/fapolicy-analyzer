@@ -111,7 +111,7 @@ jobs:
       - name: Install deps
         run: |
           # need to generate build deps with cargo2rpm
-          for d in $(cargo2rpm -p Cargo.toml buildrequires); do
+          cargo2rpm -p Cargo.toml buildrequires | while read line; do
             grep -n "BuildRequires:" fapolicy-analyzer.spec | head -n1 | cut -d: -f1 | xargs -I{} sed -i "{}iBuildRequires: $d" fapolicy-analyzer.spec
           done
           cat fapolicy-analyzer.spec
