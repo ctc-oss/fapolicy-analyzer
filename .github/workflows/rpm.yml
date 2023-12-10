@@ -112,7 +112,7 @@ jobs:
         run: |
           # need to generate build deps with cargo2rpm
           cargo2rpm -p Cargo.toml buildrequires | while read line; do
-            grep -n "BuildRequires:" fapolicy-analyzer.spec | head -n1 | cut -d: -f1 | xargs -I{} sed -i "{}iBuildRequires: $d" fapolicy-analyzer.spec
+            grep -n "BuildRequires:" fapolicy-analyzer.spec | head -n1 | cut -d: -f1 | xargs -I{} sed -i "{}iBuildRequires: $line" fapolicy-analyzer.spec
           done
           cat fapolicy-analyzer.spec
           dnf -y builddep fapolicy-analyzer.spec
