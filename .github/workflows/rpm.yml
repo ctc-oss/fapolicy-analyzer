@@ -357,7 +357,6 @@ jobs:
           cid="${{ matrix.props.dist }}-${{ github.run_id }}"
           podman exec $cid dnf install -y mock
           podman exec $cid mock -r ${{ matrix.props.chroot }} --init
-          podman exec $cid mkdir -p /tmp/rpmbuild
 
       - name: Build with Mock
         run: |

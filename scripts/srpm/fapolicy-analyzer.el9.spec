@@ -180,9 +180,6 @@ mkdir -p ${CARGO_REG_DIR}
 for d in %{cargo_registry}/*; do ln -sf ${d} ${CARGO_REG_DIR} || true; done
 tar -xzf %{SOURCE2} -C ${CARGO_REG_DIR} --skip-old-files --strip-components=2
 
-# DEBUG
-ls -l ${CARGO_REG_DIR}
-
 %cargo_prep
 
 # here the Cargo config is updated to point to the new registry dir
