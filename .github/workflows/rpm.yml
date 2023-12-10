@@ -231,10 +231,6 @@ jobs:
           cd /tmp/rpmbuild/SOURCES/
           mv vendor-rs.tar.gz vendor-rs-${spec_version}.tar.gz
 
-      - name: Mark as git safe
-        run: |
-          git config --global --add safe.directory $GITHUB_WORKSPACE
-
       - name: Generate doc tag
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
@@ -253,8 +249,6 @@ jobs:
         run: |
           mkdir -p /tmp/archives
           mv vendor-docs-*.tar.gz /tmp/archives
-        env:
-          PLATFORM: ${{ matrix.props.dist }}
 
       - name: Export el tarballs
         if: startsWith(matrix.props.dist, 'el')
@@ -350,11 +344,15 @@ jobs:
         run: |
           sha256sum /tmp/src/*
 
-      - name: Prepare build container
+      - name: Create build container
         run: |
           sudo apt install -y podman
           cid="${{ matrix.props.dist }}-${{ github.run_id }}"
           podman run -dt --name $cid --privileged fedora:39
+
+      - name: Create container
+        run: |
+          cid="${{ matrix.props.dist }}-${{ github.run_id }}"
           podman exec $cid dnf install -y mock
           podman exec $cid mock -r ${{ matrix.props.chroot }} --init
           podman exec $cid mkdir -p /tmp/rpmbuild
@@ -364,7 +362,6 @@ jobs:
           cid="${{ matrix.props.dist }}-${{ github.run_id }}"
           srpm=$(find . -name *.${{ matrix.props.dist }}.src.rpm)
           podman cp $srpm $cid:/tmp/$srpm
-          podman cp vendor-rs-*.tar.gz $cid:/tmp/rpmbuild/SOURCES
           podman exec $cid mock -r ${{ matrix.props.chroot }} rebuild /tmp/$srpm --resultdir /tmp/rpmbuild
         working-directory: /tmp/src/
 
