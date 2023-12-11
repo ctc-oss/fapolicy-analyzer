@@ -306,7 +306,7 @@ checksum = "e78d4f1cc4ae33bbfc157ed5d5a5ef3bc29227303d595861deb238fcec4e9457"
 
 [[package]]
 name = "fapolicy-analyzer"
-version = "0.4.1"
+version = "1.0.0"
 dependencies = [
  "chrono",
  "fapolicy-auparse",
@@ -321,7 +321,7 @@ dependencies = [
 
 [[package]]
 name = "fapolicy-app"
-version = "0.4.1"
+version = "1.0.0"
 dependencies = [
  "confy",
  "directories 5.0.1",
@@ -335,7 +335,7 @@ dependencies = [
 
 [[package]]
 name = "fapolicy-auparse"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "fapolicy-auparse-sys",
  "thiserror",
@@ -351,7 +351,7 @@ dependencies = [
 
 [[package]]
 name = "fapolicy-daemon"
-version = "0.5.0"
+version = "1.0.0"
 dependencies = [
  "assert_matches",
  "dbus",
@@ -366,7 +366,7 @@ dependencies = [
 
 [[package]]
 name = "fapolicy-pyo3"
-version = "0.4.2"
+version = "1.0.0"
 dependencies = [
  "chrono",
  "fapolicy-analyzer",
@@ -384,7 +384,7 @@ dependencies = [
 
 [[package]]
 name = "fapolicy-rules"
-version = "0.4.6"
+version = "1.0.0"
 dependencies = [
  "assert_matches",
  "is_executable",
@@ -397,7 +397,7 @@ dependencies = [
 
 [[package]]
 name = "fapolicy-tools"
-version = "0.5.0"
+version = "1.0.0"
 dependencies = [
  "ariadne",
  "clap",
@@ -416,7 +416,7 @@ dependencies = [
 
 [[package]]
 name = "fapolicy-trust"
-version = "0.5.0"
+version = "1.0.0"
 dependencies = [
  "fapolicy-util",
  "lmdb",
@@ -430,7 +430,7 @@ dependencies = [
 
 [[package]]
 name = "fapolicy-util"
-version = "0.4.1"
+version = "1.0.0"
 dependencies = [
  "data-encoding",
  "nom",
