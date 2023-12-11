@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
-      - name: Install requirements
+      - name: Install package dependencies
         run: |
           sudo apt-get update
           sudo apt-get install libdbus-1-dev libaudit-dev libauparse-dev
@@ -54,7 +54,7 @@ jobs:
       # https://github.com/rust-lang/rust-clippy/issues/8971
       - run: sed -i '/pyo3/d' Cargo.toml
 
-      - name: Install requirements
+      - name: Install package dependencies
         run: |
           sudo apt-get update
           sudo apt-get install libdbus-1-dev libaudit-dev libauparse-dev
@@ -72,6 +72,10 @@ jobs:
     name: Semver Check
     runs-on: ubuntu-latest
     steps:
+      - name: Install package dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install libdbus-1-dev libaudit-dev libauparse-dev
       - uses: actions/checkout@v3
       - name: Check semver
         uses: u9g/cargo-semver-checks-action@no-anno
@@ -83,7 +87,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
-      - name: Install requirements
+      - name: Install package dependencies
         run: |
           sudo apt-get update
           sudo apt-get install libdbus-1-dev libaudit-dev libauparse-dev
