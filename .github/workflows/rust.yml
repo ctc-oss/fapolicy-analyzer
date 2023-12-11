@@ -80,7 +80,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           path: './downstream'
-      - run: cargo install semver-checks
+      - run: cargo install cargo-semver-checks
       - run: >-
           cargo semver-checks
           --manifest-path './downstream/Cargo.toml'
