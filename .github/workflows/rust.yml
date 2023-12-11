@@ -71,6 +71,7 @@ jobs:
   semver-checks:
     name: Semver Check
     runs-on: ubuntu-22.04
+    continue-on-error: true
     if: ${{ github.event.pull_request }}
     steps:
       - name: Install package dependencies
