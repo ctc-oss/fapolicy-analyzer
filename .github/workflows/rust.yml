@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
-      - name: Install requirements
+      - name: Install package dependencies
         run: |
           sudo apt-get update
           sudo apt-get install libdbus-1-dev libaudit-dev libauparse-dev
@@ -54,7 +54,7 @@ jobs:
       # https://github.com/rust-lang/rust-clippy/issues/8971
       - run: sed -i '/pyo3/d' Cargo.toml
 
-      - name: Install requirements
+      - name: Install package dependencies
         run: |
           sudo apt-get update
           sudo apt-get install libdbus-1-dev libaudit-dev libauparse-dev
@@ -68,12 +68,45 @@ jobs:
           command: clippy
           args: -- -D warnings
 
+  semver-checks:
+    name: Semver Check
+    runs-on: ubuntu-22.04
+    continue-on-error: true
+    if: ${{ github.event.pull_request }}
+    steps:
+      - name: Install package dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install libdbus-1-dev libaudit-dev libauparse-dev
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.base_ref }}
+          path: './base'
+      - uses: actions/checkout@v4
+        with:
+          path: './pr'
+      - name: Install cargo-semver-checks
+        uses: robinraju/release-downloader@v1.8
+        with:
+          repository: obi1kenobi/cargo-semver-checks
+          filename: cargo-semver-checks-x86_64-unknown-linux-gnu.tar.gz
+          latest: true
+          extract: true
+      - name: Run cargo-semver-checks
+        run: >-
+          ./cargo-semver-checks semver-checks
+          --manifest-path './pr/Cargo.toml'
+          --baseline-root './base'
+          --default-features
+          --release-type minor
+
   test:
     name: Test Suite
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
-      - name: Install requirements
+      - name: Install package dependencies
         run: |
           sudo apt-get update
           sudo apt-get install libdbus-1-dev libaudit-dev libauparse-dev
