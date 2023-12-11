@@ -69,19 +69,24 @@ jobs:
           args: -- -D warnings
 
   semver-checks:
-    name: Semver Check
     runs-on: ubuntu-latest
+    if: ${{ github.event.pull_request }}
     steps:
-      - name: Install package dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install libdbus-1-dev libaudit-dev libauparse-dev
-      - uses: actions/checkout@v3
-      - name: Check semver
-        uses: jw3/cargo-semver-checks-action@v0
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/checkout@v4
         with:
-          pr: true
-          verbose: true
+          ref: ${{ github.base_ref }}
+          path: './upstream'
+      - uses: actions/checkout@v4
+        with:
+          path: './downstream'
+      - run: cargo install semver-checks
+      - run: >-
+          cargo semver-checks
+          --manifest-path './downstream/Cargo.toml'
+          --baseline-root './upstream'
+          --default-features
+          --release-type minor
 
   test:
     name: Test Suite
