@@ -72,6 +72,10 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event.pull_request }}
     steps:
+      - name: Install package dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install libdbus-1-dev libaudit-dev libauparse-dev
       - uses: dtolnay/rust-toolchain@stable
       - uses: actions/checkout@v4
         with:
