@@ -74,7 +74,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Check semver
-        uses: u9g/cargo-semver-checks-action@main
+        uses: u9g/cargo-semver-checks-action@no-anno
         with:
           pr: true
 
