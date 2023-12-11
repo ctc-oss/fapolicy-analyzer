@@ -78,7 +78,7 @@ jobs:
           sudo apt-get install libdbus-1-dev libaudit-dev libauparse-dev
       - uses: actions/checkout@v3
       - name: Check semver
-        uses: jw3/cargo-semver-checks-action@main
+        uses: jw3/cargo-semver-checks-action@no-anno
         with:
           pr: true
           verbose: true
