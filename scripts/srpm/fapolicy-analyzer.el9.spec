@@ -41,6 +41,7 @@ BuildRequires: desktop-file-utils
 
 BuildRequires: clang
 BuildRequires: audit-libs-devel
+BuildRequires: lmdb-devel
 
 BuildRequires: rust-packaging
 
