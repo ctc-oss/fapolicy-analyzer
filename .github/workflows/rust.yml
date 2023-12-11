@@ -91,7 +91,7 @@ jobs:
           latest: true
           extract: true
       - run: >-
-          ./cargo-semver-checks
+          ./cargo-semver-checks semver-checks
           --manifest-path './pr/Cargo.toml'
           --baseline-root './base'
           --default-features
