@@ -81,6 +81,7 @@ jobs:
         uses: u9g/cargo-semver-checks-action@no-anno
         with:
           pr: true
+          verbose: true
 
   test:
     name: Test Suite
