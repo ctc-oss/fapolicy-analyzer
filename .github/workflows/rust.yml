@@ -73,12 +73,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Install requirements
-        run: |
-          sudo apt-get update
-          sudo apt-get install libdbus-1-dev libaudit-dev libauparse-dev
       - name: Check semver
-        uses: obi1kenobi/cargo-semver-checks-action@v2
+        uses: u9g/cargo-semver-checks-action@master
 
   test:
     name: Test Suite
