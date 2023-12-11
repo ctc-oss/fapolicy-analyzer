@@ -74,7 +74,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Check semver
-        uses: u9g/cargo-semver-checks-action@master
+        uses: u9g/cargo-semver-checks-action@main
 
   test:
     name: Test Suite
