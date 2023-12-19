@@ -43,7 +43,7 @@ impl Commands {
             .open(FIFO_PIPE)?;
 
         // the new line char is required here
-        fifo.write_all(&format!("{}\n", self as u8).as_bytes())?;
+        fifo.write_all(format!("{}\n", self as u8).as_bytes())?;
 
         Ok(())
     }
