@@ -193,9 +193,15 @@ impl PyChangeset {
 /// send signal to fapolicyd FIFO pipe to reload the trust database
 #[pyfunction]
 fn signal_trust_reload() -> PyResult<()> {
-    pipe::reload_trust().map_err(|e| {
-        PyRuntimeError::new_err(format!("failed to write reload byte to pipe: {:?}", e))
-    })
+    pipe::reload_trust()
+        .map_err(|e| PyRuntimeError::new_err(format!("failed to signal trust reload: {:?}", e)))
+}
+
+/// send signal to fapolicyd FIFO pipe to reload rules
+#[pyfunction]
+fn signal_rule_reload() -> PyResult<()> {
+    pipe::reload_rules()
+        .map_err(|e| PyRuntimeError::new_err(format!("failed to signal rules reload: {:?}", e)))
 }
 
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
@@ -203,5 +209,6 @@ pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyTrust>()?;
     m.add_class::<PyActual>()?;
     m.add_function(wrap_pyfunction!(signal_trust_reload, m)?)?;
+    m.add_function(wrap_pyfunction!(signal_rule_reload, m)?)?;
     Ok(())
 }
