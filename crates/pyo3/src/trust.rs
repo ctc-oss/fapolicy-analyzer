@@ -11,6 +11,7 @@ use std::collections::HashMap;
 use std::io::Write;
 
 use fapolicy_daemon::fapolicyd::FIFO_PIPE;
+use fapolicy_daemon::pipe;
 use pyo3::prelude::*;
 
 use fapolicy_trust::ops::{get_path_action_map, Changeset};
@@ -192,17 +193,15 @@ impl PyChangeset {
 /// send signal to fapolicyd FIFO pipe to reload the trust database
 #[pyfunction]
 fn signal_trust_reload() -> PyResult<()> {
-    let mut fifo = std::fs::OpenOptions::new()
-        .write(true)
-        .read(false)
-        .open(FIFO_PIPE)
-        .map_err(|e| PyRuntimeError::new_err(format!("failed to open fifo pipe: {}", e)))?;
+    pipe::reload_trust()
+        .map_err(|e| PyRuntimeError::new_err(format!("failed to signal trust reload: {:?}", e)))
+}
 
-    fifo.write_all("1".as_bytes()).map_err(|e| {
-        PyRuntimeError::new_err(format!("failed to write reload byte to pipe: {:?}", e))
-    })?;
-
-    Ok(())
+/// send signal to fapolicyd FIFO pipe to reload rules
+#[pyfunction]
+fn signal_rule_reload() -> PyResult<()> {
+    pipe::reload_rules()
+        .map_err(|e| PyRuntimeError::new_err(format!("failed to signal rules reload: {:?}", e)))
 }
 
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
@@ -210,5 +209,6 @@ pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyTrust>()?;
     m.add_class::<PyActual>()?;
     m.add_function(wrap_pyfunction!(signal_trust_reload, m)?)?;
+    m.add_function(wrap_pyfunction!(signal_rule_reload, m)?)?;
     Ok(())
 }
