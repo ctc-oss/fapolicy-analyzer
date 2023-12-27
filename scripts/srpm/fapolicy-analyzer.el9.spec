@@ -53,7 +53,7 @@ BuildRequires: rust-byteorder-devel
 BuildRequires: rust-cc-devel
 BuildRequires: rust-cfg-if-devel
 BuildRequires: rust-chrono-devel
-#BuildRequires: rust-confy-devel
+BuildRequires: rust-confy-devel
 BuildRequires: rust-crossbeam-channel-devel
 BuildRequires: rust-crossbeam-deque-devel
 BuildRequires: rust-crossbeam-epoch-devel
@@ -87,16 +87,13 @@ BuildRequires: rust-parking_lot_core-devel
 BuildRequires: rust-pkg-config-devel
 BuildRequires: rust-proc-macro-hack-devel
 BuildRequires: rust-proc-macro2-devel
-#BuildRequires: (crate(pyo3/default) >= 0.15.0 with crate(pyo3/default) < 0.16.0)
-#BuildRequires: (crate(pyo3-macros/default) >= 0.15.0 with crate(pyo3-macros/default) < 0.16.0)
-#BuildRequires: (crate(pyo3-build-config/default) >= 0.15.0 with crate(pyo3-build-config/default) < 0.16.0)
-#BuildRequires: (crate(pyo3-macros-backend/default) >= 0.15.0 with crate(pyo3-macros-backend/default) < 0.16.0)
+#BuildRequires: rust-pyo3-devel
 #BuildRequires: rust-pyo3-log-devel
 BuildRequires: rust-quote-devel
 BuildRequires: rust-rayon-devel
 BuildRequires: rust-rayon-core-devel
 BuildRequires: rust-remove_dir_all-devel
-#BuildRequires: rust-ring-devel
+BuildRequires: rust-ring-devel
 BuildRequires: rust-scopeguard-devel
 BuildRequires: rust-serde-devel
 BuildRequires: rust-serde_derive-devel
@@ -111,7 +108,7 @@ BuildRequires: rust-time0.1-devel
 BuildRequires: rust-toml-devel
 BuildRequires: rust-unicode-xid-devel
 BuildRequires: rust-unindent-devel
-#BuildRequires: rust-untrusted-devel
+BuildRequires: rust-untrusted-devel
 BuildRequires: rust-paste-devel
 BuildRequires: rust-indoc-devel
 
