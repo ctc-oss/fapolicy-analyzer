@@ -265,12 +265,12 @@ jobs:
 
       - name: build
         run: |
-          copr-cli build --chroot ${{ matrix.props.chroot }} fapolicy-analyzer /tmp/fapolicy-analyzer-*.${{ matrix.props.dist }}.src.rpm
+          chroot=$(echo ${{ matrix.props.chroot }} | cut -d+ -f2)
+          copr-cli build --chroot $chroot fapolicy-analyzer /tmp/fapolicy-analyzer-*.${{ matrix.props.dist }}.src.rpm
 
   rpm:
     needs: [ config, srpm ]
     name: Rebuild ${{ matrix.props.dist }}
-    container: ${{ matrix.props.image }}
     runs-on: ubuntu-20.04
     strategy:
       matrix: ${{ fromJson(needs.config.outputs.matrix )}}
@@ -289,25 +289,36 @@ jobs:
         run: |
           sha256sum /tmp/src/*
 
-      - name: Enable EPEL
-        if: startsWith(matrix.props.dist, 'el')
+      - name: Prepare build container
         run: |
-          dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-${{ matrix.props.version }}.noarch.rpm
+          sudo apt install -y podman
+          cid="${{ matrix.props.dist }}-${{ github.run_id }}"
+          podman run -dt --name $cid --privileged fedora:39
+          podman exec $cid dnf install -y mock
+          podman exec $cid mock -r ${{ matrix.props.chroot }} --init
 
-      - name: Install RPM build dependencies
+      - name: Build with Mock
         run: |
-          dnf install -y make rpm rpmdevtools dnf-plugins-core
+          cid="${{ matrix.props.dist }}-${{ github.run_id }}"
+          srpm=$(find . -name *.${{ matrix.props.dist }}.src.rpm)
+          podman cp $srpm $cid:/tmp/$srpm
+          podman exec $cid mock -r ${{ matrix.props.chroot }} rebuild /tmp/$srpm --resultdir /tmp/rpmbuild
+        working-directory: /tmp/src/
 
-      - name: Rebuild SRPM
+      - name: Show logs
+        if: always()
         run: |
-          dnf builddep -y ${{ matrix.props.spec }}
-          rpmbuild --rebuild /tmp/src/fapolicy-analyzer-*.${{ matrix.props.dist }}.src.rpm
+          cid="${{ matrix.props.dist }}-${{ github.run_id }}"
+          podman exec $cid ls -R /tmp/rpmbuild
+          podman exec $cid cat /tmp/rpmbuild/build.log
 
       - name: Export RPMs
         run: |
+          cid="${{ matrix.props.dist }}-${{ github.run_id }}"
+          podman cp $cid:/tmp/rpmbuild/ /tmp/rpmbuild
           mkdir -p /tmp/archives
-          ls | grep -v debug | xargs mv -t /tmp/archives
-        working-directory: /github/home/rpmbuild/RPMS/x86_64
+          cd /tmp/rpmbuild
+          ls | grep -v -e debug -e log | xargs mv -t /tmp/archives
 
       - name: Upload RPMs
         uses: actions/upload-artifact@v3
