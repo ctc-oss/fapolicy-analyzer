@@ -96,7 +96,7 @@ jobs:
 
   crates0:
     name: Vendor Crates0
-    container: registry.fedoraproject.org/fedora:rawhide
+    container: registry.fedoraproject.org/fedora:37
     runs-on: ubuntu-20.04
     steps:
       - name: Install RPM build dependencies
