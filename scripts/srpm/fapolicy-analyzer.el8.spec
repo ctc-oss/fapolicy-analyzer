@@ -116,27 +116,12 @@ rm -rf %{venv_lib}/pip*
 cp -r  %{python3_sitelib}/pip* %{venv_lib}
 
 %autosetup -n %{name}
+%cargo_prep -V2
 
-# An unprivileged user cannot write to the default registry location of
-# /usr/share/cargo/registry so we work around this by linking the contents
-# of the default registry into a new writable location, and then extract
-# the contents of the vendor tarball to this new writable dir.
-# The extraction favor the system crates by untaring with --skip-old-files
-# Later the Cargo config will be updated to point to this new registry dir
-CARGO_REG_DIR=%{_builddir}/vendor-rs
-mkdir -p ${CARGO_REG_DIR}
-tar -xzf %{SOURCE2} -C ${CARGO_REG_DIR} --skip-old-files --strip-components=2
-ls -alR ${CARGO_REG_DIR}
-
-%cargo_prep
-
-# here the Cargo config is updated to point to the new registry dir
-sed -i "s#%{cargo_registry}#${CARGO_REG_DIR}#g" .cargo/config
+ls -al
+ls -al vendor
 
 tar -xzf %{SOURCE1}
-
-# relock with available crates
-rm Cargo.lock
 
 # disable the dev-tools crate
 sed -i '/tools/d' Cargo.toml
