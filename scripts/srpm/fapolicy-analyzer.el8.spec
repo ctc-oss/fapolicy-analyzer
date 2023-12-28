@@ -123,6 +123,8 @@ ls -al vendor
 
 tar -xzf %{SOURCE1}
 
+rm Cargo.lock
+
 # disable the dev-tools crate
 sed -i '/tools/d' Cargo.toml
 
