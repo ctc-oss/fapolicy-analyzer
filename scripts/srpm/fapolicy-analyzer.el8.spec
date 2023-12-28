@@ -120,6 +120,9 @@ cp -r  %{python3_sitelib}/pip* %{venv_lib}
 
 tar -xzf %{SOURCE1}
 
+# relock with available crates
+rm Cargo.lock
+
 # disable the dev-tools crate
 sed -i '/tools/d' Cargo.toml
 
