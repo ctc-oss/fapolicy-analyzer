@@ -5,7 +5,7 @@
       "dist": "el8",
       "spec": "scripts/srpm/fapolicy-analyzer.el8.spec",
       "image": "rockylinux:8",
-      "chroot": "rocky+epel-9-x86_64",
+      "chroot": "rocky+epel-8-x86_64",
       "version": "8"
     }
   ]
