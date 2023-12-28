@@ -123,10 +123,10 @@ cp -r  %{python3_sitelib}/pip* %{venv_lib}
 # the contents of the vendor tarball to this new writable dir.
 # The extraction favor the system crates by untaring with --skip-old-files
 # Later the Cargo config will be updated to point to this new registry dir
-CARGO_REG_DIR=%{_builddir}/vendor-rs/registry
+CARGO_REG_DIR=%{_builddir}/vendor-rs
 mkdir -p ${CARGO_REG_DIR}
-for d in %{cargo_registry}/*; do ln -sf ${d} ${CARGO_REG_DIR} || true; done
 tar -xzf %{SOURCE2} -C ${CARGO_REG_DIR} --skip-old-files --strip-components=2
+ls -alR ${CARGO_REG_DIR}
 
 %cargo_prep
 
