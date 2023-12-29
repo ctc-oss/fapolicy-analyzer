@@ -15,10 +15,17 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
       is-copr-enabled: ${{ steps.is-copr-enabled.outputs.defined }}
+      version-number: ${{ steps.parse-commit-msg.outputs.version-number }}
     steps:
       - uses: actions/checkout@v3
         with:
           ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: Capture release version
+        id: parse-commit-msg
+        if: startsWith(${{ github.event.head_commit.message }}, 'Release v')
+        run: echo ::set-output name=version-number::$(echo "${{ github.event.head_commit.message }}" | cut -d" " -f2)
 
       - name: Load config matrix
         id: set-matrix
@@ -62,7 +69,7 @@ jobs:
           make -f .copr/Makefile vendor-app spec=fapolicy-analyzer.spec
 
       - name: Rename source0 with prerelease version
-        if: endsWith(github.ref, '/el8')
+        if: ${{ !startsWith(github.event.head_commit.message, 'Release v') }}
         run: |
           spec_version=$(grep "Version:" fapolicy-analyzer.spec | tr -s ' ' | cut -d' ' -f2)
           commit_number=$(git rev-list HEAD~1 --count)
@@ -140,7 +147,6 @@ jobs:
       matrix: ${{ fromJson(needs.config.outputs.matrix) }}
     steps:
       - name: Enable EPEL
-        if: startsWith(matrix.props.dist, 'el')
         run: |
           dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-${{ matrix.props.version }}.noarch.rpm
 
@@ -152,20 +158,15 @@ jobs:
           ref: ${{ github.ref }}
           fetch-depth: 0
 
-      - name: Strip ref to tag
-        id: tag_name
-        if: startsWith(${{ github.event.head_commit.message }}, 'Release v')
-        run: echo ::set-output name=VERSION::$(${{echo github.event.head_commit.message }} | cut -d" " -f2)
-
       - name: Mark as git safe
         run: |
           git config --global --add safe.directory $GITHUB_WORKSPACE
 
       - name: Ensure spec version matches tag
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(${{ github.event.head_commit.message }}, 'Release v')
         run: |
           spec_version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
-          tag="${{ steps.tag_name.outputs.VERSION }}"
+          tag="${{ needs.config.outputs.version-number }}"
           tag_version="${tag#v}"
           echo "Got version $tag_version from git tag $tag"
           
@@ -183,7 +184,7 @@ jobs:
           echo "The spec version $spec_version is correct based on git tag $tag"
 
       - name: Patch spec with prerelease version
-        if: endsWith(github.ref, '/el8')
+        if: ${{ !startsWith(github.event.head_commit.message, 'Release v') }}
         run: |
           spec_version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
           commit_number=$(git rev-list HEAD --count)
@@ -215,23 +216,21 @@ jobs:
           path: /tmp/rpmbuild/SOURCES/
 
       - name: Fetch Crates0 tarball
-        if: startsWith(matrix.props.dist, 'el')
         uses: actions/download-artifact@v3
         with:
           name: crates0
           path: /tmp/rpmbuild/SOURCES/
 
       - name: Tag Crates0 tarball
-        if: startsWith(matrix.props.dist, 'el')
         run: |
           spec_version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
           cd /tmp/rpmbuild/SOURCES/
           mv vendor-rs.tar.gz vendor-rs-${spec_version}.tar.gz
 
       - name: Generate doc tag
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(${{ github.event.head_commit.message }}, 'Release v')
         run: |
-          echo "${{ steps.tag_name.outputs.VERSION }}" > help/version
+          echo "${{ needs.config.outputs.version-number }}" > help/version
           cat help/version
 
       - name: Build SRPM
@@ -248,7 +247,6 @@ jobs:
           mv vendor-docs-*.tar.gz /tmp/archives
 
       - name: Export el tarballs
-        if: startsWith(matrix.props.dist, 'el')
         run: |
           version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
           mv /tmp/rpmbuild/SOURCES/vendor-rs-${version}.tar.gz /tmp/archives/
@@ -331,7 +329,6 @@ jobs:
           path: /tmp/src/
 
       - name: Download tarball artifacts
-        if: startsWith(matrix.props.dist, 'el')
         uses: actions/download-artifact@v3
         with:
           name: tarball-artifacts
@@ -406,7 +403,6 @@ jobs:
           sha256sum /tmp/src/*
 
       - name: Enable EPEL
-        if: startsWith(matrix.props.dist, 'el')
         run: |
           dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-${{ matrix.props.version }}.noarch.rpm
 
@@ -420,9 +416,9 @@ jobs:
           rpm -q fapolicy-analyzer
 
   publish:
-    needs: [ srpm, rpm, install, copr ]
+    needs: [ config, srpm, rpm, install, copr ]
     name: Publish
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(${{ github.event.head_commit.message }}, 'Release v')
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
@@ -436,17 +432,19 @@ jobs:
 
       - name: Tag artifacts as el8
         run: |
-          mv source0/fapolicy-analyzer-${{ steps.tag_name.outputs.VERSION }}.tar.gz fapolicy-analyzer-${{ steps.tag_name.outputs.VERSION }}.el8.tar.gz
-          mv source0/vendor-rs.tar.gz vendor-rs.el8.tar.gz
+          tag="${{ needs.config.outputs.version-number }}"
+          v="${tag#v}"
+          mv source0/fapolicy-analyzer-${v}.tar.gz fapolicy-analyzer-${v}.el8.tar.gz
+          mv tarball-artifacts/vendor-rs-${v}.tar.gz vendor-rs-${v}.el8.tar.gz
         working-directory: /tmp/archives
 
       - name: Release artifacts
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ steps.tag_name.outputs.VERSION }}
+          tag_name: ${{ needs.config.outputs.version-number }}
           draft: true
           files: |
-            /tmp/archives/fapolicy-analyzer-${{ steps.tag_name.outputs.VERSION }}.el8.tar.gz
-            /tmp/archives/vendor-rs.el8.tar.gz
+            /tmp/archives/fapolicy-analyzer-*.el8.tar.gz
+            /tmp/archives/vendor-rs-*.el8.tar.gz
             /tmp/archives/rpm-artifacts/*.rpm
             /tmp/archives/srpm-artifacts/*.src.rpm
