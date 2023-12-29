@@ -38,6 +38,7 @@ BuildRequires: desktop-file-utils
 
 BuildRequires: clang
 BuildRequires: audit-libs-devel
+BuildRequires: lmdb-devel
 
 BuildRequires: rust-toolset
 BuildRequires: python3dist(toml)
