@@ -1,6 +1,6 @@
 Summary:       File Access Policy Analyzer
 Name:          fapolicy-analyzer
-Version:       1.2.0
+Version:       1.2.2
 Release:       1%{?dist}
 License:       GPL-3.0-or-later
 URL:           https://github.com/ctc-oss/fapolicy-analyzer
@@ -41,6 +41,7 @@ BuildRequires: desktop-file-utils
 
 BuildRequires: clang
 BuildRequires: audit-libs-devel
+BuildRequires: lmdb-devel
 
 BuildRequires: rust-packaging
 
@@ -52,7 +53,7 @@ BuildRequires: rust-byteorder-devel
 BuildRequires: rust-cc-devel
 BuildRequires: rust-cfg-if-devel
 BuildRequires: rust-chrono-devel
-#BuildRequires: rust-confy-devel
+BuildRequires: rust-confy-devel
 BuildRequires: rust-crossbeam-channel-devel
 BuildRequires: rust-crossbeam-deque-devel
 BuildRequires: rust-crossbeam-epoch-devel
@@ -86,16 +87,13 @@ BuildRequires: rust-parking_lot_core-devel
 BuildRequires: rust-pkg-config-devel
 BuildRequires: rust-proc-macro-hack-devel
 BuildRequires: rust-proc-macro2-devel
-#BuildRequires: (crate(pyo3/default) >= 0.15.0 with crate(pyo3/default) < 0.16.0)
-#BuildRequires: (crate(pyo3-macros/default) >= 0.15.0 with crate(pyo3-macros/default) < 0.16.0)
-#BuildRequires: (crate(pyo3-build-config/default) >= 0.15.0 with crate(pyo3-build-config/default) < 0.16.0)
-#BuildRequires: (crate(pyo3-macros-backend/default) >= 0.15.0 with crate(pyo3-macros-backend/default) < 0.16.0)
+#BuildRequires: rust-pyo3-devel
 #BuildRequires: rust-pyo3-log-devel
 BuildRequires: rust-quote-devel
 BuildRequires: rust-rayon-devel
 BuildRequires: rust-rayon-core-devel
 BuildRequires: rust-remove_dir_all-devel
-#BuildRequires: rust-ring-devel
+BuildRequires: rust-ring-devel
 BuildRequires: rust-scopeguard-devel
 BuildRequires: rust-serde-devel
 BuildRequires: rust-serde_derive-devel
@@ -110,7 +108,7 @@ BuildRequires: rust-time0.1-devel
 BuildRequires: rust-toml-devel
 BuildRequires: rust-unicode-xid-devel
 BuildRequires: rust-unindent-devel
-#BuildRequires: rust-untrusted-devel
+BuildRequires: rust-untrusted-devel
 BuildRequires: rust-paste-devel
 BuildRequires: rust-indoc-devel
 
@@ -130,10 +128,6 @@ Requires:      gnome-icon-theme
 # runtime required for rendering user guide
 Requires:      webkit2gtk3
 Requires:      mesa-dri-drivers
-
-# rust-ring-devel does not support s390x and ppc64le:
-# https://bugzilla.redhat.com/show_bug.cgi?id=1869980
-ExcludeArch:   s390x %{power64}
 
 %global module          fapolicy_analyzer
 
@@ -236,5 +230,5 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
 %attr(755,root,root) %{_datadir}/applications/%{name}.desktop
 
 %changelog
-* Mon Nov 06 2023 John Wass <jwass3@gmail.com> 1.2.0-1
+* Wed Dec 27 2023 John Wass <jwass3@gmail.com> 1.2.2-1
 - New release

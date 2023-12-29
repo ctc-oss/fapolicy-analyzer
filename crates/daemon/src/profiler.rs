@@ -70,7 +70,12 @@ impl Profiler {
                 // create a temp file as the backup location
                 let backup = NamedTempFile::new()?;
                 // move original compiled to backup location
-                fs::rename(&compiled, &backup)?;
+                fs::rename(&compiled, &backup).or_else(|x| {
+                    log::debug!("rename fallback copy");
+                    fs::copy(&compiled, &backup)
+                        .and_then(|_| fs::remove_file(&compiled))
+                        .or(Err(x))
+                })?;
                 // write compiled rules for the profiling run
                 write::compiled_rules(db, &compiled)?;
                 log::debug!("rules backed up to {:?}", backup.path());
