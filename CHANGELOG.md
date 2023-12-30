@@ -149,3 +149,7 @@ Note: RPM artifacts for this release are only available via the Fedora package r
 - Bump versions for v1.1.0 [[#835](https://github.com/ctc-oss/fapolicy-analyzer/pull/835) @jw3]
 
 **[(Full Changelog)](https://github.com/ctc-oss/fapolicy-analyzer/compare/v1.0.0...v1.0.1)**
+
+# v1.0.0
+
+Initial release
