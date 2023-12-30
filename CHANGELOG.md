@@ -5,6 +5,8 @@ Release notes
 
 ## Releases
 
+<!-- towncrier release notes start -->
+
 # v1.2.2
 
 ### Added Features
