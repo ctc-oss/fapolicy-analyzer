@@ -28,6 +28,7 @@ from fapolicy_analyzer.ui.actions import (
 from fapolicy_analyzer.ui.changeset_wrapper import Changeset, ConfigChangeset
 from fapolicy_analyzer.ui.config.config_text_view import ConfigTextView
 from fapolicy_analyzer.ui.config.config_status_info import ConfigStatusInfo
+from fapolicy_analyzer.ui.rules.rules_admin_page import VALIDATION_NOTE_CATEGORY
 from fapolicy_analyzer.ui.strings import (
     APPLY_CHANGESETS_ERROR_MESSAGE,
     CONFIG_CHANGESET_PARSE_ERROR,
@@ -143,6 +144,14 @@ class ConfigAdminPage(UIConnectedWidget):
         try:
             changeset.parse(self.__modified_config_text)
             valid = changeset.is_valid()
+            if show_notifications and not valid:
+                dispatch(
+                    add_notification(
+                        CONFIG_CHANGESET_PARSE_ERROR,
+                        NotificationType.ERROR,
+                        category=VALIDATION_NOTE_CATEGORY,
+                    )
+                )
         except Exception as e:
             logging.error("Error setting changeset config: %s", e)
             dispatch(
