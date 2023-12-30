@@ -9,7 +9,7 @@ jobs:
     name: Check if towncrier change log entry is correct
     runs-on: ubuntu-latest
     steps:
-      - uses: scientific-python/action-towncrier-changelog@0.1
+      - uses: scientific-python/action-towncrier-changelog@0.1.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BOT_USERNAME: changelog-bot
