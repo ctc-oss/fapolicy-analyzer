@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "c8c9a0d6fd9e9cb935ab29b8bbee01bd757508e57a850aba65d6e7c2bcc616ec"
+            "sha256": "bc4a6d71dab471e1f41b6451faee15ace15b8e6d46e211e538954541931be375"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -426,6 +426,29 @@
             ],
             "index": "pypi",
             "version": "==4.2.0"
+        },
+        "ruff": {
+            "hashes": [
+                "sha256:0e17f53bcbb4fff8292dfd84cf72d767b5e146f009cccd40c2fad27641f8a7a9",
+                "sha256:104aa9b5e12cb755d9dce698ab1b97726b83012487af415a4512fedd38b1459e",
+                "sha256:1e63bf5a4a91971082a4768a0aba9383c12392d0d6f1e2be2248c1f9054a20da",
+                "sha256:28d920e319783d5303333630dae46ecc80b7ba294aeffedf946a02ac0b7cc3db",
+                "sha256:2aec598fb65084e41a9c5d4b95726173768a62055aafb07b4eff976bac72a592",
+                "sha256:331aae2cd4a0554667ac683243b151c74bd60e78fb08c3c2a4ac05ee1e606a39",
+                "sha256:479ca4250cab30f9218b2e563adc362bd6ae6343df7c7b5a7865300a5156d5a6",
+                "sha256:4d0738917c203246f3e275b37006faa3aa96c828b284ebfe3e99a8cb413c8c4b",
+                "sha256:69dac82d63a50df2ab0906d97a01549f814b16bc806deeac4f064ff95c47ddf5",
+                "sha256:744dfe4b35470fa3820d5fe45758aace6269c578f7ddc43d447868cfe5078bcb",
+                "sha256:8151425a60878e66f23ad47da39265fc2fad42aed06fb0a01130e967a7a064f4",
+                "sha256:837c739729394df98f342319f5136f33c65286b28b6b70a87c28f59354ec939b",
+                "sha256:aa8344310f1ae79af9ccd6e4b32749e93cddc078f9b5ccd0e45bd76a6d2e8bb6",
+                "sha256:b041dee2734719ddbb4518f762c982f2e912e7f28b8ee4fe1dee0b15d1b6e800",
+                "sha256:c497d769164df522fdaf54c6eba93f397342fe4ca2123a2e014a5b8fc7df81c7",
+                "sha256:e6837202c2859b9f22e43cb01992373c2dbfeae5c0c91ad691a4a2e725392464",
+                "sha256:e6a212f436122ac73df851f0cf006e0c6612fe6f9c864ed17ebefce0eff6a5fd"
+            ],
+            "index": "pypi",
+            "version": "==0.1.9"
         },
         "semantic-version": {
             "hashes": [
