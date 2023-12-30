@@ -3,6 +3,41 @@ Release notes
 
 ``fapolicy-analyzer`` issues are filed on [GitHub](https://github.com/ctc-oss/fapolicy-analyzer/issues).
 
+## Releases
+
+# v1.2.2
+
+### Added Features
+
+- Revisit pipe operations [[#964](https://github.com/ctc-oss/fapolicy-analyzer/issues/964) [#966](https://github.com/ctc-oss/fapolicy-analyzer/pull/966) @jw3]
+
+### Bug Fixes
+
+- Try harder to back up rules during profiling [[#965](https://github.com/ctc-oss/fapolicy-analyzer/issues/965) [#967](https://github.com/ctc-oss/fapolicy-analyzer/pull/967) @jw3]
+
+### Additional Changes
+
+- Upgrade Pyo3 to 0.20 [[#956](https://github.com/ctc-oss/fapolicy-analyzer/issues/956) [#968](https://github.com/ctc-oss/fapolicy-analyzer/pull/968) @jw3]
+
+
+# v1.2.1
+
+Packaging updates
+
+Note: RPM artifacts for this release are only available via the Fedora package repositories.
+
+### Bug Fixes
+
+- Failure to build for 32 bit [[#947](https://github.com/ctc-oss/fapolicy-analyzer/issues/947) [#953](https://github.com/ctc-oss/fapolicy-analyzer/pull/953) @jw3]
+
+### Additional Changes
+
+- Remove ExcludeArch from spec [[#948](https://github.com/ctc-oss/fapolicy-analyzer/issues/948) [#953](https://github.com/ctc-oss/fapolicy-analyzer/pull/953) @jw3]
+- Upgrade pyo3 [[#882](https://github.com/ctc-oss/fapolicy-analyzer/issues/882) [#905](https://github.com/ctc-oss/fapolicy-analyzer/pull/905) @jw3]
+- Bring spec changes back from v1.2 [[#949](https://github.com/ctc-oss/fapolicy-analyzer/issues/949) [#951](https://github.com/ctc-oss/fapolicy-analyzer/pull/951) @jw3]
+- Fc not building due to missing crate [[#929](https://github.com/ctc-oss/fapolicy-analyzer/issues/929)]
+- Update fc builds [[#946](https://github.com/ctc-oss/fapolicy-analyzer/pull/946) @jw3]
+
 # v1.2.0
 
 ### Added Features
