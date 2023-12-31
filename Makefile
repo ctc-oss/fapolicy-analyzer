@@ -99,7 +99,7 @@ format: pyformat cargo-fmt
 # Format python source code
 pyformat:
 	@echo -e "${GRN}  |--- Python formating...${NC}"
-	pipenv run black fapolicy_analyzer/
+	pipenv run format
 
 # Format rust source code
 cargo-fmt:
@@ -120,7 +120,7 @@ header-check:
 # Perform linting on the Python source code
 pylint:
 	@echo -e "${GRN}-  |--- Python linting...${NC}"
-	pipenv run flake8 fapolicy_analyzer/
+	pipenv run lint
 
 # Perform linting on the rust source code
 clippy:

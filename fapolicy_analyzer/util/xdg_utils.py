@@ -35,8 +35,9 @@ def _app_dir_prefix(key):
             os.makedirs(app_tmp_dir, 0o700)
     except Exception as e:
         print(
-            "Warning: Directory creation of '{}' failed."
-            "Using /tmp/".format(app_tmp_dir),
+            "Warning: Directory creation of '{}' failed." "Using /tmp/".format(
+                app_tmp_dir
+            ),
             e,
         )
         app_tmp_dir = "/tmp/"

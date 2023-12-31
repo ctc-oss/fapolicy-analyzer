@@ -18,13 +18,17 @@ from dataclasses import dataclass, field
 from typing import Callable, Mapping, Sequence
 
 
+def true():
+    return True
+
+
 @dataclass
 class UIAction:
     name: str
     tooltip: str
     icon: str
     signals: Mapping[str, Callable]
-    sensitivity_func: Callable[..., bool] = lambda: True
+    sensitivity_func: Callable[..., bool] = true
 
 
 @dataclass
