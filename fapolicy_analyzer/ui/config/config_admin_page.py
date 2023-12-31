@@ -28,6 +28,7 @@ from fapolicy_analyzer.ui.actions import (
 from fapolicy_analyzer.ui.changeset_wrapper import Changeset, ConfigChangeset
 from fapolicy_analyzer.ui.config.config_text_view import ConfigTextView
 from fapolicy_analyzer.ui.config.config_status_info import ConfigStatusInfo
+from fapolicy_analyzer.ui.rules.rules_admin_page import VALIDATION_NOTE_CATEGORY
 from fapolicy_analyzer.ui.strings import (
     APPLY_CHANGESETS_ERROR_MESSAGE,
     CONFIG_CHANGESET_PARSE_ERROR,
@@ -56,6 +57,13 @@ class ConfigAdminPage(UIConnectedWidget):
         actions = {
             "config": [
                 UIAction(
+                    name="Validate",
+                    tooltip="Validate Config",
+                    icon="emblem-default",
+                    signals={"clicked": self.on_validate_clicked},
+                    sensitivity_func=self.__config_unvalidated,
+                ),
+                UIAction(
                     name="Save",
                     tooltip="Save Config",
                     icon="document-save",
@@ -67,6 +75,7 @@ class ConfigAdminPage(UIConnectedWidget):
         UIPage.__init__(self, actions)
         self.__loading_text: bool = False
         self.__config_text: str = ""
+        self.__config_validated: bool = False
         self.__changesets: Sequence[Changeset] = []
         self.__modified_config_text: str = ""
         self.__config_validated: bool = True
@@ -111,11 +120,20 @@ class ConfigAdminPage(UIConnectedWidget):
                 self.__status_info.render_config_status(changeset.info())
             overrideDialog.hide()
 
+    def on_validate_clicked(self, *args):
+        changeset, _ = self.__build_and_validate_changeset(show_notifications=False)
+        self.__status_info.render_config_status(changeset.info())
+        # dispatch to force toolbar refresh
+        dispatch(modify_config_text(self.__config_validated))
+
     def __config_dirty(self) -> bool:
         return (
             bool(self.__modified_config_text)
             and self.__modified_config_text != self.__config_text
         )
+
+    def __config_unvalidated(self) -> bool:
+        return not self.__config_validated
 
     def __build_and_validate_changeset(
         self, show_notifications=True
@@ -126,6 +144,14 @@ class ConfigAdminPage(UIConnectedWidget):
         try:
             changeset.parse(self.__modified_config_text)
             valid = changeset.is_valid()
+            if show_notifications and not valid:
+                dispatch(
+                    add_notification(
+                        CONFIG_CHANGESET_PARSE_ERROR,
+                        NotificationType.ERROR,
+                        category=VALIDATION_NOTE_CATEGORY,
+                    )
+                )
         except Exception as e:
             logging.error("Error setting changeset config: %s", e)
             dispatch(
