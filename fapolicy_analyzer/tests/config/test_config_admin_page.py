@@ -34,8 +34,6 @@ from fapolicy_analyzer.ui.config.config_admin_page import ConfigAdminPage
 from fapolicy_analyzer.ui.store import init_store
 from fapolicy_analyzer.ui.strings import (
     CONFIG_TEXT_LOAD_ERROR,
-    RULES_VALIDATION_ERROR,
-    RULES_VALIDATION_WARNING,
     CONFIG_CHANGESET_PARSE_ERROR,
 )
 
