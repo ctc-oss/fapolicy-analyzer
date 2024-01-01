@@ -21,3 +21,11 @@ jobs:
           ! grep -R -L --exclude-dir=vendor \
             --include='*.py' --include='*.rs' --include='*.glade' --include='*.sh' \
             'Copyright Concurrent Technologies Corporation' *
+
+  changelog:
+    name: Enforce changelog entry
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jw3/newsforce@v0
