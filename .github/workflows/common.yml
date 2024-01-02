@@ -28,6 +28,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: jw3/newsforce@v0
+      - uses: jw3/newsforce@docker
         with:
           ignores: ci,documentation,release
