@@ -29,3 +29,5 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: jw3/newsforce@v0
+        with:
+          ignores: ci,documentation,release
