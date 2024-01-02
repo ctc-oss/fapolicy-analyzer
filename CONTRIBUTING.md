@@ -63,7 +63,7 @@ PRs may be excluded from the documentation requirement if they fall into one of 
 - `documentation` - Documentation improvements do not usually need reported to users
 - `release` - Release PRs do not need a news article
 
-To exclude the news check on a PR label the PR with the category or prefix the PR title with the name and a colon, `ci: Updated the build`.
+To exclude the news check on a PR label the PR with the category or tag PR title with a prefix + `:`, eg. `ci: Updated the build`.
 
 ### Getting Help
 Feel free to ask a question or start a discussion in the [Discussion](https://github.com/ctc-oss/fapolicy-analyzer/discussions) section of this project.
