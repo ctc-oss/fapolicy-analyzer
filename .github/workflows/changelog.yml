@@ -1,0 +1,23 @@
+on:
+  push:
+    branches:
+      - 'master'
+      - 'release/*'
+  pull_request:
+    types: [opened, synchronize, labeled, unlabeled, edited]
+    branches:
+      - 'master'
+      - 'release/*'
+
+name: Changelog
+
+jobs:
+  changelog:
+    name: Enforce changelog entry
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jw3/newsforce@docker
+        with:
+          ignores: ci,documentation,release
