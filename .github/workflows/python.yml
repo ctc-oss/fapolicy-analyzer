@@ -30,6 +30,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Install requirements
         run: |
+          dnf -y install 'dnf-command(builddep)'  
           dnf -y builddep fapolicy-analyzer.spec
           dnf -y install xorg-x11-server-Xvfb
       - name: Set up Python ${{ matrix.python-version }}
