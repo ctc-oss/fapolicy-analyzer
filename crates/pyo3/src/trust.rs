@@ -8,9 +8,7 @@
 
 use pyo3::exceptions::PyRuntimeError;
 use std::collections::HashMap;
-use std::io::Write;
 
-use fapolicy_daemon::fapolicyd::FIFO_PIPE;
 use fapolicy_daemon::pipe;
 use pyo3::prelude::*;
 
