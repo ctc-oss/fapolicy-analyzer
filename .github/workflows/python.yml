@@ -45,7 +45,7 @@ jobs:
       - name: Install dependencies
         id: install_deps
         run: |
-          pip install pipenv==2023.7.4 || pip install pipenv
+          python3 -m pip install pipenv==2023.7.4 || python3 -m pip install pipenv
           pipenv install --dev --python ${{ matrix.python-version }}
           echo ::set-output name=virt_env::$(pipenv --venv)
       - name: Setup Bindings
