@@ -21,7 +21,7 @@ jobs:
 
   ui_test:
     name: UI Test Suite for Python ${{ matrix.python-version }}
-    container: fedora:rawhide
+    container: fedora:latest
     runs-on: ubuntu-20.04
     strategy:
       matrix:
