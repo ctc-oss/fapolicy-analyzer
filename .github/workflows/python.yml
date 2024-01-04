@@ -46,8 +46,7 @@ jobs:
 
       - name: Install dnf python deps
         run: |
-          dnf install -y python3-pipenv
-          dnf -y install python3-pyOpenSSL
+          dnf install -y python3-pip
 
       - name: Install pipenv deps
         run: pipenv install --dev --python ${{ matrix.python-version }}
