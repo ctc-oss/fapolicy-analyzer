@@ -4,13 +4,13 @@ Version:       1.2.2
 Release:       1%{?dist}
 License:       GPL-3.0-or-later
 URL:           https://github.com/ctc-oss/fapolicy-analyzer
-Source0:       %{url}/releases/download/v%{version}/%{name}-%{version}.tar.gz
+Source0:       %{url}/releases/download/v%{version}/%{name}-%{version}.el8.tar.gz
 
 # vendored documentation sources, used to generate help docs
 Source1:       %{url}/releases/download/v%{version}/vendor-docs-%{version}.tar.gz
 
 # vendored rust dependencies
-Source2:       %{url}/releases/download/v%{version}/vendor-rs-%{version}.tar.gz
+Source2:       %{url}/releases/download/v%{version}/vendor-rs-%{version}.el8.tar.gz
 
 # Build-time python dependencies for setuptools-rust
 Source10:      %{pypi_source setuptools-rust 1.1.2}
@@ -61,10 +61,6 @@ Requires:      gtksourceview3
 # runtime required for rendering user guide
 Requires:      webkit2gtk3
 Requires:      mesa-dri-drivers
-
-# rust-ring-devel does not support s390x and ppc64le:
-# https://bugzilla.redhat.com/show_bug.cgi?id=1869980
-ExcludeArch:   s390x %{power64}
 
 %global module          fapolicy_analyzer
 
@@ -118,9 +114,6 @@ cp -r  %{python3_sitelib}/pip* %{venv_lib}
 
 %autosetup -n %{name}
 %cargo_prep -V2
-
-ls -al
-ls -al vendor
 
 tar -xzf %{SOURCE1}
 
