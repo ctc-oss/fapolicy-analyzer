@@ -17,6 +17,7 @@ use fapolicy_app::cfg;
 use fapolicy_app::sys::deploy_app_state;
 use fapolicy_rules::db::Entry::Comment;
 use fapolicy_trust::stat::Status::*;
+use fapolicy_util::sha::sha256_digest;
 // use fapolicy_util::sha::sha256_digest;
 
 use crate::acl::{PyGroup, PyUser};
@@ -269,9 +270,8 @@ pub fn rule_identity(system: &PySystem) -> PyResult<String> {
             Comment(_) => acc,
             e => format!("{}\n{}\n", acc, crate::rules::text_for_entry(e)),
         });
-    Ok("".to_owned())
-    // sha256_digest(txt.as_bytes())
-    //     .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))
+    sha256_digest(txt.as_bytes())
+        .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))
 }
 
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
