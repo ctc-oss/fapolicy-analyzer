@@ -407,6 +407,7 @@ dependencies = [
  "fapolicy-daemon",
  "fapolicy-rules",
  "fapolicy-trust",
+ "fapolicy-util",
  "log",
  "pyo3",
  "pyo3-log",

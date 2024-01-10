@@ -197,7 +197,7 @@ class MainWindow(UIConnectedWidget):
                 page.dispose()
                 return
 
-        if self.__page:
+        if self.__page is not None:
             self.__page.dispose()
         self.__page = page
         self.mainContent.pack_start(page.get_ref(), True, True, 0)
@@ -482,6 +482,7 @@ class MainWindow(UIConnectedWidget):
         rulesPage = router(PAGE_SELECTION.RULES_ADMIN)
         if kwargs.get("rule_id", None) is not None:
             rulesPage.highlight_row_from_data(kwargs["rule_id"])
+        rulesPage.refresh_toolbar += self._refresh_toolbar
         self.__pack_main_content(rulesPage)
 
     def on_profileExecMenu_activate(self, *args):
