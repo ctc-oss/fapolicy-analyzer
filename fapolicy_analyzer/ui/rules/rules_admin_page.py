@@ -19,7 +19,7 @@ from typing import Any, Optional, Sequence, Tuple
 
 from events import Events
 
-from fapolicy_analyzer import Rule, System
+from fapolicy_analyzer import Rule, System, reload_profiler_rules
 from fapolicy_analyzer.ui.actions import (
     Notification,
     NotificationType,
@@ -336,7 +336,7 @@ class RulesAdminPage(UIConnectedWidget, UIPage, Events):
             self.refresh_toolbar()
 
     def on_load_in_profiler_clicked(self, *args):
-        print("on load in profiler")
+        reload_profiler_rules(self.__system)
 
     def __can_load_in_profiler(self):
         return self.__profiling_active and not self.__rules_dirty()

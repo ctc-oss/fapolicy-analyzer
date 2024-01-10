@@ -8,10 +8,12 @@
 
 use chrono::Utc;
 use fapolicy_analyzer::users::read_users;
+use fapolicy_app::sys::Error::WriteRulesFail;
 use fapolicy_daemon::fapolicyd::wait_until_ready;
+use fapolicy_daemon::pipe;
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
-use pyo3::{PyResult, Python};
+use pyo3::{exceptions, PyResult, Python};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
@@ -23,6 +25,7 @@ use std::sync::Arc;
 use std::time::{Duration, SystemTime};
 use std::{io, thread};
 
+use crate::system::PySystem;
 use fapolicy_daemon::profiler::Profiler;
 use fapolicy_rules::read::load_rules_db;
 
@@ -472,9 +475,30 @@ impl PyProfiler {
     }
 }
 
+/// Update the compiled.rules in place and send a signal to the fapolicyd pipe to reload
+/// Cleanup of the change here is handled in the normal shutdown flow by the profiler
+#[pyfunction]
+fn reload_profiler_rules(system: &PySystem) -> PyResult<()> {
+    println!("writing rules update");
+
+    let compiled_rules_path = PathBuf::from(&system.rs.config.system.rules_file_path)
+        .parent()
+        .expect("invalid toml: rules_file_path")
+        .join("compiled.rules");
+
+    fapolicy_rules::write::compiled_rules(&system.rs.rules_db, &compiled_rules_path)
+        .map_err(WriteRulesFail)
+        .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))?;
+
+    pipe::reload_rules()
+        .map_err(|e| exceptions::PyRuntimeError::new_err(format!("Reload failed: {:?}", e)))
+}
+
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyProfiler>()?;
     m.add_class::<ProcHandle>()?;
     m.add_class::<ExecHandle>()?;
+    m.add_function(wrap_pyfunction!(reload_profiler_rules, m)?)?;
+
     Ok(())
 }
