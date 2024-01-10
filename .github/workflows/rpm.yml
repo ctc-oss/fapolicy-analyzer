@@ -24,7 +24,7 @@ jobs:
 
       - name: Capture release version
         id: parse-commit-msg
-        if: startsWith(${{ github.event.head_commit.message }}, 'Release v')
+        if: startsWith(github.event.head_commit.message, 'Release v')
         run: echo ::set-output name=version-number::$(echo "${{ github.event.head_commit.message }}" | cut -d" " -f2)
 
       - name: Load config matrix
@@ -69,7 +69,7 @@ jobs:
           make -f .copr/Makefile vendor-app spec=fapolicy-analyzer.spec
 
       - name: Rename source0 with prerelease version
-        if: ${{ !startsWith(github.event.head_commit.message, 'Release v') }}
+        if: endsWith(github.ref, '/el8')
         run: |
           spec_version=$(grep "Version:" fapolicy-analyzer.spec | tr -s ' ' | cut -d' ' -f2)
           commit_number=$(git rev-list HEAD~1 --count)
@@ -163,7 +163,7 @@ jobs:
           git config --global --add safe.directory $GITHUB_WORKSPACE
 
       - name: Ensure spec version matches tag
-        if: startsWith(${{ github.event.head_commit.message }}, 'Release v')
+        if: startsWith(github.event.head_commit.message, 'Release v')
         run: |
           spec_version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
           tag="${{ needs.config.outputs.version-number }}"
@@ -228,7 +228,7 @@ jobs:
           mv vendor-rs.tar.gz vendor-rs-${spec_version}.tar.gz
 
       - name: Generate doc tag
-        if: startsWith(${{ github.event.head_commit.message }}, 'Release v')
+        if: startsWith(github.event.head_commit.message, 'Release v')
         run: |
           echo "${{ needs.config.outputs.version-number }}" > help/version
           cat help/version
@@ -418,7 +418,7 @@ jobs:
   publish:
     needs: [ config, srpm, rpm, install, copr ]
     name: Publish
-    if: startsWith(${{ github.event.head_commit.message }}, 'Release v')
+    if: startsWith(github.event.head_commit.message, 'Release v')
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
