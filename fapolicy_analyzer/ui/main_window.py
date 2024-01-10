@@ -482,6 +482,7 @@ class MainWindow(UIConnectedWidget):
         rulesPage = router(PAGE_SELECTION.RULES_ADMIN)
         if kwargs.get("rule_id", None) is not None:
             rulesPage.highlight_row_from_data(kwargs["rule_id"])
+        rulesPage.refresh_toolbar += self._refresh_toolbar
         self.__pack_main_content(rulesPage)
 
     def on_profileExecMenu_activate(self, *args):

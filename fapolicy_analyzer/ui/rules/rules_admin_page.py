@@ -61,10 +61,6 @@ VALIDATION_NOTE_CATEGORY = "invalid rules"
 
 
 class RulesAdminPage(UIConnectedWidget, UIPage, Events):
-    __events__ = [
-        "refresh_toolbar",
-    ]
-
     def __init__(self):
         features = [
             {get_system_feature(): {"on_next": self.on_next_system}},
@@ -72,6 +68,10 @@ class RulesAdminPage(UIConnectedWidget, UIPage, Events):
             {get_profiling_feature(): {"on_next": self.on_next_profiling_state}},
         ]
         UIConnectedWidget.__init__(self, features=features)
+
+        self.__events__ = [
+            "refresh_toolbar",
+        ]
         Events.__init__(self)
 
         actions = {
@@ -92,9 +92,9 @@ class RulesAdminPage(UIConnectedWidget, UIPage, Events):
                 ),
                 UIAction(
                     name="Profile",
-                    tooltip="Load Rules in Profiler",
+                    tooltip="Apply to Profiler",
                     icon="media-seek-forward",
-                    signals={"clicked": self.on_load_in_profiler},
+                    signals={"clicked": self.on_load_in_profiler_clicked},
                     sensitivity_func=self.__can_load_in_profiler,
                 ),
             ],
@@ -335,8 +335,8 @@ class RulesAdminPage(UIConnectedWidget, UIPage, Events):
             self.__profiling_active = state.running
             self.refresh_toolbar()
 
-    def on_load_in_profiler(self, *args):
+    def on_load_in_profiler_clicked(self, *args):
         print("on load in profiler")
 
     def __can_load_in_profiler(self):
-        return self.__profiling_active
+        return self.__profiling_active and not self.__rules_dirty()
