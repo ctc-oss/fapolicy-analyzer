@@ -197,7 +197,7 @@ class MainWindow(UIConnectedWidget):
                 page.dispose()
                 return
 
-        if self.__page:
+        if self.__page is not None:
             self.__page.dispose()
         self.__page = page
         self.mainContent.pack_start(page.get_ref(), True, True, 0)
