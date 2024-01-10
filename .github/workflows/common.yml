@@ -1,12 +1,10 @@
 on:
   push:
     branches:
-      - 'master'
-      - 'release/*'
+      - 'el8'
   pull_request:
     branches:
-      - 'master'
-      - 'release/*'
+      - 'el8'
 
 name: Common CI
 
