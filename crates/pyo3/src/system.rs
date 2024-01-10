@@ -15,7 +15,10 @@ use fapolicy_analyzer::events::db::DB as EventDB;
 use fapolicy_app::app::State;
 use fapolicy_app::cfg;
 use fapolicy_app::sys::deploy_app_state;
+use fapolicy_rules::db::Entry::Comment;
 use fapolicy_trust::stat::Status::*;
+use fapolicy_util::sha::sha256_digest;
+// use fapolicy_util::sha::sha256_digest;
 
 use crate::acl::{PyGroup, PyUser};
 use crate::analysis::PyEventLog;
@@ -254,10 +257,28 @@ fn checked_system(py: Python) -> PyResult<PySystem> {
     })
 }
 
+/// Generate a sha256 hash of the db text
+/// The text hashed here is the same as what would be written to
+/// compiled.rules by either fapolicyd or the analyzer
+#[pyfunction]
+pub fn rule_identity(system: &PySystem) -> PyResult<String> {
+    let txt = system
+        .rs
+        .rules_db
+        .iter()
+        .fold(String::new(), |acc, (_, (_, x))| match x {
+            Comment(_) => acc,
+            e => format!("{}\n{}\n", acc, crate::rules::text_for_entry(e)),
+        });
+    sha256_digest(txt.as_bytes())
+        .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))
+}
+
 pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PySystem>()?;
     m.add_function(wrap_pyfunction!(config_difference, m)?)?;
     m.add_function(wrap_pyfunction!(rules_difference, m)?)?;
     m.add_function(wrap_pyfunction!(checked_system, m)?)?;
+    m.add_function(wrap_pyfunction!(rule_identity, m)?)?;
     Ok(())
 }

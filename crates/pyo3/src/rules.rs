@@ -215,7 +215,7 @@ pub(crate) fn to_text(db: &DB) -> String {
         .1
 }
 
-fn text_for_entry(e: &Entry) -> String {
+pub(crate) fn text_for_entry(e: &Entry) -> String {
     match e {
         Invalid { text, .. } => text.clone(),
         InvalidSet { text, .. } => text.clone(),
