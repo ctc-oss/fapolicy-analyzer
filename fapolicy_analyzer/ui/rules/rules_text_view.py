@@ -28,4 +28,4 @@ class RulesTextView(EditableTextView):
         self.rules_changed(self._get_text())
 
     def _get_view_lang_id(self) -> Optional[str]:
-        return "fapolicyd-rules.lang"
+        return "fapolicyd-rules"

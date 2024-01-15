@@ -60,7 +60,7 @@ class EditableTextView(UIBuilderWidget, Events):
             try:
                 with resources.path(
                     "fapolicy_analyzer.resources.sourceview.language-specs",
-                    lang_id,
+                    f"{lang_id}.lang",
                 ) as path:
                     if (
                         os.path.dirname(path.as_posix())
@@ -74,11 +74,9 @@ class EditableTextView(UIBuilderWidget, Events):
                         )
             except Exception as ex:
                 logging.warning("Could not load the rules language file")
-                logging.debug(
-                    "Error loading GtkSource language file fapolicyd-rules.lang", ex
-                )
+                logging.debug(f"Error loading GtkSource language: {lang_id}", ex)
 
-            return lang_manager.get_language("fapolicyd-rules")
+            return lang_manager.get_language(lang_id)
 
     def _get_view_style(self):
         style_manager = GtkSource.StyleSchemeManager.get_default()
