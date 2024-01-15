@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright Concurrent Technologies Corporation 2021
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<language id="fapolicyd-config" name="File Access Policy Daemon Config" version="2.0" _section="Other">
+    <metadata>
+        <property name="globs">*.config</property>
+        <property name="line-comment-start">#</property>
+    </metadata>
+
+    <styles>
+        <style id="config-eq-sign" name="Separator"/>
+        <style id="config-key" name="Config key name"/>
+    </styles>
+
+    <definitions>
+        <context id="config-eq-sign" style-ref="config-eq-sign">
+            <match>=</match>
+        </context>
+
+        <context id="config-key" style-ref="config-key">
+            <keyword>permissive</keyword>
+            <keyword>nice_val</keyword>
+            <keyword>q_size</keyword>
+            <keyword>uid</keyword>
+            <keyword>gid</keyword>
+            <keyword>do_stat_report</keyword>
+            <keyword>detailed_report</keyword>
+            <keyword>db_max_size</keyword>
+            <keyword>subj_cache_size</keyword>
+            <keyword>obj_cache_size</keyword>
+            <keyword>watch_fs</keyword>
+            <keyword>trust</keyword>
+            <keyword>integrity</keyword>
+            <keyword>syslog_format</keyword>
+            <keyword>rpm_sha256_only</keyword>
+            <keyword>allow_filesystem_mark</keyword>
+        </context>
+
+        <context id="fapolicyd-config">
+            <include>
+                <context ref="config-eq-sign"/>
+                <context ref="config-key"/>
+                <context ref="def:shell-like-comment"/>
+            </include>
+        </context>
+    </definitions>
+</language>
