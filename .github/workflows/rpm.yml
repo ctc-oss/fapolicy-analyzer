@@ -395,6 +395,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix: ${{ fromJson(needs.config.outputs.matrix )}}
+    continue-on-error: ${{ matrix.props.prerelease }}
     steps:
       - uses: actions/checkout@v3
         with:
