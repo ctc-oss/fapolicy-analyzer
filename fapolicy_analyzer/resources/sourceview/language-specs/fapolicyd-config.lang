@@ -33,6 +33,7 @@
         </context>
 
         <context id="config-key" style-ref="config-key">
+            <suffix> =</suffix>
             <keyword>permissive</keyword>
             <keyword>nice_val</keyword>
             <keyword>q_size</keyword>
