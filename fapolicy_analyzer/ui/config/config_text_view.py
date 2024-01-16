@@ -28,4 +28,4 @@ class ConfigTextView(EditableTextView):
         self.config_changed(self._get_text())
 
     def _get_view_lang_id(self) -> Optional[str]:
-        return None
+        return "fapolicyd-config"
