@@ -28,6 +28,10 @@ jobs:
         run: |
           git clone --depth 1 --branch ${{ steps.tag_name.outputs.VERSION }} https://github.com/ctc-oss/fapolicy-analyzer.wiki
 
+      - name: append version number
+        run: |
+          echo "\n---\nVersion: ${{ steps.tag_name.outputs.VERSION }}\n" >> User-Guide.md
+
       - name: generate pdf
         run: |
           pandoc -V CJKmainfont="KaiTi" User-Guide.md -o fapolicy-analyzer-user-guide.pdf
