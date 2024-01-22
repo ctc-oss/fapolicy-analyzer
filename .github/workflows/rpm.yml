@@ -33,6 +33,8 @@ jobs:
         uses: joutvhu/get-release@v1
         with:
           tag_name: ${{ steps.parse-commit-msg.outputs.version-number }}
+          throwing: true
+          debug: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
