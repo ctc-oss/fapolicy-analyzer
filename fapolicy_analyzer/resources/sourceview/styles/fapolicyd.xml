@@ -71,4 +71,8 @@
     <!-- File markers -->
     <style name="fapolicyd-rules:marker" foreground="#AAAA00" bold="true" italic="true"/>
 
+    <!-- Config keys -->
+    <style name="fapolicyd-config:config-key" foreground="black" underline="true"/>
+    <style name="fapolicyd-config:config-eq-sign" bold="true"/>
+
 </style-scheme>
