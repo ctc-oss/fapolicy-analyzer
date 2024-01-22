@@ -39,6 +39,27 @@ jobs:
         env:
           COPR_KEY: ${{ secrets.COPR_API_LOGIN }}
 
+  releasecheck:
+    needs: [ config ]
+    if: startsWith(github.event.head_commit.message, 'Release v')
+    name: Check draft release
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Find related release
+        id: find-release
+        uses: joutvhu/get-release@v1
+        with:
+          tag_name: ${{ needs.config.outputs.version-number }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify is draft
+        run: |
+          if [[ ${{ steps.find-release.outputs.draft }} != "true" ]]; then
+            echo "Release ${{ needs.config.outputs.version-number }} is not a draft"
+            exit 1;
+          fi
+
   source0:
     name: Vendor Source0
     container: registry.fedoraproject.org/fedora:38
