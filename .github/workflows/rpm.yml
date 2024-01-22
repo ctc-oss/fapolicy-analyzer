@@ -49,7 +49,7 @@ jobs:
         id: find-release
         uses: joutvhu/get-release@v1
         with:
-          tag_name: ${{ needs.config.outputs.version-number }}
+          tag_name: v1.2.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
