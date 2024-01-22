@@ -30,6 +30,7 @@ jobs:
 
       - name: append version number
         run: |
+          echo "" >> User-Guide.md
           echo "---" >> User-Guide.md
           echo "File Access Policy Analyzer version ${{ steps.tag_name.outputs.VERSION }}" >> User-Guide.md
         working-directory: fapolicy-analyzer.wiki
