@@ -27,6 +27,23 @@ jobs:
         if: startsWith(github.event.head_commit.message, 'Release v')
         run: echo ::set-output name=version-number::$(echo "${{ github.event.head_commit.message }}" | cut -d" " -f2)
 
+      - name: Find related release
+        id: find-release
+        if: startsWith(github.event.head_commit.message, 'Release v')
+        uses: joutvhu/get-release@v1
+        with:
+          tag_name: v1.2.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify is draft
+        if: startsWith(github.event.head_commit.message, 'Release v')
+        run: |
+          if [[ "${{ steps.find-release.outputs.draft }}" != "true" ]]; then
+            echo "Release ${{ steps.parse-commit-msg.outputs.version-number }} is not a draft"
+            exit 1;
+          fi
+
       - name: Load config matrix
         id: set-matrix
         run: |
@@ -38,27 +55,6 @@ jobs:
         run: echo "::set-output name=defined::true"
         env:
           COPR_KEY: ${{ secrets.COPR_API_LOGIN }}
-
-  releasecheck:
-    needs: [ config ]
-#    if: startsWith(github.event.head_commit.message, 'Release v')
-    name: Check draft release
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Find related release
-        id: find-release
-        uses: joutvhu/get-release@v1
-        with:
-          tag_name: v1.2.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Verify is draft
-        run: |
-          if [[ ${{ steps.find-release.outputs.draft }} != "true" ]]; then
-            echo "Release ${{ needs.config.outputs.version-number }} is not a draft"
-            exit 1;
-          fi
 
   source0:
     name: Vendor Source0
