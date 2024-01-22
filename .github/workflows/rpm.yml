@@ -29,15 +29,15 @@ jobs:
 
       - name: Find related release
         id: find-release
-#        if: startsWith(github.event.head_commit.message, 'Release v')
+        if: startsWith(github.event.head_commit.message, 'Release v')
         uses: joutvhu/get-release@v1
         with:
-          tag_name: v1.2.1
+          tag_name: ${{ steps.parse-commit-msg.outputs.version-number }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Verify is draft
-#        if: startsWith(github.event.head_commit.message, 'Release v')
+        if: startsWith(github.event.head_commit.message, 'Release v')
         run: |
           if [[ "${{ steps.find-release.outputs.draft }}" != "true" ]]; then
             echo "Release ${{ steps.parse-commit-msg.outputs.version-number }} is not a draft"
