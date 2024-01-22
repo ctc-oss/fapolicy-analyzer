@@ -41,7 +41,7 @@ jobs:
 
   releasecheck:
     needs: [ config ]
-    if: startsWith(github.event.head_commit.message, 'Release v')
+#    if: startsWith(github.event.head_commit.message, 'Release v')
     name: Check draft release
     runs-on: ubuntu-20.04
     steps:
