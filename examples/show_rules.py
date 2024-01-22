@@ -17,19 +17,21 @@ from fapolicy_analyzer import *
 import argparse
 import sys
 
-red = '\033[91m'
-green = '\033[92m'
-yellow = '\033[93m'
-blue = '\033[96m'
-gray = '\033[33m'
+red = "\033[91m"
+green = "\033[92m"
+yellow = "\033[93m"
+blue = "\033[96m"
+gray = "\033[33m"
 
 
 def main(*argv):
     parser = argparse.ArgumentParser()
-    parser.add_argument("--plain", action='store_true', help="Plain text rules")
+    parser.add_argument("--plain", action="store_true", help="Plain text rules")
     args = parser.parse_args(argv)
 
     s1 = System()
+    print(f"Rule Identity: {rule_identity(s1)}")
+
     if args.plain:
         print(s1.rules_text())
     else:
@@ -38,14 +40,14 @@ def main(*argv):
             if r.origin != origin:
                 origin = r.origin
                 print()
-                print(gray, end='')
+                print(gray, end="")
                 print(f"🗎 [{origin}]\033[0m")
 
-            print(green if r.is_valid else red, end='')
+            print(green if r.is_valid else red, end="")
             print(f"{r.id} {r.text} \033[0m")
             for info in r.info:
-                marker = f'[{info.category}]' if info.category != 'e' else ''
-                print(yellow if info.category == 'w' else blue, end='')
+                marker = f"[{info.category}]" if info.category != "e" else ""
+                print(yellow if info.category == "w" else blue, end="")
                 print(f"\t- {marker} {info.message} \033[0m")
 
 

@@ -22,6 +22,7 @@ fapolicy-app = { version = "*", path = "../app" }
 fapolicy-daemon = { version = "*", path = "../daemon" }
 fapolicy-rules = { version = "*", path = "../rules" }
 fapolicy-trust = { version = "*", path = "../trust" }
+fapolicy-util = { version = "*", path = "../util" }
 
 [features]
 default = []

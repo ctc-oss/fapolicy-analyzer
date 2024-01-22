@@ -27,6 +27,23 @@ jobs:
         if: startsWith(github.event.head_commit.message, 'Release v')
         run: echo ::set-output name=version-number::$(echo "${{ github.event.head_commit.message }}" | cut -d" " -f2)
 
+      - name: Find related release
+        id: find-release
+        if: startsWith(github.event.head_commit.message, 'Release v')
+        uses: joutvhu/get-release@v1
+        with:
+          tag_name: ${{ steps.parse-commit-msg.outputs.version-number }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify is draft
+        if: startsWith(github.event.head_commit.message, 'Release v')
+        run: |
+          if [[ "${{ steps.find-release.outputs.draft }}" != "true" ]]; then
+            echo "Release ${{ steps.parse-commit-msg.outputs.version-number }} is not a draft"
+            exit 1;
+          fi
+
       - name: Load config matrix
         id: set-matrix
         run: |
@@ -74,7 +91,7 @@ jobs:
           spec_version=$(grep "Version:" fapolicy-analyzer.spec | tr -s ' ' | cut -d' ' -f2)
           commit_number=$(git rev-list HEAD~1 --count)
           patched_version="$spec_version~dev${commit_number}"
-          mv fapolicy-analyzer-${spec_version}.tar.gz fapolicy-analyzer-${patched_version}.tar.gz
+          mv fapolicy-analyzer-${spec_version}.tar.gz fapolicy-analyzer-${patched_version}.el8.tar.gz
 
       - name: Rename source0 with pull request version
         if: github.event_name == 'pull_request'
@@ -82,7 +99,7 @@ jobs:
           spec_version=$(grep "Version:" fapolicy-analyzer.spec | tr -s ' ' | cut -d' ' -f2)
           pr_number=${{ github.event.pull_request.number }}
           patched_version="0.0.${pr_number}"
-          mv fapolicy-analyzer-${spec_version}.tar.gz fapolicy-analyzer-${patched_version}.tar.gz
+          mv fapolicy-analyzer-${spec_version}.tar.gz fapolicy-analyzer-${patched_version}.el8.tar.gz
 
       - name: Upload
         uses: actions/upload-artifact@v3
@@ -225,7 +242,7 @@ jobs:
         run: |
           spec_version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
           cd /tmp/rpmbuild/SOURCES/
-          mv vendor-rs.tar.gz vendor-rs-${spec_version}.tar.gz
+          mv vendor-rs.tar.gz vendor-rs-${spec_version}.el8.tar.gz
 
       - name: Generate doc tag
         if: startsWith(github.event.head_commit.message, 'Release v')
@@ -249,7 +266,7 @@ jobs:
       - name: Export el tarballs
         run: |
           version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
-          mv /tmp/rpmbuild/SOURCES/vendor-rs-${version}.tar.gz /tmp/archives/
+          mv /tmp/rpmbuild/SOURCES/vendor-rs-${version}.el8.tar.gz /tmp/archives/
 
       - name: Upload Tarballs
         uses: actions/upload-artifact@v3
@@ -429,14 +446,6 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           path: /tmp/archives/
-
-      - name: Tag artifacts as el8
-        run: |
-          tag="${{ needs.config.outputs.version-number }}"
-          v="${tag#v}"
-          mv source0/fapolicy-analyzer-${v}.tar.gz fapolicy-analyzer-${v}.el8.tar.gz
-          mv tarball-artifacts/vendor-rs-${v}.tar.gz vendor-rs-${v}.el8.tar.gz
-        working-directory: /tmp/archives
 
       - name: Release artifacts
         uses: softprops/action-gh-release@v1

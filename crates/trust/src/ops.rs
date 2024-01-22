@@ -6,11 +6,10 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+use fapolicy_util::sha::sha256_digest;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufReader;
-
-use fapolicy_util::sha::sha256_digest;
 
 use crate::db::{Rec, DB};
 use crate::error::Error;
@@ -101,7 +100,7 @@ pub fn get_path_action_map(cs: &Changeset) -> HashMap<String, String> {
     cs.changes.iter().map(to_pair).collect()
 }
 
-fn new_trust_record(path: &str) -> Result<Trust, fapolicy_util::sha::Error> {
+fn new_trust_record(path: &str) -> Result<Trust, Error> {
     let f = File::open(path)?;
     let sha = sha256_digest(BufReader::new(&f))?;
 
