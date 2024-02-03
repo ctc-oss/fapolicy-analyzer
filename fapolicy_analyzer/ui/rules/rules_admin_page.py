@@ -331,7 +331,6 @@ class RulesAdminPage(UIConnectedWidget, UIPage, Events):
 
     def on_next_profiling_state(self, state: ProfilerState):
         if self.__profiling_active != state.running:
-            print(state)
             self.__profiling_active = state.running
             self.refresh_toolbar()
 
