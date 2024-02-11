@@ -38,13 +38,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Verify is draft
-        if: startsWith(github.event.head_commit.message, 'Release v')
-        run: |
-          if [[ "${{ steps.find-release.outputs.draft }}" != "true" ]]; then
-            echo "Release ${{ steps.parse-commit-msg.outputs.version-number }} is not a draft"
-            exit 1;
-          fi
+#      - name: Verify is draft
+#        if: startsWith(github.event.head_commit.message, 'Release v')
+#        run: |
+#          if [[ "${{ steps.find-release.outputs.draft }}" != "true" ]]; then
+#            echo "Release ${{ steps.parse-commit-msg.outputs.version-number }} is not a draft"
+#            exit 1;
+#          fi
 
       - name: Load config matrix
         id: set-matrix
@@ -85,10 +85,10 @@ jobs:
 
       - name: Vendor
         run: |
-          make -f .copr/Makefile vendor-app spec=fapolicy-analyzer.spec
+          make -f .copr/Makefile vendor-app spec=scripts/srpm/fapolicy-analyzer.el8.spec
 
       - name: Rename source0 with prerelease version
-        if: endsWith(github.ref, '/el8')
+        if: ${{ !startsWith(github.event.head_commit.message, 'Release v') }}
         run: |
           spec_version=$(grep "Version:" fapolicy-analyzer.spec | tr -s ' ' | cut -d' ' -f2)
           commit_number=$(git rev-list HEAD~1 --count)

@@ -36,7 +36,7 @@ vendor: prep_rpmbuild_dir vendor-app vendor-doc
 endif
 
 vendor-app:
-	git archive HEAD -o "fapolicy-analyzer-${VERSION}.tar.gz" --prefix=fapolicy-analyzer/
+	git archive HEAD -o "fapolicy-analyzer-${VERSION}.el8.tar.gz" --prefix=fapolicy-analyzer/
 
 vendor-py:
 	which spectool && spectool -g -C /tmp/rpmbuild/SOURCES/ \$(spec) || true
