@@ -1,11 +1,26 @@
 Release notes
-###
+===
 
-``fapolicy-analyzer`` issues are filed on [GitHub](https://github.com/ctc-oss/fapolicy-analyzer/issues).
+`fapolicy-analyzer` issues are filed on [GitHub](https://github.com/ctc-oss/fapolicy-analyzer/issues).
+
 
 ## Releases
 
 <!-- towncrier release notes start -->
+
+## [v1.3.0](https://github.com/ctc-oss/fapolicy-analyzer/releases/tag/v1.3.0) - 2024-02-11
+
+
+### _Added_
+
+- Allow rules to be loaded dynamically into a profiling session ([#990](https://github.com/ctc-oss/fapolicy-analyzer/pull/990))
+- Added syntax highlighting to the fapolicyd config editor ([#991](https://github.com/ctc-oss/fapolicy-analyzer/pull/991))
+
+### Packaging
+
+- Use digest crate for sha256 hashing, removing need for ring crate. ([#984](https://github.com/ctc-oss/fapolicy-analyzer/pull/984))
+- Add a version number to the PDF user guide content and filename. ([#995](https://github.com/ctc-oss/fapolicy-analyzer/pull/995))
+
 
 # v1.2.2
 
