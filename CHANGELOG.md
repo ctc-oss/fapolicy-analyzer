@@ -11,7 +11,7 @@ Release notes
 ## [v1.3.0](https://github.com/ctc-oss/fapolicy-analyzer/releases/tag/v1.3.0) - 2024-02-11
 
 
-### _Added_
+### Added
 
 - Allow rules to be loaded dynamically into a profiling session ([#990](https://github.com/ctc-oss/fapolicy-analyzer/pull/990))
 - Added syntax highlighting to the fapolicyd config editor ([#991](https://github.com/ctc-oss/fapolicy-analyzer/pull/991))
