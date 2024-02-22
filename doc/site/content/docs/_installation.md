@@ -4,11 +4,11 @@ date = 2024-02-21T18:54:20-05:00
 draft = true
 +++
 
-You can install the Policy Analyzer in one of the following ways
+# How to install the fapolicy-analyzer?
 
-<details>
+You can install the analyzer in one of the following ways
 
-  <summary>From Fedora Packages</summary>
+## From Fedora Packages
 
 <a href="https://packages.fedoraproject.org/pkgs/fapolicy-analyzer/fapolicy-analyzer/"><img src="https://img.shields.io/fedora/v/fapolicy-analyzer?logo=fedora&label=Fedora&color=3c6eb4"></a>
 
@@ -18,11 +18,8 @@ This installation method is currently available for Fedora EPEL 8, EPEL 9, and F
 dnf install fapolicy-analyzer
 ```
 
-</details>
 
-<details>
-
-  <summary>From GitHub releases</summary>
+## From GitHub releases
 
 [![GitHub latest release](https://shields.io/github/v/release/ctc-oss/fapolicy-analyzer?color=3c6eb4&display_name=tag&sort=semver&label=Stable&logo=github)](https://github.com/ctc-oss/fapolicy-analyzer/releases/latest)
 [![GitHub Latest pre-release)](https://img.shields.io/github/v/release/ctc-oss/fapolicy-analyzer?color=3c6eb4&include_prereleases&label=Beta&logo=github)](https://github.com/ctc-oss/fapolicy-analyzer/releases)
@@ -31,11 +28,8 @@ dnf install fapolicy-analyzer
 You can install the Policy Analyzer through the installers available in the [latest release](https://github.com/ctc-oss/fapolicy-analyzer/releases). <br>
 Choose an RPM from the latest Fedora stable, Rawhide, and EPEL builds. <br>
 
-</details>
 
-<details>
-
-  <summary>From Fedora Copr</summary>
+## From Fedora Copr
 
 <a href="https://copr.fedorainfracloud.org/coprs/ctc-oss/fapolicy-analyzer/"><img src="https://img.shields.io/badge/dynamic/json?color=B87333&logo=fedora&label=Copr&query=builds.latest.state&url=https%3A%2F%2Fcopr.fedorainfracloud.org%2Fapi_3%2Fpackage%3Fownername%3Dctc-oss%26projectname%3Dfapolicy-analyzer%26packagename%3Dfapolicy-analyzer%26with_latest_build%3DTrue"></a>
 
@@ -70,11 +64,8 @@ Use the `dev` tag + the commit number from the `master` branch, for example
 
 will install the prerelease 1.0.0 version at the 308th commit on the master branch.
 
-</details>
 
-<details>
-
-  <summary>From a containerized build environment</summary>
+## From a containerized build environment
 
 Follow this method only if you have cloned the GitHub repository and have Podman installed
 
@@ -83,12 +74,8 @@ Follow this method only if you have cloned the GitHub repository and have Podman
 
 After a successful build the container will copy the RPMs into the host `/tmp` directory.
 
-</details>
 
-
-<details>
-
-  <summary>From a local development environment</summary>
+## From a local development environment</summary>
 
 Follow this method only if you have installed all required build tools
 
@@ -97,5 +84,3 @@ Follow this method only if you have installed all required build tools
 This requires Pip + Pipenv + Python 3.9 or greater, and Rust 1.62.1 or greater.
 
 Python and Rust dependencies will be installed during the build process.
-
-</details>
