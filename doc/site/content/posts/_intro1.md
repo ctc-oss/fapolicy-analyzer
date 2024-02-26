@@ -29,7 +29,7 @@ fapolicyd enforces these policies by monitoring file access requests and decidin
 
 
 
-## GUI Frontend with GTK3, Rust Backend
+## GTK3 Frontend, Rust Backend
 
 The fapolicy-analyzer GUI frontend is implemented in GTK3 which offers several advantages, particularly in terms of user interface design and integration with the Linux desktop environment. GTK3, being a native toolkit for GNOME, ensures that the application will have a consistent look and feel with other applications in the desktop environment, providing a seamless user experience. The rich set of widgets and tools available in GTK3 allows for the creation of intuitive and user-friendly interfaces, making it easier for administrators and security professionals to interact with the application, visualize policies, and analyze results. Additionally, GTK3 supports theming, which enables customization of the application's appearance to match the user's preferences or the system's theme.
 
