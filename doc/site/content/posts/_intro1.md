@@ -8,6 +8,7 @@ In the realm of Linux system administration, ensuring the security and integrity
 
 The blog series starts here with a high level introduction and then proceeds into the essentials of the fapolicy-analyzer, discussing its purpose, how it complements fapolicyd, and along the way offering practical advice on how to effectively use it to bolster your system's security.
 
+
 ## The File Access Policy Analyzer
 
 The fapolicy-analyzer is a tool used within the fapolicyd ecosystem to enhance system security on Linux by controlling and analyzing file access based on predefined policies. It allows administrators and security professionals to examine existing file access policies to understand the rules in place and their impact on the system. Additionally, the fapolicy-analyzer can be used to test new policies in a non-intrusive manner, enabling fine-tuning before enforcement, ensuring that the policies are effective and do not disrupt legitimate system operations.
@@ -28,7 +29,6 @@ The rules in the file access policy specify the conditions under which files can
 fapolicyd enforces these policies by monitoring file access requests and deciding whether to allow or deny them based on the rules and trust levels. fapolicy-analyzer is used to analyze these policies, helping administrators understand how the rules and trust designations affect file access on the system and enabling them to fine-tune the policies for optimal security and system functionality.
 
 
-
 ## GTK3 Frontend, Rust Backend
 
 The fapolicy-analyzer GUI frontend is implemented in GTK3 which offers several advantages, particularly in terms of user interface design and integration with the Linux desktop environment. GTK3, being a native toolkit for GNOME, ensures that the application will have a consistent look and feel with other applications in the desktop environment, providing a seamless user experience. The rich set of widgets and tools available in GTK3 allows for the creation of intuitive and user-friendly interfaces, making it easier for administrators and security professionals to interact with the application, visualize policies, and analyze results. Additionally, GTK3 supports theming, which enables customization of the application's appearance to match the user's preferences or the system's theme.
@@ -38,25 +38,16 @@ Implementing the fapolicy-analyzer in Rust offers several advantages, including 
 
 ## A Summary of fapolicy-analyzer Tools
 
-The fapolicy-analyzer capabilities are separated into a number of different views.  Each of these are specialized to provide one of the major capabilities.
+The fapolicy-analyzer design is centered around configuration and analysis of the runtime behavior of fapolicyd.
 
-These views are coordinated where there is overlapping functionality. In general edits must be saved before switching views.
+The capabilities to do this are provided by a number of different tools arranges into views of the GUI application.
 
-The fapolicyd configuration editor view
-
-
-
-Additional functionality
-
-Control fapolicyd
-
-The fapolicy-analyzer transmits DBUS messages to control the fapolicyd service. This file-less control mechanism allows the application to remain in control even if fapolicyd would be deployed using a very restrictive ruleset that denies all file requests. In this case the system would normally be locked down until fapolicyd was stopped, however the fapolicy-analyzer will remain responsive and can stop the daemon and recover the system.
-
-Note that this capability is only available if the fapolicy-analyzer was already open when the restrictive rules were activated.
-
-Exporting sessions
-
-To preserve editing state the fapolicy-analyzer can write out undeployed edits to a json journal which can be loaded later. This can be used to save an edit session that is not ready to deploy.
+1. Rule editor with validation and syntax highlighting
+2. Trust database manager to synchronize what fapolicyd believes and what exists on disk
+3. Log analyzer to provide insight and understand fapolicyd runtime behavior
+4. Disk access profiler to generate list of file access requests for an application 
+5. Configuration editor for fapolicyd, with syntax validation
+6. DBUS control over the fapolicyd daemon
 
 ---
 
