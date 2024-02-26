@@ -49,9 +49,14 @@ The capabilities to do this are provided by a number of different tools arranges
 5. Configuration editor for fapolicyd, with syntax validation
 6. DBUS control over the fapolicyd daemon
 
+Here is a screenshot of the GTK3 GUI displaying the rule editor.
+
+![screenshot](https://github.com/ctc-oss/fapolicy-analyzer/wiki/images/daemon-menu.png)
+
+We will discuss the rule editor in detail in a follow-up post.
+
 ---
 
-
-Please watch for the next post in the series where we discuss fapolicyd rule administration in detail.
+Please watch for the next post in the series where we walk through the installation and configuration of the fapolicy-analyzer.
 
 Additional information can be found in the [fapolicy-analyzer user guide](https://github.com/ctc-oss/fapolicy-analyzer/wiki/User-Guide) which is available on the GitHub Wiki and is also packaged in the RPM packages.
