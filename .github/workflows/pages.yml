@@ -42,6 +42,11 @@ jobs:
       - name: Install Node.js dependencies
         run: "[[ -f package-lock.json || -f npm-shrinkwrap.json ]] && npm ci || true"
 
+      - name: Install Hugo modules
+        run: |
+          hugo mod get -u
+        working-directory: doc/site
+
       - name: Hugo build
         run: |
           hugo \
