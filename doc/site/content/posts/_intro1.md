@@ -1,7 +1,6 @@
 +++
 title = 'Introduction - 1'
 date = 2024-02-21T18:11:44-05:00
-draft = true
 +++
 
 In the realm of Linux system administration, ensuring the security and integrity of your systems is paramount. One of the advanced toolsets at your disposal for achieving this are the fapolicy-analyzer tools, which are closely related to [fapolicyd, the File Access Policy Daemon](https://github.com/linux-application-whitelisting/fapolicyd).  This post is the first in a series that will be discussing the capabilities of the fapolicy-analyzer tools and how they can help achieve and maintain a secure file access policy.

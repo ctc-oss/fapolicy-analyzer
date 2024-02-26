@@ -1,7 +1,6 @@
 +++
 title = 'Installation'
 date = 2024-02-21T18:54:20-05:00
-draft = true
 +++
 
 # How to install the fapolicy-analyzer?

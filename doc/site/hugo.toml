@@ -1,4 +1,4 @@
-baseURL = 'https://example.org/'
+baseURL = 'https://ctc-oss.github.io/fapolicy-analyzer/'
 languageCode = 'en-us'
 title = 'File Access Policy Analyzer'
 
