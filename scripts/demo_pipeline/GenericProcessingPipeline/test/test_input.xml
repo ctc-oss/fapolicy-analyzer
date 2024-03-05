@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<TestWrapper name="Test I/O Data">
+  <Test TestId="0001">
+    <Name>Capitalize first char</Name>
+    <Input>one</Input>
+    <Output>One</Output>
+  </Test>
+  <Test TestId="0002">
+    <Name>Capitalize last char</Name>
+    <Input>one</Input>
+    <Output>onE</Output>
+  </Test>
+  <Test TestId="0003">
+    <Name>Capitalize all inner chars</Name>
+    <Input>one</Input>
+    <Output>oNe</Output>
+  </Test>
+  <Test TestId="0004">
+    <Name>Capitalize all words</Name>
+    <Input>one two three</Input>
+    <Output>One Two Three</Output>
+  </Test>
+  <Test TestId="0005">
+    <Name>Convert string to all lower case.</Name>
+    <Input>One TWo ThreE</Input>
+    <Output>one two three</Output>
+  </Test>
+  <Test TestId="0006">
+    <Name>Convert string to all upper case</Name>
+    <Input>one tWo THrEe</Input>
+    <Output></Output>
+  </Test>
+</TestWrapper>
