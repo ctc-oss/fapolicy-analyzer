@@ -1,6 +1,12 @@
+/*
+ * Copyright Concurrent Technologies Corporation 2021
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+
 // output_xlator.cpp - Accepts a file input and sends it out via TCP/IP
-// TPArchambault 2024.01.25
-//
 
 #include <Log4Cxx.h>
 #include <iostream>
