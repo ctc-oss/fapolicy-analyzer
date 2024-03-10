@@ -97,7 +97,7 @@ Python and Rust dependencies will be installed during the build process.
 The packaged fapolicy-analyzer configuration should be suitable for most installations. However there are some
 configuration flags that can be set to control low level behavior.
 
-## Common issues
+### Common issues
 
 The most common issue when starting the fapolicy-analyzer the first time will occur on a system where fapolicyd has not
 yet been run. This is due to the initialization that fapolicyd performs on startup rather than on install. The
@@ -107,3 +107,35 @@ On a standard install this is indicating that disk location like the trust datab
 future release the fapolicy-analyzer will provide specific error indications rather than the list of possible issues.
 There may also be a point in the future where the fapolicy-analyzer will initialize these locations rather than relying
 on fapolicyd to run first.
+
+### config.toml
+
+The fapolicy-analyzer configuration can be tuned for development or non-standard installations. The default
+configuration looks like
+
+```toml
+[system]
+rules_file_path = '/etc/fapolicyd/rules.d'
+trust_lmdb_path = '/var/lib/fapolicyd'
+system_trust_path = '/var/lib/rpm'
+trust_dir_path = '/etc/fapolicyd/trust.d'
+trust_file_path = '/etc/fapolicyd/fapolicyd.trust'
+syslog_file_path = '/var/log/messages'
+config_file_path = '/etc/fapolicyd/fapolicyd.conf'
+
+[application]
+data_dir = '/home/me/.local/share/fapolicy-analyzer'
+```
+
+The paths in this file will vary depending on deployment target. On Fedora systems the standard filesystem paths are
+used for state and configuration (etc, var) while on development deployments
+the [XDG file paths](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html) are used for
+portability and convenience.
+
+---
+
+Please watch for the next post in the series where we step through rule editing and deployment.
+
+Additional information can be found in
+the [fapolicy-analyzer user guide](https://github.com/ctc-oss/fapolicy-analyzer/wiki/User-Guide) which is available on
+the GitHub Wiki and is also packaged in the RPM packages.
