@@ -5,9 +5,9 @@ date: 2024-03-09T17:02:50-05:00
 
 ## fapolicyd compatibility
 
-Currently compatible with fapolicyd v1.0+. This will evolve in the future as minimum versions increase across
-
-The fapolicy-analyzer tools
+Currently compatible with fapolicyd v1.0+.
+The [fapolicyd-feature](https://github.com/ctc-oss/fapolicy-analyzer/labels/fapolicyd-feature) label in the issue
+tracker contains specific compatibility issues.
 
 ## Installation by supported platform
 
@@ -16,7 +16,7 @@ The fapolicy-analyzer tools
 The fapolicy-analyzer was first published to Fedora 8 with packages later added for RHEL 9.
 
 ```sh
-todo;; install epel
+dnf install epel-release
 dnf install fapolicy-analyzer
 ```
 
@@ -92,4 +92,18 @@ This requires Pip + Pipenv + Python 3.9 or greater, and Rust 1.62.1 or greater.
 
 Python and Rust dependencies will be installed during the build process.
 
-todo;; add a section for installing development packages for testing releases
+## Configuring fapolicy-analyzer
+
+The packaged fapolicy-analyzer configuration should be suitable for most installations. However there are some
+configuration flags that can be set to control low level behavior.
+
+## Common issues
+
+The most common issue when starting the fapolicy-analyzer the first time will occur on a system where fapolicyd has not
+yet been run. This is due to the initialization that fapolicyd performs on startup rather than on install. The
+fapolicy-analyzer may display a dialog like this:
+
+On a standard install this is indicating that disk location like the trust database have not yet been initialized. In a
+future release the fapolicy-analyzer will provide specific error indications rather than the list of possible issues.
+There may also be a point in the future where the fapolicy-analyzer will initialize these locations rather than relying
+on fapolicyd to run first.
