@@ -1,12 +1,6 @@
 ---
 title: "Contributing"
-weight: 1
-# bookFlatSection: false
-# bookToc: true
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
+date: 2024-03-09T17:03:50-05:00
 ---
 
 # Contributing Guide
