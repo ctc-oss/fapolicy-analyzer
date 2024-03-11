@@ -77,7 +77,7 @@ efficiently processing large sets of file access policies and logs.
 
 The fapolicy-analyzer design is centered around configuration and analysis of the runtime behavior of fapolicyd.
 
-The capabilities to do this are provided by a number of different tools arranges into views of the GUI application.
+The capabilities to do this are provided by a number of different tools arranged into views of the GUI application.
 
 1. Rule editor with syntax highlighting, syntax validation, and policy linting
 2. Trust database manager to synchronize what fapolicyd believes and what exists on disk
