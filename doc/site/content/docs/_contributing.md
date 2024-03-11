@@ -18,14 +18,14 @@ and [setuptools_rust](https://setuptools-rust.readthedocs.io/en/latest/).
 We use [pipenv](https://pipenv.pypa.io/en/latest/) for creating a sand-boxed development environment. To
 install `pipenv` into your home directory:
 
-```{shell}
+```shell
 pip3 install --user pipenv
 ```
 
 To build and install the bindings, and to start the virtual development environment, run the following from the top
 level directory of this repository:
 
-```{shell}
+```shell
 make shell
 ```
 

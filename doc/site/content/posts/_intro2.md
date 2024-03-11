@@ -1,5 +1,5 @@
 ---
-title: "Introduction - 2 - Installation"
+title: "Intro 2 - Installation"
 date: 2024-03-09T17:02:50-05:00
 ---
 

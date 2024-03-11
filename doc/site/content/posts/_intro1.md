@@ -1,5 +1,5 @@
 +++
-title = 'Introduction - 1 - About'
+title = 'Intro 1 - About'
 date = 2024-02-21T18:11:44-05:00
 +++
 
