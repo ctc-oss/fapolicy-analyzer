@@ -88,7 +88,7 @@ The capabilities to do this are provided by a number of different tools arranges
 
 Here is a screenshot of the GTK3 GUI displaying the rule editor.
 
-![screenshot](https://github.com/ctc-oss/fapolicy-analyzer/wiki/images/daemon-menu.png)
+![screenshot](https://github.com/ctc-oss/fapolicy-analyzer/wiki/site/daemon-menu.png)
 
 We will discuss the rule editor in detail in a follow-up post.
 

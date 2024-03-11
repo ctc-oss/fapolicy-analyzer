@@ -103,6 +103,8 @@ The most common issue when starting the fapolicy-analyzer the first time will oc
 yet been run. This is due to the initialization that fapolicyd performs on startup rather than on install. The
 fapolicy-analyzer may display a dialog like this:
 
+![failed-to-init](https://github.com/ctc-oss/fapolicy-analyzer/wiki/site/failed-to-start.png)
+
 On a standard install this is indicating that disk location like the trust database have not yet been initialized. In a
 future release the fapolicy-analyzer will provide specific error indications rather than the list of possible issues.
 There may also be a point in the future where the fapolicy-analyzer will initialize these locations rather than relying
@@ -134,7 +136,8 @@ portability and convenience.
 
 ---
 
-Please watch for the next post in the series where we step through rule editing and deployment.
+In the next post in this series we will step through rule editing and deployment with the assistance of the syntax
+checker, linter, and in-line d-directory editing.
 
 Additional information can be found in
 the [fapolicy-analyzer user guide](https://github.com/ctc-oss/fapolicy-analyzer/wiki/User-Guide) which is available on
