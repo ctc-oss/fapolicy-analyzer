@@ -2,6 +2,9 @@ on:
   push:
     branches:
       - 'master'
+  pull_request:
+    branches:
+      - 'master'
   workflow_dispatch:
 
 name: Pages
@@ -61,6 +64,7 @@ jobs:
           path: ./doc/site/public
 
   deploy:
+    if: github.ref == 'refs/heads/master'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

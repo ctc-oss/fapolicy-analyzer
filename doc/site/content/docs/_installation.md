@@ -1,5 +1,5 @@
 +++
-title = 'Installation'
+title = 'Installing'
 date = 2024-02-21T18:54:20-05:00
 +++
 
@@ -17,22 +17,22 @@ This installation method is currently available for Fedora EPEL 8, EPEL 9, and F
 dnf install fapolicy-analyzer
 ```
 
-
 ## From GitHub releases
 
 [![GitHub latest release](https://shields.io/github/v/release/ctc-oss/fapolicy-analyzer?color=3c6eb4&display_name=tag&sort=semver&label=Stable&logo=github)](https://github.com/ctc-oss/fapolicy-analyzer/releases/latest)
 [![GitHub Latest pre-release)](https://img.shields.io/github/v/release/ctc-oss/fapolicy-analyzer?color=3c6eb4&include_prereleases&label=Beta&logo=github)](https://github.com/ctc-oss/fapolicy-analyzer/releases)
 ![GitHub downloads](https://img.shields.io/github/downloads/ctc-oss/fapolicy-analyzer/total?color=3c6eb4&logo=github)
 
-You can install the Policy Analyzer through the installers available in the [latest release](https://github.com/ctc-oss/fapolicy-analyzer/releases). <br>
+You can install the Policy Analyzer through the installers available in
+the [latest release](https://github.com/ctc-oss/fapolicy-analyzer/releases). <br>
 Choose an RPM from the latest Fedora stable, Rawhide, and EPEL builds. <br>
-
 
 ## From Fedora Copr
 
 <a href="https://copr.fedorainfracloud.org/coprs/ctc-oss/fapolicy-analyzer/"><img src="https://img.shields.io/badge/dynamic/json?color=B87333&logo=fedora&label=Copr&query=builds.latest.state&url=https%3A%2F%2Fcopr.fedorainfracloud.org%2Fapi_3%2Fpackage%3Fownername%3Dctc-oss%26projectname%3Dfapolicy-analyzer%26packagename%3Dfapolicy-analyzer%26with_latest_build%3DTrue"></a>
 
-The Copr repository contains the latest development builds and release builds prior to publishing to the Fedora repositories.
+The Copr repository contains the latest development builds and release builds prior to publishing to the Fedora
+repositories.
 
 Follow this method to install a prerelease package.
 
@@ -63,7 +63,6 @@ Use the `dev` tag + the commit number from the `master` branch, for example
 
 will install the prerelease 1.0.0 version at the 308th commit on the master branch.
 
-
 ## From a containerized build environment
 
 Follow this method only if you have cloned the GitHub repository and have Podman installed
@@ -72,7 +71,6 @@ Follow this method only if you have cloned the GitHub repository and have Podman
 - `make el-rpm` to build a RHEL 8 RPM
 
 After a successful build the container will copy the RPMs into the host `/tmp` directory.
-
 
 ## From a local development environment</summary>
 
