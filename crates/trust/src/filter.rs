@@ -10,6 +10,7 @@ use std::cell::Cell;
 use std::cmp::Ordering;
 use std::collections::{BTreeSet, HashMap};
 use std::fmt::{Display, Formatter, Write};
+use std::path::PathBuf;
 
 use nom::branch::alt;
 use nom::bytes::complete::tag;
@@ -51,32 +52,33 @@ impl From<Dec> for bool {
 }
 
 /// Internal API
-type Db<'a> = BTreeSet<Entry<'a>>;
-type MetaDb<'a> = HashMap<&'a str, Metadata>;
+type Db = BTreeSet<Entry>;
+type MetaDb = HashMap<PathBuf, Metadata>;
 
 /// Internal API
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-struct Entry<'a> {
-    k: &'a str,
+#[derive(Clone, Debug, Eq, PartialEq)]
+struct Entry {
+    k: PathBuf,
     d: Dec,
-    p: Option<&'a &'a str>,
+    m: usize,
+    p: usize,
 }
 
-impl<'a> From<(&'a str, Dec)> for Entry<'a> {
-    fn from((k, d): (&'a str, Dec)) -> Self {
-        Entry { k, d, p: None }
+impl From<(PathBuf, Dec)> for Entry {
+    fn from((k, d): (PathBuf, Dec)) -> Self {
+        Entry { k, d, m: 0, p: 0 }
     }
 }
 
-impl Ord for Entry<'_> {
+impl Ord for Entry {
     fn cmp(&self, other: &Self) -> Ordering {
-        other.k.cmp(self.k)
+        other.k.cmp(&self.k)
     }
 }
 
-impl PartialOrd for Entry<'_> {
+impl PartialOrd for Entry {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        other.k.partial_cmp(self.k)
+        other.k.partial_cmp(&self.k)
     }
 }
 
@@ -96,27 +98,27 @@ enum Meta {
 
 /// Internal API
 #[derive(Default)]
-struct MetaDecider<'a> {
-    db: Decider<'a>,
-    meta: MetaDb<'a>,
+struct MetaDecider {
+    db: Decider,
+    meta: MetaDb,
 }
 
-impl<'a> MetaDecider<'a> {
+impl<'a> MetaDecider {
     // allow or deny
-    fn check<T: AsRef<str>>(&self, p: T) -> bool {
+    fn check(&self, p: &str) -> bool {
         self.db.check(p)
     }
 
     // allow or deny, with meta
-    fn check_ln<T: AsRef<str>>(&self, p: T) -> (bool, Meta) {
-        let m = p.as_ref();
+    fn check_ln(&self, p: &str) -> (bool, Meta) {
+        let m: PathBuf = p.into();
         let (d, ln) = self
             .db
             .0
             .iter()
             .find_map(|e| {
-                if m.starts_with(e.k) {
-                    Some((e.d, Some(e.k)))
+                if m.starts_with(e.k.clone()) {
+                    Some((e.d, Some(e.k.clone())))
                 } else {
                     None
                 }
@@ -124,6 +126,7 @@ impl<'a> MetaDecider<'a> {
             .unwrap_or((Exc, None));
 
         let meta = ln
+            .as_ref()
             .map(|k| self.meta.get(k))
             .flatten()
             .map(|x| LineNumber(x.0))
@@ -132,82 +135,96 @@ impl<'a> MetaDecider<'a> {
         (d.into(), meta)
     }
 
-    fn add_ln(&mut self, k: &'a str, d: Dec, ln: LineNum) {
-        self.db.0.insert((k, d).into());
+    fn add_ln(&mut self, k: PathBuf, d: Dec, ln: LineNum) {
+        self.db.0.insert((k.clone(), d).into());
         self.meta.insert(k, Metadata(ln));
     }
 }
 
 #[derive(Default)]
-struct Decider<'a>(Db<'a>);
-impl<'a> Decider<'a> {
-    fn make(e: (&'a str, Dec)) -> Decider<'a> {
+struct Decider(Db);
+impl<'a> Decider {
+    fn make((k, v): (&str, Dec)) -> Decider {
         let mut db = Db::new();
-        db.insert(e.into());
+        db.insert((k.into(), v).into());
         Self(db)
     }
 
     // allow or deny
-    fn check<T: AsRef<str>>(&self, p: T) -> bool {
-        let m = p.as_ref();
+    fn check(&self, p: &str) -> bool {
+        let m: PathBuf = p.into();
         dbg!(&self.0);
         self.0
             .iter()
-            .find_map(|e| if m.starts_with(e.k) { Some(e.d) } else { None })
+            .find_map(|e| {
+                if m.starts_with(e.k.clone()) {
+                    Some(e.d)
+                } else {
+                    None
+                }
+            })
             .unwrap_or(Exc)
             .into()
     }
 
-    fn add(&mut self, k: &'a str, d: Dec) {
+    fn add(&mut self, k: PathBuf, d: Dec) {
         self.0.insert((k, d).into());
     }
 }
 
-fn parse<'a>(lines: &[&'a str]) -> Result<Decider<'a>, Error> {
+fn parse(lines: &[&str]) -> Result<Decider, Error> {
     let mut decider = Decider::default();
 
-    let mut entries = vec![];
+    let mut prev_i = None;
+    let mut stack = vec![];
     for line in lines {
-        entries.push(parse_entry(line)?);
-    }
-
-    let entries: Vec<_> = entries
-        .into_iter()
-        .map(|(i, (k, d))| (i, Entry { k, d, p: None }))
-        .collect();
-
-    let mut last_i = 0;
-    let mut parents: Vec<&'a str> = vec![];
-    for (i, mut e) in entries.iter().by_ref() {
-        if *i == last_i {
-            e.p = parents.last();
-        } else {
-            let x = parents.last();
+        match (prev_i, parse_entry(line)) {
+            (None, Ok((i, (k, d)))) if i == 0 => {
+                let p = PathBuf::from(k);
+                println!("a push [{}{p:?}]", " ".repeat(i));
+                stack.push(p);
+                prev_i = Some(i);
+                decider.add(k.into(), d);
+            }
+            (Some(pi), Ok((i, (k, d)))) if i == 0 => {
+                let p = PathBuf::from(k);
+                println!("a2 push [{}{p:?}]", " ".repeat(i));
+                stack.push(p.clone());
+                prev_i = Some(0);
+                decider.add(p, d);
+            }
+            (None, Ok((i, (k, d)))) => {
+                panic!("bad format too many start indent")
+            }
+            (Some(pi), Ok((i, (k, d)))) if i > pi => {
+                let last = stack.last().unwrap();
+                let p = last.join(k);
+                println!("b push [{d}{p:?}]");
+                stack.push(p.clone());
+                prev_i = Some(i);
+                decider.add(p, d);
+            }
+            (Some(pi), Ok((i, (k, d)))) if i < pi => {
+                let p = PathBuf::from(k);
+                println!("c push [{}{p:?}]", " ".repeat(i));
+                stack.push(p.clone());
+                prev_i = Some(i);
+                decider.add(p, d);
+            }
+            (Some(pi), Ok((i, (k, d)))) => {
+                println!("d push ");
+            }
+            (_, Err(_)) => eprintln!("failed ot parse"),
         }
     }
-
-    // let mut es = vec![];
-    // let mut p = None;
-    // let mut i = 0;
-    // for (ii, (k, d)) in entries {
-    //     let e = Entry { k, d, p };
-    //     es.push(e);
-    // }
-    //
-    // let mut v = vec![];
-    // let mut l = None;
-    // for i in 0..10 {
-    //     l = v.last();
-    //     v.push(i);
-    // }
 
     Ok(decider)
 }
 
-fn parse_meta<'a>(lines: &[&'a str]) -> Result<MetaDecider<'a>, Error> {
+fn parse_meta(lines: &[&str]) -> Result<MetaDecider, Error> {
     let mut decider = MetaDecider::default();
     for (i, line) in lines.iter().enumerate() {
-        parse_entry(line).map(|(_, (k, d))| decider.add_ln(k, d, i))?;
+        parse_entry(line).map(|(_, (k, d))| decider.add_ln(k.into(), d, i))?;
     }
     Ok(decider)
 }
@@ -242,6 +259,19 @@ mod tests {
     fn test_parser() -> Result<(), Error> {
         let (i, (k, d)) = parse_entry("          + foo")?;
         println!("{i} -> {d} {k}");
+        Ok(())
+    }
+
+    #[test]
+    fn test_indented() -> Result<(), Error> {
+        let s = " ";
+        let d = parse(&["+ /", "  - foo/bar", "   + baz"])?;
+        //                             _     __             ___
+        assert!(d.check("/"));
+        assert!(d.check("/foo"));
+        assert!(!d.check("/foo/bar"));
+        assert!(!d.check("/foo/bar/biz"));
+        assert!(d.check("/foo/bar/baz"));
         Ok(())
     }
 
