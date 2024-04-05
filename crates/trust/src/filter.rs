@@ -6,7 +6,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use std::cell::Cell;
 use std::cmp::Ordering;
 use std::collections::{BTreeSet, HashMap};
 use std::fmt::{Display, Formatter, Write};
@@ -25,7 +24,7 @@ use crate::filter::Meta::LineNumber;
 
 /// Internal API
 #[derive(Copy, Clone, Debug, Default, Eq, PartialEq)]
-enum Dec {
+pub(crate) enum Dec {
     #[default]
     Exc,
     Inc,
@@ -263,7 +262,27 @@ mod tests {
     }
 
     #[test]
+    fn test_single_wildcard() -> Result<(), Error> {
+        let (i, (k, d)) = parse_entry("          + foo")?;
+        println!("{i} -> {d} {k}");
+        Ok(())
+    }
+
+    #[test]
     fn test_indented() -> Result<(), Error> {
+        let s = " ";
+        let d = parse(&["+ /", "  - foo/bar", "   + baz"])?;
+        //                             _     __             ___
+        assert!(d.check("/"));
+        assert!(d.check("/foo"));
+        assert!(!d.check("/foo/bar"));
+        assert!(!d.check("/foo/bar/biz"));
+        assert!(d.check("/foo/bar/baz"));
+        Ok(())
+    }
+
+    #[test]
+    fn test_mix_indented() -> Result<(), Error> {
         let s = " ";
         let d = parse(&["+ /", "  - foo/bar", "   + baz"])?;
         //                             _     __             ___
