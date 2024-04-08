@@ -71,10 +71,10 @@ impl Node {
     }
 
     pub fn check(&self, path: &str) -> Dec {
-        self.find(path, 0).unwrap_or(Exc)
+        self.find(path, 0, false).unwrap_or(Exc)
     }
 
-    fn find(&self, path: &str, idx: usize) -> Option<Dec> {
+    fn find(&self, path: &str, idx: usize, wc: bool) -> Option<Dec> {
         if idx == path.len() {
             return match self.decision {
                 d @ Some(_) => d,
@@ -90,9 +90,15 @@ impl Node {
 
         let c = path.chars().nth(idx).unwrap();
 
-        if let Some(node) = self.children.get(&c).or_else(|| self.children.get(&'?')) {
-            if let Some(d) = node.find(path, idx + 1) {
+        if let Some(node) = self.children.get(&c) {
+            if let Some(d) = node.find(path, idx + 1, false) {
                 return Some(d);
+            }
+        } else if let Some(wc) = self.children.get(&'?') {
+            if let Some(d) = wc.find(path, idx + 1, true) {
+                return Some(d);
+            } else {
+                println!("----");
             }
         }
 
@@ -100,16 +106,20 @@ impl Node {
             match star_node.decision {
                 d @ Some(_) => return d,
                 None => {
-                    if let Some(v1) = star_node.find(path, idx) {
+                    if let Some(v1) = star_node.find(path, idx, true) {
                         return Some(v1);
-                    } else if let Some(v2) = star_node.find(path, idx + 1) {
+                    } else if let Some(v2) = star_node.find(path, idx + 1, true) {
                         return Some(v2);
                     }
                 }
             };
         }
 
-        self.decision
+        if !wc {
+            self.decision
+        } else {
+            None
+        }
     }
 }
 
@@ -250,6 +260,13 @@ mod tests {
     use crate::filter::{parse, parse_entry, Decider, Error, MetaDecider};
 
     #[test]
+    fn test_parser() -> Result<(), Error> {
+        let (i, (k, d)) = parse_entry("          + foo")?;
+        println!("{i} -> {d} {k}");
+        Ok(())
+    }
+
+    #[test]
     fn test_indented() -> Result<(), Error> {
         let d = parse(&["+ /", " - b", "  + baz"])?;
         //                             _     _       __
@@ -257,13 +274,6 @@ mod tests {
         assert!(!d.check("/b"));
         assert!(d.check("/b/baz"));
         assert!(!d.check("/b/bar"));
-        Ok(())
-    }
-
-    #[test]
-    fn test_parser() -> Result<(), Error> {
-        let (i, (k, d)) = parse_entry("          + foo")?;
-        println!("{i} -> {d} {k}");
         Ok(())
     }
 
@@ -295,6 +305,30 @@ mod tests {
         let d = parse(&["+ /", "- /foo"])?;
         assert!(d.check("/"));
         assert!(!d.check("/foo"));
+        Ok(())
+    }
+
+    #[test]
+    fn test_q_wildcard() -> Result<(), Error> {
+        let d = parse(&["+ /", " - b?"])?;
+        //                             _     _       __
+        assert!(d.check("/a"));
+        assert!(d.check("/b"));
+        assert!(!d.check("/bb"));
+        assert!(!d.check("/bc"));
+        assert!(d.check("/bcd"));
+        Ok(())
+    }
+
+    #[test]
+    fn test_star_wildcard() -> Result<(), Error> {
+        let d = parse(&["+ /", " - b", " - b*"])?;
+        //                             _     _       __
+        assert!(d.check("/a"));
+        assert!(!d.check("/b"));
+        assert!(!d.check("/bb"));
+        assert!(!d.check("/bc"));
+        assert!(!d.check("/bcd"));
         Ok(())
     }
 
