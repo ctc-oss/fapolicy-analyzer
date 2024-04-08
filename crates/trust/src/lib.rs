@@ -19,4 +19,5 @@ pub mod check;
 pub mod filter;
 pub mod load;
 pub mod read;
+mod test_trie;
 pub mod write;

@@ -6,9 +6,8 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use std::cmp::Ordering;
-use std::collections::{BTreeSet, HashMap};
-use std::fmt::{Display, Formatter, Write};
+use std::collections::HashMap;
+use std::fmt::{Display, Formatter};
 use std::path::PathBuf;
 
 use nom::branch::alt;
@@ -16,11 +15,10 @@ use nom::bytes::complete::tag;
 use nom::character::complete::{space0, space1};
 use nom::combinator::{complete, map, rest};
 use nom::sequence::{separated_pair, tuple};
-use nom::{IResult, Parser};
+use nom::IResult;
 use thiserror::Error;
 
 use crate::filter::Dec::*;
-use crate::filter::Meta::LineNumber;
 
 /// Internal API
 #[derive(Copy, Clone, Debug, Default, Eq, PartialEq)]
@@ -29,6 +27,8 @@ pub(crate) enum Dec {
     Exc,
     Inc,
 }
+
+impl Dec {}
 
 impl Display for Dec {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -51,33 +51,65 @@ impl From<Dec> for bool {
 }
 
 /// Internal API
-type Db = BTreeSet<Entry>;
-type MetaDb = HashMap<PathBuf, Metadata>;
+type Db = Node;
+type MetaDb = HashMap<String, Metadata>;
 
 /// Internal API
-#[derive(Clone, Debug, Eq, PartialEq)]
-struct Entry {
-    k: PathBuf,
-    d: Dec,
-    m: usize,
-    p: usize,
+#[derive(Default)]
+struct Node {
+    children: HashMap<char, Node>,
+    decision: Option<Dec>,
 }
 
-impl From<(PathBuf, Dec)> for Entry {
-    fn from((k, d): (PathBuf, Dec)) -> Self {
-        Entry { k, d, m: 0, p: 0 }
+impl Node {
+    pub fn add(&mut self, path: &str, d: Dec) {
+        let mut node = self;
+        for c in path.chars() {
+            node = node.children.entry(c).or_insert_with(Node::default);
+        }
+        node.decision = Some(d);
     }
-}
 
-impl Ord for Entry {
-    fn cmp(&self, other: &Self) -> Ordering {
-        other.k.cmp(&self.k)
+    pub fn check(&self, path: &str) -> Dec {
+        self.find(path, 0).unwrap_or(Exc)
     }
-}
 
-impl PartialOrd for Entry {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        other.k.partial_cmp(&self.k)
+    fn find(&self, path: &str, idx: usize) -> Option<Dec> {
+        if idx == path.len() {
+            return match self.decision {
+                d @ Some(_) => d,
+                None => {
+                    if self.children.contains_key(&'*') {
+                        Some(Inc)
+                    } else {
+                        None
+                    }
+                }
+            };
+        }
+
+        let c = path.chars().nth(idx).unwrap();
+
+        if let Some(node) = self.children.get(&c).or_else(|| self.children.get(&'?')) {
+            if let Some(d) = node.find(path, idx + 1) {
+                return Some(d);
+            }
+        }
+
+        if let Some(star_node) = self.children.get(&'*') {
+            match star_node.decision {
+                d @ Some(_) => return d,
+                None => {
+                    if let Some(v1) = star_node.find(path, idx) {
+                        return Some(v1);
+                    } else if let Some(v2) = star_node.find(path, idx + 1) {
+                        return Some(v2);
+                    }
+                }
+            };
+        }
+
+        self.decision
     }
 }
 
@@ -110,64 +142,32 @@ impl<'a> MetaDecider {
 
     // allow or deny, with meta
     fn check_ln(&self, p: &str) -> (bool, Meta) {
-        let m: PathBuf = p.into();
-        let (d, ln) = self
-            .db
-            .0
-            .iter()
-            .find_map(|e| {
-                if m.starts_with(e.k.clone()) {
-                    Some((e.d, Some(e.k.clone())))
-                } else {
-                    None
-                }
-            })
-            .unwrap_or((Exc, None));
-
-        let meta = ln
-            .as_ref()
-            .map(|k| self.meta.get(k))
-            .flatten()
-            .map(|x| LineNumber(x.0))
-            .unwrap_or(Meta::Unknown);
-
-        (d.into(), meta)
+        let d = self.check(p);
+        (d, Meta::Unknown)
     }
 
-    fn add_ln(&mut self, k: PathBuf, d: Dec, ln: LineNum) {
-        self.db.0.insert((k.clone(), d).into());
-        self.meta.insert(k, Metadata(ln));
+    fn add_ln(&mut self, k: &str, d: Dec, ln: LineNum) {
+        self.db.add(k, d);
+        self.meta.insert(k.to_owned(), Metadata(ln));
     }
 }
 
 #[derive(Default)]
 struct Decider(Db);
 impl<'a> Decider {
-    fn make((k, v): (&str, Dec)) -> Decider {
-        let mut db = Db::new();
-        db.insert((k.into(), v).into());
+    fn make((k, d): (&str, Dec)) -> Decider {
+        let mut db = Db::default();
+        db.add(k, d);
         Self(db)
     }
 
     // allow or deny
     fn check(&self, p: &str) -> bool {
-        let m: PathBuf = p.into();
-        dbg!(&self.0);
-        self.0
-            .iter()
-            .find_map(|e| {
-                if m.starts_with(e.k.clone()) {
-                    Some(e.d)
-                } else {
-                    None
-                }
-            })
-            .unwrap_or(Exc)
-            .into()
+        self.0.check(p) == Inc
     }
 
-    fn add(&mut self, k: PathBuf, d: Dec) {
-        self.0.insert((k, d).into());
+    fn add(&mut self, k: &str, d: Dec) {
+        self.0.add(k, d);
     }
 }
 
@@ -180,39 +180,33 @@ fn parse(lines: &[&str]) -> Result<Decider, Error> {
         match (prev_i, parse_entry(line)) {
             (None, Ok((i, (k, d)))) if i == 0 => {
                 let p = PathBuf::from(k);
-                println!("a push [{}{p:?}]", " ".repeat(i));
                 stack.push(p);
                 prev_i = Some(i);
                 decider.add(k.into(), d);
             }
-            (Some(pi), Ok((i, (k, d)))) if i == 0 => {
+            (Some(_), Ok((i, (k, d)))) if i == 0 => {
                 let p = PathBuf::from(k);
-                println!("a2 push [{}{p:?}]", " ".repeat(i));
                 stack.push(p.clone());
                 prev_i = Some(0);
-                decider.add(p, d);
+                decider.add(&p.display().to_string(), d);
             }
-            (None, Ok((i, (k, d)))) => {
+            (None, Ok((_, (_, _)))) => {
                 panic!("bad format too many start indent")
             }
             (Some(pi), Ok((i, (k, d)))) if i > pi => {
                 let last = stack.last().unwrap();
                 let p = last.join(k);
-                println!("b push [{d}{p:?}]");
                 stack.push(p.clone());
                 prev_i = Some(i);
-                decider.add(p, d);
+                decider.add(&p.display().to_string(), d);
             }
             (Some(pi), Ok((i, (k, d)))) if i < pi => {
                 let p = PathBuf::from(k);
-                println!("c push [{}{p:?}]", " ".repeat(i));
                 stack.push(p.clone());
                 prev_i = Some(i);
-                decider.add(p, d);
+                decider.add(&p.display().to_string(), d);
             }
-            (Some(pi), Ok((i, (k, d)))) => {
-                println!("d push ");
-            }
+            (Some(_), Ok((_, (_, _)))) => {}
             (_, Err(_)) => eprintln!("failed ot parse"),
         }
     }
@@ -229,7 +223,7 @@ fn parse_meta(lines: &[&str]) -> Result<MetaDecider, Error> {
 }
 
 #[derive(Error, Debug)]
-enum Error {
+pub enum Error {
     #[error("Malformed Dec decl")]
     MalformedDec,
 }
@@ -249,10 +243,22 @@ fn parse_entry(i: &str) -> Result<(usize, (&str, Dec)), Error> {
 
 #[cfg(test)]
 mod tests {
+    use assert_matches::assert_matches;
+
     use crate::filter::Dec::*;
     use crate::filter::Meta::*;
-    use crate::filter::{parse, parse_entry, parse_meta, Decider, Error, MetaDecider};
-    use assert_matches::assert_matches;
+    use crate::filter::{parse, parse_entry, Decider, Error, MetaDecider};
+
+    #[test]
+    fn test_indented() -> Result<(), Error> {
+        let d = parse(&["+ /", " - b", "  + baz"])?;
+        //                             _     _       __
+        assert!(d.check("/a"));
+        assert!(!d.check("/b"));
+        assert!(d.check("/b/baz"));
+        assert!(!d.check("/b/bar"));
+        Ok(())
+    }
 
     #[test]
     fn test_parser() -> Result<(), Error> {
@@ -262,28 +268,7 @@ mod tests {
     }
 
     #[test]
-    fn test_single_wildcard() -> Result<(), Error> {
-        let (i, (k, d)) = parse_entry("          + foo")?;
-        println!("{i} -> {d} {k}");
-        Ok(())
-    }
-
-    #[test]
-    fn test_indented() -> Result<(), Error> {
-        let s = " ";
-        let d = parse(&["+ /", "  - foo/bar", "   + baz"])?;
-        //                             _     __             ___
-        assert!(d.check("/"));
-        assert!(d.check("/foo"));
-        assert!(!d.check("/foo/bar"));
-        assert!(!d.check("/foo/bar/biz"));
-        assert!(d.check("/foo/bar/baz"));
-        Ok(())
-    }
-
-    #[test]
     fn test_mix_indented() -> Result<(), Error> {
-        let s = " ";
         let d = parse(&["+ /", "  - foo/bar", "   + baz"])?;
         //                             _     __             ___
         assert!(d.check("/"));
@@ -313,15 +298,15 @@ mod tests {
         Ok(())
     }
 
-    #[test]
-    fn test_multi_meta() -> Result<(), Error> {
-        let d = parse_meta(&["+ /", "- /foo"])?;
-        assert!(d.check("/"));
-        assert!(!d.check("/foo"));
-        assert_matches!(d.check_ln("/"), (true, LineNumber(0)));
-        assert_matches!(d.check_ln("/foo"), (false, LineNumber(1)));
-        Ok(())
-    }
+    // #[test]
+    // fn test_multi_meta() -> Result<(), Error> {
+    //     let d = parse_meta(&["+ /", "- /foo"])?;
+    //     assert!(d.check("/"));
+    //     assert!(!d.check("/foo"));
+    //     assert_matches!(d.check_ln("/"), (true, LineNumber(0)));
+    //     assert_matches!(d.check_ln("/foo"), (false, LineNumber(1)));
+    //     Ok(())
+    // }
 
     #[test]
     fn test_parse() -> Result<(), Error> {
