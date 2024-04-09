@@ -8,6 +8,7 @@
 
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
+use std::io::BufRead;
 use std::path::PathBuf;
 
 use nom::branch::alt;
@@ -40,7 +41,6 @@ impl Display for Dec {
 }
 
 /// Internal API
-// bool == allow
 impl From<Dec> for bool {
     fn from(value: Dec) -> Self {
         match value {
@@ -63,6 +63,7 @@ struct Node {
 
 impl Node {
     pub fn add(&mut self, path: &str, d: Dec) {
+        println!("add {d} {path}");
         let mut node = self;
         for c in path.chars() {
             node = node.children.entry(c).or_insert_with(Node::default);
@@ -187,6 +188,7 @@ fn parse(lines: &[&str]) -> Result<Decider, Error> {
     let mut prev_i = None;
     let mut stack = vec![];
     for line in lines {
+        println!("={line}");
         match (prev_i, parse_entry(line)) {
             (None, Ok((i, (k, d)))) if i == 0 => {
                 let p = PathBuf::from(k);
@@ -216,8 +218,15 @@ fn parse(lines: &[&str]) -> Result<Decider, Error> {
                 prev_i = Some(i);
                 decider.add(&p.display().to_string(), d);
             }
-            (Some(_), Ok((_, (_, _)))) => {}
-            (_, Err(_)) => eprintln!("failed ot parse"),
+            (Some(_), Ok((_, (k, d)))) => {
+                let p = PathBuf::from(k);
+                stack.pop();
+                let last = stack.last().unwrap();
+                let p = last.join(k);
+                stack.push(p.clone());
+                decider.add(&p.display().to_string(), d);
+            }
+            (_, Err(e)) => eprintln!("failed to parse: {e}"),
         }
     }
 
@@ -254,6 +263,7 @@ fn parse_entry(i: &str) -> Result<(usize, (&str, Dec)), Error> {
 #[cfg(test)]
 mod tests {
     use assert_matches::assert_matches;
+    use fapolicy_util::trimto::TrimTo;
 
     use crate::filter::Dec::*;
     use crate::filter::Meta::*;
@@ -383,35 +393,78 @@ mod tests {
         // the meta check would return unknown on empty decider
         assert_matches!(d.check_ln("/"), (false, Unknown))
     }
+
+    #[test]
+    fn simple_allow_list1() {
+        let al = r#"
+        |- /usr/bin/some_binary1
+        |- /usr/bin/some_binary2
+        |+ /"#
+            .trim_to('|');
+
+        let d = parse(&al.split("\n").collect::<Vec<&str>>()).unwrap();
+        assert!(d.check("/"));
+        assert!(!d.check("/usr/bin/some_binary1"));
+        assert!(!d.check("/usr/bin/some_binary2"));
+    }
+
+    #[test]
+    fn simple_allow_list2() {
+        let al = r#"
+        |+ /
+        | + usr/bin/
+        |  - some_binary1
+        |  - some_binary2"#
+            .trim_to('|');
+
+        let d = parse(&al.split("\n").collect::<Vec<&str>>()).unwrap();
+        assert!(d.check("/"));
+        assert!(!d.check("/usr/bin/some_binary1"));
+        assert!(!d.check("/usr/bin/some_binary2"));
+    }
+
+    #[test]
+    fn simple_allow_list_wc1() {
+        let al = r#"
+        |- /usr/bin/some_binary?
+        |+ /"#
+            .trim_to('|');
+
+        let d = parse(&al.split("\n").collect::<Vec<&str>>()).unwrap();
+        assert!(d.check("/"));
+        assert!(!d.check("/usr/bin/some_binary1"));
+        assert!(!d.check("/usr/bin/some_binary2"));
+    }
+
+    #[test]
+    fn simple_allow_list_wc2() {
+        let al = r#"
+        |+ /
+        | - usr/bin/some_binary*"#
+            .trim_to('|');
+
+        let d = parse(&al.split("\n").collect::<Vec<&str>>()).unwrap();
+        assert!(d.check("/"));
+        assert!(!d.check("/usr/bin/some_binary1"));
+        assert!(!d.check("/usr/bin/some_binary2"));
+    }
+
+    #[test]
+    fn simple_allow_list_wc3() {
+        let al = r#"
+        |+ /
+        | - usr/share
+        |  + *.py
+        |  + *.pl"#
+            .trim_to('|');
+
+        let d = parse(&al.split("\n").collect::<Vec<&str>>()).unwrap();
+        assert!(d.check("/usr/bin/ls"));
+        assert!(!d.check("/usr/share/something"));
+        assert!(d.check("/usr/share/abcd.py"));
+    }
 }
 
-// .nf
-// .B # this is simple allow list
-// .B - /usr/bin/some_binary1
-// .B - /usr/bin/some_binary2
-// .B + /
-// .fi
-//
-// .nf
-// .B # this is the same
-// .B + /
-// .B \ + usr/bin/
-// .B \ \ - some_binary1
-// .B \ \ - some_binary2
-// .fi
-//
-// .nf
-// .B # this is similar allow list with a wildcard
-// .B - /usr/bin/some_binary?
-// .B + /
-// .fi
-//
-// .nf
-// .B # this is similar with another wildcard
-// .B + /
-// .B \ - usr/bin/some_binary*
-// .fi
-//
 // .nf
 // .B # keeps everything except usr/share except python and perl files
 // .B # /usr/bin/ls - result is '+'
