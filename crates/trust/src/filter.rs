@@ -80,7 +80,13 @@ impl Node {
             return match self.decision {
                 d @ Some(_) => d,
                 None => {
-                    if self.children.contains_key(&'*') {
+                    if self.children.contains_key(&'*')
+                        && self
+                            .children
+                            .iter()
+                            .find_map(|(c, n)| if *c == '*' { Some(Inc) } else { None })
+                            .is_none()
+                    {
                         Some(Inc)
                     } else {
                         None
@@ -98,8 +104,6 @@ impl Node {
         } else if let Some(wc) = self.children.get(&'?') {
             if let Some(d) = wc.find(path, idx + 1, true) {
                 return Some(d);
-            } else {
-                println!("----");
             }
         }
 
@@ -114,6 +118,10 @@ impl Node {
                     }
                 }
             };
+        }
+
+        if self.children.contains_key(&'*') {
+            return self.find(path, idx + 1, wc);
         }
 
         if !wc {
@@ -462,6 +470,19 @@ mod tests {
         assert!(d.check("/usr/bin/ls"));
         assert!(!d.check("/usr/share/something"));
         assert!(d.check("/usr/share/abcd.py"));
+    }
+
+    #[test]
+    fn simple_allow_list_wc4() {
+        let al = r#"
+        |+ /
+        | - usr/share
+        |   + *.py"#
+            .trim_to('|');
+
+        let d = parse(&al.split("\n").collect::<Vec<&str>>()).unwrap();
+        assert!(!d.check("/usr/share/abc"));
+        // assert!(!d.check("/usr/share/abc.py"));
     }
 }
 
