@@ -107,21 +107,20 @@ impl Node {
             }
         }
 
+        // a wildcard leaf provides the decision
+        // a wildcard node needs traversed
         if let Some(star_node) = self.children.get(&'*') {
-            match star_node.decision {
-                d @ Some(_) => return d,
+            return match star_node.decision {
                 None => {
-                    if let Some(v1) = star_node.find(path, idx, true) {
-                        return Some(v1);
-                    } else if let Some(v2) = star_node.find(path, idx + 1, true) {
-                        return Some(v2);
+                    // not a leaf node;; step through the wildcards children
+                    if let Some(r) = star_node.find(path, idx, true) {
+                        Some(r)
+                    } else {
+                        self.find(path, idx + 1, wc)
                     }
                 }
+                leaf_decision => leaf_decision,
             };
-        }
-
-        if self.children.contains_key(&'*') {
-            return self.find(path, idx + 1, wc);
         }
 
         if !wc {
@@ -474,6 +473,19 @@ mod tests {
 
     #[test]
     fn simple_allow_list_wc4() {
+        let al = r#"
+        |+ /
+        | - usr/share
+        |   + *.py"#
+            .trim_to('|');
+
+        let d = parse(&al.split("\n").collect::<Vec<&str>>()).unwrap();
+        assert!(!d.check("/usr/share/abc"));
+        // assert!(!d.check("/usr/share/abc.py"));
+    }
+
+    #[test]
+    fn simple_allow_list_wc5() {
         let al = r#"
         |+ /
         | - usr/share
