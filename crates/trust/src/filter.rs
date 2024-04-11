@@ -20,6 +20,7 @@ use thiserror::Error;
 
 use crate::filter::Dec::*;
 
+/// Errors that can occur in this module
 #[derive(Error, Debug)]
 pub enum Error {
     #[error("Malformed: {0}")]
@@ -34,11 +35,16 @@ pub enum Error {
 
 type LineNum = usize;
 
+/// Represents a filter decision about whether a path should be
+/// included or excluded from the trust database
 #[derive(Copy, Clone, Debug, Default, Eq, PartialEq)]
-enum Dec {
+pub enum Dec {
+    /// A decision that was made due to lack of explicit config
     #[default]
     Default,
+    /// Explicityly exclude, contains the source line number
     Exc(LineNum),
+    /// Explicityly include, contains the source line number
     Inc(LineNum),
 }
 
@@ -49,6 +55,10 @@ impl Dec {
             Inc(_) => Inc(ln),
         }
     }
+
+    fn is_explicit(&self) -> bool {
+        matches!(self, Inc(_) | Exc(_))
+    }
 }
 
 enum Wild {
@@ -56,6 +66,8 @@ enum Wild {
     Glob,
 }
 
+// A trie structure that maps filter path chars to nodes
+// The end of word is marked by a decision being present
 #[derive(Debug, Default)]
 struct Node {
     children: HashMap<char, Node>,
@@ -64,15 +76,18 @@ struct Node {
 
 impl Node {
     pub fn add<P: AsRef<Path>>(&mut self, path: P, d: Dec) {
+        assert!(d.is_explicit());
         let mut node = self;
         for c in path.as_ref().display().to_string().chars() {
-            node = node.children.entry(c).or_insert_with(Node::default);
+            node = node.children.entry(c).or_default();
         }
         node.decision = Some(d);
     }
 
-    pub fn check(&self, path: &str) -> Dec {
-        self.find(path, 0, None).unwrap_or(Default)
+    /// Check a path against the filter
+    pub fn check<P: AsRef<Path>>(&self, path: P) -> Dec {
+        self.find(path.as_ref().display().to_string().as_ref(), 0, None)
+            .unwrap_or(Default)
     }
 
     fn find(&self, path: &str, idx: usize, wild: Option<Wild>) -> Option<Dec> {
@@ -98,14 +113,9 @@ impl Node {
         // check for glob leaves, they provide a decision; a glob node needs traversed
         if let Some(star_node) = self.children.get(&'*') {
             return match star_node.decision {
-                None => {
-                    if let Some(r) = star_node.find(path, idx, Some(Wild::Glob)) {
-                        Some(r)
-                    } else {
-                        self.find(path, idx + 1, wild)
-                    }
-                }
-                // leaf nodes propagate their decision
+                None => star_node
+                    .find(path, idx, Some(Wild::Glob))
+                    .or_else(|| self.find(path, idx + 1, wild)),
                 leaf_decision => leaf_decision,
             };
         }
@@ -117,18 +127,20 @@ impl Node {
     }
 }
 
+/// Makes filter policy decisions against a path
+/// Built from a parse of a filter conf
 #[derive(Debug, Default)]
-struct Decider(Node);
+pub struct Decider(Node);
 impl Decider {
-    fn check(&self, p: &str) -> bool {
+    pub fn check(&self, p: &str) -> bool {
         matches!(self.0.check(p), Inc(_))
     }
 
-    fn dec(&self, p: &str) -> Dec {
+    pub fn dec(&self, p: &str) -> Dec {
         self.0.check(p)
     }
 
-    fn add<P: AsRef<Path>>(&mut self, k: P, d: Dec) {
+    pub fn add<P: AsRef<Path>>(&mut self, k: P, d: Dec) {
         self.0.add(k, d);
     }
 }
@@ -137,7 +149,8 @@ fn ignored_line(l: &str) -> bool {
     l.trim_start().starts_with('#') || l.trim().is_empty()
 }
 
-fn parse(lines: &[&str]) -> Result<Decider, Error> {
+/// Parse a filter config from the passed lines
+pub fn parse(lines: &[&str]) -> Result<Decider, Error> {
     use Error::*;
 
     let mut decider = Decider::default();
