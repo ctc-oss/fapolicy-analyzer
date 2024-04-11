@@ -7,6 +7,7 @@
  */
 
 use std::collections::HashMap;
+use std::default::Default;
 use std::fmt::{Display, Formatter};
 use std::path::PathBuf;
 
@@ -35,15 +36,25 @@ pub enum Error {
 #[derive(Copy, Clone, Debug, Default, Eq, PartialEq)]
 enum Dec {
     #[default]
-    Exc,
-    Inc,
+    Default,
+    Exc(LineNum),
+    Inc(LineNum),
+}
+
+impl Dec {
+    fn with_line_num(self, ln: LineNum) -> Self {
+        match self {
+            Default | Exc(_) => Exc(ln),
+            Inc(_) => Inc(ln),
+        }
+    }
 }
 
 impl Display for Dec {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            Exc => f.write_str("-"),
-            Inc => f.write_str("+"),
+            Exc(_) | Default => f.write_str("-"),
+            Inc(_) => f.write_str("+"),
         }
     }
 }
@@ -51,14 +62,13 @@ impl Display for Dec {
 impl From<Dec> for bool {
     fn from(value: Dec) -> Self {
         match value {
-            Exc => false,
-            Inc => true,
+            Exc(_) | Default => false,
+            Inc(_) => true,
         }
     }
 }
 
 type Db = Node;
-type MetaDb = HashMap<String, Metadata>;
 
 #[derive(Debug, Default)]
 struct Node {
@@ -76,7 +86,7 @@ impl Node {
     }
 
     pub fn check(&self, path: &str) -> Dec {
-        self.find(path, 0, false).unwrap_or(Exc)
+        self.find(path, 0, false).unwrap_or(Default)
     }
 
     fn find(&self, path: &str, idx: usize, wc: bool) -> Option<Dec> {
@@ -126,53 +136,15 @@ impl Node {
 
 type LineNum = usize;
 
-#[derive(Default)]
-struct Metadata(LineNum);
-
-/// Public API
-#[derive(Debug)]
-enum Meta {
-    Unknown,
-    LineNumber(LineNum),
-}
-
-/// Internal API
-#[derive(Default)]
-struct MetaDecider {
-    db: Decider,
-    meta: MetaDb,
-}
-
-impl<'a> MetaDecider {
-    // allow or deny
-    fn check(&self, p: &str) -> bool {
-        self.db.check(p)
-    }
-
-    // allow or deny, with meta
-    fn check_ln(&self, p: &str) -> (bool, Meta) {
-        let d = self.check(p);
-        (d, Meta::Unknown)
-    }
-
-    fn add_ln(&mut self, k: &str, d: Dec, ln: LineNum) {
-        self.db.add(k, d);
-        self.meta.insert(k.to_owned(), Metadata(ln));
-    }
-}
-
 #[derive(Debug, Default)]
 struct Decider(Db);
 impl<'a> Decider {
-    fn make((k, d): (&str, Dec)) -> Decider {
-        let mut db = Db::default();
-        db.add(k, d);
-        Self(db)
+    fn check(&self, p: &str) -> bool {
+        matches!(self.0.check(p), Inc(_))
     }
 
-    // allow or deny
-    fn check(&self, p: &str) -> bool {
-        self.0.check(p) == Inc
+    fn dec(&self, p: &str) -> Dec {
+        self.0.check(p)
     }
 
     fn add(&mut self, k: &str, d: Dec) {
@@ -191,7 +163,7 @@ fn parse(lines: &[&str]) -> Result<Decider, Error> {
 
     let mut prev_i = None;
     let mut stack = vec![];
-    for line in lines.iter().filter(|x| !ignored_line(x)) {
+    for (ln, line) in lines.iter().enumerate().filter(|(_, x)| !ignored_line(x)) {
         match (prev_i, parse_entry(line)) {
             (None, Ok((i, (k, d)))) if i == 0 => {
                 if !k.starts_with('/') {
@@ -200,7 +172,7 @@ fn parse(lines: &[&str]) -> Result<Decider, Error> {
                 let p = PathBuf::from(k);
                 stack.push(p);
                 prev_i = Some(i);
-                decider.add(k.into(), d);
+                decider.add(k.into(), d.with_line_num(ln));
             }
             (None, Ok((_, (_, _)))) => return Err(TooManyStartIndents),
             (Some(_), Ok((i, (k, d)))) if i == 0 => {
@@ -210,14 +182,14 @@ fn parse(lines: &[&str]) -> Result<Decider, Error> {
                 let p = PathBuf::from(k);
                 stack.push(p.clone());
                 prev_i = Some(0);
-                decider.add(&p.display().to_string(), d);
+                decider.add(&p.display().to_string(), d.with_line_num(ln));
             }
             (Some(pi), Ok((i, (k, d)))) if i > pi => {
                 let last = stack.last().unwrap();
                 let p = last.join(k);
                 stack.push(p.clone());
                 prev_i = Some(i);
-                decider.add(&p.display().to_string(), d);
+                decider.add(&p.display().to_string(), d.with_line_num(ln));
             }
             (Some(pi), Ok((i, (k, d)))) if i < pi => {
                 stack.truncate(i);
@@ -225,14 +197,14 @@ fn parse(lines: &[&str]) -> Result<Decider, Error> {
                 let p = last.join(k);
                 stack.push(p.clone());
                 prev_i = Some(i);
-                decider.add(&p.display().to_string(), d);
+                decider.add(&p.display().to_string(), d.with_line_num(ln));
             }
             (Some(_), Ok((i, (k, d)))) => {
                 stack.truncate(i);
                 let last = stack.last().unwrap();
                 let p = last.join(k);
                 stack.push(p.clone());
-                decider.add(&p.display().to_string(), d);
+                decider.add(&p.display().to_string(), d.with_line_num(ln));
             }
             (_, Err(_)) => return Err(MalformedDec(line.to_string())),
         }
@@ -241,16 +213,8 @@ fn parse(lines: &[&str]) -> Result<Decider, Error> {
     Ok(decider)
 }
 
-fn parse_meta(lines: &[&str]) -> Result<MetaDecider, Error> {
-    let mut decider = MetaDecider::default();
-    for (i, line) in lines.iter().enumerate() {
-        parse_entry(line).map(|(_, (k, d))| decider.add_ln(k.into(), d, i))?;
-    }
-    Ok(decider)
-}
-
 fn parse_dec(i: &str) -> IResult<&str, Dec> {
-    alt((map(tag("+"), |_| Inc), map(tag("-"), |_| Exc)))(i)
+    alt((map(tag("+"), |_| Inc(0)), map(tag("-"), |_| Exc(0))))(i)
 }
 
 fn parse_entry(i: &str) -> Result<(usize, (&str, Dec)), Error> {
@@ -266,10 +230,10 @@ fn parse_entry(i: &str) -> Result<(usize, (&str, Dec)), Error> {
 mod tests {
     use assert_matches::assert_matches;
     use fapolicy_util::trimto::TrimTo;
+    use std::default::Default;
 
     use crate::filter::Dec::*;
-    use crate::filter::Meta::*;
-    use crate::filter::{parse, Decider, Error, MetaDecider};
+    use crate::filter::{parse, Decider, Error};
 
     #[test]
     fn test_too_many_indents() {
@@ -351,16 +315,6 @@ mod tests {
         Ok(())
     }
 
-    // #[test]
-    // fn test_multi_meta() -> Result<(), Error> {
-    //     let d = parse_meta(&["+ /", "- /foo"])?;
-    //     assert!(d.check("/"));
-    //     assert!(!d.check("/foo"));
-    //     assert_matches!(d.check_ln("/"), (true, LineNumber(0)));
-    //     assert_matches!(d.check_ln("/foo"), (false, LineNumber(1)));
-    //     Ok(())
-    // }
-
     #[test]
     fn test_parse() -> Result<(), Error> {
         let d = parse(&["+ /"])?;
@@ -391,34 +345,12 @@ mod tests {
         assert!(d.check("/usr/foo/x.py"));
     }
 
-    #[test]
-    fn test_next() {
-        let d = Decider::make(("/", Inc));
-        assert!(d.check("/"));
-        assert!(d.check("/foo"));
-
-        let d = Decider::make(("/foo", Inc));
-        assert!(!d.check("/"));
-        assert!(d.check("/foo"));
-    }
-
     // an empty decider should deny everything
     #[test]
     fn test_frist() {
         let d = Decider::default();
         assert!(!d.check("/"));
         assert!(!d.check("/foo"));
-    }
-
-    #[test]
-    fn test_frist_meta() {
-        // the plain old check should work
-        let d = MetaDecider::default();
-        assert!(!d.check("/"));
-        assert!(!d.check("/foo"));
-
-        // the meta check would return unknown on empty decider
-        assert_matches!(d.check_ln("/"), (false, Unknown))
     }
 
     #[test]
@@ -598,5 +530,19 @@ mod tests {
         assert!(!d.check("/tmp/x"));
         assert!(!d.check("/tmp/y"));
         assert!(!d.check("/z"));
+    }
+
+    #[test]
+    fn test_meta() {
+        let al = r#"
+        |- /usr/bin/some_binary1
+        |- /usr/bin/some_binary2
+        |+ /"#
+            .trim_to('|');
+
+        let d = parse(&al.split("\n").collect::<Vec<&str>>()).unwrap();
+        assert_matches!(d.dec("/"), Inc(3));
+        assert_matches!(d.dec("/usr/bin/some_binary1"), Exc(1));
+        assert_matches!(d.dec("/usr/bin/some_binary2"), Exc(2));
     }
 }
