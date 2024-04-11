@@ -19,7 +19,18 @@ use nom::IResult;
 use thiserror::Error;
 
 use crate::filter::Dec::*;
-use crate::filter::Error::{MalformedDec, NonAbsRootElement, TooManyStartIndents};
+
+#[derive(Error, Debug)]
+pub enum Error {
+    #[error("Malformed: {0}")]
+    MalformedDec(String),
+
+    #[error("Malformed: root element is not absolute")]
+    NonAbsRootElement,
+
+    #[error("Malformed: too many starting indents")]
+    TooManyStartIndents,
+}
 
 /// Internal API
 #[derive(Copy, Clone, Debug, Default, Eq, PartialEq)]
@@ -194,6 +205,8 @@ fn ignored_line(l: &str) -> bool {
 }
 
 fn parse(lines: &[&str]) -> Result<Decider, Error> {
+    use Error::*;
+
     let mut decider = Decider::default();
 
     let mut prev_i = None;
@@ -254,18 +267,6 @@ fn parse_meta(lines: &[&str]) -> Result<MetaDecider, Error> {
         parse_entry(line).map(|(_, (k, d))| decider.add_ln(k.into(), d, i))?;
     }
     Ok(decider)
-}
-
-#[derive(Error, Debug)]
-pub enum Error {
-    #[error("Malformed: {0}")]
-    MalformedDec(String),
-
-    #[error("Malformed: root element is not absolute")]
-    NonAbsRootElement,
-
-    #[error("Malformed: too many starting indents")]
-    TooManyStartIndents,
 }
 
 fn parse_dec(i: &str) -> IResult<&str, Dec> {
