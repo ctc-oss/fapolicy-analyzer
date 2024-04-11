@@ -162,26 +162,23 @@ fn parse(lines: &[&str]) -> Result<Decider, Error> {
             }
             (None, Ok((_, (_, _)))) => return Err(TooManyStartIndents),
             (Some(pi), Ok((i, (k, d)))) if i > pi => {
-                let last = stack.last().unwrap();
-                let p = last.join(k);
-                stack.push(p.clone());
-                prev_i = Some(i);
+                let p = stack.last().map(|l| l.join(k)).unwrap();
                 decider.add(&p.display().to_string(), d.with_line_num(ln));
+                stack.push(p);
+                prev_i = Some(i);
             }
             (Some(pi), Ok((i, (k, d)))) if i < pi => {
                 stack.truncate(i);
-                let last = stack.last().unwrap();
-                let p = last.join(k);
-                stack.push(p.clone());
-                prev_i = Some(i);
+                let p = stack.last().map(|l| l.join(k)).unwrap();
                 decider.add(&p.display().to_string(), d.with_line_num(ln));
+                stack.push(p);
+                prev_i = Some(i);
             }
             (Some(_), Ok((i, (k, d)))) => {
                 stack.truncate(i);
-                let last = stack.last().unwrap();
-                let p = last.join(k);
-                stack.push(p.clone());
+                let p = stack.last().map(|l| l.join(k)).unwrap();
                 decider.add(&p.display().to_string(), d.with_line_num(ln));
+                stack.push(p);
             }
             (_, Err(_)) => return Err(MalformedDec(line.to_string())),
         }
