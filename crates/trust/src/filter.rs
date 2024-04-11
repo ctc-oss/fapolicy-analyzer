@@ -322,7 +322,7 @@ mod tests {
         | "#
         .trim_to('|');
 
-        let d = parse(&al.split("\n").collect::<Vec<&str>>()).unwrap();
+        let d = parse(&al.split('\n').collect::<Vec<&str>>()).unwrap();
         assert!(!d.check("/usr/foo/x"));
         assert!(d.check("/usr/foo/x.py"));
         assert!(!d.check("/usr/bar/x"));
@@ -345,7 +345,7 @@ mod tests {
         |+ /"#
             .trim_to('|');
 
-        let d = parse(&al.split("\n").collect::<Vec<&str>>()).unwrap();
+        let d = parse(&al.split('\n').collect::<Vec<&str>>()).unwrap();
         assert!(d.check("/"));
         assert!(!d.check("/usr/bin/some_binary1"));
         assert!(!d.check("/usr/bin/some_binary2"));
@@ -360,7 +360,7 @@ mod tests {
         |  - some_binary2"#
             .trim_to('|');
 
-        let d = parse(&al.split("\n").collect::<Vec<&str>>()).unwrap();
+        let d = parse(&al.split('\n').collect::<Vec<&str>>()).unwrap();
         assert!(d.check("/"));
         assert!(!d.check("/usr/bin/some_binary1"));
         assert!(!d.check("/usr/bin/some_binary2"));
@@ -373,7 +373,7 @@ mod tests {
         |+ /"#
             .trim_to('|');
 
-        let d = parse(&al.split("\n").collect::<Vec<&str>>()).unwrap();
+        let d = parse(&al.split('\n').collect::<Vec<&str>>()).unwrap();
         assert!(d.check("/"));
         assert!(!d.check("/usr/bin/some_binary1"));
         assert!(!d.check("/usr/bin/some_binary2"));
@@ -386,7 +386,7 @@ mod tests {
         | - usr/bin/some_binary*"#
             .trim_to('|');
 
-        let d = parse(&al.split("\n").collect::<Vec<&str>>()).unwrap();
+        let d = parse(&al.split('\n').collect::<Vec<&str>>()).unwrap();
         assert!(d.check("/"));
         assert!(!d.check("/usr/bin/some_binary1"));
         assert!(!d.check("/usr/bin/some_binary2"));
@@ -401,7 +401,7 @@ mod tests {
         |  + *.pl"#
             .trim_to('|');
 
-        let d = parse(&al.split("\n").collect::<Vec<&str>>()).unwrap();
+        let d = parse(&al.split('\n').collect::<Vec<&str>>()).unwrap();
         assert!(d.check("/usr/bin/ls"));
         assert!(!d.check("/usr/share/something"));
         assert!(d.check("/usr/share/abcd.py"));
@@ -415,7 +415,7 @@ mod tests {
         |   + *.py"#
             .trim_to('|');
 
-        let d = parse(&al.split("\n").collect::<Vec<&str>>()).unwrap();
+        let d = parse(&al.split('\n').collect::<Vec<&str>>()).unwrap();
         assert!(!d.check("/usr/share/abc"));
         // assert!(!d.check("/usr/share/abc.py"));
     }
@@ -428,7 +428,7 @@ mod tests {
         |   + *.py"#
             .trim_to('|');
 
-        let d = parse(&al.split("\n").collect::<Vec<&str>>()).unwrap();
+        let d = parse(&al.split('\n').collect::<Vec<&str>>()).unwrap();
         assert!(!d.check("/usr/share/abc"));
         assert!(!d.check("/usr/share/abc.pl"));
         assert!(d.check("/usr/share/abc.py"));
@@ -481,7 +481,7 @@ mod tests {
         |"#
         .trim_to('|');
 
-        let d = parse(&al.split("\n").collect::<Vec<&str>>()).unwrap();
+        let d = parse(&al.split('\n').collect::<Vec<&str>>()).unwrap();
         assert!(d.check("/bin/foo"));
         assert!(!d.check("/usr/share/x.txt"));
         assert!(!d.check("/usr/include/x.h"));
@@ -508,7 +508,7 @@ mod tests {
         |- /z"#
             .trim_to('|');
 
-        let d = parse(&al.split("\n").collect::<Vec<&str>>()).unwrap();
+        let d = parse(&al.split('\n').collect::<Vec<&str>>()).unwrap();
         assert!(!d.check("/usr/share/xyz"));
         assert!(d.check("/usr/share/abc/def/foo.py"));
         assert!(!d.check("/tmp/x"));
@@ -526,7 +526,7 @@ mod tests {
         | - bar/baz"#
             .trim_to('|');
 
-        let d = parse(&al.split("\n").collect::<Vec<&str>>()).unwrap();
+        let d = parse(&al.split('\n').collect::<Vec<&str>>()).unwrap();
         assert_matches!(d.dec("/"), Inc(3));
         assert_matches!(d.dec("/usr/bin/some_binary1"), Exc(1));
         assert_matches!(d.dec("/usr/bin/some_binary2"), Exc(2));
