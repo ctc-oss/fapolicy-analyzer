@@ -212,123 +212,7 @@ mod tests {
     use crate::filter::Dec::*;
     use crate::filter::{parse, Decider, Error};
 
-    #[test]
-    fn test_too_many_indents() {
-        assert_matches!(parse(&[" + foo"]), Err(Error::TooManyStartIndents));
-    }
-
-    #[test]
-    fn test_i0_starts_with_slash() {
-        assert_matches!(parse(&["+ x"]), Err(Error::NonAbsRootElement));
-        assert_matches!(
-            parse(&["+ /", " - foo", "+ bar"]),
-            Err(Error::NonAbsRootElement)
-        );
-    }
-
-    #[test]
-    fn test_indented() -> Result<(), Error> {
-        let d = parse(&["+ /", " - b", "  + baz"])?;
-        //                             _     _       __
-        assert!(d.check("/a"));
-        assert!(!d.check("/b"));
-        assert!(d.check("/b/baz"));
-        assert!(!d.check("/b/bar"));
-        Ok(())
-    }
-
-    #[test]
-    fn test_mix_indented() -> Result<(), Error> {
-        let d = parse(&["+ /", "  - foo/bar", "   + baz"])?;
-        //                             _     __             ___
-        assert!(d.check("/"));
-        assert!(d.check("/foo"));
-        assert!(!d.check("/foo/bar"));
-        assert!(!d.check("/foo/bar/biz"));
-        assert!(d.check("/foo/bar/baz"));
-        Ok(())
-    }
-
-    #[test]
-    fn test_nested() -> Result<(), Error> {
-        let d = parse(&["+ /", "- /foo/bar", "+ /foo/bar/baz"])?;
-        assert!(d.check("/"));
-        assert!(d.check("/foo"));
-        assert!(!d.check("/foo/bar"));
-        assert!(!d.check("/foo/bar/biz"));
-        assert!(d.check("/foo/bar/baz"));
-        Ok(())
-    }
-
-    #[test]
-    fn test_multi() -> Result<(), Error> {
-        let d = parse(&["+ /", "- /foo"])?;
-        assert!(d.check("/"));
-        assert!(!d.check("/foo"));
-        Ok(())
-    }
-
-    #[test]
-    fn test_q_wildcard() -> Result<(), Error> {
-        let d = parse(&["+ /", " - b?"])?;
-        //                             _     _       __
-        assert!(d.check("/a"));
-        assert!(d.check("/b"));
-        assert!(!d.check("/bb"));
-        assert!(!d.check("/bc"));
-        assert!(d.check("/bcd"));
-        Ok(())
-    }
-
-    #[test]
-    fn test_star_wildcard() -> Result<(), Error> {
-        let d = parse(&["+ /", " - b", " - b*"])?;
-        //                             _     _       __
-        assert!(d.check("/a"));
-        assert!(!d.check("/b"));
-        assert!(!d.check("/bb"));
-        assert!(!d.check("/bc"));
-        assert!(!d.check("/bcd"));
-        Ok(())
-    }
-
-    #[test]
-    fn test_parse() -> Result<(), Error> {
-        let d = parse(&["+ /"])?;
-        assert!(d.check("/"));
-        assert!(d.check("/foo"));
-
-        let d = parse(&["+ /foo"])?;
-        assert!(!d.check("/"));
-        assert!(d.check("/foo"));
-        Ok(())
-    }
-
-    #[test]
-    fn test_parse_unnest() {
-        let al = r#"
-        |+ /
-        | - usr/foo
-        |   + *.py
-        | - usr/bar
-        |   + *.py
-        | "#
-        .trim_to('|');
-
-        let d = parse(&al.split('\n').collect::<Vec<&str>>()).unwrap();
-        assert!(!d.check("/usr/foo/x"));
-        assert!(d.check("/usr/foo/x.py"));
-        assert!(!d.check("/usr/bar/x"));
-        assert!(d.check("/usr/foo/x.py"));
-    }
-
-    // an empty decider should deny everything
-    #[test]
-    fn test_frist() {
-        let d = Decider::default();
-        assert!(!d.check("/"));
-        assert!(!d.check("/foo"));
-    }
+    // the first few tests are modeled after example config from the fapolicyd documentation
 
     #[test]
     fn simple_allow_list1() {
@@ -357,6 +241,203 @@ mod tests {
         assert!(d.check("/"));
         assert!(!d.check("/usr/bin/some_binary1"));
         assert!(!d.check("/usr/bin/some_binary2"));
+    }
+
+    // this one has embedded comments
+    #[test]
+    fn default_filter_file_for_fedora() {
+        let al = r#"
+        |+ /
+        | - usr/include/
+        | - usr/share/
+        |  # Python byte code
+        |  + *.py?
+        |  # Python text files
+        |  + *.py
+        |  # Some apps have a private libexec
+        |  + */libexec/*
+        |  # Ruby
+        |  + *.rb
+        |  # Perl
+        |  + *.pl
+        |  # System tap
+        |  + *.stp
+        |  # Javascript
+        |  + *.js
+        |  # Java archive
+        |  + *.jar
+        |  # M4
+        |  + *.m4
+        |  # PHP
+        |  + *.php
+        |  # Perl Modules
+        |  + *.pm
+        |  # Lua
+        |  + *.lua
+        |  # Java
+        |  + *.class
+        |  # Typescript
+        |  + *.ts
+        |  # Typescript JSX
+        |  + *.tsx
+        |  # Lisp
+        |  + *.el
+        |  # Compiled Lisp
+        |  + *.elc
+        | - usr/src/kernel*/
+        |  + */scripts/*
+        |  + */tools/objtool/*
+
+        |"#
+        .trim_to('|');
+
+        let d = parse(&al.split('\n').collect::<Vec<&str>>()).unwrap();
+        assert!(d.check("/bin/foo"));
+        assert!(!d.check("/usr/share/x.txt"));
+        assert!(!d.check("/usr/include/x.h"));
+        assert!(d.check("/usr/share/python/my.py"));
+        assert!(d.check("/usr/share/python/my.pyc"));
+        assert!(!d.check("/usr/share/python/my.foo"));
+        assert!(d.check("/usr/share/myapp/libexec/anything"));
+        assert!(!d.check("/usr/share/myapp2/not-libexec/anything"));
+        assert!(!d.check("/usr/src/kernel/foo"));
+        assert!(!d.check("/usr/src/kernel-6.5/foo"));
+        assert!(d.check("/usr/src/kernels/5.13.16/scripts/foo"));
+        assert!(d.check("/usr/src/kernels/5.13.16/tools/objtool/foo"));
+    }
+
+    // the remainder of the tests exercise other corners of the parsing api
+
+    #[test]
+    fn meta_source_line_numbers() {
+        let al = r#"
+        |- /usr/bin/some_binary1
+        |- /usr/bin/some_binary2
+        |+ /
+        | - foo
+        | - bar/baz"#
+            .trim_to('|');
+
+        let d = parse(&al.split('\n').collect::<Vec<&str>>()).unwrap();
+        assert_matches!(d.dec("/"), Inc(3));
+        assert_matches!(d.dec("/usr/bin/some_binary1"), Exc(1));
+        assert_matches!(d.dec("/usr/bin/some_binary2"), Exc(2));
+        assert_matches!(d.dec("/foo"), Exc(4));
+        assert_matches!(d.dec("/bar/baz"), Exc(5));
+    }
+
+    #[test]
+    fn too_many_indents() {
+        assert_matches!(parse(&[" + foo"]), Err(Error::TooManyStartIndents));
+    }
+
+    #[test]
+    fn indentation_0_starts_with_slash() {
+        assert_matches!(parse(&["+ x"]), Err(Error::NonAbsRootElement));
+        assert_matches!(
+            parse(&["+ /", " - foo", "+ bar"]),
+            Err(Error::NonAbsRootElement)
+        );
+    }
+
+    #[test]
+    fn indentation_basic() -> Result<(), Error> {
+        let d = parse(&["+ /", " - b", "  + baz"])?;
+        assert!(d.check("/a"));
+        assert!(!d.check("/b"));
+        assert!(d.check("/b/baz"));
+        assert!(!d.check("/b/bar"));
+        Ok(())
+    }
+
+    #[test]
+    fn indentation_mix() -> Result<(), Error> {
+        let d = parse(&["+ /", "  - foo/bar", "   + baz"])?;
+        assert!(d.check("/"));
+        assert!(d.check("/foo"));
+        assert!(!d.check("/foo/bar"));
+        assert!(!d.check("/foo/bar/biz"));
+        assert!(d.check("/foo/bar/baz"));
+        Ok(())
+    }
+
+    #[test]
+    fn indentation_nested() -> Result<(), Error> {
+        let d = parse(&["+ /", "- /foo/bar", "+ /foo/bar/baz"])?;
+        assert!(d.check("/"));
+        assert!(d.check("/foo"));
+        assert!(!d.check("/foo/bar"));
+        assert!(!d.check("/foo/bar/biz"));
+        assert!(d.check("/foo/bar/baz"));
+        Ok(())
+    }
+
+    #[test]
+    fn basic() -> Result<(), Error> {
+        let d = parse(&["+ /", "- /foo"])?;
+        assert!(d.check("/"));
+        assert!(!d.check("/foo"));
+        Ok(())
+    }
+
+    #[test]
+    fn wildcard_single() -> Result<(), Error> {
+        let d = parse(&["+ /", " - b?"])?;
+        assert!(d.check("/a"));
+        assert!(d.check("/b"));
+        assert!(!d.check("/bb"));
+        assert!(!d.check("/bc"));
+        assert!(d.check("/bcd"));
+        Ok(())
+    }
+
+    #[test]
+    fn wildcard_glob() -> Result<(), Error> {
+        let d = parse(&["+ /", " - b", " - b*"])?;
+        assert!(d.check("/a"));
+        assert!(!d.check("/b"));
+        assert!(!d.check("/bb"));
+        assert!(!d.check("/bc"));
+        assert!(!d.check("/bcd"));
+        Ok(())
+    }
+
+    #[test]
+    fn parse_basic() -> Result<(), Error> {
+        let d = parse(&["+ /"])?;
+        assert!(d.check("/"));
+        assert!(d.check("/foo"));
+
+        let d = parse(&["+ /foo"])?;
+        assert!(!d.check("/"));
+        assert!(d.check("/foo"));
+        Ok(())
+    }
+
+    #[test]
+    fn parse_unnesting() {
+        let al = r#"
+        |+ /
+        | - usr/foo
+        |   + *.py
+        | - usr/bar
+        |   + *.py
+        | "#
+        .trim_to('|');
+
+        let d = parse(&al.split('\n').collect::<Vec<&str>>()).unwrap();
+        assert!(!d.check("/usr/foo/x"));
+        assert!(d.check("/usr/foo/x.py"));
+        assert!(!d.check("/usr/bar/x"));
+        assert!(d.check("/usr/foo/x.py"));
+    }
+
+    // an empty decider should deny everything
+    #[test]
+    fn no_rules() {
+        let d = Decider::default();
+        assert!(!d.check("/"));
+        assert!(!d.check("/foo"));
     }
 
     #[test]
@@ -428,69 +509,7 @@ mod tests {
     }
 
     #[test]
-    fn test_default_filter_file_for_fedora() {
-        let al = r#"
-        |+ /
-        | - usr/include/
-        | - usr/share/
-        |  # Python byte code
-        |  + *.py?
-        |  # Python text files
-        |  + *.py
-        |  # Some apps have a private libexec
-        |  + */libexec/*
-        |  # Ruby
-        |  + *.rb
-        |  # Perl
-        |  + *.pl
-        |  # System tap
-        |  + *.stp
-        |  # Javascript
-        |  + *.js
-        |  # Java archive
-        |  + *.jar
-        |  # M4
-        |  + *.m4
-        |  # PHP
-        |  + *.php
-        |  # Perl Modules
-        |  + *.pm
-        |  # Lua
-        |  + *.lua
-        |  # Java
-        |  + *.class
-        |  # Typescript
-        |  + *.ts
-        |  # Typescript JSX
-        |  + *.tsx
-        |  # Lisp
-        |  + *.el
-        |  # Compiled Lisp
-        |  + *.elc
-        | - usr/src/kernel*/
-        |  + */scripts/*
-        |  + */tools/objtool/*
-
-        |"#
-        .trim_to('|');
-
-        let d = parse(&al.split('\n').collect::<Vec<&str>>()).unwrap();
-        assert!(d.check("/bin/foo"));
-        assert!(!d.check("/usr/share/x.txt"));
-        assert!(!d.check("/usr/include/x.h"));
-        assert!(d.check("/usr/share/python/my.py"));
-        assert!(d.check("/usr/share/python/my.pyc"));
-        assert!(!d.check("/usr/share/python/my.foo"));
-        assert!(d.check("/usr/share/myapp/libexec/anything"));
-        assert!(!d.check("/usr/share/myapp2/not-libexec/anything"));
-        assert!(!d.check("/usr/src/kernel/foo"));
-        assert!(!d.check("/usr/src/kernel-6.5/foo"));
-        assert!(d.check("/usr/src/kernels/5.13.16/scripts/foo"));
-        assert!(d.check("/usr/src/kernels/5.13.16/tools/objtool/foo"));
-    }
-
-    #[test]
-    fn test_from_nested_back_to_0() {
+    fn from_nested_back_to_0() {
         let al = r#"
         |+ /
         | - usr/share/
@@ -507,23 +526,5 @@ mod tests {
         assert!(!d.check("/tmp/x"));
         assert!(!d.check("/tmp/y"));
         assert!(!d.check("/z"));
-    }
-
-    #[test]
-    fn test_meta() {
-        let al = r#"
-        |- /usr/bin/some_binary1
-        |- /usr/bin/some_binary2
-        |+ /
-        | - foo
-        | - bar/baz"#
-            .trim_to('|');
-
-        let d = parse(&al.split('\n').collect::<Vec<&str>>()).unwrap();
-        assert_matches!(d.dec("/"), Inc(3));
-        assert_matches!(d.dec("/usr/bin/some_binary1"), Exc(1));
-        assert_matches!(d.dec("/usr/bin/some_binary2"), Exc(2));
-        assert_matches!(d.dec("/foo"), Exc(4));
-        assert_matches!(d.dec("/bar/baz"), Exc(5));
     }
 }
