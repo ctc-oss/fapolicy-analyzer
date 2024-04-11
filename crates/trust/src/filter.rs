@@ -8,7 +8,7 @@
 
 use std::collections::HashMap;
 use std::default::Default;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use nom::branch::alt;
 use nom::bytes::complete::tag;
@@ -63,9 +63,9 @@ struct Node {
 }
 
 impl Node {
-    pub fn add(&mut self, path: &str, d: Dec) {
+    pub fn add<P: AsRef<Path>>(&mut self, path: P, d: Dec) {
         let mut node = self;
-        for c in path.chars() {
+        for c in path.as_ref().display().to_string().chars() {
             node = node.children.entry(c).or_insert_with(Node::default);
         }
         node.decision = Some(d);
@@ -88,19 +88,17 @@ impl Node {
                 return Some(d);
             }
         }
-        // next try to find a wildcard char
+        // next try to find a single wildcard char
         else if let Some(wc) = self.children.get(&'?') {
             if let Some(d) = wc.find(path, idx + 1, Some(Wild::Single)) {
                 return Some(d);
             }
         }
 
-        // a glob leaf provides the decision
-        // a glob node needs traversed
+        // check for glob leaves, they provide a decision; a glob node needs traversed
         if let Some(star_node) = self.children.get(&'*') {
             return match star_node.decision {
                 None => {
-                    // not a leaf node;; step through children
                     if let Some(r) = star_node.find(path, idx, Some(Wild::Glob)) {
                         Some(r)
                     } else {
@@ -130,7 +128,7 @@ impl Decider {
         self.0.check(p)
     }
 
-    fn add(&mut self, k: &str, d: Dec) {
+    fn add<P: AsRef<Path>>(&mut self, k: P, d: Dec) {
         self.0.add(k, d);
     }
 }
@@ -146,8 +144,11 @@ fn parse(lines: &[&str]) -> Result<Decider, Error> {
 
     let mut prev_i = None;
     let mut stack = vec![];
+
+    // process lines from the config, ignoring comments and empty lines
     for (ln, line) in lines.iter().enumerate().filter(|(_, x)| !ignored_line(x)) {
         match (prev_i, parse_entry(line)) {
+            // at the root level anywhere in the conf
             (prev, Ok((0, (k, d)))) => {
                 if !k.starts_with('/') {
                     return Err(NonAbsRootElement);
@@ -155,35 +156,38 @@ fn parse(lines: &[&str]) -> Result<Decider, Error> {
                 if prev.is_some() {
                     stack.clear();
                 }
-                let p = PathBuf::from(k);
-                stack.push(p);
+                decider.add(k, d.with_line_num(ln));
+                stack.push(PathBuf::from(k));
                 prev_i = Some(0);
-                decider.add(k.into(), d.with_line_num(ln));
             }
+            // fail if the first conf element is indented
             (None, Ok((_, (_, _)))) => return Err(TooManyStartIndents),
+            // handle an indentation
             (Some(pi), Ok((i, (k, d)))) if i > pi => {
                 let p = stack.last().map(|l| l.join(k)).unwrap();
-                decider.add(&p.display().to_string(), d.with_line_num(ln));
+                decider.add(&p, d.with_line_num(ln));
                 stack.push(p);
                 prev_i = Some(i);
             }
+            // handle unindentation
             (Some(pi), Ok((i, (k, d)))) if i < pi => {
                 stack.truncate(i);
                 let p = stack.last().map(|l| l.join(k)).unwrap();
-                decider.add(&p.display().to_string(), d.with_line_num(ln));
+                decider.add(&p, d.with_line_num(ln));
                 stack.push(p);
                 prev_i = Some(i);
             }
+            // remaining at previous level
             (Some(_), Ok((i, (k, d)))) => {
                 stack.truncate(i);
                 let p = stack.last().map(|l| l.join(k)).unwrap();
-                decider.add(&p.display().to_string(), d.with_line_num(ln));
+                decider.add(&p, d.with_line_num(ln));
                 stack.push(p);
             }
+            // propagate parse errors
             (_, Err(_)) => return Err(MalformedDec(line.to_string())),
         }
     }
-
     Ok(decider)
 }
 
