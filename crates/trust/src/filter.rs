@@ -62,7 +62,9 @@ impl Dec {
 }
 
 enum Wild {
+    // exactly once
     Single,
+    // 1 or more
     Glob,
 }
 
