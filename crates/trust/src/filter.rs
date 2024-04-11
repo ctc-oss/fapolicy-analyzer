@@ -51,6 +51,11 @@ impl Dec {
     }
 }
 
+enum Wild {
+    Single,
+    Glob,
+}
+
 #[derive(Debug, Default)]
 struct Node {
     children: HashMap<char, Node>,
@@ -67,10 +72,10 @@ impl Node {
     }
 
     pub fn check(&self, path: &str) -> Dec {
-        self.find(path, 0, false).unwrap_or(Default)
+        self.find(path, 0, None).unwrap_or(Default)
     }
 
-    fn find(&self, path: &str, idx: usize, wc: bool) -> Option<Dec> {
+    fn find(&self, path: &str, idx: usize, wild: Option<Wild>) -> Option<Dec> {
         if idx == path.len() {
             return self.decision;
         }
@@ -79,27 +84,27 @@ impl Node {
 
         // try to find a node matching the next char
         if let Some(node) = self.children.get(&c) {
-            if let Some(d) = node.find(path, idx + 1, false) {
+            if let Some(d) = node.find(path, idx + 1, None) {
                 return Some(d);
             }
         }
         // next try to find a wildcard char
         else if let Some(wc) = self.children.get(&'?') {
-            if let Some(d) = wc.find(path, idx + 1, true) {
+            if let Some(d) = wc.find(path, idx + 1, Some(Wild::Single)) {
                 return Some(d);
             }
         }
 
-        // a wildcard leaf provides the decision
-        // a wildcard node needs traversed
+        // a glob leaf provides the decision
+        // a glob node needs traversed
         if let Some(star_node) = self.children.get(&'*') {
             return match star_node.decision {
                 None => {
-                    // not a leaf node;; step through children of wildcard
-                    if let Some(r) = star_node.find(path, idx, true) {
+                    // not a leaf node;; step through children
+                    if let Some(r) = star_node.find(path, idx, Some(Wild::Glob)) {
                         Some(r)
                     } else {
-                        self.find(path, idx + 1, wc)
+                        self.find(path, idx + 1, wild)
                     }
                 }
                 // leaf nodes propagate their decision
@@ -107,10 +112,9 @@ impl Node {
             };
         }
 
-        if wc {
-            None
-        } else {
-            self.decision
+        match wild {
+            Some(_) => None,
+            None => self.decision,
         }
     }
 }
