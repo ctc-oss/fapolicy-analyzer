@@ -148,26 +148,19 @@ fn parse(lines: &[&str]) -> Result<Decider, Error> {
     let mut stack = vec![];
     for (ln, line) in lines.iter().enumerate().filter(|(_, x)| !ignored_line(x)) {
         match (prev_i, parse_entry(line)) {
-            (None, Ok((i, (k, d)))) if i == 0 => {
+            (prev, Ok((0, (k, d)))) => {
                 if !k.starts_with('/') {
                     return Err(NonAbsRootElement);
+                }
+                if prev.is_some() {
+                    stack.clear();
                 }
                 let p = PathBuf::from(k);
                 stack.push(p);
-                prev_i = Some(i);
+                prev_i = Some(0);
                 decider.add(k.into(), d.with_line_num(ln));
             }
             (None, Ok((_, (_, _)))) => return Err(TooManyStartIndents),
-            (Some(_), Ok((i, (k, d)))) if i == 0 => {
-                if !k.starts_with('/') {
-                    return Err(NonAbsRootElement);
-                }
-                stack.clear();
-                let p = PathBuf::from(k);
-                stack.push(p.clone());
-                prev_i = Some(0);
-                decider.add(&p.display().to_string(), d.with_line_num(ln));
-            }
             (Some(pi), Ok((i, (k, d)))) if i > pi => {
                 let last = stack.last().unwrap();
                 let p = last.join(k);
