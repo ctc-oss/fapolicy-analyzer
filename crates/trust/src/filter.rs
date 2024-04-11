@@ -322,7 +322,7 @@ mod tests {
         assert!(d.check("/usr/src/kernels/5.13.16/tools/objtool/foo"));
     }
 
-    // the remainder of the tests exercise other corners of the parsing api
+    // the remainder of the tests exercise other corners of the decision api
 
     #[test]
     fn meta_source_line_numbers() {
