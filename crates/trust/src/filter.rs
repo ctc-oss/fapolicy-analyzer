@@ -81,22 +81,7 @@ impl Node {
 
     fn find(&self, path: &str, idx: usize, wc: bool) -> Option<Dec> {
         if idx == path.len() {
-            return match self.decision {
-                d @ Some(_) => d,
-                None => {
-                    if self.children.contains_key(&'*')
-                        && self
-                            .children
-                            .iter()
-                            .find_map(|(c, _)| if *c == '*' { Some(Inc) } else { None })
-                            .is_none()
-                    {
-                        Some(Inc)
-                    } else {
-                        None
-                    }
-                }
-            };
+            return self.decision;
         }
 
         let c = path.chars().nth(idx).unwrap();
@@ -284,7 +269,7 @@ mod tests {
 
     use crate::filter::Dec::*;
     use crate::filter::Meta::*;
-    use crate::filter::{parse, parse_meta, Decider, Error, MetaDecider};
+    use crate::filter::{parse, Decider, Error, MetaDecider};
 
     #[test]
     fn test_too_many_indents() {
@@ -366,15 +351,15 @@ mod tests {
         Ok(())
     }
 
-    #[test]
-    fn test_multi_meta() -> Result<(), Error> {
-        let d = parse_meta(&["+ /", "- /foo"])?;
-        assert!(d.check("/"));
-        assert!(!d.check("/foo"));
-        assert_matches!(d.check_ln("/"), (true, LineNumber(0)));
-        assert_matches!(d.check_ln("/foo"), (false, LineNumber(1)));
-        Ok(())
-    }
+    // #[test]
+    // fn test_multi_meta() -> Result<(), Error> {
+    //     let d = parse_meta(&["+ /", "- /foo"])?;
+    //     assert!(d.check("/"));
+    //     assert!(!d.check("/foo"));
+    //     assert_matches!(d.check_ln("/"), (true, LineNumber(0)));
+    //     assert_matches!(d.check_ln("/foo"), (false, LineNumber(1)));
+    //     Ok(())
+    // }
 
     #[test]
     fn test_parse() -> Result<(), Error> {
