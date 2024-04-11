@@ -14,7 +14,7 @@ pub trait TrimTo {
 impl<T: AsRef<str>> TrimTo for T {
     fn trim_to(&self, marker: char) -> String {
         let mut lines = vec![];
-        for line in self.as_ref().split("\n") {
+        for line in self.as_ref().split('\n') {
             if let Some((_, s)) = line.split_once(marker) {
                 lines.push(s)
             } else {
@@ -40,7 +40,7 @@ mod tests {
 
     #[test]
     fn multiline() {
-        assert_eq!("1|a\n2|b\n3|c".trim_to('|').replace("\n", ""), "abc");
-        assert_eq!("|a\n|b\n|c".trim_to('|').replace("\n", ""), "abc");
+        assert_eq!("1|a\n2|b\n3|c".trim_to('|').replace('\n', ""), "abc");
+        assert_eq!("|a\n|b\n|c".trim_to('|').replace('\n', ""), "abc");
     }
 }
