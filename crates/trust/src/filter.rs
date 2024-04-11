@@ -8,7 +8,6 @@
 
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
-use std::io::BufRead;
 use std::path::PathBuf;
 
 use nom::branch::alt;
@@ -20,6 +19,7 @@ use nom::IResult;
 use thiserror::Error;
 
 use crate::filter::Dec::*;
+use crate::filter::Error::{MalformedDec, NonAbsRootElement, TooManyStartIndents};
 
 /// Internal API
 #[derive(Copy, Clone, Debug, Default, Eq, PartialEq)]
@@ -55,7 +55,7 @@ type Db = Node;
 type MetaDb = HashMap<String, Metadata>;
 
 /// Internal API
-#[derive(Default)]
+#[derive(Debug, Default)]
 struct Node {
     children: HashMap<char, Node>,
     decision: Option<Dec>,
@@ -63,7 +63,6 @@ struct Node {
 
 impl Node {
     pub fn add(&mut self, path: &str, d: Dec) {
-        println!("add {d} {path}");
         let mut node = self;
         for c in path.chars() {
             node = node.children.entry(c).or_insert_with(Node::default);
@@ -84,7 +83,7 @@ impl Node {
                         && self
                             .children
                             .iter()
-                            .find_map(|(c, n)| if *c == '*' { Some(Inc) } else { None })
+                            .find_map(|(c, _)| if *c == '*' { Some(Inc) } else { None })
                             .is_none()
                     {
                         Some(Inc)
@@ -112,21 +111,22 @@ impl Node {
         if let Some(star_node) = self.children.get(&'*') {
             return match star_node.decision {
                 None => {
-                    // not a leaf node;; step through the wildcards children
+                    // not a leaf node;; step through children of wildcard
                     if let Some(r) = star_node.find(path, idx, true) {
                         Some(r)
                     } else {
                         self.find(path, idx + 1, wc)
                     }
                 }
+                // leaf node;; use leaf decision
                 leaf_decision => leaf_decision,
             };
         }
 
-        if !wc {
-            self.decision
-        } else {
+        if wc {
             None
+        } else {
+            self.decision
         }
     }
 }
@@ -170,7 +170,7 @@ impl<'a> MetaDecider {
     }
 }
 
-#[derive(Default)]
+#[derive(Debug, Default)]
 struct Decider(Db);
 impl<'a> Decider {
     fn make((k, d): (&str, Dec)) -> Decider {
@@ -189,28 +189,35 @@ impl<'a> Decider {
     }
 }
 
+fn ignored_line(l: &str) -> bool {
+    l.trim_start().starts_with('#') || l.trim().is_empty()
+}
+
 fn parse(lines: &[&str]) -> Result<Decider, Error> {
     let mut decider = Decider::default();
 
     let mut prev_i = None;
     let mut stack = vec![];
-    for line in lines {
-        println!("={line}");
+    for line in lines.iter().filter(|x| !ignored_line(x)) {
         match (prev_i, parse_entry(line)) {
             (None, Ok((i, (k, d)))) if i == 0 => {
+                if !k.starts_with('/') {
+                    return Err(NonAbsRootElement);
+                }
                 let p = PathBuf::from(k);
                 stack.push(p);
                 prev_i = Some(i);
                 decider.add(k.into(), d);
             }
+            (None, Ok((_, (_, _)))) => return Err(TooManyStartIndents),
             (Some(_), Ok((i, (k, d)))) if i == 0 => {
+                if !k.starts_with('/') {
+                    return Err(NonAbsRootElement);
+                }
                 let p = PathBuf::from(k);
                 stack.push(p.clone());
                 prev_i = Some(0);
                 decider.add(&p.display().to_string(), d);
-            }
-            (None, Ok((_, (_, _)))) => {
-                panic!("bad format too many start indent")
             }
             (Some(pi), Ok((i, (k, d)))) if i > pi => {
                 let last = stack.last().unwrap();
@@ -220,20 +227,21 @@ fn parse(lines: &[&str]) -> Result<Decider, Error> {
                 decider.add(&p.display().to_string(), d);
             }
             (Some(pi), Ok((i, (k, d)))) if i < pi => {
-                let p = PathBuf::from(k);
+                stack.truncate(i);
+                let last = stack.last().unwrap();
+                let p = last.join(k);
                 stack.push(p.clone());
                 prev_i = Some(i);
                 decider.add(&p.display().to_string(), d);
             }
-            (Some(_), Ok((_, (k, d)))) => {
-                let p = PathBuf::from(k);
-                stack.pop();
+            (Some(_), Ok((i, (k, d)))) => {
+                stack.truncate(i);
                 let last = stack.last().unwrap();
                 let p = last.join(k);
                 stack.push(p.clone());
                 decider.add(&p.display().to_string(), d);
             }
-            (_, Err(e)) => eprintln!("failed to parse: {e}"),
+            (_, Err(_)) => return Err(MalformedDec(line.to_string())),
         }
     }
 
@@ -250,8 +258,14 @@ fn parse_meta(lines: &[&str]) -> Result<MetaDecider, Error> {
 
 #[derive(Error, Debug)]
 pub enum Error {
-    #[error("Malformed Dec decl")]
-    MalformedDec,
+    #[error("Malformed: {0}")]
+    MalformedDec(String),
+
+    #[error("Malformed: root element is not absolute")]
+    NonAbsRootElement,
+
+    #[error("Malformed: too many starting indents")]
+    TooManyStartIndents,
 }
 
 fn parse_dec(i: &str) -> IResult<&str, Dec> {
@@ -264,7 +278,7 @@ fn parse_entry(i: &str) -> Result<(usize, (&str, Dec)), Error> {
         separated_pair(parse_dec, space1, rest),
     )))(i)
     .map(|(_, (indent, (d, p)))| (indent, (p, d)))
-    .map_err(|_| Error::MalformedDec)
+    .map_err(|_| Error::MalformedDec(i.to_string()))
 }
 
 #[cfg(test)]
@@ -274,13 +288,20 @@ mod tests {
 
     use crate::filter::Dec::*;
     use crate::filter::Meta::*;
-    use crate::filter::{parse, parse_entry, Decider, Error, MetaDecider};
+    use crate::filter::{parse, Decider, Error, MetaDecider};
 
     #[test]
-    fn test_parser() -> Result<(), Error> {
-        let (i, (k, d)) = parse_entry("          + foo")?;
-        println!("{i} -> {d} {k}");
-        Ok(())
+    fn test_too_many_indents() {
+        assert_matches!(parse(&[" + foo"]), Err(Error::TooManyStartIndents));
+    }
+
+    #[test]
+    fn test_i0_starts_with_slash() {
+        assert_matches!(parse(&["+ x"]), Err(Error::NonAbsRootElement));
+        assert_matches!(
+            parse(&["+ /", " - foo", "+ bar"]),
+            Err(Error::NonAbsRootElement)
+        );
     }
 
     #[test]
@@ -369,6 +390,24 @@ mod tests {
         assert!(!d.check("/"));
         assert!(d.check("/foo"));
         Ok(())
+    }
+
+    #[test]
+    fn test_parse_unnest() {
+        let al = r#"
+        |+ /
+        | - usr/foo
+        |   + *.py
+        | - usr/bar
+        |   + *.py
+        | "#
+        .trim_to('|');
+
+        let d = parse(&al.split("\n").collect::<Vec<&str>>()).unwrap();
+        assert!(!d.check("/usr/foo/x"));
+        assert!(d.check("/usr/foo/x.py"));
+        assert!(!d.check("/usr/bar/x"));
+        assert!(d.check("/usr/foo/x.py"));
     }
 
     #[test]
@@ -494,62 +533,89 @@ mod tests {
 
         let d = parse(&al.split("\n").collect::<Vec<&str>>()).unwrap();
         assert!(!d.check("/usr/share/abc"));
-        // assert!(!d.check("/usr/share/abc.py"));
+        assert!(!d.check("/usr/share/abc.pl"));
+        assert!(d.check("/usr/share/abc.py"));
+    }
+
+    #[test]
+    fn test_default_filter_file_for_fedora() {
+        let al = r#"
+        |+ /
+        | - usr/include/
+        | - usr/share/
+        |  # Python byte code
+        |  + *.py?
+        |  # Python text files
+        |  + *.py
+        |  # Some apps have a private libexec
+        |  + */libexec/*
+        |  # Ruby
+        |  + *.rb
+        |  # Perl
+        |  + *.pl
+        |  # System tap
+        |  + *.stp
+        |  # Javascript
+        |  + *.js
+        |  # Java archive
+        |  + *.jar
+        |  # M4
+        |  + *.m4
+        |  # PHP
+        |  + *.php
+        |  # Perl Modules
+        |  + *.pm
+        |  # Lua
+        |  + *.lua
+        |  # Java
+        |  + *.class
+        |  # Typescript
+        |  + *.ts
+        |  # Typescript JSX
+        |  + *.tsx
+        |  # Lisp
+        |  + *.el
+        |  # Compiled Lisp
+        |  + *.elc
+        | - usr/src/kernel*/
+        |  + */scripts/*
+        |  + */tools/objtool/*
+
+        |"#
+        .trim_to('|');
+
+        let d = parse(&al.split("\n").collect::<Vec<&str>>()).unwrap();
+        assert!(d.check("/bin/foo"));
+        assert!(!d.check("/usr/share/x.txt"));
+        assert!(!d.check("/usr/include/x.h"));
+        assert!(d.check("/usr/share/python/my.py"));
+        assert!(d.check("/usr/share/python/my.pyc"));
+        assert!(!d.check("/usr/share/python/my.foo"));
+        assert!(d.check("/usr/share/myapp/libexec/anything"));
+        assert!(!d.check("/usr/share/myapp2/not-libexec/anything"));
+        assert!(!d.check("/usr/src/kernel/foo"));
+        assert!(!d.check("/usr/src/kernel-6.5/foo"));
+        assert!(d.check("/usr/src/kernels/5.13.16/scripts/foo"));
+        assert!(d.check("/usr/src/kernels/5.13.16/tools/objtool/foo"));
+    }
+
+    #[test]
+    fn test_from_nested_back_to_0() {
+        let al = r#"
+        |+ /
+        | - usr/share/
+        |  + abc/def/
+        |   + *.py
+        |- /tmp/x
+        |- /tmp/y
+        |- /z"#
+            .trim_to('|');
+
+        let d = parse(&al.split("\n").collect::<Vec<&str>>()).unwrap();
+        assert!(!d.check("/usr/share/xyz"));
+        assert!(d.check("/usr/share/abc/def/foo.py"));
+        assert!(!d.check("/tmp/x"));
+        assert!(!d.check("/tmp/y"));
+        assert!(!d.check("/z"));
     }
 }
-
-// .nf
-// .B # keeps everything except usr/share except python and perl files
-// .B # /usr/bin/ls - result is '+'
-// .B # /usr/share/something - result is '-'
-// .B # /usr/share/abcd.py - result is '+'
-// .B + /
-// .B \ - usr/share/
-// .B \ \ + *.py
-// .B \ \ + *.pl
-// .fi
-//
-//----------
-//
-// # default filter file for fedora
-//
-// + /
-//  - usr/include/
-//  - usr/share/
-//   # Python byte code
-//   + *.py?
-//   # Python text files
-//   + *.py
-//   # Some apps have a private libexec
-//   + */libexec/*
-//   # Ruby
-//   + *.rb
-//   # Perl
-//   + *.pl
-//   # System tap
-//   + *.stp
-//   # Javascript
-//   + *.js
-//   # Java archive
-//   + *.jar
-//   # M4
-//   + *.m4
-//   # PHP
-//   + *.php
-//   # Perl Modules
-//   + *.pm
-//   # Lua
-//   + *.lua
-//   # Java
-//   + *.class
-//   # Typescript
-//   + *.ts
-//   # Typescript JSX
-//   + *.tsx
-//   # Lisp
-//   + *.el
-//   # Compiled Lisp
-//   + *.elc
-//  - usr/src/kernel*/
-//   + */scripts/*
-//   + */tools/objtool/*
