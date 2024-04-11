@@ -8,7 +8,6 @@
 
 use std::collections::HashMap;
 use std::default::Default;
-use std::fmt::{Display, Formatter};
 use std::path::PathBuf;
 
 use nom::branch::alt;
@@ -33,6 +32,8 @@ pub enum Error {
     TooManyStartIndents,
 }
 
+type LineNum = usize;
+
 #[derive(Copy, Clone, Debug, Default, Eq, PartialEq)]
 enum Dec {
     #[default]
@@ -49,26 +50,6 @@ impl Dec {
         }
     }
 }
-
-impl Display for Dec {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Exc(_) | Default => f.write_str("-"),
-            Inc(_) => f.write_str("+"),
-        }
-    }
-}
-
-impl From<Dec> for bool {
-    fn from(value: Dec) -> Self {
-        match value {
-            Exc(_) | Default => false,
-            Inc(_) => true,
-        }
-    }
-}
-
-type Db = Node;
 
 #[derive(Debug, Default)]
 struct Node {
@@ -134,10 +115,8 @@ impl Node {
     }
 }
 
-type LineNum = usize;
-
 #[derive(Debug, Default)]
-struct Decider(Db);
+struct Decider(Node);
 impl<'a> Decider {
     fn check(&self, p: &str) -> bool {
         matches!(self.0.check(p), Inc(_))
@@ -179,6 +158,7 @@ fn parse(lines: &[&str]) -> Result<Decider, Error> {
                 if !k.starts_with('/') {
                     return Err(NonAbsRootElement);
                 }
+                stack.clear();
                 let p = PathBuf::from(k);
                 stack.push(p.clone());
                 prev_i = Some(0);
@@ -537,12 +517,16 @@ mod tests {
         let al = r#"
         |- /usr/bin/some_binary1
         |- /usr/bin/some_binary2
-        |+ /"#
+        |+ /
+        | - foo
+        | - bar/baz"#
             .trim_to('|');
 
         let d = parse(&al.split("\n").collect::<Vec<&str>>()).unwrap();
         assert_matches!(d.dec("/"), Inc(3));
         assert_matches!(d.dec("/usr/bin/some_binary1"), Exc(1));
         assert_matches!(d.dec("/usr/bin/some_binary2"), Exc(2));
+        assert_matches!(d.dec("/foo"), Exc(4));
+        assert_matches!(d.dec("/bar/baz"), Exc(5));
     }
 }
