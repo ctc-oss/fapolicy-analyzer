@@ -121,7 +121,7 @@ impl Node {
 
 #[derive(Debug, Default)]
 struct Decider(Node);
-impl<'a> Decider {
+impl Decider {
     fn check(&self, p: &str) -> bool {
         matches!(self.0.check(p), Inc(_))
     }
