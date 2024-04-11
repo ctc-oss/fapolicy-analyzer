@@ -32,15 +32,12 @@ pub enum Error {
     TooManyStartIndents,
 }
 
-/// Internal API
 #[derive(Copy, Clone, Debug, Default, Eq, PartialEq)]
-pub(crate) enum Dec {
+enum Dec {
     #[default]
     Exc,
     Inc,
 }
-
-impl Dec {}
 
 impl Display for Dec {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -51,7 +48,6 @@ impl Display for Dec {
     }
 }
 
-/// Internal API
 impl From<Dec> for bool {
     fn from(value: Dec) -> Self {
         match value {
@@ -61,11 +57,9 @@ impl From<Dec> for bool {
     }
 }
 
-/// Internal API
 type Db = Node;
 type MetaDb = HashMap<String, Metadata>;
 
-/// Internal API
 #[derive(Debug, Default)]
 struct Node {
     children: HashMap<char, Node>,
@@ -107,11 +101,14 @@ impl Node {
 
         let c = path.chars().nth(idx).unwrap();
 
+        // try to find a node matching the next char
         if let Some(node) = self.children.get(&c) {
             if let Some(d) = node.find(path, idx + 1, false) {
                 return Some(d);
             }
-        } else if let Some(wc) = self.children.get(&'?') {
+        }
+        // next try to find a wildcard char
+        else if let Some(wc) = self.children.get(&'?') {
             if let Some(d) = wc.find(path, idx + 1, true) {
                 return Some(d);
             }
@@ -129,7 +126,7 @@ impl Node {
                         self.find(path, idx + 1, wc)
                     }
                 }
-                // leaf node;; use leaf decision
+                // leaf nodes propagate their decision
                 leaf_decision => leaf_decision,
             };
         }
@@ -144,8 +141,6 @@ impl Node {
 
 type LineNum = usize;
 
-// This could expand to more properties
-// For now it will stay simple.
 #[derive(Default)]
 struct Metadata(LineNum);
 
@@ -289,7 +284,7 @@ mod tests {
 
     use crate::filter::Dec::*;
     use crate::filter::Meta::*;
-    use crate::filter::{parse, Decider, Error, MetaDecider};
+    use crate::filter::{parse, parse_meta, Decider, Error, MetaDecider};
 
     #[test]
     fn test_too_many_indents() {
@@ -371,15 +366,15 @@ mod tests {
         Ok(())
     }
 
-    // #[test]
-    // fn test_multi_meta() -> Result<(), Error> {
-    //     let d = parse_meta(&["+ /", "- /foo"])?;
-    //     assert!(d.check("/"));
-    //     assert!(!d.check("/foo"));
-    //     assert_matches!(d.check_ln("/"), (true, LineNumber(0)));
-    //     assert_matches!(d.check_ln("/foo"), (false, LineNumber(1)));
-    //     Ok(())
-    // }
+    #[test]
+    fn test_multi_meta() -> Result<(), Error> {
+        let d = parse_meta(&["+ /", "- /foo"])?;
+        assert!(d.check("/"));
+        assert!(!d.check("/foo"));
+        assert_matches!(d.check_ln("/"), (true, LineNumber(0)));
+        assert_matches!(d.check_ln("/foo"), (false, LineNumber(1)));
+        Ok(())
+    }
 
     #[test]
     fn test_parse() -> Result<(), Error> {
