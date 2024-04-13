@@ -451,6 +451,7 @@ dependencies = [
 name = "fapolicy-trust"
 version = "0.5.0"
 dependencies = [
+ "assert_matches",
  "fapolicy-util",
  "lmdb",
  "log",
