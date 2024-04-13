@@ -39,12 +39,12 @@ type LineNum = usize;
 /// included or excluded from the trust database
 #[derive(Copy, Clone, Debug, Default, Eq, PartialEq)]
 pub enum Dec {
-    /// A decision that was made due to lack of explicit config
+    /// The default decision made due to lack of explicit config
     #[default]
     Default,
-    /// Explicityly exclude, contains the source line number
+    /// Exclude, contains the source line number
     Exc(LineNum),
-    /// Explicityly include, contains the source line number
+    /// Include, contains the source line number
     Inc(LineNum),
 }
 
@@ -58,6 +58,24 @@ impl Dec {
 
     fn is_explicit(&self) -> bool {
         matches!(self, Inc(_) | Exc(_))
+    }
+}
+
+/// Makes filter policy decisions against a path
+/// Built from a parse of a filter conf
+#[derive(Debug, Default)]
+pub struct Decider(Node);
+impl Decider {
+    pub fn check(&self, p: &str) -> bool {
+        matches!(self.0.check(p), Inc(_))
+    }
+
+    pub fn dec(&self, p: &str) -> Dec {
+        self.0.check(p)
+    }
+
+    pub fn add<P: AsRef<Path>>(&mut self, k: P, d: Dec) {
+        self.0.add(k, d);
     }
 }
 
@@ -92,28 +110,27 @@ impl Node {
             .unwrap_or(Default)
     }
 
+    // recurse the trie with wildcard support
     fn find(&self, path: &str, idx: usize, wild: Option<Wild>) -> Option<Dec> {
         if idx == path.len() {
             return self.decision;
         }
-
         let c = path.chars().nth(idx).unwrap();
 
-        // try to find a node matching the next char
+        // try to find a node matching the char
         if let Some(node) = self.children.get(&c) {
             if let Some(d) = node.find(path, idx + 1, None) {
                 return Some(d);
             }
         }
-        // next try to find a single wildcard char
+        // if no match check for a single wildcard char
         else if let Some(wc) = self.children.get(&'?') {
             if let Some(d) = wc.find(path, idx + 1, Some(Wild::Single)) {
                 return Some(d);
             }
         }
-
-        // check for glob leaves, they provide a decision; a glob node needs traversed
-        if let Some(star_node) = self.children.get(&'*') {
+        // or a glob: leaves provide the decision, a node needs traversed
+        else if let Some(star_node) = self.children.get(&'*') {
             return match star_node.decision {
                 None => star_node
                     .find(path, idx, Some(Wild::Glob))
@@ -122,6 +139,7 @@ impl Node {
             };
         }
 
+        // a match while wild defers decision to the parent
         match wild {
             Some(_) => None,
             None => self.decision,
@@ -129,29 +147,11 @@ impl Node {
     }
 }
 
-/// Makes filter policy decisions against a path
-/// Built from a parse of a filter conf
-#[derive(Debug, Default)]
-pub struct Decider(Node);
-impl Decider {
-    pub fn check(&self, p: &str) -> bool {
-        matches!(self.0.check(p), Inc(_))
-    }
-
-    pub fn dec(&self, p: &str) -> Dec {
-        self.0.check(p)
-    }
-
-    pub fn add<P: AsRef<Path>>(&mut self, k: P, d: Dec) {
-        self.0.add(k, d);
-    }
-}
-
 fn ignored_line(l: &str) -> bool {
     l.trim_start().starts_with('#') || l.trim().is_empty()
 }
 
-/// Parse a filter config from the passed lines
+/// Parse a filter config from the conf lines
 pub fn parse(lines: &[&str]) -> Result<Decider, Error> {
     use Error::*;
 
