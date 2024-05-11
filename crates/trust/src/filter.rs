@@ -163,11 +163,10 @@ pub fn parse(lines: &[&str]) -> Result<Decider, Error> {
     // process lines from the config, ignoring comments and empty lines
     for (ln, line) in lines.iter().enumerate().filter(|(_, x)| !ignored_line(x)) {
         match (prev_i, parse_entry(line)) {
-            // at the root level anywhere in the conf
+            // ensure root level starts with /
+            (_, Ok((0, (k, _)))) if !k.starts_with('/') => return Err(NonAbsRootElement),
+            // at the root level, anywhere in the conf
             (prev, Ok((0, (k, d)))) => {
-                if !k.starts_with('/') {
-                    return Err(NonAbsRootElement);
-                }
                 if prev.is_some() {
                     stack.clear();
                 }
