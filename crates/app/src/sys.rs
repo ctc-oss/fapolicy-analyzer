@@ -15,7 +15,7 @@ use thiserror::Error;
 
 use fapolicy_daemon::fapolicyd::{
     CONFIG_FILE_PATH, RPM_DB_PATH, RULES_FILE_PATH, TRUST_DIR_PATH, TRUST_FILE_PATH,
-    TRUST_LMDB_PATH,
+    TRUST_FILTER_FILE_PATH, TRUST_LMDB_PATH,
 };
 
 use crate::app::State;
@@ -94,6 +94,10 @@ pub struct Config {
     // fapolicyd.conf path
     #[serde(default = "daemon_conf_path")]
     pub config_file_path: String,
+
+    // fapolicyd.conf path
+    #[serde(default = "daemon_conf_path")]
+    pub trust_filter_file_path: String,
 }
 
 impl Default for Config {
@@ -106,6 +110,7 @@ impl Default for Config {
             trust_file_path: TRUST_FILE_PATH.to_string(),
             syslog_file_path: RHEL_SYSLOG_LOG_FILE_PATH.to_string(),
             config_file_path: CONFIG_FILE_PATH.to_string(),
+            trust_filter_file_path: TRUST_FILTER_FILE_PATH.to_string(),
         }
     }
 }

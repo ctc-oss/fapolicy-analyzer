@@ -24,6 +24,7 @@ from fapolicy_analyzer.ui.actions import (
     apply_changesets,
     modify_config_text,
     request_config_text,
+    request_trust_filter_text,
 )
 from fapolicy_analyzer.ui.changeset_wrapper import Changeset, ConfigChangeset
 from fapolicy_analyzer.ui.config.trust_filter_text_view import TrustFilterTextView
@@ -100,7 +101,7 @@ class TrustFilterAdminPage(UIConnectedWidget):
 
     def __load_config(self):
         self.__loading_text = True
-        dispatch(request_config_text())
+        dispatch(request_trust_filter_text())
 
     def on_save_clicked(self, *args):
         changeset, valid = self.__build_and_validate_changeset(show_notifications=False)
@@ -169,7 +170,7 @@ class TrustFilterAdminPage(UIConnectedWidget):
 
     def on_next_system(self, system: Any):
         changesetState = system.get("changesets")
-        text_state = system.get("config_text")
+        text_state = system.get("trust_filter_text")
         system_state = system.get("system")
 
         if self.__saving and changesetState.error:

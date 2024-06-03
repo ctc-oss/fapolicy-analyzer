@@ -187,6 +187,12 @@ impl PySystem {
         daemon::conf_to_text(&self.rs.daemon_config)
     }
 
+    fn trust_filter_text(&self) -> String {
+        log::debug!("trust_filter_text");
+        // filter_config_to_text(&self.rs.trust_filter_config)
+        "...".to_string()
+    }
+
     fn config_info(&self) -> Vec<PyConfigInfo> {
         log::debug!("config_info");
         daemon::conf_info(&self.rs.daemon_config)

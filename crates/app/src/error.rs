@@ -26,4 +26,6 @@ pub enum Error {
     ConfigError(#[from] ConfyError),
     #[error("fapolicyd config error: {0}")]
     DaemonConfigError(#[from] fapolicy_daemon::conf::error::Error),
+    #[error("trust filter error: {0}")]
+    TrustFilterError(#[from] fapolicy_trust::filter::error::Error),
 }

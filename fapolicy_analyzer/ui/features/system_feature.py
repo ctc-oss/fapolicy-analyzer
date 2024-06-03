@@ -80,7 +80,10 @@ from fapolicy_analyzer.ui.actions import (
     system_initialization_error,
     system_received,
     system_trust_load_complete,
-    system_trust_load_started, error_trust_filter_text, REQUEST_TRUST_FILTER_TEXT, received_trust_filter_text,
+    system_trust_load_started,
+    error_trust_filter_text,
+    REQUEST_TRUST_FILTER_TEXT,
+    received_trust_filter_text,
 )
 from fapolicy_analyzer.ui.reducers import system_reducer
 from fapolicy_analyzer.ui.strings import SYSTEM_INITIALIZATION_ERROR

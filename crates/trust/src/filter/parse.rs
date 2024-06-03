@@ -18,7 +18,7 @@ use nom::sequence::{separated_pair, tuple};
 use nom::IResult;
 use thiserror::Error;
 
-use crate::filter::Dec::*;
+use crate::filter::parse::Dec::*;
 
 /// Errors that can occur in this module
 #[derive(Error, Debug)]
@@ -224,8 +224,8 @@ mod tests {
     use fapolicy_util::trimto::TrimTo;
     use std::default::Default;
 
-    use crate::filter::Dec::*;
-    use crate::filter::{parse, Decider, Error};
+    use crate::filter::parse::Dec::*;
+    use crate::filter::parse::{parse, Decider, Error};
 
     // the first few tests are modeled after example config from the fapolicyd documentation
 
