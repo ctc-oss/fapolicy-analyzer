@@ -248,3 +248,7 @@ CONFIG_TEXT_LOAD_ERROR = _("Error loading Config text")
 CONFIG_CHANGESET_PARSE_ERROR = _(
     "Error parsing the config text. See log for more details."
 )
+TRUST_FILTER_TEXT_LOAD_ERROR = _("Error loading Package Filter text")
+TRUST_FILTER_CHANGESET_PARSE_ERROR = _(
+    "Error parsing the package filter text. See log for more details."
+)

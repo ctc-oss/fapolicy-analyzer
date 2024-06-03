@@ -1,4 +1,4 @@
-# Copyright Concurrent Technologies Corporation 2023
+# Copyright Concurrent Technologies Corporation 2024
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+
 import gi
 import logging
 
@@ -21,17 +22,17 @@ from fapolicy_analyzer.ui.actions import (
     NotificationType,
     add_notification,
     apply_changesets,
-    modify_trust_filter_text,
-    request_trust_filter_text,
+    modify_config_text,
+    request_config_text,
 )
 from fapolicy_analyzer.ui.changeset_wrapper import Changeset, ConfigChangeset
-from fapolicy_analyzer.ui.config.config_text_view import ConfigTextView
-from fapolicy_analyzer.ui.config.config_status_info import ConfigStatusInfo
+from fapolicy_analyzer.ui.config.trust_filter_text_view import TrustFilterTextView
+from fapolicy_analyzer.ui.config.trust_filter_status_info import TrustFilterStatusInfo
 from fapolicy_analyzer.ui.rules.rules_admin_page import VALIDATION_NOTE_CATEGORY
 from fapolicy_analyzer.ui.strings import (
     APPLY_CHANGESETS_ERROR_MESSAGE,
-    CONFIG_CHANGESET_PARSE_ERROR,
-    CONFIG_TEXT_LOAD_ERROR,
+    TRUST_FILTER_CHANGESET_PARSE_ERROR,
+    TRUST_FILTER_TEXT_LOAD_ERROR,
     RULES_OVERRIDE_MESSAGE,
 )
 from fapolicy_analyzer.ui.ui_page import UIPage, UIAction
@@ -47,24 +48,24 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
 
 
-class ConfigAdminPage(UIConnectedWidget):
+class TrustFilterAdminPage(UIConnectedWidget):
     def __init__(self):
         features = [
             {get_system_feature(): {"on_next": self.on_next_system}},
         ]
         UIConnectedWidget.__init__(self, features=features)
         actions = {
-            "config": [
+            "trust filter": [
                 UIAction(
                     name="Validate",
-                    tooltip="Validate Config",
+                    tooltip="Validate Filter",
                     icon="emblem-default",
                     signals={"clicked": self.on_validate_clicked},
                     sensitivity_func=self.__config_unvalidated,
                 ),
                 UIAction(
                     name="Save",
-                    tooltip="Save Config",
+                    tooltip="Save Filter",
                     icon="document-save",
                     signals={"clicked": self.on_save_clicked},
                     sensitivity_func=self.__config_dirty,
@@ -86,20 +87,20 @@ class ConfigAdminPage(UIConnectedWidget):
         self._first_pass = True
 
     def __init_child_widgets(self):
-        self._text_view: ConfigTextView = ConfigTextView()
-        self.get_object("configContentArea").pack_start(
+        self._text_view: TrustFilterTextView = TrustFilterTextView()
+        self.get_object("trustFilterContentArea").pack_start(
             self._text_view.get_ref(), True, True, 0
         )
-        self._text_view.config_changed += self.on_text_view_config_changed
+        self._text_view.filter_changed += self.on_text_view_filter_changed
 
-        self.__status_info = ConfigStatusInfo()
-        self.get_object("configStatusFrame").add(self.__status_info.get_ref())
+        self.__status_info = TrustFilterStatusInfo()
+        self.get_object("trustFilterStatusFrame").add(self.__status_info.get_ref())
 
         self.__load_config()
 
     def __load_config(self):
         self.__loading_text = True
-        dispatch(request_trust_filter_text())
+        dispatch(request_config_text())
 
     def on_save_clicked(self, *args):
         changeset, valid = self.__build_and_validate_changeset(show_notifications=False)
@@ -123,7 +124,7 @@ class ConfigAdminPage(UIConnectedWidget):
         changeset, _ = self.__build_and_validate_changeset(show_notifications=False)
         self.__status_info.render_config_status(changeset.info())
         # dispatch to force toolbar refresh
-        dispatch(modify_trust_filter_text(self.__config_validated))
+        dispatch(modify_config_text(self.__config_validated))
 
     def __config_dirty(self) -> bool:
         return (
@@ -146,7 +147,7 @@ class ConfigAdminPage(UIConnectedWidget):
             if show_notifications and not valid:
                 dispatch(
                     add_notification(
-                        CONFIG_CHANGESET_PARSE_ERROR,
+                        TRUST_FILTER_CHANGESET_PARSE_ERROR,
                         NotificationType.ERROR,
                         category=VALIDATION_NOTE_CATEGORY,
                     )
@@ -155,7 +156,7 @@ class ConfigAdminPage(UIConnectedWidget):
             logging.error("Error setting changeset config: %s", e)
             dispatch(
                 add_notification(
-                    CONFIG_CHANGESET_PARSE_ERROR,
+                    TRUST_FILTER_CHANGESET_PARSE_ERROR,
                     NotificationType.ERROR,
                 )
             )
@@ -188,8 +189,10 @@ class ConfigAdminPage(UIConnectedWidget):
         if not text_state.loading and self.__error_text != text_state.error:
             self.__error_text = text_state.error
             self.__loading_text = False
-            logging.error("%s: %s", CONFIG_TEXT_LOAD_ERROR, self.__error_text)
-            dispatch(add_notification(CONFIG_TEXT_LOAD_ERROR, NotificationType.ERROR))
+            logging.error("%s: %s", TRUST_FILTER_TEXT_LOAD_ERROR, self.__error_text)
+            dispatch(
+                add_notification(TRUST_FILTER_TEXT_LOAD_ERROR, NotificationType.ERROR)
+            )
         elif (
                 self.__loading_text
                 and not text_state.loading
@@ -201,11 +204,11 @@ class ConfigAdminPage(UIConnectedWidget):
             self.__config_validated = True
             self.__status_info.render_config_status(system_state.system.config_info())
 
-    def on_text_view_config_changed(self, config: str):
+    def on_text_view_filter_changed(self, config: str):
         self.__modified_config_text = config
         self.__config_validated = False
         # print(self._unsaved_changes, self._first_pass)
         self._unsaved_changes = True if not self._first_pass else False
         if self._first_pass:
             self._first_pass = False
-        dispatch(modify_trust_filter_text(config))
+        dispatch(modify_config_text(config))

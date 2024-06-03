@@ -1,4 +1,4 @@
-# Copyright Concurrent Technologies Corporation 2023
+# Copyright Concurrent Technologies Corporation 2024
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -12,23 +12,20 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from typing import Optional
+
+from fapolicy_analyzer.ui.editable_text_view import EditableTextView
 
 
-from enum import Enum
+class TrustFilterTextView(EditableTextView):
+    def __init__(self):
+        self.__events__ = ["filter_changed"]
+        super().__init__()
 
+        self._buffer.connect("changed", self.on_filter_changed)
 
-class PAGE_SELECTION(Enum):
-    TRUST_DATABASE_ADMIN = "trust"
-    RULES_ADMIN = "rules"
-    ANALYZE_AUDIT = "audit"
-    ANALYZE_FROM_DEBUG = "debug log"
-    ANALYZE_SYSLOG = "syslog"
-    PROFILER = "profiler"
-    CONFIG = "config"
-    TRUST_FILTER = "trust filter"
+    def on_filter_changed(self, buffer):
+        self.filter_changed(self._get_text())
 
-
-class LogType(Enum):
-    audit = "audit"
-    debug = "debug"
-    syslog = "syslog"
+    def _get_view_lang_id(self) -> Optional[str]:
+        return None  # "fapolicyd-trustfilter"

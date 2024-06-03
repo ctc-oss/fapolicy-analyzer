@@ -80,7 +80,7 @@ from fapolicy_analyzer.ui.actions import (
     system_initialization_error,
     system_received,
     system_trust_load_complete,
-    system_trust_load_started,
+    system_trust_load_started, error_trust_filter_text, REQUEST_TRUST_FILTER_TEXT, received_trust_filter_text,
 )
 from fapolicy_analyzer.ui.reducers import system_reducer
 from fapolicy_analyzer.ui.strings import SYSTEM_INITIALIZATION_ERROR
@@ -90,14 +90,13 @@ from fapolicy_analyzer.util.fapd_dbase import fapd_dbase_snapshot
 gi.require_version("Gtk", "3.0")
 from gi.repository import GLib  # isort: skip
 
-
 SYSTEM_FEATURE = "system"
 _system: System
 _checkpoint: System
 
 
 def create_system_feature(
-    dispatch: Callable, system: System = None
+        dispatch: Callable, system: System = None
 ) -> ReduxFeatureModule:
     """
     Creates a Redux feature of type System
@@ -175,11 +174,11 @@ def create_system_feature(
         return add_changesets(changesets)
 
     def _check_disk_trust_update(
-        updates: Sequence[Trust],
-        count: int,
-        action_fn: Callable[[Trust, int, float], Action],
-        event: Event,
-        timestamp: float,
+            updates: Sequence[Trust],
+            count: int,
+            action_fn: Callable[[Trust, int, float], Action],
+            event: Event,
+            timestamp: float,
     ):
         if event.is_set():
             return
@@ -190,10 +189,10 @@ def create_system_feature(
         _idle_dispatch(action_fn(updates, count, timestamp))
 
     def _check_disk_trust_complete(
-        action_fn: Callable[[float], Action],
-        flag_fn: Callable[[], None],
-        event: Event,
-        timestamp: float,
+            action_fn: Callable[[float], Action],
+            flag_fn: Callable[[], None],
+            event: Event,
+            timestamp: float,
     ):
         if not event.is_set():
             _idle_dispatch(action_fn(timestamp))
@@ -309,6 +308,10 @@ def create_system_feature(
         text = _system.config_text()
         return received_config_text(text)
 
+    def _get_trust_filter_text(_: Action) -> Action:
+        text = _system.trust_filter_text()
+        return received_trust_filter_text(text)
+
     init_epic = pipe(
         of_init_feature(SYSTEM_FEATURE),
         map(lambda _: _init_system()),
@@ -386,12 +389,19 @@ def create_system_feature(
         catch(lambda ex, source: of(error_config_text(str(ex)))),
     )
 
+    request_trust_filter_text_epic = pipe(
+        of_type(REQUEST_TRUST_FILTER_TEXT),
+        map(_get_trust_filter_text),
+        catch(lambda ex, source: of(error_trust_filter_text(str(ex)))),
+    )
+
     system_epic = combine_epics(
         init_epic,
         apply_changesets_epic,
         deploy_system_epic,
         request_ancillary_trust_epic,
         request_config_text_epic,
+        request_trust_filter_text_epic,
         request_events_epic,
         request_groups_epic,
         request_rules_epic,

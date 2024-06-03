@@ -107,7 +107,13 @@ impl PySystem {
 
     /// Apply the changeset to the state of this System, produces a new System
     fn apply_config_changes(&self, change: daemon::PyChangeset) -> PySystem {
-        log::debug!("apply_rule_changes");
+        log::debug!("apply_config_changes");
+        self.rs.apply_config_changes(change.into()).into()
+    }
+
+    /// Apply the changeset to the state of this System, produces a new System
+    fn apply_trust_filter_changes(&self, change: daemon::PyChangeset) -> PySystem {
+        log::debug!("apply_trust_filter_changes");
         self.rs.apply_config_changes(change.into()).into()
     }
 

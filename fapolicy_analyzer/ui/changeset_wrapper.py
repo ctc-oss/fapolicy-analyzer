@@ -90,6 +90,35 @@ class ConfigChangeset(Changeset[str]):
         return ccs
 
 
+class TrustFilterChangeset(Changeset[str]):
+    def __init__(self):
+        self.__wrapped = fapolicy_analyzer.TrustFilterChangeset()
+
+    def parse(self, change: str):
+        self.__wrapped.parse(change)
+
+    def is_valid(self) -> bool:
+        return self.__wrapped.is_valid()
+
+    def info(self) -> List[ConfigInfo]:
+        return self.__wrapped.trustfilter_info()
+
+    def apply_to_system(self, system: System) -> System:
+        return system.apply_trust_filter_changes(self.__wrapped)
+
+    def serialize(self) -> Dict[str, str]:
+        return {
+            "type": "trustfilter",
+            "data": self.__wrapped.text(),
+        }
+
+    @staticmethod
+    def deserialize(d: str) -> "TrustFilterChangeset":
+        ccs = TrustFilterChangeset()
+        ccs.parse(d)
+        return ccs
+
+
 class RuleChangeset(Changeset[str]):
     def __init__(self):
         self.__wrapped = fapolicy_analyzer.RuleChangeset()

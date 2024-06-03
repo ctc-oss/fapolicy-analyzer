@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.38.2 -->
+<!--
+  Copyright Concurrent Technologies Corporation 2022
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<interface>
+    <requires lib="gtk+" version="3.22"/>
+    <object class="GtkPaned" id="trustFilterAdminPage">
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="orientation">vertical</property>
+        <child>
+            <object class="GtkFrame">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="hexpand">False</property>
+                <property name="vexpand">False</property>
+                <property name="label_xalign">0</property>
+                <property name="shadow_type">none</property>
+                <child>
+                    <object class="GtkBox" id="trustFilterContentArea">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="hexpand">False</property>
+                        <property name="vexpand">False</property>
+                        <property name="orientation">vertical</property>
+                        <child>
+                            <placeholder/>
+                        </child>
+                    </object>
+                </child>
+                <child type="label_item">
+                    <placeholder/>
+                </child>
+            </object>
+            <packing>
+                <property name="resize">True</property>
+                <property name="shrink">True</property>
+            </packing>
+        </child>
+        <child>
+            <object class="GtkFrame" id="trustFilterStatusFrame">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label_xalign">0</property>
+                <property name="shadow_type">none</property>
+                <child>
+                    <placeholder/>
+                </child>
+                <child type="label_item">
+                    <placeholder/>
+                </child>
+            </object>
+            <packing>
+                <property name="resize">False</property>
+                <property name="shrink">True</property>
+            </packing>
+        </child>
+    </object>
+    <object class="GtkDialog" id="saveOverrideDialog">
+        <property name="can-focus">False</property>
+        <property name="icon-name">dialog-warning</property>
+        <property name="title" translatable="yes">Confirm Config Save</property>
+        <property name="type-hint">dialog</property>
+        <child internal-child="vbox">
+            <object class="GtkBox">
+                <property name="can-focus">False</property>
+                <property name="orientation">vertical</property>
+                <property name="spacing">2</property>
+                <child internal-child="action_area">
+                    <object class="GtkButtonBox">
+                        <property name="can-focus">False</property>
+                        <property name="layout-style">center</property>
+                        <child>
+                            <object class="GtkButton" id="button1">
+                                <property name="label" translatable="yes">Proceed</property>
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="receives-default">True</property>
+                            </object>
+                            <packing>
+                                <property name="expand">True</property>
+                                <property name="fill">True</property>
+                                <property name="position">0</property>
+                            </packing>
+                        </child>
+                        <child>
+                            <object class="GtkButton" id="button2">
+                                <property name="label" translatable="yes">Cancel</property>
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="receives-default">True</property>
+                            </object>
+                            <packing>
+                                <property name="expand">True</property>
+                                <property name="fill">True</property>
+                                <property name="position">1</property>
+                            </packing>
+                        </child>
+                    </object>
+                    <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">0</property>
+                    </packing>
+                </child>
+                <child>
+                    <object class="GtkLabel" id="overrideText">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="margin-bottom">20</property>
+                        <property name="justify">center</property>
+                    </object>
+                    <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                    </packing>
+                </child>
+            </object>
+        </child>
+        <action-widgets>
+            <action-widget response="-5">button1</action-widget>
+            <action-widget response="-6">button2</action-widget>
+        </action-widgets>
+        <child type="titlebar">
+            <placeholder/>
+        </child>
+    </object>
+</interface>
