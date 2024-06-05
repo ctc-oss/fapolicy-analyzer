@@ -22,8 +22,7 @@ from fapolicy_analyzer.ui.actions import (
     NotificationType,
     add_notification,
     apply_changesets,
-    modify_config_text,
-    request_config_text,
+    modify_trust_filter_text,
     request_trust_filter_text,
 )
 from fapolicy_analyzer.ui.changeset_wrapper import Changeset, ConfigChangeset
@@ -125,7 +124,7 @@ class TrustFilterAdminPage(UIConnectedWidget):
         changeset, _ = self.__build_and_validate_changeset(show_notifications=False)
         self.__status_info.render_config_status(changeset.info())
         # dispatch to force toolbar refresh
-        dispatch(modify_config_text(self.__config_validated))
+        dispatch(modify_trust_filter_text(self.__config_validated))
 
     def __config_dirty(self) -> bool:
         return (
@@ -212,4 +211,4 @@ class TrustFilterAdminPage(UIConnectedWidget):
         self._unsaved_changes = True if not self._first_pass else False
         if self._first_pass:
             self._first_pass = False
-        dispatch(modify_config_text(config))
+        dispatch(modify_trust_filter_text(config))

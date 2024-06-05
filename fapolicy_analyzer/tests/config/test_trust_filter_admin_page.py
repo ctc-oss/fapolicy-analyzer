@@ -37,7 +37,6 @@ from fapolicy_analyzer.ui.strings import (
     TRUST_FILTER_CHANGESET_PARSE_ERROR,
 )
 
-
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
 
@@ -107,7 +106,7 @@ def test_handles_config_text_exception(mock_dispatch, mock_system_feature):
         InstanceOf(Action)
         & Attrs(
             type=ADD_NOTIFICATION,
-            payload=Attrs(text=CONFIG_TEXT_LOAD_ERROR),
+            payload=Attrs(text=TRUST_FILTER_TEXT_LOAD_ERROR),
         )
     )
 
@@ -147,7 +146,7 @@ def test_validate_clicked_invalid(widget, mock_dispatch):
         & Attrs(
             type=ADD_NOTIFICATION,
             payload=Attrs(
-                type=NotificationType.ERROR, text=CONFIG_CHANGESET_PARSE_ERROR
+                type=NotificationType.ERROR, text=TRUST_FILTER_CHANGESET_PARSE_ERROR
             ),
         )
     )
