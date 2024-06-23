@@ -55,7 +55,7 @@ Requires:      gtksourceview3
 Requires:      gnome-icon-theme
 
 # runtime required for rendering user guide
-Requires:      webkit2gtk3
+Requires:      webkit2gtk4
 Requires:      mesa-dri-drivers
 
 %global module          fapolicy_analyzer
