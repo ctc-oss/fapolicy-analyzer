@@ -15,7 +15,7 @@ similar = "2.1"
 chrono = "0.4"
 tempfile = "3.3"
 log = "0.4"
-pyo3-log = "0.9"
+pyo3-log = "0.10"
 
 fapolicy-analyzer = { path = "../analyzer" }
 fapolicy-auparse = { path = "../auparse" }
