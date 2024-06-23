@@ -128,15 +128,15 @@ class TrustFilterAdminPage(UIConnectedWidget):
 
     def __config_dirty(self) -> bool:
         return (
-                bool(self.__modified_config_text)
-                and self.__modified_config_text != self.__config_text
+            bool(self.__modified_config_text)
+            and self.__modified_config_text != self.__config_text
         )
 
     def __config_unvalidated(self) -> bool:
         return not self.__config_validated
 
     def __build_and_validate_changeset(
-            self, show_notifications=True
+        self, show_notifications=True
     ) -> Tuple[ConfigChangeset, bool]:
         changeset = ConfigChangeset()
         valid = False
@@ -194,9 +194,9 @@ class TrustFilterAdminPage(UIConnectedWidget):
                 add_notification(TRUST_FILTER_TEXT_LOAD_ERROR, NotificationType.ERROR)
             )
         elif (
-                self.__loading_text
-                and not text_state.loading
-                and self.__config_text != text_state.config_text
+            self.__loading_text
+            and not text_state.loading
+            and self.__config_text != text_state.config_text
         ):
             self.__loading_text = False
             self.__config_text = text_state.config_text

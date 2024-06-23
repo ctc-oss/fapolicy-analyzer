@@ -60,7 +60,7 @@ def handle_system_received(state: SystemState, action: Action) -> SystemState:
 
 
 def handle_error_system_initialization(
-        state: SystemState, action: Action
+    state: SystemState, action: Action
 ) -> SystemState:
     payload = cast(str, action.payload)
     return _create_state(state, error=payload)
