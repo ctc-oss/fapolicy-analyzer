@@ -55,8 +55,12 @@ Requires:      gtksourceview3
 Requires:      gnome-icon-theme
 
 # runtime required for rendering user guide
-Requires:      webkit2gtk4
 Requires:      mesa-dri-drivers
+%if 0%{?fedora} < 40
+Requires:      webkit2gtk3
+%else
+Requires:      webkit2gtk4
+%endif
 
 %global module          fapolicy_analyzer
 # pep440 versions handle dev and rc differently, so we call them out explicitly here
