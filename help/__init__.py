@@ -266,9 +266,9 @@ def build_help(
             # copy media to language directory
             source_media = path.join(source, "C", "media")
             build_media = path.join(build_path, "media")
-            shutil.copytree(source_media, build_media)
+            shutil.copytree(source_media, build_media, dirs_exist_ok=True)
         else:
-            shutil.copytree(source_path, build_path)
+            shutil.copytree(source_path, build_path, dirs_exist_ok=True)
 
 
 def install_help(
@@ -282,7 +282,7 @@ def install_help(
         print(f"\t{lang}")
         lang_source = path.join(source, lang)
         lang_dest = path.join(dest, lang, name)
-        shutil.copytree(lang_source, lang_dest)
+        shutil.copytree(lang_source, lang_dest, dirs_exist_ok=True)
 
 
 def _args():
