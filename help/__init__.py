@@ -19,7 +19,6 @@ import os
 import shutil
 import subprocess
 import urllib.request
-from distutils import dir_util
 from glob import glob
 from os import makedirs, path
 from typing import Optional, Sequence
@@ -125,12 +124,12 @@ def _copy_from_local_clone(local_repo_path: str, filename: str):
 
 
 def _download(
-    files: Sequence[str] = DEFAULT_HELP_FILES,
-    repo: str = DEFAULT_REPO,
-    commit: str = DEFAULT_COMMIT,
-    output_dir: str = DEFAULT_OUTPUT_DIR,
-    media_url: str = DEFAULT_MEDIA_URL,
-    proxy: Optional[str] = None,
+        files: Sequence[str] = DEFAULT_HELP_FILES,
+        repo: str = DEFAULT_REPO,
+        commit: str = DEFAULT_COMMIT,
+        output_dir: str = DEFAULT_OUTPUT_DIR,
+        media_url: str = DEFAULT_MEDIA_URL,
+        proxy: Optional[str] = None,
 ) -> Sequence[str]:
     """
     Will download the latest help markdown files from the online help
@@ -179,11 +178,11 @@ def _download(
 
 
 def update_help(
-    repo: str = DEFAULT_REPO,
-    commit: str = DEFAULT_COMMIT,
-    output_dir: str = DEFAULT_OUTPUT_DIR,
-    files: Sequence[str] = DEFAULT_HELP_FILES,
-    proxy: Optional[str] = None,
+        repo: str = DEFAULT_REPO,
+        commit: str = DEFAULT_COMMIT,
+        output_dir: str = DEFAULT_OUTPUT_DIR,
+        files: Sequence[str] = DEFAULT_HELP_FILES,
+        proxy: Optional[str] = None,
 ):
     def _parse_help():
         c_dir = path.join(output_dir, "C")
@@ -239,8 +238,8 @@ def _get_languages(source: str):
 
 
 def build_help(
-    source: str = DEFAULT_OUTPUT_DIR,
-    build: str = DEFAULT_BUILD_DIR,
+        source: str = DEFAULT_OUTPUT_DIR,
+        build: str = DEFAULT_BUILD_DIR,
 ):
     c_docs = glob(path.join(source, "C", "*.html"))
     name = "fapolicy-analyzer"
@@ -267,14 +266,22 @@ def build_help(
             # copy media to language directory
             source_media = path.join(source, "C", "media")
             build_media = path.join(build_path, "media")
-            dir_util.copy_tree(source_media, build_media)
+            _copy_tree(source_media, build_media)
         else:
-            dir_util.copy_tree(source_path, build_path)
+            _copy_tree(source_path, build_path)
+
+
+def _copy_tree(src, dst):
+    import glob
+    before = set(glob.iglob("*", recursive=True))
+    shutil.copytree(src, dst, dirs_exist_ok=True)
+    after = set(glob.iglob("*", recursive=True))
+    return list(after - before)
 
 
 def install_help(
-    source: str = DEFAULT_BUILD_DIR,
-    dest: str = DEFAULT_INSTALL_DIR,
+        source: str = DEFAULT_BUILD_DIR,
+        dest: str = DEFAULT_INSTALL_DIR,
 ):
     name = "fapolicy-analyzer"
     print(f"Installing langs to {dest}")
@@ -283,7 +290,7 @@ def install_help(
         print(f"\t{lang}")
         lang_source = path.join(source, lang)
         lang_dest = path.join(dest, lang, name)
-        dir_util.copy_tree(lang_source, lang_dest)
+        _copy_tree(lang_source, lang_dest)
 
 
 def _args():
