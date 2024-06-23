@@ -26,15 +26,6 @@
       "chroot": "fedora-38-x86_64",
       "version": "38",
       "prerelease": false
-    },
-    {
-      "platform": "rhel",
-      "dist": "el9",
-      "spec": "scripts/srpm/fapolicy-analyzer.el9.spec",
-      "image": "rockylinux:9",
-      "chroot": "rocky+epel-9-x86_64",
-      "version": "9",
-      "prerelease": false
     }
   ]
 }
