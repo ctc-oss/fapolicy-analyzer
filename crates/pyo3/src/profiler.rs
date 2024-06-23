@@ -494,7 +494,7 @@ fn reload_profiler_rules(system: &PySystem) -> PyResult<()> {
         .map_err(|e| exceptions::PyRuntimeError::new_err(format!("Reload failed: {:?}", e)))
 }
 
-pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
+pub fn init_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyProfiler>()?;
     m.add_class::<ProcHandle>()?;
     m.add_class::<ExecHandle>()?;

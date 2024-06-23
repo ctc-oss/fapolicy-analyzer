@@ -202,7 +202,7 @@ fn signal_rule_reload() -> PyResult<()> {
         .map_err(|e| PyRuntimeError::new_err(format!("failed to signal rules reload: {:?}", e)))
 }
 
-pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
+pub fn init_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyChangeset>()?;
     m.add_class::<PyTrust>()?;
     m.add_class::<PyActual>()?;
