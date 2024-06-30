@@ -166,6 +166,7 @@ ln -sf  %{python3_sitelib}/{Babel*,babel} %{venv_lib}
 # Later the Cargo config will be updated to point to this new registry dir
 # The crates in the vendor tarball are collected from Rawhide.
 CARGO_REG_DIR=%{_builddir}/vendor-rs
+mkdir -p ${CARGO_REG_DIR}
 tar -xzf %{SOURCE2} -C ${CARGO_REG_DIR} --skip-old-files --strip-components=2
 
 %cargo_prep -v ${CARGO_REG_DIR}
