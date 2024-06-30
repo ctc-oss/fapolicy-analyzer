@@ -59,7 +59,7 @@ Requires:      mesa-dri-drivers
 %if 0%{?fedora} < 40
 Requires:      webkit2gtk3
 %else
-Requires:      webkit2gtk4
+Requires:      webkit2gtk4.1
 %endif
 
 %global module          fapolicy_analyzer
