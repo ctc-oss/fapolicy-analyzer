@@ -167,6 +167,7 @@ ln -sf  %{python3_sitelib}/{Babel*,babel} %{venv_lib}
 # The crates in the vendor tarball are collected from Rawhide.
 CARGO_REG_DIR=%{_builddir}/vendor-rs
 mkdir -p ${CARGO_REG_DIR}
+for d in %{cargo_registry}/*; do ln -sf ${d} ${CARGO_REG_DIR} || true; done
 tar -xzf %{SOURCE2} -C ${CARGO_REG_DIR} --skip-old-files --strip-components=2
 
 %cargo_prep -v ${CARGO_REG_DIR}
