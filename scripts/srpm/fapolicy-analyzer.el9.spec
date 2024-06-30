@@ -21,7 +21,7 @@ Source15:      %{pypi_source semantic_version 2.8.2}
 Source16:      %{pypi_source packaging 21.3}
 Source17:      %{pypi_source pyparsing 2.1.0}
 Source18:      %{pypi_source tomli 1.2.3}
-Source19:      %{pypi_source flit_core 3.7.1}
+Source19:      %{pypi_source flit_core 3.9.0}
 Source20:      %{pypi_source typing_extensions 3.7.4.3}
 
 BuildRequires: python3-devel
