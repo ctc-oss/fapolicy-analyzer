@@ -124,12 +124,12 @@ def _copy_from_local_clone(local_repo_path: str, filename: str):
 
 
 def _download(
-        files: Sequence[str] = DEFAULT_HELP_FILES,
-        repo: str = DEFAULT_REPO,
-        commit: str = DEFAULT_COMMIT,
-        output_dir: str = DEFAULT_OUTPUT_DIR,
-        media_url: str = DEFAULT_MEDIA_URL,
-        proxy: Optional[str] = None,
+    files: Sequence[str] = DEFAULT_HELP_FILES,
+    repo: str = DEFAULT_REPO,
+    commit: str = DEFAULT_COMMIT,
+    output_dir: str = DEFAULT_OUTPUT_DIR,
+    media_url: str = DEFAULT_MEDIA_URL,
+    proxy: Optional[str] = None,
 ) -> Sequence[str]:
     """
     Will download the latest help markdown files from the online help
@@ -156,7 +156,6 @@ def _download(
         # Also include relative media
         media_urls = _parse_media_urls(html, media_url)
         for url in media_urls:
-
             # Construct path to relative media in help staging area
             url_tuple = urlparse(url)
             filename = path.basename(url_tuple.path)
@@ -178,11 +177,11 @@ def _download(
 
 
 def update_help(
-        repo: str = DEFAULT_REPO,
-        commit: str = DEFAULT_COMMIT,
-        output_dir: str = DEFAULT_OUTPUT_DIR,
-        files: Sequence[str] = DEFAULT_HELP_FILES,
-        proxy: Optional[str] = None,
+    repo: str = DEFAULT_REPO,
+    commit: str = DEFAULT_COMMIT,
+    output_dir: str = DEFAULT_OUTPUT_DIR,
+    files: Sequence[str] = DEFAULT_HELP_FILES,
+    proxy: Optional[str] = None,
 ):
     def _parse_help():
         c_dir = path.join(output_dir, "C")
@@ -238,8 +237,8 @@ def _get_languages(source: str):
 
 
 def build_help(
-        source: str = DEFAULT_OUTPUT_DIR,
-        build: str = DEFAULT_BUILD_DIR,
+    source: str = DEFAULT_OUTPUT_DIR,
+    build: str = DEFAULT_BUILD_DIR,
 ):
     c_docs = glob(path.join(source, "C", "*.html"))
     name = "fapolicy-analyzer"
@@ -272,8 +271,8 @@ def build_help(
 
 
 def install_help(
-        source: str = DEFAULT_BUILD_DIR,
-        dest: str = DEFAULT_INSTALL_DIR,
+    source: str = DEFAULT_BUILD_DIR,
+    dest: str = DEFAULT_INSTALL_DIR,
 ):
     name = "fapolicy-analyzer"
     print(f"Installing langs to {dest}")
