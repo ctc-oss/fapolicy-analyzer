@@ -100,7 +100,7 @@ jobs:
     steps:
       - name: Install RPM build dependencies
         run: |
-          dnf install -y git dnf-plugins-core cargo2rpm
+          dnf install -y git dnf5-plugins dnf-plugins-core cargo2rpm
 
       - uses: actions/checkout@v3
         with:
@@ -309,7 +309,7 @@ jobs:
           echo "token = ${COPR_TOKEN}" >> $HOME/.config/copr
           echo "copr_url = https://copr.fedorainfracloud.org" >> $HOME/.config/copr
         env:
-          COPR_USER:  ${{ secrets.COPR_API_USER }}
+          COPR_USER: ${{ secrets.COPR_API_USER }}
           COPR_LOGIN: ${{ secrets.COPR_API_LOGIN }}
           COPR_TOKEN: ${{ secrets.COPR_API_TOKEN }}
 

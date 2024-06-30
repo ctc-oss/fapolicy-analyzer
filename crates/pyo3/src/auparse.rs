@@ -14,7 +14,7 @@ fn is_audit_available() -> bool {
     cfg!(feature = "audit")
 }
 
-pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
+pub fn init_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(is_audit_available, m)?)?;
     Ok(())
 }

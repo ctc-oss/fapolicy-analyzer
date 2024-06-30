@@ -230,7 +230,7 @@ pub(crate) fn text_for_entry(e: &Entry) -> String {
 // #[pyfunction]
 // fn text_to_rule_db(txt: &str) -> PyResult<PyDict> {}
 
-pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
+pub fn init_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyRule>()?;
     m.add_class::<PyRuleInfo>()?;
     m.add_class::<PyChangeset>()?;

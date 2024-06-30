@@ -2,12 +2,21 @@
   "props": [
     {
       "platform": "fedora",
+      "dist": "fc41",
+      "spec": "fapolicy-analyzer.spec",
+      "image": "registry.fedoraproject.org/fedora:41",
+      "chroot": "fedora-rawhide-x86_64",
+      "version": "41",
+      "prerelease": true
+    },
+    {
+      "platform": "fedora",
       "dist": "fc40",
       "spec": "fapolicy-analyzer.spec",
       "image": "registry.fedoraproject.org/fedora:40",
-      "chroot": "fedora-rawhide-x86_64",
+      "chroot": "fedora-40-x86_64",
       "version": "40",
-      "prerelease": true
+      "prerelease": false
     },
     {
       "platform": "fedora",
@@ -16,15 +25,6 @@
       "image": "registry.fedoraproject.org/fedora:39",
       "chroot": "fedora-39-x86_64",
       "version": "39",
-      "prerelease": false
-    },
-    {
-      "platform": "fedora",
-      "dist": "fc38",
-      "spec": "fapolicy-analyzer.spec",
-      "image": "registry.fedoraproject.org/fedora:38",
-      "chroot": "fedora-38-x86_64",
-      "version": "38",
       "prerelease": false
     },
     {

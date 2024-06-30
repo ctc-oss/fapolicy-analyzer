@@ -274,7 +274,7 @@ pub fn rule_identity(system: &PySystem) -> PyResult<String> {
         .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))
 }
 
-pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
+pub fn init_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PySystem>()?;
     m.add_function(wrap_pyfunction!(config_difference, m)?)?;
     m.add_function(wrap_pyfunction!(rules_difference, m)?)?;

@@ -19,7 +19,6 @@ import os
 import shutil
 import subprocess
 import urllib.request
-from distutils import dir_util
 from glob import glob
 from os import makedirs, path
 from typing import Optional, Sequence
@@ -157,7 +156,6 @@ def _download(
         # Also include relative media
         media_urls = _parse_media_urls(html, media_url)
         for url in media_urls:
-
             # Construct path to relative media in help staging area
             url_tuple = urlparse(url)
             filename = path.basename(url_tuple.path)
@@ -267,9 +265,9 @@ def build_help(
             # copy media to language directory
             source_media = path.join(source, "C", "media")
             build_media = path.join(build_path, "media")
-            dir_util.copy_tree(source_media, build_media)
+            shutil.copytree(source_media, build_media, dirs_exist_ok=True)
         else:
-            dir_util.copy_tree(source_path, build_path)
+            shutil.copytree(source_path, build_path, dirs_exist_ok=True)
 
 
 def install_help(
@@ -283,7 +281,7 @@ def install_help(
         print(f"\t{lang}")
         lang_source = path.join(source, lang)
         lang_dest = path.join(dest, lang, name)
-        dir_util.copy_tree(lang_source, lang_dest)
+        shutil.copytree(lang_source, lang_dest, dirs_exist_ok=True)
 
 
 def _args():

@@ -326,7 +326,7 @@ mod tests {
     }
 }
 
-pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
+pub fn init_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyEvent>()?;
     m.add_class::<PySubject>()?;
     m.add_class::<PyObject>()?;

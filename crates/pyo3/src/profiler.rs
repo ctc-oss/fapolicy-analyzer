@@ -131,11 +131,11 @@ impl PyProfiler {
     }
 
     fn profile(&self, target: &str) -> PyResult<ProcHandle> {
-        self.profile_all(vec![target])
+        self.profile_all(vec![target.to_owned()])
     }
 
     // accept callback for exec control (eg kill), and done notification
-    fn profile_all(&self, targets: Vec<&str>) -> PyResult<ProcHandle> {
+    fn profile_all(&self, targets: Vec<String>) -> PyResult<ProcHandle> {
         log::debug!("profile_all {}", targets.join(";"));
         // the working dir must exist prior to execution
         if let Some(pwd) = self.pwd.as_ref() {
@@ -494,7 +494,7 @@ fn reload_profiler_rules(system: &PySystem) -> PyResult<()> {
         .map_err(|e| exceptions::PyRuntimeError::new_err(format!("Reload failed: {:?}", e)))
 }
 
-pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
+pub fn init_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyProfiler>()?;
     m.add_class::<ProcHandle>()?;
     m.add_class::<ExecHandle>()?;

@@ -238,7 +238,7 @@ fn conf_text_error_check(txt: &str) -> Option<String> {
     }
 }
 
-pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
+pub fn init_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyHandle>()?;
     m.add_class::<PyChangeset>()?;
     m.add_class::<PyConfigInfo>()?;
