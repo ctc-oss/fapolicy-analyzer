@@ -47,7 +47,7 @@ jobs:
 
       - name: Install Hugo modules
         run: |
-          hugo mod get -u
+          hugo mod get
         working-directory: doc/site
 
       - name: Hugo build
