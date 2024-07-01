@@ -27,7 +27,7 @@ use crate::rules::PyRule;
 use crate::trust;
 use crate::{daemon, rules};
 
-use super::trust::PyTrust;
+use super::trust::{PyFilterChangeset, PyTrust};
 
 #[pyclass(module = "app", name = "System")]
 #[derive(Clone)]
@@ -112,9 +112,9 @@ impl PySystem {
     }
 
     /// Apply the changeset to the state of this System, produces a new System
-    fn apply_trust_filter_changes(&self, change: daemon::PyChangeset) -> PySystem {
+    fn apply_trust_filter_changes(&self, change: PyFilterChangeset) -> PySystem {
         log::debug!("apply_trust_filter_changes");
-        self.rs.apply_config_changes(change.into()).into()
+        self.rs.apply_trust_filter_changes(change.into()).into()
     }
 
     /// Update the host system with this state of this System and signal fapolicyd to reload trust

@@ -8,7 +8,7 @@
 
 pub mod db;
 pub mod error;
-mod load;
+pub mod load;
 pub mod ops;
 pub mod parse;
 pub mod read;

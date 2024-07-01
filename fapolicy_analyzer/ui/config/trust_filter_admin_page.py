@@ -25,7 +25,7 @@ from fapolicy_analyzer.ui.actions import (
     modify_trust_filter_text,
     request_trust_filter_text,
 )
-from fapolicy_analyzer.ui.changeset_wrapper import Changeset, ConfigChangeset
+from fapolicy_analyzer.ui.changeset_wrapper import Changeset, TrustFilterChangeset
 from fapolicy_analyzer.ui.config.trust_filter_text_view import TrustFilterTextView
 from fapolicy_analyzer.ui.config.trust_filter_status_info import TrustFilterStatusInfo
 from fapolicy_analyzer.ui.rules.rules_admin_page import VALIDATION_NOTE_CATEGORY
@@ -77,7 +77,7 @@ class TrustFilterAdminPage(UIConnectedWidget):
         self.__config_text: str = ""
         self.__config_validated: bool = False
         self.__changesets: Sequence[Changeset] = []
-        self.__modified_config_text: str = ""
+        self.__modified_filter_text: str = ""
         self.__config_validated: bool = True
         self.__init_child_widgets()
         self.__error_text: Optional[str] = None
@@ -128,8 +128,8 @@ class TrustFilterAdminPage(UIConnectedWidget):
 
     def __config_dirty(self) -> bool:
         return (
-            bool(self.__modified_config_text)
-            and self.__modified_config_text != self.__config_text
+            bool(self.__modified_filter_text)
+            and self.__modified_filter_text != self.__config_text
         )
 
     def __config_unvalidated(self) -> bool:
@@ -137,12 +137,12 @@ class TrustFilterAdminPage(UIConnectedWidget):
 
     def __build_and_validate_changeset(
         self, show_notifications=True
-    ) -> Tuple[ConfigChangeset, bool]:
-        changeset = ConfigChangeset()
+    ) -> Tuple[TrustFilterChangeset, bool]:
+        changeset = TrustFilterChangeset()
         valid = False
 
         try:
-            changeset.parse(self.__modified_config_text)
+            changeset.parse(self.__modified_filter_text)
             valid = changeset.is_valid()
             if show_notifications and not valid:
                 dispatch(
@@ -205,7 +205,7 @@ class TrustFilterAdminPage(UIConnectedWidget):
             self.__status_info.render_config_status(system_state.system.config_info())
 
     def on_text_view_filter_changed(self, config: str):
-        self.__modified_config_text = config
+        self.__modified_filter_text = config
         self.__config_validated = False
         # print(self._unsaved_changes, self._first_pass)
         self._unsaved_changes = True if not self._first_pass else False
