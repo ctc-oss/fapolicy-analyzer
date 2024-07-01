@@ -28,6 +28,8 @@ pub enum Error {
     WriteRulesFail(io::Error),
     #[error("Failed to write fapolicyd.conf; {0}")]
     WriteConfFail(io::Error),
+    #[error("Failed to write fapolicyd-filter.conf; {0}")]
+    WriteFilterFail(io::Error),
     #[error("{0}")]
     DaemonError(#[from] fapolicy_daemon::error::Error),
 }
@@ -41,6 +43,13 @@ pub fn deploy_app_state(state: &State) -> Result<(), Error> {
         &PathBuf::from(&state.config.system.config_file_path),
     )
     .map_err(WriteConfFail)?;
+
+    // write trust filter conf
+    fapolicy_trust::filter::write::db(
+        &state.trust_filter_config,
+        &PathBuf::from(&state.config.system.trust_filter_conf_path),
+    )
+    .map_err(WriteFilterFail)?;
 
     // write rules model
     fapolicy_rules::write::db(

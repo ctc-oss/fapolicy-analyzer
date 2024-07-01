@@ -117,12 +117,12 @@ class TrustFilterAdminPage(UIConnectedWidget):
                 dispatch(apply_changesets(changeset))
                 self._unsaved_changes = False
             else:
-                self.__status_info.render_config_status(changeset.info())
+                self.__status_info.render_filter_status(changeset.info())
             overrideDialog.hide()
 
     def on_validate_clicked(self, *args):
         changeset, _ = self.__build_and_validate_changeset(show_notifications=False)
-        self.__status_info.render_config_status(changeset.info())
+        self.__status_info.render_filter_status(changeset.info())
         # dispatch to force toolbar refresh
         dispatch(modify_trust_filter_text(self.__config_validated))
 
@@ -202,7 +202,9 @@ class TrustFilterAdminPage(UIConnectedWidget):
             self.__config_text = text_state.config_text
             self._text_view.render_text(self.__config_text)
             self.__config_validated = True
-            self.__status_info.render_config_status(system_state.system.config_info())
+            self.__status_info.render_filter_status(
+                system_state.system.trust_filter_info()
+            )
 
     def on_text_view_filter_changed(self, config: str):
         self.__modified_filter_text = config

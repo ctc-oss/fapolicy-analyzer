@@ -99,7 +99,7 @@ _checkpoint: System
 
 
 def create_system_feature(
-        dispatch: Callable, system: System = None
+    dispatch: Callable, system: System = None
 ) -> ReduxFeatureModule:
     """
     Creates a Redux feature of type System
@@ -177,11 +177,11 @@ def create_system_feature(
         return add_changesets(changesets)
 
     def _check_disk_trust_update(
-            updates: Sequence[Trust],
-            count: int,
-            action_fn: Callable[[Trust, int, float], Action],
-            event: Event,
-            timestamp: float,
+        updates: Sequence[Trust],
+        count: int,
+        action_fn: Callable[[Trust, int, float], Action],
+        event: Event,
+        timestamp: float,
     ):
         if event.is_set():
             return
@@ -192,10 +192,10 @@ def create_system_feature(
         _idle_dispatch(action_fn(updates, count, timestamp))
 
     def _check_disk_trust_complete(
-            action_fn: Callable[[float], Action],
-            flag_fn: Callable[[], None],
-            event: Event,
-            timestamp: float,
+        action_fn: Callable[[float], Action],
+        flag_fn: Callable[[], None],
+        event: Event,
+        timestamp: float,
     ):
         if not event.is_set():
             _idle_dispatch(action_fn(timestamp))
@@ -266,7 +266,7 @@ def create_system_feature(
             logging.warning(
                 "Fapolicyd pre-deploy backup failed, continuing with deployment."
             )
-        _system.deploy()
+        _system.deploy_only()
         return system_deployed()
 
     def _set_checkpoint(action: Action) -> Action:

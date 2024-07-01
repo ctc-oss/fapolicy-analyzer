@@ -27,7 +27,7 @@ use crate::rules::PyRule;
 use crate::trust;
 use crate::{daemon, rules};
 
-use super::trust::{PyFilterChangeset, PyTrust};
+use super::trust::{PyFilterChangeset, PyFilterInfo, PyTrust};
 
 #[pyclass(module = "app", name = "System")]
 #[derive(Clone)]
@@ -195,6 +195,11 @@ impl PySystem {
     fn config_info(&self) -> Vec<PyConfigInfo> {
         log::debug!("config_info");
         daemon::conf_info(&self.rs.daemon_config)
+    }
+
+    fn trust_filter_info(&self) -> Vec<PyFilterInfo> {
+        log::debug!("trust_filter_info");
+        trust::filter_info(&self.rs.trust_filter_config)
     }
 
     // we rely on the gil to keep this synced up

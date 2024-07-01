@@ -36,12 +36,12 @@ class TrustFilterStatusInfo(EditorStatusInfo):
         )
 
         self._STATUS_HEADERS = {
-            "e": _("invalid config(s) found"),
+            "e": _("invalid filters(s) found"),
             "w": _("warning(s) found"),
             "i": _("informational message(s)"),
         }
 
-    def render_config_status(self, info):
+    def render_filter_status(self, info):
         stats = {"e": [], "w": [], "i": []}
         for i in info:
             stats.get(i.category, []).append(i.message)

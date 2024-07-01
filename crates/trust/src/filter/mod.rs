@@ -12,5 +12,6 @@ pub mod load;
 pub mod ops;
 pub mod parse;
 pub mod read;
+pub mod write;
 
 pub use db::*;
