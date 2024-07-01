@@ -11,3 +11,6 @@ pub mod error;
 mod load;
 pub mod ops;
 pub mod parse;
+pub mod read;
+
+pub use db::*;

@@ -28,42 +28,42 @@ class FilterTextState(NamedTuple):
     error: Optional[str]
     loading: bool
     config_text: str
-    modified_config_text: str
+    modified_filter_text: str
 
 
 def _create_state(state: FilterTextState, **kwargs: Optional[Any]) -> FilterTextState:
     return FilterTextState(**{**state._asdict(), **kwargs})
 
 
-def handle_request_config_text(state: FilterTextState, _: Action) -> FilterTextState:
+def handle_request_filter_text(state: FilterTextState, _: Action) -> FilterTextState:
     return _create_state(state, loading=True, error=None)
 
 
-def handle_received_config_text(
-        state: FilterTextState, action: Action
+def handle_received_filter_text(
+    state: FilterTextState, action: Action
 ) -> FilterTextState:
     payload = cast(str, action.payload)
     return _create_state(state, config_text=payload, error=None, loading=False)
 
 
-def handle_modify_config_text(
-        state: FilterTextState, action: Action
+def handle_modify_filter_text(
+    state: FilterTextState, action: Action
 ) -> FilterTextState:
     payload = cast(str, action.payload)
-    return _create_state(state, modified_config_text=payload, error=None, loading=False)
+    return _create_state(state, modified_filter_text=payload, error=None, loading=False)
 
 
-def handle_error_config_text(state: FilterTextState, action: Action) -> FilterTextState:
+def handle_error_filter_text(state: FilterTextState, action: Action) -> FilterTextState:
     payload = cast(str, action.payload)
     return _create_state(state, error=payload, loading=False)
 
 
 trust_filter_text_reducer: Reducer = handle_actions(
     {
-        REQUEST_TRUST_FILTER_TEXT: handle_request_config_text,
-        RECEIVED_TRUST_FILTER_TEXT: handle_received_config_text,
-        MODIFY_TRUST_FILTER_TEXT: handle_modify_config_text,
-        ERROR_TRUST_FILTER_TEXT: handle_error_config_text,
+        REQUEST_TRUST_FILTER_TEXT: handle_request_filter_text,
+        RECEIVED_TRUST_FILTER_TEXT: handle_received_filter_text,
+        MODIFY_TRUST_FILTER_TEXT: handle_modify_filter_text,
+        ERROR_TRUST_FILTER_TEXT: handle_error_filter_text,
     },
-    FilterTextState(error=None, config_text="", loading=False, modified_config_text=""),
+    FilterTextState(error=None, config_text="", loading=False, modified_filter_text=""),
 )

@@ -189,8 +189,7 @@ impl PySystem {
 
     fn trust_filter_text(&self) -> String {
         log::debug!("trust_filter_text");
-        // filter_config_to_text(&self.rs.trust_filter_config)
-        "...".to_string()
+        trust::filter_to_text(&self.rs.trust_filter_config)
     }
 
     fn config_info(&self) -> Vec<PyConfigInfo> {

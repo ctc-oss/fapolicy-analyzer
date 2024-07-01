@@ -6,10 +6,10 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+use std::path::PathBuf;
+
 use serde::Deserialize;
 use serde::Serialize;
-use std::iter::Filter;
-use std::path::PathBuf;
 
 use fapolicy_analyzer::users::{read_groups, read_users, Group, User};
 use fapolicy_daemon::conf::ops::Changeset as ConfChanges;
@@ -70,7 +70,9 @@ impl State {
             groups: read_groups()?,
             daemon_config: fapolicy_daemon::conf::from_file(&cfg.system.config_file_path)?,
             daemon_version: fapolicy_daemon::version(),
-            trust_filter_config: FilterDB::from_file(&cfg.system.trust_filter_file_path)?,
+            trust_filter_config: fapolicy_trust::filter::read::file(
+                &cfg.system.trust_filter_conf_path,
+            )?,
         })
     }
 

@@ -28,4 +28,4 @@ class TrustFilterTextView(EditableTextView):
         self.filter_changed(self._get_text())
 
     def _get_view_lang_id(self) -> Optional[str]:
-        return None  # "fapolicyd-trustfilter"
+        return "fapolicyd-filter"

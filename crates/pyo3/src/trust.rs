@@ -9,12 +9,12 @@
 use pyo3::exceptions::PyRuntimeError;
 use std::collections::HashMap;
 
-use fapolicy_daemon::pipe;
+use fapolicy_daemon::{conf, pipe};
 use pyo3::prelude::*;
 
 use fapolicy_trust::ops::{get_path_action_map, Changeset};
 use fapolicy_trust::stat::{Actual, Status};
-use fapolicy_trust::Trust;
+use fapolicy_trust::{filter, Trust};
 
 /// Trust entry
 ///
@@ -200,6 +200,13 @@ fn signal_trust_reload() -> PyResult<()> {
 fn signal_rule_reload() -> PyResult<()> {
     pipe::reload_rules()
         .map_err(|e| PyRuntimeError::new_err(format!("failed to signal rules reload: {:?}", e)))
+}
+
+pub(crate) fn filter_to_text(db: &filter::DB) -> String {
+    db.iter()
+        .fold(String::new(), |acc, line| format!("{acc}\n{line}"))
+        .trim_start()
+        .to_owned()
 }
 
 pub fn init_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
