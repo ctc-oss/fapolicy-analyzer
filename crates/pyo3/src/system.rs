@@ -239,6 +239,27 @@ fn config_difference(lhs: &PySystem, rhs: &PySystem) -> String {
     diff_lines.join("")
 }
 
+// todo;; this will become more advanced and based on the filter object rather than text
+#[pyfunction]
+fn trust_filter_difference(lhs: &PySystem, rhs: &PySystem) -> String {
+    log::debug!("trust_filter_difference");
+
+    let ltxt = lhs.trust_filter_text();
+    let rtxt = rhs.trust_filter_text();
+    let diff = TextDiff::from_lines(&ltxt, &rtxt);
+
+    let mut diff_lines = vec![];
+    for line in diff.iter_all_changes() {
+        let sign = match line.tag() {
+            ChangeTag::Delete => "-",
+            ChangeTag::Insert => "+",
+            ChangeTag::Equal => " ",
+        };
+        diff_lines.push(format!("{}{}", sign, line));
+    }
+    diff_lines.join("")
+}
+
 // todo;; this should become more advanced and be based on rule db rather than text
 #[pyfunction]
 fn rules_difference(lhs: &PySystem, rhs: &PySystem) -> String {
@@ -294,6 +315,7 @@ pub fn init_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PySystem>()?;
     m.add_function(wrap_pyfunction!(config_difference, m)?)?;
     m.add_function(wrap_pyfunction!(rules_difference, m)?)?;
+    m.add_function(wrap_pyfunction!(trust_filter_difference, m)?)?;
     m.add_function(wrap_pyfunction!(checked_system, m)?)?;
     m.add_function(wrap_pyfunction!(rule_identity, m)?)?;
     Ok(())
