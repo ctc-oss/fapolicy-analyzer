@@ -27,7 +27,7 @@ from fapolicy_analyzer.redux import Action, Reducer, handle_actions
 class FilterTextState(NamedTuple):
     error: Optional[str]
     loading: bool
-    config_text: str
+    filter_text: str
     modified_filter_text: str
 
 
@@ -43,7 +43,7 @@ def handle_received_filter_text(
     state: FilterTextState, action: Action
 ) -> FilterTextState:
     payload = cast(str, action.payload)
-    return _create_state(state, config_text=payload, error=None, loading=False)
+    return _create_state(state, filter_text=payload, error=None, loading=False)
 
 
 def handle_modify_filter_text(
@@ -65,5 +65,5 @@ trust_filter_text_reducer: Reducer = handle_actions(
         MODIFY_TRUST_FILTER_TEXT: handle_modify_filter_text,
         ERROR_TRUST_FILTER_TEXT: handle_error_filter_text,
     },
-    FilterTextState(error=None, config_text="", loading=False, modified_filter_text=""),
+    FilterTextState(error=None, filter_text="", loading=False, modified_filter_text=""),
 )

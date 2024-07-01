@@ -61,24 +61,24 @@ class TrustFilterAdminPage(UIConnectedWidget):
                     tooltip="Validate Filter",
                     icon="emblem-default",
                     signals={"clicked": self.on_validate_clicked},
-                    sensitivity_func=self.__config_unvalidated,
+                    sensitivity_func=self.__filter_unvalidated,
                 ),
                 UIAction(
                     name="Save",
                     tooltip="Save Filter",
                     icon="document-save",
                     signals={"clicked": self.on_save_clicked},
-                    sensitivity_func=self.__config_dirty,
+                    sensitivity_func=self.__filter_dirty,
                 ),
             ],
         }
         UIPage.__init__(self, actions)
         self.__loading_text: bool = False
-        self.__config_text: str = ""
-        self.__config_validated: bool = False
+        self.__filter_text: str = ""
+        self.__filter_validated: bool = False
         self.__changesets: Sequence[Changeset] = []
         self.__modified_filter_text: str = ""
-        self.__config_validated: bool = True
+        self.__filter_validated: bool = True
         self.__init_child_widgets()
         self.__error_text: Optional[str] = None
         self.__error_config: Optional[str] = None
@@ -124,16 +124,16 @@ class TrustFilterAdminPage(UIConnectedWidget):
         changeset, _ = self.__build_and_validate_changeset(show_notifications=False)
         self.__status_info.render_filter_status(changeset.info())
         # dispatch to force toolbar refresh
-        dispatch(modify_trust_filter_text(self.__config_validated))
+        dispatch(modify_trust_filter_text(self.__filter_validated))
 
-    def __config_dirty(self) -> bool:
+    def __filter_dirty(self) -> bool:
         return (
             bool(self.__modified_filter_text)
-            and self.__modified_filter_text != self.__config_text
+            and self.__modified_filter_text != self.__filter_text
         )
 
-    def __config_unvalidated(self) -> bool:
-        return not self.__config_validated
+    def __filter_unvalidated(self) -> bool:
+        return not self.__filter_validated
 
     def __build_and_validate_changeset(
         self, show_notifications=True
@@ -162,7 +162,7 @@ class TrustFilterAdminPage(UIConnectedWidget):
             )
             return changeset, valid
 
-        self.__config_validated = valid
+        self.__filter_validated = valid
         # self.__clear_validation_notifications()
 
         return changeset, valid
@@ -182,7 +182,7 @@ class TrustFilterAdminPage(UIConnectedWidget):
             )
         elif self.__changesets != changesetState.changesets:
             self.__changesets = changesetState.changesets
-            self.__config_text = ""
+            self.__filter_text = ""
             self.__load_config()
             self._unsaved_changes = False
 
@@ -196,19 +196,19 @@ class TrustFilterAdminPage(UIConnectedWidget):
         elif (
             self.__loading_text
             and not text_state.loading
-            and self.__config_text != text_state.config_text
+            and self.__filter_text != text_state.filter_text
         ):
             self.__loading_text = False
-            self.__config_text = text_state.config_text
-            self._text_view.render_text(self.__config_text)
-            self.__config_validated = True
+            self.__filter_text = text_state.filter_text
+            self._text_view.render_text(self.__filter_text)
+            self.__filter_validated = True
             self.__status_info.render_filter_status(
                 system_state.system.trust_filter_info()
             )
 
     def on_text_view_filter_changed(self, config: str):
         self.__modified_filter_text = config
-        self.__config_validated = False
+        self.__filter_validated = False
         # print(self._unsaved_changes, self._first_pass)
         self._unsaved_changes = True if not self._first_pass else False
         if self._first_pass:
