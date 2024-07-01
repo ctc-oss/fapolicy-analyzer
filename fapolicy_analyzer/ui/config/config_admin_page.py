@@ -21,8 +21,8 @@ from fapolicy_analyzer.ui.actions import (
     NotificationType,
     add_notification,
     apply_changesets,
-    modify_trust_filter_text,
-    request_trust_filter_text,
+    modify_config_text,
+    request_config_text,
 )
 from fapolicy_analyzer.ui.changeset_wrapper import Changeset, ConfigChangeset
 from fapolicy_analyzer.ui.config.config_text_view import ConfigTextView
@@ -99,7 +99,7 @@ class ConfigAdminPage(UIConnectedWidget):
 
     def __load_config(self):
         self.__loading_text = True
-        dispatch(request_trust_filter_text())
+        dispatch(request_config_text())
 
     def on_save_clicked(self, *args):
         changeset, valid = self.__build_and_validate_changeset(show_notifications=False)
@@ -123,19 +123,19 @@ class ConfigAdminPage(UIConnectedWidget):
         changeset, _ = self.__build_and_validate_changeset(show_notifications=False)
         self.__status_info.render_config_status(changeset.info())
         # dispatch to force toolbar refresh
-        dispatch(modify_trust_filter_text(self.__config_validated))
+        dispatch(modify_config_text(self.__config_validated))
 
     def __config_dirty(self) -> bool:
         return (
-                bool(self.__modified_config_text)
-                and self.__modified_config_text != self.__config_text
+            bool(self.__modified_config_text)
+            and self.__modified_config_text != self.__config_text
         )
 
     def __config_unvalidated(self) -> bool:
         return not self.__config_validated
 
     def __build_and_validate_changeset(
-            self, show_notifications=True
+        self, show_notifications=True
     ) -> Tuple[ConfigChangeset, bool]:
         changeset = ConfigChangeset()
         valid = False
@@ -191,9 +191,9 @@ class ConfigAdminPage(UIConnectedWidget):
             logging.error("%s: %s", CONFIG_TEXT_LOAD_ERROR, self.__error_text)
             dispatch(add_notification(CONFIG_TEXT_LOAD_ERROR, NotificationType.ERROR))
         elif (
-                self.__loading_text
-                and not text_state.loading
-                and self.__config_text != text_state.config_text
+            self.__loading_text
+            and not text_state.loading
+            and self.__config_text != text_state.config_text
         ):
             self.__loading_text = False
             self.__config_text = text_state.config_text
@@ -208,4 +208,4 @@ class ConfigAdminPage(UIConnectedWidget):
         self._unsaved_changes = True if not self._first_pass else False
         if self._first_pass:
             self._first_pass = False
-        dispatch(modify_trust_filter_text(config))
+        dispatch(modify_config_text(config))
