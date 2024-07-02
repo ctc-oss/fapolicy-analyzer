@@ -118,8 +118,7 @@
                             <property name="can_focus">False</property>
                             <property name="label" translatable="yes">Syslog</property>
                             <property name="use_underline">True</property>
-                            <signal name="activate" handler="on_syslogMenu_activate"
-                                    swapped="no"/>
+                            <signal name="activate" handler="on_syslogMenu_activate" swapped="no"/>
                           </object>
                         </child>
                         <child>
@@ -127,8 +126,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="label" translatable="yes">Debug Log</property>
-                            <signal name="activate" handler="on_analyzeMenu_activate"
-                                    swapped="no"/>
+                            <signal name="activate" handler="on_analyzeMenu_activate" swapped="no"/>
                           </object>
                         </child>
                         <child>
@@ -137,8 +135,7 @@
                             <property name="can_focus">False</property>
                             <property name="label" translatable="yes">Audit Log</property>
                             <property name="use_underline">True</property>
-                            <signal name="activate" handler="on_auditlogMenu_activate"
-                                    swapped="no"/>
+                            <signal name="activate" handler="on_auditlogMenu_activate" swapped="no"/>
                           </object>
                         </child>
                       </object>
@@ -161,8 +158,7 @@
                             <property name="can_focus">False</property>
                             <property name="label" translatable="yes">Trust</property>
                             <property name="use_underline">True</property>
-                            <signal name="activate" handler="on_trustDbMenu_activate"
-                                    swapped="no"/>
+                            <signal name="activate" handler="on_trustDbMenu_activate" swapped="no"/>
                           </object>
                         </child>
                         <child>
@@ -171,8 +167,7 @@
                             <property name="can_focus">False</property>
                             <property name="label" translatable="yes">Rules</property>
                             <property name="use_underline">True</property>
-                            <signal name="activate" handler="on_rulesAdminMenu_activate"
-                                    swapped="no"/>
+                            <signal name="activate" handler="on_rulesAdminMenu_activate" swapped="no"/>
                           </object>
                         </child>
                         <child>
@@ -181,8 +176,7 @@
                             <property name="can_focus">False</property>
                             <property name="label" translatable="yes">Profiler</property>
                             <property name="use_underline">True</property>
-                            <signal name="activate" handler="on_profileExecMenu_activate"
-                                    swapped="no"/>
+                            <signal name="activate" handler="on_profileExecMenu_activate" swapped="no"/>
                           </object>
                         </child>
                       </object>
@@ -205,8 +199,7 @@
                             <property name="can_focus">False</property>
                             <property name="use_underline">True</property>
                             <property name="use_stock">True</property>
-                            <signal name="activate" handler="on_fapdStopMenu_activate"
-                                    swapped="no"/>
+                            <signal name="activate" handler="on_fapdStopMenu_activate" swapped="no"/>
                           </object>
                         </child>
                         <child>
@@ -216,8 +209,7 @@
                             <property name="can_focus">False</property>
                             <property name="use_underline">True</property>
                             <property name="use_stock">True</property>
-                            <signal name="activate" handler="on_fapdStartMenu_activate"
-                                    swapped="no"/>
+                            <signal name="activate" handler="on_fapdStartMenu_activate" swapped="no"/>
                           </object>
                         </child>
                         <child>
@@ -227,8 +219,7 @@
                             <property name="can_focus">False</property>
                             <property name="use_underline">True</property>
                             <property name="use_stock">True</property>
-                            <signal name="activate" handler="on_configAdminMenu_activate"
-                                    swapped="no"/>
+                            <signal name="activate" handler="on_configAdminMenu_activate" swapped="no"/>
                           </object>
                         </child>
                         <child>
@@ -241,72 +232,64 @@
                             <signal name="activate"
                                     handler="on_trustFilterAdminMenu_activate"
                                     swapped="no"/>
-                          </object>
+                            </object>
                         </child>
                       </object>
                     </child>
                   </object>
-                </child>
-                <child>
-                  <object class="GtkMenuItem">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">Session</property>
-                    <property name="use_underline">True</property>
-                    <child type="submenu">
-                      <object class="GtkMenu">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <child>
-                          <object class="GtkImageMenuItem" id="openMenu">
-                            <property name="label">gtk-open</property>
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="use_underline">True</property>
-                            <property name="use_stock">True</property>
-                            <signal name="activate" handler="on_openMenu_activate"
-                                    swapped="no"/>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkMenuItem" id="restoreMenu">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="label" translatable="yes"
-                                      comments="Presents option to load prior sessions tmp file (if it exists.)">
-                              Restore
-                            </property>
-                            <property name="use_underline">True</property>
-                            <signal name="activate" handler="on_restoreMenu_activate"
-                                    swapped="no"/>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkImageMenuItem" id="saveMenu">
-                            <property name="label">gtk-save</property>
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="use_underline">True</property>
-                            <property name="use_stock">True</property>
-                            <signal name="activate" handler="on_saveMenu_activate"
-                                    swapped="no"/>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkImageMenuItem" id="saveAsMenu">
-                            <property name="label">gtk-save-as</property>
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="use_underline">True</property>
-                            <property name="use_stock">True</property>
-                            <signal name="activate" handler="on_saveAsMenu_activate"
-                                    swapped="no"/>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
+                </child><child>
+                <object class="GtkMenuItem">
+                  <property name="visible">True</property>
+                  <property name="can_focus">False</property>
+                  <property name="label" translatable="yes">Session</property>
+                  <property name="use_underline">True</property>
+                  <child type="submenu">
+                    <object class="GtkMenu">
+                      <property name="visible">True</property>
+                      <property name="can_focus">False</property>
+                      <child>
+                        <object class="GtkImageMenuItem" id="openMenu">
+                          <property name="label">gtk-open</property>
+                          <property name="visible">True</property>
+                          <property name="can_focus">False</property>
+                          <property name="use_underline">True</property>
+                          <property name="use_stock">True</property>
+                          <signal name="activate" handler="on_openMenu_activate" swapped="no"/>
+                        </object>
+                      </child>
+                      <child>
+                        <object class="GtkMenuItem" id="restoreMenu">
+                          <property name="visible">True</property>
+                          <property name="can_focus">False</property>
+                          <property name="label" translatable="yes" comments="Presents option to load prior sessions tmp file (if it exists.)">Restore</property>
+                          <property name="use_underline">True</property>
+                          <signal name="activate" handler="on_restoreMenu_activate" swapped="no"/>
+                        </object>
+                      </child>
+                      <child>
+                        <object class="GtkImageMenuItem" id="saveMenu">
+                          <property name="label">gtk-save</property>
+                          <property name="visible">True</property>
+                          <property name="can_focus">False</property>
+                          <property name="use_underline">True</property>
+                          <property name="use_stock">True</property>
+                          <signal name="activate" handler="on_saveMenu_activate" swapped="no"/>
+                        </object>
+                      </child>
+                      <child>
+                        <object class="GtkImageMenuItem" id="saveAsMenu">
+                          <property name="label">gtk-save-as</property>
+                          <property name="visible">True</property>
+                          <property name="can_focus">False</property>
+                          <property name="use_underline">True</property>
+                          <property name="use_stock">True</property>
+                          <signal name="activate" handler="on_saveAsMenu_activate" swapped="no"/>
+                        </object>
+                      </child>
+                    </object>
+                  </child>
+                </object>
+              </child>
                 <child>
                   <object class="GtkMenuItem">
                     <property name="visible">True</property>
@@ -323,8 +306,7 @@
                             <property name="can_focus">False</property>
                             <property name="label" translatable="yes">User Guide</property>
                             <property name="use_underline">True</property>
-                            <signal name="activate" handler="on_helpMenu_activate"
-                                    swapped="no"/>
+                            <signal name="activate" handler="on_helpMenu_activate" swapped="no"/>
                           </object>
                         </child>
                         <child>
@@ -334,8 +316,7 @@
                             <property name="can_focus">False</property>
                             <property name="use_underline">True</property>
                             <property name="use_stock">True</property>
-                            <signal name="activate" handler="on_aboutMenu_activate"
-                                    swapped="no"/>
+                            <signal name="activate" handler="on_aboutMenu_activate" swapped="no"/>
                           </object>
                         </child>
                       </object>
