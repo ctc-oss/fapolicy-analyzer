@@ -266,7 +266,7 @@ def create_system_feature(
             logging.warning(
                 "Fapolicyd pre-deploy backup failed, continuing with deployment."
             )
-        _system.deploy_only()
+        _system.deploy()
         return system_deployed()
 
     def _set_checkpoint(action: Action) -> Action:
