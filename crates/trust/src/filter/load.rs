@@ -11,7 +11,7 @@ use crate::filter::error::Error;
 use crate::filter::read;
 
 pub fn file(path: &str) -> Result<DB, Error> {
-    read::file(path.into())
+    read::file(path)
 }
 
 pub fn mem(txt: &str) -> Result<DB, Error> {

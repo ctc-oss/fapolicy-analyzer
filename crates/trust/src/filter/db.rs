@@ -5,12 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-use crate::filter::error::Error;
-use crate::filter::parse::parse;
 use std::fmt::{Display, Formatter};
-use std::fs::File;
-use std::io;
-use std::io::{BufRead, BufReader};
 use std::slice::Iter;
 
 #[derive(Clone, Debug)]
