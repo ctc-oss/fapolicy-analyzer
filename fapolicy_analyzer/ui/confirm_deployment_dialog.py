@@ -26,6 +26,10 @@ from fapolicy_analyzer.ui.config.config_difference_dialog import (
     ConfigDifferenceDialog,
     filter_config_diff,
 )
+from fapolicy_analyzer.ui.config.trust_filter_difference_dialog import (
+    TrustFilterDifferenceDialog,
+    filter_trust_filter_diff,
+)
 from fapolicy_analyzer.ui.changeset_wrapper import Changeset, TrustChangeset
 from fapolicy_analyzer.ui.configs import Colors
 from fapolicy_analyzer.ui.strings import (
@@ -33,6 +37,7 @@ from fapolicy_analyzer.ui.strings import (
     CHANGESET_ACTION_DEL_TRUST,
     CHANGESET_ACTION_RULES,
     CHANGESET_ACTION_CONFIG,
+    CHANGESET_ACTION_FILTER,
     DEPLOY_ANCILLARY_CONFIRM_DLG_ACTION_COL_HDR,
     DEPLOY_ANCILLARY_CONFIRM_DLG_CHANGE_COL_HDR,
 )
@@ -129,6 +134,29 @@ class ConfirmDeploymentDialog(UIBuilderWidget):
             message = " and ".join((m for m in [add_text, del_text] if m)) + " made"
             return ([(_(message), "Config")], diffs)
 
+        def trust_filter_changes():
+            if not previous_system or not current_system:
+                return ([], "")
+            diffs = ""
+            diffs = filter_trust_filter_diff(previous_system, current_system)
+            adds_list = []
+            dels_list = []
+            for d in diffs:
+                if d.startswith("+"):
+                    adds_list += [d]
+                elif d.startswith("-"):
+                    dels_list += [d]
+
+            adds = len(adds_list)
+            dels = len(dels_list)
+            if (adds + dels) == 0:
+                return ([], "")
+
+            add_text = f"{adds} addition{'s' if adds > 1 else ''}" if adds else None
+            del_text = f"{dels} removal{'s' if dels > 1 else ''}" if dels else None
+            message = " and ".join((m for m in [add_text, del_text] if m)) + " made"
+            return ([(_(message), "Filter")], diffs)
+
         def trust_changes():
             return [
                 t
@@ -139,19 +167,28 @@ class ConfirmDeploymentDialog(UIBuilderWidget):
 
         rule_messages, rule_diff = rules_changes()
         config_messages, config_diff = config_changes()
+        filter_messages, filter_diff = trust_filter_changes()
+
         expand_rule_btn = self.get_object("expandRuleButton")
         expand_rule_btn.set_visible(True) if [
             *rule_messages
         ] else expand_rule_btn.set_visible(False)
+
         expand_config_btn = self.get_object("expandConfigButton")
         expand_config_btn.set_visible(True) if [
             *config_messages
         ] else expand_config_btn.set_visible(False)
 
+        expand_filter_btn = self.get_object("expandFilterButton")
+        expand_filter_btn.set_visible(True) if [
+            *filter_messages
+        ] else expand_filter_btn.set_visible(False)
+
         return (
-            [*trust_changes(), *rule_messages, *config_messages],
+            [*trust_changes(), *rule_messages, *config_messages, *filter_messages],
             rule_diff,
             config_diff,
+            filter_diff,
         )
 
     def __load_store(
@@ -165,9 +202,10 @@ class ConfirmDeploymentDialog(UIBuilderWidget):
             "Del": CHANGESET_ACTION_DEL_TRUST,
             "Rules": CHANGESET_ACTION_RULES,
             "Config": CHANGESET_ACTION_CONFIG,
+            "Filter": CHANGESET_ACTION_FILTER,
         }
         store = Gtk.ListStore(str, str)
-        pathActionPairs, _, _ = self.__to_path_action_pairs(
+        pathActionPairs, _, _, _ = self.__to_path_action_pairs(
             changesets, current_system, previous_system
         )
         for e in pathActionPairs:
@@ -188,6 +226,13 @@ class ConfirmDeploymentDialog(UIBuilderWidget):
 
     def on_expandConfigButton_clicked(self, *args):
         diff_dialog = ConfigDifferenceDialog(
+            self.__current_system, self.__previous_system
+        ).get_ref()
+        diff_dialog.run()
+        diff_dialog.destroy()
+
+    def on_expandFilterButton_clicked(self, *args):
+        diff_dialog = TrustFilterDifferenceDialog(
             self.__current_system, self.__previous_system
         ).get_ref()
         diff_dialog.run()

@@ -18,7 +18,7 @@ use nom::sequence::{separated_pair, tuple};
 use nom::IResult;
 use thiserror::Error;
 
-use crate::filter::Dec::*;
+use crate::filter::parse::Dec::*;
 
 /// Errors that can occur in this module
 #[derive(Error, Debug)]
@@ -163,11 +163,10 @@ pub fn parse(lines: &[&str]) -> Result<Decider, Error> {
     // process lines from the config, ignoring comments and empty lines
     for (ln, line) in lines.iter().enumerate().filter(|(_, x)| !ignored_line(x)) {
         match (prev_i, parse_entry(line)) {
-            // at the root level anywhere in the conf
+            // ensure root level starts with /
+            (_, Ok((0, (k, _)))) if !k.starts_with('/') => return Err(NonAbsRootElement),
+            // at the root level, anywhere in the conf
             (prev, Ok((0, (k, d)))) => {
-                if !k.starts_with('/') {
-                    return Err(NonAbsRootElement);
-                }
                 if prev.is_some() {
                     stack.clear();
                 }
@@ -225,8 +224,8 @@ mod tests {
     use fapolicy_util::trimto::TrimTo;
     use std::default::Default;
 
-    use crate::filter::Dec::*;
-    use crate::filter::{parse, Decider, Error};
+    use crate::filter::parse::Dec::*;
+    use crate::filter::parse::{parse, Decider, Error};
 
     // the first few tests are modeled after example config from the fapolicyd documentation
 

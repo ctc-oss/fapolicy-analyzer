@@ -25,6 +25,7 @@ pub const TRUST_FILE_PATH: &str = "/etc/fapolicyd/fapolicyd.trust";
 pub const RULES_FILE_PATH: &str = "/etc/fapolicyd/rules.d";
 pub const COMPILED_RULES_PATH: &str = "/etc/fapolicyd/compiled.rules";
 pub const CONFIG_FILE_PATH: &str = "/etc/fapolicyd/fapolicyd.conf";
+pub const TRUST_FILTER_FILE_PATH: &str = "/etc/fapolicyd/fapolicyd-filter.conf";
 pub const RPM_DB_PATH: &str = "/var/lib/rpm";
 pub const FIFO_PIPE: &str = "/run/fapolicyd/fapolicyd.fifo";
 pub const START_POLLING_EVENTS_MESSAGE: &str = "Starting to listen for events";

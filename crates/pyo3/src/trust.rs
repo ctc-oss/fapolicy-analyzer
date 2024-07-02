@@ -6,15 +6,17 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use pyo3::exceptions::PyRuntimeError;
-use std::collections::HashMap;
-
 use fapolicy_daemon::pipe;
-use pyo3::prelude::*;
-
+use fapolicy_trust::filter::load::with_error_message;
+use fapolicy_trust::filter::ops::Changeset as FilterChangeset;
+use fapolicy_trust::filter::Line;
 use fapolicy_trust::ops::{get_path_action_map, Changeset};
 use fapolicy_trust::stat::{Actual, Status};
-use fapolicy_trust::Trust;
+use fapolicy_trust::{filter, Trust};
+use pyo3::exceptions;
+use pyo3::exceptions::PyRuntimeError;
+use pyo3::prelude::*;
+use std::collections::HashMap;
 
 /// Trust entry
 ///
@@ -202,10 +204,113 @@ fn signal_rule_reload() -> PyResult<()> {
         .map_err(|e| PyRuntimeError::new_err(format!("failed to signal rules reload: {:?}", e)))
 }
 
+pub(crate) fn filter_to_text(db: &filter::DB) -> String {
+    db.iter()
+        .fold(String::new(), |acc, line| format!("{acc}\n{line}"))
+        .trim_start()
+        .to_owned()
+}
+
+#[pyclass(module = "trust", name = "FilterInfo")]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct PyFilterInfo {
+    pub category: String,
+    pub message: String,
+}
+
+#[pymethods]
+impl PyFilterInfo {
+    #[getter]
+    fn get_category(&self) -> String {
+        self.category.clone()
+    }
+
+    #[getter]
+    fn get_message(&self) -> String {
+        self.message.clone()
+    }
+}
+
+pub(crate) fn filter_info(db: &filter::DB) -> Vec<PyFilterInfo> {
+    let e = "e";
+    db.iter().fold(vec![], |mut acc, line| {
+        let message = match line {
+            Line::Invalid(s) => Some(format!("Invalid: {s}")),
+            Line::Malformed(s) => Some(format!("Malformed: {s}")),
+            Line::Duplicate(s) => Some(format!("Duplicated: {s}")),
+            _ => None,
+        };
+        if let Some(message) = message {
+            acc.push(PyFilterInfo {
+                category: e.to_owned(),
+                message,
+            });
+        };
+        acc
+    })
+}
+
+/// A mutable collection of trust filter changes
+#[pyclass(module = "trust", name = "TrustFilterChangeset")]
+#[derive(Default, Clone)]
+pub struct PyFilterChangeset {
+    rs: FilterChangeset,
+}
+
+impl From<FilterChangeset> for PyFilterChangeset {
+    fn from(rs: FilterChangeset) -> Self {
+        Self { rs }
+    }
+}
+
+impl From<PyFilterChangeset> for FilterChangeset {
+    fn from(py: PyFilterChangeset) -> Self {
+        py.rs
+    }
+}
+
+#[pymethods]
+impl PyFilterChangeset {
+    #[new]
+    pub fn new() -> Self {
+        PyFilterChangeset::default()
+    }
+
+    fn parse(&mut self, text: &str) -> PyResult<()> {
+        match self.rs.set(text.trim()) {
+            Ok(_) => Ok(()),
+            Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{:?}", e))),
+        }
+    }
+
+    fn text(&self) -> Option<&str> {
+        self.rs.src().map(|s| &**s)
+    }
+
+    fn filter_info(&self) -> Vec<PyFilterInfo> {
+        filter_info(self.rs.get())
+    }
+
+    fn is_valid(&self) -> bool {
+        self.rs.get().is_valid()
+    }
+}
+
+#[pyfunction]
+fn filter_text_error_check(txt: &str) -> Option<String> {
+    match with_error_message(txt) {
+        Ok(_) => None,
+        Err(s) => Some(s),
+    }
+}
+
 pub fn init_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyChangeset>()?;
     m.add_class::<PyTrust>()?;
     m.add_class::<PyActual>()?;
+    m.add_class::<PyFilterChangeset>()?;
+    m.add_class::<PyFilterInfo>()?;
+    m.add_function(wrap_pyfunction!(filter_text_error_check, m)?)?;
     m.add_function(wrap_pyfunction!(signal_trust_reload, m)?)?;
     m.add_function(wrap_pyfunction!(signal_rule_reload, m)?)?;
     Ok(())
