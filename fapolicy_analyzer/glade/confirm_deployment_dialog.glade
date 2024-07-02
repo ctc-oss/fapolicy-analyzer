@@ -17,191 +17,191 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <interface>
-    <requires lib="gtk+" version="3.20"/>
-    <object class="GtkDialog" id="confirmDeploymentDialog">
+  <requires lib="gtk+" version="3.20"/>
+  <object class="GtkDialog" id="confirmDeploymentDialog">
+    <property name="can_focus">False</property>
+    <property name="title" translatable="yes">Deploy Changesets?</property>
+    <property name="modal">True</property>
+    <property name="default_height">260</property>
+    <property name="destroy_with_parent">True</property>
+    <property name="type_hint">dialog</property>
+    <property name="deletable">False</property>
+    <child type="titlebar">
+      <placeholder/>
+    </child>
+    <child internal-child="vbox">
+      <object class="GtkBox">
         <property name="can_focus">False</property>
-        <property name="title" translatable="yes">Deploy Changesets?</property>
-        <property name="modal">True</property>
-        <property name="default_height">260</property>
-        <property name="destroy_with_parent">True</property>
-        <property name="type_hint">dialog</property>
-        <property name="deletable">False</property>
-        <child type="titlebar">
-            <placeholder/>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox">
+            <property name="can_focus">False</property>
+            <property name="layout_style">end</property>
+            <child>
+              <object class="GtkButton" id="button1">
+                <property name="label">gtk-no</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="button2">
+                <property name="label">gtk-yes</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="expandRuleButton">
+                <property name="label">Rule Details</property>
+                <property name="visible">False</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+                <signal name="clicked" handler="on_expandRuleButton_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="expandConfigButton">
+                <property name="label">Config Details</property>
+                <property name="visible">False</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+                <signal name="clicked" handler="on_expandConfigButton_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="expandFilterButton">
+                <property name="label">Filter Details</property>
+                <property name="visible">False</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+                <signal name="clicked" handler="on_expandFilterButton_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">0</property>
+          </packing>
         </child>
-        <child internal-child="vbox">
-            <object class="GtkBox">
+        <child>
+          <object class="GtkBox">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="orientation">vertical</property>
+            <property name="spacing">5</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="orientation">vertical</property>
-                <property name="spacing">2</property>
-                <child internal-child="action_area">
-                    <object class="GtkButtonBox">
-                        <property name="can_focus">False</property>
-                        <property name="layout_style">end</property>
-                        <child>
-                            <object class="GtkButton" id="button1">
-                                <property name="label">gtk-no</property>
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">True</property>
-                                <property name="use_stock">True</property>
-                            </object>
-                            <packing>
-                                <property name="expand">True</property>
-                                <property name="fill">True</property>
-                                <property name="position">1</property>
-                            </packing>
-                        </child>
-                        <child>
-                            <object class="GtkButton" id="button2">
-                                <property name="label">gtk-yes</property>
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">True</property>
-                                <property name="use_stock">True</property>
-                            </object>
-                            <packing>
-                                <property name="expand">True</property>
-                                <property name="fill">True</property>
-                                <property name="position">2</property>
-                            </packing>
-                        </child>
-                        <child>
-                            <object class="GtkButton" id="expandRuleButton">
-                                <property name="label">Rule Details</property>
-                                <property name="visible">False</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">True</property>
-                                <property name="use_stock">True</property>
-                                <signal name="clicked" handler="on_expandRuleButton_clicked" swapped="no"/>
-                            </object>
-                            <packing>
-                                <property name="expand">True</property>
-                                <property name="fill">True</property>
-                                <property name="position">0</property>
-                            </packing>
-                        </child>
-                        <child>
-                            <object class="GtkButton" id="expandConfigButton">
-                                <property name="label">Config Details</property>
-                                <property name="visible">False</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">True</property>
-                                <property name="use_stock">True</property>
-                                <signal name="clicked" handler="on_expandConfigButton_clicked" swapped="no"/>
-                            </object>
-                            <packing>
-                                <property name="expand">True</property>
-                                <property name="fill">True</property>
-                                <property name="position">1</property>
-                            </packing>
-                        </child>
-                        <child>
-                            <object class="GtkButton" id="expandFilterButton">
-                                <property name="label">Filter Details</property>
-                                <property name="visible">False</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">True</property>
-                                <property name="use_stock">True</property>
-                                <signal name="clicked" handler="on_expandFilterButton_clicked" swapped="no"/>
-                            </object>
-                            <packing>
-                                <property name="expand">True</property>
-                                <property name="fill">True</property>
-                                <property name="position">2</property>
-                            </packing>
-                        </child>
-                    </object>
-                    <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">0</property>
-                    </packing>
-                </child>
+                <property name="label" translatable="yes">Are you sure you wish to deploy your changes
+                  to the fapolicyd?
+                  This will update fapolicyd and restart the service.
+                </property>
+                <property name="xalign">0.05000000074505806</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkScrolledWindow">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="shadow_type">in</property>
                 <child>
-                    <object class="GtkBox">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="orientation">vertical</property>
-                        <property name="spacing">5</property>
-                        <child>
-                            <object class="GtkLabel">
-                                <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="label" translatable="yes">Are you sure you wish to deploy your changes
-                                    to the fapolicyd?
-                                    This will update fapolicyd and restart the service.
-                                </property>
-                                <property name="xalign">0.05000000074505806</property>
-                            </object>
-                            <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">0</property>
-                            </packing>
-                        </child>
-                        <child>
-                            <object class="GtkScrolledWindow">
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="shadow_type">in</property>
-                                <child>
-                                    <object class="GtkTreeView" id="changesTreeView">
-                                        <property name="visible">True</property>
-                                        <property name="can_focus">True</property>
-                                        <child internal-child="selection">
-                                            <object class="GtkTreeSelection">
-                                                <property name="mode">none</property>
-                                            </object>
-                                        </child>
-                                    </object>
-                                </child>
-                            </object>
-                            <packing>
-                                <property name="expand">True</property>
-                                <property name="fill">True</property>
-                                <property name="position">1</property>
-                            </packing>
-                        </child>
-                        <child>
-                            <object class="GtkFrame">
-                                <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="label_xalign">0</property>
-                                <property name="shadow_type">out</property>
-                                <child>
-                                    <object class="GtkCheckButton" id="saveStateCbn">
-                                        <property name="label" translatable="yes">"Save As..." fapolicyd data and
-                                            configuration to archive prior to deployment.
-                                        </property>
-                                        <property name="visible">True</property>
-                                        <property name="can_focus">True</property>
-                                        <property name="receives_default">False</property>
-                                        <property name="draw_indicator">True</property>
-                                    </object>
-                                </child>
-                                <child type="label_item">
-                                    <placeholder/>
-                                </child>
-                            </object>
-                            <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">2</property>
-                            </packing>
-                        </child>
-                    </object>
-                    <packing>
-                        <property name="expand">True</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
-                    </packing>
+                  <object class="GtkTreeView" id="changesTreeView">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <child internal-child="selection">
+                      <object class="GtkTreeSelection">
+                        <property name="mode">none</property>
+                      </object>
+                    </child>
+                  </object>
                 </child>
-            </object>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkFrame">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label_xalign">0</property>
+                <property name="shadow_type">out</property>
+                <child>
+                  <object class="GtkCheckButton" id="saveStateCbn">
+                    <property name="label" translatable="yes">"Save As..." fapolicyd data and
+                      configuration to archive prior to deployment.
+                    </property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">False</property>
+                    <property name="draw_indicator">True</property>
+                  </object>
+                </child>
+                <child type="label_item">
+                  <placeholder/>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
         </child>
-        <action-widgets>
-            <action-widget response="-9">button1</action-widget>
-            <action-widget response="-8">button2</action-widget>
-        </action-widgets>
-    </object>
+      </object>
+    </child>
+    <action-widgets>
+      <action-widget response="-9">button1</action-widget>
+      <action-widget response="-8">button2</action-widget>
+    </action-widgets>
+  </object>
 </interface>
