@@ -20,7 +20,7 @@ from inspect import currentframe
 def f(formatString):
     frame = currentframe().f_back
     return (
-        eval(f'f"""{formatString}"""', frame.f_locals, frame.f_globals)
+        eval(f'f"""{formatString}"""', locals=frame.f_locals, globals=frame.f_globals)
         if formatString
         else formatString
     )
