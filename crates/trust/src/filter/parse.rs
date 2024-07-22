@@ -19,6 +19,7 @@ use nom::IResult;
 use thiserror::Error;
 
 use crate::filter::parse::Dec::*;
+use crate::filter::Line;
 
 /// Errors that can occur in this module
 #[derive(Error, Debug)]
@@ -151,8 +152,8 @@ fn ignored_line(l: &str) -> bool {
     l.trim_start().starts_with('#') || l.trim().is_empty()
 }
 
-/// Parse a filter config from the conf lines
-pub fn parse(lines: &[&str]) -> Result<Decider, Error> {
+/// Parse a Decider from the conf lines
+pub fn decider(lines: &[&str]) -> Result<Decider, Error> {
     use Error::*;
 
     let mut decider = Decider::default();
@@ -205,6 +206,68 @@ pub fn parse(lines: &[&str]) -> Result<Decider, Error> {
     Ok(decider)
 }
 
+/// Parse a Decider from the conf lines
+pub fn lines(input: Vec<String>) -> Vec<Line> {
+    let mut lines = vec![];
+
+    let mut prev_i = None;
+    let mut stack = vec![];
+
+    // process lines from the config, ignoring comments and empty lines
+    for (ln, line) in input.iter().enumerate() {
+        if line.trim_start().starts_with('#') {
+            lines.push(Line::Comment(line.to_string()))
+        } else if line.is_empty() {
+            lines.push(Line::BlankLine);
+        } else {
+            match (prev_i, parse_entry(line)) {
+                // ensure root level starts with /
+                (_, Ok((0, (k, _)))) if !k.starts_with('/') => {
+                    lines.push(Line::Invalid("NonAbsRootElement".to_owned()))
+                }
+                // at the root level, anywhere in the conf
+                (prev, Ok((0, (k, _)))) => {
+                    if prev.is_some() {
+                        stack.clear();
+                    }
+                    lines.push(Line::Valid(line.to_string()));
+                    stack.push(PathBuf::from(k));
+                    prev_i = Some(0);
+                }
+                // fail if the first conf element is indented
+                (None, Ok((_, (_, _)))) => {
+                    lines.push(Line::Invalid("TooManyStartIndents".to_owned()))
+                }
+                // handle an indentation
+                (Some(pi), Ok((i, (k, _)))) if i > pi => {
+                    let p = stack.last().map(|l| l.join(k)).unwrap();
+                    lines.push(Line::Valid(line.to_string()));
+                    stack.push(p);
+                    prev_i = Some(i);
+                }
+                // handle unindentation
+                (Some(pi), Ok((i, (k, _)))) if i < pi => {
+                    stack.truncate(i);
+                    let p = stack.last().map(|l| l.join(k)).unwrap();
+                    lines.push(Line::Valid(line.to_string()));
+                    stack.push(p);
+                    prev_i = Some(i);
+                }
+                // remaining at previous level
+                (Some(_), Ok((i, (k, _)))) => {
+                    stack.truncate(i);
+                    let p = stack.last().map(|l| l.join(k)).unwrap();
+                    lines.push(Line::Valid(line.to_string()));
+                    stack.push(p);
+                }
+                // propagate parse errors
+                (_, Err(_)) => lines.push(Line::Malformed(line.to_string())),
+            }
+        }
+    }
+    lines
+}
+
 fn parse_dec(i: &str) -> IResult<&str, Dec> {
     alt((map(tag("+"), |_| Inc(0)), map(tag("-"), |_| Exc(0))))(i)
 }
@@ -220,12 +283,14 @@ fn parse_entry(i: &str) -> Result<(usize, (&str, Dec)), Error> {
 
 #[cfg(test)]
 mod tests {
-    use assert_matches::assert_matches;
-    use fapolicy_util::trimto::TrimTo;
     use std::default::Default;
 
+    use assert_matches::assert_matches;
+
+    use fapolicy_util::trimto::TrimTo;
+
     use crate::filter::parse::Dec::*;
-    use crate::filter::parse::{parse, Decider, Error};
+    use crate::filter::parse::{decider, Decider, Error};
 
     // the first few tests are modeled after example config from the fapolicyd documentation
 
@@ -237,7 +302,7 @@ mod tests {
         |+ /"#
             .trim_to('|');
 
-        let d = parse(&al.split('\n').collect::<Vec<&str>>()).unwrap();
+        let d = decider(&al.split('\n').collect::<Vec<&str>>()).unwrap();
         assert!(d.check("/"));
         assert!(!d.check("/usr/bin/some_binary1"));
         assert!(!d.check("/usr/bin/some_binary2"));
@@ -252,7 +317,7 @@ mod tests {
         |  - some_binary2"#
             .trim_to('|');
 
-        let d = parse(&al.split('\n').collect::<Vec<&str>>()).unwrap();
+        let d = decider(&al.split('\n').collect::<Vec<&str>>()).unwrap();
         assert!(d.check("/"));
         assert!(!d.check("/usr/bin/some_binary1"));
         assert!(!d.check("/usr/bin/some_binary2"));
@@ -306,7 +371,7 @@ mod tests {
         |"#
         .trim_to('|');
 
-        let d = parse(&al.split('\n').collect::<Vec<&str>>()).unwrap();
+        let d = decider(&al.split('\n').collect::<Vec<&str>>()).unwrap();
         assert!(d.check("/bin/foo"));
         assert!(!d.check("/usr/share/x.txt"));
         assert!(!d.check("/usr/include/x.h"));
@@ -333,7 +398,7 @@ mod tests {
         | - bar/baz"#
             .trim_to('|');
 
-        let d = parse(&al.split('\n').collect::<Vec<&str>>()).unwrap();
+        let d = decider(&al.split('\n').collect::<Vec<&str>>()).unwrap();
         assert_matches!(d.dec("/"), Inc(3));
         assert_matches!(d.dec("/usr/bin/some_binary1"), Exc(1));
         assert_matches!(d.dec("/usr/bin/some_binary2"), Exc(2));
@@ -343,21 +408,21 @@ mod tests {
 
     #[test]
     fn too_many_indents() {
-        assert_matches!(parse(&[" + foo"]), Err(Error::TooManyStartIndents));
+        assert_matches!(decider(&[" + foo"]), Err(Error::TooManyStartIndents));
     }
 
     #[test]
     fn indentation_0_starts_with_slash() {
-        assert_matches!(parse(&["+ x"]), Err(Error::NonAbsRootElement));
+        assert_matches!(decider(&["+ x"]), Err(Error::NonAbsRootElement));
         assert_matches!(
-            parse(&["+ /", " - foo", "+ bar"]),
+            decider(&["+ /", " - foo", "+ bar"]),
             Err(Error::NonAbsRootElement)
         );
     }
 
     #[test]
     fn indentation_basic() -> Result<(), Error> {
-        let d = parse(&["+ /", " - b", "  + baz"])?;
+        let d = decider(&["+ /", " - b", "  + baz"])?;
         assert!(d.check("/a"));
         assert!(!d.check("/b"));
         assert!(d.check("/b/baz"));
@@ -367,7 +432,7 @@ mod tests {
 
     #[test]
     fn indentation_mix() -> Result<(), Error> {
-        let d = parse(&["+ /", "  - foo/bar", "   + baz"])?;
+        let d = decider(&["+ /", "  - foo/bar", "   + baz"])?;
         assert!(d.check("/"));
         assert!(d.check("/foo"));
         assert!(!d.check("/foo/bar"));
@@ -378,7 +443,7 @@ mod tests {
 
     #[test]
     fn indentation_nested() -> Result<(), Error> {
-        let d = parse(&["+ /", "- /foo/bar", "+ /foo/bar/baz"])?;
+        let d = decider(&["+ /", "- /foo/bar", "+ /foo/bar/baz"])?;
         assert!(d.check("/"));
         assert!(d.check("/foo"));
         assert!(!d.check("/foo/bar"));
@@ -389,7 +454,7 @@ mod tests {
 
     #[test]
     fn basic() -> Result<(), Error> {
-        let d = parse(&["+ /", "- /foo"])?;
+        let d = decider(&["+ /", "- /foo"])?;
         assert!(d.check("/"));
         assert!(!d.check("/foo"));
         Ok(())
@@ -397,7 +462,7 @@ mod tests {
 
     #[test]
     fn wildcard_single() -> Result<(), Error> {
-        let d = parse(&["+ /", " - b?"])?;
+        let d = decider(&["+ /", " - b?"])?;
         assert!(d.check("/a"));
         assert!(d.check("/b"));
         assert!(!d.check("/bb"));
@@ -408,7 +473,7 @@ mod tests {
 
     #[test]
     fn wildcard_glob() -> Result<(), Error> {
-        let d = parse(&["+ /", " - b", " - b*"])?;
+        let d = decider(&["+ /", " - b", " - b*"])?;
         assert!(d.check("/a"));
         assert!(!d.check("/b"));
         assert!(!d.check("/bb"));
@@ -419,11 +484,11 @@ mod tests {
 
     #[test]
     fn parse_basic() -> Result<(), Error> {
-        let d = parse(&["+ /"])?;
+        let d = decider(&["+ /"])?;
         assert!(d.check("/"));
         assert!(d.check("/foo"));
 
-        let d = parse(&["+ /foo"])?;
+        let d = decider(&["+ /foo"])?;
         assert!(!d.check("/"));
         assert!(d.check("/foo"));
         Ok(())
@@ -440,7 +505,7 @@ mod tests {
         | "#
         .trim_to('|');
 
-        let d = parse(&al.split('\n').collect::<Vec<&str>>()).unwrap();
+        let d = decider(&al.split('\n').collect::<Vec<&str>>()).unwrap();
         assert!(!d.check("/usr/foo/x"));
         assert!(d.check("/usr/foo/x.py"));
         assert!(!d.check("/usr/bar/x"));
@@ -462,7 +527,7 @@ mod tests {
         |+ /"#
             .trim_to('|');
 
-        let d = parse(&al.split('\n').collect::<Vec<&str>>()).unwrap();
+        let d = decider(&al.split('\n').collect::<Vec<&str>>()).unwrap();
         assert!(d.check("/"));
         assert!(!d.check("/usr/bin/some_binary1"));
         assert!(!d.check("/usr/bin/some_binary2"));
@@ -475,7 +540,7 @@ mod tests {
         | - usr/bin/some_binary*"#
             .trim_to('|');
 
-        let d = parse(&al.split('\n').collect::<Vec<&str>>()).unwrap();
+        let d = decider(&al.split('\n').collect::<Vec<&str>>()).unwrap();
         assert!(d.check("/"));
         assert!(!d.check("/usr/bin/some_binary1"));
         assert!(!d.check("/usr/bin/some_binary2"));
@@ -490,7 +555,7 @@ mod tests {
         |  + *.pl"#
             .trim_to('|');
 
-        let d = parse(&al.split('\n').collect::<Vec<&str>>()).unwrap();
+        let d = decider(&al.split('\n').collect::<Vec<&str>>()).unwrap();
         assert!(d.check("/usr/bin/ls"));
         assert!(!d.check("/usr/share/something"));
         assert!(d.check("/usr/share/abcd.py"));
@@ -504,7 +569,7 @@ mod tests {
         |   + *.py"#
             .trim_to('|');
 
-        let d = parse(&al.split('\n').collect::<Vec<&str>>()).unwrap();
+        let d = decider(&al.split('\n').collect::<Vec<&str>>()).unwrap();
         assert!(!d.check("/usr/share/abc"));
         // assert!(!d.check("/usr/share/abc.py"));
     }
@@ -517,7 +582,7 @@ mod tests {
         |   + *.py"#
             .trim_to('|');
 
-        let d = parse(&al.split('\n').collect::<Vec<&str>>()).unwrap();
+        let d = decider(&al.split('\n').collect::<Vec<&str>>()).unwrap();
         assert!(!d.check("/usr/share/abc"));
         assert!(!d.check("/usr/share/abc.pl"));
         assert!(d.check("/usr/share/abc.py"));
@@ -535,7 +600,7 @@ mod tests {
         |- /z"#
             .trim_to('|');
 
-        let d = parse(&al.split('\n').collect::<Vec<&str>>()).unwrap();
+        let d = decider(&al.split('\n').collect::<Vec<&str>>()).unwrap();
         assert!(!d.check("/usr/share/xyz"));
         assert!(d.check("/usr/share/abc/def/foo.py"));
         assert!(!d.check("/tmp/x"));
