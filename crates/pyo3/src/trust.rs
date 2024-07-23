@@ -239,7 +239,7 @@ pub(crate) fn filter_info(db: &filter::DB) -> Vec<PyFilterInfo> {
             Line::Invalid(s) => Some((e, format!("Invalid: {s}"))),
             Line::Malformed(s) => Some((e, format!("Malformed: {s}"))),
             Line::Duplicate(s) => Some((e, format!("Duplicated: {s}"))),
-            Line::ValidWithWarning(_, m) => Some((w, format!("{m}"))),
+            Line::ValidWithWarning(_, m) => Some((w, m.to_owned())),
             _ => None,
         };
         if let Some((category, message)) = info {
