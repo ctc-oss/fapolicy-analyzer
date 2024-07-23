@@ -41,6 +41,14 @@ BuildRequires: audit-libs-devel
 BuildRequires: cargo-rpm-macros
 BuildRequires: python3dist(setuptools-rust)
 
+%package cli
+
+%build
+echo "echo 'hello'" > %{_sbindir}/%{name}-cli
+chmod +x %{_sbindir}/%{name}-cli
+
+%package gui
+
 Requires:      python3
 Requires:      python3-gobject
 Requires:      python3-events
@@ -107,6 +115,12 @@ export RUSTFLAGS="%{build_rustflags}"
 %{cargo_license} > LICENSE.dependencies
 
 %install
+
+%if %{with cli}
+install -D bin/%{name} %{buildroot}/%{_sbindir}/%{name}-cli
+%endif
+
+%if %{with gui}
 %{py3_install_wheel %{module}-%{module_version}*%{_target_cpu}.whl}
 %{python3} help install --dest %{buildroot}/%{_datadir}/help
 install -D bin/%{name} %{buildroot}/%{_sbindir}/%{name}
@@ -115,11 +129,15 @@ install -D data/config.toml -t %{buildroot}%{_sysconfdir}/%{name}/
 desktop-file-install data/%{name}.desktop
 find locale -name %{name}.mo -exec cp --parents -rv {} %{buildroot}/%{_datadir} \;
 %find_lang %{name} --with-gnome
+%endif
 
 %check
 desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
 
-%files -n %{name} -f %{name}.lang
+%files libs
+%attr(755,root,root) %{_sbindir}/%{name}-cli
+
+%files gui -f %{name}.lang
 %doc scripts/srpm/README
 %license LICENSE
 %license LICENSE.dependencies
