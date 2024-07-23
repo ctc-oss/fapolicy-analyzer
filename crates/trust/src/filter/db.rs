@@ -11,6 +11,7 @@ use std::slice::Iter;
 #[derive(Clone, Debug)]
 pub enum Line {
     Valid(String),
+    ValidWithWarning(String, String),
     Invalid(String),
     Malformed(String),
     Duplicate(String),
@@ -52,7 +53,7 @@ impl Display for Line {
         use Line::*;
 
         match self {
-            Valid(tok) => f.write_fmt(format_args!("{tok}")),
+            Valid(tok) | ValidWithWarning(tok, _) => f.write_fmt(format_args!("{tok}")),
             Invalid(tok) => f.write_fmt(format_args!("{tok}")),
             Malformed(txt) => f.write_str(txt),
             Duplicate(tok) => f.write_fmt(format_args!("{tok}")),

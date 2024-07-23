@@ -17,8 +17,8 @@ fn lines_in_file(path: PathBuf) -> Result<Vec<String>, Error> {
     let reader = File::open(path)
         .map(BufReader::new)
         .map_err(|_| Error::General)?;
-    let lines = reader.lines().flatten().collect();
-    Ok(lines)
+    let lines: Vec<_> = reader.lines().collect();
+    Ok(lines.into_iter().flatten().collect())
 }
 
 pub fn file(path: PathBuf) -> Result<DB, Error> {
