@@ -206,7 +206,7 @@ pub fn decider(lines: &[&str]) -> Result<Decider, Error> {
     Ok(decider)
 }
 
-/// Parse a Decider from the conf lines
+/// Parse a Line from the conf lines
 pub fn lines(input: Vec<String>) -> Vec<Line> {
     let mut lines = vec![];
 
@@ -214,7 +214,7 @@ pub fn lines(input: Vec<String>) -> Vec<Line> {
     let mut stack = vec![];
 
     // process lines from the config, ignoring comments and empty lines
-    for (ln, line) in input.iter().enumerate() {
+    for (_, line) in input.iter().enumerate() {
         if line.trim_start().starts_with('#') {
             lines.push(Line::Comment(line.to_string()))
         } else if line.is_empty() {
