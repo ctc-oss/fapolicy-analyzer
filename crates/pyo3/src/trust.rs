@@ -233,16 +233,18 @@ impl PyFilterInfo {
 
 pub(crate) fn filter_info(db: &filter::DB) -> Vec<PyFilterInfo> {
     let e = "e";
+    let w = "w";
     db.iter().fold(vec![], |mut acc, line| {
-        let message = match line {
-            Line::Invalid(s) => Some(format!("Invalid: {s}")),
-            Line::Malformed(s) => Some(format!("Malformed: {s}")),
-            Line::Duplicate(s) => Some(format!("Duplicated: {s}")),
+        let info = match line {
+            Line::Invalid(s) => Some((e, format!("Invalid: {s}"))),
+            Line::Malformed(s) => Some((e, format!("Malformed: {s}"))),
+            Line::Duplicate(s) => Some((e, format!("Duplicated: {s}"))),
+            Line::ValidWithWarning(_, m) => Some((w, format!("{m}"))),
             _ => None,
         };
-        if let Some(message) = message {
+        if let Some((category, message)) = info {
             acc.push(PyFilterInfo {
-                category: e.to_owned(),
+                category: category.to_owned(),
                 message,
             });
         };

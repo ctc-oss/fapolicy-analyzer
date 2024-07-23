@@ -206,7 +206,7 @@ pub fn decider(lines: &[&str]) -> Result<Decider, Error> {
     Ok(decider)
 }
 
-/// Parse a Line from the conf lines
+/// Parse Lines entries from the conf lines
 pub fn lines(input: Vec<String>) -> Vec<Line> {
     let mut lines = vec![];
 
@@ -238,10 +238,18 @@ pub fn lines(input: Vec<String>) -> Vec<Line> {
                 (None, Ok((_, (_, _)))) => {
                     lines.push(Line::Invalid("TooManyStartIndents".to_owned()))
                 }
-                // handle an indentation
+                // handle indentation
                 (Some(pi), Ok((i, (k, _)))) if i > pi => {
+                    let entry = if i - pi == 1 {
+                        Line::Valid(line.to_string())
+                    } else {
+                        Line::ValidWithWarning(
+                            line.to_string(),
+                            format!("Excessive indent, {} spaces", i - pi - 1),
+                        )
+                    };
                     let p = stack.last().map(|l| l.join(k)).unwrap();
-                    lines.push(Line::Valid(line.to_string()));
+                    lines.push(entry);
                     stack.push(p);
                     prev_i = Some(i);
                 }
