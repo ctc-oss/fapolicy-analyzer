@@ -13,8 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fapolicy_analyzer
 from fapolicy_analyzer.util.format import f, snake_to_camelcase
 
+import pytest
 import context  # noqa: F401
 
 
@@ -41,3 +43,16 @@ def test_f():
 
 def test_f_none():
     assert f(None) is None
+
+@pytest.mark.parametrize("version, f_in, eval_out",[((3,9), "foo", "insert is foo"),
+                                                  ((3,12), "bar", "insert is bar"),
+                                                  ((3,13), "baz", "insert is baz")])
+def test_f_supported_py_vers(version, f_in, eval_out, mocker):
+    insert = f_in
+    mockEval = mocker.patch('builtins.eval', return_value=f"insert is {insert}")
+    mockSysVer = mocker.patch.object(fapolicy_analyzer.util.format, "sys")
+    mockSysVer.version_info = version
+
+    assert f(None) is None
+    assert f(f"insert is {insert}") == eval_out
+    assert mockEval.called
