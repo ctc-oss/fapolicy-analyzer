@@ -28,3 +28,6 @@ venvs
 fapolicy_analyzer/resources/build-info.json
 VERSION
 FEATURES
+
+doc
+news
