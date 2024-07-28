@@ -57,7 +57,7 @@ def test_f_supported_py_vers(py_ver, f_in, eval_out, mocker):
     assert f(f"insert is {insert}") == eval_out
 
     # Check if keyword args were in eval()'s call
-    assert mockEval.called_once
+    assert mockEval.called
     tupleEvalArgs = mockEval.call_args
 
     if py_ver < (3, 13):
