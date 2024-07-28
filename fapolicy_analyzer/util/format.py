@@ -14,16 +14,22 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import re
+import sys
 from inspect import currentframe
 
 
 def f(formatString):
     frame = currentframe().f_back
-    return (
-        eval(f'f"""{formatString}"""', frame.f_locals, frame.f_globals)
-        if formatString
-        else formatString
-    )
+
+    if formatString:
+        if sys.version_info < (3, 13):
+            formatString = eval(f'f"""{formatString}"""', frame.f_locals,
+                                frame.f_globals)
+        else:
+            formatString = eval(f'f"""{formatString}"""',
+                                locals=frame.f_locals,
+                                globals=frame.f_globals)
+    return formatString
 
 
 def snake_to_camelcase(string):

@@ -6,18 +6,21 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use serde::Deserialize;
-use serde::Serialize;
 use std::path::PathBuf;
 
+use serde::Deserialize;
+use serde::Serialize;
+
 use fapolicy_analyzer::users::{read_groups, read_users, Group, User};
-use fapolicy_daemon::conf::ops::Changeset as ConfigChanges;
+use fapolicy_daemon::conf::ops::Changeset as ConfChanges;
 use fapolicy_daemon::conf::DB as ConfDB;
 use fapolicy_daemon::fapolicyd::Version;
 use fapolicy_rules::db::DB as RulesDB;
 use fapolicy_rules::ops::Changeset as RuleChanges;
 use fapolicy_rules::read::load_rules_db;
 use fapolicy_trust::db::DB as TrustDB;
+use fapolicy_trust::filter::db::DB as FilterDB;
+use fapolicy_trust::filter::ops::Changeset as FilterChanges;
 use fapolicy_trust::ops::Changeset as TrustChanges;
 use fapolicy_trust::{check, load};
 
@@ -35,6 +38,7 @@ pub struct State {
     pub groups: Vec<Group>,
     pub daemon_config: ConfDB,
     pub daemon_version: Version,
+    pub trust_filter_config: FilterDB,
 }
 
 impl State {
@@ -47,6 +51,7 @@ impl State {
             groups: vec![],
             daemon_config: ConfDB::default(),
             daemon_version: fapolicy_daemon::version(),
+            trust_filter_config: FilterDB::default(),
         }
     }
 
@@ -65,6 +70,9 @@ impl State {
             groups: read_groups()?,
             daemon_config: fapolicy_daemon::conf::from_file(&cfg.system.config_file_path)?,
             daemon_version: fapolicy_daemon::version(),
+            trust_filter_config: fapolicy_trust::filter::read::file(
+                &cfg.system.trust_filter_conf_path,
+            )?,
         })
     }
 
@@ -85,6 +93,7 @@ impl State {
             groups: self.groups.clone(),
             daemon_config: self.daemon_config.clone(),
             daemon_version: self.daemon_version.clone(),
+            trust_filter_config: self.trust_filter_config.clone(),
         }
     }
 
@@ -99,11 +108,12 @@ impl State {
             groups: self.groups.clone(),
             daemon_config: self.daemon_config.clone(),
             daemon_version: self.daemon_version.clone(),
+            trust_filter_config: self.trust_filter_config.clone(),
         }
     }
 
     /// Apply a config changeset to this state, results in a new immutable state
-    pub fn apply_config_changes(&self, changes: ConfigChanges) -> Self {
+    pub fn apply_config_changes(&self, changes: ConfChanges) -> Self {
         let modified = changes.apply();
         Self {
             config: self.config.clone(),
@@ -113,6 +123,21 @@ impl State {
             groups: self.groups.clone(),
             daemon_config: modified.clone(),
             daemon_version: self.daemon_version.clone(),
+            trust_filter_config: self.trust_filter_config.clone(),
+        }
+    }
+
+    pub fn apply_trust_filter_changes(&self, changes: FilterChanges) -> Self {
+        let modified = changes.apply();
+        Self {
+            config: self.config.clone(),
+            trust_db: self.trust_db.clone(),
+            rules_db: self.rules_db.clone(),
+            users: self.users.clone(),
+            groups: self.groups.clone(),
+            daemon_config: self.daemon_config.clone(),
+            daemon_version: self.daemon_version.clone(),
+            trust_filter_config: modified.clone(),
         }
     }
 }

@@ -79,6 +79,10 @@ RECEIVED_CONFIG_TEXT = "RECEIVED_CONFIG_TEXT"
 MODIFY_CONFIG_TEXT = "MODIFY_CONFIG_TEXT"
 ERROR_CONFIG_TEXT = "ERROR_CONFIG_TEXT"
 
+REQUEST_TRUST_FILTER_TEXT = "REQUEST_TRUST_FILTER_TEXT"
+RECEIVED_TRUST_FILTER_TEXT = "RECEIVED_TRUST_FILTER_TEXT"
+MODIFY_TRUST_FILTER_TEXT = "MODIFY_TRUST_FILTER_TEXT"
+ERROR_TRUST_FILTER_TEXT = "ERROR_TRUST_FILTER_TEXT"
 
 PROFILING_INIT_EVENT = "PROFILING_INIT"
 START_PROFILING_REQUEST = "START_PROFILING_REQUEST"
@@ -121,7 +125,7 @@ class Notification(NamedTuple):
 
 
 def add_notification(
-    text: str, type: NotificationType = NotificationType.INFO, category: str = None
+        text: str, type: NotificationType = NotificationType.INFO, category: str = None
 ) -> Action:
     return _create_action(
         ADD_NOTIFICATION, (Notification(next(_ids), text, type, category))
@@ -157,7 +161,7 @@ def ancillary_trust_load_started(count: int, timestamp: float) -> Action:
 
 
 def received_ancillary_trust_update(
-    update: Sequence[Trust], count: int, timestamp: float
+        update: Sequence[Trust], count: int, timestamp: float
 ) -> Action:
     return _create_action(RECEIVED_ANCILLARY_TRUST_UPDATE, (update, count, timestamp))
 
@@ -179,7 +183,7 @@ def system_trust_load_started(count: int, timestamp: float) -> Action:
 
 
 def received_system_trust_update(
-    update: Sequence[Trust], count: int, timestamp: float
+        update: Sequence[Trust], count: int, timestamp: float
 ) -> Action:
     return _create_action(RECEIVED_SYSTEM_TRUST_UPDATE, (update, count, timestamp))
 
@@ -296,6 +300,22 @@ def error_config_text(error: str) -> Action:
     return _create_action(ERROR_CONFIG_TEXT, error)
 
 
+def request_trust_filter_text() -> Action:
+    return _create_action(REQUEST_TRUST_FILTER_TEXT)
+
+
+def received_trust_filter_text(config_text: str) -> Action:
+    return _create_action(RECEIVED_TRUST_FILTER_TEXT, config_text)
+
+
+def modify_trust_filter_text(config_text: str) -> Action:
+    return _create_action(MODIFY_TRUST_FILTER_TEXT, config_text)
+
+
+def error_trust_filter_text(error: str) -> Action:
+    return _create_action(ERROR_TRUST_FILTER_TEXT, error)
+
+
 def profiler_init() -> Action:
     return _create_action(PROFILING_INIT_EVENT)
 
@@ -329,7 +349,7 @@ def profiler_done() -> Action:
 
 
 def set_profiler_output(
-    events: Optional[str], stdout: Optional[str], stderr: Optional[str]
+        events: Optional[str], stdout: Optional[str], stderr: Optional[str]
 ) -> Action:
     return _create_action(PROFILER_SET_OUTPUT_CMD, (events, stdout, stderr))
 

@@ -184,7 +184,7 @@ pub(crate) fn conf_info(db: &conf::DB) -> Vec<PyConfigInfo> {
     })
 }
 
-/// A mutable collection of rule changes
+/// A mutable collection of config changes
 #[pyclass(module = "daemon", name = "ConfigChangeset")]
 #[derive(Default, Clone)]
 pub struct PyChangeset {

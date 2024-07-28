@@ -38,6 +38,7 @@ from fapolicy_analyzer.ui.actions import (
 )
 from fapolicy_analyzer.ui.changeset_wrapper import Changeset
 from fapolicy_analyzer.ui.config.config_admin_page import ConfigAdminPage
+from fapolicy_analyzer.ui.config.trust_filter_admin_page import TrustFilterAdminPage
 from fapolicy_analyzer.ui.configs import Sizing
 from fapolicy_analyzer.ui.database_admin_page import DatabaseAdminPage
 from fapolicy_analyzer.ui.fapd_manager import FapdManager, ServiceStatus
@@ -79,6 +80,7 @@ def router(page: PAGE_SELECTION, *data) -> UIPage:
         PAGE_SELECTION.RULES_ADMIN: RulesAdminPage,
         PAGE_SELECTION.PROFILER: ProfilerPage,
         PAGE_SELECTION.CONFIG: ConfigAdminPage,
+        PAGE_SELECTION.TRUST_FILTER: TrustFilterAdminPage,
     }.get(page, RulesAdminPage)
     return route(*data)
 
@@ -128,9 +130,9 @@ class MainWindow(UIConnectedWidget):
 
         # Enable profiler tool menu item if root user, env var, or magic file
         prof_ui_enable = (
-            self._fapdControlPermitted  # EUID == 0
-            or getenv("PROF_UI_ENABLE", "false").lower() != "false"
-            or path.exists("/tmp/prof_ui_enable")
+                self._fapdControlPermitted  # EUID == 0
+                or getenv("PROF_UI_ENABLE", "false").lower() != "false"
+                or path.exists("/tmp/prof_ui_enable")
         )
         self.get_object("profileExecMenu").set_sensitive(prof_ui_enable)
         self.get_object("auditlogMenu").set_sensitive(is_audit_available())
@@ -477,6 +479,9 @@ class MainWindow(UIConnectedWidget):
 
     def on_configAdminMenu_activate(self, *args):
         self.__pack_main_content(router(PAGE_SELECTION.CONFIG))
+
+    def on_trustFilterAdminMenu_activate(self, *args):
+        self.__pack_main_content(router(PAGE_SELECTION.TRUST_FILTER))
 
     def on_rulesAdminMenu_activate(self, *args, **kwargs):
         rulesPage = router(PAGE_SELECTION.RULES_ADMIN)
