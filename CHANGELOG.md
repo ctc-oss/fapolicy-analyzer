@@ -8,6 +8,23 @@ Release notes
 
 <!-- towncrier release notes start -->
 
+## [v1.4.0](https://github.com/ctc-oss/fapolicy-analyzer/releases/tag/v1.4.0) - 2024-07-28
+
+
+### Added
+
+- Added fapolicyd package filter config parser and analyzer. ([#1012](https://github.com/ctc-oss/fapolicy-analyzer/pull/1012))
+- Added fapolicyd package filter config editor GUI. ([#1014](https://github.com/ctc-oss/fapolicy-analyzer/pull/1014))
+
+### Fixed
+
+- Address new Py 3.13 eval() parameter list while still supporting RHEL9 Py 3.9 ([#1022](https://github.com/ctc-oss/fapolicy-analyzer/pull/1022))
+
+### Packaging
+
+- Supporting Fedora 41, 40, 39, dropped support for 38. ([#1016](https://github.com/ctc-oss/fapolicy-analyzer/pull/1016))
+
+
 ## [v1.3.0](https://github.com/ctc-oss/fapolicy-analyzer/releases/tag/v1.3.0) - 2024-02-11
 
 
