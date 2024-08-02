@@ -21,7 +21,7 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
       is-copr-enabled: ${{ steps.is-copr-enabled.outputs.defined }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
 
@@ -46,7 +46,7 @@ jobs:
       - name: Install deps
         run: dnf install -y git make python3
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
@@ -84,7 +84,7 @@ jobs:
           mv fapolicy-analyzer-${spec_version}.tar.gz fapolicy-analyzer-${patched_version}.tar.gz
 
       - name: Upload
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: source0
           path: |
@@ -110,7 +110,7 @@ jobs:
       - name: Install Git
         run: dnf install -y git
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
@@ -209,14 +209,14 @@ jobs:
           mv vendor-rs-${version}.tar.gz /tmp/archives/
 
       - name: Upload SourceX
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: tarball-artifacts
           path: |
             /tmp/archives/*.tar.gz
 
       - name: Upload SRPMs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: srpm-artifacts
           path: |
@@ -275,7 +275,7 @@ jobs:
     strategy:
       matrix: ${{ fromJson(needs.config.outputs.matrix )}}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
 
@@ -310,7 +310,7 @@ jobs:
         working-directory: /github/home/rpmbuild/RPMS/x86_64
 
       - name: Upload RPMs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: rpm-artifacts
           path: |
@@ -324,7 +324,7 @@ jobs:
     strategy:
       matrix: ${{ fromJson(needs.config.outputs.matrix )}}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
 
@@ -358,7 +358,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
 
