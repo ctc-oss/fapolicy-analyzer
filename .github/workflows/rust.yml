@@ -23,7 +23,7 @@ jobs:
       - run: rustup component add rustfmt
       # use a placeholder for bindgen bindings
       - run: echo "//placeholder" | tee crates/auparse/sys/src/bindings.rs
-      - uses: actions-rs/cargo@v4
+      - uses: actions-rs/cargo@v1
         with:
           command: fmt
           args: --all -- --check
@@ -40,7 +40,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@v1
         with:
           toolchain: 1.71.1
-      - uses: actions-rs/cargo@v4
+      - uses: actions-rs/cargo@v1
         with:
           command: check
 
@@ -59,7 +59,7 @@ jobs:
           components: clippy
           toolchain: 1.71.1
       - run: rustup component add clippy
-      - uses: actions-rs/cargo@v4
+      - uses: actions-rs/cargo@v1
         with:
           command: clippy
           args: -- -D warnings
@@ -83,7 +83,7 @@ jobs:
         with:
           path: './pr'
       - name: Install cargo-semver-checks
-        uses: robinraju/release-downloader@v4
+        uses: robinraju/release-downloader@v1.8
         with:
           repository: obi1kenobi/cargo-semver-checks
           filename: cargo-semver-checks-x86_64-unknown-linux-gnu.tar.gz
@@ -109,7 +109,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@v1
         with:
           toolchain: 1.71.1
-      - uses: actions-rs/cargo@v4
+      - uses: actions-rs/cargo@v1
         with:
           command: test
           args: --all
