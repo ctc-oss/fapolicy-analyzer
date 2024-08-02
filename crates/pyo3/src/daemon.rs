@@ -79,13 +79,13 @@ impl PyHandle {
         self.rs.valid().unwrap_or(false)
     }
 
-    #[args(timeout = 15)]
+    #[pyo3(signature = (timeout = 15))]
     pub fn wait_until_active(&self, timeout: usize) -> PyResult<()> {
         wait_for_service(&self.rs, Active, timeout)
             .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
     }
 
-    #[args(timeout = 15)]
+    #[pyo3(signature = (timeout = 15))]
     pub fn wait_until_inactive(&self, timeout: usize) -> PyResult<()> {
         wait_for_service(&self.rs, Inactive, timeout)
             .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
@@ -184,7 +184,7 @@ pub(crate) fn conf_info(db: &conf::DB) -> Vec<PyConfigInfo> {
     })
 }
 
-/// A mutable collection of rule changes
+/// A mutable collection of config changes
 #[pyclass(module = "daemon", name = "ConfigChangeset")]
 #[derive(Default, Clone)]
 pub struct PyChangeset {
@@ -238,7 +238,7 @@ fn conf_text_error_check(txt: &str) -> Option<String> {
     }
 }
 
-pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
+pub fn init_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyHandle>()?;
     m.add_class::<PyChangeset>()?;
     m.add_class::<PyConfigInfo>()?;

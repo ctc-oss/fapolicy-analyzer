@@ -16,6 +16,7 @@ pub use trust::Trust;
 pub mod parse;
 
 pub mod check;
+pub mod filter;
 pub mod load;
 pub mod read;
 pub mod write;

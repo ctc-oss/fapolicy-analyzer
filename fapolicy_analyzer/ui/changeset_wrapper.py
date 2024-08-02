@@ -17,7 +17,7 @@ from abc import ABC, abstractmethod
 from typing import Dict, Generic, TypeVar, List
 
 import fapolicy_analyzer
-from fapolicy_analyzer import System, ConfigInfo
+from fapolicy_analyzer import System, ConfigInfo, FilterInfo
 
 T = TypeVar("T", Dict[str, str], str)
 
@@ -57,6 +57,8 @@ class Changeset(ABC, Generic[T]):
             return RuleChangeset.deserialize(d)
         elif t == "config":
             return ConfigChangeset.deserialize(d)
+        elif t == "filter":
+            return TrustFilterChangeset.deserialize(d)
         else:
             raise TypeError(f"Invalid changeset type {t}")
 
@@ -86,6 +88,35 @@ class ConfigChangeset(Changeset[str]):
     @staticmethod
     def deserialize(d: str) -> "ConfigChangeset":
         ccs = ConfigChangeset()
+        ccs.parse(d)
+        return ccs
+
+
+class TrustFilterChangeset(Changeset[str]):
+    def __init__(self):
+        self.__wrapped = fapolicy_analyzer.TrustFilterChangeset()
+
+    def parse(self, change: str):
+        self.__wrapped.parse(change)
+
+    def is_valid(self) -> bool:
+        return self.__wrapped.is_valid()
+
+    def info(self) -> List[FilterInfo]:
+        return self.__wrapped.filter_info()
+
+    def apply_to_system(self, system: System) -> System:
+        return system.apply_trust_filter_changes(self.__wrapped)
+
+    def serialize(self) -> Dict[str, str]:
+        return {
+            "type": "filter",
+            "data": self.__wrapped.text(),
+        }
+
+    @staticmethod
+    def deserialize(d: str) -> "TrustFilterChangeset":
+        ccs = TrustFilterChangeset()
         ccs.parse(d)
         return ccs
 

@@ -96,7 +96,7 @@ def _combine_reducers(
 
 
 def combine_reducers(
-    reducers: Mapping[str, Reducer]
+    reducers: Mapping[str, Reducer],
 ) -> Reducer[Mapping[str, StateType]]:
     """Creates a new reducer from a mapping of reducers.
 

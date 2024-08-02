@@ -99,7 +99,7 @@ format: pyformat cargo-fmt
 # Format python source code
 pyformat:
 	@echo -e "${GRN}  |--- Python formating...${NC}"
-	pipenv run black fapolicy_analyzer/
+	pipenv run format
 
 # Format rust source code
 cargo-fmt:
@@ -120,7 +120,7 @@ header-check:
 # Perform linting on the Python source code
 pylint:
 	@echo -e "${GRN}-  |--- Python linting...${NC}"
-	pipenv run flake8 fapolicy_analyzer/
+	pipenv run lint
 
 # Perform linting on the rust source code
 clippy:
@@ -143,13 +143,6 @@ fc-rpm:
 	make -f .copr/Makefile vendor OS_ID=fedora
 	podman build -t fapolicy-analyzer:39 -f Containerfile .
 	podman run --rm -it --network=none -v /tmp:/v fapolicy-analyzer:39 /v
-
-# Generate RHEL 8 rpms
-el8-rpm:
-	@echo -e "${GRN}--- el8 RPM generation...${NC}"
-	make -f .copr/Makefile vendor OS_ID=rhel DIST=.el8 spec=scripts/srpm/fapolicy-analyzer.el8.spec
-	podman build -t fapolicy-analyzer:el8 -f scripts/srpm/Containerfile.el8 .
-	podman run --rm -it --network=none -v /tmp:/v fapolicy-analyzer:el8 /v
 
 # Generate RHEL 9 rpms
 el9-rpm:

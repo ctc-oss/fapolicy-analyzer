@@ -40,7 +40,7 @@ fn app_config_dir() -> String {
     cfg::config_dir()
 }
 
-pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
+pub fn init_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(config_file_path, m)?)?;
     m.add_function(wrap_pyfunction!(app_log_dir, m)?)?;
     m.add_function(wrap_pyfunction!(app_data_dir, m)?)?;

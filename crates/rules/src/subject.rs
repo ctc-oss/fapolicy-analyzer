@@ -40,6 +40,13 @@ impl Subject {
         }
     }
 
+    pub fn comm(&self) -> Option<String> {
+        match self.parts.iter().find(|p| matches!(p, Part::Comm(_))) {
+            Some(Part::Comm(path)) => Some(path.clone()),
+            _ => None,
+        }
+    }
+
     pub fn from_exe(path: &str) -> Subject {
         Subject::new(vec![SubjPart::Exe(path.into())])
     }

@@ -19,10 +19,12 @@
 
 ## Features
 
-1. Edit rules with validation and syntax highlighting
-2. Diff trust between fapolicyd trust db and disk
-3. Analyze fapolicyd logs and fix trust discrepancies
-4. Profile application disk access in fapolicy permissive mode
+1. Rule editor with syntax highlighting, syntax validation, and policy linting
+2. Trust database manager to synchronize what fapolicyd believes and what exists on disk
+3. Log analyzer provides insight to help understand and tune fapolicyd runtime behavior
+4. Disk access profiler to capture file access requests for an executing application
+5. Configuration file editor for fapolicyd, with syntax validation and linting
+6. DBUS based control of the fapolicyd daemon which is immune to bad policy lockout
 
 See the [**User Guide**][1] for details.
 
@@ -52,7 +54,8 @@ dnf install fapolicy-analyzer
 [![GitHub Latest pre-release)](https://img.shields.io/github/v/release/ctc-oss/fapolicy-analyzer?color=3c6eb4&include_prereleases&label=Beta&logo=github)](https://github.com/ctc-oss/fapolicy-analyzer/releases)
 ![GitHub downloads](https://img.shields.io/github/downloads/ctc-oss/fapolicy-analyzer/total?color=3c6eb4&logo=github)
 
-You can install the Policy Analyzer through the installers available in the [latest release](https://github.com/ctc-oss/fapolicy-analyzer/releases). <br>
+You can install the Policy Analyzer through the installers available in
+the [latest release](https://github.com/ctc-oss/fapolicy-analyzer/releases). <br>
 Choose an RPM from the latest Fedora stable, Rawhide, and EPEL builds. <br>
 
 </details>
@@ -63,7 +66,8 @@ Choose an RPM from the latest Fedora stable, Rawhide, and EPEL builds. <br>
 
 <a href="https://copr.fedorainfracloud.org/coprs/ctc-oss/fapolicy-analyzer/"><img src="https://img.shields.io/badge/dynamic/json?color=B87333&logo=fedora&label=Copr&query=builds.latest.state&url=https%3A%2F%2Fcopr.fedorainfracloud.org%2Fapi_3%2Fpackage%3Fownername%3Dctc-oss%26projectname%3Dfapolicy-analyzer%26packagename%3Dfapolicy-analyzer%26with_latest_build%3DTrue"></a>
 
-The Copr repository contains the latest development builds and release builds prior to publishing to the Fedora repositories.
+The Copr repository contains the latest development builds and release builds prior to publishing to the Fedora
+repositories.
 
 Follow this method to install a prerelease package.
 
@@ -118,7 +122,7 @@ Follow this method only if you have installed all required build tools
 
 `make run`
 
-This requires Pip + Pipenv + Python 3.6 or greater, and Rust 1.62.1 or greater.
+This requires Pip + Pipenv + Python 3.9 or greater, and Rust 1.62.1 or greater.
 
 Python and Rust dependencies will be installed during the build process.
 
@@ -128,7 +132,8 @@ Python and Rust dependencies will be installed during the build process.
 
 Compatible with v1.0+
 
-The [![fapolicyd-badge](https://img.shields.io/github/labels/ctc-oss/fapolicy-analyzer/fapolicyd-feature?style=flat)][2] label tracks support for specific [capability][3].
+The [![fapolicyd-badge](https://img.shields.io/github/labels/ctc-oss/fapolicy-analyzer/fapolicyd-feature?style=flat)][2]
+label tracks support for specific [capability][3].
 
 ### fapolicyd.conf
 
@@ -149,5 +154,7 @@ syslog_format = rule,dec,perm,uid,gid,pid,exe,:,path,ftype,trust
 GPL v3
 
 [1]: https://github.com/ctc-oss/fapolicy-analyzer/wiki/User-Guide
+
 [2]: https://github.com/ctc-oss/fapolicy-analyzer/labels/fapolicyd-feature
+
 [3]: https://github.com/linux-application-whitelisting/fapolicyd/blob/main/ChangeLog

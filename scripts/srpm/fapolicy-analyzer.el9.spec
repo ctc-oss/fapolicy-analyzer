@@ -1,6 +1,6 @@
 Summary:       File Access Policy Analyzer
 Name:          fapolicy-analyzer
-Version:       1.1.0
+Version:       1.4.0
 Release:       1%{?dist}
 License:       GPL-3.0-or-later
 URL:           https://github.com/ctc-oss/fapolicy-analyzer
@@ -21,7 +21,7 @@ Source15:      %{pypi_source semantic_version 2.8.2}
 Source16:      %{pypi_source packaging 21.3}
 Source17:      %{pypi_source pyparsing 2.1.0}
 Source18:      %{pypi_source tomli 1.2.3}
-Source19:      %{pypi_source flit_core 3.7.1}
+Source19:      %{pypi_source flit_core 3.9.0}
 Source20:      %{pypi_source typing_extensions 3.7.4.3}
 
 BuildRequires: python3-devel
@@ -41,78 +41,67 @@ BuildRequires: desktop-file-utils
 
 BuildRequires: clang
 BuildRequires: audit-libs-devel
+BuildRequires: lmdb-devel
 
 BuildRequires: rust-packaging
 
+BuildRequires: rust-arc-swap-devel
 BuildRequires: rust-assert_matches-devel
 BuildRequires: rust-autocfg-devel
-BuildRequires: rust-bitflags-devel
+BuildRequires: rust-bindgen-devel
+BuildRequires: rust-block-buffer-devel
 BuildRequires: rust-bumpalo-devel
-BuildRequires: rust-byteorder-devel
 BuildRequires: rust-cc-devel
+BuildRequires: rust-cexpr-devel
 BuildRequires: rust-cfg-if-devel
 BuildRequires: rust-chrono-devel
-#BuildRequires: rust-confy-devel
-BuildRequires: rust-crossbeam-channel-devel
-BuildRequires: rust-crossbeam-deque-devel
+BuildRequires: rust-clang-sys-devel
+BuildRequires: rust-confy-devel
+BuildRequires: rust-cpufeatures-devel
 BuildRequires: rust-crossbeam-epoch-devel
 BuildRequires: rust-crossbeam-utils-devel
-BuildRequires: rust-data-encoding-devel
-#BuildRequires: rust-dbus-devel
+BuildRequires: rust-crypto-common-devel
+BuildRequires: rust-digest-devel
 BuildRequires: rust-directories-devel
 BuildRequires: rust-dirs-sys-devel
 BuildRequires: rust-either-devel
-BuildRequires: rust-fastrand-devel
+BuildRequires: rust-generic-array-devel
 BuildRequires: rust-getrandom-devel
-BuildRequires: rust-iana-time-zone-devel
-BuildRequires: rust-is_executable-devel
+BuildRequires: rust-glob-devel
+BuildRequires: rust-heck-devel
+BuildRequires: rust-indoc-devel
 BuildRequires: rust-instant-devel
 BuildRequires: rust-lazy_static-devel
 BuildRequires: rust-libc-devel
-#BuildRequires: rust-libdbus-sys-devel
-#BuildRequires: rust-lmdb-devel
+BuildRequires: rust-libloading-devel
 BuildRequires: rust-lock_api-devel
 BuildRequires: rust-log-devel
 BuildRequires: rust-memchr-devel
 BuildRequires: rust-memoffset-devel
-BuildRequires: rust-minimal-lexical-devel
 BuildRequires: rust-nom-devel
 BuildRequires: rust-num-integer-devel
 BuildRequires: rust-num-traits-devel
 BuildRequires: rust-num_cpus-devel
-BuildRequires: rust-once_cell-devel
+BuildRequires: rust-option-ext-devel
 BuildRequires: rust-parking_lot-devel
-BuildRequires: rust-parking_lot_core-devel
 BuildRequires: rust-pkg-config-devel
-BuildRequires: rust-proc-macro-hack-devel
 BuildRequires: rust-proc-macro2-devel
-#BuildRequires: (crate(pyo3/default) >= 0.15.0 with crate(pyo3/default) < 0.16.0)
-#BuildRequires: (crate(pyo3-macros/default) >= 0.15.0 with crate(pyo3-macros/default) < 0.16.0)
-#BuildRequires: (crate(pyo3-build-config/default) >= 0.15.0 with crate(pyo3-build-config/default) < 0.16.0)
-#BuildRequires: (crate(pyo3-macros-backend/default) >= 0.15.0 with crate(pyo3-macros-backend/default) < 0.16.0)
-#BuildRequires: rust-pyo3-log-devel
-BuildRequires: rust-quote-devel
 BuildRequires: rust-rayon-devel
-BuildRequires: rust-rayon-core-devel
-BuildRequires: rust-remove_dir_all-devel
-#BuildRequires: rust-ring-devel
-BuildRequires: rust-scopeguard-devel
-BuildRequires: rust-serde-devel
-BuildRequires: rust-serde_derive-devel
+BuildRequires: rust-regex-devel
+BuildRequires: rust-regex-syntax-devel
+BuildRequires: rust-rustc-hash-devel
+BuildRequires: rust-sha2-devel
+BuildRequires: rust-shlex-devel
 BuildRequires: rust-similar-devel
 BuildRequires: rust-smallvec-devel
-BuildRequires: rust-spin-devel
 BuildRequires: rust-syn-devel
-BuildRequires: rust-tempfile-devel
+BuildRequires: rust-target-lexicon-devel
 BuildRequires: rust-thiserror-devel
-BuildRequires: rust-thiserror-impl-devel
-BuildRequires: rust-time0.1-devel
-BuildRequires: rust-toml-devel
-BuildRequires: rust-unicode-xid-devel
+BuildRequires: rust-typenum-devel
+BuildRequires: rust-unicode-ident-devel
 BuildRequires: rust-unindent-devel
-#BuildRequires: rust-untrusted-devel
-BuildRequires: rust-paste-devel
-BuildRequires: rust-indoc-devel
+BuildRequires: rust-version_check-devel
+BuildRequires: rust-which-devel
 
 Requires:      python3
 Requires:      python3-gobject
@@ -121,7 +110,7 @@ Requires:      python3-configargparse
 Requires:      python3-more-itertools
 Requires:      python3-rx
 Requires:      python3-importlib-metadata
-Requires:      python3-toml 
+Requires:      python3-toml
 
 Requires:      gtk3
 Requires:      gtksourceview3
@@ -130,10 +119,6 @@ Requires:      gnome-icon-theme
 # runtime required for rendering user guide
 Requires:      webkit2gtk3
 Requires:      mesa-dri-drivers
-
-# rust-ring-devel does not support s390x and ppc64le:
-# https://bugzilla.redhat.com/show_bug.cgi?id=1869980
-ExcludeArch:   s390x %{power64}
 
 %global module          fapolicy_analyzer
 
@@ -177,17 +162,15 @@ ln -sf  %{python3_sitelib}/{Babel*,babel} %{venv_lib}
 # /usr/share/cargo/registry so we work around this by linking the contents
 # of the default registry into a new writable location, and then extract
 # the contents of the vendor tarball to this new writable dir.
-# The extraction favor the system crates by untaring with --skip-old-files
+# The extraction favors the system crates by untaring with --skip-old-files
 # Later the Cargo config will be updated to point to this new registry dir
+# The crates in the vendor tarball are collected from Rawhide.
 CARGO_REG_DIR=%{_builddir}/vendor-rs
 mkdir -p ${CARGO_REG_DIR}
 for d in %{cargo_registry}/*; do ln -sf ${d} ${CARGO_REG_DIR} || true; done
 tar -xzf %{SOURCE2} -C ${CARGO_REG_DIR} --skip-old-files --strip-components=2
 
-%cargo_prep
-
-# here the Cargo config is updated to point to the new registry dir
-sed -i "s#%{cargo_registry}#${CARGO_REG_DIR}#g" .cargo/config
+%cargo_prep -v ${CARGO_REG_DIR}
 
 %autosetup -n %{name}
 
@@ -236,5 +219,5 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
 %attr(755,root,root) %{_datadir}/applications/%{name}.desktop
 
 %changelog
-* Tue Jul 11 2023 John Wass <jwass3@gmail.com> 1.1.0-1
+* Sun Jul 28 2024 John Wass <jwass3@gmail.com> 1.4.0-1
 - New release

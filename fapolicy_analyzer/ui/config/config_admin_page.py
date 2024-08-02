@@ -13,8 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import gi
 import logging
-
 
 from typing import Any, Optional, Sequence, Tuple
 from fapolicy_analyzer.ui.actions import (
@@ -27,10 +27,12 @@ from fapolicy_analyzer.ui.actions import (
 from fapolicy_analyzer.ui.changeset_wrapper import Changeset, ConfigChangeset
 from fapolicy_analyzer.ui.config.config_text_view import ConfigTextView
 from fapolicy_analyzer.ui.config.config_status_info import ConfigStatusInfo
+from fapolicy_analyzer.ui.rules.rules_admin_page import VALIDATION_NOTE_CATEGORY
 from fapolicy_analyzer.ui.strings import (
     APPLY_CHANGESETS_ERROR_MESSAGE,
     CONFIG_CHANGESET_PARSE_ERROR,
     CONFIG_TEXT_LOAD_ERROR,
+    RULES_OVERRIDE_MESSAGE,
 )
 from fapolicy_analyzer.ui.ui_page import UIPage, UIAction
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
@@ -41,6 +43,9 @@ from fapolicy_analyzer.ui.store import (
     get_system_feature,
 )
 
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk  # isort: skip
+
 
 class ConfigAdminPage(UIConnectedWidget):
     def __init__(self):
@@ -50,6 +55,13 @@ class ConfigAdminPage(UIConnectedWidget):
         UIConnectedWidget.__init__(self, features=features)
         actions = {
             "config": [
+                UIAction(
+                    name="Validate",
+                    tooltip="Validate Config",
+                    icon="emblem-default",
+                    signals={"clicked": self.on_validate_clicked},
+                    sensitivity_func=self.__config_unvalidated,
+                ),
                 UIAction(
                     name="Save",
                     tooltip="Save Config",
@@ -62,6 +74,7 @@ class ConfigAdminPage(UIConnectedWidget):
         UIPage.__init__(self, actions)
         self.__loading_text: bool = False
         self.__config_text: str = ""
+        self.__config_validated: bool = False
         self.__changesets: Sequence[Changeset] = []
         self.__modified_config_text: str = ""
         self.__config_validated: bool = True
@@ -92,16 +105,34 @@ class ConfigAdminPage(UIConnectedWidget):
         changeset, valid = self.__build_and_validate_changeset(show_notifications=False)
         if valid:
             self.__saving = True
-            self._unsaved_changes = False
             dispatch(apply_changesets(changeset))
+            self._unsaved_changes = False
         else:
-            self.__status_info.render_config_status(changeset.info())
+            overrideDialog = self.get_object("saveOverrideDialog")
+            self.get_object("overrideText").set_text(RULES_OVERRIDE_MESSAGE)
+            resp = overrideDialog.run()
+            if resp == Gtk.ResponseType.OK:
+                self.__saving = True
+                dispatch(apply_changesets(changeset))
+                self._unsaved_changes = False
+            else:
+                self.__status_info.render_config_status(changeset.info())
+            overrideDialog.hide()
+
+    def on_validate_clicked(self, *args):
+        changeset, _ = self.__build_and_validate_changeset(show_notifications=False)
+        self.__status_info.render_config_status(changeset.info())
+        # dispatch to force toolbar refresh
+        dispatch(modify_config_text(self.__config_validated))
 
     def __config_dirty(self) -> bool:
         return (
             bool(self.__modified_config_text)
             and self.__modified_config_text != self.__config_text
         )
+
+    def __config_unvalidated(self) -> bool:
+        return not self.__config_validated
 
     def __build_and_validate_changeset(
         self, show_notifications=True
@@ -112,6 +143,14 @@ class ConfigAdminPage(UIConnectedWidget):
         try:
             changeset.parse(self.__modified_config_text)
             valid = changeset.is_valid()
+            if show_notifications and not valid:
+                dispatch(
+                    add_notification(
+                        CONFIG_CHANGESET_PARSE_ERROR,
+                        NotificationType.ERROR,
+                        category=VALIDATION_NOTE_CATEGORY,
+                    )
+                )
         except Exception as e:
             logging.error("Error setting changeset config: %s", e)
             dispatch(
@@ -144,6 +183,7 @@ class ConfigAdminPage(UIConnectedWidget):
             self.__changesets = changesetState.changesets
             self.__config_text = ""
             self.__load_config()
+            self._unsaved_changes = False
 
         if not text_state.loading and self.__error_text != text_state.error:
             self.__error_text = text_state.error
@@ -155,7 +195,6 @@ class ConfigAdminPage(UIConnectedWidget):
             and not text_state.loading
             and self.__config_text != text_state.config_text
         ):
-
             self.__loading_text = False
             self.__config_text = text_state.config_text
             self._text_view.render_text(self.__config_text)
@@ -165,6 +204,7 @@ class ConfigAdminPage(UIConnectedWidget):
     def on_text_view_config_changed(self, config: str):
         self.__modified_config_text = config
         self.__config_validated = False
+        # print(self._unsaved_changes, self._first_pass)
         self._unsaved_changes = True if not self._first_pass else False
         if self._first_pass:
             self._first_pass = False

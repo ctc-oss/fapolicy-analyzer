@@ -20,7 +20,7 @@ pub mod system;
 pub mod trust;
 
 #[pymodule]
-fn rust(_py: Python, m: &PyModule) -> PyResult<()> {
+fn rust(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     auparse::init_module(_py, m)?;
     acl::init_module(_py, m)?;
     analysis::init_module(_py, m)?;

@@ -28,11 +28,13 @@ from fapolicy_analyzer.ui.actions import (
     ADD_NOTIFICATION,
     APPLY_CHANGESETS,
     MODIFY_CONFIG_TEXT,
+    NotificationType,
 )
 from fapolicy_analyzer.ui.config.config_admin_page import ConfigAdminPage
 from fapolicy_analyzer.ui.store import init_store
 from fapolicy_analyzer.ui.strings import (
     CONFIG_TEXT_LOAD_ERROR,
+    CONFIG_CHANGESET_PARSE_ERROR,
 )
 
 
@@ -125,5 +127,27 @@ def test_save_click_valid(widget, mock_dispatch):
 
 def test_save_click_invalid(widget, mock_dispatch, mocker):
     widget._text_view.config_changed("permissive = foo")
+    overrideDialog = widget.get_object("saveOverrideDialog")
+    mocker.patch.object(overrideDialog, "run", return_value=Gtk.ResponseType.CANCEL)
     widget.on_save_clicked()
     mock_dispatch.assert_not_any_call(InstanceOf(Action) & Attrs(type=APPLY_CHANGESETS))
+
+
+def test_validate_clicked_valid(widget, mock_dispatch):
+    widget._text_view.config_changed("permissive = 1")
+    widget.on_validate_clicked()
+    mock_dispatch.assert_not_any_call(InstanceOf(Action) & Attrs(type=ADD_NOTIFICATION))
+
+
+def test_validate_clicked_invalid(widget, mock_dispatch):
+    widget._text_view.config_changed("permissive = foo")
+    widget.on_validate_clicked()
+    mock_dispatch.assert_not_any_call(
+        InstanceOf(Action)
+        & Attrs(
+            type=ADD_NOTIFICATION,
+            payload=Attrs(
+                type=NotificationType.ERROR, text=CONFIG_CHANGESET_PARSE_ERROR
+            ),
+        )
+    )

@@ -3,10 +3,11 @@ name = "fapolicy-trust"
 description = "Trust support for fapolicyd"
 license = "MPL-2.0"
 version = "0.5.0"
-edition = "2018"
+edition = "2021"
 
 [dev-dependencies]
 tempfile = "3.3"
+assert_matches = "1.5"
 
 [dependencies]
 lmdb = "0.8"
@@ -16,4 +17,4 @@ thiserror = "1.0"
 nom = "7.1"
 log = "0.4"
 
-fapolicy-util = { version = "*", path = "../util" }
+fapolicy-util = { path = "../util" }

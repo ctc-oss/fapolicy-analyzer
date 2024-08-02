@@ -1,0 +1,20 @@
+on:
+  pull_request:
+    types: [opened, synchronize, labeled, unlabeled, edited]
+    branches:
+      - 'master'
+
+name: Changelog
+
+jobs:
+  changelog:
+    name: Enforce changelog entry
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jw3/newsforce@v0
+        with:
+          ignores: ci,documentation,release
+          contrib_url: https://github.com/ctc-oss/fapolicy-analyzer/blob/master/CONTRIBUTING.md#changelog-updates
+          debug: true

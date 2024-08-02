@@ -196,7 +196,7 @@ fn calculate_batch_config(rec_sz: usize) -> BatchConfig {
     }
 }
 
-pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
+pub fn init_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(check_system_trust, m)?)?;
     m.add_function(wrap_pyfunction!(check_ancillary_trust, m)?)?;
     m.add_function(wrap_pyfunction!(check_all_trust, m)?)?;

@@ -9,6 +9,7 @@
 pub mod conf;
 pub mod error;
 pub mod fapolicyd;
+pub mod pipe;
 pub mod profiler;
 pub mod svc;
 pub mod version;

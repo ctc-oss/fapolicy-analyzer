@@ -15,7 +15,10 @@ use fapolicy_analyzer::events::db::DB as EventDB;
 use fapolicy_app::app::State;
 use fapolicy_app::cfg;
 use fapolicy_app::sys::deploy_app_state;
+use fapolicy_rules::db::Entry::Comment;
 use fapolicy_trust::stat::Status::*;
+use fapolicy_util::sha::sha256_digest;
+// use fapolicy_util::sha::sha256_digest;
 
 use crate::acl::{PyGroup, PyUser};
 use crate::analysis::PyEventLog;
@@ -24,7 +27,7 @@ use crate::rules::PyRule;
 use crate::trust;
 use crate::{daemon, rules};
 
-use super::trust::PyTrust;
+use super::trust::{PyFilterChangeset, PyFilterInfo, PyTrust};
 
 #[pyclass(module = "app", name = "System")]
 #[derive(Clone)]
@@ -104,8 +107,14 @@ impl PySystem {
 
     /// Apply the changeset to the state of this System, produces a new System
     fn apply_config_changes(&self, change: daemon::PyChangeset) -> PySystem {
-        log::debug!("apply_rule_changes");
+        log::debug!("apply_config_changes");
         self.rs.apply_config_changes(change.into()).into()
+    }
+
+    /// Apply the changeset to the state of this System, produces a new System
+    fn apply_trust_filter_changes(&self, change: PyFilterChangeset) -> PySystem {
+        log::debug!("apply_trust_filter_changes");
+        self.rs.apply_trust_filter_changes(change.into()).into()
     }
 
     /// Update the host system with this state of this System and signal fapolicyd to reload trust
@@ -178,9 +187,19 @@ impl PySystem {
         daemon::conf_to_text(&self.rs.daemon_config)
     }
 
+    fn trust_filter_text(&self) -> String {
+        log::debug!("trust_filter_text");
+        trust::filter_to_text(&self.rs.trust_filter_config)
+    }
+
     fn config_info(&self) -> Vec<PyConfigInfo> {
         log::debug!("config_info");
         daemon::conf_info(&self.rs.daemon_config)
+    }
+
+    fn trust_filter_info(&self) -> Vec<PyFilterInfo> {
+        log::debug!("trust_filter_info");
+        trust::filter_info(&self.rs.trust_filter_config)
     }
 
     // we rely on the gil to keep this synced up
@@ -206,6 +225,27 @@ fn config_difference(lhs: &PySystem, rhs: &PySystem) -> String {
 
     let ltxt = lhs.config_text();
     let rtxt = rhs.config_text();
+    let diff = TextDiff::from_lines(&ltxt, &rtxt);
+
+    let mut diff_lines = vec![];
+    for line in diff.iter_all_changes() {
+        let sign = match line.tag() {
+            ChangeTag::Delete => "-",
+            ChangeTag::Insert => "+",
+            ChangeTag::Equal => " ",
+        };
+        diff_lines.push(format!("{}{}", sign, line));
+    }
+    diff_lines.join("")
+}
+
+// todo;; this will become more advanced and based on the filter object rather than text
+#[pyfunction]
+fn trust_filter_difference(lhs: &PySystem, rhs: &PySystem) -> String {
+    log::debug!("trust_filter_difference");
+
+    let ltxt = lhs.trust_filter_text();
+    let rtxt = rhs.trust_filter_text();
     let diff = TextDiff::from_lines(&ltxt, &rtxt);
 
     let mut diff_lines = vec![];
@@ -254,10 +294,29 @@ fn checked_system(py: Python) -> PyResult<PySystem> {
     })
 }
 
-pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
+/// Generate a sha256 hash of the db text
+/// The text hashed here is the same as what would be written to
+/// compiled.rules by either fapolicyd or the analyzer
+#[pyfunction]
+pub fn rule_identity(system: &PySystem) -> PyResult<String> {
+    let txt = system
+        .rs
+        .rules_db
+        .iter()
+        .fold(String::new(), |acc, (_, (_, x))| match x {
+            Comment(_) => acc,
+            e => format!("{}\n{}\n", acc, crate::rules::text_for_entry(e)),
+        });
+    sha256_digest(txt.as_bytes())
+        .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))
+}
+
+pub fn init_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PySystem>()?;
     m.add_function(wrap_pyfunction!(config_difference, m)?)?;
     m.add_function(wrap_pyfunction!(rules_difference, m)?)?;
+    m.add_function(wrap_pyfunction!(trust_filter_difference, m)?)?;
     m.add_function(wrap_pyfunction!(checked_system, m)?)?;
+    m.add_function(wrap_pyfunction!(rule_identity, m)?)?;
     Ok(())
 }

@@ -6,8 +6,8 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+use pyo3::exceptions;
 use pyo3::prelude::*;
-use pyo3::{exceptions, PyObjectProtocol};
 
 use fapolicy_rules::db::Entry::*;
 use fapolicy_rules::db::{Entry, DB};
@@ -52,17 +52,6 @@ impl PyRule {
     }
 }
 
-#[pyproto]
-impl PyObjectProtocol for PyRule {
-    fn __str__(&self) -> PyResult<String> {
-        Ok(format!("{}: {}", self.id, self.text))
-    }
-
-    fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("{}: {}", self.id, self.text))
-    }
-}
-
 #[pymethods]
 impl PyRule {
     #[getter]
@@ -88,6 +77,14 @@ impl PyRule {
     #[getter]
     fn is_valid(&self) -> bool {
         self.valid
+    }
+
+    fn __str__(&self) -> PyResult<String> {
+        Ok(format!("{}: {}", self.id, self.text))
+    }
+
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(format!("{}: {}", self.id, self.text))
     }
 }
 
@@ -218,7 +215,7 @@ pub(crate) fn to_text(db: &DB) -> String {
         .1
 }
 
-fn text_for_entry(e: &Entry) -> String {
+pub(crate) fn text_for_entry(e: &Entry) -> String {
     match e {
         Invalid { text, .. } => text.clone(),
         InvalidSet { text, .. } => text.clone(),
@@ -233,7 +230,7 @@ fn text_for_entry(e: &Entry) -> String {
 // #[pyfunction]
 // fn text_to_rule_db(txt: &str) -> PyResult<PyDict> {}
 
-pub fn init_module(_py: Python, m: &PyModule) -> PyResult<()> {
+pub fn init_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyRule>()?;
     m.add_class::<PyRuleInfo>()?;
     m.add_class::<PyChangeset>()?;

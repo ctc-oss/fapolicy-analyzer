@@ -15,7 +15,7 @@ use thiserror::Error;
 
 use fapolicy_daemon::fapolicyd::{
     CONFIG_FILE_PATH, RPM_DB_PATH, RULES_FILE_PATH, TRUST_DIR_PATH, TRUST_FILE_PATH,
-    TRUST_LMDB_PATH,
+    TRUST_FILTER_FILE_PATH, TRUST_LMDB_PATH,
 };
 
 use crate::app::State;
@@ -28,6 +28,8 @@ pub enum Error {
     WriteRulesFail(io::Error),
     #[error("Failed to write fapolicyd.conf; {0}")]
     WriteConfFail(io::Error),
+    #[error("Failed to write fapolicyd-filter.conf; {0}")]
+    WriteFilterFail(io::Error),
     #[error("{0}")]
     DaemonError(#[from] fapolicy_daemon::error::Error),
 }
@@ -41,6 +43,13 @@ pub fn deploy_app_state(state: &State) -> Result<(), Error> {
         &PathBuf::from(&state.config.system.config_file_path),
     )
     .map_err(WriteConfFail)?;
+
+    // write trust filter conf
+    fapolicy_trust::filter::write::db(
+        &state.trust_filter_config,
+        &PathBuf::from(&state.config.system.trust_filter_conf_path),
+    )
+    .map_err(WriteFilterFail)?;
 
     // write rules model
     fapolicy_rules::write::db(
@@ -94,6 +103,10 @@ pub struct Config {
     // fapolicyd.conf path
     #[serde(default = "daemon_conf_path")]
     pub config_file_path: String,
+
+    // fapolicyd.conf path
+    #[serde(default = "trust_filter_conf_path")]
+    pub trust_filter_conf_path: String,
 }
 
 impl Default for Config {
@@ -106,6 +119,7 @@ impl Default for Config {
             trust_file_path: TRUST_FILE_PATH.to_string(),
             syslog_file_path: RHEL_SYSLOG_LOG_FILE_PATH.to_string(),
             config_file_path: CONFIG_FILE_PATH.to_string(),
+            trust_filter_conf_path: TRUST_FILTER_FILE_PATH.to_string(),
         }
     }
 }
@@ -140,4 +154,8 @@ fn syslog_file_path() -> String {
 
 fn daemon_conf_path() -> String {
     CONFIG_FILE_PATH.into()
+}
+
+fn trust_filter_conf_path() -> String {
+    TRUST_FILTER_FILE_PATH.into()
 }

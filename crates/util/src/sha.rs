@@ -6,13 +6,12 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+use digest::Digest;
+use sha2::Sha256;
 use std::io;
 use std::io::Read;
 
 use thiserror::Error;
-
-use data_encoding::HEXLOWER;
-use ring::digest::{Context, SHA256};
 
 #[derive(Error, Debug)]
 pub enum Error {
@@ -21,19 +20,11 @@ pub enum Error {
 }
 
 /// generate a sha256 hash as a string
-pub fn sha256_digest<R: Read>(mut reader: R) -> Result<String, Error> {
-    let mut context = Context::new(&SHA256);
-    let mut buffer = [0; 1024];
-
-    loop {
-        let count = reader.read(&mut buffer)?;
-        if count == 0 {
-            break;
-        }
-        context.update(&buffer[..count]);
-    }
-
-    Ok(HEXLOWER.encode(context.finish().as_ref()))
+pub fn sha256_digest<R: Read>(mut src: R) -> Result<String, Error> {
+    let mut hasher = Sha256::new();
+    io::copy(&mut src, &mut hasher)?;
+    let hash = hasher.finalize();
+    Ok(format!("{:x}", hash))
 }
 
 // tested with integration tests

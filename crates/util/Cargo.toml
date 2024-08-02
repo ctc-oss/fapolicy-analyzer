@@ -3,10 +3,10 @@ name = "fapolicy-util"
 description = "Utility crate for fapolicyd"
 license = "MPL-2.0"
 version = "0.4.1"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
-data-encoding = "2.3.1"
-ring = "0.16.19"
 thiserror = "1.0"
 nom = "7.1"
+digest = "0.10"
+sha2 = "0.10"

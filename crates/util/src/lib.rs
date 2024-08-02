@@ -8,3 +8,4 @@
 
 pub mod rpm;
 pub mod sha;
+pub mod trimto;

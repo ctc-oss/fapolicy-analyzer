@@ -16,6 +16,8 @@
 
 import logging
 import os
+from abc import abstractmethod
+from typing import Optional
 
 import gi
 
@@ -47,30 +49,34 @@ class EditableTextView(UIBuilderWidget, Events):
         # self.__buffer.connect("changed", self.on_rules_changed)
         self._text_view.set_buffer(self._buffer)
 
-    def _get_view_lang(self):
-        lang_manager = GtkSource.LanguageManager.get_default()
-        try:
-            with resources.path(
-                "fapolicy_analyzer.resources.sourceview.language-specs",
-                "fapolicyd-rules.lang",
-            ) as path:
-                if (
-                    os.path.dirname(path.as_posix())
-                    not in lang_manager.get_search_path()
-                ):
-                    lang_manager.set_search_path(
-                        [
-                            *lang_manager.get_search_path(),
-                            os.path.dirname(path.as_posix()),
-                        ]
-                    )
-        except Exception as ex:
-            logging.warning("Could not load the rules language file")
-            logging.debug(
-                "Error loading GtkSource language file fapolicyd-rules.lang", ex
-            )
+    @abstractmethod
+    def _get_view_lang_id(self) -> Optional[str]:
+        pass
 
-        return lang_manager.get_language("fapolicyd-rules")
+    def _get_view_lang(self):
+        lang_id = self._get_view_lang_id()
+        if lang_id:
+            lang_manager = GtkSource.LanguageManager.get_default()
+            try:
+                with resources.path(
+                    "fapolicy_analyzer.resources.sourceview.language-specs",
+                    f"{lang_id}.lang",
+                ) as path:
+                    if (
+                        os.path.dirname(path.as_posix())
+                        not in lang_manager.get_search_path()
+                    ):
+                        lang_manager.set_search_path(
+                            [
+                                *lang_manager.get_search_path(),
+                                os.path.dirname(path.as_posix()),
+                            ]
+                        )
+            except Exception as ex:
+                logging.warning("Could not load the rules language file")
+                logging.debug(f"Error loading GtkSource language: {lang_id}", ex)
+
+            return lang_manager.get_language(lang_id)
 
     def _get_view_style(self):
         style_manager = GtkSource.StyleSchemeManager.get_default()

@@ -25,6 +25,7 @@ class PAGE_SELECTION(Enum):
     ANALYZE_SYSLOG = "syslog"
     PROFILER = "profiler"
     CONFIG = "config"
+    TRUST_FILTER = "trust filter"
 
 
 class LogType(Enum):

@@ -37,7 +37,6 @@ jobs:
         env:
           COPR_KEY: ${{ secrets.COPR_API_LOGIN }}
 
-
   source0:
     name: Vendor Source0
     container: registry.fedoraproject.org/fedora:38
@@ -94,8 +93,51 @@ jobs:
         run: |
           sha256sum fapolicy-analyzer-*.tar.gz
 
+  crates0:
+    name: Vendor Crates0
+    container: registry.fedoraproject.org/fedora:rawhide
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Install RPM build dependencies
+        run: |
+          dnf install -y git dnf5-plugins dnf-plugins-core cargo2rpm
+
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: Adjust spec
+        run: |
+          # disable dev-tools crate
+          sed -i '/tools/d' Cargo.toml
+          # generate build deps with cargo2rpm
+          cargo2rpm -p Cargo.toml buildrequires | while read line; do
+            grep -n "BuildRequires:" fapolicy-analyzer.spec | head -n1 | cut -d: -f1 | xargs -I{} sed -i "{}iBuildRequires: $line" fapolicy-analyzer.spec
+          done
+
+      - name: Install build dependencies
+        run: |
+          dnf -y builddep fapolicy-analyzer.spec
+
+      - name: Tar crates
+        run: |
+          ls -l /usr/share/cargo/registry
+          scripts/srpm/vendor-rs.sh
+
+      - name: Upload tarball
+        uses: actions/upload-artifact@v3
+        with:
+          name: crates0
+          path: |
+            vendor-rs.tar.gz
+
+      - name: Checksum
+        run: |
+          sha256sum vendor-rs.tar.gz
+
   srpm:
-    needs: [ config, source0 ]
+    needs: [ config, source0, crates0 ]
     name: SRPM Build ${{ matrix.props.dist }}
     container: ${{ matrix.props.image }}
     runs-on: ubuntu-20.04
@@ -177,9 +219,19 @@ jobs:
           name: source0
           path: /tmp/rpmbuild/SOURCES/
 
-      - name: Mark as git safe
+      - name: Fetch Crates0 tarball
+        if: startsWith(matrix.props.dist, 'el')
+        uses: actions/download-artifact@v3
+        with:
+          name: crates0
+          path: /tmp/rpmbuild/SOURCES/
+
+      - name: Tag Crates0 tarball
+        if: startsWith(matrix.props.dist, 'el')
         run: |
-          git config --global --add safe.directory $GITHUB_WORKSPACE
+          spec_version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
+          cd /tmp/rpmbuild/SOURCES/
+          mv vendor-rs.tar.gz vendor-rs-${spec_version}.tar.gz
 
       - name: Generate doc tag
         if: startsWith(github.ref, 'refs/tags/v')
@@ -199,14 +251,12 @@ jobs:
         run: |
           mkdir -p /tmp/archives
           mv vendor-docs-*.tar.gz /tmp/archives
-        env:
-          PLATFORM: ${{ matrix.props.dist }}
 
       - name: Export el tarballs
         if: startsWith(matrix.props.dist, 'el')
         run: |
           version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
-          mv vendor-rs-${version}.tar.gz /tmp/archives/
+          mv /tmp/rpmbuild/SOURCES/vendor-rs-${version}.tar.gz /tmp/archives/
 
       - name: Upload SourceX
         uses: actions/upload-artifact@v4
@@ -259,18 +309,18 @@ jobs:
           echo "token = ${COPR_TOKEN}" >> $HOME/.config/copr
           echo "copr_url = https://copr.fedorainfracloud.org" >> $HOME/.config/copr
         env:
-          COPR_USER:  ${{ secrets.COPR_API_USER }}
+          COPR_USER: ${{ secrets.COPR_API_USER }}
           COPR_LOGIN: ${{ secrets.COPR_API_LOGIN }}
           COPR_TOKEN: ${{ secrets.COPR_API_TOKEN }}
 
       - name: build
         run: |
-          copr-cli build --chroot ${{ matrix.props.chroot }} fapolicy-analyzer /tmp/fapolicy-analyzer-*.${{ matrix.props.dist }}.src.rpm
+          chroot=$(echo ${{ matrix.props.chroot }} | cut -d+ -f2)
+          copr-cli build --chroot $chroot fapolicy-analyzer /tmp/fapolicy-analyzer-*.${{ matrix.props.dist }}.src.rpm
 
   rpm:
     needs: [ config, srpm ]
     name: Rebuild ${{ matrix.props.dist }}
-    container: ${{ matrix.props.image }}
     runs-on: ubuntu-20.04
     strategy:
       matrix: ${{ fromJson(needs.config.outputs.matrix )}}
@@ -285,29 +335,51 @@ jobs:
           name: srpm-artifacts
           path: /tmp/src/
 
+      - name: Download tarball artifacts
+        if: startsWith(matrix.props.dist, 'el')
+        uses: actions/download-artifact@v3
+        with:
+          name: tarball-artifacts
+          path: /tmp/src/
+
       - name: Checksum artifacts
         run: |
           sha256sum /tmp/src/*
 
-      - name: Enable EPEL
-        if: startsWith(matrix.props.dist, 'el')
+      - name: Create container
         run: |
-          dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-${{ matrix.props.version }}.noarch.rpm
+          sudo apt install -y podman
+          cid="${{ matrix.props.dist }}-${{ github.run_id }}"
+          podman run -dt --name $cid --privileged fedora:39
 
-      - name: Install RPM build dependencies
+      - name: Init container
         run: |
-          dnf install -y make rpm rpmdevtools dnf-plugins-core
+          cid="${{ matrix.props.dist }}-${{ github.run_id }}"
+          podman exec $cid dnf install -y mock
+          podman exec $cid mock -r ${{ matrix.props.chroot }} --init
 
-      - name: Rebuild SRPM
+      - name: Build with Mock
         run: |
-          dnf builddep -y ${{ matrix.props.spec }}
-          rpmbuild --rebuild /tmp/src/fapolicy-analyzer-*.${{ matrix.props.dist }}.src.rpm
+          cid="${{ matrix.props.dist }}-${{ github.run_id }}"
+          srpm=$(find . -name *.${{ matrix.props.dist }}.src.rpm)
+          podman cp $srpm $cid:/tmp/$srpm
+          podman exec $cid mock -r ${{ matrix.props.chroot }} rebuild /tmp/$srpm --resultdir /tmp/rpmbuild
+        working-directory: /tmp/src/
+
+      - name: Show logs
+        if: always()
+        run: |
+          cid="${{ matrix.props.dist }}-${{ github.run_id }}"
+          podman exec $cid ls -R /tmp/rpmbuild
+          podman exec $cid cat /tmp/rpmbuild/build.log
 
       - name: Export RPMs
         run: |
+          cid="${{ matrix.props.dist }}-${{ github.run_id }}"
+          podman cp $cid:/tmp/rpmbuild/ /tmp/rpmbuild
           mkdir -p /tmp/archives
-          ls | grep -v debug | xargs mv -t /tmp/archives
-        working-directory: /github/home/rpmbuild/RPMS/x86_64
+          cd /tmp/rpmbuild
+          ls | grep -v -e debug -e log | xargs mv -t /tmp/archives
 
       - name: Upload RPMs
         uses: actions/upload-artifact@v4
@@ -323,6 +395,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix: ${{ fromJson(needs.config.outputs.matrix )}}
+    continue-on-error: ${{ matrix.props.prerelease }}
     steps:
       - uses: actions/checkout@v4
         with:

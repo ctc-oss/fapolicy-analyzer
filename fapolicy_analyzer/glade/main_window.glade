@@ -2,17 +2,17 @@
 <!-- Generated with glade 3.22.2 -->
 <!--
      Copyright Concurrent Technologies Corporation 2021
-     
+
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
      the Free Software Foundation, either version 3 of the License, or
      (at your option) any later version.
-     
+
      This program is distributed in the hope that it will be useful,
      but WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
      GNU General Public License for more details.
-     
+
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
@@ -182,7 +182,7 @@
                       </object>
                     </child>
                   </object>
-                </child>     
+                </child>
                 <child>
                   <object class="GtkMenuItem">
                     <property name="visible">True</property>
@@ -222,62 +222,74 @@
                             <signal name="activate" handler="on_configAdminMenu_activate" swapped="no"/>
                           </object>
                         </child>
+                        <child>
+                          <object class="GtkImageMenuItem" id="trustFilterMenuItem">
+                            <property name="label">Trust Filter</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="use_underline">True</property>
+                            <property name="use_stock">True</property>
+                            <signal name="activate"
+                                    handler="on_trustFilterAdminMenu_activate"
+                                    swapped="no"/>
+                            </object>
+                        </child>
                       </object>
                     </child>
                   </object>
                 </child><child>
-                  <object class="GtkMenuItem">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">Session</property>
-                    <property name="use_underline">True</property>
-                    <child type="submenu">
-                      <object class="GtkMenu">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <child>
-                          <object class="GtkImageMenuItem" id="openMenu">
-                            <property name="label">gtk-open</property>
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="use_underline">True</property>
-                            <property name="use_stock">True</property>
-                            <signal name="activate" handler="on_openMenu_activate" swapped="no"/>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkMenuItem" id="restoreMenu">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="label" translatable="yes" comments="Presents option to load prior sessions tmp file (if it exists.)">Restore</property>
-                            <property name="use_underline">True</property>
-                            <signal name="activate" handler="on_restoreMenu_activate" swapped="no"/>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkImageMenuItem" id="saveMenu">
-                            <property name="label">gtk-save</property>
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="use_underline">True</property>
-                            <property name="use_stock">True</property>
-                            <signal name="activate" handler="on_saveMenu_activate" swapped="no"/>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkImageMenuItem" id="saveAsMenu">
-                            <property name="label">gtk-save-as</property>
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="use_underline">True</property>
-                            <property name="use_stock">True</property>
-                            <signal name="activate" handler="on_saveAsMenu_activate" swapped="no"/>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
+                <object class="GtkMenuItem">
+                  <property name="visible">True</property>
+                  <property name="can_focus">False</property>
+                  <property name="label" translatable="yes">Session</property>
+                  <property name="use_underline">True</property>
+                  <child type="submenu">
+                    <object class="GtkMenu">
+                      <property name="visible">True</property>
+                      <property name="can_focus">False</property>
+                      <child>
+                        <object class="GtkImageMenuItem" id="openMenu">
+                          <property name="label">gtk-open</property>
+                          <property name="visible">True</property>
+                          <property name="can_focus">False</property>
+                          <property name="use_underline">True</property>
+                          <property name="use_stock">True</property>
+                          <signal name="activate" handler="on_openMenu_activate" swapped="no"/>
+                        </object>
+                      </child>
+                      <child>
+                        <object class="GtkMenuItem" id="restoreMenu">
+                          <property name="visible">True</property>
+                          <property name="can_focus">False</property>
+                          <property name="label" translatable="yes" comments="Presents option to load prior sessions tmp file (if it exists.)">Restore</property>
+                          <property name="use_underline">True</property>
+                          <signal name="activate" handler="on_restoreMenu_activate" swapped="no"/>
+                        </object>
+                      </child>
+                      <child>
+                        <object class="GtkImageMenuItem" id="saveMenu">
+                          <property name="label">gtk-save</property>
+                          <property name="visible">True</property>
+                          <property name="can_focus">False</property>
+                          <property name="use_underline">True</property>
+                          <property name="use_stock">True</property>
+                          <signal name="activate" handler="on_saveMenu_activate" swapped="no"/>
+                        </object>
+                      </child>
+                      <child>
+                        <object class="GtkImageMenuItem" id="saveAsMenu">
+                          <property name="label">gtk-save-as</property>
+                          <property name="visible">True</property>
+                          <property name="can_focus">False</property>
+                          <property name="use_underline">True</property>
+                          <property name="use_stock">True</property>
+                          <signal name="activate" handler="on_saveAsMenu_activate" swapped="no"/>
+                        </object>
+                      </child>
+                    </object>
+                  </child>
+                </object>
+              </child>
                 <child>
                   <object class="GtkMenuItem">
                     <property name="visible">True</property>

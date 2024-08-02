@@ -17,7 +17,9 @@ import gi
 import logging
 from typing import Any, Optional, Sequence, Tuple
 
-from fapolicy_analyzer import Rule, System
+from events import Events
+
+from fapolicy_analyzer import Rule, System, reload_profiler_rules
 from fapolicy_analyzer.ui.actions import (
     Notification,
     NotificationType,
@@ -29,6 +31,7 @@ from fapolicy_analyzer.ui.actions import (
     request_rules_text,
 )
 from fapolicy_analyzer.ui.changeset_wrapper import Changeset, RuleChangeset
+from fapolicy_analyzer.ui.reducers.profiler_reducer import ProfilerState
 from fapolicy_analyzer.ui.rules.rules_list_view import RulesListView
 from fapolicy_analyzer.ui.rules.rules_status_info import RulesStatusInfo
 from fapolicy_analyzer.ui.rules.rules_text_view import RulesTextView
@@ -36,6 +39,7 @@ from fapolicy_analyzer.ui.store import (
     dispatch,
     get_notifications_feature,
     get_system_feature,
+    get_profiling_feature,
 )
 from fapolicy_analyzer.ui.strings import (
     APPLY_CHANGESETS_ERROR_MESSAGE,
@@ -56,13 +60,19 @@ from gi.repository import Gtk  # isort: skip
 VALIDATION_NOTE_CATEGORY = "invalid rules"
 
 
-class RulesAdminPage(UIConnectedWidget, UIPage):
+class RulesAdminPage(UIConnectedWidget, UIPage, Events):
     def __init__(self):
         features = [
             {get_system_feature(): {"on_next": self.on_next_system}},
             {get_notifications_feature(): {"on_next": self.on_next_notifications}},
+            {get_profiling_feature(): {"on_next": self.on_next_profiling_state}},
         ]
         UIConnectedWidget.__init__(self, features=features)
+
+        self.__events__ = [
+            "refresh_toolbar",
+        ]
+        Events.__init__(self)
 
         actions = {
             "rules": [
@@ -79,6 +89,13 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
                     icon="document-save",
                     signals={"clicked": self.on_save_clicked},
                     sensitivity_func=self.__rules_dirty,
+                ),
+                UIAction(
+                    name="Profile",
+                    tooltip="Apply to Profiler",
+                    icon="media-seek-forward",
+                    signals={"clicked": self.on_load_in_profiler_clicked},
+                    sensitivity_func=self.__can_load_in_profiler,
                 ),
             ],
         }
@@ -100,6 +117,7 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         self._first_pass = True
         self.__system: System = None
         self.__validation_notifications: Sequence[Notification] = []
+        self.__profiling_active = False
 
         self._list_view.treeView.connect(
             "row-collapsed", self._list_view.on_row_collapsed
@@ -212,8 +230,8 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         self.__update_list_view(changeset)
         if valid:
             self.__saving = True
-            self._unsaved_changes = False
             dispatch(apply_changesets(changeset))
+            self._unsaved_changes = False
         else:
             overrideDialog = self.get_object("saveOverrideDialog")
             self.get_object("overrideText").set_text(RULES_OVERRIDE_MESSAGE)
@@ -270,6 +288,7 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
             self.__rules_text = ""
             self.__rules = []
             self.__load_rules()
+            self._unsaved_changes = False
 
         # Handle return from loading parsed rules object
         if not rules_state.loading and self.__error_rules != rules_state.error:
@@ -309,3 +328,14 @@ class RulesAdminPage(UIConnectedWidget, UIPage):
         self.__validation_notifications = [
             n for n in notifications if n.category == VALIDATION_NOTE_CATEGORY
         ]
+
+    def on_next_profiling_state(self, state: ProfilerState):
+        if self.__profiling_active != state.running:
+            self.__profiling_active = state.running
+            self.refresh_toolbar()
+
+    def on_load_in_profiler_clicked(self, *args):
+        reload_profiler_rules(self.__system)
+
+    def __can_load_in_profiler(self):
+        return self.__profiling_active and not self.__rules_dirty()
