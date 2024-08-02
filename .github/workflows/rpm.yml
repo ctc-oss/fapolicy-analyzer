@@ -214,14 +214,14 @@ jobs:
           make -f .copr/Makefile dnf OS_ID=${{ matrix.props.platform }}
 
       - name: Fetch Source0 tarball
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: source0
           path: /tmp/rpmbuild/SOURCES/
 
       - name: Fetch Crates0 tarball
         if: startsWith(matrix.props.dist, 'el')
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: crates0
           path: /tmp/rpmbuild/SOURCES/
@@ -291,7 +291,7 @@ jobs:
           dnf install -y copr-cli
 
       - name: Download srpm artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: srpm-artifacts
           path: /tmp/
@@ -330,14 +330,14 @@ jobs:
           ref: ${{ github.ref }}
 
       - name: Download srpm artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: srpm-artifacts
           path: /tmp/src/
 
       - name: Download tarball artifacts
         if: startsWith(matrix.props.dist, 'el')
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: tarball-artifacts
           path: /tmp/src/
@@ -402,7 +402,7 @@ jobs:
           ref: ${{ github.ref }}
 
       - name: Download rpm artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: rpm-artifacts
           path: /tmp/src/
@@ -436,7 +436,7 @@ jobs:
           ref: ${{ github.ref }}
 
       - name: Download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: /tmp/archives/
 
