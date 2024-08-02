@@ -258,7 +258,7 @@ jobs:
           version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
           mv /tmp/rpmbuild/SOURCES/vendor-rs-${version}.tar.gz /tmp/archives/
 
-      - name: Upload SourceX
+      - name: Upload Tarballs
         uses: actions/upload-artifact@v4
         with:
           name: tarball-artifacts

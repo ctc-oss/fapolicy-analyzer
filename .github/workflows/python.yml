@@ -15,32 +15,9 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v4
-      - name: Install requirements
-        run: |
-          sudo apt-get update
-          sudo apt-get install libgtk-3-dev
-          sudo apt-get install libgirepository1.0-dev
-          sudo apt-get install xvfb
-          sudo apt-get install libdbus-1-dev libaudit-dev libauparse-dev
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@v1
-        with:
-          toolchain: 1.66.1
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install pipenv==2023.7.4 || pip install pipenv
-          pipenv install --dev --keep-outdated --python ${{ matrix.python-version }}
-      - name: Build
-        id: build
-        run: |
-          pipenv run compile_catalog
-          pipenv run python setup.py bdist_wheel
-          echo ::set-output name=virt_env::$(pipenv --venv)
+      - uses: chartboost/ruff-action@v1
+        with: 
+          src: fapolicy_analyzer
 
   ui_format_check:
     name: UI formatter check
