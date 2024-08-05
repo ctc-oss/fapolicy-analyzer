@@ -21,7 +21,7 @@ Source15:      %{pypi_source semantic_version 2.8.2}
 Source16:      %{pypi_source packaging 21.3}
 Source17:      %{pypi_source pyparsing 2.1.0}
 Source18:      %{pypi_source tomli 1.2.3}
-Source19:      %{pypi_source flit_core 3.9.0}
+Source19:      %{pypi_source flit_core 3.7.1}
 Source20:      %{pypi_source typing_extensions 3.7.4.3}
 
 BuildRequires: python3-devel
@@ -29,9 +29,6 @@ BuildRequires: python3dist(pip)
 BuildRequires: python3dist(babel)
 BuildRequires: python3dist(packaging)
 BuildRequires: python3dist(pyparsing)
-BuildRequires: python3dist(tomli)
-BuildRequires: python3dist(flit-core)
-BuildRequires: python3dist(typing-extensions)
 BuildRequires: python3dist(pytz)
 
 BuildRequires: dbus-devel
