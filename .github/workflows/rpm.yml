@@ -261,7 +261,7 @@ jobs:
       - name: Upload Tarballs
         uses: actions/upload-artifact@v4
         with:
-          name: tarball-artifacts-${{ matrix.props.spec }} 
+          name: tarball-artifacts-${{ matrix.props.platform }} 
           path: |
             /tmp/archives/*.tar.gz
 
