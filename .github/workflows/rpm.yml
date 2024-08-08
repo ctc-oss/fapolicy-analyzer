@@ -268,7 +268,7 @@ jobs:
       - name: Upload SRPMs
         uses: actions/upload-artifact@v4
         with:
-          name: srpm-artifacts
+          name: srpm-artifacts-${{ matrix.props.dist }} 
           path: |
             /tmp/archives/*.src.rpm
 
@@ -384,7 +384,7 @@ jobs:
       - name: Upload RPMs
         uses: actions/upload-artifact@v4
         with:
-          name: rpm-artifacts
+          name: rpm-artifacts-${{ matrix.props.dist }} 
           path: |
             /tmp/archives/*.x86_64.rpm
 
