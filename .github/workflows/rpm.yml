@@ -293,7 +293,7 @@ jobs:
       - name: Download srpm artifacts
         uses: actions/download-artifact@v4
         with:
-          name: srpm-artifacts
+          name: srpm-artifacts-${{ matrix.props.dist }} 
           path: /tmp/
 
       - name: Checksum artifacts
@@ -404,7 +404,7 @@ jobs:
       - name: Download rpm artifacts
         uses: actions/download-artifact@v4
         with:
-          name: rpm-artifacts
+          name: rpm-artifacts-${{ matrix.props.dist }} 
           path: /tmp/src/
 
       - name: Checksum artifacts
