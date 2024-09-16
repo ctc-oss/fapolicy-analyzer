@@ -18,15 +18,9 @@
 spec_file="fapolicy-analyzer.spec"
 rpmbuild_dir=/tmp/rpmbuild
 
-if [[ "$ONLINE" -eq 1 ]]; then
-  cd ${rpmbuild_dir}/SOURCES
-  spectool -g "../SPECS/$spec_file"
-  cd ${rpmbuild_dir}/SPECS
-  dnf builddep "$spec_file" -y
-fi
-
-cd ${rpmbuild_dir}/SPECS
-rpmbuild -ba "$spec_file" -D "_topdir ${rpmbuild_dir}"
+mock -r fedora-39-x86_64 --init
+mock -r fedora-39-x86_64 --buildsrpm --sources ${rpmbuild_dir}/SOURCES/ --spec ${rpmbuild_dir}/SPECS/${spec_file} --resultdir ${rpmbuild_dir}
+mock -r fedora-39-x86_64 rebuild ${rpmbuild_dir}/*.src.rpm --resultdir ${rpmbuild_dir}
 
 if [[ ! -z "$1" ]]; then
   echo "[build.sh] exporting *rpms to ${1}"
