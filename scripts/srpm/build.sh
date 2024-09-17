@@ -19,11 +19,11 @@ spec_file="fapolicy-analyzer.spec"
 rpmbuild_dir=/tmp/rpmbuild
 
 mock -r fedora-39-x86_64 --init
-mock -r fedora-39-x86_64 --buildsrpm --sources ${rpmbuild_dir}/SOURCES/ --spec ${rpmbuild_dir}/SPECS/${spec_file} --resultdir ${rpmbuild_dir}
-mock -r fedora-39-x86_64 rebuild ${rpmbuild_dir}/*.src.rpm --resultdir ${rpmbuild_dir}
+mock -r fedora-39-x86_64 --resultdir ${rpmbuild_dir} --buildsrpm --sources ${rpmbuild_dir}/SOURCES/ --spec ${rpmbuild_dir}/SPECS/${spec_file}
+mock -r fedora-39-x86_64 --resultdir ${rpmbuild_dir} --rebuild ${rpmbuild_dir}/*.src.rpm
 
 if [[ ! -z "$1" ]]; then
-  echo "[build.sh] exporting *rpms to ${1}"
-  cp -v ${rpmbuild_dir}/RPMS/**/*.rpm ${1}
-  cp -v ${rpmbuild_dir}/SRPMS/*.rpm   ${1}
+  echo "[build.sh] exporting rpms to ${1}"
+  cp -v ${rpmbuild_dir}/*.rpm ${1}
+  cp -v ${rpmbuild_dir}/*.rpm ${1}
 fi

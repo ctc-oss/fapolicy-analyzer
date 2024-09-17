@@ -144,7 +144,7 @@ fc-rpm:
 	@echo -e "${GRN}--- Fedora RPM generation v${VERSION}...${NC}"
 	make -f .copr/Makefile vendor OS_ID=fedora VERSION=${VERSION}
 	podman build -t fapolicy-analyzer --build-arg version=${VERSION} -f Containerfile .
-	podman run --rm -it --network=none -v /tmp:/v fapolicy-analyzer /v
+	podman run --privileged --rm -it -v /tmp:/v fapolicy-analyzer /v
 
 # Generate RHEL 9 rpms
 el9-rpm:

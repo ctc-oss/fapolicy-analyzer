@@ -56,7 +56,6 @@ Summary:       File Access Policy Analyzer CLI
 %description cli
 CLI Tools to assist with the configuration and management of fapolicyd.
 
-
 %package gui
 Summary:       File Access Policy Analyzer GUI
 
