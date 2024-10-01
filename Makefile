@@ -129,7 +129,7 @@ clippy:
 	@echo -e "${GRN}-  |--- Rust linting...${NC}"
 	pipenv run cargo clippy --all
 
-# Perform pre- git push unit-testing, formating, and linting
+# Perform pre- git push unit-testinrg, formating, and linting
 check: header-check format lint test
 	@echo -e "${GRN}--- Pre-Push checks complete${NC}"
 	git status
@@ -143,15 +143,15 @@ build-info:
 fc-rpm:
 	@echo -e "${GRN}--- Fedora RPM generation v${VERSION}...${NC}"
 	make -f .copr/Makefile vendor OS_ID=fedora VERSION=${VERSION}
-	podman build -t fapolicy-analyzer --build-arg version=${VERSION} -f Containerfile .
-	podman run --privileged --rm -it -v /tmp:/v fapolicy-analyzer /v
+	podman build -t fapolicy-analyzer:build --target fedorabuild --build-arg version=${VERSION} -f Containerfile .
+	podman run --privileged --rm -it -v /tmp:/v fapolicy-analyzer:build fedora-39-x86_64 /v
 
 # Generate RHEL 9 rpms
 el9-rpm:
-	@echo -e "${GRN}--- el9 RPM generation...${NC}"
-	make -f .copr/Makefile vendor OS_ID=rhel DIST=.el9 spec=scripts/srpm/fapolicy-analyzer.el9.spec
-	podman build -t fapolicy-analyzer:el9 -f scripts/srpm/Containerfile.el9 .
-	podman run --rm -it --network=none -v /tmp:/v fapolicy-analyzer:el9 /v
+	@echo -e "${GRN}--- el9 RPM generation v${VERSION}...${NC}"
+	make -f .copr/Makefile vendor vendor-rs OS_ID=rhel VERSION=${VERSION} DIST=.el9 spec=scripts/srpm/fapolicy-analyzer.el9.spec
+	podman build -t fapolicy-analyzer:build --target elbuild --build-arg version=${VERSION} --build-arg spec=scripts/srpm/fapolicy-analyzer.el9.spec -f Containerfile .
+	podman run --privileged --rm -it -v /tmp:/v fapolicy-analyzer:build rocky+epel-9-x86_64 /v
 
 # Update embedded help documentation
 help-docs:
