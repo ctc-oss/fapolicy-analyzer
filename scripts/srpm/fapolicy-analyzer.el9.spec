@@ -71,6 +71,7 @@ BuildRequires: rust-glob-devel
 BuildRequires: rust-heck-devel
 BuildRequires: rust-indoc-devel
 BuildRequires: rust-instant-devel
+BuildRequires: rust-is_executable-devel
 BuildRequires: rust-lazy_static-devel
 BuildRequires: rust-libc-devel
 BuildRequires: rust-libloading-devel
