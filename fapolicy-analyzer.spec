@@ -124,7 +124,6 @@ echo "audit" > FEATURES
 
 %if %{with cli}
 cargo build --bin tdb --release
-
 %endif
 
 %if %{with gui}
