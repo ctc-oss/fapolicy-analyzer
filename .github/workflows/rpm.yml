@@ -21,7 +21,7 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
       is-copr-enabled: ${{ steps.is-copr-enabled.outputs.defined }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
 
@@ -45,7 +45,7 @@ jobs:
       - name: Install deps
         run: dnf install -y git make python3
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
@@ -83,7 +83,7 @@ jobs:
           mv fapolicy-analyzer-${spec_version}.tar.gz fapolicy-analyzer-${patched_version}.tar.gz
 
       - name: Upload
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: source0
           path: |
@@ -102,7 +102,7 @@ jobs:
         run: |
           dnf install -y git dnf5-plugins dnf-plugins-core cargo2rpm
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
@@ -126,7 +126,7 @@ jobs:
           scripts/srpm/vendor-rs.sh
 
       - name: Upload tarball
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: crates0
           path: |
@@ -152,7 +152,7 @@ jobs:
       - name: Install Git
         run: dnf install -y git
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
@@ -214,14 +214,14 @@ jobs:
           make -f .copr/Makefile dnf OS_ID=${{ matrix.props.platform }}
 
       - name: Fetch Source0 tarball
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: source0
           path: /tmp/rpmbuild/SOURCES/
 
       - name: Fetch Crates0 tarball
         if: startsWith(matrix.props.dist, 'el')
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: crates0
           path: /tmp/rpmbuild/SOURCES/
@@ -259,16 +259,16 @@ jobs:
           mv /tmp/rpmbuild/SOURCES/vendor-rs-${version}.tar.gz /tmp/archives/
 
       - name: Upload Tarballs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: tarball-artifacts
+          name: tarball-artifacts-${{ matrix.props.dist }} 
           path: |
             /tmp/archives/*.tar.gz
 
       - name: Upload SRPMs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: srpm-artifacts
+          name: srpm-artifacts-${{ matrix.props.dist }} 
           path: |
             /tmp/archives/*.src.rpm
 
@@ -291,9 +291,9 @@ jobs:
           dnf install -y copr-cli
 
       - name: Download srpm artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: srpm-artifacts
+          name: srpm-artifacts-${{ matrix.props.dist }} 
           path: /tmp/
 
       - name: Checksum artifacts
@@ -325,21 +325,21 @@ jobs:
     strategy:
       matrix: ${{ fromJson(needs.config.outputs.matrix )}}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
 
       - name: Download srpm artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: srpm-artifacts
+          name: srpm-artifacts-${{ matrix.props.dist }} 
           path: /tmp/src/
 
       - name: Download tarball artifacts
         if: startsWith(matrix.props.dist, 'el')
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: tarball-artifacts
+          name: tarball-artifacts-${{ matrix.props.dist }} 
           path: /tmp/src/
 
       - name: Checksum artifacts
@@ -382,9 +382,9 @@ jobs:
           ls | grep -v -e debug -e log | xargs mv -t /tmp/archives
 
       - name: Upload RPMs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: rpm-artifacts
+          name: rpm-artifacts-${{ matrix.props.dist }} 
           path: |
             /tmp/archives/*.x86_64.rpm
 
@@ -397,14 +397,14 @@ jobs:
       matrix: ${{ fromJson(needs.config.outputs.matrix )}}
     continue-on-error: ${{ matrix.props.prerelease }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
 
       - name: Download rpm artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: rpm-artifacts
+          name: rpm-artifacts-${{ matrix.props.dist }} 
           path: /tmp/src/
 
       - name: Checksum artifacts
@@ -431,12 +431,12 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
 
       - name: Download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: /tmp/archives/
 

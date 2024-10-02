@@ -15,7 +15,7 @@ jobs:
     name: License header check
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Check for required headers
         run: |
           ! grep -R -L --exclude-dir=vendor \
