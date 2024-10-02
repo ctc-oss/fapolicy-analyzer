@@ -109,8 +109,6 @@ jobs:
 
       - name: Adjust spec
         run: |
-          # disable dev-tools crate
-          sed -i '/tools/d' Cargo.toml
           # generate build deps with cargo2rpm
           cargo2rpm -p Cargo.toml buildrequires | while read line; do
             grep -n "BuildRequires:" fapolicy-analyzer.spec | head -n1 | cut -d: -f1 | xargs -I{} sed -i "{}iBuildRequires: $line" fapolicy-analyzer.spec
