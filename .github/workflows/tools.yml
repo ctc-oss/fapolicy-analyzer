@@ -44,7 +44,6 @@ jobs:
         run: |
           mkdir /tmp/tools
           mv target/release/tdb /tmp/tools/tdb
-          mv target/release/rulec /tmp/tools/rulec
           mv target/release/faprofiler /tmp/tools/faprofiler
 
       - name: Archive Tools
