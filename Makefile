@@ -129,7 +129,7 @@ clippy:
 	@echo -e "${GRN}-  |--- Rust linting...${NC}"
 	pipenv run cargo clippy --all
 
-# Perform pre- git push unit-testinrg, formating, and linting
+# Perform pre- git push unit-testing, formating, and linting
 check: header-check format lint test
 	@echo -e "${GRN}--- Pre-Push checks complete${NC}"
 	git status
