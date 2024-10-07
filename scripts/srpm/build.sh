@@ -18,18 +18,13 @@
 spec_file="fapolicy-analyzer.spec"
 rpmbuild_dir=/tmp/rpmbuild
 
-if [[ "$ONLINE" -eq 1 ]]; then
-  cd ${rpmbuild_dir}/SOURCES
-  spectool -g "../SPECS/$spec_file"
-  cd ${rpmbuild_dir}/SPECS
-  dnf builddep "$spec_file" -y
-fi
+echo "[build.sh] mock $1"
+mock -r "$1" --init
+mock -r "$1" --resultdir ${rpmbuild_dir} --buildsrpm --sources ${rpmbuild_dir}/SOURCES/ --spec ${rpmbuild_dir}/SPECS/${spec_file}
+mock -r "$1" --resultdir ${rpmbuild_dir} --rebuild ${rpmbuild_dir}/*.src.rpm
 
-cd ${rpmbuild_dir}/SPECS
-rpmbuild -ba "$spec_file" -D "_topdir ${rpmbuild_dir}"
-
-if [[ ! -z "$1" ]]; then
-  echo "[build.sh] exporting *rpms to ${1}"
-  cp -v ${rpmbuild_dir}/RPMS/**/*.rpm ${1}
-  cp -v ${rpmbuild_dir}/SRPMS/*.rpm   ${1}
+if [[ -n "$2" ]]; then
+  echo "[build.sh] exporting rpms to ${2}"
+  cp -v ${rpmbuild_dir}/*.rpm ${2}
+  cp -v ${rpmbuild_dir}/*.rpm ${2}
 fi

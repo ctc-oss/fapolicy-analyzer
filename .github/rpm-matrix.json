@@ -2,10 +2,19 @@
   "props": [
     {
       "platform": "fedora",
+      "dist": "fc42",
+      "spec": "fapolicy-analyzer.spec",
+      "image": "registry.fedoraproject.org/fedora:42",
+      "chroot": "fedora-rawhide-x86_64",
+      "version": "42",
+      "prerelease": true
+    },
+    {
+      "platform": "fedora",
       "dist": "fc41",
       "spec": "fapolicy-analyzer.spec",
       "image": "registry.fedoraproject.org/fedora:41",
-      "chroot": "fedora-rawhide-x86_64",
+      "chroot": "fedora-41-x86_64",
       "version": "41",
       "prerelease": true
     },
