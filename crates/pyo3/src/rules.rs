@@ -5,16 +5,16 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+
+use pyo3::exceptions;
+use pyo3::prelude::*;
+
 use fapolicy_rules::db::Entry::*;
 use fapolicy_rules::db::{Entry, DB};
 use fapolicy_rules::error::Error::{MalformedFileMarker, ZeroRulesDefined};
 use fapolicy_rules::ops::Changeset;
 use fapolicy_rules::parser::parse::StrTrace;
 use fapolicy_rules::parser::rule::parse_with_error_message;
-use pyo3::exceptions;
-use pyo3::prelude::*;
-use pyo3::types::{IntoPyDict, PyDict};
-use std::collections::HashMap;
 
 #[pyclass(module = "rules", name = "Rule")]
 #[derive(Clone)]
@@ -226,6 +226,9 @@ pub(crate) fn text_for_entry(e: &Entry) -> String {
         e @ Comment(_) => e.to_string(),
     }
 }
+
+// #[pyfunction]
+// fn text_to_rule_db(txt: &str) -> PyResult<PyDict> {}
 
 pub fn init_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyRule>()?;
