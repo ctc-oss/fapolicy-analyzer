@@ -27,13 +27,24 @@ pub fn trust_record(s: &str) -> Result<Trust, Error> {
     match v.as_slice() {
         [f, sz, sha] => Ok(Trust {
             path: f.trim().to_string(),
-            size: sz.trim().parse()?,
+            size: sz
+                .trim()
+                .parse()
+                .map_err(|e| MalformattedTrustEntry(format!("size parse {e} [{s}]")))?,
             hash: sha.trim().to_string(),
         }),
         _ => Err(MalformattedTrustEntry(s.to_string())),
     }
 }
 
+/// Parse a trust record with type metadata data
+/// Formatted as four space separated values
+/// TYPE PATH SIZE HASH
+/// The TYPE can be system or ancillary
+/// 0 - unknown
+/// 1 - RPM
+/// 2 - File
+/// 3 - Debian
 pub(crate) fn strtyped_trust_record(s: &str, t: &str) -> Result<(Trust, TrustSource), Error> {
     match t {
         "1" => trust_record(s).map(|t| (t, System)),
