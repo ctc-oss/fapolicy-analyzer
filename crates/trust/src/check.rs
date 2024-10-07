@@ -25,6 +25,7 @@ pub fn disk_sync(db: &DB) -> Result<DB, Error> {
     Ok(DB::from(lookup))
 }
 
+#[derive(Debug)]
 pub(crate) struct TrustPair {
     pub k: String,
     pub v: String,
@@ -33,17 +34,18 @@ pub(crate) struct TrustPair {
 impl TrustPair {
     pub(crate) fn new(b: (&[u8], &[u8])) -> TrustPair {
         TrustPair {
-            k: String::from_utf8(Vec::from(b.0)).unwrap(),
-            v: String::from_utf8(Vec::from(b.1)).unwrap(),
+            k: String::from_utf8(Vec::from(b.0)).expect("valid utf-8 [k]"),
+            v: String::from_utf8(Vec::from(b.1)).expect("valid utf-8 [v]"),
         }
     }
 }
 
 impl From<TrustPair> for (String, Rec) {
     fn from(kv: TrustPair) -> Self {
-        let (tt, v) = kv.v.split_once(' ').unwrap();
-        let (t, s) = parse::strtyped_trust_record(format!("{} {}", kv.k, v).as_str(), tt)
-            .expect("failed to parse_strtyped_trust_record");
+        let (tt, v) = kv.v.split_once(' ').expect("value separated by space");
+        let (t, s) = parse::strtyped_trust_record(format!("{} {}", kv.k, v).as_str(), tt).expect(
+            &format!("failed to parse string typed trust record: {kv:?}"),
+        );
         (t.path.clone(), Rec::from_source(t, s))
     }
 }
