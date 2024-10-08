@@ -30,6 +30,7 @@ case $id in
     echo "fedora: vendoring packages"
     mkdir -p ${vendor_dest}
     cp -r /usr/share/cargo/registry/* ${vendor_dest}
+    find ${vendor_dest} -maxdepth 1 -type d -exec touch {}/README.md \;
     ;;
 
   ubuntu)
