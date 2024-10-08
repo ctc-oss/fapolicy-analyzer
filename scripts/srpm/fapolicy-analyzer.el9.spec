@@ -178,6 +178,9 @@ tar -xzf %{SOURCE12} -C %{_builddir}/setuptools --strip-components=1
 ln -sf  %{python3_sitelib}/pytz* %{venv_lib}
 ln -sf  %{python3_sitelib}/{Babel*,babel} %{venv_lib}
 
+echo "[===============]"
+id
+
 # An unprivileged user cannot write to the default registry location of
 # /usr/share/cargo/registry so we work around this by linking the contents
 # of the default registry into a new writable location, and then extract
