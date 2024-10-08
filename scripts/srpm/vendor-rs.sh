@@ -31,6 +31,7 @@ case $id in
     mkdir -p ${vendor_dest}
     cp -r /usr/share/cargo/registry/* ${vendor_dest}
     find ${vendor_dest} -maxdepth 1 -type d -exec touch {}/README.md \;
+    rm ${vendor_dest}/either-1.13.0/README.md ${vendor_dest}/cexpr-0.6.0/README.md
     ;;
 
   ubuntu)
