@@ -1,15 +1,15 @@
+name: Coverity Scan
+
 on:
   push:
     branches:
       - 'master'
 
-name: Coverity Scan
-
 jobs:
   coverity:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: vapier/coverity-scan-action@v1
         with:
           command: --no-command --fs-capture-search fapolicy_analyzer

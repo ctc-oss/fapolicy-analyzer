@@ -17,23 +17,20 @@ use std::fs::File;
 use std::io;
 use std::io::{BufReader, Write};
 use std::path::{Path, PathBuf};
-use std::process::{Command, Output};
 use std::time::SystemTime;
 
 use clap::Parser;
 use lmdb::{Cursor, DatabaseFlags, Environment, Transaction, WriteFlags};
-use rayon::prelude::*;
 use thiserror::Error;
 
 use fapolicy_app::cfg;
 use fapolicy_daemon::fapolicyd::TRUST_LMDB_NAME;
-use fapolicy_trust::load::keep_entry;
 use fapolicy_trust::read::rpm_trust;
 use fapolicy_trust::stat::Status::{Discrepancy, Missing, Trusted};
 use fapolicy_trust::{check, load, parse, read, Trust};
 use fapolicy_util::sha::sha256_digest;
 
-use crate::Error::{DirTrustError, DpkgCommandFail, DpkgNotFound};
+use crate::Error::DirTrustError;
 use crate::Subcommand::{Add, Check, Clear, Count, Del, Dump, Init, Load, Search};
 
 /// An Error that can occur in this app
@@ -120,6 +117,7 @@ struct InitOpts {
     #[clap(long)]
     force: bool,
 
+    #[cfg(feature = "deb")]
     /// use dpkg to generate db
     #[clap(long)]
     dpkg: bool,
@@ -233,11 +231,16 @@ fn init(opts: InitOpts, verbose: bool, cfg: &cfg::All, env: &Environment) -> Res
     }
 
     let t = SystemTime::now();
+
+    #[cfg(feature = "deb")]
     let sys = if opts.dpkg {
         dpkg_trust()?
     } else {
         rpm_trust(&PathBuf::from(&cfg.system.system_trust_path))?
     };
+
+    #[cfg(not(feature = "deb"))]
+    let sys = rpm_trust(&PathBuf::from(&cfg.system.system_trust_path))?;
 
     let sys = if let Some(c) = opts.count {
         let mut m = sys;
@@ -413,10 +416,18 @@ fn new_trust_record(path: &str) -> Result<Trust, Error> {
     })
 }
 
+#[cfg(feature = "deb")]
 // number of lines to eliminate the `dpkg-query -l` header
 const DPKG_QUERY_HEADER_LINES: usize = 6;
+#[cfg(feature = "deb")]
 const DPKG_QUERY: &str = "dpkg-query";
+#[cfg(feature = "deb")]
 fn dpkg_trust() -> Result<Vec<Trust>, Error> {
+    use crate::Error::{DpkgCommandFail, DpkgNotFound};
+    use fapolicy_trust::load::keep_entry;
+    use rayon::prelude::*;
+    use std::process::Command;
+
     // check that dpkg-query exists and can be called
     let _exists = Command::new(DPKG_QUERY)
         .arg("--version")
@@ -449,7 +460,8 @@ fn dpkg_trust() -> Result<Vec<Trust>, Error> {
         .collect())
 }
 
-fn output_lines(out: Output) -> Result<Vec<String>, Error> {
+#[cfg(feature = "deb")]
+fn output_lines(out: std::process::Output) -> Result<Vec<String>, Error> {
     Ok(String::from_utf8(out.stdout)?
         .lines()
         .map(String::from)

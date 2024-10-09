@@ -1,3 +1,5 @@
+name: Python CI
+
 on:
   push:
     branches:
@@ -8,13 +10,15 @@ on:
       - "master"
       - "release/*"
 
-name: Python CI
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   ruff:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: chartboost/ruff-action@v1
         with:
           src: fapolicy_analyzer
@@ -26,7 +30,7 @@ jobs:
       matrix:
         python-version: [ "3.9", "3.10", "3.11", "3.12", "3.13" ]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install requirements
         run: |
           sudo apt-get update
@@ -55,7 +59,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install pipenv==2023.7.4 || pip install pipenv
           pipenv install --dev --python ${{ matrix.python-version }}
-          echo ::set-output name=virt_env::$(pipenv --venv)
+          echo "virt_env=$(pipenv --venv)" >> $GITHUB_OUTPUT
       - name: Setup Bindings
         run: pipenv run python setup.py develop
       - name: Test with pytest
