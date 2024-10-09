@@ -16,8 +16,8 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-20.04
-    # 28 has glibc-2.27, compatible >= el8, fc, ubuntu 18.04
-    container: fedora:28
+    # 29 has glibc-2.28, compatible >= el8, fc, ubuntu 20.04
+    container: fedora:29
     steps:
       - name: Install build deps
         run: |
@@ -29,7 +29,7 @@ jobs:
         with:
           toolchain: 1.71.1
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
@@ -44,11 +44,10 @@ jobs:
         run: |
           mkdir /tmp/tools
           mv target/release/tdb /tmp/tools/tdb
-          mv target/release/rulec /tmp/tools/rulec
           mv target/release/faprofiler /tmp/tools/faprofiler
 
       - name: Archive Tools
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: fapolicy-analyzer-tools
           path: /tmp/tools/*

@@ -14,7 +14,7 @@ jobs:
   ruff:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: chartboost/ruff-action@v1
         with:
           src: fapolicy_analyzer
@@ -26,7 +26,7 @@ jobs:
       matrix:
         python-version: [ "3.9", "3.10", "3.11", "3.12", "3.13" ]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install requirements
         run: |
           sudo apt-get update

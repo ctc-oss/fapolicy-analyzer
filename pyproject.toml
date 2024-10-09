@@ -3,7 +3,7 @@ ignore = ["E402"]
 
 [tool.towncrier]
 filename = "CHANGELOG.md"
-version = "1.3.0"
+version = "1.4.0"
 start_string = "<!-- towncrier release notes start -->\n"
 title_format = "## [v{version}](https://github.com/ctc-oss/fapolicy-analyzer/releases/tag/v{version}) - {project_date}"
 issue_format = "[#{issue}](https://github.com/ctc-oss/fapolicy-analyzer/pull/{issue})"

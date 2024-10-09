@@ -10,10 +10,6 @@ name = "tdb"
 path = "src/trust_db_util.rs"
 
 [[bin]]
-name = "rulec"
-path = "src/rule_check.rs"
-
-[[bin]]
 name = "faprofiler"
 path = "src/fapolicy_profiler.rs"
 
@@ -23,7 +19,6 @@ lmdb = "0.8"
 nom = "7.1"
 rayon = "1.5"
 thiserror = "1.0"
-ariadne = "0.1"
 log = "0.4"
 
 fapolicy-analyzer = { path = "../analyzer" }

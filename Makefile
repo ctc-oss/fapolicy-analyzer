@@ -23,6 +23,8 @@ GRN=\033[0;32m
 RED=\033[0;31m
 NC=\033[0m # No Color
 
+VERSION ?= $(shell sed -n 's/^Version: *//p' fapolicy-analyzer.spec)
+
 # List the common developer targets
 list:
 	@echo
@@ -139,17 +141,17 @@ build-info:
 
 # Generate Fedora rawhide rpms
 fc-rpm:
-	@echo -e "${GRN}--- Fedora RPM generation...${NC}"
-	make -f .copr/Makefile vendor OS_ID=fedora
-	podman build -t fapolicy-analyzer:39 -f Containerfile .
-	podman run --rm -it --network=none -v /tmp:/v fapolicy-analyzer:39 /v
+	@echo -e "${GRN}--- Fedora RPM generation v${VERSION}...${NC}"
+	make -f .copr/Makefile vendor OS_ID=fedora VERSION=${VERSION}
+	podman build -t fapolicy-analyzer:build --target fedorabuild --build-arg version=${VERSION} -f Containerfile .
+	podman run --privileged --rm -it -v /tmp:/v fapolicy-analyzer:build fedora-39-x86_64 /v
 
 # Generate RHEL 9 rpms
 el9-rpm:
-	@echo -e "${GRN}--- el9 RPM generation...${NC}"
-	make -f .copr/Makefile vendor OS_ID=rhel DIST=.el9 spec=scripts/srpm/fapolicy-analyzer.el9.spec
-	podman build -t fapolicy-analyzer:el9 -f scripts/srpm/Containerfile.el9 .
-	podman run --rm -it --network=none -v /tmp:/v fapolicy-analyzer:el9 /v
+	@echo -e "${GRN}--- el9 RPM generation v${VERSION}...${NC}"
+	make -f .copr/Makefile vendor vendor-rs OS_ID=rhel VERSION=${VERSION} DIST=.el9 spec=scripts/srpm/fapolicy-analyzer.el9.spec
+	podman build -t fapolicy-analyzer:build --target elbuild --build-arg version=${VERSION} --build-arg spec=scripts/srpm/fapolicy-analyzer.el9.spec -f Containerfile .
+	podman run --privileged --rm -it -v /tmp:/v fapolicy-analyzer:build rocky+epel-9-x86_64 /v
 
 # Update embedded help documentation
 help-docs:
