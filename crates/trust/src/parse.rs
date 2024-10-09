@@ -22,18 +22,21 @@ use nom::{InputIter, Parser};
 /// Formatted as three space separated values
 /// PATH SIZE HASH
 pub fn trust_record(s: &str) -> Result<Trust, Error> {
-    let mut v: Vec<&str> = s.rsplitn(3, ' ').collect();
-    v.reverse();
-    match v.as_slice() {
-        [f, sz, sha] => Ok(Trust {
-            path: f.trim().to_string(),
-            size: sz
-                .trim()
+    if let Some((i, hash)) = s.rsplit_once(' ') {
+        if let Some((f, sz)) = i.trim().rsplit_once(' ') {
+            let size = sz
                 .parse()
-                .map_err(|e| MalformattedTrustEntry(format!("size parse {e} [{s}]")))?,
-            hash: sha.trim().to_string(),
-        }),
-        _ => Err(MalformattedTrustEntry(s.to_string())),
+                .map_err(|e| MalformattedTrustEntry(format!("size parse {e} [{s}]")))?;
+            Ok(Trust {
+                path: f.to_owned(),
+                size,
+                hash: hash.to_owned(),
+            })
+        } else {
+            Err(MalformattedTrustEntry(format!("path parse [{s}]")))
+        }
+    } else {
+        Err(MalformattedTrustEntry(format!("hash parse [{s}]")))
     }
 }
 

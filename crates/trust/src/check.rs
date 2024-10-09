@@ -70,4 +70,16 @@ mod tests {
             "61a9960bf7d255a85811f4afcac51067b8f2e4c75e21cf4f2af95319d4ed1b87"
         );
     }
+
+    #[test]
+    fn issue_1038() {
+        let tp = TrustPair::new((
+            "/etc/cron.daily/google-earth-pro".as_bytes(),
+            "1 25456                                 8c0a49af5a6fc7bd9a0bba09f1e8a6e9".as_bytes(),
+        ));
+        let (_, r) = tp.into();
+        assert_eq!(r.trusted.path, "/etc/cron.daily/google-earth-pro");
+        assert_eq!(r.trusted.size, 25456);
+        assert_eq!(r.trusted.hash, "8c0a49af5a6fc7bd9a0bba09f1e8a6e9");
+    }
 }
