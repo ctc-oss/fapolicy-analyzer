@@ -44,9 +44,8 @@ type PathRec = (String, Rec);
 impl From<TrustPair> for PathRec {
     fn from(kv: TrustPair) -> Self {
         let (tt, v) = kv.v.split_once(' ').expect("value separated by space");
-        let (t, s) = parse::strtyped_trust_record(format!("{} {}", kv.k, v).as_str(), tt).expect(
-            &format!("failed to parse string typed trust record: {kv:?}"),
-        );
+        let (t, s) = parse::strtyped_trust_record(format!("{} {}", kv.k, v).as_str(), tt)
+            .unwrap_or_else(|_| panic!("failed to parse string typed trust record: {kv:?}"));
         (t.path.clone(), Rec::from_source(t, s))
     }
 }
