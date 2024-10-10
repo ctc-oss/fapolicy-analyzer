@@ -40,7 +40,8 @@ impl TrustPair {
     }
 }
 
-impl From<TrustPair> for (String, Rec) {
+type PathRec = (String, Rec);
+impl From<TrustPair> for PathRec {
     fn from(kv: TrustPair) -> Self {
         let (tt, v) = kv.v.split_once(' ').expect("value separated by space");
         let (t, s) = parse::strtyped_trust_record(format!("{} {}", kv.k, v).as_str(), tt).expect(
@@ -53,6 +54,8 @@ impl From<TrustPair> for (String, Rec) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::source::TrustSource;
+    use assert_matches::assert_matches;
 
     #[test]
     // todo;; additional coverage for type 2 and invalid type
@@ -69,17 +72,37 @@ mod tests {
             r.trusted.hash,
             "61a9960bf7d255a85811f4afcac51067b8f2e4c75e21cf4f2af95319d4ed1b87"
         );
+        assert_matches!(r.source, Some(TrustSource::System));
+
+        let tp = TrustPair::new((
+            "/home/user/my-ls".as_bytes(),
+            "2 157984 61a9960bf7d255a85811f4afcac51067b8f2e4c75e21cf4f2af95319d4ed1b87".as_bytes(),
+        ));
+        let (_, r) = tp.into();
+        assert_matches!(r.source, Some(TrustSource::Ancillary))
     }
 
+    fn check_issue1038((_, r): PathRec) {
+        assert_eq!(r.trusted.path, "/etc/cron.daily/google-earth-pro");
+        assert_eq!(r.trusted.size, 25456);
+        assert_eq!(r.trusted.hash, "8c0a49af5a6fc7bd9a0bba09f1e8a6e9");
+    }
+
+    // handle sha1 hash entries that contain leading space
     #[test]
     fn issue_1038() {
+        // hash leading spaces
         let tp = TrustPair::new((
             "/etc/cron.daily/google-earth-pro".as_bytes(),
             "1 25456                                 8c0a49af5a6fc7bd9a0bba09f1e8a6e9".as_bytes(),
         ));
-        let (_, r) = tp.into();
-        assert_eq!(r.trusted.path, "/etc/cron.daily/google-earth-pro");
-        assert_eq!(r.trusted.size, 25456);
-        assert_eq!(r.trusted.hash, "8c0a49af5a6fc7bd9a0bba09f1e8a6e9");
+        check_issue1038(tp.into());
+
+        // hash trailing spaces
+        let tp = TrustPair::new((
+            "/etc/cron.daily/google-earth-pro".as_bytes(),
+            "1 25456                                 8c0a49af5a6fc7bd9a0bba09f1e8a6e9  ".as_bytes(),
+        ));
+        check_issue1038(tp.into());
     }
 }

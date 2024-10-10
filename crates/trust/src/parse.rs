@@ -21,8 +21,9 @@ use nom::{InputIter, Parser};
 /// Parse a trust record from a string
 /// Formatted as three space separated values
 /// PATH SIZE HASH
+/// The hash value may contain additional leading whitespace, for sha1 for example
 pub fn trust_record(s: &str) -> Result<Trust, Error> {
-    if let Some((i, hash)) = s.rsplit_once(' ') {
+    if let Some((i, hash)) = s.trim().rsplit_once(' ') {
         if let Some((f, sz)) = i.trim().rsplit_once(' ') {
             let size = sz
                 .parse()
