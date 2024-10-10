@@ -4,7 +4,7 @@
 Summary:       File Access Policy Analyzer
 Name:          fapolicy-analyzer
 Version:       1.4.0
-Release:       2%{?dist}
+Release:       1%{?dist}
 License:       GPL-3.0-or-later
 URL:           https://github.com/ctc-oss/fapolicy-analyzer
 Source0:       %{url}/releases/download/v%{version}/%{name}-%{version}.tar.gz
@@ -170,9 +170,6 @@ tar -xzf %{SOURCE12} -C %{_builddir}/setuptools --strip-components=1
 # post install deps linked from system site-packages
 ln -sf  %{python3_sitelib}/pytz* %{venv_lib}
 ln -sf  %{python3_sitelib}/{Babel*,babel} %{venv_lib}
-
-echo "[===============]"
-id
 
 # An unprivileged user cannot write to the default registry location of
 # /usr/share/cargo/registry so we work around this by linking the contents
