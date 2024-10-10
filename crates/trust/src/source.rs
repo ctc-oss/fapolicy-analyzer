@@ -16,6 +16,10 @@ use serde::Serialize;
 pub(crate) type TrustSourceEntry = (PathBuf, String);
 
 /// Identifies the origin of the trust entry
+/// System = RPM
+/// Ancillary = fapolicyd.trust
+/// DFile = trust.d
+/// todo;; deb
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum TrustSource {
     System,

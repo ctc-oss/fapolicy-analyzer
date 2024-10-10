@@ -78,8 +78,9 @@ jobs:
         if: github.event_name == 'pull_request'
         run: |
           spec_version=$(grep "Version:" fapolicy-analyzer.spec | tr -s ' ' | cut -d' ' -f2)
+          commit_number=${{ github.event.pull_request.commits }}
           pr_number=${{ github.event.pull_request.number }}
-          patched_version="0.0.${pr_number}"
+          patched_version="0.${pr_number}.${commit_number}"
           mv fapolicy-analyzer-${spec_version}.tar.gz fapolicy-analyzer-${patched_version}.tar.gz
 
       - name: Upload
@@ -198,8 +199,9 @@ jobs:
         if: github.event_name == 'pull_request'
         run: |
           spec_version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
+          commit_number=${{ github.event.pull_request.commits }}
           pr_number=${{ github.event.pull_request.number }}
-          patched_version="0.0.${pr_number}"
+          patched_version="0.${pr_number}.${commit_number}"
           sed -i "s#Version:\s*${spec_version}#Version: ${patched_version}#" ${{ matrix.props.spec }}
           grep Version ${{ matrix.props.spec }}
 
@@ -259,14 +261,14 @@ jobs:
       - name: Upload Tarballs
         uses: actions/upload-artifact@v4
         with:
-          name: tarball-artifacts-${{ matrix.props.dist }} 
+          name: tarball-artifacts-${{ matrix.props.dist }}
           path: |
             /tmp/archives/*.tar.gz
 
       - name: Upload SRPMs
         uses: actions/upload-artifact@v4
         with:
-          name: srpm-artifacts-${{ matrix.props.dist }} 
+          name: srpm-artifacts-${{ matrix.props.dist }}
           path: |
             /tmp/archives/*.src.rpm
 
@@ -291,7 +293,7 @@ jobs:
       - name: Download srpm artifacts
         uses: actions/download-artifact@v4
         with:
-          name: srpm-artifacts-${{ matrix.props.dist }} 
+          name: srpm-artifacts-${{ matrix.props.dist }}
           path: /tmp/
 
       - name: Checksum artifacts
@@ -330,14 +332,14 @@ jobs:
       - name: Download srpm artifacts
         uses: actions/download-artifact@v4
         with:
-          name: srpm-artifacts-${{ matrix.props.dist }} 
+          name: srpm-artifacts-${{ matrix.props.dist }}
           path: /tmp/src/
 
       - name: Download tarball artifacts
         if: startsWith(matrix.props.dist, 'el')
         uses: actions/download-artifact@v4
         with:
-          name: tarball-artifacts-${{ matrix.props.dist }} 
+          name: tarball-artifacts-${{ matrix.props.dist }}
           path: /tmp/src/
 
       - name: Checksum artifacts
@@ -382,7 +384,7 @@ jobs:
       - name: Upload RPMs
         uses: actions/upload-artifact@v4
         with:
-          name: rpm-artifacts-${{ matrix.props.dist }} 
+          name: rpm-artifacts-${{ matrix.props.dist }}
           path: |
             /tmp/archives/*.x86_64.rpm
 
@@ -402,7 +404,7 @@ jobs:
       - name: Download rpm artifacts
         uses: actions/download-artifact@v4
         with:
-          name: rpm-artifacts-${{ matrix.props.dist }} 
+          name: rpm-artifacts-${{ matrix.props.dist }}
           path: /tmp/src/
 
       - name: Checksum artifacts
