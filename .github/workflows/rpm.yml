@@ -199,7 +199,7 @@ jobs:
         if: github.event_name == 'pull_request'
         run: |
           spec_version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
-          commit_number=$(git rev-list HEAD~1 --count)
+          commit_number=${{ github.event.pull_request.commits }}
           pr_number=${{ github.event.pull_request.number }}
           patched_version="0.${pr_number}.${commit_number}"
           sed -i "s#Version:\s*${spec_version}#Version: ${patched_version}#" ${{ matrix.props.spec }}
