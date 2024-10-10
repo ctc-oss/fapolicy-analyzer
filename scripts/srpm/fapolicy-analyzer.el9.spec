@@ -52,6 +52,7 @@ BuildRequires: rust-bindgen-devel
 BuildRequires: rust-block-buffer-devel
 BuildRequires: rust-bumpalo-devel
 BuildRequires: rust-cc-devel
+BuildRequires: rust-cexpr-devel
 BuildRequires: rust-cfg-if-devel
 BuildRequires: rust-chrono-devel
 BuildRequires: rust-clang-sys-devel
@@ -63,14 +64,18 @@ BuildRequires: rust-crypto-common-devel
 BuildRequires: rust-digest-devel
 BuildRequires: rust-directories-devel
 BuildRequires: rust-dirs-sys-devel
+BuildRequires: rust-either-devel
 BuildRequires: rust-generic-array-devel
 BuildRequires: rust-getrandom-devel
 BuildRequires: rust-glob-devel
 BuildRequires: rust-heck-devel
 BuildRequires: rust-indoc-devel
 BuildRequires: rust-instant-devel
+BuildRequires: rust-is_executable-devel
 BuildRequires: rust-lazy_static-devel
 BuildRequires: rust-libc-devel
+BuildRequires: rust-libloading-devel
+BuildRequires: rust-lock_api-devel
 BuildRequires: rust-log-devel
 BuildRequires: rust-memchr-devel
 BuildRequires: rust-memoffset-devel
@@ -79,6 +84,7 @@ BuildRequires: rust-num-integer-devel
 BuildRequires: rust-num-traits-devel
 BuildRequires: rust-num_cpus-devel
 BuildRequires: rust-option-ext-devel
+BuildRequires: rust-parking_lot-devel
 BuildRequires: rust-pkg-config-devel
 BuildRequires: rust-proc-macro2-devel
 BuildRequires: rust-rayon-devel
@@ -91,6 +97,7 @@ BuildRequires: rust-similar-devel
 BuildRequires: rust-smallvec-devel
 BuildRequires: rust-syn-devel
 BuildRequires: rust-target-lexicon-devel
+BuildRequires: rust-thiserror-devel
 BuildRequires: rust-typenum-devel
 BuildRequires: rust-unicode-ident-devel
 BuildRequires: rust-unindent-devel
