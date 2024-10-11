@@ -10,12 +10,12 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = { version = "0.21", features = ["abi3", "auto-initialize"] }
+pyo3 = { version = "0.22", features = ["abi3", "auto-initialize"] }
 similar = "2.1"
 chrono = "0.4"
 tempfile = "3.3"
 log = "0.4"
-pyo3-log = "0.10"
+pyo3-log = "0.11"
 
 fapolicy-analyzer = { path = "../analyzer" }
 fapolicy-auparse = { path = "../auparse" }
