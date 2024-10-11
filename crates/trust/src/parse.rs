@@ -21,19 +21,34 @@ use nom::{InputIter, Parser};
 /// Parse a trust record from a string
 /// Formatted as three space separated values
 /// PATH SIZE HASH
+/// The hash value may contain additional leading whitespace, for sha1 for example
 pub fn trust_record(s: &str) -> Result<Trust, Error> {
-    let mut v: Vec<&str> = s.rsplitn(3, ' ').collect();
-    v.reverse();
-    match v.as_slice() {
-        [f, sz, sha] => Ok(Trust {
-            path: f.trim().to_string(),
-            size: sz.trim().parse()?,
-            hash: sha.trim().to_string(),
-        }),
-        _ => Err(MalformattedTrustEntry(s.to_string())),
+    if let Some((i, hash)) = s.trim().rsplit_once(' ') {
+        if let Some((f, sz)) = i.trim().rsplit_once(' ') {
+            let size = sz
+                .parse()
+                .map_err(|e| MalformattedTrustEntry(format!("size parse {e} [{s}]")))?;
+            Ok(Trust {
+                path: f.to_owned(),
+                size,
+                hash: hash.to_owned(),
+            })
+        } else {
+            Err(MalformattedTrustEntry(format!("path parse [{s}]")))
+        }
+    } else {
+        Err(MalformattedTrustEntry(format!("hash parse [{s}]")))
     }
 }
 
+/// Parse a trust record with type metadata data
+/// Formatted as four space separated values
+/// TYPE PATH SIZE HASH
+/// The TYPE can be system or ancillary
+/// 0 - unknown
+/// 1 - RPM
+/// 2 - File
+/// 3 - Debian
 pub(crate) fn strtyped_trust_record(s: &str, t: &str) -> Result<(Trust, TrustSource), Error> {
     match t {
         "1" => trust_record(s).map(|t| (t, System)),
