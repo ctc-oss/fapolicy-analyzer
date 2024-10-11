@@ -24,15 +24,14 @@ beautifulsoup4 = "*"
 wheel = "*"
 
 [packages]
-pycairo = "1.20.0"
-PyGObject = "3.38.0"
+pycairo = "~=1.25"
+PyGObject = "~=3.48"
 events = "0.4"
-argparse = "1.4.0"
+configargparse = "~=1.7"
 rx = "~=3.2"
-more-itertools = "~=7.2"
-importlib-resources = "~=1.0.2"
-importlib-metadata = "~=0.23"
-dataclasses = "==0.6"
+more-itertools = "~=8.12"
+importlib-resources = "~=6.4"
+importlib-metadata = "~=4.12"
 toml = "*"
 
 [pipenv]
