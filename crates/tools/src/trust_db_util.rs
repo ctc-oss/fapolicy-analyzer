@@ -120,6 +120,7 @@ struct InitOpts {
     #[clap(long)]
     force: bool,
 
+    #[cfg(feature = "deb")]
     /// use dpkg to generate db
     #[clap(long)]
     dpkg: bool,
@@ -233,11 +234,16 @@ fn init(opts: InitOpts, verbose: bool, cfg: &cfg::All, env: &Environment) -> Res
     }
 
     let t = SystemTime::now();
+
+    #[cfg(feature = "deb")]
     let sys = if opts.dpkg {
         dpkg_trust()?
     } else {
         rpm_trust(&PathBuf::from(&cfg.system.system_trust_path))?
     };
+
+    #[cfg(not(feature = "deb"))]
+    let sys = rpm_trust(&PathBuf::from(&cfg.system.system_trust_path))?;
 
     let sys = if let Some(c) = opts.count {
         let mut m = sys;
@@ -413,9 +419,12 @@ fn new_trust_record(path: &str) -> Result<Trust, Error> {
     })
 }
 
+#[cfg(feature = "deb")]
 // number of lines to eliminate the `dpkg-query -l` header
 const DPKG_QUERY_HEADER_LINES: usize = 6;
+#[cfg(feature = "deb")]
 const DPKG_QUERY: &str = "dpkg-query";
+#[cfg(feature = "deb")]
 fn dpkg_trust() -> Result<Vec<Trust>, Error> {
     // check that dpkg-query exists and can be called
     let _exists = Command::new(DPKG_QUERY)
