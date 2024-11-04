@@ -1,9 +1,9 @@
+name: Coverity Scan
+
 on:
   push:
     branches:
       - 'master'
-
-name: Coverity Scan
 
 jobs:
   coverity:

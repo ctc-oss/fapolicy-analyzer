@@ -1,10 +1,10 @@
+name: Changelog
+
 on:
   pull_request:
-    types: [opened, synchronize, labeled, unlabeled, edited]
+    types: [ opened, synchronize, labeled, unlabeled, edited ]
     branches:
       - 'master'
-
-name: Changelog
 
 jobs:
   changelog:

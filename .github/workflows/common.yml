@@ -1,3 +1,5 @@
+name: Common CI
+
 on:
   push:
     branches:
@@ -7,8 +9,6 @@ on:
     branches:
       - 'master'
       - 'release/*'
-
-name: Common CI
 
 jobs:
   headers:

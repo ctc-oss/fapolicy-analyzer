@@ -1,9 +1,9 @@
+name: User Guide
+
 on:
   push:
     tags:
       - 'v*'
-
-name: User Guide
 
 jobs:
   pdf:
