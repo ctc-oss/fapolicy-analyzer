@@ -17,23 +17,20 @@ use std::fs::File;
 use std::io;
 use std::io::{BufReader, Write};
 use std::path::{Path, PathBuf};
-use std::process::{Command, Output};
 use std::time::SystemTime;
 
 use clap::Parser;
 use lmdb::{Cursor, DatabaseFlags, Environment, Transaction, WriteFlags};
-use rayon::prelude::*;
 use thiserror::Error;
 
 use fapolicy_app::cfg;
 use fapolicy_daemon::fapolicyd::TRUST_LMDB_NAME;
-use fapolicy_trust::load::keep_entry;
 use fapolicy_trust::read::rpm_trust;
 use fapolicy_trust::stat::Status::{Discrepancy, Missing, Trusted};
 use fapolicy_trust::{check, load, parse, read, Trust};
 use fapolicy_util::sha::sha256_digest;
 
-use crate::Error::{DirTrustError, DpkgCommandFail, DpkgNotFound};
+use crate::Error::DirTrustError;
 use crate::Subcommand::{Add, Check, Clear, Count, Del, Dump, Init, Load, Search};
 
 /// An Error that can occur in this app
@@ -426,6 +423,11 @@ const DPKG_QUERY_HEADER_LINES: usize = 6;
 const DPKG_QUERY: &str = "dpkg-query";
 #[cfg(feature = "deb")]
 fn dpkg_trust() -> Result<Vec<Trust>, Error> {
+    use fapolicy_trust::load::keep_entry;
+    use rayon::prelude::*;
+    use std::process::Command;
+    use crate::Error::{DpkgCommandFail, DpkgNotFound};
+
     // check that dpkg-query exists and can be called
     let _exists = Command::new(DPKG_QUERY)
         .arg("--version")
@@ -458,7 +460,8 @@ fn dpkg_trust() -> Result<Vec<Trust>, Error> {
         .collect())
 }
 
-fn output_lines(out: Output) -> Result<Vec<String>, Error> {
+#[cfg(feature = "deb")]
+fn output_lines(out: std::process::Output) -> Result<Vec<String>, Error> {
     Ok(String::from_utf8(out.stdout)?
         .lines()
         .map(String::from)
