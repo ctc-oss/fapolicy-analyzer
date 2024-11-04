@@ -27,3 +27,8 @@ fapolicy-daemon = { path = "../daemon" }
 fapolicy-rules = { path = "../rules" }
 fapolicy-trust = { path = "../trust" }
 fapolicy-util = { path = "../util" }
+
+
+[features]
+default = []
+deb = []

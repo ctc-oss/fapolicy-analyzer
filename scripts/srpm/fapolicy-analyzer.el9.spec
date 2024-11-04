@@ -218,6 +218,7 @@ export RUSTFLAGS="%{build_rustflags}"
 
 %if %{with cli}
 cargo build --bin tdb --release
+cargo build --bin faprofiler --release
 %endif
 
 %if %{with gui}
@@ -230,7 +231,8 @@ cargo build --bin tdb --release
 %install
 
 %if %{with cli}
-install -D target/release/tdb %{buildroot}/%{_sbindir}/%{name}-trust
+install -D target/release/tdb %{buildroot}/%{_sbindir}/%{name}-cli-trust
+install -D target/release/faprofiler %{buildroot}/%{_sbindir}/%{name}-cli-profiler
 %endif
 
 %if %{with gui}
@@ -249,7 +251,8 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
 %endif
 
 %files cli
-%attr(755,root,root) %{_sbindir}/%{name}-trust
+%attr(755,root,root) %{_sbindir}/%{name}-cli-trust
+%attr(755,root,root) %{_sbindir}/%{name}-cli-profiler
 
 %files gui
 %{python3_sitearch}/%{module}
