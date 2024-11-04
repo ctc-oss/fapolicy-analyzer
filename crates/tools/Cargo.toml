@@ -13,6 +13,10 @@ path = "src/trust_db_util.rs"
 name = "faprofiler"
 path = "src/fapolicy_profiler.rs"
 
+[[bin]]
+name = "rulec"
+path = "src/rule_check.rs"
+
 [dependencies]
 clap = { version = "3.2.20", features = ["derive"] }
 lmdb = "0.8"
