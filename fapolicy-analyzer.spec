@@ -124,6 +124,7 @@ echo "audit" > FEATURES
 
 %if %{with cli}
 cargo build --bin tdb --release
+cargo build --bin faprofiler --release
 %endif
 
 %if %{with gui}
