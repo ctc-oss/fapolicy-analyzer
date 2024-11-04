@@ -1,3 +1,5 @@
+name: RPM
+
 on:
   push:
     branches:
@@ -11,7 +13,9 @@ on:
       - 'master'
       - 'release/*'
 
-name: RPM
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   config:
@@ -28,12 +32,12 @@ jobs:
       - name: Load config matrix
         id: set-matrix
         run: |
-          echo "::set-output name=matrix::$(cat .github/rpm-matrix.json | tr -d '\n' | tr -d ' ')"
+          echo "matrix=$(cat .github/rpm-matrix.json | tr -d '\n' | tr -d ' ')" >> $GITHUB_OUTPUT
 
       - name: Copr token discovery
         id: is-copr-enabled
         if: "${{ env.COPR_KEY != '' }}"
-        run: echo "::set-output name=defined::true"
+        run: echo "defined=true" >> $GITHUB_OUTPUT
         env:
           COPR_KEY: ${{ secrets.COPR_API_LOGIN }}
 
@@ -159,7 +163,7 @@ jobs:
       - name: Strip ref to tag
         id: tag_name
         if: startsWith(github.ref, 'refs/tags/v')
-        run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d/ -f3)
+        run: echo "VERSION=$(echo $GITHUB_REF | cut -d/ -f3)" >> $GITHUB_OUTPUT
 
       - name: Mark as git safe
         run: |

@@ -1,3 +1,5 @@
+name: Pages
+
 on:
   push:
     branches:
@@ -6,8 +8,6 @@ on:
     branches:
       - 'master'
   workflow_dispatch:
-
-name: Pages
 
 permissions:
   contents: read
