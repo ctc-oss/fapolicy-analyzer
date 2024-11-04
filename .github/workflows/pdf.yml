@@ -22,7 +22,7 @@ jobs:
       - name: Strip ref to tag
         id: tag_name
         if: startsWith(github.ref, 'refs/tags/v')
-        run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d/ -f3)
+        run: echo "VERSION=$(echo $GITHUB_REF | cut -d/ -f3)" >> $GITHUB_OUTPUT
 
       - name: clone wiki
         run: |
