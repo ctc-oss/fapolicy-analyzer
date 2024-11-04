@@ -10,7 +10,7 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = { version = "0.22", features = ["abi3", "auto-initialize"] }
+pyo3 = { version = "0.22", features = ["abi3", "auto-initialize", "py-clone"] }
 similar = "2.1"
 chrono = "0.4"
 tempfile = "3.3"
