@@ -423,10 +423,10 @@ const DPKG_QUERY_HEADER_LINES: usize = 6;
 const DPKG_QUERY: &str = "dpkg-query";
 #[cfg(feature = "deb")]
 fn dpkg_trust() -> Result<Vec<Trust>, Error> {
+    use crate::Error::{DpkgCommandFail, DpkgNotFound};
     use fapolicy_trust::load::keep_entry;
     use rayon::prelude::*;
     use std::process::Command;
-    use crate::Error::{DpkgCommandFail, DpkgNotFound};
 
     // check that dpkg-query exists and can be called
     let _exists = Command::new(DPKG_QUERY)
