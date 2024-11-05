@@ -219,6 +219,7 @@ export RUSTFLAGS="%{build_rustflags}"
 %if %{with cli}
 cargo build --bin tdb --release
 cargo build --bin faprofiler --release
+cargo build --bin rulec --release
 %endif
 
 %if %{with gui}
@@ -233,6 +234,7 @@ cargo build --bin faprofiler --release
 %if %{with cli}
 install -D target/release/tdb %{buildroot}/%{_sbindir}/%{name}-cli-trust
 install -D target/release/faprofiler %{buildroot}/%{_sbindir}/%{name}-cli-profiler
+install -D target/release/rulec %{buildroot}/%{_sbindir}/%{name}-cli-rulec
 %endif
 
 %if %{with gui}
