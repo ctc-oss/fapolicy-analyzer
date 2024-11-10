@@ -24,7 +24,7 @@ nom = "7.1"
 rayon = "1.5"
 thiserror = "1.0"
 log = "0.4"
-#ariadne = { version = "0.1.1", optional = true }
+ariadne = { version = "0.4", optional = true }
 
 fapolicy-analyzer = { path = "../analyzer" }
 fapolicy-app = { path = "../app" }
@@ -37,4 +37,4 @@ fapolicy-util = { path = "../util" }
 [features]
 default = []
 deb = []
-# pretty = ["dep:ariadne"]
+pretty = ["dep:ariadne"]
