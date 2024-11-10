@@ -17,8 +17,6 @@ use std::error::Error;
 use std::ops::Range;
 use std::path::PathBuf;
 
-use ariadne::Source;
-use ariadne::{Report, ReportKind};
 use clap::Parser;
 
 use fapolicy_rules::parser::errat::{ErrorAt, StrErrorAt};
@@ -116,20 +114,38 @@ fn report_for_file(path: PathBuf) -> Result<(), Box<dyn Error>> {
 
     for (lineno, result) in results {
         if result.is_err() {
-            let r = to_ariadne_labels(&filename, result).into_iter().rfold(
-                Report::build(ReportKind::Error, filename.as_str(), offsets[lineno].start),
-                |r, l| r.with_label(l),
-            );
+            #[cfg(feature = "pretty")]
+            {
+                use ariadne::Source;
+                use ariadne::{Report, ReportKind};
 
-            r.finish()
-                .print((filename.as_str(), Source::from(contents.join("\n"))))
-                .unwrap();
+                let r = to_ariadne_labels(&filename, result).into_iter().rfold(
+                    Report::build(ReportKind::Error, filename.as_str(), offsets[lineno].start),
+                    |r, l| r.with_label(l),
+                );
+
+                r.finish()
+                    .print((filename.as_str(), Source::from(contents.join("\n"))))
+                    .unwrap();
+            }
+
+            #[cfg(not(feature = "pretty"))]
+            match result {
+                Ok(_) => {}
+                Err(nom::Err::Error(e)) => {
+                    println!("[E] {filename}:{} {}", lineno + 1, e.0);
+                }
+                res => {
+                    log::warn!("unhandled err {:?}", res);
+                }
+            }
         }
     }
 
     Ok(())
 }
 
+#[cfg(feature = "pretty")]
 fn to_ariadne_labels<'a>(
     id: &'a str,
     result: IResult<StrTrace, Rule, StrErrorAt>,

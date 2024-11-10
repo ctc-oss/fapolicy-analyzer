@@ -202,6 +202,11 @@ rm Cargo.lock
 sed -i '/tools/d' Cargo.toml
 %endif
 
+%if %{with cli}
+# disable ariadne
+sed -i '/ariadne/d' crates/tools/Cargo.toml
+%endif
+
 # extract our doc sourcs
 tar xvzf %{SOURCE1}
 
@@ -219,6 +224,7 @@ export RUSTFLAGS="%{build_rustflags}"
 %if %{with cli}
 cargo build --bin tdb --release
 cargo build --bin faprofiler --release
+cargo build --bin rulec --release
 %endif
 
 %if %{with gui}
@@ -233,6 +239,7 @@ cargo build --bin faprofiler --release
 %if %{with cli}
 install -D target/release/tdb %{buildroot}/%{_sbindir}/%{name}-cli-trust
 install -D target/release/faprofiler %{buildroot}/%{_sbindir}/%{name}-cli-profiler
+install -D target/release/rulec %{buildroot}/%{_sbindir}/%{name}-cli-rulec
 %endif
 
 %if %{with gui}
@@ -253,6 +260,7 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
 %files cli
 %attr(755,root,root) %{_sbindir}/%{name}-cli-trust
 %attr(755,root,root) %{_sbindir}/%{name}-cli-profiler
+%attr(755,root,root) %{_sbindir}/%{name}-cli-rulec
 
 %files gui
 %{python3_sitearch}/%{module}
