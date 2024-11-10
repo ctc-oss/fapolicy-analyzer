@@ -255,6 +255,7 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
 %files cli
 %attr(755,root,root) %{_sbindir}/%{name}-cli-trust
 %attr(755,root,root) %{_sbindir}/%{name}-cli-profiler
+%attr(755,root,root) %{_sbindir}/%{name}-cli-rulec
 
 %files gui
 %{python3_sitearch}/%{module}
