@@ -37,4 +37,4 @@ fapolicy-util = { path = "../util" }
 [features]
 default = []
 deb = []
-pretty = ["dep:ariadne"]
+# pretty = ["dep:ariadne"]
