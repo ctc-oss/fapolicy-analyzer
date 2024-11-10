@@ -13,6 +13,10 @@ path = "src/trust_db_util.rs"
 name = "faprofiler"
 path = "src/fapolicy_profiler.rs"
 
+[[bin]]
+name = "rulec"
+path = "src/rule_check.rs"
+
 [dependencies]
 clap = { version = "3.2.20", features = ["derive"] }
 lmdb = "0.8"
@@ -20,6 +24,7 @@ nom = "7.1"
 rayon = "1.5"
 thiserror = "1.0"
 log = "0.4"
+ariadne = { version = "0.4", optional = true }
 
 fapolicy-analyzer = { path = "../analyzer" }
 fapolicy-app = { path = "../app" }
@@ -32,3 +37,4 @@ fapolicy-util = { path = "../util" }
 [features]
 default = []
 deb = []
+pretty = ["dep:ariadne"]
