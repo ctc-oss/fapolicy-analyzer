@@ -21,8 +21,8 @@ use crate::conf::error::Error::{
 
 fn parse_bool(i: &str) -> Result<bool, Error> {
     match nom_num(i) {
-        Ok(("", v)) if v == 1 => Ok(true),
-        Ok(("", v)) if v == 0 => Ok(false),
+        Ok(("", 1)) => Ok(true),
+        Ok(("", 0)) => Ok(false),
         Ok((_, _)) => Err(Unexpected(i.to_string())),
         Err(_) => Err(General),
     }

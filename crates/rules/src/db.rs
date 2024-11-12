@@ -316,7 +316,7 @@ mod tests {
     #[test]
     fn maintain_order() {
         let source = "foo.rules".to_string();
-        let subjs = vec!["fee", "fi", "fo", "fum", "this", "is", "such", "fun"];
+        let subjs = ["fee", "fi", "fo", "fum", "this", "is", "such", "fun"];
         let rules: Vec<(String, Entry)> = subjs
             .iter()
             .map(|s| {
