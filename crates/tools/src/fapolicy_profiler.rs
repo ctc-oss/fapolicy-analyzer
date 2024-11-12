@@ -16,7 +16,6 @@
 use clap::Parser;
 use fapolicy_daemon::profiler::Profiler;
 use fapolicy_rules::read::load_rules_db;
-use human_panic::{setup_panic, Metadata};
 use std::error::Error;
 use std::os::unix::prelude::CommandExt;
 use std::path::PathBuf;
