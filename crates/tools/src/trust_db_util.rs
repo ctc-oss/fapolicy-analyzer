@@ -174,6 +174,8 @@ struct LoadOpts {
 struct CountOpts {}
 
 fn main() -> Result<(), Error> {
+    fapolicy_tools::setup_human_panic();
+
     let sys_conf = cfg::All::load()?;
     let all_opts: Opts = Opts::parse();
     let trust_db_path = match all_opts.dbdir {

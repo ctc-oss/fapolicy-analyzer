@@ -49,6 +49,8 @@ enum Line<'a> {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
+    fapolicy_tools::setup_human_panic();
+
     let all_opts: Opts = Opts::parse();
 
     let rules_path = &*all_opts.rules_path;
