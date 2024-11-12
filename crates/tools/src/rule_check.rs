@@ -43,7 +43,7 @@ type RuleParse<'a> = Result<(StrTrace<'a>, Rule), ErrorAt<StrTrace<'a>>>;
 
 enum Line<'a> {
     Blank,
-    Comment(String),
+    Comment(()),
     SetDec,
     RuleDef(RuleParse<'a>),
 }
@@ -94,7 +94,7 @@ fn report_for_file(path: PathBuf) -> Result<(), Box<dyn Error>> {
             if s.trim().is_empty() {
                 Blank
             } else if s.starts_with('#') {
-                Comment(s.clone())
+                Comment(())
             } else if s.starts_with('%') {
                 SetDec
             } else {

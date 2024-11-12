@@ -43,7 +43,7 @@ pub struct ObjAnalysis {
 }
 
 pub fn analyze(db: &EventDB, from: Perspective, trust: &TrustDB) -> Vec<Analysis> {
-    let fit_events: Vec<Event> = db.events.iter().cloned().filter(|e| from.fit(e)).collect();
+    let fit_events: Vec<Event> = db.events.iter().filter(|&e| from.fit(e)).cloned().collect();
     let mut access_map: HashMap<String, String> = HashMap::new();
 
     fit_events

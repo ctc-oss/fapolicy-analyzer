@@ -40,7 +40,7 @@ fn rules_file(path: PathBuf) -> Result<Vec<RuleSource>, io::Error> {
     let reader = File::open(&path).map(BufReader::new)?;
     let lines = reader
         .lines()
-        .flatten()
+        .map_while(Result::ok)
         .map(|s| (path.clone(), s))
         .collect();
     Ok(lines)

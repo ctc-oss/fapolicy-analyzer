@@ -16,12 +16,6 @@ struct Product {
     _txt: String,
 }
 
-#[derive(Debug, Clone)]
-struct Assignment {
-    _lhs: String,
-    _rhs: String,
-}
-
 type StrTrace<'a> = Trace<&'a str>;
 type StrTraceError<'a> = RuleParseError<StrTrace<'a>>;
 type StrTraceResult<'a> = IResult<StrTrace<'a>, Product, StrTraceError<'a>>;
