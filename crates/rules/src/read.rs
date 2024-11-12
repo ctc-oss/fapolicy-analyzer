@@ -37,12 +37,12 @@ enum Line {
 enum LineError<I> {
     CannotParseSet(I, String),
     CannotParse(I, String),
-    Nom(I, ErrorKind),
+    Nom(I, ()),
 }
 
 impl<I> ParseError<I> for LineError<I> {
-    fn from_error_kind(input: I, kind: ErrorKind) -> Self {
-        LineError::Nom(input, kind)
+    fn from_error_kind(input: I, _kind: ErrorKind) -> Self {
+        LineError::Nom(input, ())
     }
 
     fn append(_: I, _: ErrorKind, other: Self) -> Self {

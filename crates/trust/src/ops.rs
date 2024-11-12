@@ -18,7 +18,7 @@ use crate::source::TrustSource;
 use crate::Trust;
 
 #[derive(Clone, Debug)]
-enum TrustOp {
+pub enum TrustOp {
     Add(String),
     Del(String),
     Ins(String, u64, String),
@@ -111,7 +111,7 @@ fn new_trust_record(path: &str) -> Result<Trust, Error> {
     })
 }
 
-trait InsChange {
+pub trait InsChange {
     fn ins(&mut self, path: &str, size: u64, hash: &str);
 }
 

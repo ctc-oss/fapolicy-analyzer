@@ -122,11 +122,7 @@ impl From<Vec<(Origin, Entry)>> for DB {
 impl DB {
     /// Construct DB using the provided RuleDefs and associated sources
     pub(crate) fn from_sources(defs: Vec<(Origin, Entry)>) -> Self {
-        let model: BTreeMap<usize, DbEntry> = defs
-            .into_iter()
-            .enumerate()
-            .map(|(i, (source, d))| (i, (source, d)))
-            .collect();
+        let model: BTreeMap<usize, DbEntry> = defs.into_iter().enumerate().collect();
 
         let rules: BTreeMap<usize, RuleEntry> = model
             .iter()
@@ -320,7 +316,7 @@ mod tests {
     #[test]
     fn maintain_order() {
         let source = "foo.rules".to_string();
-        let subjs = vec!["fee", "fi", "fo", "fum", "this", "is", "such", "fun"];
+        let subjs = ["fee", "fi", "fo", "fum", "this", "is", "such", "fun"];
         let rules: Vec<(String, Entry)> = subjs
             .iter()
             .map(|s| {

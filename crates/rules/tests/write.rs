@@ -89,7 +89,7 @@ fn test_dir_multi_file() -> Result<(), Box<dyn Error>> {
     let rules_d = tempfile::tempdir_in(&etc_fapolicyd)?.into_path();
     write::db(&db, &rules_d)?;
 
-    let expected = vec![expected0, expected1];
+    let expected = [expected0, expected1];
     for (i, f) in read_sorted_d_files(&rules_d)?.iter().enumerate() {
         let actual = read_string(f)?.trim().to_string();
         assert_eq!(expected[i], actual);
@@ -122,7 +122,7 @@ fn test_dir_multi_file_multi_rule() -> Result<(), Box<dyn Error>> {
     write::db(&db, &rules_d)?;
 
     let concat = format!("{}\n{}", expected0, expected1);
-    let expected = vec![concat.as_str(), expected2];
+    let expected = [concat.as_str(), expected2];
     for (i, f) in read_sorted_d_files(&rules_d)?.iter().enumerate() {
         let actual = read_string(f)?.trim().to_string();
         assert_eq!(expected[i], actual);

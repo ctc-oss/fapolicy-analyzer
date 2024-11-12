@@ -260,6 +260,14 @@ impl PyEventLog {
     }
 }
 
+pub fn init_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
+    m.add_class::<PyEvent>()?;
+    m.add_class::<PySubject>()?;
+    m.add_class::<PyObject>()?;
+    m.add_class::<PyEventLog>()?;
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -324,12 +332,4 @@ mod tests {
         log.until(Some(3));
         assert_eq!(all - 2, log.by_subject(TEST_PATH).len());
     }
-}
-
-pub fn init_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
-    m.add_class::<PyEvent>()?;
-    m.add_class::<PySubject>()?;
-    m.add_class::<PyObject>()?;
-    m.add_class::<PyEventLog>()?;
-    Ok(())
 }
