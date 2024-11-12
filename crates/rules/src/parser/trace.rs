@@ -52,15 +52,11 @@ impl<I: PartialEq> PartialEq for Trace<I> {
     }
 }
 
-///
-
 impl<I> Position for Trace<I> {
     fn position(&self) -> usize {
         self.position
     }
 }
-
-///
 
 impl<I: Offset> Offset for Trace<I> {
     fn offset(&self, second: &Self) -> usize {
