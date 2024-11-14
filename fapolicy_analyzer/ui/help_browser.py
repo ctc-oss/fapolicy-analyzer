@@ -21,7 +21,11 @@ from urllib.parse import ParseResult, urlparse, urlunparse
 import gi
 
 gi.require_version("Gtk", "3.0")
-gi.require_version("WebKit2", "4.0")
+try:
+    gi.require_version("WebKit2", "4.0")
+except Exception:
+    gi.require_version("WebKit2", "4.1")
+
 from gi.repository import Gtk, WebKit2
 
 
