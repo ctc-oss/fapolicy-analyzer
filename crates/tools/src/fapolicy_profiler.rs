@@ -47,6 +47,8 @@ struct Opts {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
+    fapolicy_tools::setup_human_panic();
+
     let opts: Opts = Opts::parse();
     log::info!("profiling: {:?}", opts.target);
     let target = opts.target.first().expect("target not specified");

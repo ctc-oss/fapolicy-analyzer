@@ -214,7 +214,7 @@ pub fn lines(input: Vec<String>) -> Vec<Line> {
     let mut stack = vec![];
 
     // process lines from the config, ignoring comments and empty lines
-    for (_, line) in input.iter().enumerate() {
+    for line in input.iter() {
         if line.trim_start().starts_with('#') {
             lines.push(Line::Comment(line.to_string()))
         } else if line.is_empty() {

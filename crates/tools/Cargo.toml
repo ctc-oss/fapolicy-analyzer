@@ -25,6 +25,7 @@ rayon = "1.5"
 thiserror = "1.0"
 log = "0.4"
 ariadne = { version = "0.4", optional = true }
+human-panic = "2.0"
 
 fapolicy-analyzer = { path = "../analyzer" }
 fapolicy-app = { path = "../app" }
