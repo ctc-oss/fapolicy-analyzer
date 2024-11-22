@@ -1,4 +1,4 @@
-# Copyright Concurrent Technologies Corporation 2023
+# Copyright Concurrent Technologies Corporation 2024
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,23 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from typing import Tuple
 
-from enum import Enum
+from fapolicy_analyzer.ui.stats.stats_view_page import StatsViewPage
 
-
-class PAGE_SELECTION(Enum):
-    TRUST_DATABASE_ADMIN = "trust"
-    RULES_ADMIN = "rules"
-    ANALYZE_AUDIT = "audit"
-    ANALYZE_FROM_DEBUG = "debug log"
-    ANALYZE_SYSLOG = "syslog"
-    PROFILER = "profiler"
-    CONFIG = "config"
-    TRUST_FILTER = "trust filter"
-    STATS_VIEW = "stats view"
-
-
-class LogType(Enum):
-    audit = "audit"
-    debug = "debug"
-    syslog = "syslog"
+__all__: Tuple[str, ...] = ("StatsViewPage",)
