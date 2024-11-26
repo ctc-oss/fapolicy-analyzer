@@ -1,0 +1,17 @@
+Permissive: false
+q_size: 800
+Inter-thread max queue depth: 2
+Allowed accesses: 10
+Denied accesses: 0
+Trust database max pages: 12800
+Trust database pages in use: 0 (0%)
+Subject cache size: 1549
+Subject slots in use: 3 (0%)
+Subject hits: 7
+Subject misses: 3
+Subject evictions: 0 (0%)
+Object cache size: 8191
+Object slots in use: 6 (0%)
+Object hits: 4
+Object misses: 6
+Object evictions: 0 (0%)

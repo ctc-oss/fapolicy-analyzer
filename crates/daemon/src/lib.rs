@@ -11,6 +11,7 @@ pub mod error;
 pub mod fapolicyd;
 pub mod pipe;
 pub mod profiler;
+pub mod stats;
 pub mod svc;
 pub mod version;
 

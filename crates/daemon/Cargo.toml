@@ -6,8 +6,13 @@ license = "MPL-2.0"
 version = "0.5.0"
 edition = "2021"
 
+[[bin]]
+name = "tester"
+path = "src/tester.rs"
+
 [dev-dependencies]
 assert_matches = "1.5"
+tempfile = "3.3"
 
 [dependencies]
 nom = "7.1"
@@ -15,6 +20,7 @@ thiserror = "1.0"
 dbus = "0.9"
 tempfile = "3.3"
 log = "0.4"
+notify = "6.1"
 
 fapolicy-trust = { path = "../trust" }
 fapolicy-rules = { path = "../rules" }
