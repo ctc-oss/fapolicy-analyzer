@@ -94,6 +94,17 @@ PROFILING_KILL_RESPONSE = "PROFILING_TERM"
 PROFILING_DONE_EVENT = "PROFILING_DONE"
 PROFILER_SET_OUTPUT_CMD = "PROFILER_SET_OUTPUT_CMD"
 PROFILER_CLEAR_STATE_CMD = "PROFILER_CLEAR_STATE_CMD"
+
+START_STATS_REQUEST = "START_STATS_REQUEST"
+START_STATS_RESPONSE = "START_STATS_RESPONSE"
+STATS_SET_SUMMARY = "STATS_SET_SUMMARY"
+STATS_KILL_REQUEST = "STATS_KILL"
+STATS_KILL_RESPONSE = "STATS_TERM"
+
+ERROR_STATS_INIT = "ERROR_STATS_INIT"
+ERROR_STATS_EXEC = "ERROR_STATS_EXEC"
+ERROR_STATS_TERM = "ERROR_STATS_TERM"
+
 ERROR_PROFILER_INIT = "ERROR_PROFILER_INIT"
 ERROR_PROFILER_EXEC = "ERROR_PROFILER_EXEC"
 ERROR_PROFILER_TERM = "ERROR_PROFILER_TERM"
@@ -328,12 +339,21 @@ def profiling_started(cmd: str) -> Action:
     return _create_action(START_PROFILING_RESPONSE, cmd)
 
 
+def start_stats() -> Action:
+    return _create_action(START_STATS_REQUEST)
+
+def stats_started(cmd: str) -> Action:
+    return _create_action(START_STATS_RESPONSE, cmd)
+
 def stop_profiling() -> Action:
     return _create_action(PROFILING_KILL_REQUEST)
 
 
 def terminating_profiler() -> Action:
     return _create_action(PROFILING_KILL_RESPONSE)
+
+def terminating_stats() -> Action:
+    return _create_action(STATS_KILL_RESPONSE)
 
 
 def profiler_exec(pid: int) -> Action:
@@ -368,6 +388,18 @@ def profiler_execution_error(error: str) -> Action:
 
 def profiler_termination_error(error: str) -> Action:
     return _create_action(ERROR_PROFILER_TERM, error)
+
+
+def set_stats_summary(summary: str) -> Action:
+    return _create_action(STATS_SET_SUMMARY, summary)
+
+
+def stats_initialization_error(error: str) -> Action:
+    return _create_action(ERROR_STATS_INIT, error)
+
+
+def stats_termination_error(error: str) -> Action:
+    return _create_action(ERROR_STATS_TERM, error)
 
 
 def init_system() -> Action:

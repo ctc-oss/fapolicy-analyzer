@@ -15,38 +15,20 @@
 
 
 import gi
-import logging
-from typing import Any, Optional, Sequence, Tuple
 from events import Events
+from fapolicy_analyzer.ui.reducers.stats_reducer import StatsStreamState
 
-
-from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
-
-from typing import Any, Optional, Sequence, Tuple
 from fapolicy_analyzer.ui.actions import (
-    NotificationType,
-    add_notification,
-    apply_changesets,
-    modify_config_text,
-    request_config_text,
+    request_config_text, start_stats,
 )
-from fapolicy_analyzer.ui.changeset_wrapper import Changeset, ConfigChangeset
-from fapolicy_analyzer.ui.config.config_text_view import ConfigTextView
-from fapolicy_analyzer.ui.config.config_status_info import ConfigStatusInfo
-from fapolicy_analyzer.ui.rules.rules_admin_page import VALIDATION_NOTE_CATEGORY
-from fapolicy_analyzer.ui.strings import (
-    APPLY_CHANGESETS_ERROR_MESSAGE,
-    CONFIG_CHANGESET_PARSE_ERROR,
-    CONFIG_TEXT_LOAD_ERROR,
-    RULES_OVERRIDE_MESSAGE,
-)
+
 from fapolicy_analyzer.ui.ui_page import UIPage, UIAction
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 
 # from fapolicy_analyzer.ui.actions import ()
 from fapolicy_analyzer.ui.store import (
     dispatch,
-    get_system_feature,
+    get_system_feature, get_stats_feature,
 )
 
 
@@ -60,14 +42,12 @@ from fapolicy_analyzer import start_stat_stream
 
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk  # isort: skip
-from gi.repository import GLib  # isort: skip
 
 
 class StatsViewPage(UIConnectedWidget, UIPage, Events):
     def __init__(self):
         features = [
-            {get_system_feature(): {"on_next": self.on_next_system}},
+            {get_stats_feature(): {"on_next": self.on_event}},
         ]
         UIConnectedWidget.__init__(self, features=features)
         self.__events__ = [ "foo" ]
@@ -79,19 +59,13 @@ class StatsViewPage(UIConnectedWidget, UIPage, Events):
         UIPage.__init__(self, actions)
         self.__init_child_widgets()
 
+        dispatch(start_stats())
+
     def __init_child_widgets(self):
         self.__text_view: GtkTextView = self.get_object("profilerOutput")
-        tv = self.__text_view
-        def execd(rec):
-            buff = Gtk.TextBuffer()
-            buff.set_text(rec.summary())
-            try:
-                GLib.idle_add(tv.set_buffer, buff)
-            except Exception as e:
-                print(e)
 
-        start_stat_stream("/var/run/fapolicyd/fapolicyd.state", execd)
-
-
-    def on_next_system(self, system: Any):
-        system_state = system.get("system")
+    def on_event(self, stats: StatsStreamState):
+        if stats.summary is not None:
+            self.__text_view.get_buffer().set_text(stats.summary)
+        else:
+            self.__text_view.get_buffer().set_text("")

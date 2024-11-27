@@ -28,7 +28,7 @@ from fapolicy_analyzer.ui.features import (
     create_application_feature,
     create_notification_feature,
     create_profiler_feature,
-    create_system_feature,
+    create_system_feature, STATS_FEATURE, create_stats_feature,
 )
 
 store = create_store()
@@ -45,6 +45,7 @@ def init_store(system: System = None):
     store.add_feature_module(create_application_feature())
     store.add_feature_module(create_notification_feature())
     store.add_feature_module(create_profiler_feature(store.dispatch))
+    store.add_feature_module(create_stats_feature(store.dispatch))
     store.add_feature_module(create_system_feature(store.dispatch, system))
 
 
@@ -60,6 +61,8 @@ def get_notifications_feature() -> Observable:
 def get_profiling_feature() -> Observable:
     return store.as_observable().pipe(map(select_feature(PROFILING_FEATURE)))
 
+def get_stats_feature() -> Observable:
+    return store.as_observable().pipe(map(select_feature(STATS_FEATURE)))
 
 def get_system_feature() -> Observable:
     return store.as_observable().pipe(map(select_feature(SYSTEM_FEATURE)))

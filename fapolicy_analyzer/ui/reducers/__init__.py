@@ -18,11 +18,13 @@ from typing import Tuple
 from fapolicy_analyzer.ui.reducers.application_reducer import application_reducer
 from fapolicy_analyzer.ui.reducers.notification_reducer import notification_reducer
 from fapolicy_analyzer.ui.reducers.profiler_reducer import profiler_reducer
+from fapolicy_analyzer.ui.reducers.stats_reducer import stats_reducer
 from fapolicy_analyzer.ui.reducers.system_reducer import system_reducer
 
 __all__: Tuple[str, ...] = (
     "application_reducer",
     "notification_reducer",
     "profiler_reducer",
+    "stats_reducer",
     "system_reducer",
 )

@@ -243,7 +243,7 @@ fn conf_text_error_check(txt: &str) -> Option<String> {
     }
 }
 
-#[pyclass(module = "stats", name = "Stream")]
+#[pyclass(module = "stats", name = "StatStream")]
 pub struct PyStatStream {
     kill_flag: Arc<AtomicBool>,
 }
