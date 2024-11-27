@@ -17,7 +17,7 @@
 import gi
 import logging
 from typing import Any, Optional, Sequence, Tuple
-from fapolicy_analyzer.ui.stats.stats_view import StatsView
+from events import Events
 
 
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
@@ -49,107 +49,46 @@ from fapolicy_analyzer.ui.store import (
     get_system_feature,
 )
 
+
+import numpy as np
+
+from matplotlib.backends.backend_gtk3agg import \
+    FigureCanvasGTK3Agg as FigureCanvas
+from matplotlib.figure import Figure
+
+
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
 
 
-class StatsViewPage(UIConnectedWidget):
+class StatsViewPage(UIConnectedWidget, UIPage, Events):
     def __init__(self):
         features = [
             {get_system_feature(): {"on_next": self.on_next_system}},
         ]
         UIConnectedWidget.__init__(self, features=features)
+        self.__events__ = [ "foo" ]
+        Events.__init__(self)
         actions = {
             "stats": [],
         }
         UIPage.__init__(self, actions)
-        self.__init_child_widgets()
-        self._first_pass = True
 
     def __init_child_widgets(self):
-        self._text_view: StatsView = StatsView()
-        self.get_object("statsViewPage").pack_start(
-            self._text_view.get_ref(), True, True, 0
-        )
+        figure = Figure(figsize=(8, 6), dpi=71)
+        axis = figure.add_subplot()
+        t = np.arange(0.0, 3.0, 0.01)
+        s = np.sin(2*np.pi*t)
+        axis.plot(t, s)
 
-    def __load_config(self):
-        self.__loading_text = True
-        dispatch(request_config_text())
+        axis.set_xlabel('time [s]')
+        axis.set_ylabel('voltage [V]')
 
-    def on_save_clicked(self, *args):
-        changeset, valid = self.__build_and_validate_changeset(show_notifications=False)
-        if valid:
-            self.__saving = True
-            dispatch(apply_changesets(changeset))
-            self._unsaved_changes = False
-        else:
-            overrideDialog = self.get_object("saveOverrideDialog")
-            self.get_object("overrideText").set_text(RULES_OVERRIDE_MESSAGE)
-            resp = overrideDialog.run()
-            if resp == Gtk.ResponseType.OK:
-                self.__saving = True
-                dispatch(apply_changesets(changeset))
-                self._unsaved_changes = False
-            else:
-                self.__status_info.render_config_status(changeset.info())
-            overrideDialog.hide()
+        canvas = FigureCanvas(figure)  # a Gtk.DrawingArea
+        canvas.set_size_request(800, 600)
 
-    def on_validate_clicked(self, *args):
-        changeset, _ = self.__build_and_validate_changeset(show_notifications=False)
-        self.__status_info.render_config_status(changeset.info())
-        # dispatch to force toolbar refresh
-        dispatch(modify_config_text(self.__config_validated))
+        self.get_object("wStatsText").add(canvas)
 
-    def __config_dirty(self) -> bool:
-        return (
-            bool(self.__modified_config_text)
-            and self.__modified_config_text != self.__config_text
-        )
-
-    def __config_unvalidated(self) -> bool:
-        return not self.__config_validated
-
-    def __build_and_validate_changeset(
-        self, show_notifications=True
-    ) -> Tuple[ConfigChangeset, bool]:
-        changeset = ConfigChangeset()
-        valid = False
-
-        try:
-            changeset.parse(self.__modified_config_text)
-            valid = changeset.is_valid()
-            if show_notifications and not valid:
-                dispatch(
-                    add_notification(
-                        CONFIG_CHANGESET_PARSE_ERROR,
-                        NotificationType.ERROR,
-                        category=VALIDATION_NOTE_CATEGORY,
-                    )
-                )
-        except Exception as e:
-            logging.error("Error setting changeset config: %s", e)
-            dispatch(
-                add_notification(
-                    CONFIG_CHANGESET_PARSE_ERROR,
-                    NotificationType.ERROR,
-                )
-            )
-            return changeset, valid
-
-        self.__config_validated = valid
-        # self.__clear_validation_notifications()
-
-        return changeset, valid
 
     def on_next_system(self, system: Any):
         system_state = system.get("system")
-
-
-    def on_text_view_config_changed(self, config: str):
-        self.__modified_config_text = config
-        self.__config_validated = False
-        # print(self._unsaved_changes, self._first_pass)
-        self._unsaved_changes = True if not self._first_pass else False
-        if self._first_pass:
-            self._first_pass = False
-        dispatch(modify_config_text(config))
