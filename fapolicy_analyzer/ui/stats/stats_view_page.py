@@ -74,20 +74,11 @@ class StatsViewPage(UIConnectedWidget, UIPage, Events):
         }
         UIPage.__init__(self, actions)
 
+        self.__init_child_widgets()
+
     def __init_child_widgets(self):
-        figure = Figure(figsize=(8, 6), dpi=71)
-        axis = figure.add_subplot()
-        t = np.arange(0.0, 3.0, 0.01)
-        s = np.sin(2*np.pi*t)
-        axis.plot(t, s)
-
-        axis.set_xlabel('time [s]')
-        axis.set_ylabel('voltage [V]')
-
-        canvas = FigureCanvas(figure)  # a Gtk.DrawingArea
-        canvas.set_size_request(800, 600)
-
-        self.get_object("wStatsText").add(canvas)
+        self.__text_view: GtkTextView = self.get_object("profilerOutput")
+        print(self.__text_view)
 
 
     def on_next_system(self, system: Any):
