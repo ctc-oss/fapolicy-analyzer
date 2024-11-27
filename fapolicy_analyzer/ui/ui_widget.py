@@ -93,6 +93,7 @@ class UIBuilderWidget(UIWidget, ABC):
             self._builder.add_from_string(glade)
 
         self._builder.connect_signals(self)
+        print(name)
         UIWidget.__init__(self, self.get_object(snake_to_camelcase(name)))
 
     def get_object(self, name):

@@ -14,17 +14,25 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from typing import Optional
 
-from fapolicy_analyzer.ui.editable_text_view import EditableTextView
+import gi
 
+from events import Events
+
+from fapolicy_analyzer.ui.editable_text_view import EditableTextView
+from fapolicy_analyzer.ui.ui_widget import UIBuilderWidget
+
+gi.require_version("GtkSource", "3.0")
+from gi.repository import GtkSource  # isort: skip
 
 class StatsView(UIBuilderWidget, Events):
     def __init__(self):
-        UIBuilderWidget.__init__(self, "stats_view")
-        self.__events__ = []
+        UIBuilderWidget.__init__(self, "stats_view_page")
+        self.__events__ = ["on_stats_changed"]
         Events.__init__(self)
         self._text_view = self.get_object("statsView")
 
-        self._buffer.connect("changed", self.on_config_changed)
+        self._buffer = GtkSource.Buffer()
+        self._buffer.connect("changed", self.on_stats_changed)
 
     def on_config_changed(self, buffer):
         self.config_changed(self._get_text())

@@ -17,6 +17,7 @@
 import gi
 import logging
 from typing import Any, Optional, Sequence, Tuple
+from fapolicy_analyzer.ui.stats.stats_view import StatsView
 
 
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
@@ -66,16 +67,10 @@ class StatsViewPage(UIConnectedWidget):
         self._first_pass = True
 
     def __init_child_widgets(self):
-        self._text_view: ConfigTextView = ConfigTextView()
-        self.get_object("configContentArea").pack_start(
+        self._text_view: StatsView = StatsView()
+        self.get_object("statsViewPage").pack_start(
             self._text_view.get_ref(), True, True, 0
         )
-        self._text_view.config_changed += self.on_text_view_config_changed
-
-        self.__status_info = ConfigStatusInfo()
-        self.get_object("configStatusFrame").add(self.__status_info.get_ref())
-
-        self.__load_config()
 
     def __load_config(self):
         self.__loading_text = True
@@ -147,39 +142,8 @@ class StatsViewPage(UIConnectedWidget):
         return changeset, valid
 
     def on_next_system(self, system: Any):
-        changesetState = system.get("changesets")
-        text_state = system.get("config_text")
         system_state = system.get("system")
 
-        if self.__saving and changesetState.error:
-            self.__saving = False
-            logging.error(
-                "%s: %s", APPLY_CHANGESETS_ERROR_MESSAGE, changesetState.error
-            )
-            dispatch(
-                add_notification(APPLY_CHANGESETS_ERROR_MESSAGE, NotificationType.ERROR)
-            )
-        elif self.__changesets != changesetState.changesets:
-            self.__changesets = changesetState.changesets
-            self.__config_text = ""
-            self.__load_config()
-            self._unsaved_changes = False
-
-        if not text_state.loading and self.__error_text != text_state.error:
-            self.__error_text = text_state.error
-            self.__loading_text = False
-            logging.error("%s: %s", CONFIG_TEXT_LOAD_ERROR, self.__error_text)
-            dispatch(add_notification(CONFIG_TEXT_LOAD_ERROR, NotificationType.ERROR))
-        elif (
-            self.__loading_text
-            and not text_state.loading
-            and self.__config_text != text_state.config_text
-        ):
-            self.__loading_text = False
-            self.__config_text = text_state.config_text
-            self._text_view.render_text(self.__config_text)
-            self.__config_validated = True
-            self.__status_info.render_config_status(system_state.system.config_info())
 
     def on_text_view_config_changed(self, config: str):
         self.__modified_config_text = config
