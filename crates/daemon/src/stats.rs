@@ -8,6 +8,7 @@ use notify::{Config, Event, EventKind, RecommendedWatcher, RecursiveMode, Watche
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::Receiver;
 use std::sync::{Arc, Mutex};
 use std::thread;
@@ -15,23 +16,23 @@ use std::time::{Duration, Instant};
 
 #[derive(Debug, Default, Clone)]
 pub struct Rec {
-    permissive: bool,
-    q_size: i32,
-    inter_thread_max_queue_depth: i32,
-    allowed_accesses: i32,
-    denied_accesses: i32,
-    trust_db_max_pages: i32,
-    trust_db_pages_in_use: (i32, f32),
-    subject_cache_size: i32,
-    subject_slots_in_use: (i32, f32),
-    subject_hits: i32,
-    subject_misses: i32,
-    subject_evictions: (i32, f32),
-    object_cache_size: i32,
-    object_slots_in_use: (i32, f32),
-    object_hits: i32,
-    object_misses: i32,
-    object_evictions: (i32, f32),
+    pub permissive: bool,
+    pub q_size: i32,
+    pub inter_thread_max_queue_depth: i32,
+    pub allowed_accesses: i32,
+    pub denied_accesses: i32,
+    pub trust_db_max_pages: i32,
+    pub trust_db_pages_in_use: (i32, f32),
+    pub subject_cache_size: i32,
+    pub subject_slots_in_use: (i32, f32),
+    pub subject_hits: i32,
+    pub subject_misses: i32,
+    pub subject_evictions: (i32, f32),
+    pub object_cache_size: i32,
+    pub object_slots_in_use: (i32, f32),
+    pub object_hits: i32,
+    pub object_misses: i32,
+    pub object_evictions: (i32, f32),
 }
 
 #[derive(Debug, Default)]
@@ -135,7 +136,7 @@ impl Db {
     }
 }
 
-pub fn read(path: &str, db: Arc<Mutex<Db>>) -> Result<Receiver<Rec>, Error> {
+pub fn read(path: &str, kill: Arc<AtomicBool>) -> Result<Receiver<Rec>, Error> {
     let (ext_tx, ext_rx) = std::sync::mpsc::channel();
     let (tx, rx) = std::sync::mpsc::channel();
 
@@ -147,7 +148,7 @@ pub fn read(path: &str, db: Arc<Mutex<Db>>) -> Result<Receiver<Rec>, Error> {
                 .watch(Path::new(&path), RecursiveMode::NonRecursive)
                 .unwrap();
 
-            loop {
+            while !kill.load(Ordering::Relaxed) {
                 if let Ok(Ok(Event {
                     kind: EventKind::Modify(ModifyKind::Data(_)),
                     ..

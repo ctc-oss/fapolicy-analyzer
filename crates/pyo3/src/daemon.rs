@@ -5,17 +5,22 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-
 use crate::system::PySystem;
-use fapolicy_daemon::conf;
 use fapolicy_daemon::conf::ops::Changeset;
 use fapolicy_daemon::conf::{with_error_message, Line};
 use fapolicy_daemon::fapolicyd::Version;
+use fapolicy_daemon::stats::Rec;
 use fapolicy_daemon::svc::State::{Active, Inactive};
 use fapolicy_daemon::svc::{wait_for_service, Handle};
+use fapolicy_daemon::{conf, stats};
 use pyo3::exceptions;
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
+use pyo3::types::PyString;
+use std::string::ToString;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Mutex};
+use std::thread;
 
 #[pyclass(module = "svc", name = "Handle")]
 #[derive(Clone, Default)]
@@ -238,16 +243,89 @@ fn conf_text_error_check(txt: &str) -> Option<String> {
     }
 }
 
+#[pyclass(module = "stats", name = "Stream")]
+pub struct PyStatStream {
+    kill_flag: Arc<AtomicBool>,
+}
+
+impl PyStatStream {
+    pub fn kill(&self) {
+        self.kill_flag.store(true, Ordering::Relaxed)
+    }
+}
+
+#[pyclass(module = "stats", name = "Rec")]
+pub struct PyRec {
+    rs: Rec,
+}
+
+#[pymethods]
+impl PyRec {
+    fn q_size(&self) -> i32 {
+        self.rs.q_size
+    }
+    fn inter_thread_max_queue_depth(&self) -> i32 {
+        self.rs.inter_thread_max_queue_depth
+    }
+    fn allowed_accesses(&self) -> i32 {
+        self.rs.allowed_accesses
+    }
+    fn denied_accesses(&self) -> i32 {
+        self.rs.denied_accesses
+    }
+    fn trust_db_max_pages(&self) -> i32 {
+        self.rs.trust_db_max_pages
+    }
+    fn trust_db_pages_in_use(&self) -> i32 {
+        self.rs.trust_db_pages_in_use.0
+    }
+    fn trust_db_pages_in_use_pct(&self) -> f32 {
+        self.rs.trust_db_pages_in_use.1
+    }
+    fn subject_cache_size(&self) -> i32 {
+        self.rs.subject_cache_size
+    }
+
+    fn summary(&self) -> String {
+        format!(
+            "Subject Hits: {}\nSubject Misses: {}",
+            self.rs.subject_hits, self.rs.subject_misses
+        )
+    }
+}
+
+#[pyfunction]
+fn start_stat_stream(path: &str, f: PyObject) -> PyResult<PyStatStream> {
+    let kill_flag = Arc::new(AtomicBool::new(false));
+    let rx = stats::read("/var/run/fapolicyd/fapolicyd.state", kill_flag.clone())
+        .expect("failed to read stats");
+
+    thread::spawn(move || {
+        for rec in rx.iter() {
+            Python::with_gil(|py| {
+                if f.call1(py, (PyRec { rs: rec },)).is_err() {
+                    log::warn!("'tick' callback failed");
+                }
+            });
+        }
+    });
+
+    Ok(PyStatStream { kill_flag })
+}
+
 pub fn init_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyHandle>()?;
     m.add_class::<PyChangeset>()?;
     m.add_class::<PyConfigInfo>()?;
+    m.add_class::<PyRec>()?;
+    m.add_class::<PyStatStream>()?;
     m.add_function(wrap_pyfunction!(fapolicyd_version, m)?)?;
     m.add_function(wrap_pyfunction!(start_fapolicyd, m)?)?;
     m.add_function(wrap_pyfunction!(stop_fapolicyd, m)?)?;
     m.add_function(wrap_pyfunction!(rollback_fapolicyd, m)?)?;
     m.add_function(wrap_pyfunction!(is_fapolicyd_active, m)?)?;
     m.add_function(wrap_pyfunction!(conf_text_error_check, m)?)?;
+    m.add_function(wrap_pyfunction!(start_stat_stream, m)?)?;
     Ok(())
 }
 

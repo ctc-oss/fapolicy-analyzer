@@ -56,9 +56,12 @@ from matplotlib.backends.backend_gtk3agg import \
     FigureCanvasGTK3Agg as FigureCanvas
 from matplotlib.figure import Figure
 
+from fapolicy_analyzer import start_stat_stream
+
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # isort: skip
+from gi.repository import GLib  # isort: skip
 
 
 class StatsViewPage(UIConnectedWidget, UIPage, Events):
@@ -68,17 +71,26 @@ class StatsViewPage(UIConnectedWidget, UIPage, Events):
         ]
         UIConnectedWidget.__init__(self, features=features)
         self.__events__ = [ "foo" ]
+        self._unsaved_changes = False
         Events.__init__(self)
         actions = {
             "stats": [],
         }
         UIPage.__init__(self, actions)
-
         self.__init_child_widgets()
 
     def __init_child_widgets(self):
         self.__text_view: GtkTextView = self.get_object("profilerOutput")
-        print(self.__text_view)
+        tv = self.__text_view
+        def execd(rec):
+            buff = Gtk.TextBuffer()
+            buff.set_text(rec.summary())
+            try:
+                GLib.idle_add(tv.set_buffer, buff)
+            except Exception as e:
+                print(e)
+
+        start_stat_stream("/var/run/fapolicyd/fapolicyd.state", execd)
 
 
     def on_next_system(self, system: Any):
