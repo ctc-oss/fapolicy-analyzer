@@ -38,7 +38,7 @@ from matplotlib.backends.backend_gtk3agg import \
     FigureCanvasGTK3Agg as FigureCanvas
 from matplotlib.figure import Figure
 
-from fapolicy_analyzer import start_stat_stream
+from fapolicy_analyzer import signal_flush_cache
 
 
 gi.require_version("Gtk", "3.0")
@@ -54,7 +54,14 @@ class StatsViewPage(UIConnectedWidget, UIPage, Events):
         self._unsaved_changes = False
         Events.__init__(self)
         actions = {
-            "stats": [],
+            "stats": [
+                UIAction(
+                    "Flush",
+                    "Flush Cache",
+                    "edit-clear",
+                    {"clicked": self.on_clear_clicked},
+                )
+            ],
         }
         UIPage.__init__(self, actions)
         self.__init_child_widgets()
@@ -69,3 +76,6 @@ class StatsViewPage(UIConnectedWidget, UIPage, Events):
             self.__text_view.get_buffer().set_text(stats.summary)
         else:
             self.__text_view.get_buffer().set_text("")
+
+    def on_clear_clicked(self, x):
+        signal_flush_cache()

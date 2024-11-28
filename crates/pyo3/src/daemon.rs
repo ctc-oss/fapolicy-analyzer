@@ -12,9 +12,10 @@ use fapolicy_daemon::fapolicyd::Version;
 use fapolicy_daemon::stats::Rec;
 use fapolicy_daemon::svc::State::{Active, Inactive};
 use fapolicy_daemon::svc::{wait_for_service, Handle};
-use fapolicy_daemon::{conf, stats};
+use fapolicy_daemon::{conf, pipe, stats};
 use pyo3::exceptions;
 use pyo3::exceptions::PyRuntimeError;
+use pyo3::indoc::indoc;
 use pyo3::prelude::*;
 use pyo3::types::PyString;
 use std::string::ToString;
@@ -285,11 +286,54 @@ impl PyRec {
     fn subject_cache_size(&self) -> i32 {
         self.rs.subject_cache_size
     }
+    fn subject_slots_in_use(&self) -> i32 {
+        self.rs.subject_slots_in_use.0
+    }
+    fn subject_slots_in_use_pct(&self) -> f32 {
+        self.rs.subject_slots_in_use.1
+    }
 
     fn summary(&self) -> String {
         format!(
-            "Subject Hits: {}\nSubject Misses: {}",
-            self.rs.subject_hits, self.rs.subject_misses
+            indoc!(
+                "q_size: {}
+                Inter-thread max queue depth: {}
+                Allowed accesses: {}
+                Denied accesses: {}
+                Trust database max pages: {}
+                Trust database pages in use: {} ({}%)
+                Subject cache size: {}
+                Subject slots in use: {} ({}%)
+                Subject hits: {}
+                Subject misses: {}
+                Subject evictions: {} ({}%)
+                Object cache size: {}
+                Object slots in use: {} ({}%)
+                Object hits: {}
+                Object misses: {}
+                Object evictions: {} ({}%)"
+            ),
+            self.rs.q_size,
+            self.rs.inter_thread_max_queue_depth,
+            self.rs.allowed_accesses,
+            self.rs.denied_accesses,
+            self.rs.trust_db_max_pages,
+            self.rs.trust_db_pages_in_use.0,
+            self.rs.trust_db_pages_in_use.1,
+            self.rs.subject_cache_size,
+            self.rs.subject_slots_in_use.0,
+            self.rs.subject_slots_in_use.1,
+            self.rs.subject_hits,
+            self.rs.subject_misses,
+            self.rs.subject_evictions.0,
+            self.rs.subject_evictions.1,
+            self.rs.object_cache_size,
+            self.rs.object_slots_in_use.0,
+            self.rs.object_slots_in_use.1,
+            self.rs.object_hits,
+            self.rs.object_misses,
+            self.rs.object_evictions.0,
+            self.rs.object_evictions.1,
         )
     }
 }
@@ -313,6 +357,13 @@ fn start_stat_stream(path: &str, f: PyObject) -> PyResult<PyStatStream> {
     Ok(PyStatStream { kill_flag })
 }
 
+/// send signal to fapolicyd FIFO pipe to reload the trust database
+#[pyfunction]
+fn signal_flush_cache() -> PyResult<()> {
+    pipe::flush_cache()
+        .map_err(|e| PyRuntimeError::new_err(format!("failed to signal cache flush: {:?}", e)))
+}
+
 pub fn init_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyHandle>()?;
     m.add_class::<PyChangeset>()?;
@@ -326,6 +377,7 @@ pub fn init_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(is_fapolicyd_active, m)?)?;
     m.add_function(wrap_pyfunction!(conf_text_error_check, m)?)?;
     m.add_function(wrap_pyfunction!(start_stat_stream, m)?)?;
+    m.add_function(wrap_pyfunction!(signal_flush_cache, m)?)?;
     Ok(())
 }
 
