@@ -70,6 +70,7 @@ class StatsViewPage(UIConnectedWidget, UIPage, Events):
 
     def __init_child_widgets(self):
         self.__text_view: GtkTextView = self.get_object("profilerOutput")
+        self.__vbox: GtkBox = self.get_object("vbox")
 
     def on_event(self, stats: StatsStreamState):
         if stats.summary is not None:
@@ -79,3 +80,16 @@ class StatsViewPage(UIConnectedWidget, UIPage, Events):
 
     def on_clear_clicked(self, x):
         signal_flush_cache()
+
+        figure = Figure(figsize=(5, 4), dpi=100)
+        ax = figure.add_subplot(1, 1, 1)
+        ax.plot([0, 1, 2, 3, 4], [0, 1, 4, 9, 16], label="y = x^2")  # Simple y = x^2 plot
+        ax.set_title("Line Plot")
+        ax.set_xlabel("X-axis")
+        ax.set_ylabel("Y-axis")
+        ax.legend()
+
+        canvas = FigureCanvas(figure)
+        canvas.set_size_request(300, 300)
+        self.__vbox.pack_start(canvas, True, True, 0)
+        canvas.show()
