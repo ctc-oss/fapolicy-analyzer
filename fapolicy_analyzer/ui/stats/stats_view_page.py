@@ -31,9 +31,6 @@ from fapolicy_analyzer.ui.store import (
     get_system_feature, get_stats_feature,
 )
 
-
-import numpy as np
-
 from matplotlib.backends.backend_gtk3agg import \
     FigureCanvasGTK3Agg as FigureCanvas
 from matplotlib.figure import Figure
@@ -50,7 +47,7 @@ class StatsViewPage(UIConnectedWidget, UIPage, Events):
             {get_stats_feature(): {"on_next": self.on_event}},
         ]
         UIConnectedWidget.__init__(self, features=features)
-        self.__events__ = [ "foo" ]
+        self.__events__ = []
         self._unsaved_changes = False
         Events.__init__(self)
         actions = {
@@ -65,7 +62,6 @@ class StatsViewPage(UIConnectedWidget, UIPage, Events):
         }
         UIPage.__init__(self, actions)
         self.__init_child_widgets()
-
         dispatch(start_stats())
 
     def __init_child_widgets(self):
@@ -90,6 +86,16 @@ class StatsViewPage(UIConnectedWidget, UIPage, Events):
         ax.legend()
 
         canvas = FigureCanvas(figure)
-        canvas.set_size_request(300, 300)
-        self.__vbox.pack_start(canvas, True, True, 0)
+        canvas.set_size_request(100, 200)
+        self.__vbox.pack_start(canvas, False, False, 10)
+        canvas.show()
+
+        canvas = FigureCanvas(figure)
+        canvas.set_size_request(100, 200)
+        self.__vbox.pack_start(canvas, False, False, 10)
+        canvas.show()
+
+        canvas = FigureCanvas(figure)
+        canvas.set_size_request(100, 200)
+        self.__vbox.pack_start(canvas, False, False, 10)
         canvas.show()
