@@ -390,8 +390,8 @@ def profiler_termination_error(error: str) -> Action:
     return _create_action(ERROR_PROFILER_TERM, error)
 
 
-def set_stats_summary(summary: str) -> Action:
-    return _create_action(STATS_SET_SUMMARY, summary)
+def set_stats_summary(summary: str, object_hits: int) -> Action:
+    return _create_action(STATS_SET_SUMMARY, (summary, object_hits))
 
 
 def stats_initialization_error(error: str) -> Action:

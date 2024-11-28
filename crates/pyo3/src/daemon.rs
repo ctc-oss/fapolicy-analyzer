@@ -292,6 +292,9 @@ impl PyRec {
     fn subject_slots_in_use_pct(&self) -> f32 {
         self.rs.subject_slots_in_use.1
     }
+    fn object_hits(&self) -> i32 {
+        self.rs.object_hits
+    }
 
     fn summary(&self) -> String {
         format!(

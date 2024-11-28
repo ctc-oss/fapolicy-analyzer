@@ -21,13 +21,14 @@ from fapolicy_analyzer.ui.actions import START_STATS_REQUEST, START_STATS_RESPON
 class StatsStreamState(NamedTuple):
     summary: Optional[str]
     running: Optional[bool]
+    object_hits: Optional[int]
 
 class Started(StatsStreamState):
     pass
 
 
 def empty_stats_state():
-    return StatsStreamState(summary=None, running=None)
+    return StatsStreamState(summary=None, object_hits=None, running=None)
 
 def derive_stats_state(
     target, source: StatsStreamState, **kwargs: Optional[Any]
@@ -38,17 +39,18 @@ def derive_stats_state(
 def handle_start_stats_request(
     state: StatsStreamState, action: Action
 ) -> StatsStreamState:
-    return StatsStreamState(summary=state.summary, running=state.running)
+    return StatsStreamState(summary=state.summary, object_hits=state.object_hits, running=state.running)
 
 def handle_start_stats_response(
     state: StatsStreamState, action: Action
 ) -> StatsStreamState:
-    return StatsStreamState(summary=state.summary, running=True)
+    return StatsStreamState(summary=state.summary, object_hits=state.object_hits, running=True)
 
 def handle_set_stats_summary(
     state: StatsStreamState, action: Action
 ) -> StatsStreamState:
-    return StatsStreamState(summary=action.payload, running=True)
+    (summary, object_hits) = action.payload
+    return StatsStreamState(summary=summary, object_hits=object_hits, running=True)
 
 
 stats_reducer: Reducer = handle_actions(

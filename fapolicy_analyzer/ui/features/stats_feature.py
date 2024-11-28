@@ -45,7 +45,7 @@ def create_stats_feature(dispatch: Callable) -> ReduxFeatureModule:
         GLib.idle_add(dispatch, action)
 
     def _on_rec_recv(rec):
-        _idle_dispatch(set_stats_summary(rec.summary()))
+        _idle_dispatch(set_stats_summary(rec.summary(), rec.object_hits()))
 
     def _start_stat_stream(action: Action) -> Action:
         nonlocal stream_active

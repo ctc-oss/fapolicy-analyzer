@@ -12,6 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import time
 
 
 import gi
@@ -61,41 +62,30 @@ class StatsViewPage(UIConnectedWidget, UIPage, Events):
             ],
         }
         UIPage.__init__(self, actions)
+        self._x = []
+        self._y = []
         self.__init_child_widgets()
         dispatch(start_stats())
 
     def __init_child_widgets(self):
         self.__text_view: GtkTextView = self.get_object("profilerOutput")
         self.__vbox: GtkBox = self.get_object("vbox")
+        figure = Figure(figsize=(5, 4), dpi=100)
+        self._ax = figure.add_subplot(1, 1, 1)
+        self._line = self._ax.plot([], [], [])[0]
+        self._canvas = FigureCanvas(figure)
+        self._canvas.set_size_request(100, 200)
+        self.__vbox.pack_start(self._canvas, False, False, 10)
+        self._canvas.show()
 
     def on_event(self, stats: StatsStreamState):
         if stats.summary is not None:
             self.__text_view.get_buffer().set_text(stats.summary)
-        else:
-            self.__text_view.get_buffer().set_text("")
+            self._x.append(int(time.time()))
+            self._y.append(stats.object_hits)
+            self._ax.plot(self._x, self._y)
+            self._canvas.draw()
+
 
     def on_clear_clicked(self, x):
         signal_flush_cache()
-
-        figure = Figure(figsize=(5, 4), dpi=100)
-        ax = figure.add_subplot(1, 1, 1)
-        ax.plot([0, 1, 2, 3, 4], [0, 1, 4, 9, 16], label="y = x^2")  # Simple y = x^2 plot
-        ax.set_title("Line Plot")
-        ax.set_xlabel("X-axis")
-        ax.set_ylabel("Y-axis")
-        ax.legend()
-
-        canvas = FigureCanvas(figure)
-        canvas.set_size_request(100, 200)
-        self.__vbox.pack_start(canvas, False, False, 10)
-        canvas.show()
-
-        canvas = FigureCanvas(figure)
-        canvas.set_size_request(100, 200)
-        self.__vbox.pack_start(canvas, False, False, 10)
-        canvas.show()
-
-        canvas = FigureCanvas(figure)
-        canvas.set_size_request(100, 200)
-        self.__vbox.pack_start(canvas, False, False, 10)
-        canvas.show()
