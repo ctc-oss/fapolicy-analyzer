@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Any, Dict, NamedTuple, Optional
+from typing import Any, NamedTuple, Optional
 from fapolicy_analyzer.redux import Action, Reducer, handle_actions
 from fapolicy_analyzer.ui.actions import START_STATS_REQUEST, START_STATS_RESPONSE, STATS_UPDATE
 from fapolicy_analyzer import Rec, RecTs

@@ -49,7 +49,6 @@ from fapolicy_analyzer.ui.notification import Notification
 from fapolicy_analyzer.ui.operations import DeployChangesetsOp
 from fapolicy_analyzer.ui.policy_rules_admin_page import PolicyRulesAdminPage
 from fapolicy_analyzer.ui.profiler_page import ProfilerPage
-from fapolicy_analyzer.ui.stats import StatsViewPage
 from fapolicy_analyzer.ui.rules import RulesAdminPage
 from fapolicy_analyzer.ui.session_manager import sessionManager
 from fapolicy_analyzer.ui.store import (
