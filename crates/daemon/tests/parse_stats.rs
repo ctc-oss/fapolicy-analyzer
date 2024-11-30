@@ -1,5 +1,4 @@
 use fapolicy_daemon::stats;
-use std::sync::{Arc, Mutex};
 
 #[test]
 fn parse_stat_rec() {

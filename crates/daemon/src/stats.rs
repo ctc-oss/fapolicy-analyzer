@@ -3,17 +3,16 @@ use crate::error::Error::ParseStatsError;
 use nom::bytes::complete::tag;
 use nom::character::complete::digit1;
 use nom::sequence::{delimited, separated_pair, terminated};
-use notify::event::{DataChange, ModifyKind};
+use notify::event::ModifyKind;
 use notify::{Config, Event, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
-use std::alloc::System;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::Receiver;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use std::thread;
-use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
+use std::time::{Duration, Instant, SystemTime};
 
 #[derive(Debug, Default, Clone)]
 pub struct Rec {
@@ -55,7 +54,6 @@ pub struct Avg {
     object_hits: i32,
     object_misses: i32,
     object_evictions: i32,
-    duration: Duration,
 }
 
 impl Avg {
@@ -107,7 +105,6 @@ impl Avg {
 #[derive(Debug, Default)]
 pub struct RecTs {
     count: i32,
-    duration: Duration,
     pub timestamps: Vec<i64>,
     pub allowed_accesses: Vec<i32>,
     pub denied_accesses: Vec<i32>,
