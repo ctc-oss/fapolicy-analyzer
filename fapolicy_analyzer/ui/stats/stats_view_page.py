@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import time
+from array import array
 
 
 import gi
@@ -57,23 +58,21 @@ class StatsViewPage(UIConnectedWidget, UIPage, Events):
                     "Flush",
                     "Flush Cache",
                     "edit-clear",
-                    {"clicked": self.on_clear_clicked},
+                    {"clicked": self.on_flush_cache_clicked},
                 )
             ],
         }
         UIPage.__init__(self, actions)
-        self._x = []
-        self._y = []
         self.__init_child_widgets()
         dispatch(start_stats())
 
     def __init_child_widgets(self):
         self.__text_view: GtkTextView = self.get_object("profilerOutput")
         self.__vbox: GtkBox = self.get_object("vbox")
-        figure = Figure(figsize=(5, 4), dpi=100)
-        self._ax = figure.add_subplot(1, 1, 1)
-        self._line = self._ax.plot([], [], [])[0]
-        self._canvas = FigureCanvas(figure)
+        self._figure = Figure(figsize=(5, 4), dpi=100)
+        self._ax = self._figure.add_subplot(1, 1, 1)
+        self._line = self._ax.plot([], [])[0]
+        self._canvas = FigureCanvas(self._figure)
         self._canvas.set_size_request(100, 200)
         self.__vbox.pack_start(self._canvas, False, False, 10)
         self._canvas.show()
@@ -81,11 +80,13 @@ class StatsViewPage(UIConnectedWidget, UIPage, Events):
     def on_event(self, stats: StatsStreamState):
         if stats.summary is not None:
             self.__text_view.get_buffer().set_text(stats.summary)
-            self._x.append(int(time.time()))
-            self._y.append(stats.object_hits)
-            self._ax.plot(self._x, self._y)
+            print(stats.ts.timestamps())
+            print(stats.ts.object_hits())
+            self._line.set_xdata(stats.ts.timestamps())
+            self._line.set_ydata(stats.ts.object_hits())
+            self._ax.relim()
+            self._ax.autoscale_view()
             self._canvas.draw()
 
-
-    def on_clear_clicked(self, x):
+    def on_flush_cache_clicked(self, _):
         signal_flush_cache()

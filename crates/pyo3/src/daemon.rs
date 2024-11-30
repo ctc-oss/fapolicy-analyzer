@@ -9,7 +9,7 @@ use crate::system::PySystem;
 use fapolicy_daemon::conf::ops::Changeset;
 use fapolicy_daemon::conf::{with_error_message, Line};
 use fapolicy_daemon::fapolicyd::Version;
-use fapolicy_daemon::stats::Rec;
+use fapolicy_daemon::stats::{Rec, RecTs};
 use fapolicy_daemon::svc::State::{Active, Inactive};
 use fapolicy_daemon::svc::{wait_for_service, Handle};
 use fapolicy_daemon::{conf, pipe, stats};
@@ -341,6 +341,58 @@ impl PyRec {
     }
 }
 
+#[pyclass(module = "stats", name = "RecTs")]
+pub struct PyRecTs {
+    rs: RecTs,
+}
+
+#[pymethods]
+impl PyRecTs {
+    fn timestamps(&self) -> Vec<i64> {
+        self.rs.timestamps.clone()
+    }
+    fn allowed_accesses(&self) -> Vec<i32> {
+        self.rs.allowed_accesses.clone()
+    }
+    fn denied_accesses(&self) -> Vec<i32> {
+        self.rs.denied_accesses.clone()
+    }
+    fn trust_db_pages_in_use(&self) -> Vec<i32> {
+        self.rs.trust_db_pages_in_use.clone()
+    }
+    fn subject_cache_size(&self) -> Vec<i32> {
+        self.rs.subject_cache_size.clone()
+    }
+    fn subject_slots_in_use(&self) -> Vec<i32> {
+        self.rs.subject_slots_in_use.clone()
+    }
+    fn object_hits(&self) -> Vec<i32> {
+        self.rs.object_hits.clone()
+    }
+
+    fn subject_hits(&self) -> Vec<i32> {
+        self.rs.subject_hits.clone()
+    }
+    fn subject_misses(&self) -> Vec<i32> {
+        self.rs.subject_misses.clone()
+    }
+    fn subject_evictions(&self) -> Vec<i32> {
+        self.rs.subject_evictions.clone()
+    }
+    fn object_cache_size(&self) -> Vec<i32> {
+        self.rs.object_cache_size.clone()
+    }
+    fn object_slots_in_use(&self) -> Vec<i32> {
+        self.rs.object_slots_in_use.clone()
+    }
+    fn object_misses(&self) -> Vec<i32> {
+        self.rs.object_misses.clone()
+    }
+    fn object_evictions(&self) -> Vec<i32> {
+        self.rs.object_evictions.clone()
+    }
+}
+
 #[pyfunction]
 fn start_stat_stream(path: &str, f: PyObject) -> PyResult<PyStatStream> {
     let kill_flag = Arc::new(AtomicBool::new(false));
@@ -348,9 +400,11 @@ fn start_stat_stream(path: &str, f: PyObject) -> PyResult<PyStatStream> {
         .expect("failed to read stats");
 
     thread::spawn(move || {
-        for rec in rx.iter() {
+        for (rec, ts) in rx.iter() {
             Python::with_gil(|py| {
-                if f.call1(py, (PyRec { rs: rec },)).is_err() {
+                if f.call1(py, ((PyRec { rs: rec }, PyRecTs { rs: ts }),))
+                    .is_err()
+                {
                     log::warn!("'tick' callback failed");
                 }
             });
@@ -372,6 +426,7 @@ pub fn init_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyChangeset>()?;
     m.add_class::<PyConfigInfo>()?;
     m.add_class::<PyRec>()?;
+    m.add_class::<PyRecTs>()?;
     m.add_class::<PyStatStream>()?;
     m.add_function(wrap_pyfunction!(fapolicyd_version, m)?)?;
     m.add_function(wrap_pyfunction!(start_fapolicyd, m)?)?;

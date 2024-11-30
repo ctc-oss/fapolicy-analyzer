@@ -17,7 +17,7 @@ from enum import Enum
 from itertools import count
 from typing import Any, Dict, Iterator, NamedTuple, Optional, Sequence
 
-from fapolicy_analyzer import Changeset, Event, Group, Rule, System, Trust, User
+from fapolicy_analyzer import Changeset, Event, Group, Rule, System, Trust, User, Rec, RecTs
 from fapolicy_analyzer.redux import Action, create_action
 from fapolicy_analyzer.ui.types import LogType
 
@@ -97,7 +97,7 @@ PROFILER_CLEAR_STATE_CMD = "PROFILER_CLEAR_STATE_CMD"
 
 START_STATS_REQUEST = "START_STATS_REQUEST"
 START_STATS_RESPONSE = "START_STATS_RESPONSE"
-STATS_SET_SUMMARY = "STATS_SET_SUMMARY"
+STATS_UPDATE = "STATS_UPDATE"
 STATS_KILL_REQUEST = "STATS_KILL"
 STATS_KILL_RESPONSE = "STATS_TERM"
 
@@ -390,8 +390,8 @@ def profiler_termination_error(error: str) -> Action:
     return _create_action(ERROR_PROFILER_TERM, error)
 
 
-def set_stats_summary(summary: str, object_hits: int) -> Action:
-    return _create_action(STATS_SET_SUMMARY, (summary, object_hits))
+def stats_update(summary: str, rec: Rec, ts: RecTs) -> Action:
+    return _create_action(STATS_UPDATE, (summary, rec, ts))
 
 
 def stats_initialization_error(error: str) -> Action:

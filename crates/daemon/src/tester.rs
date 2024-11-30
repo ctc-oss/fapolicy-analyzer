@@ -1,7 +1,7 @@
 use fapolicy_daemon::stats;
 use std::sync::atomic::AtomicBool;
 use std::sync::{Arc, Mutex};
-use std::time::{Duration, Instant};
+use std::time::{Duration, Instant, SystemTime};
 
 fn main() {
     let kill_flag = Arc::new(AtomicBool::new(false));
@@ -11,9 +11,9 @@ fn main() {
     let rx = stats::read("/var/run/fapolicyd/fapolicyd.state", kill_flag.clone())
         .expect("failed to read stats");
 
-    for rec in rx.iter() {
+    for (rec, _) in rx.iter() {
         let mut db = db.lock().expect("failed to lock");
-        db.pruned_insert(Instant::now(), Duration::from_secs(30), rec);
+        db.pruned_insert(SystemTime::now(), Duration::from_secs(30), rec);
         let avg = db.avg(Duration::from_secs(10));
         println!("{avg:?}")
     }

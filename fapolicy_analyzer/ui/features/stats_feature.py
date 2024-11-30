@@ -28,7 +28,7 @@ from fapolicy_analyzer.redux import (
         combine_epics,
         of_type, create_feature_module,
 )
-from fapolicy_analyzer.ui.actions import  stats_started, terminating_stats, START_STATS_REQUEST, stats_initialization_error, STATS_KILL_REQUEST, stats_termination_error, set_stats_summary
+from fapolicy_analyzer.ui.actions import  stats_started, terminating_stats, START_STATS_REQUEST, stats_initialization_error, STATS_KILL_REQUEST, stats_termination_error, stats_update
 from fapolicy_analyzer.ui.reducers import stats_reducer
 
 
@@ -44,8 +44,9 @@ def create_stats_feature(dispatch: Callable) -> ReduxFeatureModule:
     def _idle_dispatch(action: Action):
         GLib.idle_add(dispatch, action)
 
-    def _on_rec_recv(rec):
-        _idle_dispatch(set_stats_summary(rec.summary(), rec.object_hits()))
+    def _on_recv(payload):
+        (rec, ts) = payload
+        _idle_dispatch(stats_update(rec.summary(), rec, ts))
 
     def _start_stat_stream(action: Action) -> Action:
         nonlocal stream_active
@@ -57,7 +58,7 @@ def create_stats_feature(dispatch: Callable) -> ReduxFeatureModule:
         stream_active = True
 
         f = "/var/run/fapolicyd/fapolicyd.state"
-        _handle = start_stat_stream(f, _on_rec_recv)
+        _handle = start_stat_stream(f, _on_recv)
 
         return stats_started(f)
 

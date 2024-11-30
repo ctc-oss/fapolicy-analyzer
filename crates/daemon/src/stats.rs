@@ -5,6 +5,7 @@ use nom::character::complete::digit1;
 use nom::sequence::{delimited, separated_pair, terminated};
 use notify::event::{DataChange, ModifyKind};
 use notify::{Config, Event, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
+use std::alloc::System;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
@@ -12,7 +13,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::Receiver;
 use std::sync::{Arc, Mutex};
 use std::thread;
-use std::time::{Duration, Instant};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 #[derive(Debug, Default, Clone)]
 pub struct Rec {
@@ -104,43 +105,108 @@ impl Avg {
 }
 
 #[derive(Debug, Default)]
+pub struct RecTs {
+    count: i32,
+    duration: Duration,
+    pub timestamps: Vec<i64>,
+    pub allowed_accesses: Vec<i32>,
+    pub denied_accesses: Vec<i32>,
+    pub trust_db_pages_in_use: Vec<i32>,
+    pub subject_cache_size: Vec<i32>,
+    pub subject_slots_in_use: Vec<i32>,
+    pub subject_hits: Vec<i32>,
+    pub subject_misses: Vec<i32>,
+    pub subject_evictions: Vec<i32>,
+    pub object_cache_size: Vec<i32>,
+    pub object_slots_in_use: Vec<i32>,
+    pub object_hits: Vec<i32>,
+    pub object_misses: Vec<i32>,
+    pub object_evictions: Vec<i32>,
+}
+
+impl RecTs {
+    pub fn new(duration: Duration) -> Self {
+        Self {
+            duration,
+            ..Default::default()
+        }
+    }
+    pub fn add(&mut self, rec: &Rec, observed: SystemTime) {
+        self.count += 1;
+        self.timestamps.push(
+            observed
+                .duration_since(SystemTime::UNIX_EPOCH)
+                .unwrap()
+                .as_secs() as i64,
+        );
+        self.allowed_accesses.push(rec.allowed_accesses);
+        self.denied_accesses.push(rec.denied_accesses);
+        self.trust_db_pages_in_use.push(rec.trust_db_max_pages);
+        self.subject_cache_size.push(rec.subject_cache_size);
+        self.subject_slots_in_use.push(rec.subject_slots_in_use.0);
+        self.subject_hits.push(rec.subject_hits);
+        self.subject_misses.push(rec.subject_misses);
+        self.subject_evictions.push(rec.subject_evictions.0);
+        self.object_cache_size.push(rec.object_cache_size);
+        self.object_slots_in_use.push(rec.object_slots_in_use.0);
+        self.object_hits.push(rec.object_hits);
+        self.object_misses.push(rec.object_misses);
+        self.object_evictions.push(rec.object_evictions.0)
+    }
+}
+
+#[derive(Debug, Default)]
 pub struct Db {
-    entries: Vec<(Instant, Rec)>,
+    entries: Vec<(SystemTime, Rec)>,
 }
 
 impl Db {
-    pub fn prune(&mut self, now: Instant, ttl: Duration) {
-        self.entries.retain(|(i, _)| now.duration_since(*i) < ttl);
+    pub fn prune(&mut self, now: SystemTime, ttl: Duration) {
+        self.entries
+            .retain(|(i, _)| now.duration_since(*i).unwrap() < ttl);
     }
 
-    pub fn insert(&mut self, now: Instant, rec: Rec) {
+    pub fn insert(&mut self, now: SystemTime, rec: Rec) {
         self.entries.push((now, rec));
     }
 
-    pub fn pruned_insert(&mut self, now: Instant, ttl: Duration, rec: Rec) {
+    pub fn pruned_insert(&mut self, now: SystemTime, ttl: Duration, rec: Rec) {
         self.insert(now, rec);
         self.prune(now, ttl);
     }
 
     pub fn avg(&self, interval: Duration) -> Avg {
-        let now = Instant::now();
+        let now = SystemTime::now();
         let subset = self
             .entries
             .iter()
-            .filter(|(i, _)| now.duration_since(*i) < interval)
+            .filter(|(i, _)| now.duration_since(*i).unwrap() < interval)
             .fold(Avg::default(), |mut acc, (_, r)| {
                 acc.add(r);
                 acc
             });
         subset.reduce()
     }
+
+    pub fn ts(&self, interval: Duration) -> RecTs {
+        let now = SystemTime::now();
+        self.entries
+            .iter()
+            .filter(|(i, _)| now.duration_since(*i).unwrap() < interval)
+            .fold(RecTs::default(), |mut acc, (x, r)| {
+                acc.add(r, *x);
+                acc
+            })
+    }
 }
 
-pub fn read(path: &str, kill: Arc<AtomicBool>) -> Result<Receiver<Rec>, Error> {
+pub fn read(path: &str, kill: Arc<AtomicBool>) -> Result<Receiver<(Rec, RecTs)>, Error> {
     let (ext_tx, ext_rx) = std::sync::mpsc::channel();
     let (tx, rx) = std::sync::mpsc::channel();
 
     thread::spawn({
+        let mut db = Db::default();
+        let ttl = Duration::from_secs(300);
         let path = path.to_owned();
         move || {
             let mut watcher = Box::new(RecommendedWatcher::new(tx, Config::default()).unwrap());
@@ -148,6 +214,8 @@ pub fn read(path: &str, kill: Arc<AtomicBool>) -> Result<Receiver<Rec>, Error> {
                 .watch(Path::new(&path), RecursiveMode::NonRecursive)
                 .unwrap();
 
+            let mut last = Instant::now();
+            let interval = Duration::from_secs(1);
             while !kill.load(Ordering::Relaxed) {
                 if let Ok(Ok(Event {
                     kind: EventKind::Modify(ModifyKind::Data(_)),
@@ -155,7 +223,12 @@ pub fn read(path: &str, kill: Arc<AtomicBool>) -> Result<Receiver<Rec>, Error> {
                 })) = rx.recv()
                 {
                     let rec = parse(&path).expect("rec parse error");
-                    ext_tx.send(rec).unwrap();
+                    db.pruned_insert(SystemTime::now(), ttl, rec.clone());
+                    let now = Instant::now();
+                    if now.duration_since(last) > interval {
+                        ext_tx.send((rec, db.ts(ttl))).expect("ts send error");
+                        last = now;
+                    }
                 }
             }
         }

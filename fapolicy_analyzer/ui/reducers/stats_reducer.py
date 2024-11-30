@@ -15,20 +15,21 @@
 
 from typing import Any, Dict, NamedTuple, Optional
 from fapolicy_analyzer.redux import Action, Reducer, handle_actions
-from fapolicy_analyzer.ui.actions import START_STATS_REQUEST, START_STATS_RESPONSE, STATS_SET_SUMMARY
-
+from fapolicy_analyzer.ui.actions import START_STATS_REQUEST, START_STATS_RESPONSE, STATS_UPDATE
+from fapolicy_analyzer import Rec, RecTs
 
 class StatsStreamState(NamedTuple):
     summary: Optional[str]
     running: Optional[bool]
-    object_hits: Optional[int]
+    rec: Optional[Rec]
+    ts: Optional[RecTs]
 
 class Started(StatsStreamState):
     pass
 
 
 def empty_stats_state():
-    return StatsStreamState(summary=None, object_hits=None, running=None)
+    return StatsStreamState(summary=None, rec=None, ts=None, running=None)
 
 def derive_stats_state(
     target, source: StatsStreamState, **kwargs: Optional[Any]
@@ -39,25 +40,25 @@ def derive_stats_state(
 def handle_start_stats_request(
     state: StatsStreamState, action: Action
 ) -> StatsStreamState:
-    return StatsStreamState(summary=state.summary, object_hits=state.object_hits, running=state.running)
+    return StatsStreamState(summary=state.summary, rec=state.rec, ts=state.ts, running=state.running)
 
 def handle_start_stats_response(
     state: StatsStreamState, action: Action
 ) -> StatsStreamState:
-    return StatsStreamState(summary=state.summary, object_hits=state.object_hits, running=True)
+    return StatsStreamState(summary=state.summary, rec=state.rec, ts=state.ts, running=True)
 
-def handle_set_stats_summary(
+def handle_update_stats(
     state: StatsStreamState, action: Action
 ) -> StatsStreamState:
-    (summary, object_hits) = action.payload
-    return StatsStreamState(summary=summary, object_hits=object_hits, running=True)
+    (summary, rec, ts) = action.payload
+    return StatsStreamState(summary=summary, rec=rec, ts=ts, running=True)
 
 
 stats_reducer: Reducer = handle_actions(
     {
         START_STATS_REQUEST: handle_start_stats_request,
         START_STATS_RESPONSE: handle_start_stats_response,
-        STATS_SET_SUMMARY: handle_set_stats_summary,
+        STATS_UPDATE: handle_update_stats,
     },
     empty_stats_state(),
 )
