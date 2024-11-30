@@ -396,8 +396,7 @@ impl PyRecTs {
 #[pyfunction]
 fn start_stat_stream(path: &str, f: PyObject) -> PyResult<PyStatStream> {
     let kill_flag = Arc::new(AtomicBool::new(false));
-    let rx = stats::read(path, kill_flag.clone())
-        .expect("failed to read stats");
+    let rx = stats::read(path, kill_flag.clone()).expect("failed to read stats");
 
     thread::spawn(move || {
         for (rec, ts) in rx.iter() {
