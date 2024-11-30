@@ -105,7 +105,6 @@ impl Avg {
             object_hits: self.object_hits / n,
             object_misses: self.object_misses / n,
             object_evictions: self.object_evictions / n,
-            duration: Default::default(),
         }
     }
 }
@@ -130,12 +129,6 @@ pub struct RecTs {
 }
 
 impl RecTs {
-    pub fn new(duration: Duration) -> Self {
-        Self {
-            duration,
-            ..Default::default()
-        }
-    }
     pub fn add(&mut self, rec: &Rec, observed: SystemTime) {
         self.count += 1;
         self.timestamps.push(

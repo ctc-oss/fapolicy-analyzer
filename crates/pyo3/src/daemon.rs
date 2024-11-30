@@ -17,10 +17,8 @@ use pyo3::exceptions;
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::indoc::indoc;
 use pyo3::prelude::*;
-use pyo3::types::PyString;
-use std::string::ToString;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use std::thread;
 
 #[pyclass(module = "svc", name = "Handle")]
