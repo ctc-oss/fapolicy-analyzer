@@ -16,6 +16,7 @@
 import logging
 import os
 import json
+from fapolicy_analyzer.ui.stats import StatsViewPage
 from locale import gettext as _
 from os import getenv, geteuid, path
 from threading import Thread
@@ -81,6 +82,7 @@ def router(page: PAGE_SELECTION, *data) -> UIPage:
         PAGE_SELECTION.PROFILER: ProfilerPage,
         PAGE_SELECTION.CONFIG: ConfigAdminPage,
         PAGE_SELECTION.TRUST_FILTER: TrustFilterAdminPage,
+        PAGE_SELECTION.STATS_VIEW: StatsViewPage,
     }.get(page, RulesAdminPage)
     return route(*data)
 
@@ -482,6 +484,9 @@ class MainWindow(UIConnectedWidget):
 
     def on_trustFilterAdminMenu_activate(self, *args):
         self.__pack_main_content(router(PAGE_SELECTION.TRUST_FILTER))
+
+    def on_statsViewMenu_activate(self, *args):
+        self.__pack_main_content(router(PAGE_SELECTION.STATS_VIEW))
 
     def on_rulesAdminMenu_activate(self, *args, **kwargs):
         rulesPage = router(PAGE_SELECTION.RULES_ADMIN)

@@ -13,23 +13,33 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from fapolicy_analyzer import *
+import sys
+import argparse
+import signal
+import sys
+import threading
+from functools import partial
 
-from enum import Enum
+def execd(rec):
+    print(f"{rec.summary()}")
+
+def on_sigint(signum, frame, kill):
+    print("Terminating...")
+    kill()
+
+def main(*argv):
+    ss = start_stat_stream("/var/run/fapolicyd/fapolicyd.state", execd)
+    wait_for_done = threading.Event()
+
+    handler = partial(
+        on_sigint,
+        kill=wait_for_done.set,
+    )
+    signal.signal(signal.SIGINT, handler)
+    print("waiting...")
+    wait_for_done.wait()
 
 
-class PAGE_SELECTION(Enum):
-    TRUST_DATABASE_ADMIN = "trust"
-    RULES_ADMIN = "rules"
-    ANALYZE_AUDIT = "audit"
-    ANALYZE_FROM_DEBUG = "debug log"
-    ANALYZE_SYSLOG = "syslog"
-    PROFILER = "profiler"
-    CONFIG = "config"
-    TRUST_FILTER = "trust filter"
-    STATS_VIEW = "stats view"
-
-
-class LogType(Enum):
-    audit = "audit"
-    debug = "debug"
-    syslog = "syslog"
+if __name__ == "__main__":
+    main(*sys.argv[1:])

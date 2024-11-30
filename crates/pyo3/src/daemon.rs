@@ -5,17 +5,21 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-
 use crate::system::PySystem;
-use fapolicy_daemon::conf;
 use fapolicy_daemon::conf::ops::Changeset;
 use fapolicy_daemon::conf::{with_error_message, Line};
 use fapolicy_daemon::fapolicyd::Version;
+use fapolicy_daemon::stats::{Rec, RecTs};
 use fapolicy_daemon::svc::State::{Active, Inactive};
 use fapolicy_daemon::svc::{wait_for_service, Handle};
+use fapolicy_daemon::{conf, pipe, stats};
 use pyo3::exceptions;
 use pyo3::exceptions::PyRuntimeError;
+use pyo3::indoc::indoc;
 use pyo3::prelude::*;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
+use std::thread;
 
 #[pyclass(module = "svc", name = "Handle")]
 #[derive(Clone, Default)]
@@ -238,16 +242,197 @@ fn conf_text_error_check(txt: &str) -> Option<String> {
     }
 }
 
+#[pyclass(module = "stats", name = "StatStream")]
+pub struct PyStatStream {
+    kill_flag: Arc<AtomicBool>,
+}
+
+impl PyStatStream {
+    pub fn kill(&self) {
+        self.kill_flag.store(true, Ordering::Relaxed)
+    }
+}
+
+#[pyclass(module = "stats", name = "Rec")]
+pub struct PyRec {
+    rs: Rec,
+}
+
+#[pymethods]
+impl PyRec {
+    fn q_size(&self) -> i32 {
+        self.rs.q_size
+    }
+    fn inter_thread_max_queue_depth(&self) -> i32 {
+        self.rs.inter_thread_max_queue_depth
+    }
+    fn allowed_accesses(&self) -> i32 {
+        self.rs.allowed_accesses
+    }
+    fn denied_accesses(&self) -> i32 {
+        self.rs.denied_accesses
+    }
+    fn trust_db_max_pages(&self) -> i32 {
+        self.rs.trust_db_max_pages
+    }
+    fn trust_db_pages_in_use(&self) -> i32 {
+        self.rs.trust_db_pages_in_use.0
+    }
+    fn trust_db_pages_in_use_pct(&self) -> f32 {
+        self.rs.trust_db_pages_in_use.1
+    }
+    fn subject_cache_size(&self) -> i32 {
+        self.rs.subject_cache_size
+    }
+    fn subject_slots_in_use(&self) -> i32 {
+        self.rs.subject_slots_in_use.0
+    }
+    fn subject_slots_in_use_pct(&self) -> f32 {
+        self.rs.subject_slots_in_use.1
+    }
+    fn object_hits(&self) -> i32 {
+        self.rs.object_hits
+    }
+
+    fn summary(&self) -> String {
+        format!(
+            indoc!(
+                "q_size: {}
+                Inter-thread max queue depth: {}
+                Allowed accesses: {}
+                Denied accesses: {}
+                Trust database max pages: {}
+                Trust database pages in use: {} ({}%)
+                Subject cache size: {}
+                Subject slots in use: {} ({}%)
+                Subject hits: {}
+                Subject misses: {}
+                Subject evictions: {} ({}%)
+                Object cache size: {}
+                Object slots in use: {} ({}%)
+                Object hits: {}
+                Object misses: {}
+                Object evictions: {} ({}%)"
+            ),
+            self.rs.q_size,
+            self.rs.inter_thread_max_queue_depth,
+            self.rs.allowed_accesses,
+            self.rs.denied_accesses,
+            self.rs.trust_db_max_pages,
+            self.rs.trust_db_pages_in_use.0,
+            self.rs.trust_db_pages_in_use.1,
+            self.rs.subject_cache_size,
+            self.rs.subject_slots_in_use.0,
+            self.rs.subject_slots_in_use.1,
+            self.rs.subject_hits,
+            self.rs.subject_misses,
+            self.rs.subject_evictions.0,
+            self.rs.subject_evictions.1,
+            self.rs.object_cache_size,
+            self.rs.object_slots_in_use.0,
+            self.rs.object_slots_in_use.1,
+            self.rs.object_hits,
+            self.rs.object_misses,
+            self.rs.object_evictions.0,
+            self.rs.object_evictions.1,
+        )
+    }
+}
+
+#[pyclass(module = "stats", name = "RecTs")]
+pub struct PyRecTs {
+    rs: RecTs,
+}
+
+#[pymethods]
+impl PyRecTs {
+    fn timestamps(&self) -> Vec<i64> {
+        self.rs.timestamps.clone()
+    }
+    fn allowed_accesses(&self) -> Vec<i32> {
+        self.rs.allowed_accesses.clone()
+    }
+    fn denied_accesses(&self) -> Vec<i32> {
+        self.rs.denied_accesses.clone()
+    }
+    fn trust_db_pages_in_use(&self) -> Vec<i32> {
+        self.rs.trust_db_pages_in_use.clone()
+    }
+    fn subject_cache_size(&self) -> Vec<i32> {
+        self.rs.subject_cache_size.clone()
+    }
+    fn subject_slots_in_use(&self) -> Vec<i32> {
+        self.rs.subject_slots_in_use.clone()
+    }
+    fn object_hits(&self) -> Vec<i32> {
+        self.rs.object_hits.clone()
+    }
+
+    fn subject_hits(&self) -> Vec<i32> {
+        self.rs.subject_hits.clone()
+    }
+    fn subject_misses(&self) -> Vec<i32> {
+        self.rs.subject_misses.clone()
+    }
+    fn subject_evictions(&self) -> Vec<i32> {
+        self.rs.subject_evictions.clone()
+    }
+    fn object_cache_size(&self) -> Vec<i32> {
+        self.rs.object_cache_size.clone()
+    }
+    fn object_slots_in_use(&self) -> Vec<i32> {
+        self.rs.object_slots_in_use.clone()
+    }
+    fn object_misses(&self) -> Vec<i32> {
+        self.rs.object_misses.clone()
+    }
+    fn object_evictions(&self) -> Vec<i32> {
+        self.rs.object_evictions.clone()
+    }
+}
+
+#[pyfunction]
+fn start_stat_stream(path: &str, f: PyObject) -> PyResult<PyStatStream> {
+    let kill_flag = Arc::new(AtomicBool::new(false));
+    let rx = stats::read(path, kill_flag.clone()).expect("failed to read stats");
+
+    thread::spawn(move || {
+        for (rec, ts) in rx.iter() {
+            Python::with_gil(|py| {
+                if f.call1(py, ((PyRec { rs: rec }, PyRecTs { rs: ts }),))
+                    .is_err()
+                {
+                    log::warn!("'tick' callback failed");
+                }
+            });
+        }
+    });
+
+    Ok(PyStatStream { kill_flag })
+}
+
+/// send signal to fapolicyd FIFO pipe to reload the trust database
+#[pyfunction]
+fn signal_flush_cache() -> PyResult<()> {
+    pipe::flush_cache()
+        .map_err(|e| PyRuntimeError::new_err(format!("failed to signal cache flush: {:?}", e)))
+}
+
 pub fn init_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyHandle>()?;
     m.add_class::<PyChangeset>()?;
     m.add_class::<PyConfigInfo>()?;
+    m.add_class::<PyRec>()?;
+    m.add_class::<PyRecTs>()?;
+    m.add_class::<PyStatStream>()?;
     m.add_function(wrap_pyfunction!(fapolicyd_version, m)?)?;
     m.add_function(wrap_pyfunction!(start_fapolicyd, m)?)?;
     m.add_function(wrap_pyfunction!(stop_fapolicyd, m)?)?;
     m.add_function(wrap_pyfunction!(rollback_fapolicyd, m)?)?;
     m.add_function(wrap_pyfunction!(is_fapolicyd_active, m)?)?;
     m.add_function(wrap_pyfunction!(conf_text_error_check, m)?)?;
+    m.add_function(wrap_pyfunction!(start_stat_stream, m)?)?;
+    m.add_function(wrap_pyfunction!(signal_flush_cache, m)?)?;
     Ok(())
 }
 
