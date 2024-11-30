@@ -71,7 +71,8 @@ class StatsViewPage(UIConnectedWidget, UIPage, Events):
         self.__vbox: GtkBox = self.get_object("vbox")
         self._figure = Figure(figsize=(5, 4), dpi=100)
         self._ax = self._figure.add_subplot(1, 1, 1)
-        self._line = self._ax.plot([], [])[0]
+        self._obj_hits = self._ax.plot([], [])[0]
+        self._obj_misses = self._ax.plot([], [])[0]
         self._canvas = FigureCanvas(self._figure)
         self._canvas.set_size_request(100, 200)
         self.__vbox.pack_start(self._canvas, False, False, 10)
@@ -82,8 +83,10 @@ class StatsViewPage(UIConnectedWidget, UIPage, Events):
             self.__text_view.get_buffer().set_text(stats.summary)
             print(stats.ts.timestamps())
             print(stats.ts.object_hits())
-            self._line.set_xdata(stats.ts.timestamps())
-            self._line.set_ydata(stats.ts.object_hits())
+            self._obj_hits.set_xdata(stats.ts.timestamps())
+            self._obj_hits.set_ydata(stats.ts.object_hits())
+            self._obj_misses.set_xdata(stats.ts.timestamps())
+            self._obj_misses.set_ydata(stats.ts.object_misses())
             self._ax.relim()
             self._ax.autoscale_view()
             self._canvas.draw()
