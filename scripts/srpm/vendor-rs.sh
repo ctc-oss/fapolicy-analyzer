@@ -30,7 +30,7 @@ case $id in
     echo "fedora: vendoring packages"
     mkdir -p ${vendor_dest}
     cp -r /usr/share/cargo/registry/* ${vendor_dest}
-    find ${vendor_dest} -maxdepth 1 -type d -exec touch {}/README.md \;
+    find ${vendor_dest} -maxdepth 1 -type d -exec touch {}/README.md \; -exec chmod 777 {}/README.md  \;
     # work around the readme doc issue
     rm ${vendor_dest}/either-1.13.0/README.md
     rm ${vendor_dest}/cexpr-0.6.0/README.md
