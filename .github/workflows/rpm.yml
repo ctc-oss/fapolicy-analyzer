@@ -444,6 +444,10 @@ jobs:
         with:
           path: /tmp/archives/
 
+      - name: Checksum
+        run: |
+          sha256sum /tmp/archives/** || true
+
       - name: Release artifacts
         uses: softprops/action-gh-release@v1
         with:
@@ -453,6 +457,6 @@ jobs:
           files: |
             fapolicy-analyzer.spec
             /tmp/archives/source0/*.tar.gz
-            /tmp/archives/rpm-artifacts/*.rpm
-            /tmp/archives/srpm-artifacts/*.src.rpm
-            /tmp/archives/tarball-artifacts/*.tar.gz
+            /tmp/archives/rpm-artifacts-*/*.rpm
+            /tmp/archives/srpm-artifacts-*/*.src.rpm
+            /tmp/archives/tarball-artifacts-*/*.tar.gz
