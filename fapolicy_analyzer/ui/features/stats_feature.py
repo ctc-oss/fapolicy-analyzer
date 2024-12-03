@@ -48,7 +48,6 @@ def create_stats_feature(dispatch: Callable) -> ReduxFeatureModule:
         _idle_dispatch(stats_update(rec.summary(), rec, ts))
 
     def _start_stat_stream(action: Action) -> Action:
-        print("=== start stats stream ===")
         nonlocal stream_active
         global _handle
 
