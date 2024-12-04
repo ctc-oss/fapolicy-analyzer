@@ -26,7 +26,7 @@ from typing import Sequence
 import gi
 
 import fapolicy_analyzer.ui.strings as strings
-from fapolicy_analyzer import System, is_audit_available
+from fapolicy_analyzer import System, is_audit_available, is_stats_available
 from fapolicy_analyzer import __version__ as app_version
 from fapolicy_analyzer.ui import get_resource
 from fapolicy_analyzer.ui.action_toolbar import ActionToolbar
@@ -138,6 +138,7 @@ class MainWindow(UIConnectedWidget):
         )
         self.get_object("profileExecMenu").set_sensitive(prof_ui_enable)
         self.get_object("auditlogMenu").set_sensitive(is_audit_available())
+        self.get_object("statsViewMenuItem").set_sensitive(is_stats_available())
 
         self.__add_toolbar()
 
