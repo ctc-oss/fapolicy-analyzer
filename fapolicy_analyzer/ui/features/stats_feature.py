@@ -51,12 +51,13 @@ def create_stats_feature(dispatch: Callable) -> ReduxFeatureModule:
         nonlocal stream_active
         global _handle
 
+        f = "/var/run/fapolicyd/fapolicyd.state"
+
         if stream_active:
-            return action
+            return stats_started(f)
 
         stream_active = True
 
-        f = "/var/run/fapolicyd/fapolicyd.state"
         _handle = start_stat_stream(f, _on_recv)
 
         return stats_started(f)
@@ -69,6 +70,7 @@ def create_stats_feature(dispatch: Callable) -> ReduxFeatureModule:
             return action
 
         _handle.kill()
+        stream_active = False
 
         return terminating_stats()
 
