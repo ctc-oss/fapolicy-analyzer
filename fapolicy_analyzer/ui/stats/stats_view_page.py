@@ -25,7 +25,6 @@ from fapolicy_analyzer.ui.actions import (
 from fapolicy_analyzer.ui.ui_page import UIPage, UIAction
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 
-# from fapolicy_analyzer.ui.actions import ()
 from fapolicy_analyzer.ui.store import (
     dispatch,
     get_stats_feature,
@@ -65,25 +64,44 @@ class StatsViewPage(UIConnectedWidget, UIPage, Events):
 
     def __init_child_widgets(self):
         self.__text_view = self.get_object("profilerOutput")
+
+        # containers
         self.__vbox = self.get_object("vbox")
+
+        # figures
         self._figure = Figure(figsize=(5, 4), dpi=100)
+
+        # axes
         self._ax = self._figure.add_subplot(1, 1, 1)
+
+        # lines
         self._obj_hits = self._ax.plot([], [])[0]
         self._obj_misses = self._ax.plot([], [])[0]
+
+        # canvases
         self._canvas = FigureCanvas(self._figure)
         self._canvas.set_size_request(100, 200)
+
+        # packing
         self.__vbox.pack_start(self._canvas, False, False, 10)
         self._canvas.show()
 
     def on_event(self, stats: StatsStreamState):
         if stats.summary is not None:
+            # update summary
             self.__text_view.get_buffer().set_text(stats.summary)
+
+            # update xy data for lines
             self._obj_hits.set_xdata(stats.ts.timestamps())
             self._obj_hits.set_ydata(stats.ts.object_hits())
             self._obj_misses.set_xdata(stats.ts.timestamps())
             self._obj_misses.set_ydata(stats.ts.object_misses())
+
+            # relimit axes
             self._ax.relim()
             self._ax.autoscale_view()
+
+            # redraw
             self._canvas.draw()
 
     def on_flush_cache_clicked(self, _):
