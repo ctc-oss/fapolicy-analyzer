@@ -26,7 +26,7 @@ try:
 except ImportError:
     import importlib_resources as resources
 
-from events import Events
+from fapolicy_analyzer.events import Events
 from fapolicy_analyzer.ui.ui_widget import UIBuilderWidget
 
 gi.require_version("GtkSource", "3.0")

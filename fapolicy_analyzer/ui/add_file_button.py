@@ -18,7 +18,7 @@ import re
 from os import path
 
 import gi
-from events import Events
+from fapolicy_analyzer.events import Events
 
 from fapolicy_analyzer.ui import strings
 from fapolicy_analyzer.ui.file_chooser_dialog import FileChooserDialog

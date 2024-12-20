@@ -17,7 +17,7 @@ import gi
 import logging
 from typing import Any, Optional, Sequence, Tuple
 
-from events import Events
+from fapolicy_analyzer.events import Events
 
 from fapolicy_analyzer import Rule, System, reload_profiler_rules
 from fapolicy_analyzer.ui.actions import (

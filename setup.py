@@ -60,6 +60,7 @@ setup(
         include=[
             "fapolicy_analyzer",
             "fapolicy_analyzer.css",
+            "fapolicy_analyzer.events*",
             "fapolicy_analyzer.glade",
             "fapolicy_analayzer.locale*",
             "fapolicy_analyzer.redux*",

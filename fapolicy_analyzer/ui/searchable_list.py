@@ -20,7 +20,7 @@ import gi
 from fapolicy_analyzer.ui.strings import FILTERING_DISABLED_DURING_LOADING_MESSAGE
 
 gi.require_version("Gtk", "3.0")
-from events import Events
+from fapolicy_analyzer.events import Events
 from gi.repository import Gtk
 
 from fapolicy_analyzer.ui.loader import Loader
