@@ -21,6 +21,7 @@ from fapolicy_analyzer.ui.reducers.stats_reducer import StatsStreamState
 from fapolicy_analyzer.ui.actions import (
     start_stats,
 )
+from fapolicy_analyzer.ui.stats.views import ObjCacheView, SubjCacheView, SlotsCacheView, EvictionCacheView
 
 from fapolicy_analyzer.ui.ui_page import UIPage, UIAction
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
@@ -65,26 +66,34 @@ class StatsViewPage(UIConnectedWidget, UIPage, Events):
 
     def __init_child_widgets(self):
         self.__text_view = self.get_object("profilerOutput")
-        self.__vbox = self.get_object("vbox")
-        self._figure = Figure(figsize=(5, 4), dpi=100)
-        self._ax = self._figure.add_subplot(1, 1, 1)
-        self._obj_hits = self._ax.plot([], [])[0]
-        self._obj_misses = self._ax.plot([], [])[0]
-        self._canvas = FigureCanvas(self._figure)
-        self._canvas.set_size_request(100, 200)
-        self.__vbox.pack_start(self._canvas, False, False, 10)
-        self._canvas.show()
+
+        self.__lbox = self.get_object("lbox")
+        self.__rbox = self.get_object("rbox")
+
+        self.__obj_cache_view = ObjCacheView()
+        self.__rbox.pack_start(self.__obj_cache_view.canvas, False, False, 10)
+
+        self.__subj_cache_view = SubjCacheView()
+        self.__rbox.pack_start(self.__subj_cache_view.canvas, False, False, 10)
+
+        self.__slots_view = SlotsCacheView()
+        self.__rbox.pack_start(self.__slots_view.canvas, False, False, 10)
+
+        self.__eviction_view = EvictionCacheView()
+        self.__lbox.pack_start(self.__eviction_view.canvas, False, False, 10)
+
+        self.__obj_cache_view.canvas.show()
+        self.__subj_cache_view.canvas.show()
+        self.__slots_view.canvas.show()
+        self.__eviction_view.canvas.show()
 
     def on_event(self, stats: StatsStreamState):
         if stats.summary is not None:
             self.__text_view.get_buffer().set_text(stats.summary)
-            self._obj_hits.set_xdata(stats.ts.timestamps())
-            self._obj_hits.set_ydata(stats.ts.object_hits())
-            self._obj_misses.set_xdata(stats.ts.timestamps())
-            self._obj_misses.set_ydata(stats.ts.object_misses())
-            self._ax.relim()
-            self._ax.autoscale_view()
-            self._canvas.draw()
+            self.__obj_cache_view.on_event(stats)
+            self.__subj_cache_view.on_event(stats)
+            self.__slots_view.on_event(stats)
+            self.__eviction_view.on_event(stats)
 
     def on_flush_cache_clicked(self, _):
         signal_flush_cache()
