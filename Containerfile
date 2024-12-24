@@ -1,4 +1,4 @@
-ARG image=registry.fedoraproject.org/fedora:latest
+ARG image=registry.fedoraproject.org/fedora:41
 FROM $image AS fedorabuild
 ARG version
 ARG spec=fapolicy-analyzer.spec
