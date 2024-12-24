@@ -134,7 +134,6 @@ Summary:       File Access Policy Analyzer GUI
 
 Requires:      python3
 Requires:      python3-gobject
-Requires:      python3-events
 Requires:      python3-configargparse
 Requires:      python3-more-itertools
 Requires:      python3-rx
