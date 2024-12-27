@@ -26,7 +26,6 @@ wheel = "*"
 [packages]
 pycairo = "1.20.0"
 PyGObject = "3.38.0"
-events = "0.4"
 argparse = "1.4.0"
 rx = "~=3.2"
 more-itertools = "~=7.2"

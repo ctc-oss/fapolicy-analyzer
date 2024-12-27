@@ -15,7 +15,7 @@
 
 
 import gi
-from events import Events
+from fapolicy_analyzer.events import Events
 from fapolicy_analyzer.ui.reducers.stats_reducer import StatsStreamState
 
 from fapolicy_analyzer.ui.actions import (

@@ -14,7 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import gi
-from events import Events
+from fapolicy_analyzer.events import Events
 
 from fapolicy_analyzer.ui.strings import (
     FILE_LIST_RULE_ID_HEADER,

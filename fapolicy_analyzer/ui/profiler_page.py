@@ -27,7 +27,7 @@ from typing import Optional
 import fapolicy_analyzer.ui.strings as s
 
 import gi
-from events import Events
+from fapolicy_analyzer.events import Events
 from fapolicy_analyzer.ui.actions import (
     clear_profiler_state,
     start_profiling,

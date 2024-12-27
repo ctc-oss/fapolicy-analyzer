@@ -16,7 +16,7 @@
 import logging
 from locale import gettext as _
 
-from events import Events
+from fapolicy_analyzer.events import Events
 
 import fapolicy_analyzer.ui.strings as strings
 from fapolicy_analyzer.ui.actions import (

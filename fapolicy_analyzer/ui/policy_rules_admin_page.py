@@ -18,7 +18,7 @@ from os import path
 from typing import Optional, Sequence
 
 import gi
-from events import Events
+from fapolicy_analyzer.events import Events
 
 from fapolicy_analyzer import EventLog, Group, Trust, User
 from fapolicy_analyzer.ui.acl_list import ACLList
