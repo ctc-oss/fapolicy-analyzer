@@ -24,6 +24,7 @@ RED=\033[0;31m
 NC=\033[0m # No Color
 
 VERSION ?= $(shell sed -n 's/^Version: *//p' fapolicy-analyzer.spec)
+FID     ?= rawhide
 
 # List the common developer targets
 list:
@@ -141,10 +142,10 @@ build-info:
 
 # Generate Fedora rawhide rpms
 fc-rpm:
-	@echo -e "${GRN}--- Fedora RPM generation v${VERSION}...${NC}"
+	@echo -e "${GRN}--- Fedora $(FID) RPM generation v${VERSION}...${NC}"
 	make -f .copr/Makefile vendor OS_ID=fedora VERSION=${VERSION}
 	podman build -t fapolicy-analyzer:build --target fedorabuild --build-arg version=${VERSION} -f Containerfile .
-	podman run --privileged --rm -it -v /tmp:/v fapolicy-analyzer:build fedora-41-x86_64 /v
+	podman run --privileged --rm -it -v /tmp:/v fapolicy-analyzer:build fedora-$(FID)-x86_64 /v
 
 # Generate RHEL 9 rpms
 el9-rpm:
