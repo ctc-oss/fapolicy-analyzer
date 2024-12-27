@@ -40,13 +40,6 @@
             "index": "pypi",
             "version": "==0.6"
         },
-        "events": {
-            "hashes": [
-                "sha256:a7286af378ba3e46640ac9825156c93bdba7502174dd696090fdfcd4d80a1abd"
-            ],
-            "index": "pypi",
-            "version": "==0.5"
-        },
         "importlib-metadata": {
             "hashes": [
                 "sha256:aa18d7378b00b40847790e7c27e11673d7fed219354109d0e7b9e5b25dc3ad26",
@@ -472,7 +465,9 @@
             "version": "==0.4.6"
         },
         "coverage": {
-            "extras": [],
+            "extras": [
+                "toml"
+            ],
             "hashes": [
                 "sha256:093896e530c38c8e9c996901858ac63f3d4171268db2c9c8b373a228f459bbc5",
                 "sha256:09b9f848b28081e7b975a3626e9081574a7b9196cde26604540582da60235fdf",
