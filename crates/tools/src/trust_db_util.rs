@@ -21,6 +21,7 @@ use std::time::SystemTime;
 
 use clap::Parser;
 use lmdb::{Cursor, DatabaseFlags, Environment, Transaction, WriteFlags};
+use log::warn;
 use thiserror::Error;
 
 use fapolicy_app::cfg;
@@ -236,7 +237,7 @@ fn init(opts: InitOpts, verbose: bool, cfg: &cfg::All, env: &Environment) -> Res
 
     #[cfg(feature = "deb")]
     let sys = if opts.dpkg {
-        dpkg_trust()?
+        dpkg_trust(opts.count)?
     } else {
         rpm_trust(&PathBuf::from(&cfg.system.system_trust_path))?
     };
@@ -424,10 +425,9 @@ const DPKG_QUERY_HEADER_LINES: usize = 6;
 #[cfg(feature = "deb")]
 const DPKG_QUERY: &str = "dpkg-query";
 #[cfg(feature = "deb")]
-fn dpkg_trust() -> Result<Vec<Trust>, Error> {
+fn dpkg_trust(count: Option<usize>) -> Result<Vec<Trust>, Error> {
     use crate::Error::{DpkgCommandFail, DpkgNotFound};
     use fapolicy_trust::load::keep_entry;
-    use rayon::prelude::*;
     use std::process::Command;
 
     // check that dpkg-query exists and can be called
@@ -448,18 +448,34 @@ fn dpkg_trust() -> Result<Vec<Trust>, Error> {
         .map(String::from)
         .collect();
 
-    Ok(packages
-        .par_iter()
-        .flat_map(|p| Command::new(DPKG_QUERY).args(vec!["-L", p]).output())
-        .flat_map(output_lines)
-        .flatten()
-        // apply the rpm filter to limit results
-        .filter(|p| keep_entry(p))
-        .filter_map(|s| match new_trust_record(&s) {
-            Ok(t) => Some(t),
-            Err(_) => None,
-        })
-        .collect())
+    let mut trust = vec![];
+    'outer: for pkg in packages {
+        if let Ok(lines) = Command::new(DPKG_QUERY)
+            .args(vec!["-L", &pkg])
+            .output()
+            .map_err(DpkgCommandFail)
+            .and_then(output_lines)
+        {
+            for line in lines {
+                if keep_entry(&line) {
+                    if let Ok(t) = new_trust_record(&line) {
+                        trust.push(t);
+                        if let Some(count) = count {
+                            if trust.len() >= count {
+                                break 'outer;
+                            }
+                        }
+                    } else {
+                        warn!("failed to create trust entry for [{line}]")
+                    }
+                }
+            }
+        } else {
+            warn!("failed to {DPKG_QUERY} {pkg}")
+        }
+    }
+
+    Ok(trust)
 }
 
 #[cfg(feature = "deb")]
