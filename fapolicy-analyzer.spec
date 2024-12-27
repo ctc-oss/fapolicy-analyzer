@@ -66,6 +66,7 @@ Requires:      python3-more-itertools
 Requires:      python3-rx
 Requires:      python3-importlib-metadata
 Requires:      python3-toml
+Requires:      python3-matplotlib-gtk3
 
 Requires:      gtk3
 Requires:      gtksourceview3

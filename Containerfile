@@ -15,9 +15,6 @@ WORKDIR /tmp/rpmbuild
 
 COPY --chown=10001:0 $spec SPECS/fapolicy-analyzer.spec
 
-USER root
-RUN dnf -y builddep SPECS/fapolicy-analyzer.spec
-
 USER 10001
 
 COPY --chown=10001:0 fapolicy-analyzer-$version.tar.gz SOURCES/
