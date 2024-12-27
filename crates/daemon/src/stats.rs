@@ -109,6 +109,7 @@ impl Avg {
     }
 }
 
+/// Rec Time Series
 #[derive(Debug, Default)]
 pub struct RecTs {
     count: i32,
