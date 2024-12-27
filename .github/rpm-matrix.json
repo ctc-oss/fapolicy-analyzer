@@ -28,15 +28,6 @@
       "prerelease": false
     },
     {
-      "platform": "fedora",
-      "dist": "fc39",
-      "spec": "fapolicy-analyzer.spec",
-      "image": "registry.fedoraproject.org/fedora:39",
-      "chroot": "fedora-39-x86_64",
-      "version": "39",
-      "prerelease": false
-    },
-    {
       "platform": "rhel",
       "dist": "el9",
       "spec": "scripts/srpm/fapolicy-analyzer.el9.spec",
