@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.38.2 -->
 <!--
   Copyright Concurrent Technologies Corporation 2024
 
@@ -15,23 +16,31 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
-
-<!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
   <object class="GtkBox" id="statsViewPage">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
     <child>
-      <object class="GtkScrolledWindow">
+      <object class="GtkBox" id="lbox">
         <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="shadow-type">in</property>
+        <property name="can-focus">False</property>
+        <property name="margin-end">3</property>
+        <property name="orientation">vertical</property>
         <child>
           <object class="GtkTextView" id="profilerOutput">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
+            <property name="monospace">True</property>
           </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
         </child>
       </object>
       <packing>
@@ -41,9 +50,10 @@
       </packing>
     </child>
     <child>
-      <object class="GtkBox" id="vbox">
+      <object class="GtkBox" id="rbox">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
+        <property name="margin-start">3</property>
         <property name="orientation">vertical</property>
         <child>
           <placeholder/>
