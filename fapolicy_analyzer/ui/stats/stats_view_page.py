@@ -26,15 +26,10 @@ from fapolicy_analyzer.ui.stats.views import ObjCacheView, SubjCacheView, SlotsC
 from fapolicy_analyzer.ui.ui_page import UIPage, UIAction
 from fapolicy_analyzer.ui.ui_widget import UIConnectedWidget
 
-# from fapolicy_analyzer.ui.actions import ()
 from fapolicy_analyzer.ui.store import (
     dispatch,
     get_stats_feature,
 )
-
-from matplotlib.backends.backend_gtk3agg import \
-    FigureCanvasGTK3Agg as FigureCanvas
-from matplotlib.figure import Figure
 
 from fapolicy_analyzer import signal_flush_cache
 
