@@ -16,7 +16,7 @@
       "image": "registry.fedoraproject.org/fedora:41",
       "chroot": "fedora-41-x86_64",
       "version": "41",
-      "prerelease": true
+      "prerelease": false
     },
     {
       "platform": "fedora",
