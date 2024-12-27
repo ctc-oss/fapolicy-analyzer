@@ -37,16 +37,20 @@ def get_version():
     return meta["version"]
 
 
-# comma separated list of features that should be enabled in the rust build
+# features can be defined as a mix of comma and line separated
 def get_features():
     enabling = None
     if "FEATURES" in os.environ:
         enabling = os.getenv("FEATURES")
     if os.path.exists("FEATURES"):
         with open("FEATURES", "r") as features:
-            v = features.readline().strip().split(",")
+            v = set()
+            for l in features.readlines():
+                for f in l.strip().split(","):
+                    if f:
+                        v.add(f)
             if len(v):
-                enabling = v
+                enabling = sorted(list(v))
     print(f"Enabled Rust features: {enabling}")
     return enabling
 

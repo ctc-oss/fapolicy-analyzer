@@ -28,4 +28,5 @@ fapolicy-util = { path = "../util" }
 [features]
 default = []
 audit = []
+stats = []
 xdg = ["fapolicy-app/xdg"]
