@@ -14,23 +14,36 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use clap::Parser;
+use fapolicy_daemon::fapolicyd::START_POLLING_EVENTS_MESSAGE;
 use fapolicy_daemon::profiler::Profiler;
 use fapolicy_rules::read::load_rules_db;
+use log::info;
 use std::error::Error;
+use std::fs::File;
+use std::io::{BufRead, BufReader, Write};
 use std::os::unix::prelude::CommandExt;
 use std::path::PathBuf;
 use std::process::Command;
+use strip_ansi_escapes::strip_str;
 
 #[derive(Parser)]
 #[clap(name = "File Access Policy Profiler", version = "v0.0.0")]
 struct Opts {
+    /// do not write events to stdout
+    #[clap(long)]
+    quiet: bool,
+
     /// path to *.rules or rules.d
-    #[clap(short, long)]
+    #[clap(long)]
     rules: Option<String>,
 
-    /// out path for daemon stdout log
+    /// path to write daemon log
     #[clap(long)]
-    stdout: Option<String>,
+    dlog: Option<String>,
+
+    /// path to write command log
+    #[clap(long)]
+    clog: Option<String>,
 
     /// the profiling uid
     #[clap(long)]
@@ -47,19 +60,18 @@ struct Opts {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    fapolicy_tools::setup_human_panic();
+    env_logger::init();
 
+    fapolicy_tools::setup_human_panic();
     let opts: Opts = Opts::parse();
     log::info!("profiling: {:?}", opts.target);
     let target = opts.target.first().expect("target not specified");
     let args: Vec<&String> = opts.target.iter().skip(1).collect();
-
     let mut profiler = Profiler::new();
     let db = opts
         .rules
         .map(|p| load_rules_db(&p).expect("failed to load rules"));
-
-    if let Some(path) = opts.stdout.map(PathBuf::from) {
+    if let Some(path) = opts.dlog.as_ref().map(PathBuf::from) {
         if path.exists() {
             log::warn!("deleting existing log file from {}", path.display());
             std::fs::remove_file(&path)?;
@@ -67,7 +79,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         profiler.events_log = Some(path);
     }
 
-    profiler.activate_with_rules(db.as_ref())?;
+    let outfile = profiler.activate_with_rules(db.as_ref())?;
     let mut cmd = Command::new(target);
     if let Some(uid) = opts.uid {
         cmd.uid(uid);
@@ -75,9 +87,39 @@ fn main() -> Result<(), Box<dyn Error>> {
     if let Some(gid) = opts.gid {
         cmd.gid(gid);
     }
+
     let out = cmd.args(args).output()?;
-    println!("{}", String::from_utf8(out.stdout)?);
     profiler.deactivate()?;
+
+    // write command output to file if specified
+    if let Some(path) = opts.clog.map(PathBuf::from) {
+        let mut f = File::create(&path)?;
+        f.write_all(&out.stdout)?;
+        info!("wrote cmd output to {}", path.display());
+    }
+
+    // if the events file was not specified we will dump to the screen
+    if !opts.quiet {
+        let f = File::open(outfile)?;
+        let bufrdr = BufReader::new(&f);
+        let lines = bufrdr.lines().map(|x| x.unwrap());
+        for line in lines
+            .skip_while(|l| !l.contains(START_POLLING_EVENTS_MESSAGE))
+            .skip(1)
+        {
+            if strip_str(&line).contains("[ INFO ]") {
+                if let Some((_, rhs)) = line.split_once("]: ") {
+                    println!("{rhs}");
+                } else {
+                    log::warn!("failed to split output line \"{}\", ignoring", line);
+                }
+            }
+        }
+    }
+
+    if let Some(path) = opts.dlog.map(PathBuf::from) {
+        info!("wrote daemon output to {}", path.display());
+    }
 
     Ok(())
 }
