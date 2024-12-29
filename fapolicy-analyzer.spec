@@ -145,7 +145,7 @@ export RUSTFLAGS="%{build_rustflags}"
 %if %{with cli}
 install -D target/release/tdb %{buildroot}/%{_sbindir}/%{name}-cli-trust
 install -D target/release/faprofiler %{buildroot}/%{_sbindir}/%{name}-cli-profiler
-install -D target/release/rulec %{buildroot}/%{_sbindir}/%{name}-cli-rulec
+install -D target/release/rulec %{buildroot}/%{_sbindir}/%{name}-cli-rules
 %endif
 
 %if %{with gui}
@@ -167,7 +167,7 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
 %files cli
 %attr(755,root,root) %{_sbindir}/%{name}-cli-trust
 %attr(755,root,root) %{_sbindir}/%{name}-cli-profiler
-%attr(755,root,root) %{_sbindir}/%{name}-cli-rulec
+%attr(755,root,root) %{_sbindir}/%{name}-cli-rules
 
 %files gui
 %{python3_sitearch}/%{module}
