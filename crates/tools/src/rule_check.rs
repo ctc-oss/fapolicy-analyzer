@@ -19,6 +19,7 @@ use std::path::PathBuf;
 
 use clap::Parser;
 
+use fapolicy_daemon::fapolicyd;
 use fapolicy_rules::parser::errat::{ErrorAt, StrErrorAt};
 use fapolicy_rules::parser::parse::StrTrace;
 use fapolicy_rules::parser::trace::Trace;
@@ -31,11 +32,13 @@ use std::collections::BTreeMap;
 use std::fs::File;
 use std::io;
 use std::io::{BufRead, BufReader};
+use std::process::exit;
 
 #[derive(Parser)]
 #[clap(name = "Rule Checker", version = "v0.0.0")]
 struct Opts {
     /// path to *.rules or rules.d
+    #[clap(default_value=fapolicyd::RULES_FILE_PATH)]
     rules_path: String,
 }
 
@@ -64,15 +67,21 @@ fn main() -> Result<(), Box<dyn Error>> {
             x
         });
 
+    let mut errors = 0;
     for (file, _) in contents {
-        report_for_file(file)?;
+        errors += report_for_file(file)?;
     }
-    Ok(())
+
+    if errors > 0 {
+        exit(1)
+    } else {
+        Ok(())
+    }
 }
 
-fn report_for_file(path: PathBuf) -> Result<(), Box<dyn Error>> {
+fn report_for_file(path: PathBuf) -> Result<usize, Box<dyn Error>> {
     let filename = path.display().to_string();
-    let buff = BufReader::new(File::open(path)?);
+    let buff = BufReader::new(File::open(&path)?);
     let lines: Result<Vec<String>, io::Error> = buff.lines().collect();
 
     let contents: Vec<String> = lines?.into_iter().collect();
@@ -114,6 +123,7 @@ fn report_for_file(path: PathBuf) -> Result<(), Box<dyn Error>> {
         })
         .collect();
 
+    let mut errors = 0;
     for (lineno, result) in results {
         if result.is_err() {
             #[cfg(feature = "pretty")]
@@ -135,16 +145,20 @@ fn report_for_file(path: PathBuf) -> Result<(), Box<dyn Error>> {
             match result {
                 Ok(_) => {}
                 Err(nom::Err::Error(e)) => {
-                    println!("[E] {filename}:{} {}", lineno + 1, e.0);
+                    println!("[EE] {filename}:{} {}", lineno + 1, e.0);
                 }
                 res => {
                     log::warn!("unhandled err {:?}", res);
                 }
             }
+            errors += 1;
         }
     }
+    if errors == 0 {
+        println!("[OK] {}", path.display());
+    }
 
-    Ok(())
+    Ok(errors)
 }
 
 #[cfg(feature = "pretty")]
