@@ -32,11 +32,11 @@ case $id in
     cp -r /usr/share/cargo/registry/* ${vendor_dest}
     find ${vendor_dest} -maxdepth 1 -type d -exec touch {}/README.md \;
     # work around the readme doc issue
-    rm ${vendor_dest}/either-1.13.0/README.md
-    rm ${vendor_dest}/cexpr-0.6.0/README.md
-    rm ${vendor_dest}/libloading-0.8.5/README.md
-    rm ${vendor_dest}/lock_api-0.4.12/README.md
-    rm ${vendor_dest}/parking_lot_core-0.9.10/README.md
+    rm ${vendor_dest}/either-*/README.md
+    rm ${vendor_dest}/cexpr-*/README.md
+    rm ${vendor_dest}/libloading-*/README.md
+    rm ${vendor_dest}/lock_api-*/README.md
+    rm ${vendor_dest}/parking_lot_core-*/README.md
     ;;
 
   ubuntu)
