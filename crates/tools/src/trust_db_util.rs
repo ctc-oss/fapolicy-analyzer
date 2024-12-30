@@ -21,7 +21,6 @@ use std::time::SystemTime;
 
 use clap::Parser;
 use lmdb::{Cursor, DatabaseFlags, Environment, Transaction, WriteFlags};
-use log::warn;
 use thiserror::Error;
 
 use fapolicy_app::cfg;
@@ -467,12 +466,12 @@ fn dpkg_trust(count: Option<usize>) -> Result<Vec<Trust>, Error> {
                             }
                         }
                     } else {
-                        warn!("failed to create trust entry for [{line}]")
+                        log::warn!("failed to create trust entry for [{line}]")
                     }
                 }
             }
         } else {
-            warn!("failed to {DPKG_QUERY} {pkg}")
+            log::warn!("failed to {DPKG_QUERY} {pkg}")
         }
     }
 
