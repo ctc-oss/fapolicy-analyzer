@@ -32,7 +32,7 @@ use std::collections::BTreeMap;
 use std::fs::File;
 use std::io;
 use std::io::{BufRead, BufReader};
-use std::process::exit;
+use std::process::ExitCode;
 
 #[derive(Parser)]
 #[clap(name = "Rule Checker", version = "v0.0.0")]
@@ -51,8 +51,9 @@ enum Line<'a> {
     RuleDef(RuleParse<'a>),
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() -> Result<ExitCode, Box<dyn Error>> {
     fapolicy_tools::setup_human_panic();
+    env_logger::init();
 
     let all_opts: Opts = Opts::parse();
 
@@ -72,11 +73,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         errors += report_for_file(file)?;
     }
 
-    if errors > 0 {
-        exit(1)
-    } else {
-        Ok(())
-    }
+    Ok(ExitCode::from(if errors > 0 { 1 } else { 0 }))
 }
 
 fn report_for_file(path: PathBuf) -> Result<usize, Box<dyn Error>> {
