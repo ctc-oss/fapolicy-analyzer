@@ -25,12 +25,13 @@ use thiserror::Error;
 
 use fapolicy_app::cfg;
 use fapolicy_daemon::fapolicyd::TRUST_LMDB_NAME;
+use fapolicy_trust::db::DB;
 use fapolicy_trust::read::rpm_trust;
 use fapolicy_trust::stat::Status::{Discrepancy, Missing, Trusted};
 use fapolicy_trust::{check, load, parse, read, Trust};
 use fapolicy_util::sha::sha256_digest;
 
-use crate::Error::DirTrustError;
+use crate::Error::{DirTrustError, TrustError};
 use crate::Subcommand::{Add, Check, Clear, Count, Del, Dump, Init, Load, Search};
 
 /// An Error that can occur in this app
@@ -342,11 +343,8 @@ fn find(opts: SearchDbOpts, _: &cfg::All, env: &Environment) -> Result<(), Error
 }
 
 fn dump(opts: DumpDbOpts, cfg: &cfg::All) -> Result<(), Error> {
-    let db = load::trust_db(
-        &PathBuf::from(&cfg.system.trust_lmdb_path),
-        &PathBuf::from(&cfg.system.trust_dir_path),
-        Some(&PathBuf::from(&cfg.system.trust_file_path)),
-    )?;
+    let db = load_trust_db(cfg)?;
+
     match opts.outfile {
         None => {
             for (_, v) in db.iter() {
@@ -365,11 +363,7 @@ fn dump(opts: DumpDbOpts, cfg: &cfg::All) -> Result<(), Error> {
 }
 
 fn check(_: CheckDbOpts, cfg: &cfg::All) -> Result<(), Error> {
-    let db = load::trust_db(
-        &PathBuf::from(&cfg.system.trust_lmdb_path),
-        &PathBuf::from(&cfg.system.trust_dir_path),
-        Some(&PathBuf::from(&cfg.system.trust_file_path)),
-    )?;
+    let db = load_trust_db(cfg)?;
 
     let t = SystemTime::now();
     let db = check::disk_sync(&db)?;
@@ -392,6 +386,15 @@ fn check(_: CheckDbOpts, cfg: &cfg::All) -> Result<(), Error> {
     );
 
     Ok(())
+}
+
+fn load_trust_db(cfg: &cfg::All) -> Result<DB, Error> {
+    load::trust_db(
+        &PathBuf::from(&cfg.system.trust_lmdb_path),
+        &PathBuf::from(&cfg.system.trust_dir_path),
+        Some(&PathBuf::from(&cfg.system.trust_file_path)),
+    )
+    .map_err(TrustError)
 }
 
 fn count(_: CountOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
