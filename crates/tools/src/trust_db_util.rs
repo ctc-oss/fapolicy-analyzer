@@ -176,6 +176,7 @@ struct CountOpts {}
 
 fn main() -> Result<(), Error> {
     fapolicy_tools::setup_human_panic();
+    env_logger::init();
 
     let sys_conf = cfg::All::load()?;
     let all_opts: Opts = Opts::parse();

@@ -17,7 +17,6 @@ use clap::Parser;
 use fapolicy_daemon::fapolicyd::START_POLLING_EVENTS_MESSAGE;
 use fapolicy_daemon::profiler::Profiler;
 use fapolicy_rules::read::load_rules_db;
-use log::info;
 use std::error::Error;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Write};
@@ -60,9 +59,9 @@ struct Opts {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
+    fapolicy_tools::setup_human_panic();
     env_logger::init();
 
-    fapolicy_tools::setup_human_panic();
     let opts: Opts = Opts::parse();
     log::info!("profiling: {:?}", opts.target);
     let target = opts.target.first().expect("target not specified");
@@ -95,7 +94,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     if let Some(path) = opts.clog.map(PathBuf::from) {
         let mut f = File::create(&path)?;
         f.write_all(&out.stdout)?;
-        info!("wrote cmd output to {}", path.display());
+        log::info!("wrote cmd output to {}", path.display());
     }
 
     // if the events file was not specified we will dump to the screen
@@ -118,7 +117,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     if let Some(path) = opts.dlog.map(PathBuf::from) {
-        info!("wrote daemon output to {}", path.display());
+        log::info!("wrote daemon output to {}", path.display());
     }
 
     Ok(())
