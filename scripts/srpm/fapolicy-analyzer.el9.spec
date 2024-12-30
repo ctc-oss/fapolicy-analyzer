@@ -247,6 +247,7 @@ install -D target/release/rulec %{buildroot}/%{_sbindir}/%{name}-cli-rules
 %{python3} help install --dest %{buildroot}/%{_datadir}/help
 install -D bin/%{name} %{buildroot}/%{_sbindir}/%{name}
 install -D data/%{name}.8 -t %{buildroot}/%{_mandir}/man8/
+install -D data/%{name}-cli-*.8 -t %{buildroot}/%{_mandir}/man8/
 desktop-file-install data/%{name}.desktop
 find locale -name %{name}.mo -exec cp --parents -rv {} %{buildroot}/%{_datadir} \;
 %find_lang %{name} --with-gnome
@@ -267,6 +268,7 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
 %{python3_sitearch}/%{module}-%{module_version}*
 %attr(755,root,root) %{_sbindir}/%{name}
 %attr(644,root,root) %{_mandir}/man8/%{name}.8*
+%attr(644,root,root) %{_mandir}/man8/%{name}-cli-*.8*
 %attr(755,root,root) %{_datadir}/applications/%{name}.desktop
 
 %files -f %{name}.lang
