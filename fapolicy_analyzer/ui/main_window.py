@@ -16,7 +16,7 @@
 import logging
 import os
 import json
-from fapolicy_analyzer.ui.stats import StatsViewPage
+
 from locale import gettext as _
 from os import getenv, geteuid, path
 from threading import Thread
@@ -27,6 +27,10 @@ import gi
 
 import fapolicy_analyzer.ui.strings as strings
 from fapolicy_analyzer import System, is_audit_available, is_stats_available
+
+if is_stats_available():
+   from fapolicy_analyzer.ui.stats import StatsViewPage
+
 from fapolicy_analyzer import __version__ as app_version
 from fapolicy_analyzer.ui import get_resource
 from fapolicy_analyzer.ui.action_toolbar import ActionToolbar
@@ -82,8 +86,10 @@ def router(page: PAGE_SELECTION, *data) -> UIPage:
         PAGE_SELECTION.PROFILER: ProfilerPage,
         PAGE_SELECTION.CONFIG: ConfigAdminPage,
         PAGE_SELECTION.TRUST_FILTER: TrustFilterAdminPage,
-        PAGE_SELECTION.STATS_VIEW: StatsViewPage,
-    }.get(page, RulesAdminPage)
+    }
+    if is_stats_available():
+        route[PAGE_SELECTION.STATS_VIEW] = StatsViewPage
+    route = route.get(page, route)
     return route(*data)
 
 
