@@ -35,7 +35,7 @@ use std::io::{BufRead, BufReader};
 use std::process::ExitCode;
 
 #[derive(Parser)]
-#[clap(name = "Rule Checker", version = "v0.0.0")]
+#[clap(name = "Rule Checker", version = "1.5.0")]
 struct Opts {
     /// path to *.rules or rules.d
     #[clap(default_value=fapolicyd::RULES_FILE_PATH)]

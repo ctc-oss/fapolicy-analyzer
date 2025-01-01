@@ -454,9 +454,11 @@ jobs:
           tag_name: ${{ steps.tag_name.outputs.VERSION }}
           prerelease: ${{ startsWith(github.ref, 'refs/tags/v0') || contains(github.ref, 'rc') }}
           draft: true
+          # the tarball-artifacts are only published from el9 to prevent duplicates and capture vendor-rs
+          # el9 is also beneficial because it is always present, unlike the fc versions that are evolving
           files: |
             fapolicy-analyzer.spec
             /tmp/archives/source0/*.tar.gz
             /tmp/archives/rpm-artifacts-*/*.rpm
             /tmp/archives/srpm-artifacts-*/*.src.rpm
-            /tmp/archives/tarball-artifacts-*/*.tar.gz
+            /tmp/archives/tarball-artifacts-el9/*.tar.gz

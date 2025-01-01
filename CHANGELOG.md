@@ -8,6 +8,26 @@ Release notes
 
 <!-- towncrier release notes start -->
 
+## [v1.5.0](https://github.com/ctc-oss/fapolicy-analyzer/releases/tag/v1.5.0) - 2024-12-31
+
+### Added
+
+- Include the command line based fapolicy Trust DB admin tool in the CLI RPM distribution. ([#1025](https://github.com/ctc-oss/fapolicy-analyzer/pull/1025))
+- Include the command line based fapolicy profile tool in the CLI RPM distribution. ([#1040](https://github.com/ctc-oss/fapolicy-analyzer/pull/1040))
+- Include the command line based rule compiler tool in the CLI RPM distribution. ([#1043](https://github.com/ctc-oss/fapolicy-analyzer/pull/1043))
+- Add friendly messages in case of application crash, with instructions for bug reporting and trace file. ([#1045](https://github.com/ctc-oss/fapolicy-analyzer/pull/1045))
+- Added fapolicyd cache stats view with text and 2D plots, showing cache performance. ([#1048](https://github.com/ctc-oss/fapolicy-analyzer/pull/1048))
+
+### Fixed
+
+- Fixed trust init issue related to sha1 hashes and improved diagnostics around parsing the trust db entries. ([#1038](https://github.com/ctc-oss/fapolicy-analyzer/pull/1038))
+- Fixed webkit version selection to support both Fedora and EPEL versions of webkit2. ([#1044](https://github.com/ctc-oss/fapolicy-analyzer/pull/1044))
+
+### Packaging
+
+- Subpackaged RPM build to support separate CLI and GUI installations. ([#1025](https://github.com/ctc-oss/fapolicy-analyzer/pull/1025))
+
+
 ## [v1.4.0](https://github.com/ctc-oss/fapolicy-analyzer/releases/tag/v1.4.0) - 2024-07-28
 
 

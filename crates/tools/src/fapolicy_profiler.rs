@@ -26,7 +26,7 @@ use std::process::Command;
 use strip_ansi_escapes::strip_str;
 
 #[derive(Parser)]
-#[clap(name = "File Access Policy Profiler", version = "v0.0.0")]
+#[clap(name = "File Access Policy Profiler", version = "1.5.0")]
 struct Opts {
     /// do not write events to stdout
     #[clap(long)]
