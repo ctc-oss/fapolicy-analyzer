@@ -69,7 +69,7 @@ pub enum Error {
 }
 
 #[derive(Parser)]
-#[clap(name = "Trust DB Utils", version = "v0.1")]
+#[clap(name = "Trust DB Util", version = "1.5.0")]
 struct Opts {
     #[clap(subcommand)]
     cmd: Subcommand,
