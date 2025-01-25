@@ -159,11 +159,6 @@ rm Cargo.lock
 sed -i '/tools/d' Cargo.toml
 %endif
 
-%if %{with cli}
-# disable ariadne
-sed -i '/ariadne/d' crates/tools/Cargo.toml
-%endif
-
 # extract our doc sourcs
 tar xvzf %{SOURCE1}
 
