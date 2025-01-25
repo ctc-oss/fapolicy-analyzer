@@ -23,7 +23,7 @@
       "dist": "el9",
       "spec": "scripts/srpm/fapolicy-analyzer.el9.spec",
       "image": "rockylinux:9",
-      "chroot": "rocky+epel-9-x86_64",
+      "chroot": "centos-stream+epel-9-x86_64",
       "version": "9",
       "prerelease": false
     }
