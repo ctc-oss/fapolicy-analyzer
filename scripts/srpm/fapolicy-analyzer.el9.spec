@@ -21,6 +21,7 @@ BuildRequires: python3dist(babel)
 BuildRequires: python3dist(packaging)
 BuildRequires: python3dist(pyparsing)
 BuildRequires: python3dist(pytz)
+BuildRequires: python3dist(setuptools-rust)
 
 BuildRequires: dbus-devel
 BuildRequires: gettext
@@ -30,8 +31,6 @@ BuildRequires: desktop-file-utils
 BuildRequires: clang
 BuildRequires: audit-libs-devel
 BuildRequires: lmdb-devel
-
-BuildRequires: rust-packaging
 
 BuildRequires: rust-arc-swap-devel
 BuildRequires: rust-assert_matches-devel
