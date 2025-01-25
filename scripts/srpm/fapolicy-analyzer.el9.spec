@@ -149,8 +149,9 @@ for d in %{cargo_registry}/*; do ln -sf ${d} ${CARGO_REG_DIR} || true; done
 tar -xzf %{SOURCE2} -C ${CARGO_REG_DIR} --skip-old-files --strip-components=2
 %endif
 
-%autosetup -n %{name}
 %cargo_prep -v ${CARGO_REG_DIR}
+
+%autosetup -n %{name}
 
 rm Cargo.lock
 
@@ -169,8 +170,6 @@ echo %{module_version} > VERSION
 # capture build info
 scripts/build-info.py --os --time
 
-%generate_buildrequires
-%pyproject_buildrequires
 
 %build
 # ensure standard Rust compiler flags are set
