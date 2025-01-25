@@ -177,15 +177,15 @@ scripts/build-info.py --os --time
 export RUSTFLAGS="%{build_rustflags}"
 
 %if %{with cli}
-cargo build --bin tdb --release
-cargo build --bin faprofiler --release
-cargo build --bin rulec --release
+%{cargo_build} --bin tdb
+%{cargo_build} --bin rulec
+%{cargo_build} --bin faprofiler
 %endif
 
 %if %{with gui}
-%{venv_py3} setup.py compile_catalog -f
-%{venv_py3} help build
-%{venv_py3} setup.py bdist_wheel
+%{python3} setup.py compile_catalog -f
+%{python3} help build
+%{python3} setup.py bdist_wheel
 %endif
 
 
