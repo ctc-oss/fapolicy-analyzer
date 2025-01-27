@@ -8,8 +8,8 @@
 
 extern crate bindgen;
 
+use bindgen::CargoCallbacks;
 use std::error::Error;
-use bindgen::builder;
 
 fn main() -> Result<(), Box<dyn Error>> {
     println!("cargo:rustc-link-lib=audit");
@@ -20,7 +20,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .rust_target("1.79.0".parse()?)
         .header("wrapper.h")
         .blocklist_type("timex")
-        .parse_callbacks(Box::new(bindgen::CargoCallbacks))
+        .parse_callbacks(Box::new(CargoCallbacks::new()))
         .generate()
         .expect("Unable to generate bindings");
 
