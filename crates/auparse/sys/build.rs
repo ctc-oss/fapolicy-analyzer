@@ -8,7 +8,6 @@
 
 extern crate bindgen;
 
-use bindgen::CargoCallbacks;
 use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -20,7 +19,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .rust_target("1.79.0".parse()?)
         .header("wrapper.h")
         .blocklist_type("timex")
-        .parse_callbacks(Box::new(CargoCallbacks::new()))
+        .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
         .generate()
         .expect("Unable to generate bindings");
 
