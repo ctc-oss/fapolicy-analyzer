@@ -153,7 +153,7 @@ el-rpm:
 	@echo -e "${GRN}--- el$(el) RPM generation v${VERSION}...${NC}"
 	make -f .copr/Makefile vendor vendor-rs OS_ID=rhel VERSION=${VERSION} DIST=.el$(el) spec=scripts/srpm/fapolicy-analyzer.el$(el).spec
 	podman build -t fapolicy-analyzer:build-el$(el) --target elbuild --build-arg version=${VERSION} --build-arg spec=scripts/srpm/fapolicy-analyzer.el$(el).spec -f Containerfile .
-	podman run --privileged --rm -it -v /tmp:/v fapolicy-analyzer:build-el$(el) rocky+epel-$(el)-x86_64 /v
+	podman run --privileged --rm -it -v /tmp:/v fapolicy-analyzer:build-el$(el) centos-stream+epel-$(el)-x86_64 /v
 
 # Update embedded help documentation
 help-docs:
