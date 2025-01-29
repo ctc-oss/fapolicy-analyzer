@@ -32,6 +32,8 @@ BuildRequires: clang
 BuildRequires: audit-libs-devel
 BuildRequires: lmdb-devel
 
+BuildRequires: rust-packaging
+
 BuildRequires: rust-arc-swap-devel
 BuildRequires: rust-assert_matches-devel
 BuildRequires: rust-autocfg-devel
