@@ -26,6 +26,15 @@
       "chroot": "rocky+epel-9-x86_64",
       "version": "9",
       "prerelease": false
+    },
+    {
+      "platform": "rhel",
+      "dist": "el10",
+      "spec": "scripts/srpm/fapolicy-analyzer.el9.spec",
+      "image": "rockylinux:10",
+      "chroot": "rocky+epel-10-x86_64",
+      "version": "10",
+      "prerelease": false
     }
   ]
 }
