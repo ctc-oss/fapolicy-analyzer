@@ -450,7 +450,7 @@ impl PyProfiler {
     /// Creates a [Command] and configures it according to the [PyProfiler]
     /// Returns a tuple [CmdArgs] type to preserve the target command string
     fn build(&self, args: &str) -> CmdArgs {
-        let opts: Vec<&str> = args.split(' ').collect();
+        let opts = tokenize(args);
         let (target, opts) = opts.split_first().expect("invalid cmd string");
 
         let mut cmd = Command::new(target);
@@ -492,6 +492,45 @@ fn reload_profiler_rules(system: &PySystem) -> PyResult<()> {
 
     pipe::reload_rules()
         .map_err(|e| exceptions::PyRuntimeError::new_err(format!("Reload failed: {:?}", e)))
+}
+
+fn tokenize(input: &str) -> Vec<String> {
+    let mut tokens = Vec::new();
+    let mut current = String::new();
+    let mut in_quotes = false;
+    let mut quote_char = '\0';
+
+    for c in input.chars() {
+        if in_quotes {
+            if c == quote_char {
+                in_quotes = false;
+                tokens.push(current.clone());
+                current.clear();
+            } else {
+                current.push(c);
+            }
+        } else {
+            if c.is_whitespace() {
+                if !current.is_empty() {
+                    tokens.push(current.clone());
+                    current.clear();
+                }
+            } else if c == '"' || c == '\'' {
+                in_quotes = true;
+                quote_char = c;
+                if !current.is_empty() {
+                    tokens.push(current.clone());
+                    current.clear();
+                }
+            } else {
+                current.push(c);
+            }
+        }
+    }
+    if !current.is_empty() {
+        tokens.push(current);
+    }
+    tokens
 }
 
 pub fn init_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
