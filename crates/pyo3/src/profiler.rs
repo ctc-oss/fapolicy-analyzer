@@ -28,6 +28,7 @@ use std::{io, thread};
 use crate::system::PySystem;
 use fapolicy_daemon::profiler::Profiler;
 use fapolicy_rules::read::load_rules_db;
+use fapolicy_util::tokenize;
 
 type EnvVars = HashMap<String, String>;
 type CmdArgs = (Command, String);
@@ -492,45 +493,6 @@ fn reload_profiler_rules(system: &PySystem) -> PyResult<()> {
 
     pipe::reload_rules()
         .map_err(|e| exceptions::PyRuntimeError::new_err(format!("Reload failed: {:?}", e)))
-}
-
-fn tokenize(input: &str) -> Vec<String> {
-    let mut tokens = Vec::new();
-    let mut current = String::new();
-    let mut in_quotes = false;
-    let mut quote_char = '\0';
-
-    for c in input.chars() {
-        if in_quotes {
-            if c == quote_char {
-                in_quotes = false;
-                tokens.push(current.clone());
-                current.clear();
-            } else {
-                current.push(c);
-            }
-        } else {
-            if c.is_whitespace() {
-                if !current.is_empty() {
-                    tokens.push(current.clone());
-                    current.clear();
-                }
-            } else if c == '"' || c == '\'' {
-                in_quotes = true;
-                quote_char = c;
-                if !current.is_empty() {
-                    tokens.push(current.clone());
-                    current.clear();
-                }
-            } else {
-                current.push(c);
-            }
-        }
-    }
-    if !current.is_empty() {
-        tokens.push(current);
-    }
-    tokens
 }
 
 pub fn init_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
