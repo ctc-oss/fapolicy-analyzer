@@ -242,13 +242,47 @@ jobs:
           echo "${{ steps.tag_name.outputs.VERSION }}" > help/version
           cat help/version
 
+      - name: Create container
+        run: |
+          sudo apt install -y podman
+          cid="${{ matrix.props.dist }}-${{ github.run_id }}"
+          podman run -dt --name $cid --privileged fedora:39
+
       - name: Build SRPM
         run: |
-          make -f .copr/Makefile             \
-               vendor build export           \
-               outdir=/tmp/archives          \
+          make -f .copr/Makefile vendor      \
                spec=${{ matrix.props.spec }} \
                OS_ID=${{ matrix.props.platform }}
+
+      - name: Init container
+        run: |
+          cid="${{ matrix.props.dist }}-${{ github.run_id }}"
+          podman exec $cid dnf install -y mock
+          podman exec $cid mock -r ${{ matrix.props.chroot }} --init
+
+      - name: Build SRPM with Mock
+        run: |
+          ls -al
+          cid="${{ matrix.props.dist }}-${{ github.run_id }}"
+          podman cp ${{ matrix.props.spec }} $cid:/tmp/SPECS/
+          podman cp 
+          podman exec $cid mock -r ${{ matrix.props.chroot }} --resultdir /tmp/rpmbuild/ --buildsrpm --sources /tmp/SOURCES/ --spec /tmp/SPECS/${spec_file}
+        working-directory: /tmp/src/
+
+      - name: Show logs
+        if: always()
+        run: |
+          cid="${{ matrix.props.dist }}-${{ github.run_id }}"
+          podman exec $cid ls -R /tmp/rpmbuild
+          podman exec $cid cat /tmp/rpmbuild/build.log
+
+      - name: Export SRPM
+        run: |
+          cid="${{ matrix.props.dist }}-${{ github.run_id }}"
+          podman cp $cid:/tmp/rpmbuild/ /tmp/rpmbuild
+          mkdir -p /tmp/archives
+          cd /tmp/rpmbuild
+          ls | grep -v -e debug -e log | xargs mv -t /tmp/archives
 
       - name: Export common tarballs
         run: |
