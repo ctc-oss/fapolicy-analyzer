@@ -146,12 +146,12 @@ jobs:
     strategy:
       matrix: ${{ fromJson(needs.config.outputs.matrix) }}
     steps:
-      - name: Enable EPEL
-        if: startsWith(matrix.props.dist, 'el')
-        run: dnf install -y epel-release
+      #      - name: Enable EPEL
+      #        if: startsWith(matrix.props.dist, 'el')
+      #        run: dnf install -y epel-release
 
       - name: Install Git
-        run: dnf install -y git
+        run: sudo apt install -y git
 
       - uses: actions/checkout@v4
         with:
@@ -209,11 +209,11 @@ jobs:
 
       - name: Install RPM build dependencies
         run: |
-          dnf install -y make rpm rpmdevtools dnf-plugins-core
+          apt install -y make
 
-      - name: Install SRPM build dependencies
-        run: |
-          make -f .copr/Makefile dnf OS_ID=${{ matrix.props.platform }}
+      #      - name: Install SRPM build dependencies
+      #        run: |
+      #          make -f .copr/Makefile dnf OS_ID=${{ matrix.props.platform }}
 
       - name: Fetch Source0 tarball
         uses: actions/download-artifact@v4
