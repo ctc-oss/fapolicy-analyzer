@@ -256,11 +256,11 @@ jobs:
 
       - name: Build SRPM with Mock
         run: |
-          ls /tmp/rpmbuild/SOURCES/
           cid="${{ matrix.props.dist }}-${{ github.run_id }}"
           spec_file=$(basename ${{ matrix.props.spec }})
           podman cp ${{ matrix.props.spec }} $cid:/tmp/SPECS
           podman cp /tmp/rpmbuild/SOURCES $cid:/tmp/SOURCES
+          podman exec $cid ls -al /tmp/SOURCES
           podman exec $cid mock -r ${{ matrix.props.chroot }} --resultdir /tmp/rpmbuild/ --buildsrpm --sources /tmp/SOURCES/ --spec /tmp/SPECS/${spec_file}
 
       - name: Show logs
