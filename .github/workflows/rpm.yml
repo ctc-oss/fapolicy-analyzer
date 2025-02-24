@@ -247,12 +247,6 @@ jobs:
           cid="${{ matrix.props.dist }}-${{ github.run_id }}"
           podman run -dt --name $cid --privileged fedora:39
 
-      - name: Build SRPM
-        run: |
-          make -f .copr/Makefile vendor      \
-               spec=${{ matrix.props.spec }} \
-               OS_ID=${{ matrix.props.platform }}
-
       - name: Init container
         run: |
           cid="${{ matrix.props.dist }}-${{ github.run_id }}"
