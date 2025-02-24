@@ -366,7 +366,7 @@ jobs:
           cid="${{ matrix.props.dist }}-${{ github.run_id }}"
           srpm=$(find . -name *.${{ matrix.props.dist }}.src.rpm)
           podman cp $srpm $cid:/tmp/$srpm
-          podman exec $cid mock -r ${{ matrix.props.chroot }} rebuild /tmp/$srpm --resultdir /tmp/rpmbuild
+          podman exec $cid mock -r ${{ matrix.props.chroot }} --resultdir /tmp/rpmbuild --enablerepo=crb --rebuild /tmp/$srpm
         working-directory: /tmp/src/
 
       - name: Show logs
