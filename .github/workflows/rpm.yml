@@ -209,7 +209,7 @@ jobs:
 
       - name: Install RPM build dependencies
         run: |
-          apt install -y make
+          sudo apt install -y make
 
       #      - name: Install SRPM build dependencies
       #        run: |
