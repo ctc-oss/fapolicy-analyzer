@@ -142,7 +142,6 @@ jobs:
   srpm:
     needs: [ config, source0, crates0 ]
     name: SRPM Build ${{ matrix.props.dist }}
-    container: ${{ matrix.props.image }}
     runs-on: ubuntu-20.04
     strategy:
       matrix: ${{ fromJson(needs.config.outputs.matrix) }}
@@ -244,7 +243,7 @@ jobs:
 
       - name: Create container
         run: |
-          dnf install -y podman
+          sudo apt install -y podman
           cid="${{ matrix.props.dist }}-${{ github.run_id }}"
           podman run -dt --name $cid --privileged fedora:39
 
