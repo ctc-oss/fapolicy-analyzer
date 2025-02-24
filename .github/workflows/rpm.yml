@@ -207,9 +207,9 @@ jobs:
           sed -i "s#Version:\s*${spec_version}#Version: ${patched_version}#" ${{ matrix.props.spec }}
           grep Version ${{ matrix.props.spec }}
 
-      - name: Install RPM build dependencies
+      - name: Install dependencies
         run: |
-          sudo apt install -y make
+          sudo apt install -y make python3-markdown2
 
       #      - name: Install SRPM build dependencies
       #        run: |
