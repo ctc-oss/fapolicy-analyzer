@@ -258,13 +258,14 @@ jobs:
           cid="${{ matrix.props.dist }}-${{ github.run_id }}"
           podman exec $cid dnf install -y mock
           podman exec $cid mock -r ${{ matrix.props.chroot }} --init
+          podman exec $cid mkdir -p /tmp/SPECS /tmp/SOURCES
 
       - name: Build SRPM with Mock
         run: |
           cid="${{ matrix.props.dist }}-${{ github.run_id }}"
-          podman cp ${{ matrix.props.spec }} $cid:/tmp/
+          podman cp ${{ matrix.props.spec }} $cid:/tmp/SPECS/
           podman cp /tmp/SOURCES/ $cid:/tmp/SOURCES/
-          podman exec $cid mock -r ${{ matrix.props.chroot }} --resultdir /tmp/rpmbuild/ --buildsrpm --sources /tmp/SOURCES/ --spec /tmp/${spec_file}
+          podman exec $cid mock -r ${{ matrix.props.chroot }} --resultdir /tmp/rpmbuild/ --buildsrpm --sources /tmp/SOURCES/ --spec /tmp/SPECS/${spec_file}
 
       - name: Show logs
         if: always()
