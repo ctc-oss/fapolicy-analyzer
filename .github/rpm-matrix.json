@@ -6,7 +6,6 @@
       "spec": "fapolicy-analyzer.spec",
       "image": "registry.fedoraproject.org/fedora:41",
       "chroot": "fedora-41-x86_64",
-      "version": "41",
       "prerelease": false
     },
     {
@@ -15,7 +14,6 @@
       "spec": "fapolicy-analyzer.spec",
       "image": "registry.fedoraproject.org/fedora:40",
       "chroot": "fedora-40-x86_64",
-      "version": "40",
       "prerelease": false
     },
     {
@@ -24,7 +22,6 @@
       "spec": "scripts/srpm/fapolicy-analyzer.el9.spec",
       "image": "rockylinux:9",
       "chroot": "rocky+epel-9-x86_64",
-      "version": "9",
       "prerelease": false
     },
     {
@@ -32,8 +29,7 @@
       "dist": "el10",
       "spec": "scripts/srpm/fapolicy-analyzer.el9.spec",
       "image": "rockylinux:9",
-      "chroot": "almalinux-kitten-10-x86_64",
-      "version": "9",
+      "chroot": "centos-stream+epel-10-x86_64",
       "prerelease": false
     }
   ]

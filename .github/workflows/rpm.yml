@@ -149,8 +149,7 @@ jobs:
     steps:
       - name: Enable EPEL
         if: startsWith(matrix.props.dist, 'el')
-        run: |
-          dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-${{ matrix.props.version }}.noarch.rpm
+        run: dnf install -y epel-release
 
       - name: Install Git
         run: dnf install -y git
@@ -417,8 +416,7 @@ jobs:
 
       - name: Enable EPEL
         if: startsWith(matrix.props.dist, 'el')
-        run: |
-          dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-${{ matrix.props.version }}.noarch.rpm
+        run: dnf install -y epel-release
 
       - name: Install RPM
         run: |
