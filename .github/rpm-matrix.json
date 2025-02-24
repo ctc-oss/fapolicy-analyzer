@@ -27,7 +27,7 @@
     {
       "platform": "rhel",
       "dist": "el10",
-      "spec": "scripts/srpm/fapolicy-analyzer.el9.spec",
+      "spec": "scripts/srpm/fapolicy-analyzer.el10.spec",
       "image": "rockylinux:9",
       "chroot": "centos-stream+epel-10-x86_64",
       "prerelease": false
