@@ -19,10 +19,8 @@ BuildRequires: python3-devel
 BuildRequires: python3dist(setuptools)
 BuildRequires: python3dist(setuptools-rust)
 BuildRequires: python3dist(pip)
+BuildRequires: python3dist(wheel)
 BuildRequires: python3dist(babel)
-BuildRequires: python3dist(packaging)
-BuildRequires: python3dist(pyparsing)
-BuildRequires: python3dist(pytz)
 
 BuildRequires: dbus-devel
 BuildRequires: gettext
