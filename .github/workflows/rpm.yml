@@ -244,7 +244,7 @@ jobs:
 
       - name: Create container
         run: |
-          sudo apt install -y podman
+          sudo dnf install -y podman
           cid="${{ matrix.props.dist }}-${{ github.run_id }}"
           podman run -dt --name $cid --privileged fedora:39
 
