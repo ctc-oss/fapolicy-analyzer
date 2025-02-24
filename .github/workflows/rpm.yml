@@ -209,7 +209,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo apt install -y make python3-markdown2
+          sudo apt install -y make python3-toml python3-bs4 python3-requests python3-babel itstool python3-markdown2
 
       #      - name: Install SRPM build dependencies
       #        run: |
