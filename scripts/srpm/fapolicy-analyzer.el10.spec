@@ -136,7 +136,6 @@ GUI Tools to assist with the configuration and management of fapolicyd.
 
 %prep
 
-%if %{with gui}
 # An unprivileged user cannot write to the default registry location of
 # /usr/share/cargo/registry so we work around this by linking the contents
 # of the default registry into a new writable location, and then extract
@@ -148,7 +147,6 @@ CARGO_REG_DIR=%{_builddir}/vendor-rs
 mkdir -p ${CARGO_REG_DIR}
 for d in %{cargo_registry}/*; do ln -sf ${d} ${CARGO_REG_DIR} || true; done
 tar -xzf %{SOURCE2} -C ${CARGO_REG_DIR} --skip-old-files --strip-components=2
-%endif
 
 %cargo_prep -v ${CARGO_REG_DIR}
 
