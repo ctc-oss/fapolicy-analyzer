@@ -262,6 +262,7 @@ jobs:
 
       - name: Build SRPM with Mock
         run: |
+          ls /tmp/rpmbuild/SOURCES/
           cid="${{ matrix.props.dist }}-${{ github.run_id }}"
           spec_file=$(basename ${{ matrix.props.spec }})
           podman cp ${{ matrix.props.spec }} $cid:/tmp/SPECS/
