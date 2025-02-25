@@ -146,7 +146,7 @@ jobs:
     steps:
       - name: Install RPM build dependencies
         run: |
-          dnf install -y git  python3-pip python3-toml python3-beautifulsoup4 python3-markdown2
+          dnf install -y git make python3-pip python3-toml python3-beautifulsoup4 python3-markdown2
 
       - uses: actions/checkout@v4
         with:
