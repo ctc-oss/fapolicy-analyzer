@@ -47,7 +47,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Install deps
-        run: dnf install -y git make python3
+        run: dnf install -y git make python3 python3-pip python3-toml python3-beautifulsoup4 python3-markdown2
 
       - uses: actions/checkout@v4
         with:
@@ -180,7 +180,7 @@ jobs:
           sha256sum vendor-docs.tar.gz
 
   srpm:
-    needs: [ config, source0, crates0 ]
+    needs: [ config, source0, crates0, docs0 ]
     name: SRPM Build ${{ matrix.props.dist }}
     runs-on: ubuntu-20.04
     strategy:
