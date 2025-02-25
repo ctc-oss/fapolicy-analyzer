@@ -166,7 +166,7 @@ jobs:
 
       - name: Export common tarballs
         run: |
-          mv /tmp/rpmbuild/SOURCES/vendor-docs-*.tar.gz /tmp/archives/vendor-docs.tar.gz
+          mv /tmp/rpmbuild/SOURCES/vendor-docs-*.tar.gz vendor-docs.tar.gz
 
       - name: Upload tarball
         uses: actions/upload-artifact@v4
