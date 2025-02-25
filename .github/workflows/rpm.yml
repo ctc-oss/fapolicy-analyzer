@@ -47,7 +47,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Install deps
-        run: dnf install -y git make python3 python3-pip python3-toml python3-beautifulsoup4 python3-markdown2
+        run: dnf install -y git make python3
 
       - uses: actions/checkout@v4
         with:
@@ -146,7 +146,7 @@ jobs:
     steps:
       - name: Install RPM build dependencies
         run: |
-          dnf install -y git dnf5-plugins dnf-plugins-core cargo2rpm
+          dnf install -y git  python3-pip python3-toml python3-beautifulsoup4 python3-markdown2
 
       - uses: actions/checkout@v4
         with:
