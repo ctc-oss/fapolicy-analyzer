@@ -506,10 +506,6 @@ jobs:
       matrix: ${{ fromJson(needs.config.outputs.matrix )}}
     continue-on-error: ${{ matrix.props.prerelease }}
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref }}
-
       - name: Download rpm artifacts
         uses: actions/download-artifact@v4
         with:
