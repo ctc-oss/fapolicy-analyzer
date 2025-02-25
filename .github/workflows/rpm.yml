@@ -322,7 +322,7 @@ jobs:
       - name: Export common tarballs
         run: |
           mkdir -p /tmp/archives
-          mv vendor-docs-*.tar.gz /tmp/archives
+          mv /tmp/rpmbuild/SOURCES/vendor-docs-*.tar.gz /tmp/archives
 
       - name: Export el tarballs
         if: startsWith(matrix.props.dist, 'el')
