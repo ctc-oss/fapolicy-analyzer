@@ -312,9 +312,9 @@ jobs:
       - name: Export SRPM
         run: |
           cid="${{ matrix.props.dist }}-${{ github.run_id }}"
-          podman cp $cid:/tmp/rpmbuild/ /tmp/rpmbuild
+          podman cp $cid:/tmp/rpmbuild/ /tmp/build
           mkdir -p /tmp/archives
-          cd /tmp/rpmbuild
+          cd /tmp/build
           ls | grep -v -e debug -e log | xargs mv -t /tmp/archives
 
       - name: Export common tarballs
