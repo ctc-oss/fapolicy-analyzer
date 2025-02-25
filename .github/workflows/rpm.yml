@@ -274,12 +274,11 @@ jobs:
           path: /tmp/rpmbuild/SOURCES/
 
       - name: Tag 0 tarballs
-        if: startsWith(matrix.props.dist, 'el')
         run: |
           spec_version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
           cd /tmp/rpmbuild/SOURCES/
-          mv vendor-rs.tar.gz vendor-rs-${spec_version}.tar.gz
           mv vendor-docs.tar.gz vendor-docs-${spec_version}.tar.gz
+          mv vendor-rs.tar.gz vendor-rs-${spec_version}.tar.gz | true
 
       - name: Create container
         run: |
