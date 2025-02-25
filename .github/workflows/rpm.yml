@@ -186,7 +186,7 @@ jobs:
     steps:
       - name: Install RPM build dependencies
         run: |
-          dnf install -y git make which rpm-build rpmdevtools
+          dnf install -y git which rpm-build rpmdevtools
 
       - uses: actions/checkout@v4
         with:
@@ -195,12 +195,12 @@ jobs:
 
       - name: Build SRPM
         run: |
-          mkdir -p /tmp/rpmbuild/SOURCES
-          make -f .copr/Makefile vendor-py
+          mkdir -p /tmp/SOURCES
+          spectool -g -C /tmp/SOURCES ${{ matrix.props.spec }}
 
       - name: Export common tarballs
         run: |
-          mv /tmp/rpmbuild/SOURCES/*.tar.gz .
+          mv /tmp/SOURCES/*.tar.gz .
 
       - name: Upload tarball
         uses: actions/upload-artifact@v4
