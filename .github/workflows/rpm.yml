@@ -186,7 +186,7 @@ jobs:
     steps:
       - name: Install RPM build dependencies
         run: |
-          dnf install -y git make rpm-build rpmdevtools
+          dnf install -y git make which rpm-build rpmdevtools
 
       - uses: actions/checkout@v4
         with:
