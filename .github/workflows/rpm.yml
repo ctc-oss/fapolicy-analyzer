@@ -161,7 +161,8 @@ jobs:
 
       - name: Build SRPM
         run: |
-          make -f .copr/Makefile prepfs vendor-doc
+          mkdir -p /tmp/rpmbuild/SOURCES /tmp/archives
+          make -f .copr/Makefile vendor-doc
 
       - name: Export common tarballs
         run: |
