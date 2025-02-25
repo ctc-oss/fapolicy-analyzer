@@ -179,17 +179,47 @@ jobs:
         run: |
           sha256sum vendor-docs.tar.gz
 
+  python0:
+    name: Vendor Python0
+    container: registry.fedoraproject.org/fedora:latest
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Install RPM build dependencies
+        run: |
+          dnf install -y rpm-build rpmdevtools
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: Build SRPM
+        run: |
+          mkdir -p /tmp/rpmbuild/SOURCES
+          make -f .copr/Makefile vendor-py
+
+      - name: Export common tarballs
+        run: |
+          mv /tmp/rpmbuild/SOURCES/*.tar.gz .
+
+      - name: Upload tarball
+        uses: actions/upload-artifact@v4
+        with:
+          name: python0
+          path: |
+            ./*.tar.gz
+
+      - name: Checksum
+        run: |
+          sha256sum ./*.tar.gz
+
   srpm:
-    needs: [ config, source0, crates0, docs0 ]
+    needs: [ config, source0, crates0, docs0, python0 ]
     name: SRPM Build ${{ matrix.props.dist }}
     runs-on: ubuntu-20.04
     strategy:
       matrix: ${{ fromJson(needs.config.outputs.matrix) }}
     steps:
-      #      - name: Enable EPEL
-      #        if: startsWith(matrix.props.dist, 'el')
-      #        run: dnf install -y epel-release
-
       - name: Install Git
         run: sudo apt install -y git
 
@@ -247,14 +277,6 @@ jobs:
           sed -i "s#Version:\s*${spec_version}#Version: ${patched_version}#" ${{ matrix.props.spec }}
           grep Version ${{ matrix.props.spec }}
 
-      #      - name: Install dependencies
-      #        run: |
-      #          sudo apt install -y make libxml2-utils python3-toml python3-bs4 python3-requests python3-babel itstool python3-markdown2
-
-      #      - name: Install SRPM build dependencies
-      #        run: |
-      #          make -f .copr/Makefile dnf OS_ID=${{ matrix.props.platform }}
-
       - name: Fetch Source0 tarball
         uses: actions/download-artifact@v4
         with:
@@ -271,6 +293,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: crates0
+          path: /tmp/rpmbuild/SOURCES/
+
+      - name: Fetch Python0 tarball
+        if: startsWith(matrix.props.dist, 'el9')
+        uses: actions/download-artifact@v4
+        with:
+          name: python0
           path: /tmp/rpmbuild/SOURCES/
 
       - name: Tag 0 tarballs
