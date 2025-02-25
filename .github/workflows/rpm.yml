@@ -196,7 +196,7 @@ jobs:
       - name: Build SRPM
         run: |
           mkdir -p /tmp/SOURCES
-          spectool -g -C /tmp/SOURCES ${{ matrix.props.spec }}
+          spectool -g -C /tmp/SOURCES scripts/srpm/fapolicy-analyzer.el9.spec
 
       - name: Export common tarballs
         run: |
