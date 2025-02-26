@@ -139,21 +139,89 @@ jobs:
         run: |
           sha256sum vendor-rs.tar.gz
 
+  docs0:
+    name: Vendor Docs0
+    container: registry.fedoraproject.org/fedora:latest
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Install RPM build dependencies
+        run: |
+          dnf install -y git make python3-pip python3-toml python3-beautifulsoup4 python3-markdown2 itstool
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: Generate doc tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          echo "${{ steps.tag_name.outputs.VERSION }}" > help/version
+          cat help/version
+
+      - name: Build SRPM
+        run: |
+          mkdir -p /tmp/rpmbuild/SOURCES /tmp/archives
+          make -f .copr/Makefile vendor-doc
+
+      - name: Export common tarballs
+        run: |
+          mv /tmp/rpmbuild/SOURCES/vendor-docs-*.tar.gz vendor-docs.tar.gz
+
+      - name: Upload tarball
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs0
+          path: |
+            vendor-docs.tar.gz
+
+      - name: Checksum
+        run: |
+          sha256sum vendor-docs.tar.gz
+
+  python0:
+    name: Vendor Python0
+    container: registry.fedoraproject.org/fedora:latest
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Install RPM build dependencies
+        run: |
+          dnf install -y git which rpm-build rpmdevtools
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: Build SRPM
+        run: |
+          mkdir -p /tmp/SOURCES
+          spectool -g -C /tmp/SOURCES scripts/srpm/fapolicy-analyzer.el9.spec
+
+      - name: Export common tarballs
+        run: |
+          mv /tmp/SOURCES/*.tar.gz .
+
+      - name: Upload tarball
+        uses: actions/upload-artifact@v4
+        with:
+          name: python0
+          path: |
+            ./*.tar.gz
+
+      - name: Checksum
+        run: |
+          sha256sum ./*.tar.gz
+
   srpm:
-    needs: [ config, source0, crates0 ]
+    needs: [ config, source0, crates0, docs0, python0 ]
     name: SRPM Build ${{ matrix.props.dist }}
-    container: ${{ matrix.props.image }}
     runs-on: ubuntu-20.04
     strategy:
       matrix: ${{ fromJson(needs.config.outputs.matrix) }}
     steps:
-      - name: Enable EPEL
-        if: startsWith(matrix.props.dist, 'el')
-        run: |
-          dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-${{ matrix.props.version }}.noarch.rpm
-
       - name: Install Git
-        run: dnf install -y git
+        run: sudo apt install -y git
 
       - uses: actions/checkout@v4
         with:
@@ -209,52 +277,79 @@ jobs:
           sed -i "s#Version:\s*${spec_version}#Version: ${patched_version}#" ${{ matrix.props.spec }}
           grep Version ${{ matrix.props.spec }}
 
-      - name: Install RPM build dependencies
-        run: |
-          dnf install -y make rpm rpmdevtools dnf-plugins-core
-
-      - name: Install SRPM build dependencies
-        run: |
-          make -f .copr/Makefile dnf OS_ID=${{ matrix.props.platform }}
-
       - name: Fetch Source0 tarball
         uses: actions/download-artifact@v4
         with:
           name: source0
           path: /tmp/rpmbuild/SOURCES/
 
+      - name: Fetch Docs0 tarball
+        uses: actions/download-artifact@v4
+        with:
+          name: docs0
+          path: /tmp/rpmbuild/SOURCES/
+
       - name: Fetch Crates0 tarball
-        if: startsWith(matrix.props.dist, 'el')
         uses: actions/download-artifact@v4
         with:
           name: crates0
           path: /tmp/rpmbuild/SOURCES/
 
-      - name: Tag Crates0 tarball
-        if: startsWith(matrix.props.dist, 'el')
+      - name: Fetch Python0 tarball
+        if: startsWith(matrix.props.dist, 'el9')
+        uses: actions/download-artifact@v4
+        with:
+          name: python0
+          path: /tmp/rpmbuild/SOURCES/
+
+      - name: Tag 0 tarballs
         run: |
           spec_version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
           cd /tmp/rpmbuild/SOURCES/
-          mv vendor-rs.tar.gz vendor-rs-${spec_version}.tar.gz
+          mv vendor-docs.tar.gz vendor-docs-${spec_version}.tar.gz
+          mv vendor-rs.tar.gz vendor-rs-${spec_version}.tar.gz | true
 
-      - name: Generate doc tag
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: Create container
         run: |
-          echo "${{ steps.tag_name.outputs.VERSION }}" > help/version
-          cat help/version
+          sudo apt install -y podman
+          cid="${{ matrix.props.dist }}-${{ github.run_id }}"
+          podman run -dt --name $cid --privileged fedora:39
 
-      - name: Build SRPM
+      - name: Init container
         run: |
-          make -f .copr/Makefile             \
-               vendor build export           \
-               outdir=/tmp/archives          \
-               spec=${{ matrix.props.spec }} \
-               OS_ID=${{ matrix.props.platform }}
+          cid="${{ matrix.props.dist }}-${{ github.run_id }}"
+          podman exec $cid dnf install -y mock
+          podman exec $cid mock -r ${{ matrix.props.chroot }} --init
+          podman exec $cid mkdir -p /tmp/SPECS /tmp/SOURCES
+
+      - name: Build SRPM with Mock
+        run: |
+          cid="${{ matrix.props.dist }}-${{ github.run_id }}"
+          spec_file=$(basename ${{ matrix.props.spec }})
+          podman cp ${{ matrix.props.spec }} $cid:/tmp/SPECS/
+          podman cp /tmp/rpmbuild/SOURCES $cid:/tmp
+          podman exec $cid ls -al /tmp/SOURCES
+          podman exec $cid mock -r ${{ matrix.props.chroot }} --resultdir /tmp/rpmbuild/ --buildsrpm --sources /tmp/SOURCES/ --spec /tmp/SPECS/${spec_file}
+
+      - name: Show logs
+        if: always()
+        run: |
+          cid="${{ matrix.props.dist }}-${{ github.run_id }}"
+          podman exec $cid ls -R /tmp/rpmbuild
+          podman exec $cid cat /tmp/rpmbuild/build.log
+
+      - name: Export SRPM
+        run: |
+          cid="${{ matrix.props.dist }}-${{ github.run_id }}"
+          podman cp $cid:/tmp/rpmbuild/ /tmp/build
+          mkdir -p /tmp/archives
+          cd /tmp/build
+          ls | grep -v -e debug -e log | xargs mv -t /tmp/archives
 
       - name: Export common tarballs
         run: |
           mkdir -p /tmp/archives
-          mv vendor-docs-*.tar.gz /tmp/archives
+          mv /tmp/rpmbuild/SOURCES/vendor-docs-*.tar.gz /tmp/archives
 
       - name: Export el tarballs
         if: startsWith(matrix.props.dist, 'el')
@@ -362,12 +457,22 @@ jobs:
           podman exec $cid dnf install -y mock
           podman exec $cid mock -r ${{ matrix.props.chroot }} --init
 
-      - name: Build with Mock
+      - name: Build for FC with Mock
+        if: startsWith(matrix.props.dist, 'fc')
         run: |
           cid="${{ matrix.props.dist }}-${{ github.run_id }}"
           srpm=$(find . -name *.${{ matrix.props.dist }}.src.rpm)
           podman cp $srpm $cid:/tmp/$srpm
-          podman exec $cid mock -r ${{ matrix.props.chroot }} rebuild /tmp/$srpm --resultdir /tmp/rpmbuild
+          podman exec $cid mock -r ${{ matrix.props.chroot }} --resultdir /tmp/rpmbuild --rebuild /tmp/$srpm
+        working-directory: /tmp/src/
+
+      - name: Build for EL with Mock
+        if: startsWith(matrix.props.dist, 'el')
+        run: |
+          cid="${{ matrix.props.dist }}-${{ github.run_id }}"
+          srpm=$(find . -name *.${{ matrix.props.dist }}.src.rpm)
+          podman cp $srpm $cid:/tmp/$srpm
+          podman exec $cid mock -r ${{ matrix.props.chroot }} --resultdir /tmp/rpmbuild --enablerepo=crb --rebuild /tmp/$srpm
         working-directory: /tmp/src/
 
       - name: Show logs
@@ -401,10 +506,6 @@ jobs:
       matrix: ${{ fromJson(needs.config.outputs.matrix )}}
     continue-on-error: ${{ matrix.props.prerelease }}
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref }}
-
       - name: Download rpm artifacts
         uses: actions/download-artifact@v4
         with:
@@ -417,8 +518,7 @@ jobs:
 
       - name: Enable EPEL
         if: startsWith(matrix.props.dist, 'el')
-        run: |
-          dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-${{ matrix.props.version }}.noarch.rpm
+        run: dnf install -y epel-release
 
       - name: Install RPM
         run: |
