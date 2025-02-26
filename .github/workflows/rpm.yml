@@ -521,7 +521,6 @@ jobs:
         run: dnf install -y epel-release
 
       - name: Install RPM
-        if: ${{ !startsWith(matrix.props.dist, 'el10') }}
         run: |
           dnf install -y /tmp/src/fapolicy-analyzer-*.${{ matrix.props.dist }}.x86_64.rpm
 

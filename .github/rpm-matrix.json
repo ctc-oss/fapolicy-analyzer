@@ -30,7 +30,7 @@
       "spec": "scripts/srpm/fapolicy-analyzer.el10.spec",
       "image": "almalinux:10-kitten",
       "chroot": "centos-stream+epel-10-x86_64",
-      "prerelease": false
+      "prerelease": true
     }
   ]
 }
