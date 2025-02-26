@@ -457,7 +457,7 @@ jobs:
           podman exec $cid dnf install -y mock
           podman exec $cid mock -r ${{ matrix.props.chroot }} --init
 
-      - name: Build el with Mock
+      - name: Build for FC with Mock
         if: startsWith(matrix.props.dist, 'fc')
         run: |
           cid="${{ matrix.props.dist }}-${{ github.run_id }}"
@@ -466,7 +466,7 @@ jobs:
           podman exec $cid mock -r ${{ matrix.props.chroot }} --resultdir /tmp/rpmbuild --rebuild /tmp/$srpm
         working-directory: /tmp/src/
 
-      - name: Build with Mock
+      - name: Build for EL with Mock
         if: startsWith(matrix.props.dist, 'el')
         run: |
           cid="${{ matrix.props.dist }}-${{ github.run_id }}"
