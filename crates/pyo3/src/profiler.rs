@@ -28,6 +28,7 @@ use std::{io, thread};
 use crate::system::PySystem;
 use fapolicy_daemon::profiler::Profiler;
 use fapolicy_rules::read::load_rules_db;
+use fapolicy_util::tokenize;
 
 type EnvVars = HashMap<String, String>;
 type CmdArgs = (Command, String);
@@ -450,7 +451,7 @@ impl PyProfiler {
     /// Creates a [Command] and configures it according to the [PyProfiler]
     /// Returns a tuple [CmdArgs] type to preserve the target command string
     fn build(&self, args: &str) -> CmdArgs {
-        let opts: Vec<&str> = args.split(' ').collect();
+        let opts = tokenize(args);
         let (target, opts) = opts.split_first().expect("invalid cmd string");
 
         let mut cmd = Command::new(target);
