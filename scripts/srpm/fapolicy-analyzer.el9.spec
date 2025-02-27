@@ -63,8 +63,7 @@ BuildRequires: rust-libc-devel
 BuildRequires: rust-libloading-devel
 BuildRequires: rust-lock_api-devel
 BuildRequires: rust-log-devel
-BuildRequires: rust-memchr-develBuildRequires: rust-log-devel
-
+BuildRequires: rust-memchr-devel
 BuildRequires: rust-memoffset-devel
 BuildRequires: rust-nom-devel
 BuildRequires: rust-num-integer-devel
