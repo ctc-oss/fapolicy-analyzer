@@ -15,24 +15,12 @@ Source1:       %{url}/releases/download/v%{version}/vendor-docs-%{version}.tar.g
 # vendored rust dependencies
 Source2:       %{url}/releases/download/v%{version}/vendor-rs-%{version}.tar.gz
 
-# Build-time python dependencies for setuptools-rust
-Source10:      %{pypi_source setuptools-rust 1.1.2}
-Source12:      %{pypi_source setuptools 59.6.0}
-Source13:      %{pypi_source wheel 0.37.0}
-Source14:      %{pypi_source setuptools_scm 6.4.2}
-Source15:      %{pypi_source semantic_version 2.8.2}
-Source16:      %{pypi_source packaging 21.3}
-Source17:      %{pypi_source pyparsing 2.1.0}
-Source18:      %{pypi_source tomli 1.2.3}
-Source19:      %{pypi_source flit_core 3.7.1}
-Source20:      %{pypi_source typing_extensions 3.7.4.3}
-
 BuildRequires: python3-devel
+BuildRequires: python3dist(setuptools)
+BuildRequires: python3dist(setuptools-rust)
 BuildRequires: python3dist(pip)
+BuildRequires: python3dist(wheel)
 BuildRequires: python3dist(babel)
-BuildRequires: python3dist(packaging)
-BuildRequires: python3dist(pyparsing)
-BuildRequires: python3dist(pytz)
 
 BuildRequires: dbus-devel
 BuildRequires: gettext
@@ -42,8 +30,6 @@ BuildRequires: desktop-file-utils
 BuildRequires: clang
 BuildRequires: audit-libs-devel
 BuildRequires: lmdb-devel
-
-BuildRequires: rust-packaging
 
 BuildRequires: rust-arc-swap-devel
 BuildRequires: rust-assert_matches-devel
@@ -77,7 +63,8 @@ BuildRequires: rust-libc-devel
 BuildRequires: rust-libloading-devel
 BuildRequires: rust-lock_api-devel
 BuildRequires: rust-log-devel
-BuildRequires: rust-memchr-devel
+BuildRequires: rust-memchr-develBuildRequires: rust-log-devel
+
 BuildRequires: rust-memoffset-devel
 BuildRequires: rust-nom-devel
 BuildRequires: rust-num-integer-devel
@@ -105,11 +92,6 @@ BuildRequires: rust-version_check-devel
 BuildRequires: rust-which-devel
 
 %global module          fapolicy_analyzer
-
-%global venv_dir        %{_builddir}/vendor-py
-%global venv_py3        %{venv_dir}/bin/python3
-%global venv_lib        %{venv_dir}/lib/python3.9/site-packages
-%global venv_install    %{venv_py3} -m pip install --find-links=%{_sourcedir} --no-index --quiet
 
 # pep440 versions handle dev and rc differently, so we call them out explicitly here
 %global module_version  %{lua: v = string.gsub(rpm.expand("%{?version}"), "~dev", ".dev"); \
@@ -153,30 +135,6 @@ GUI Tools to assist with the configuration and management of fapolicyd.
 
 %prep
 
-%if %{with gui}
-# setuptools-rust is not available as a package. installing it requires
-# upgrades of pip, setuptools, wheel, and some transient dependencies.
-# install these to a virtual environment to isolate changes, and
-# define venv_py3 for accessing the venv python3 interpreter.
-%{python3} -m venv %{venv_dir}
-
-# there exists a circular dependency between setuptools <-> wheel,
-# by calling setuptools/setup.py before pip'ing we can bypass that
-mkdir -p %{_builddir}/setuptools
-tar -xzf %{SOURCE12} -C %{_builddir}/setuptools --strip-components=1
-%{venv_py3} %{_builddir}/setuptools/setup.py -q install
-
-# now pip install wheel, and setuptools again
-%{venv_install} %{SOURCE13}
-%{venv_install} %{SOURCE12}
-
-# install setuptools-rust
-%{venv_install} %{SOURCE10}
-
-# post install deps linked from system site-packages
-ln -sf  %{python3_sitelib}/pytz* %{venv_lib}
-ln -sf  %{python3_sitelib}/{Babel*,babel} %{venv_lib}
-
 # An unprivileged user cannot write to the default registry location of
 # /usr/share/cargo/registry so we work around this by linking the contents
 # of the default registry into a new writable location, and then extract
@@ -188,7 +146,6 @@ CARGO_REG_DIR=%{_builddir}/vendor-rs
 mkdir -p ${CARGO_REG_DIR}
 for d in %{cargo_registry}/*; do ln -sf ${d} ${CARGO_REG_DIR} || true; done
 tar -xzf %{SOURCE2} -C ${CARGO_REG_DIR} --skip-old-files --strip-components=2
-%endif
 
 %cargo_prep -v ${CARGO_REG_DIR}
 
@@ -227,9 +184,9 @@ cargo build --bin rulec --release
 %endif
 
 %if %{with gui}
-%{venv_py3} setup.py compile_catalog -f
-%{venv_py3} help build
-%{venv_py3} setup.py bdist_wheel
+%{python3} setup.py compile_catalog -f
+%{python3} help build
+%{python3} setup.py bdist_wheel
 %endif
 
 
