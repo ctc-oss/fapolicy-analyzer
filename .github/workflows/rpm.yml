@@ -179,42 +179,8 @@ jobs:
         run: |
           sha256sum vendor-docs.tar.gz
 
-  python0:
-    name: Vendor Python0
-    container: registry.fedoraproject.org/fedora:latest
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Install RPM build dependencies
-        run: |
-          dnf install -y git which rpm-build rpmdevtools
-
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref }}
-          fetch-depth: 0
-
-      - name: Build SRPM
-        run: |
-          mkdir -p /tmp/SOURCES
-          spectool -g -C /tmp/SOURCES scripts/srpm/fapolicy-analyzer.el9.spec
-
-      - name: Export common tarballs
-        run: |
-          mv /tmp/SOURCES/*.tar.gz .
-
-      - name: Upload tarball
-        uses: actions/upload-artifact@v4
-        with:
-          name: python0
-          path: |
-            ./*.tar.gz
-
-      - name: Checksum
-        run: |
-          sha256sum ./*.tar.gz
-
   srpm:
-    needs: [ config, source0, crates0, docs0, python0 ]
+    needs: [ config, source0, crates0, docs0 ]
     name: SRPM Build ${{ matrix.props.dist }}
     runs-on: ubuntu-20.04
     strategy:
@@ -293,13 +259,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: crates0
-          path: /tmp/rpmbuild/SOURCES/
-
-      - name: Fetch Python0 tarball
-        if: startsWith(matrix.props.dist, 'el9')
-        uses: actions/download-artifact@v4
-        with:
-          name: python0
           path: /tmp/rpmbuild/SOURCES/
 
       - name: Tag 0 tarballs
