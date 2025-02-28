@@ -31,6 +31,8 @@ BuildRequires: clang
 BuildRequires: audit-libs-devel
 BuildRequires: lmdb-devel
 
+BuildRequires: rust-packaging
+
 BuildRequires: rust-arc-swap-devel
 BuildRequires: rust-assert_matches-devel
 BuildRequires: rust-autocfg-devel
@@ -141,8 +143,8 @@ GUI Tools to assist with the configuration and management of fapolicyd.
 # The extraction favors the system crates by untaring with --skip-old-files
 # Later the Cargo config will be updated to point to this new registry dir
 # The crates in the vendor tarball are collected from Rawhide.
-echo "%{cargo_registry}"
-ls -al "%{cargo_registry}"
+echo %{cargo_registry}
+ls -al %{cargo_registry}
 
 CARGO_REG_DIR=%{_builddir}/vendor-rs
 mkdir -p ${CARGO_REG_DIR}
