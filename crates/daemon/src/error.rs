@@ -35,4 +35,10 @@ pub enum Error {
 
     #[error("failed to observe fapolicyd shutdown")]
     NotStopped,
+
+    #[error("failed to parse stat entry: {0}")]
+    ParseStatsError(String),
+
+    #[error("the profiler is already active")]
+    ProfilerAlreadyActive,
 }
