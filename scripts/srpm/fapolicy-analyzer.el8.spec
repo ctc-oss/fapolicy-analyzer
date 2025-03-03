@@ -150,6 +150,11 @@ rm Cargo.lock
 sed -i '/tools/d' Cargo.toml
 %endif
 
+%if %{with cli}
+# disable ariadne
+sed -i '/ariadne/d' crates/tools/Cargo.toml
+%endif
+
 # setup.py looks up the version from git describe
 # this overrides that check to the RPM version
 echo %{module_version} > VERSION
