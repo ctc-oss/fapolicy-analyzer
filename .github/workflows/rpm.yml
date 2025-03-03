@@ -139,7 +139,7 @@ jobs:
 
       - name: Install build dependencies
         run: |
-          dnf -y builddep scripts/srpm/fapolicy-analyzer.el8.spec
+          dnf -y builddep fapolicy-analyzer.spec
 
       - name: Tar crates
         run: |
