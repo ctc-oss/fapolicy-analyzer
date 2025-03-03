@@ -86,6 +86,7 @@ jobs:
       - name: Vendor
         run: |
           make -f .copr/Makefile vendor-app spec=scripts/srpm/fapolicy-analyzer.el8.spec
+          ls -al
 
       - name: Rename source0 with prerelease version
         if: ${{ !startsWith(github.event.head_commit.message, 'Release v') && github.event_name != 'pull_request' }}
