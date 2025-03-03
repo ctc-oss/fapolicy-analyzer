@@ -15,8 +15,9 @@ use fapolicy_rules::db::DB;
 use fapolicy_rules::write;
 
 use crate::error::Error;
+use crate::error::Error::ProfilerAlreadyActive;
 use crate::fapolicyd::{Daemon, COMPILED_RULES_PATH};
-use crate::svc::State;
+use crate::svc::{wait_for_service, State};
 use crate::{fapolicyd, svc};
 
 const PROFILER_NAME: &str = "fapolicyp";
@@ -48,49 +49,59 @@ impl Profiler {
         self.fapolicyp.active()
     }
 
-    pub fn activate(&mut self) -> Result<State, Error> {
+    pub fn activate(&mut self) -> Result<PathBuf, Error> {
         self.activate_with_rules(None)
     }
 
-    pub fn activate_with_rules(&mut self, db: Option<&DB>) -> Result<State, Error> {
+    pub fn activate_with_rules(&mut self, db: Option<&DB>) -> Result<PathBuf, Error> {
         let fapolicyd = svc::Handle::default();
-        if !self.is_active() {
-            // 1. preserve fapolicyd daemon state
-            self.prev_state = Some(fapolicyd.state()?);
-            // 2. stop fapolicyd daemon if running
-            if let Some(State::Active) = self.prev_state {
-                // todo;; probably need to ensure its not in
-                //        a state like restart, init or some such
-                fapolicyd.stop()?
-            }
-            // 3. swap the rules file if necessary
-            if let Some(db) = db {
-                // compiled.rules is always at the default location
-                let compiled = PathBuf::from(COMPILED_RULES_PATH);
-                // create a temp file as the backup location
-                let backup = NamedTempFile::new()?;
-                // move original compiled to backup location
-                fs::rename(&compiled, &backup).or_else(|x| {
-                    log::debug!("rename fallback copy");
-                    fs::copy(&compiled, &backup)
-                        .and_then(|_| fs::remove_file(&compiled))
-                        .or(Err(x))
-                })?;
-                // write compiled rules for the profiling run
-                write::compiled_rules(db, &compiled)?;
-                log::debug!("rules backed up to {:?}", backup.path());
-                self.prev_rules = Some(backup);
-            }
-            // 5. start the profiler daemon
-            self.fapolicyp.start(self.events_log.as_ref())?;
-            // 6. wait for the profiler daemon to become active
-            if let Some(log) = self.events_log.as_ref() {
-                if fapolicyd::wait_until_ready(log).is_err() {
-                    log::warn!("wait_until_ready failed");
-                };
-            }
+        if self.is_active() {
+            return Err(ProfilerAlreadyActive);
         }
-        fapolicyd.state()
+
+        // 1. preserve fapolicyd daemon state
+        self.prev_state = Some(fapolicyd.state()?);
+        // 2. stop fapolicyd daemon if running
+        if let Some(State::Active) = self.prev_state {
+            // todo;; probably need to ensure its not in
+            //        a state like restart, init or some such
+            fapolicyd.stop()?;
+            wait_for_service(&fapolicyd, State::Inactive, 10)?;
+        }
+        // 3. swap the rules file if necessary
+        if let Some(db) = db {
+            // compiled.rules is always at the default location
+            let compiled = PathBuf::from(COMPILED_RULES_PATH);
+            // create a temp file as the backup location
+            let backup = NamedTempFile::new()?;
+            // move original compiled to backup location
+            fs::rename(&compiled, &backup).or_else(|x| {
+                log::debug!("rename fallback copy");
+                fs::copy(&compiled, &backup)
+                    .and_then(|_| fs::remove_file(&compiled))
+                    .or(Err(x))
+            })?;
+            // write compiled rules for the profiling run
+            write::compiled_rules(db, &compiled)?;
+            log::debug!("rules backed up to {:?}", backup.path());
+            self.prev_rules = Some(backup);
+        }
+        // 5. resolve the output file
+        let outfile = match &self.events_log {
+            Some(p) => p.clone(),
+            None => NamedTempFile::new()?.into_temp_path().to_path_buf(),
+        };
+        log::debug!("events-file: {}", outfile.display());
+
+        // 6. start the profiler daemon
+        self.fapolicyp.start(Some(&outfile))?;
+
+        // 7. wait for the profiler daemon to become active
+        if fapolicyd::wait_until_ready(&outfile).is_err() {
+            log::warn!("wait_until_ready failed");
+        };
+
+        Ok(outfile)
     }
 
     pub fn deactivate(&mut self) -> Result<State, Error> {
@@ -107,7 +118,6 @@ impl Profiler {
             }
             // 4. start fapolicyd daemon if it was previously active
             if let Some(State::Active) = self.prev_state {
-                log::debug!("restarting daemon");
                 fapolicyd.start()?;
             }
         }

@@ -17,7 +17,7 @@ jobs:
       is-copr-enabled: ${{ steps.is-copr-enabled.outputs.defined }}
       version-number: ${{ steps.parse-commit-msg.outputs.version-number }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
@@ -38,13 +38,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-#      - name: Verify is draft
-#        if: startsWith(github.event.head_commit.message, 'Release v')
-#        run: |
-#          if [[ "${{ steps.find-release.outputs.draft }}" != "true" ]]; then
-#            echo "Release ${{ steps.parse-commit-msg.outputs.version-number }} is not a draft"
-#            exit 1;
-#          fi
+      #      - name: Verify is draft
+      #        if: startsWith(github.event.head_commit.message, 'Release v')
+      #        run: |
+      #          if [[ "${{ steps.find-release.outputs.draft }}" != "true" ]]; then
+      #            echo "Release ${{ steps.parse-commit-msg.outputs.version-number }} is not a draft"
+      #            exit 1;
+      #          fi
 
       - name: Load config matrix
         id: set-matrix
@@ -66,7 +66,7 @@ jobs:
       - name: Install deps
         run: dnf install -y git make python3
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
@@ -88,23 +88,23 @@ jobs:
           make -f .copr/Makefile vendor-app spec=scripts/srpm/fapolicy-analyzer.el8.spec
 
       - name: Rename source0 with prerelease version
-        if: ${{ !startsWith(github.event.head_commit.message, 'Release v') }}
+        if: ${{ !startsWith(github.event.head_commit.message, 'Release v') && github.event_name != 'pull_request' }}
         run: |
-          spec_version=$(grep "Version:" fapolicy-analyzer.spec | tr -s ' ' | cut -d' ' -f2)
+          spec_version=$(grep "Version:" scripts/srpm/fapolicy-analyzer.el8.spec | tr -s ' ' | cut -d' ' -f2)
           commit_number=$(git rev-list HEAD~1 --count)
           patched_version="$spec_version~dev${commit_number}"
-          mv fapolicy-analyzer-${spec_version}.tar.gz fapolicy-analyzer-${patched_version}.el8.tar.gz
+          mv fapolicy-analyzer-${spec_version}.el8.tar.gz fapolicy-analyzer-${patched_version}.el8.tar.gz
 
       - name: Rename source0 with pull request version
         if: github.event_name == 'pull_request'
         run: |
-          spec_version=$(grep "Version:" fapolicy-analyzer.spec | tr -s ' ' | cut -d' ' -f2)
+          spec_version=$(grep "Version:" scripts/srpm/fapolicy-analyzer.el8.spec | tr -s ' ' | cut -d' ' -f2)
           pr_number=${{ github.event.pull_request.number }}
           patched_version="0.0.${pr_number}"
-          mv fapolicy-analyzer-${spec_version}.tar.gz fapolicy-analyzer-${patched_version}.el8.tar.gz
+          mv fapolicy-analyzer-${spec_version}.el8.tar.gz fapolicy-analyzer-${patched_version}.el8.tar.gz
 
       - name: Upload
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: source0
           path: |
@@ -123,7 +123,7 @@ jobs:
         run: |
           dnf install -y git dnf-plugins-core cargo2rpm
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
@@ -147,7 +147,7 @@ jobs:
           scripts/srpm/vendor-rs.sh
 
       - name: Upload tarball
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: crates0
           path: |
@@ -172,7 +172,7 @@ jobs:
       - name: Install Git
         run: dnf install -y git
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
@@ -229,13 +229,13 @@ jobs:
           make -f .copr/Makefile dnf OS_ID=${{ matrix.props.platform }}
 
       - name: Fetch Source0 tarball
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: source0
           path: /tmp/rpmbuild/SOURCES/
 
       - name: Fetch Crates0 tarball
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: crates0
           path: /tmp/rpmbuild/SOURCES/
@@ -271,14 +271,14 @@ jobs:
           mv /tmp/rpmbuild/SOURCES/vendor-rs-${version}.el8.tar.gz /tmp/archives/
 
       - name: Upload Tarballs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: tarball-artifacts
           path: |
             /tmp/archives/*.tar.gz
 
       - name: Upload SRPMs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: srpm-artifacts
           path: |
@@ -303,7 +303,7 @@ jobs:
           dnf install -y copr-cli
 
       - name: Download srpm artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: srpm-artifacts
           path: /tmp/
@@ -321,7 +321,7 @@ jobs:
           echo "token = ${COPR_TOKEN}" >> $HOME/.config/copr
           echo "copr_url = https://copr.fedorainfracloud.org" >> $HOME/.config/copr
         env:
-          COPR_USER:  ${{ secrets.COPR_API_USER }}
+          COPR_USER: ${{ secrets.COPR_API_USER }}
           COPR_LOGIN: ${{ secrets.COPR_API_LOGIN }}
           COPR_TOKEN: ${{ secrets.COPR_API_TOKEN }}
 
@@ -337,18 +337,18 @@ jobs:
     strategy:
       matrix: ${{ fromJson(needs.config.outputs.matrix )}}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
 
       - name: Download srpm artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: srpm-artifacts
           path: /tmp/src/
 
       - name: Download tarball artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: tarball-artifacts
           path: /tmp/src/
@@ -393,7 +393,7 @@ jobs:
           ls | grep -v -e debug -e log | xargs mv -t /tmp/archives
 
       - name: Upload RPMs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: rpm-artifacts
           path: |
@@ -407,12 +407,12 @@ jobs:
     strategy:
       matrix: ${{ fromJson(needs.config.outputs.matrix )}}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
 
       - name: Download rpm artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: rpm-artifacts
           path: /tmp/src/
@@ -440,12 +440,12 @@ jobs:
     if: startsWith(github.event.head_commit.message, 'Release v')
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
 
       - name: Download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: /tmp/archives/
 

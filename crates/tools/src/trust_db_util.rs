@@ -17,23 +17,21 @@ use std::fs::File;
 use std::io;
 use std::io::{BufReader, Write};
 use std::path::{Path, PathBuf};
-use std::process::{Command, Output};
 use std::time::SystemTime;
 
 use clap::Parser;
 use lmdb::{Cursor, DatabaseFlags, Environment, Transaction, WriteFlags};
-use rayon::prelude::*;
 use thiserror::Error;
 
 use fapolicy_app::cfg;
 use fapolicy_daemon::fapolicyd::TRUST_LMDB_NAME;
-use fapolicy_trust::load::keep_entry;
+use fapolicy_trust::db::DB;
 use fapolicy_trust::read::rpm_trust;
 use fapolicy_trust::stat::Status::{Discrepancy, Missing, Trusted};
 use fapolicy_trust::{check, load, parse, read, Trust};
 use fapolicy_util::sha::sha256_digest;
 
-use crate::Error::{DirTrustError, DpkgCommandFail, DpkgNotFound};
+use crate::Error::{DirTrustError, TrustError};
 use crate::Subcommand::{Add, Check, Clear, Count, Del, Dump, Init, Load, Search};
 
 /// An Error that can occur in this app
@@ -71,7 +69,7 @@ pub enum Error {
 }
 
 #[derive(Parser)]
-#[clap(name = "Trust DB Utils", version = "v0.1")]
+#[clap(name = "Trust DB Util", version = "1.5.0")]
 struct Opts {
     #[clap(subcommand)]
     cmd: Subcommand,
@@ -120,6 +118,7 @@ struct InitOpts {
     #[clap(long)]
     force: bool,
 
+    #[cfg(feature = "deb")]
     /// use dpkg to generate db
     #[clap(long)]
     dpkg: bool,
@@ -176,6 +175,9 @@ struct LoadOpts {
 struct CountOpts {}
 
 fn main() -> Result<(), Error> {
+    fapolicy_tools::setup_human_panic();
+    env_logger::init();
+
     let sys_conf = cfg::All::load()?;
     let all_opts: Opts = Opts::parse();
     let trust_db_path = match all_opts.dbdir {
@@ -233,11 +235,16 @@ fn init(opts: InitOpts, verbose: bool, cfg: &cfg::All, env: &Environment) -> Res
     }
 
     let t = SystemTime::now();
+
+    #[cfg(feature = "deb")]
     let sys = if opts.dpkg {
-        dpkg_trust()?
+        dpkg_trust(opts.count)?
     } else {
         rpm_trust(&PathBuf::from(&cfg.system.system_trust_path))?
     };
+
+    #[cfg(not(feature = "deb"))]
+    let sys = rpm_trust(&PathBuf::from(&cfg.system.system_trust_path))?;
 
     let sys = if let Some(c) = opts.count {
         let mut m = sys;
@@ -336,11 +343,8 @@ fn find(opts: SearchDbOpts, _: &cfg::All, env: &Environment) -> Result<(), Error
 }
 
 fn dump(opts: DumpDbOpts, cfg: &cfg::All) -> Result<(), Error> {
-    let db = load::trust_db(
-        &PathBuf::from(&cfg.system.trust_lmdb_path),
-        &PathBuf::from(&cfg.system.trust_dir_path),
-        Some(&PathBuf::from(&cfg.system.trust_file_path)),
-    )?;
+    let db = load_trust_db(cfg)?;
+
     match opts.outfile {
         None => {
             for (_, v) in db.iter() {
@@ -359,11 +363,7 @@ fn dump(opts: DumpDbOpts, cfg: &cfg::All) -> Result<(), Error> {
 }
 
 fn check(_: CheckDbOpts, cfg: &cfg::All) -> Result<(), Error> {
-    let db = load::trust_db(
-        &PathBuf::from(&cfg.system.trust_lmdb_path),
-        &PathBuf::from(&cfg.system.trust_dir_path),
-        Some(&PathBuf::from(&cfg.system.trust_file_path)),
-    )?;
+    let db = load_trust_db(cfg)?;
 
     let t = SystemTime::now();
     let db = check::disk_sync(&db)?;
@@ -386,6 +386,15 @@ fn check(_: CheckDbOpts, cfg: &cfg::All) -> Result<(), Error> {
     );
 
     Ok(())
+}
+
+fn load_trust_db(cfg: &cfg::All) -> Result<DB, Error> {
+    load::trust_db(
+        &PathBuf::from(&cfg.system.trust_lmdb_path),
+        &PathBuf::from(&cfg.system.trust_dir_path),
+        Some(&PathBuf::from(&cfg.system.trust_file_path)),
+    )
+    .map_err(TrustError)
 }
 
 fn count(_: CountOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
@@ -413,10 +422,17 @@ fn new_trust_record(path: &str) -> Result<Trust, Error> {
     })
 }
 
+#[cfg(feature = "deb")]
 // number of lines to eliminate the `dpkg-query -l` header
 const DPKG_QUERY_HEADER_LINES: usize = 6;
+#[cfg(feature = "deb")]
 const DPKG_QUERY: &str = "dpkg-query";
-fn dpkg_trust() -> Result<Vec<Trust>, Error> {
+#[cfg(feature = "deb")]
+fn dpkg_trust(count: Option<usize>) -> Result<Vec<Trust>, Error> {
+    use crate::Error::{DpkgCommandFail, DpkgNotFound};
+    use fapolicy_trust::load::keep_entry;
+    use std::process::Command;
+
     // check that dpkg-query exists and can be called
     let _exists = Command::new(DPKG_QUERY)
         .arg("--version")
@@ -435,21 +451,38 @@ fn dpkg_trust() -> Result<Vec<Trust>, Error> {
         .map(String::from)
         .collect();
 
-    Ok(packages
-        .par_iter()
-        .flat_map(|p| Command::new(DPKG_QUERY).args(vec!["-L", p]).output())
-        .flat_map(output_lines)
-        .flatten()
-        // apply the rpm filter to limit results
-        .filter(|p| keep_entry(p))
-        .filter_map(|s| match new_trust_record(&s) {
-            Ok(t) => Some(t),
-            Err(_) => None,
-        })
-        .collect())
+    let mut trust = vec![];
+    'outer: for pkg in packages {
+        if let Ok(lines) = Command::new(DPKG_QUERY)
+            .args(vec!["-L", &pkg])
+            .output()
+            .map_err(DpkgCommandFail)
+            .and_then(output_lines)
+        {
+            for line in lines {
+                if keep_entry(&line) {
+                    if let Ok(t) = new_trust_record(&line) {
+                        trust.push(t);
+                        if let Some(count) = count {
+                            if trust.len() >= count {
+                                break 'outer;
+                            }
+                        }
+                    } else {
+                        log::warn!("failed to create trust entry for [{line}]")
+                    }
+                }
+            }
+        } else {
+            log::warn!("failed to {DPKG_QUERY} {pkg}")
+        }
+    }
+
+    Ok(trust)
 }
 
-fn output_lines(out: Output) -> Result<Vec<String>, Error> {
+#[cfg(feature = "deb")]
+fn output_lines(out: std::process::Output) -> Result<Vec<String>, Error> {
     Ok(String::from_utf8(out.stdout)?
         .lines()
         .map(String::from)

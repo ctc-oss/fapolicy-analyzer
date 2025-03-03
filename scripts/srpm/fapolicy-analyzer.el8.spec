@@ -1,3 +1,6 @@
+%bcond_without cli
+%bcond_without gui
+
 Summary:       File Access Policy Analyzer
 Name:          fapolicy-analyzer
 Version:       1.3.0
@@ -44,23 +47,8 @@ BuildRequires: rust-toolset
 BuildRequires: python3dist(toml)
 BuildRequires: python3dist(typing-extensions)
 
-Requires:      python3
-Requires:      python3-gobject
-Requires:      python3-events
-Requires:      python3-configargparse
-Requires:      python3-more-itertools
-Requires:      python3-rx
-Requires:      python3-importlib-metadata
-Requires:      python3-dataclasses
-Requires:      python3-importlib-resources
-Requires:      python3-toml
-Requires:      gtk3
 Requires:      dbus-libs
-Requires:      gtksourceview3
 
-# runtime required for rendering user guide
-Requires:      webkit2gtk3
-Requires:      mesa-dri-drivers
 
 %global module          fapolicy_analyzer
 
@@ -75,10 +63,47 @@ Requires:      mesa-dri-drivers
 %global module_version  %{lua: v = string.gsub(rpm.expand("%{?version}"), "~dev", ".dev"); \
                                v = string.gsub(v, "~rc",  "rc"); print(v) }
 
+Requires:      %{name}-cli
+Requires:      %{name}-gui
+
 %description
 Tools to assist with the configuration and management of fapolicyd.
 
+
+%package cli
+Summary:       File Access Policy Analyzer CLI
+
+%description cli
+CLI Tools to assist with the configuration and management of fapolicyd.
+
+
+%package gui
+Summary:       File Access Policy Analyzer GUI
+
+Requires:      python3
+Requires:      python3-gobject
+Requires:      python3-events
+Requires:      python3-configargparse
+Requires:      python3-more-itertools
+Requires:      python3-rx
+Requires:      python3-importlib-metadata
+Requires:      python3-dataclasses
+Requires:      python3-importlib-resources
+Requires:      python3-toml
+Requires:      gtk3
+Requires:      gtksourceview3
+
+# runtime required for rendering user guide
+Requires:      webkit2gtk3
+Requires:      mesa-dri-drivers
+
+%description gui
+GUI Tools to assist with the configuration and management of fapolicyd.
+
+
 %prep
+
+%if %{with gui}
 # setuptools-rust is not available as a package. installing it requires
 # upgrades of pip, setuptools, wheel, and some transient dependencies.
 # install these to a virtual environment to isolate changes, and
@@ -111,6 +136,7 @@ ln -sf  %{python3_sitelib}/{Babel*,babel} %{venv_lib}
 # switching back will ensure the correct (patched) wheel packaging for use in our rpm
 rm -rf %{venv_lib}/pip*
 cp -r  %{python3_sitelib}/pip* %{venv_lib}
+%endif
 
 %autosetup -n %{name}
 %cargo_prep -V2
@@ -119,8 +145,15 @@ tar -xzf %{SOURCE1}
 
 rm Cargo.lock
 
+%if %{without cli}
 # disable the dev-tools crate
 sed -i '/tools/d' Cargo.toml
+%endif
+
+%if %{with cli}
+# disable ariadne
+sed -i '/ariadne/d' crates/tools/Cargo.toml
+%endif
 
 # setup.py looks up the version from git describe
 # this overrides that check to the RPM version
@@ -133,12 +166,28 @@ scripts/build-info.py --os --time
 # ensure standard Rust compiler flags are set
 export RUSTFLAGS="%{build_rustflags}"
 
+%if %{with cli}
+cargo build --bin tdb --release
+cargo build --bin faprofiler --release
+cargo build --bin rulec --release
+%endif
+
+%if %{with gui}
 # use the venv to build
 %{venv_py3} setup.py compile_catalog -f
 %{venv_py3} help build
 %{venv_py3} setup.py bdist_wheel
+%endif
 
 %install
+
+%if %{with cli}
+install -D target/release/tdb %{buildroot}/%{_sbindir}/%{name}-cli-trust
+install -D target/release/faprofiler %{buildroot}/%{_sbindir}/%{name}-cli-profiler
+install -D target/release/rulec %{buildroot}/%{_sbindir}/%{name}-cli-rules
+%endif
+
+%if %{with gui}
 %{py3_install_wheel %{module}-%{module_version}*%{_target_cpu}.whl}
 %{python3} help install --dest %{buildroot}/%{_datadir}/help
 install -D bin/%{name} %{buildroot}/%{_sbindir}/%{name}
@@ -146,18 +195,28 @@ install -D data/%{name}.8 -t %{buildroot}/%{_mandir}/man8/
 desktop-file-install data/%{name}.desktop
 find locale -name %{name}.mo -exec cp --parents -rv {} %{buildroot}/%{_datadir} \;
 %find_lang %{name} --with-gnome
+%endif
 
 %check
+%if %{with gui}
 desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
+%endif
 
-%files -n %{name} -f %{name}.lang
-%doc scripts/srpm/README
-%license LICENSE
+%files cli
+%attr(755,root,root) %{_sbindir}/%{name}-cli-trust
+%attr(755,root,root) %{_sbindir}/%{name}-cli-profiler
+%attr(755,root,root) %{_sbindir}/%{name}-cli-rules
+
+%files gui
 %{python3_sitearch}/%{module}
 %{python3_sitearch}/%{module}-%{module_version}*
 %attr(755,root,root) %{_sbindir}/%{name}
 %attr(644,root,root) %{_mandir}/man8/%{name}.8*
 %attr(755,root,root) %{_datadir}/applications/%{name}.desktop
+
+%files -n %{name} -f %{name}.lang
+%doc scripts/srpm/README
+%license LICENSE
 
 %changelog
 * Sat Feb 03 2024 John Wass <jwass3@gmail.com> 1.3.0-1
