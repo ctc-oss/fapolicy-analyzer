@@ -128,6 +128,15 @@ jobs:
           ref: ${{ github.ref }}
           fetch-depth: 0
 
+      - name: Adjust spec
+        run: |
+          # disable dev-tools crate
+          sed -i '/tools/d' Cargo.toml
+          # generate build deps with cargo2rpm
+          cargo2rpm -p Cargo.toml buildrequires -t | while read line; do
+            grep -n "BuildRequires:" fapolicy-analyzer.spec | head -n1 | cut -d: -f1 | xargs -I{} sed -i "{}iBuildRequires: $line" fapolicy-analyzer.spec
+          done
+
       - name: Install build dependencies
         run: |
           dnf -y builddep scripts/srpm/fapolicy-analyzer.el8.spec
