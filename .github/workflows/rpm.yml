@@ -88,9 +88,9 @@ jobs:
           make -f .copr/Makefile vendor-app spec=scripts/srpm/fapolicy-analyzer.el8.spec
 
       - name: Rename source0 with prerelease version
-        if: ${{ !startsWith(github.event.head_commit.message, 'Release v') }}
+        if: ${{ !startsWith(github.event.head_commit.message, 'Release v') && github.event_name != 'pull_request' }}
         run: |
-          spec_version=$(grep "Version:" fapolicy-analyzer.spec | tr -s ' ' | cut -d' ' -f2)
+          spec_version=$(grep "Version:" scripts/srpm/fapolicy-analyzer.el8.spec | tr -s ' ' | cut -d' ' -f2)
           commit_number=$(git rev-list HEAD~1 --count)
           patched_version="$spec_version~dev${commit_number}"
           mv fapolicy-analyzer-${spec_version}.tar.gz fapolicy-analyzer-${patched_version}.el8.tar.gz
@@ -98,7 +98,7 @@ jobs:
       - name: Rename source0 with pull request version
         if: github.event_name == 'pull_request'
         run: |
-          spec_version=$(grep "Version:" fapolicy-analyzer.spec | tr -s ' ' | cut -d' ' -f2)
+          spec_version=$(grep "Version:" scripts/srpm/fapolicy-analyzer.el8.spec | tr -s ' ' | cut -d' ' -f2)
           pr_number=${{ github.event.pull_request.number }}
           patched_version="0.0.${pr_number}"
           mv fapolicy-analyzer-${spec_version}.tar.gz fapolicy-analyzer-${patched_version}.el8.tar.gz
@@ -128,18 +128,9 @@ jobs:
           ref: ${{ github.ref }}
           fetch-depth: 0
 
-      - name: Adjust spec
-        run: |
-          # disable dev-tools crate
-          sed -i '/tools/d' Cargo.toml
-          # generate build deps with cargo2rpm
-          cargo2rpm -p Cargo.toml buildrequires -t | while read line; do
-            grep -n "BuildRequires:" fapolicy-analyzer.spec | head -n1 | cut -d: -f1 | xargs -I{} sed -i "{}iBuildRequires: $line" fapolicy-analyzer.spec
-          done
-
       - name: Install build dependencies
         run: |
-          dnf -y builddep fapolicy-analyzer.spec
+          dnf -y builddep scripts/srpm/fapolicy-analyzer.el8.spec
 
       - name: Tar crates
         run: |
