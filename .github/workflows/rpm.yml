@@ -17,7 +17,7 @@ jobs:
       is-copr-enabled: ${{ steps.is-copr-enabled.outputs.defined }}
       version-number: ${{ steps.parse-commit-msg.outputs.version-number }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
