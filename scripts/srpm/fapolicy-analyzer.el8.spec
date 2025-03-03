@@ -43,7 +43,7 @@ BuildRequires: clang
 BuildRequires: audit-libs-devel
 BuildRequires: lmdb-devel
 
-BuildRequires: rust-toolset
+BuildRequires: rust-packaging
 BuildRequires: python3dist(toml)
 BuildRequires: python3dist(typing-extensions)
 
