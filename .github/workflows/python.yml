@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   ruff:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - uses: chartboost/ruff-action@v1
@@ -25,7 +25,7 @@ jobs:
 
   ui_test:
     name: UI Test Suite for Python ${{ matrix.python-version }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         python-version: [ "3.9", "3.10", "3.11", "3.12" ]

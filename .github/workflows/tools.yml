@@ -19,7 +19,7 @@ concurrency:
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     # 29 has glibc-2.28, compatible >= el8, fc, ubuntu 20.04
     container: fedora:29
     steps:

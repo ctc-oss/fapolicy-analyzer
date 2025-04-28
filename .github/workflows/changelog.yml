@@ -10,7 +10,7 @@ jobs:
   changelog:
     name: Enforce changelog entry
     if: github.event_name == 'pull_request'
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - uses: jw3/newsforce@v0
