@@ -20,7 +20,7 @@ concurrency:
 jobs:
   config:
     name: Load configuration
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
       is-copr-enabled: ${{ steps.is-copr-enabled.outputs.defined }}
@@ -44,7 +44,7 @@ jobs:
   source0:
     name: Vendor Source0
     container: registry.fedoraproject.org/fedora:38
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Install deps
         run: dnf install -y git make python3
@@ -100,8 +100,8 @@ jobs:
 
   crates0:
     name: Vendor Crates0
-    container: registry.fedoraproject.org/fedora:latest
-    runs-on: ubuntu-20.04
+    container: registry.fedoraproject.org/fedora:41
+    runs-on: ubuntu-22.04
     steps:
       - name: Install RPM build dependencies
         run: |
@@ -142,7 +142,7 @@ jobs:
   docs0:
     name: Vendor Docs0
     container: registry.fedoraproject.org/fedora:latest
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Install RPM build dependencies
         run: |
@@ -182,7 +182,7 @@ jobs:
   python0:
     name: Vendor Python0
     container: registry.fedoraproject.org/fedora:latest
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Install RPM build dependencies
         run: |
@@ -216,7 +216,7 @@ jobs:
   srpm:
     needs: [ config, source0, crates0, docs0, python0 ]
     name: SRPM Build ${{ matrix.props.dist }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix: ${{ fromJson(needs.config.outputs.matrix) }}
     steps:
@@ -380,7 +380,7 @@ jobs:
     name: Copr Build ${{ matrix.props.dist }}
     if: needs.config.outputs.is-copr-enabled == 'true'
     container: 'rockylinux:8.6'
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix: ${{ fromJson(needs.config.outputs.matrix) }}
     steps:
@@ -420,7 +420,7 @@ jobs:
   rpm:
     needs: [ config, srpm ]
     name: Rebuild ${{ matrix.props.dist }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix: ${{ fromJson(needs.config.outputs.matrix )}}
     steps:
@@ -501,7 +501,7 @@ jobs:
     needs: [ config, srpm, rpm ]
     name: Install ${{ matrix.props.dist }}
     container: ${{ matrix.props.image }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix: ${{ fromJson(needs.config.outputs.matrix )}}
     continue-on-error: ${{ matrix.props.prerelease }}
@@ -533,7 +533,7 @@ jobs:
     needs: [ srpm, rpm, install, copr ]
     name: Publish
     if: startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
         with:
