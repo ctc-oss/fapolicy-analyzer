@@ -100,7 +100,7 @@ jobs:
 
   crates0:
     name: Vendor Crates0
-    container: registry.fedoraproject.org/fedora:latest
+    container: registry.fedoraproject.org/fedora:41
     runs-on: ubuntu-22.04
     steps:
       - name: Install RPM build dependencies
