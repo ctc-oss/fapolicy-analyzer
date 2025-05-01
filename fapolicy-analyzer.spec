@@ -70,7 +70,7 @@ Requires:      python3-matplotlib-gtk3
 
 Requires:      gtk3
 Requires:      gtksourceview3
-Requires:      adwaita-icon-theme
+Requires:      gnome-icon-theme
 
 # runtime required for rendering user guide
 Requires:      mesa-dri-drivers

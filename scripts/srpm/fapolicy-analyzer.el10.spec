@@ -124,7 +124,7 @@ Requires:      python3-tomli
 
 Requires:      gtk3
 Requires:      gtksourceview3
-Requires:      gnome-icon-theme
+Requires:      adwaita-icon-theme
 
 # runtime required for rendering user guide
 Requires:      webkit2gtk4.1
