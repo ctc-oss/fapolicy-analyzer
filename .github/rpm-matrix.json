@@ -28,7 +28,7 @@
       "platform": "rhel",
       "dist": "el10",
       "spec": "scripts/srpm/fapolicy-analyzer.el10.spec",
-      "image": "almalinux:10-kitten",
+      "image": "almalinux/10-kitten-base",
       "chroot": "centos-stream+epel-10-x86_64",
       "prerelease": true
     }

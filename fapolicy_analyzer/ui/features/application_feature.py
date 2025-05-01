@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import toml
+import tomli
 from rx import of
 from rx.core.pipe import pipe
 from rx.operators import catch, map
@@ -44,7 +44,7 @@ def create_application_feature() -> ReduxFeatureModule:
     def _get_app_config(_: Action) -> Action:
         path = config_file_path()
         with open(path, "r") as f:
-            config = toml.load(f)
+            config = tomli.load(f)
         return received_app_config(config.get("ui", {}))
 
     request_app_config_epic = pipe(

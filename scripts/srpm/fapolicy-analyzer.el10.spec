@@ -120,15 +120,14 @@ Requires:      python3-gobject
 Requires:      python3-configargparse
 Requires:      python3-more-itertools
 Requires:      python3-rx
-Requires:      python3-importlib-metadata
-Requires:      python3-toml
+Requires:      python3-tomli
 
 Requires:      gtk3
 Requires:      gtksourceview3
-Requires:      gnome-icon-theme
+Requires:      adwaita-icon-theme
 
 # runtime required for rendering user guide
-Requires:      webkit2gtk3
+Requires:      webkit2gtk4.1
 Requires:      mesa-dri-drivers
 
 %description gui
