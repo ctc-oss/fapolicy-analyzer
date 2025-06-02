@@ -142,7 +142,7 @@ Requires:      python3-toml
 
 Requires:      gtk3
 Requires:      gtksourceview3
-Requires:      gnome-icon-theme
+Requires:      adwaita-icon-theme
 
 # runtime required for rendering user guide
 Requires:      webkit2gtk3
