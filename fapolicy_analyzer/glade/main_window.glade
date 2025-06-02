@@ -26,7 +26,7 @@
     <property name="program_name">File Access Policy Analyzer</property>
     <property name="website">https://github.com/ctc-oss/fapolicy-analyzer/wiki</property>
     <property name="website_label" translatable="yes">Visit our Wiki for more information</property>
-    <property name="logo_icon_name">changes-prevent</property>
+    <property name="logo_icon_name">changes-prevent-symbolic</property>
     <property name="license_type">gpl-3-0</property>
     <child type="titlebar">
       <placeholder/>

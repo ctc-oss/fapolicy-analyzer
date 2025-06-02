@@ -111,7 +111,7 @@
   </object>
   <object class="GtkDialog" id="saveOverrideDialog">
     <property name="can-focus">False</property>
-    <property name="icon-name">dialog-warning</property>
+    <property name="icon-name">dialog-warning-symbolic</property>
     <property name="title" translatable="yes">Confirm Rule Save</property>
     <property name="type-hint">dialog</property>
     <child internal-child="vbox">

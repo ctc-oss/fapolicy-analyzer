@@ -50,7 +50,7 @@ class StatsViewPage(UIConnectedWidget, UIPage, Events):
                 UIAction(
                     "Flush",
                     "Flush Cache",
-                    "edit-clear",
+                    "edit-clear-symbolic",
                     {"clicked": self.on_flush_cache_clicked},
                 )
             ],

@@ -22,7 +22,7 @@
   <object class="GtkImage" id="listAddImage">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="icon-name">list-add</property>
+    <property name="icon-name">list-add-symbolic</property>
   </object>
   <object class="GtkButton" id="addFileButton">
     <property name="visible">True</property>

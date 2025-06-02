@@ -58,14 +58,14 @@ class ConfigAdminPage(UIConnectedWidget):
                 UIAction(
                     name="Validate",
                     tooltip="Validate Config",
-                    icon="emblem-default",
+                    icon="emblem-default-symbolic",
                     signals={"clicked": self.on_validate_clicked},
                     sensitivity_func=self.__config_unvalidated,
                 ),
                 UIAction(
                     name="Save",
                     tooltip="Save Config",
-                    icon="document-save",
+                    icon="document-save-symbolic",
                     signals={"clicked": self.on_save_clicked},
                     sensitivity_func=self.__config_dirty,
                 ),

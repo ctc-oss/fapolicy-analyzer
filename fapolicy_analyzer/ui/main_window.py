@@ -164,7 +164,7 @@ class MainWindow(UIConnectedWidget):
                 UIAction(
                     name="Deploy",
                     tooltip="Deploy Changesets",
-                    icon="system-software-update",
+                    icon="software-update-available-symbolic",
                     signals={"clicked": self.on_deployChanges_clicked},
                     sensitivity_func=self.__dirty_changesets,
                 )

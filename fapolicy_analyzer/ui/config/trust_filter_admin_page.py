@@ -59,14 +59,14 @@ class TrustFilterAdminPage(UIConnectedWidget):
                 UIAction(
                     name="Validate",
                     tooltip="Validate Filter",
-                    icon="emblem-default",
+                    icon="emblem-default-symbolic",
                     signals={"clicked": self.on_validate_clicked},
                     sensitivity_func=self.__filter_unvalidated,
                 ),
                 UIAction(
                     name="Save",
                     tooltip="Save Filter",
-                    icon="document-save",
+                    icon="document-save-symbolic",
                     signals={"clicked": self.on_save_clicked},
                     sensitivity_func=self.__filter_dirty,
                 ),
