@@ -20,16 +20,16 @@
       "platform": "rhel",
       "dist": "el9",
       "spec": "scripts/srpm/fapolicy-analyzer.el9.spec",
-      "image": "rockylinux:9",
-      "chroot": "centos-stream+epel-9-x86_64",
+      "image": "almalinux:9",
+      "chroot": "alma+epel-9-x86_64",
       "prerelease": false
     },
     {
       "platform": "rhel",
       "dist": "el10",
       "spec": "scripts/srpm/fapolicy-analyzer.el10.spec",
-      "image": "almalinux/10-kitten-base",
-      "chroot": "centos-stream+epel-10-x86_64",
+      "image": "almalinux:10",
+      "chroot": "alma+epel-10-x86_64",
       "prerelease": true
     }
   ]
