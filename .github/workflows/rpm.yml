@@ -43,7 +43,7 @@ jobs:
 
   source0:
     name: Vendor Source0
-    container: registry.fedoraproject.org/fedora:38
+    container: registry.fedoraproject.org/fedora:41
     runs-on: ubuntu-22.04
     steps:
       - name: Install deps
@@ -100,7 +100,7 @@ jobs:
 
   crates0:
     name: Vendor Crates0
-    container: registry.fedoraproject.org/fedora:41
+    container: registry.fedoraproject.org/fedora:39
     runs-on: ubuntu-22.04
     steps:
       - name: Install RPM build dependencies
@@ -313,7 +313,7 @@ jobs:
         run: |
           sudo apt install -y podman
           cid="${{ matrix.props.dist }}-${{ github.run_id }}"
-          podman run -dt --name $cid --privileged fedora:39
+          podman run -dt --name $cid --privileged fedora:41
 
       - name: Init container
         run: |
@@ -449,7 +449,7 @@ jobs:
         run: |
           sudo apt install -y podman
           cid="${{ matrix.props.dist }}-${{ github.run_id }}"
-          podman run -dt --name $cid --privileged fedora:39
+          podman run -dt --name $cid --privileged fedora:41
 
       - name: Init container
         run: |
