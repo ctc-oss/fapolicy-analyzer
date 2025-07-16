@@ -9,14 +9,6 @@
       "prerelease": false
     },
     {
-      "platform": "fedora",
-      "dist": "fc40",
-      "spec": "fapolicy-analyzer.spec",
-      "image": "registry.fedoraproject.org/fedora:40",
-      "chroot": "fedora-40-x86_64",
-      "prerelease": false
-    },
-    {
       "platform": "rhel",
       "dist": "el9",
       "spec": "scripts/srpm/fapolicy-analyzer.el9.spec",
