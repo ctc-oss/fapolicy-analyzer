@@ -12,7 +12,7 @@
       "platform": "rhel",
       "dist": "el9",
       "spec": "scripts/srpm/fapolicy-analyzer.el9.spec",
-      "image": "rockylinux:9",
+      "image": "quay.io/rockylinux/rockylinux:9",
       "chroot": "rocky+epel-9-x86_64",
       "prerelease": false
     },
@@ -20,7 +20,7 @@
       "platform": "rhel",
       "dist": "el10",
       "spec": "scripts/srpm/fapolicy-analyzer.el10.spec",
-      "image": "rockylinux:10",
+      "image": "quay.io/rockylinux/rockylinux:10",
       "chroot": "rocky+epel-10-x86_64",
       "prerelease": false
     }
