@@ -30,7 +30,7 @@
       "spec": "scripts/srpm/fapolicy-analyzer.el10.spec",
       "image": "rockylinux:10",
       "chroot": "rocky+epel-10-x86_64",
-      "prerelease": true
+      "prerelease": false
     }
   ]
 }
