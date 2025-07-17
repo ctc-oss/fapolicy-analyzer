@@ -519,12 +519,11 @@ jobs:
       - name: Enable EPEL
         if: startsWith(matrix.props.dist, 'el')
         run: |
-          dnf install -y epel-release || dnf install -y epel-release || dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-10.noarch.rpm
-          dnf config-manager --set-enabled epel-testing
+          dnf install -y epel-release
 
       - name: Install RPM
         run: |
-          dnf install -y /tmp/src/fapolicy-analyzer-*.${{ matrix.props.dist }}.x86_64.rpm
+          dnf install -y --enablerepo=epel-testing /tmp/src/fapolicy-analyzer-*.${{ matrix.props.dist }}.x86_64.rpm
 
       - name: Check RPM
         run: |
