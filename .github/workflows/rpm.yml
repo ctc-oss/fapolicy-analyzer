@@ -521,9 +521,14 @@ jobs:
         run: |
           dnf install -y epel-release
 
+      - name: Enable EPEL Testing Repo
+        if: startsWith(matrix.props.dist, 'el10')
+        run: |
+          dnf config-manager --set-enabled epel-testing
+
       - name: Install RPM
         run: |
-          dnf install -y --enablerepo=epel-testing /tmp/src/fapolicy-analyzer-*.${{ matrix.props.dist }}.x86_64.rpm
+          dnf install -y /tmp/src/fapolicy-analyzer-*.${{ matrix.props.dist }}.x86_64.rpm
 
       - name: Check RPM
         run: |
