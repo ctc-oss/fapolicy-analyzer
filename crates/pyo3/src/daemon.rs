@@ -122,14 +122,12 @@ fn fapolicyd_version() -> Option<String> {
 
 pub(crate) fn deploy(system: &PySystem) -> PyResult<()> {
     let handle = PyHandle::default();
-    let was_active = handle.is_active()?;
-    let plan = handle
-        .stop()
-        .and_then(|_| handle.wait_until_inactive(15))
-        .and_then(|_| system.deploy_only());
-    match was_active {
-        false => plan,
-        true => plan
+    match handle.is_active()? {
+        false => system.deploy_only(),
+        true => handle
+            .stop()
+            .and_then(|_| handle.wait_until_inactive(15))
+            .and_then(|_| system.deploy_only())
             .and_then(|_| handle.start())
             .and_then(|_| handle.wait_until_active(15)),
     }
