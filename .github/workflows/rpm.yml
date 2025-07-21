@@ -43,7 +43,7 @@ jobs:
 
   source0:
     name: Vendor Source0
-    container: registry.fedoraproject.org/fedora:38
+    container: registry.fedoraproject.org/fedora:41
     runs-on: ubuntu-22.04
     steps:
       - name: Install deps
@@ -313,7 +313,7 @@ jobs:
         run: |
           sudo apt install -y podman
           cid="${{ matrix.props.dist }}-${{ github.run_id }}"
-          podman run -dt --name $cid --privileged fedora:39
+          podman run -dt --name $cid --privileged fedora:41
 
       - name: Init container
         run: |
@@ -449,7 +449,7 @@ jobs:
         run: |
           sudo apt install -y podman
           cid="${{ matrix.props.dist }}-${{ github.run_id }}"
-          podman run -dt --name $cid --privileged fedora:39
+          podman run -dt --name $cid --privileged fedora:41
 
       - name: Init container
         run: |
@@ -519,7 +519,12 @@ jobs:
       - name: Enable EPEL
         if: startsWith(matrix.props.dist, 'el')
         run: |
-          dnf install -y epel-release || dnf install -y epel-release || dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-10.noarch.rpm
+          dnf install -y epel-release
+
+      - name: Enable EPEL Testing Repo
+        if: startsWith(matrix.props.dist, 'el10')
+        run: |
+          dnf config-manager --set-enabled epel-testing
 
       - name: Install RPM
         run: |

@@ -21,7 +21,7 @@ rpmbuild_dir=/tmp/rpmbuild
 echo "[build.sh] mock $1"
 mock -r "$1" --init
 mock -r "$1" --resultdir ${rpmbuild_dir} --buildsrpm --sources ${rpmbuild_dir}/SOURCES/ --spec ${rpmbuild_dir}/SPECS/${spec_file}
-mock -r "$1" --resultdir ${rpmbuild_dir} --enablerepo=crb --rebuild ${rpmbuild_dir}/*.src.rpm
+mock -r "$1" --resultdir ${rpmbuild_dir} --rebuild ${rpmbuild_dir}/*.src.rpm
 
 if [[ -n "$2" ]]; then
   echo "[build.sh] exporting rpms to ${2}"

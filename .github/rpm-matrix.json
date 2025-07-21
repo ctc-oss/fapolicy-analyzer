@@ -9,28 +9,20 @@
       "prerelease": false
     },
     {
-      "platform": "fedora",
-      "dist": "fc40",
-      "spec": "fapolicy-analyzer.spec",
-      "image": "registry.fedoraproject.org/fedora:40",
-      "chroot": "fedora-40-x86_64",
-      "prerelease": false
-    },
-    {
       "platform": "rhel",
       "dist": "el9",
       "spec": "scripts/srpm/fapolicy-analyzer.el9.spec",
-      "image": "rockylinux:9",
-      "chroot": "centos-stream+epel-9-x86_64",
+      "image": "quay.io/rockylinux/rockylinux:9",
+      "chroot": "rocky+epel-9-x86_64",
       "prerelease": false
     },
     {
       "platform": "rhel",
       "dist": "el10",
       "spec": "scripts/srpm/fapolicy-analyzer.el10.spec",
-      "image": "almalinux/10-kitten-base",
-      "chroot": "centos-stream+epel-10-x86_64",
-      "prerelease": true
+      "image": "quay.io/rockylinux/rockylinux:10",
+      "chroot": "rocky+epel-10-x86_64",
+      "prerelease": false
     }
   ]
 }
