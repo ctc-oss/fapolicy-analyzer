@@ -1,3 +1,30 @@
+[build-system]
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "fapolicy_analyzer"
+description = "File Access Policy Analyzer"
+dynamic = ["version"]
+dependencies = [
+    "pycairo==1.25.1",
+    "PyGObject==3.46.0",
+    "configargparse==1.7.1",
+    "rx==3.2",
+    "more-itertools==10.1.0",
+    "importlib-resources==6.4.4",
+    "importlib-metadata==8.6.1",
+    "dataclasses==0.6",
+    "matplotlib~=3.9.1",
+    "tomli==2.0.1"
+]
+
+[tool.maturin]
+module-name = "rust"
+features = ["pyo3/extension-module"]
+manifest-path = "crates/pyo3/Cargo.toml"
+python-packages = ["fapolicy_analyzer"]
+
 [tool.ruff.lint]
 ignore = ["E402"]
 
