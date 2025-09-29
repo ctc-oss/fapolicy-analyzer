@@ -35,7 +35,6 @@ case $id in
     rm ${vendor_dest}/either-*/README.md
     rm ${vendor_dest}/cexpr-*/README.md
     rm ${vendor_dest}/libloading-*/README.md
-    rm ${vendor_dest}/parking_lot_core-*/README.md
     ;;
 
   ubuntu)
