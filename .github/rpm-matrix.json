@@ -2,6 +2,14 @@
   "props": [
     {
       "platform": "fedora",
+      "dist": "fc44",
+      "spec": "fapolicy-analyzer.spec",
+      "image": "registry.fedoraproject.org/fedora:44",
+      "chroot": "fedora-44-x86_64",
+      "prerelease": false
+    },
+    {
+      "platform": "fedora",
       "dist": "fc43",
       "spec": "fapolicy-analyzer.spec",
       "image": "registry.fedoraproject.org/fedora:43",
