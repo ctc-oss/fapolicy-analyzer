@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import toml
+import tomli
 from rx import of
 from rx.core.pipe import pipe
 from rx.operators import catch, map
