@@ -16,7 +16,7 @@ import argparse
 import shutil
 
 import requests as req
-import toml
+import tomli
 from bs4 import BeautifulSoup
 
 mirror_url = "https://mirrors.kernel.org/fedora-epel/9/Everything/x86_64/Packages/r/"
@@ -24,8 +24,8 @@ mirror_url = "https://mirrors.kernel.org/fedora-epel/9/Everything/x86_64/Package
 
 def required_packages():
     project_name = "example-rulec"
-    with open('Cargo.lock') as lock:
-        packages = toml.load(lock)["package"]
+    with open('Cargo.lock', 'rb') as lock:
+        packages = tomli.load(lock)["package"]
         required = {}
         for pkg in packages:
             name = pkg["name"]
