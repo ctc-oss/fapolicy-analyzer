@@ -1,6 +1,7 @@
 *~
 .coverage
 .env
+.venv
 .idea
 .local
 .testmondata
