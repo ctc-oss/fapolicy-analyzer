@@ -1,16 +1,13 @@
 Building
 ===
 
-The build of fapolicy-analyzer and its command line utilities uses Maturin and uv. The environment will run out of a
-Python virtual environment. The setup process is as follows.
+The build of fapolicy-analyzer and its command line utilities uses Maturin and uv.
 
-## Steps
+## Minimal Build Environment
 1. Install uv - `pip install uv`
-2. Create venv - `uv venv`
-3. Install maturin - `uv pip install maturin`
-4. Install dependencies - `uv sync`
-5. Build fapolicy-analyzer - `uv run maturin develop`
-6. Launch fapolicy-analzyer - `uv run gui`
+2. Install maturin - `pip install maturin`
+3. Build fapolicy-analyzer - `uv run maturin develop`
+4. Launch fapolicy-analzyer - `uv run gui`
 
 ## Python Requirements
 
