@@ -26,6 +26,8 @@ venvs
 *.tar.gz
 /vendor*/
 
+uv.lock
+
 fapolicy_analyzer/resources/build-info.json
 VERSION
 FEATURES
