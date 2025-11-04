@@ -24,6 +24,8 @@ See the Cargo.toml files in each individual [crate](crates) for detailed Rust de
 ## System Dependencies
 
 ### Build
+- uv
+- maturin
 - python3-devel
 - python3-setuptools
 - python3-setuptools-rust
