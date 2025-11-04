@@ -28,6 +28,10 @@
 
 See the [**User Guide**][1] for details.
 
+## Building
+
+See [BUILD.md](BUILD.md) for environment setup and build instructions. 
+
 ## Installation
 
 You can install the Policy Analyzer in one of the following ways
