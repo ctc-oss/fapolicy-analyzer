@@ -57,10 +57,10 @@ jobs:
         id: install_deps
         run: |
           python -m pip install --upgrade pip
-          pip install pipenv==2023.7.4 || pip install pipenv
+          pip install uv
+          pip install maturin
           pipenv install --dev --python ${{ matrix.python-version }}
-          echo "virt_env=$(pipenv --venv)" >> $GITHUB_OUTPUT
       - name: Setup Bindings
-        run: pipenv run python setup.py develop
+        run: uv run maturin develop
       - name: Test with pytest
-        run: pipenv run test
+        run: uv run xvfb-run -a pytest -s --cov=fapolicy_analyzer fapolicy_analyzer/tests/
