@@ -29,8 +29,16 @@ features = ["pyo3/extension-module"]
 manifest-path = "crates/pyo3/Cargo.toml"
 python-packages = ["fapolicy_analyzer"]
 
+[tool.ruff]
+line-length = 120
+target-version = "py39"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
 [tool.ruff.lint]
-ignore = ["E402"]
+extend-ignore = ["E203", "E402"]
 
 [tool.towncrier]
 filename = "CHANGELOG.md"
