@@ -5,7 +5,7 @@ build-backend = "maturin"
 [project]
 name = "fapolicy_analyzer"
 description = "File Access Policy Analyzer"
-dynamic = ["version"]
+version = "0.0.0"
 requires-python = ">=3.9"
 dependencies = [
     #"pycairo==1.25.1",
@@ -34,7 +34,7 @@ ignore = ["E402"]
 
 [tool.towncrier]
 filename = "CHANGELOG.md"
-version = "1.5.0"
+version = "0.0.0"
 start_string = "<!-- towncrier release notes start -->\n"
 title_format = "## [v{version}](https://github.com/ctc-oss/fapolicy-analyzer/releases/tag/v{version}) - {project_date}"
 issue_format = "[#{issue}](https://github.com/ctc-oss/fapolicy-analyzer/pull/{issue})"
