@@ -59,7 +59,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install uv
           pip install maturin
-          pipenv install --dev --python ${{ matrix.python-version }}
+          uv sync --dev --python ${{ matrix.python-version }}
       - name: Setup Bindings
         run: uv run maturin develop
       - name: Test with pytest
