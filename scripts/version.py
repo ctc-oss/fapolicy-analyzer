@@ -48,12 +48,15 @@ def find_version():
 def main(*argv):
     parser = argparse.ArgumentParser()
     parser.add_argument("--patch", action="store_true", help="Patch pyproject.toml version field")
+    parser.add_argument("--toml", type=str, default="../pyproject.toml", help="Patch pyproject.toml version field")
     args = parser.parse_args(argv)
 
     version = find_version()
+    print(version)
+
     if args.patch:
         lines = list()
-        with open("pyproject.toml", "r") as cfg:
+        with open(args.toml, "r") as cfg:
             for line in cfg.readlines():
                 splits = line.split("=", 1)
                 if len(splits) == 2:
@@ -66,10 +69,8 @@ def main(*argv):
                         lines.append(line)
                 else:
                     lines.append(line)
-        with open("pyproject.toml", "w") as cfg:
+        with open(args.toml, "w") as cfg:
             cfg.writelines(lines)
-    else:
-        print(version)
 
 
 def get_keywords():

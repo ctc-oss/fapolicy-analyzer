@@ -167,6 +167,10 @@ help-docs:
 	uv run help update
 	uv run help build
 
+# Update the project version using git describe version string
+version-string:
+	uv run scripts/version.py --patch --toml $(PWD)/pyproject.toml
+
 # Display all Makefile targets
 list-all:
 	@echo
