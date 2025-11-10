@@ -24,7 +24,7 @@ dependencies = [
 gui = "fapolicy_analyzer.ui.__main__:main"
 
 [tool.maturin]
-module-name = "rust"
+module-name = "fapolicy_analyzer.rust"
 features = ["pyo3/extension-module"]
 manifest-path = "crates/pyo3/Cargo.toml"
 python-packages = ["fapolicy_analyzer"]
