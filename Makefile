@@ -146,7 +146,7 @@ check: header-check format lint test
 # Execute the commands to generate the build information for display
 build-info:
 	@echo -e "${GRN}-  |--- Build info created${NC}"
-	scripts/build-info.py --git --os --time
+	uv run scripts/build-info.py --git --os --time
 
 # Generate Fedora rawhide rpms
 fc-rpm:
@@ -164,8 +164,8 @@ el-rpm:
 
 # Update embedded help documentation
 help-docs:
-	python3 help update
-	python3 help build
+	uv run help update
+	uv run help build
 
 # Display all Makefile targets
 list-all:

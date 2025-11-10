@@ -50,3 +50,7 @@ See the Cargo.toml files in each individual [crate](crates) for detailed Rust de
 - gtk3
 - gtksourceview3
 - gnome-icon-theme
+
+### Build docs
+
+- gettext
