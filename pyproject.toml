@@ -48,6 +48,7 @@ title_format = "## [v{version}](https://github.com/ctc-oss/fapolicy-analyzer/rel
 issue_format = "[#{issue}](https://github.com/ctc-oss/fapolicy-analyzer/pull/{issue})"
 underlines = ["", "", ""]
 directory = "news"
+template = "scripts/.towncrier.template.md"
 
 [tool.towncrier.fragment.added]
 name = "Added"
