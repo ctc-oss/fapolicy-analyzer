@@ -41,13 +41,11 @@ list:
 	@echo
 	@echo "       fapolicy-analyzer - High level common operation targets"
 	@echo
-	@echo "     list     - Display common development targets"
 	@echo "     run      - Execute the fapolicy-analyzer"
 	@echo "     test     - Execute all unit-tests"
 	@echo "     lint     - Execute source code linting tools"
 	@echo "     format   - Execute source code formatting"
 	@echo "     check    - Perform pre-git push tests and formatting"
-	@echo "     list-all - Display all targets"
 	@echo
 	@echo "     Note: Options can be passed to fapolicy-analyzer by"
 	@echo "           setting the OPTIONS environment variable, for example"
@@ -171,16 +169,13 @@ help-docs:
 version-string:
 	uv run scripts/version.py --patch --toml $(PWD)/pyproject.toml
 
-# Display all Makefile targets
-list-all:
-	@echo
-	@echo -e "${GRN}---Displaying all fapolicy-analyzer targets${NC}"
-	@echo
-	# Input to the loop is a list of targets extracted from this Makefile
-	@for t in `grep -E -o '^[^#].+*:' Makefile | egrep -v 'echo|@|podman'`;\
-	do # Output the target w/o a newline\
-	echo -e -n "$$t    \t";\
-	# grep the Makefile for the target; print line immediately preceding it\
-	grep  -B1 "^$$t" Makefile | head -1 | sed 's/\#//';\
-	done
-	@echo
+# Remove build related temporary files
+clean:
+	@rm -rf ./build/
+	@rm -rf ./vendor-rs/
+	@rm -f  ./fapolicy_analyzer/resources/build-info.json
+
+# Clean all build caches and build related temporary files
+clean-all: clean
+	@uv clean -q
+	@cargo clean -q
