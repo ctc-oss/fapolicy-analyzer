@@ -13,7 +13,6 @@ crate-type = ["cdylib"]
 pyo3 = { version = "0.21", features = ["abi3", "auto-initialize"] }
 similar = "2.1"
 chrono = "0.4"
-tempfile = "3.3"
 log = "0.4"
 pyo3-log = "0.10"
 

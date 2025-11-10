@@ -8,19 +8,24 @@
 
 extern crate bindgen;
 
-fn main() {
+use std::error::Error;
+
+fn main() -> Result<(), Box<dyn Error>> {
     println!("cargo:rustc-link-lib=audit");
     println!("cargo:rustc-link-lib=auparse");
     println!("cargo:rerun-if-changed=wrapper.h");
 
     let bindings = bindgen::Builder::default()
+        .rust_target("1.79.0".parse()?)
         .header("wrapper.h")
         .blocklist_type("timex")
-        .parse_callbacks(Box::new(bindgen::CargoCallbacks))
+        .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
         .generate()
         .expect("Unable to generate bindings");
 
     bindings
         .write_to_file("src/bindings.rs")
         .expect("Couldn't write bindings!");
+
+    Ok(())
 }
