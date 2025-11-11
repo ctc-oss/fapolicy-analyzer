@@ -41,7 +41,6 @@ BuildRequires: audit-libs-devel
 
 BuildRequires: uv
 BuildRequires: maturin
-BuildRequires: patchelf
 BuildRequires: cargo-rpm-macros
 
 BuildRequires: desktop-file-utils
