@@ -30,20 +30,15 @@ case $id in
     echo "fedora: vendoring packages"
     mkdir -p ${vendor_dest}
     cp -r /usr/share/cargo/registry/* ${vendor_dest}
-    find ${vendor_dest} -maxdepth 1 -type d -exec touch {}/README.md \;
-    # work around the readme doc issue
-    rm ${vendor_dest}/either-*/README.md
-    rm ${vendor_dest}/cexpr-*/README.md
-    rm ${vendor_dest}/libloading-*/README.md
-    rm ${vendor_dest}/lock_api-*/README.md
-    rm ${vendor_dest}/parking_lot_core-*/README.md
+    scripts/srpm/lock2spec.py --vendor_dir=${vendor_dest}
+    find ${vendor_dest} -maxdepth 1 -type d -exec touch {}/{README.md,PLATFORM.md,CHANGELOG.md,DESIGN.md} \;
     ;;
 
   ubuntu)
     echo "ubuntu: vendoring crates.io"
     cargo check
     cargo vendor-filterer --platform=x86_64-unknown-linux-gnu ${vendor_dest} &> /dev/null
-    python3 scripts/srpm/lock2spec.py --vendor_all
+    scripts/srpm/lock2spec.py
     ;;
 
   *)
