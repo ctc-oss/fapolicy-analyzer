@@ -105,23 +105,21 @@ jobs:
     steps:
       - name: Install RPM build dependencies
         run: |
-          dnf install -y git dnf5-plugins dnf-plugins-core cargo2rpm
+          dnf install -y git dnf5-plugins dnf-plugins-core cargo2rpm uv
+
+      - name: Install venv
+        run: |
+          uv sync --dev
 
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
 
-      - name: Adjust spec
-        run: |
-          # generate build deps with cargo2rpm
-          cargo2rpm -p Cargo.toml buildrequires | while read line; do
-            grep -n "BuildRequires:" fapolicy-analyzer.spec | head -n1 | cut -d: -f1 | xargs -I{} sed -i "{}iBuildRequires: $line" fapolicy-analyzer.spec
-          done
-
       - name: Install build dependencies
         run: |
-          dnf -y builddep fapolicy-analyzer.spec
+          rm Cargo.lock
+          scripts/lock2dnf.sh Cargo.toml
 
       - name: Tar crates
         run: |
