@@ -9,4 +9,4 @@ edition = "2021"
 bindgen = ">=0.63"
 
 [dependencies]
-thiserror = "1"
+thiserror = "2"

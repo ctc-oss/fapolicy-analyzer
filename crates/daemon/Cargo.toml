@@ -12,7 +12,7 @@ tempfile = "3.3"
 
 [dependencies]
 nom = "7.1"
-thiserror = "1.0"
+thiserror = "2"
 dbus = "0.9"
 tempfile = "3.3"
 log = "0.4"
