@@ -49,9 +49,13 @@ def main(*argv):
     parser = argparse.ArgumentParser()
     parser.add_argument("--patch", action="store_true", help="Patch pyproject.toml version field")
     parser.add_argument("--toml", type=str, default="../pyproject.toml", help="Patch pyproject.toml version field")
+    parser.add_argument("--version", type=str, required=False, help="Patch pyproject.toml version field")
     args = parser.parse_args(argv)
 
-    version = find_version()
+    if args.version:
+        version = args.version
+    else:
+        version = find_version()
     print(version)
 
     if args.patch:
