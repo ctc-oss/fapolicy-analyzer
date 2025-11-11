@@ -116,9 +116,16 @@ jobs:
         run: |
           uv sync --only-group vendor
 
+      - name: Local crates config
+        run: |
+          mkdir .cargo
+          cp scripts/srpm/cargo.toml .cargo/config.toml
+
       - name: Install build dependencies
         run: |
+          rm Cargo.lock
           scripts/lock2dnf.sh Cargo.toml
+          cargo generate-lockfile
 
       - name: Tar crates
         run: |

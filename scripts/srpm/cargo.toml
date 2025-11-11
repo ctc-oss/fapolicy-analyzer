@@ -1,0 +1,4 @@
+[source.crates-io]
+replace-with = "dnf"
+[source.dnf]
+directory = "/usr/share/cargo/registry"
