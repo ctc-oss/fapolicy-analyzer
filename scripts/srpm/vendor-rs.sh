@@ -30,7 +30,7 @@ case $id in
     echo "fedora: vendoring packages"
     mkdir -p ${vendor_dest}
     cp -r /usr/share/cargo/registry/* ${vendor_dest}
-    uv run scripts/srpm/lock2spec.py --vendor_dir=${vendor_dest}
+    uv run --only-group vendor scripts/srpm/lock2spec.py --vendor_dir=${vendor_dest}
     find ${vendor_dest} -maxdepth 1 -type d -exec touch {}/{README.md,PLATFORM.md,CHANGELOG.md,DESIGN.md} \;
     ;;
 
@@ -38,7 +38,7 @@ case $id in
     echo "ubuntu: vendoring crates.io"
     cargo check
     cargo vendor-filterer --platform=x86_64-unknown-linux-gnu ${vendor_dest} &> /dev/null
-    uv run scripts/srpm/lock2spec.py --vendor_dir=${vendor_dest}
+    uv run --only-group vendor scripts/srpm/lock2spec.py --vendor_dir=${vendor_dest}
     ;;
 
   *)
