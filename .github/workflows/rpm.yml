@@ -107,14 +107,14 @@ jobs:
         run: |
           dnf install -y git dnf5-plugins dnf-plugins-core cargo2rpm uv
 
-      - name: Install venv
-        run: |
-          uv sync --dev
-
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
+
+      - name: Install venv
+        run: |
+          uv sync --dev
 
       - name: Install build dependencies
         run: |
