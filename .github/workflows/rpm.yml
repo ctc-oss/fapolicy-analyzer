@@ -114,7 +114,7 @@ jobs:
 
       - name: Install venv
         run: |
-          uv sync --dev
+          uv sync --only-group vendor
 
       - name: Install build dependencies
         run: |
