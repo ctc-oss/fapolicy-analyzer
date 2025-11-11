@@ -28,20 +28,23 @@ Source0:       %{url}/releases/download/v%{version}/%{name}-%{version}.tar.gz
 Source1:       %{url}/releases/download/v%{version}/vendor-docs-%{version}.tar.gz
 
 BuildRequires: python3-devel
-BuildRequires: python3dist(setuptools)
 BuildRequires: python3dist(pip)
 BuildRequires: python3dist(wheel)
-BuildRequires: python3dist(babel)
 BuildRequires: dbus-devel
+
+BuildRequires: babel
 BuildRequires: gettext
 BuildRequires: itstool
-BuildRequires: desktop-file-utils
 
 BuildRequires: clang
 BuildRequires: audit-libs-devel
 
+BuildRequires: uv
+BuildRequires: maturin
+BuildRequires: patchelf
 BuildRequires: cargo-rpm-macros
-BuildRequires: python3dist(setuptools-rust)
+
+BuildRequires: desktop-file-utils
 
 Requires:      %{name}-cli
 Requires:      %{name}-gui
@@ -105,9 +108,8 @@ sed -i '/pyo3/d' Cargo.toml
 # extract our doc sourcs
 tar xvzf %{SOURCE1}
 
-# our setup.py looks up the version from git describe
-# this overrides that check to use the RPM version
-echo %{module_version} > VERSION
+# patch pyproject.toml version
+scripts/version.py --patch --toml pyproject.toml --version %{module_version}
 
 # capture build info
 scripts/build-info.py --os --time
@@ -122,19 +124,19 @@ echo "audit" > FEATURES
 
 %build
 
-%if %{with cli}
-cargo build --bin tdb --release
-cargo build --bin faprofiler --release
-cargo build --bin rulec --release --features pretty
-%endif
-
-%if %{with gui}
 # ensure standard Rust compiler flags are set
 export RUSTFLAGS="%{build_rustflags}"
 
-%{python3} setup.py compile_catalog -f
+%if %{with cli}
+cargo build --release --bin tdb
+cargo build --release --bin faprofiler
+cargo build --release --bin rulec --features pretty
+%endif
+
+%if %{with gui}
+pybabel compile -f -d locale -D fapolicy-analyzer
 %{python3} help build
-%{python3} setup.py bdist_wheel
+maturin build --release --skip-auditwheel -o dist
 
 %{cargo_license_summary}
 %{cargo_license} > LICENSE.dependencies
@@ -149,7 +151,8 @@ install -D target/release/rulec %{buildroot}/%{_sbindir}/%{name}-cli-rules
 %endif
 
 %if %{with gui}
-%{py3_install_wheel %{module}-%{module_version}*%{_target_cpu}.whl}
+wheel=$(basename dist/*.whl)
+%{py3_install_wheel $wheel}
 %{python3} help install --dest %{buildroot}/%{_datadir}/help
 install -D bin/%{name} %{buildroot}/%{_sbindir}/%{name}
 install -D data/%{name}.8 -t %{buildroot}/%{_mandir}/man8/
