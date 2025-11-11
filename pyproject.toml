@@ -20,9 +20,6 @@ dependencies = [
     "tomli==2.0.1"
 ]
 
-[project.scripts]
-gui = "fapolicy_analyzer.ui.__main__:main"
-
 [tool.maturin]
 module-name = "fapolicy_analyzer.rust"
 features = ["pyo3/extension-module"]
