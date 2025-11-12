@@ -5,9 +5,11 @@ The build of fapolicy-analyzer and its command line utilities uses Maturin and u
 
 ## Minimal Build Environment
 1. Install uv - `pip install uv`
-2. Install maturin - `pip install maturin`
+2. Install maturin - `uv tool install maturin`
 3. Build fapolicy-analyzer - `uv run maturin develop`
 4. Launch fapolicy-analzyer - `uv run gui`
+
+The project Makefile has a number of command combinations for common operations.
 
 ## Python Requirements
 

@@ -19,7 +19,7 @@
 #   description comment immediately preceding the target:dependency line so
 #   that the list-all extraction scripting can work correctly.
 #
-PYBABEL = uv run pybabel
+PYBABEL = uv run --group i18n pybabel
 DOMAIN  = fapolicy-analyzer
 LOCALEDIR = locale
 BABEL_MAPPING = babel.cfg
@@ -59,7 +59,7 @@ list:
 i18n: i18n-extract i18n-compile
 
 # Extract translatable strings from source
-i18n-extract:
+i18n-extract: tool-babel
 	$(PYBABEL) extract -F $(BABEL_MAPPING) -o $(POTFILE) $(BABEL_INPUTDIRS)
 
 # Update existing .po files (if any)
@@ -67,22 +67,34 @@ i18n-update: i18n-extract
 	$(PYBABEL) update -i $(POTFILE) -d $(LOCALEDIR) -D $(DOMAIN)
 
 # Compile .po → .mo files for all locales
-i18n-compile:
+i18n-compile: tool-babel
 	$(PYBABEL) compile -d $(LOCALEDIR) -D $(DOMAIN)
 
 i18n-clean:
-	rm -f $(POTFILE)
-	find $(LOCALEDIR) -name '*.mo' -delete
+	@find $(LOCALEDIR) -name '*.mo' -delete
+
+tool-babel:
+	@uv tool install babel -q
+
+tool-maturin:
+	@uv tool install maturin -q
 
 # Build the python/rust bindings
-build:
+build: tool-maturin
 	@echo -e "${GRN}  |--- Generating python bindings...${NC}"
 	uv run maturin develop
+
+wheel: tool-maturin
+	@uv run maturin build --release --skip-auditwheel -o dist
 
 ###############################################################################
 # fapolicy-analyzer execution
 # Execute fapolicy-analyzer [OPTIONS]
 run: build
+	uv run --group pypiui gui
+
+# Expects os packages for gtk
+run2: build
 	uv run gui
 
 ###############################################################################
@@ -162,20 +174,23 @@ el-rpm:
 
 # Update embedded help documentation
 help-docs:
-	uv run help update
-	uv run help build
+	uv run --group vendor help update
+	uv run --group vendor help build
+
+# clean up help related artifacts
+help-clean:
+	@rm -rf ./help/help.pot ./help/C
 
 # Update the project version using git describe version string
 version-string:
 	uv run scripts/version.py --patch --toml $(PWD)/pyproject.toml
 
-# Remove build related temporary files
-clean:
-	@rm -rf ./build/
-	@rm -rf ./vendor-rs/
-	@rm -f  ./fapolicy_analyzer/resources/build-info.json
+# Removes temporary files
+clean: i18n-clean help-clean
+	@rm -rf ./build/ ./vendor-rs/ ./dist/
+	@rm -f ./fapolicy_analyzer/resources/build-info.json
 
-# Clean all build caches and build related temporary files
+# Removes caches and builds
 clean-all: clean
-	@uv clean -q
 	@cargo clean -q
+	@rm -rf .venv
