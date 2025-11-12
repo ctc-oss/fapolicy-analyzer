@@ -30,20 +30,20 @@ Source1:       %{url}/releases/download/v%{version}/vendor-docs-%{version}.tar.g
 BuildRequires: python3-devel
 BuildRequires: python3dist(pip)
 BuildRequires: python3dist(wheel)
-BuildRequires: dbus-devel
 
 BuildRequires: babel
 BuildRequires: gettext
 BuildRequires: itstool
+BuildRequires: desktop-file-utils
 
 BuildRequires: clang
 BuildRequires: audit-libs-devel
+BuildRequires: dbus-devel
+BuildRequires: lmdb-devel
 
 BuildRequires: uv
 BuildRequires: maturin
 BuildRequires: cargo-rpm-macros
-
-BuildRequires: desktop-file-utils
 
 Requires:      %{name}-cli
 Requires:      %{name}-gui
@@ -122,7 +122,6 @@ echo "audit" > FEATURES
 %cargo_generate_buildrequires -a
 
 %build
-
 # ensure standard Rust compiler flags are set
 export RUSTFLAGS="%{build_rustflags}"
 
