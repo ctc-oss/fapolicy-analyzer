@@ -31,7 +31,6 @@ case $id in
     mkdir -p ${vendor_dest}
     cp -r /usr/share/cargo/registry/* ${vendor_dest}
     uv run --only-group vendor scripts/srpm/lock2spec.py --vendor_dir=${vendor_dest}
-    find ${vendor_dest} -maxdepth 1 -type d -exec touch {}/{README.md,PLATFORM.md,CHANGELOG.md,DESIGN.md} \;
     ;;
 
   ubuntu)
