@@ -2,6 +2,14 @@
   "props": [
     {
       "platform": "fedora",
+      "dist": "fc44",
+      "spec": "fapolicy-analyzer.spec",
+      "image": "registry.fedoraproject.org/fedora:44",
+      "chroot": "fedora-44-x86_64",
+      "prerelease": true
+    },
+    {
+      "platform": "fedora",
       "dist": "fc43",
       "spec": "fapolicy-analyzer.spec",
       "image": "registry.fedoraproject.org/fedora:43",
@@ -10,10 +18,10 @@
     },
     {
       "platform": "rhel",
-      "dist": "el9",
-      "spec": "scripts/srpm/fapolicy-analyzer.el9.spec",
-      "image": "quay.io/rockylinux/rockylinux:9",
-      "chroot": "rocky+epel-9-x86_64",
+      "dist": "el10",
+      "spec": "scripts/srpm/fapolicy-analyzer.el10.spec",
+      "image": "quay.io/rockylinux/rockylinux:10",
+      "chroot": "rocky+epel-10-x86_64",
       "prerelease": false
     }
   ]
