@@ -122,13 +122,13 @@ echo "audit" > FEATURES
 %cargo_generate_buildrequires -a
 
 %build
-# ensure standard Rust compiler flags are set
+# ensure standard Rust compiler flags are set in Maturin
 export RUSTFLAGS="%{build_rustflags}"
 
 %if %{with cli}
-cargo build --release --bin tdb
-cargo build --release --bin faprofiler
-cargo build --release --bin rulec --features pretty
+%cargo_build --bin tdb
+%cargo_build --bin faprofiler
+%cargo_build --bin rulec --features pretty
 %endif
 
 %if %{with gui}
