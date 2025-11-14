@@ -123,7 +123,6 @@ jobs:
 
       - name: Install build dependencies
         run: |
-          rm Cargo.lock
           scripts/lock2dnf.sh Cargo.toml
           cargo generate-lockfile
 
