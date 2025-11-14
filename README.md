@@ -30,6 +30,8 @@ See the [**User Guide**][1] for details.
 
 ## Building
 
+The Policy Analyzer builds and runs with [**`uv`**](https://github.com/astral-sh/uv?tab=readme-ov-file#installation).
+
 See [BUILD.md](BUILD.md) for environment setup and build instructions. 
 
 ## Installation
