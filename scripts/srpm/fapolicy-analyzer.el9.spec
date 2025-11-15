@@ -199,11 +199,6 @@ tar -xzf %{SOURCE2} -C ${CARGO_REG_DIR} --skip-old-files --strip-components=2
 sed -i '/tools/d' Cargo.toml
 %endif
 
-%if %{with cli}
-# disable ariadne
-sed -i '/ariadne/d' crates/tools/Cargo.toml
-%endif
-
 # extract our doc sourcs
 tar xvzf %{SOURCE1}
 
@@ -248,6 +243,9 @@ install -D data/%{name}-cli-*.8 -t %{buildroot}/%{_mandir}/man8/
 desktop-file-install data/%{name}.desktop
 find locale -name %{name}.mo -exec cp --parents -rv {} %{buildroot}/%{_datadir} \;
 %find_lang %{name} --with-gnome
+
+# remove gui entrypoint
+rm %{buildroot}/%{_bindir}/gui
 %endif
 
 %check

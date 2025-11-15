@@ -69,6 +69,7 @@ BuildRequires: rust-strsim-devel
 BuildRequires: rust-tempfile-devel
 BuildRequires: rust-thiserror-devel
 BuildRequires: rust-unindent-devel
+BuildRequires: rust-yansi-devel
 
 %global module          fapolicy_analyzer
 
@@ -114,10 +115,10 @@ GUI Tools to assist with the configuration and management of fapolicyd.
 %prep
 
 # An unprivileged user cannot write to the default registry location of
-# /usr/share/cargo/registry so we work around this by linking the contents
-# of the default registry into a new writable location, and then extract
+# /usr/share/cargo/registry so we work around this by copying the contents
+# of the default registry into a new writable location, and then extracting
 # the contents of the vendor tarball to this new writable dir.
-# The extraction favors the system crates by untaring with --skip-old-files
+# The extraction favors the system crates by untaring with --skip-old-files.
 # The crates in the vendor tarball are collected from the latest stable fc.
 CARGO_REG_DIR=%{_builddir}/vendor-rs
 mkdir -p ${CARGO_REG_DIR}
@@ -138,11 +139,6 @@ touch ${CARGO_REG_DIR}/clap_derive-*/README.md
 sed -i '/tools/d' Cargo.toml
 %endif
 
-%if %{with cli}
-# disable ariadne
-sed -i '/ariadne/d' crates/tools/Cargo.toml
-%endif
-
 # extract our doc sourcs
 tar xvzf %{SOURCE1}
 
@@ -153,13 +149,13 @@ scripts/version.py --patch --toml pyproject.toml --version %{module_version}
 scripts/build-info.py --os --time
 
 %build
-# ensure standard Rust compiler flags are set in Maturin
+# ensure standard Rust compiler flags are set
 export RUSTFLAGS="%{build_rustflags}"
 
 %if %{with cli}
-cargo build --release --bin tdb
-cargo build --release --bin faprofiler
-cargo build --release --bin rulec --features pretty
+cargo build --release -p fapolicy-tools --bin tdb
+cargo build --release -p fapolicy-tools --bin faprofiler
+cargo build --release -p fapolicy-tools --bin rulec --features pretty
 %endif
 
 %if %{with gui}
@@ -187,6 +183,9 @@ install -D data/%{name}-cli-*.8 -t %{buildroot}/%{_mandir}/man8/
 desktop-file-install data/%{name}.desktop
 find locale -name %{name}.mo -exec cp --parents -rv {} %{buildroot}/%{_datadir} \;
 %find_lang %{name} --with-gnome
+
+# remove gui entrypoint
+rm %{buildroot}/%{_bindir}/gui
 %endif
 
 %check
