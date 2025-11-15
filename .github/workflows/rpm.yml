@@ -105,7 +105,7 @@ jobs:
     steps:
       - name: Install RPM build dependencies
         run: |
-          dnf install -y git dnf5-plugins dnf-plugins-core cargo2rpm uv
+          dnf install -y git dnf5-plugins dnf-plugins-core cargo2rpm uv cmake cairo-devel
 
       - uses: actions/checkout@v4
         with:
