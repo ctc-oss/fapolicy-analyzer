@@ -17,8 +17,8 @@
 
 set -e
 
-if [[ -z "$1" ]] || [[ -z "$2" ]]; then
-  echo "usage: vendor-rs.sh <epel-version> <fapolicy-analyzer-version>"
+if [[ -z "$1" ]]; then
+  echo "usage: vendor-rs.sh <epel-version>"
   exit 1
 fi
 
@@ -51,7 +51,7 @@ esac
 
 uv run --only-group vendor scripts/srpm/lock2spec.py --epel "$1" --vendor_dir=${vendor_dest}
 
-vendor_tar=vendor-rs-${1}-${2}.tar.gz
+vendor_tar=vendor-rs.tar.gz
 vendor_root=$(dirname ${vendor_dest})
 tar czf ${vendor_tar} -C ${vendor_root} .
 du -sh ${vendor_tar}
