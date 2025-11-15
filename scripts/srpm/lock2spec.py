@@ -57,7 +57,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--vendor_all", action='store_true', help="Vendor all requirements, no filtering")
     parser.add_argument("--vendor_dir", type=str, default="vendor-rs/vendor", help="Vendor directory")
-    parser.add_argument("--epel", type=int, default=10, help="Version of EPEL to filter with (9 or 10)")
+    parser.add_argument("--epel", type=str, default="10", help="Version of EPEL to filter with (9 or 10)")
     args = parser.parse_args()
 
     if args.vendor_all:
@@ -89,9 +89,13 @@ if __name__ == '__main__':
             rpms[p] = f"rust-{p}"
             unvendor.append(f"{p}-{v}")
         elif f"{major}" == f"{epel_major}":
-            #print(f"[vendor] {p} {v}: minor miss {epel_minor}")
-            rpms[p] = f"rust-{p}"
-            unvendor.append(f"{p}-{v}")
+            if f"{major}" == "0":
+                print(f"[vendor] {p} {v}: minor miss on zero-major")
+                crates[p] = f"%{{crates_source {p} {v}}}"
+            else:
+                #print(f"[vendor] {p} {v}: minor miss {epel_minor}")
+                rpms[p] = f"rust-{p}"
+                unvendor.append(f"{p}-{v}")
         else:
             print(f"[vendor] {p} {v}: major miss {epel_major}")
             crates[p] = f"%{{crates_source {p} {v}}}"
