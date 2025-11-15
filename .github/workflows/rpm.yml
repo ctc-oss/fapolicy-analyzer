@@ -112,10 +112,6 @@ jobs:
           ref: ${{ github.ref }}
           fetch-depth: 0
 
-      - name: Install venv
-        run: |
-          uv sync --only-group vendor
-
       - name: Local crates config
         run: |
           mkdir .cargo
