@@ -119,6 +119,7 @@ jobs:
 
       - name: Install build dependencies
         run: |
+          sed -i '/nodocs/d' /etc/dnf/dnf.conf
           scripts/lock2dnf.sh Cargo.toml
           cargo generate-lockfile
 
