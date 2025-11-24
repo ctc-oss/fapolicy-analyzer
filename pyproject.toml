@@ -11,9 +11,6 @@ dependencies = [
     "configargparse==1.7.1",
     "rx==3.2",
     "more-itertools==10.1.0",
-    "importlib-resources==6.4.4",
-    "importlib-metadata==8.6.1",
-    "dataclasses==0.6",
     "matplotlib~=3.9.1",
     "tomli==2.0.1",
 ]
