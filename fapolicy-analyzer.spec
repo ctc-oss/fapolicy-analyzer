@@ -136,9 +136,12 @@ pybabel compile -f -d locale -D fapolicy-analyzer
 %{python3} help build
 maturin build --release --skip-auditwheel -o dist
 
+# remove gui entrypoint
+rm %{buildroot}/%{_bindir}/gui
+%endif
+
 %{cargo_license_summary}
 %{cargo_license} > LICENSE.dependencies
-%endif
 
 %install
 

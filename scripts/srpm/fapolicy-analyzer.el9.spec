@@ -248,6 +248,9 @@ find locale -name %{name}.mo -exec cp --parents -rv {} %{buildroot}/%{_datadir} 
 rm %{buildroot}/%{_bindir}/gui
 %endif
 
+%{cargo_license_summary}
+%{cargo_license} > LICENSE.dependencies
+
 %check
 %if %{with gui}
 desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
