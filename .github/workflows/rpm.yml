@@ -425,9 +425,22 @@ jobs:
     strategy:
       matrix: ${{ fromJson(needs.config.outputs.matrix )}}
     steps:
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 8192
+          swap-size-mb: 512
+          remove-dotnet: 'true'
+          build-mount-path: $HOME/.local/share/containers
+
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
+
+      - name: Check free space
+        run: |
+          echo "Free space:"
+          df -h
 
       - name: Download srpm artifacts
         uses: actions/download-artifact@v4
@@ -435,12 +448,22 @@ jobs:
           name: srpm-artifacts-${{ matrix.props.dist }}
           path: /tmp/src/
 
+      - name: Check free space
+        run: |
+          echo "Free space:"
+          df -h
+
       - name: Download tarball artifacts
         if: startsWith(matrix.props.dist, 'el')
         uses: actions/download-artifact@v4
         with:
           name: tarball-artifacts-${{ matrix.props.dist }}
           path: /tmp/src/
+
+      - name: Check free space
+        run: |
+          echo "Free space:"
+          df -h
 
       - name: Checksum artifacts
         run: |
@@ -458,6 +481,11 @@ jobs:
           podman exec $cid dnf install -y mock
           podman exec $cid mock -r ${{ matrix.props.chroot }} --init
 
+      - name: Check free space
+        run: |
+          echo "Free space:"
+          df -h
+
       - name: Build for FC with Mock
         if: startsWith(matrix.props.dist, 'fc')
         run: |
@@ -473,7 +501,7 @@ jobs:
           cid="${{ matrix.props.dist }}-${{ github.run_id }}"
           srpm=$(find . -name *.${{ matrix.props.dist }}.src.rpm)
           podman cp $srpm $cid:/tmp/$srpm
-          podman exec $cid mock -r ${{ matrix.props.chroot }} --resultdir /tmp/rpmbuild --enablerepo=crb --rebuild /tmp/$srpm
+          podman exec $cid mock --trace -v -r ${{ matrix.props.chroot }} --resultdir /tmp/rpmbuild --enablerepo=crb --rebuild /tmp/$srpm
         working-directory: /tmp/src/
 
       - name: Show logs
@@ -482,6 +510,12 @@ jobs:
           cid="${{ matrix.props.dist }}-${{ github.run_id }}"
           podman exec $cid ls -R /tmp/rpmbuild
           podman exec $cid cat /tmp/rpmbuild/build.log
+
+      - name: Show free space
+        if: always()
+        run: |
+          echo "Free space:"
+          df -h
 
       - name: Export RPMs
         run: |
