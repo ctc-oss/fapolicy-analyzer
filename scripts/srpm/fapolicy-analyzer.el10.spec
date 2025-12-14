@@ -125,12 +125,6 @@ mkdir -p ${CARGO_REG_DIR}
 for d in %{cargo_registry}/*; do cp -r ${d} ${CARGO_REG_DIR} || true; done
 tar -xzf %{SOURCE2} -C ${CARGO_REG_DIR} --no-same-owner --skip-old-files --strip-components=2
 
-touch ${CARGO_REG_DIR}/jiff-*/{README.md,PLATFORM.md,CHANGELOG.md,DESIGN.md}
-touch ${CARGO_REG_DIR}/is_executable-*/README.md
-touch ${CARGO_REG_DIR}/getrandom-*/README.md
-touch ${CARGO_REG_DIR}/clap_builder-*/README.md
-touch ${CARGO_REG_DIR}/clap_derive-*/README.md
-
 %cargo_prep -v ${CARGO_REG_DIR}
 %autosetup -n %{name}
 
@@ -164,6 +158,8 @@ pybabel compile -f -d locale -D fapolicy-analyzer
 maturin build --release --skip-auditwheel -o dist
 %endif
 
+%{cargo_license_summary}
+%{cargo_license} > LICENSE.dependencies
 
 %install
 
@@ -187,9 +183,6 @@ find locale -name %{name}.mo -exec cp --parents -rv {} %{buildroot}/%{_datadir} 
 # remove gui entrypoint
 rm %{buildroot}/%{_bindir}/gui
 %endif
-
-%{cargo_license_summary}
-%{cargo_license} > LICENSE.dependencies
 
 %check
 %if %{with gui}
