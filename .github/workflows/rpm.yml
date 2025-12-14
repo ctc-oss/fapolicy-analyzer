@@ -425,14 +425,6 @@ jobs:
     strategy:
       matrix: ${{ fromJson(needs.config.outputs.matrix )}}
     steps:
-      - name: Maximize build space
-        uses: easimon/maximize-build-space@master
-        with:
-          root-reserve-mb: 8192
-          swap-size-mb: 512
-          remove-dotnet: 'true'
-          build-mount-path: $HOME/.local/share/containers
-
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
