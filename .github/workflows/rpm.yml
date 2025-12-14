@@ -126,8 +126,8 @@ jobs:
       - name: Tar crates
         run: |
           ls -l /usr/share/cargo/registry
-          # locking to 10.1 for now
-          scripts/srpm/vendor-rs.sh 10.1
+          # locking to 10.2 for now
+          scripts/srpm/vendor-rs.sh 10.2
 
       - name: Upload tarball
         uses: actions/upload-artifact@v4
