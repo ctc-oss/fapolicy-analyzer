@@ -125,6 +125,10 @@ echo "audit" > FEATURES
 # ensure standard Rust compiler flags are set
 export RUSTFLAGS="%{build_rustflags}"
 
+export CARGO_BUILD_JOBS=2
+export CARGO_PROFILE_RELEASE_CODEGEN_UNITS=1
+export CARGO_INCREMENTAL=0
+
 %if %{with cli}
 cargo build --release --bin tdb
 cargo build --release --bin faprofiler
