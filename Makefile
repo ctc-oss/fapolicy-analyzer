@@ -19,6 +19,13 @@
 #   description comment immediately preceding the target:dependency line so
 #   that the list-all extraction scripting can work correctly.
 #
+PYBABEL = uv run --group i18n pybabel
+DOMAIN  = fapolicy-analyzer
+LOCALEDIR = locale
+BABEL_MAPPING = babel.cfg
+BABEL_INPUTDIRS = fapolicy_analyzer/ui fapolicy_analyzer/glade
+POTFILE  = $(LOCALEDIR)/$(DOMAIN).pot
+
 GRN=\033[0;32m
 RED=\033[0;31m
 NC=\033[0m # No Color
@@ -34,14 +41,11 @@ list:
 	@echo
 	@echo "       fapolicy-analyzer - High level common operation targets"
 	@echo
-	@echo "     list     - Display common development targets"
-	@echo "     shell    - Install deps, build bindings, start venv shell"
 	@echo "     run      - Execute the fapolicy-analyzer"
 	@echo "     test     - Execute all unit-tests"
 	@echo "     lint     - Execute source code linting tools"
 	@echo "     format   - Execute source code formatting"
 	@echo "     check    - Perform pre-git push tests and formatting"
-	@echo "     list-all - Display all targets"
 	@echo
 	@echo "     Note: Options can be passed to fapolicy-analyzer by"
 	@echo "           setting the OPTIONS environment variable, for example"
@@ -51,34 +55,47 @@ list:
 	@echo "             $$ make -k [target]"
 	@echo
 
-###############################################################################
-# Development environment population and creation
-# Start a shell session in a python virtual environment
-shell: install build
-	@echo
-	@echo -e "${GRN}--- Starting a fapolicy-analyzer development shell${NC}"
-	pipenv shell
-	@echo -e "${GRN}--- Development shell terminated${NC}"
+# extract and compile
+i18n: i18n-extract i18n-compile
 
-# Update the virtual environment suitable for pipenv run
-env: install build
-	@echo -e "${GRN}--- Updating the virtual environment complete${NC}"
+# Extract translatable strings from source
+i18n-extract: tool-babel
+	$(PYBABEL) extract -F $(BABEL_MAPPING) -o $(POTFILE) $(BABEL_INPUTDIRS)
 
-# Install python dependencies into the virtual environment
-install:
-	@echo -e "${GRN}  |--- Installing pipenv dependencies...${NC}"
-	pipenv install --dev
+# Update existing .po files (if any)
+i18n-update: i18n-extract
+	$(PYBABEL) update -i $(POTFILE) -d $(LOCALEDIR) -D $(DOMAIN)
+
+# Compile .po → .mo files for all locales
+i18n-compile: tool-babel
+	$(PYBABEL) compile -d $(LOCALEDIR) -D $(DOMAIN)
+
+i18n-clean:
+	@find $(LOCALEDIR) -name '*.mo' -delete
+
+tool-babel:
+	@uv tool install babel -q
+
+tool-maturin:
+	@uv tool install maturin -q
 
 # Build the python/rust bindings
-build: install
+build: tool-maturin
 	@echo -e "${GRN}  |--- Generating python bindings...${NC}"
-	pipenv run python setup.py develop
+	uv run maturin develop
+
+wheel: tool-maturin
+	@uv run maturin build --release --skip-auditwheel -o dist
 
 ###############################################################################
 # fapolicy-analyzer execution
 # Execute fapolicy-analyzer [OPTIONS]
-run: env
-	pipenv run python -m fapolicy_analyzer.ui ${OPTIONS}
+run: build
+	uv run --group pypiui gui
+
+# Expects os packages for gtk
+run2: build
+	uv run gui
 
 ###############################################################################
 # Development unit-testing and source code style tools
@@ -89,7 +106,7 @@ test: pytest cargo-test
 # Execute the python unit tests
 pytest: build
 	@echo -e "${GRN}  |--- Python unit-testing: Invoking pytest...${NC}"
-	pipenv run xvfb-run -a pytest -s --cov=fapolicy_analyzer fapolicy_analyzer/tests/
+	uv run xvfb-run -a pytest -s --cov=fapolicy_analyzer fapolicy_analyzer/tests/
 
 # Execute the Rust unit-tests
 cargo-test: build
@@ -103,12 +120,12 @@ format: pyformat cargo-fmt
 # Format python source code
 pyformat:
 	@echo -e "${GRN}  |--- Python formating...${NC}"
-	pipenv run format
+	uv run ruff format
 
 # Format rust source code
 cargo-fmt:
 	@echo -e "${GRN}-  |--- Rust formatting...${NC}"
-	pipenv run cargo fmt
+	cargo fmt
 
 # Perform linting on the project source code
 lint: pylint clippy
@@ -124,12 +141,12 @@ header-check:
 # Perform linting on the Python source code
 pylint:
 	@echo -e "${GRN}-  |--- Python linting...${NC}"
-	pipenv run lint
+	uv run ruff check fapolicy_analyzer
 
 # Perform linting on the rust source code
 clippy:
 	@echo -e "${GRN}-  |--- Rust linting...${NC}"
-	pipenv run cargo clippy --all
+	cargo clippy --all
 
 # Perform pre- git push unit-testing, formating, and linting
 check: header-check format lint test
@@ -139,7 +156,7 @@ check: header-check format lint test
 # Execute the commands to generate the build information for display
 build-info:
 	@echo -e "${GRN}-  |--- Build info created${NC}"
-	scripts/build-info.py --overwrite --git --os --time
+	uv run scripts/build-info.py --git --os --time
 
 # Generate Fedora rawhide rpms
 fc-rpm:
@@ -157,19 +174,23 @@ el-rpm:
 
 # Update embedded help documentation
 help-docs:
-	python3 help update
-	python3 help build
+	uv run --group vendor help update
+	uv run --group vendor help build
 
-# Display all Makefile targets
-list-all:
-	@echo
-	@echo -e "${GRN}---Displaying all fapolicy-analyzer targets${NC}"
-	@echo
-	# Input to the loop is a list of targets extracted from this Makefile
-	@for t in `grep -E -o '^[^#].+*:' Makefile | egrep -v 'echo|@|podman'`;\
-	do # Output the target w/o a newline\
-	echo -e -n "$$t    \t";\
-	# grep the Makefile for the target; print line immediately preceding it\
-	grep  -B1 "^$$t" Makefile | head -1 | sed 's/\#//';\
-	done
-	@echo
+# clean up help related artifacts
+help-clean:
+	@rm -rf ./help/help.pot ./help/C
+
+# Update the project version using git describe version string
+version-string:
+	uv run scripts/version.py --patch --toml $(PWD)/pyproject.toml
+
+# Removes temporary files
+clean: i18n-clean help-clean
+	@rm -rf ./build/ ./vendor-rs/ ./dist/
+	@rm -f ./fapolicy_analyzer/resources/build-info.json
+
+# Removes caches and builds
+clean-all: clean
+	@cargo clean -q
+	@rm -rf .venv

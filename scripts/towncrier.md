@@ -6,9 +6,9 @@
 {% if definitions[category]['showcontent'] %}
 {% for text, pull_requests in section[category].items() %}
 - {{ text }} {{ pull_requests|join(', ') }}
-{% endfor %}
-{% else %}
+  {% endfor %}
+  {% else %}
 - {{ section[category]['']|join(', ') }}
-{% endif %}
+  {% endif %}
 
 {% endfor %}{% else %}No significant changes.{% endif %}{% endfor %}

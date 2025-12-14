@@ -43,7 +43,7 @@ jobs:
 
   source0:
     name: Vendor Source0
-    container: registry.fedoraproject.org/fedora:41
+    container: registry.fedoraproject.org/fedora:43
     runs-on: ubuntu-22.04
     steps:
       - name: Install deps
@@ -100,33 +100,34 @@ jobs:
 
   crates0:
     name: Vendor Crates0
-    container: registry.fedoraproject.org/fedora:41
+    container: registry.fedoraproject.org/fedora:43
     runs-on: ubuntu-22.04
     steps:
       - name: Install RPM build dependencies
         run: |
-          dnf install -y git dnf5-plugins dnf-plugins-core cargo2rpm
+          dnf install -y git dnf5-plugins dnf-plugins-core cargo2rpm uv cmake cairo-devel
 
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
 
-      - name: Adjust spec
+      - name: Local crates config
         run: |
-          # generate build deps with cargo2rpm
-          cargo2rpm -p Cargo.toml buildrequires | while read line; do
-            grep -n "BuildRequires:" fapolicy-analyzer.spec | head -n1 | cut -d: -f1 | xargs -I{} sed -i "{}iBuildRequires: $line" fapolicy-analyzer.spec
-          done
+          mkdir .cargo
+          cp scripts/srpm/cargo.toml .cargo/config.toml
 
       - name: Install build dependencies
         run: |
-          dnf -y builddep fapolicy-analyzer.spec
+          sed -i '/nodocs/d' /etc/dnf/dnf.conf
+          scripts/lock2dnf.sh Cargo.toml
+          cargo generate-lockfile
 
       - name: Tar crates
         run: |
           ls -l /usr/share/cargo/registry
-          scripts/srpm/vendor-rs.sh
+          # locking to 10.2 for now
+          scripts/srpm/vendor-rs.sh 10.2
 
       - name: Upload tarball
         uses: actions/upload-artifact@v4
@@ -313,7 +314,7 @@ jobs:
         run: |
           sudo apt install -y podman
           cid="${{ matrix.props.dist }}-${{ github.run_id }}"
-          podman run -dt --name $cid --privileged fedora:41
+          podman run -dt --name $cid --privileged fedora:43
 
       - name: Init container
         run: |
@@ -428,11 +429,21 @@ jobs:
         with:
           ref: ${{ github.ref }}
 
+      - name: Check free space
+        run: |
+          echo "Free space:"
+          df -h
+
       - name: Download srpm artifacts
         uses: actions/download-artifact@v4
         with:
           name: srpm-artifacts-${{ matrix.props.dist }}
           path: /tmp/src/
+
+      - name: Check free space
+        run: |
+          echo "Free space:"
+          df -h
 
       - name: Download tarball artifacts
         if: startsWith(matrix.props.dist, 'el')
@@ -440,6 +451,11 @@ jobs:
         with:
           name: tarball-artifacts-${{ matrix.props.dist }}
           path: /tmp/src/
+
+      - name: Check free space
+        run: |
+          echo "Free space:"
+          df -h
 
       - name: Checksum artifacts
         run: |
@@ -449,13 +465,18 @@ jobs:
         run: |
           sudo apt install -y podman
           cid="${{ matrix.props.dist }}-${{ github.run_id }}"
-          podman run -dt --name $cid --privileged fedora:41
+          podman run -dt --name $cid --privileged fedora:43
 
       - name: Init container
         run: |
           cid="${{ matrix.props.dist }}-${{ github.run_id }}"
           podman exec $cid dnf install -y mock
           podman exec $cid mock -r ${{ matrix.props.chroot }} --init
+
+      - name: Check free space
+        run: |
+          echo "Free space:"
+          df -h
 
       - name: Build for FC with Mock
         if: startsWith(matrix.props.dist, 'fc')
@@ -472,7 +493,7 @@ jobs:
           cid="${{ matrix.props.dist }}-${{ github.run_id }}"
           srpm=$(find . -name *.${{ matrix.props.dist }}.src.rpm)
           podman cp $srpm $cid:/tmp/$srpm
-          podman exec $cid mock -r ${{ matrix.props.chroot }} --resultdir /tmp/rpmbuild --enablerepo=crb --rebuild /tmp/$srpm
+          podman exec $cid mock --trace -v -r ${{ matrix.props.chroot }} --resultdir /tmp/rpmbuild --enablerepo=crb --rebuild /tmp/$srpm
         working-directory: /tmp/src/
 
       - name: Show logs
@@ -481,6 +502,12 @@ jobs:
           cid="${{ matrix.props.dist }}-${{ github.run_id }}"
           podman exec $cid ls -R /tmp/rpmbuild
           podman exec $cid cat /tmp/rpmbuild/build.log
+
+      - name: Show free space
+        if: always()
+        run: |
+          echo "Free space:"
+          df -h
 
       - name: Export RPMs
         run: |

@@ -17,10 +17,15 @@
 
 set -e
 
-# rust
+if [[ -z "$1" ]]; then
+  echo "usage: vendor-rs.sh <epel-version>"
+  exit 1
+fi
+
+# clean previous vendor dir
 rm -rf vendor-rs
 
-# the dest path here needs to stay synced up with the path in lock2spec.py
+# the build expects this dir structure
 vendor_dest=vendor-rs/vendor
 
 id=$(. /etc/os-release && echo $ID)
@@ -30,35 +35,23 @@ case $id in
     echo "fedora: vendoring packages"
     mkdir -p ${vendor_dest}
     cp -r /usr/share/cargo/registry/* ${vendor_dest}
-    find ${vendor_dest} -maxdepth 1 -type d -exec touch {}/README.md \;
-    # work around the readme doc issue
-    rm ${vendor_dest}/either-*/README.md
-    rm ${vendor_dest}/cexpr-*/README.md
-    rm ${vendor_dest}/libloading-*/README.md
-    rm ${vendor_dest}/lock_api-*/README.md
-    rm ${vendor_dest}/parking_lot_core-*/README.md
     ;;
 
   ubuntu)
     echo "ubuntu: vendoring crates.io"
     cargo check
     cargo vendor-filterer --platform=x86_64-unknown-linux-gnu ${vendor_dest} &> /dev/null
-    python3 scripts/srpm/lock2spec.py --vendor_all
     ;;
 
   *)
     echo "error: $id is an unsupported build platform"
+    exit 1
     ;;
 esac
 
+uv run --only-group vendor scripts/srpm/lock2spec.py --epel "$1" --vendor_dir=${vendor_dest}
 
 vendor_tar=vendor-rs.tar.gz
 vendor_root=$(dirname ${vendor_dest})
 tar czf ${vendor_tar} -C ${vendor_root} .
-
-if [[ ! -z "$1" ]]; then
-  vendor_tar=vendor-rs-${1}.tar.gz
-  mv vendor-rs.tar.gz ${vendor_tar}
-fi
-
 du -sh ${vendor_tar}

@@ -26,5 +26,4 @@ mock -r "$1" --resultdir ${rpmbuild_dir} --rebuild ${rpmbuild_dir}/*.src.rpm
 if [[ -n "$2" ]]; then
   echo "[build.sh] exporting rpms to ${2}"
   cp -v ${rpmbuild_dir}/*.rpm ${2}
-  cp -v ${rpmbuild_dir}/*.rpm ${2}
 fi

@@ -194,16 +194,9 @@ tar -xzf %{SOURCE2} -C ${CARGO_REG_DIR} --skip-old-files --strip-components=2
 
 %autosetup -n %{name}
 
-rm Cargo.lock
-
 %if %{without cli}
 # disable the dev-tools crate
 sed -i '/tools/d' Cargo.toml
-%endif
-
-%if %{with cli}
-# disable ariadne
-sed -i '/ariadne/d' crates/tools/Cargo.toml
 %endif
 
 # extract our doc sourcs
@@ -250,7 +243,13 @@ install -D data/%{name}-cli-*.8 -t %{buildroot}/%{_mandir}/man8/
 desktop-file-install data/%{name}.desktop
 find locale -name %{name}.mo -exec cp --parents -rv {} %{buildroot}/%{_datadir} \;
 %find_lang %{name} --with-gnome
+
+# remove gui entrypoint
+rm %{buildroot}/%{_bindir}/gui
 %endif
+
+%{cargo_license_summary}
+%{cargo_license} > LICENSE.dependencies
 
 %check
 %if %{with gui}

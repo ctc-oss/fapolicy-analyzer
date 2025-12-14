@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#
+
 # Copyright Concurrent Technologies Corporation 2021
 #
 # This program is free software: you can redistribute it and/or modify
@@ -15,10 +15,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+# install all available packages for a Cargo.lock
+# generate a temporary spec file and use builddep to install
 
-if [[ ! -d /run/fapolicyd ]]; then mkdir /run/fapolicyd; fi
-if [[ ! -p /run/fapolicyd/fapolicyd.fifo ]]; then mkfifo /run/fapolicyd/fapolicyd.fifo; fi
+if [ -z "$1" ]; then
+  echo "usage: lock2dnf <path-to-cargo-toml>"
+  exit 1
+fi
 
-chown "$SUDO_UID" /run/fapolicyd/fapolicyd.fifo
+tmpfile=$(mktemp)
+trap 'rm -f "$tmpfile"' EXIT
 
-while i=$(cat /run/fapolicyd/fapolicyd.fifo); do echo "$i"; done
+echo "Name: fapolicy-analyzer-builddeps" > "${tmpfile}"
+echo "Summary: Cargo2RPM Build Dependencies" | tee -a "${tmpfile}"
+echo "Version: 0.0.0" | tee -a "${tmpfile}"
+echo "License: None" | tee -a "${tmpfile}"
+echo "Release: 1" | tee -a "${tmpfile}"
+cargo2rpm --path "$1" buildrequires --with-check --all-features | sed 's/^/BuildRequires: /' | tee -a "${tmpfile}"
+echo "%description" | tee -a "${tmpfile}"
+dnf builddep -y --enable-repo updates-testing --spec "${tmpfile}"

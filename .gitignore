@@ -1,6 +1,7 @@
 *~
 .coverage
 .env
+.venv
 .idea
 .local
 .testmondata
@@ -24,6 +25,9 @@ venvs
 
 *.tar.gz
 /vendor*/
+
+Cargo.lock
+uv.lock
 
 fapolicy_analyzer/resources/build-info.json
 VERSION
