@@ -119,7 +119,6 @@ echo "audit" > FEATURES
 %endif
 
 %generate_buildrequires
-%pyproject_buildrequires -R
 %cargo_generate_buildrequires -a
 
 %build
