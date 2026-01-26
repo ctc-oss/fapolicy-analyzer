@@ -128,6 +128,8 @@ tar -xzf %{SOURCE2} -C ${CARGO_REG_DIR} --no-same-owner --skip-old-files --strip
 %cargo_prep -v ${CARGO_REG_DIR}
 %autosetup -n %{name}
 
+rm Cargo.lock
+
 %if %{without cli}
 # disable the dev-tools crate
 sed -i '/tools/d' Cargo.toml
