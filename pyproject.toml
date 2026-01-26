@@ -8,11 +8,11 @@ description = "File Access Policy Analyzer"
 version = "0.0.0"
 requires-python = ">=3.9"
 dependencies = [
-    "configargparse==1.7.1",
-    "rx==3.2",
-    "more-itertools==10.1.0",
-    "matplotlib~=3.9.1",
-    "tomli==2.0.1",
+    "configargparse",
+    "rx",
+    "more-itertools",
+    "matplotlib",
+    "tomli",
 ]
 
 [project.scripts]
