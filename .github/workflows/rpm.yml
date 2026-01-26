@@ -126,7 +126,7 @@ jobs:
       - name: Tar crates
         run: |
           ls -l /usr/share/cargo/registry
-          scripts/srpm/vendor-rs.sh 10
+          scripts/srpm/vendor-rs.sh 10.1
 
       - name: Upload tarball
         uses: actions/upload-artifact@v4
