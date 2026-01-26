@@ -20,8 +20,8 @@
       "platform": "rhel",
       "dist": "el10",
       "spec": "scripts/srpm/fapolicy-analyzer.el10.spec",
-      "image": "quay.io/rockylinux/rockylinux:10",
-      "chroot": "rocky+epel-10-x86_64",
+      "image": "quay.io/centos/centos:stream10",
+      "chroot": "centos-stream+epel-10-x86_64",
       "prerelease": false
     }
   ]
