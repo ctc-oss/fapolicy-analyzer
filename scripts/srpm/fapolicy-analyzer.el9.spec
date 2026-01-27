@@ -45,6 +45,9 @@ BuildRequires: lmdb-devel
 
 BuildRequires: rust-packaging
 
+BuildRequires: rust-anstream-devel
+BuildRequires: rust-anstyle-query-devel
+BuildRequires: rust-ariadne-devel
 BuildRequires: rust-arc-swap-devel
 BuildRequires: rust-assert_matches-devel
 BuildRequires: rust-autocfg-devel
@@ -56,6 +59,8 @@ BuildRequires: rust-cexpr-devel
 BuildRequires: rust-cfg-if-devel
 BuildRequires: rust-chrono-devel
 BuildRequires: rust-clang-sys-devel
+BuildRequires: rust-clap-devel
+BuildRequires: rust-clap_derive-devel
 BuildRequires: rust-confy-devel
 BuildRequires: rust-cpufeatures-devel
 BuildRequires: rust-crossbeam-epoch-devel
@@ -65,13 +70,17 @@ BuildRequires: rust-digest-devel
 BuildRequires: rust-directories-devel
 BuildRequires: rust-dirs-sys-devel
 BuildRequires: rust-either-devel
+BuildRequires: rust-env_logger-devel
 BuildRequires: rust-generic-array-devel
 BuildRequires: rust-getrandom-devel
 BuildRequires: rust-glob-devel
 BuildRequires: rust-heck-devel
+BuildRequires: rust-human-panic-devel
+BuildRequires: rust-iana-time-zone-devel
 BuildRequires: rust-indoc-devel
 BuildRequires: rust-instant-devel
 BuildRequires: rust-is_executable-devel
+BuildRequires: rust-jiff-devel
 BuildRequires: rust-lazy_static-devel
 BuildRequires: rust-libc-devel
 BuildRequires: rust-libloading-devel
@@ -80,13 +89,17 @@ BuildRequires: rust-log-devel
 BuildRequires: rust-memchr-devel
 BuildRequires: rust-memoffset-devel
 BuildRequires: rust-nom-devel
+BuildRequires: rust-notify-devel
 BuildRequires: rust-num-integer-devel
 BuildRequires: rust-num-traits-devel
 BuildRequires: rust-num_cpus-devel
 BuildRequires: rust-option-ext-devel
 BuildRequires: rust-parking_lot-devel
 BuildRequires: rust-pkg-config-devel
+BuildRequires: rust-prettyplease-devel
 BuildRequires: rust-proc-macro2-devel
+BuildRequires: rust-pyo3-devel
+BuildRequires: rust-pyo3-macros-devel
 BuildRequires: rust-rayon-devel
 BuildRequires: rust-regex-devel
 BuildRequires: rust-regex-syntax-devel
@@ -95,8 +108,11 @@ BuildRequires: rust-sha2-devel
 BuildRequires: rust-shlex-devel
 BuildRequires: rust-similar-devel
 BuildRequires: rust-smallvec-devel
+BuildRequires: rust-strip-ansi-escapes-devel
+BuildRequires: rust-strsim-devel
 BuildRequires: rust-syn-devel
 BuildRequires: rust-target-lexicon-devel
+BuildRequires: rust-tempfile-devel
 BuildRequires: rust-thiserror-devel
 BuildRequires: rust-typenum-devel
 BuildRequires: rust-unicode-ident-devel
