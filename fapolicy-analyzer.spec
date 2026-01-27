@@ -69,7 +69,7 @@ Requires:      python3-importlib-metadata
 Requires:      python3-toml
 Requires:      python3-matplotlib-gtk3
 
-%global __requires_exclude ^python3\.[0-9]+dist\(reactivex\).*
+%global __requires_exclude ^python3\.[0-9]+dist\\(rx\\)
 Requires:      python3-rx
 
 Requires:      gtk3
