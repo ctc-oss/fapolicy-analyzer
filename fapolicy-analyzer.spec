@@ -65,10 +65,12 @@ Requires:      python3
 Requires:      python3-gobject
 Requires:      python3-configargparse
 Requires:      python3-more-itertools
-Requires:      python3-rx
 Requires:      python3-importlib-metadata
 Requires:      python3-toml
 Requires:      python3-matplotlib-gtk3
+
+%global __requires_exclude ^python3\.[0-9]+dist\(reactivex\).*
+Requires:      python3-rx
 
 Requires:      gtk3
 Requires:      gtksourceview3
