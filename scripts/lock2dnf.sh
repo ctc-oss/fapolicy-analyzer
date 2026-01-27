@@ -17,9 +17,11 @@
 
 # install all available packages for a Cargo.lock
 # generate a temporary spec file and use builddep to install
+#
+# example: lock2dnf.sh Cargo.toml --enable-repo updates-testing
 
 if [ -z "$1" ]; then
-  echo "usage: lock2dnf <path-to-cargo-toml>"
+  echo "usage: lock2dnf <path-to-cargo-toml> [optional builddep args]"
   exit 1
 fi
 
@@ -33,4 +35,4 @@ echo "License: None" | tee -a "${tmpfile}"
 echo "Release: 1" | tee -a "${tmpfile}"
 cargo2rpm --path "$1" buildrequires --with-check --all-features | sed 's/^/BuildRequires: /' | tee -a "${tmpfile}"
 echo "%description" | tee -a "${tmpfile}"
-dnf builddep -y --enable-repo updates-testing --spec "${tmpfile}"
+dnf builddep -y --spec "${tmpfile}" "$2"
