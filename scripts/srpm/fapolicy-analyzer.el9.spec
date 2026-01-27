@@ -238,6 +238,7 @@ cargo build --bin rulec --release
 %endif
 
 %if %{with gui}
+mv scripts/{setup.cfg,setup.py,version.py} .
 %{venv_py3} setup.py compile_catalog -f
 %{venv_py3} help build
 %{venv_py3} setup.py bdist_wheel
@@ -263,9 +264,6 @@ install -D data/%{name}-cli-*.8 -t %{buildroot}/%{_mandir}/man8/
 desktop-file-install data/%{name}.desktop
 find locale -name %{name}.mo -exec cp --parents -rv {} %{buildroot}/%{_datadir} \;
 %find_lang %{name} --with-gnome
-
-# remove gui entrypoint
-rm %{buildroot}/%{_bindir}/gui
 %endif
 
 %check
