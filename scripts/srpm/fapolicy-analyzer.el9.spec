@@ -13,7 +13,7 @@ Source0:       %{url}/releases/download/v%{version}/%{name}-%{version}.tar.gz
 Source1:       %{url}/releases/download/v%{version}/vendor-docs-%{version}.tar.gz
 
 # vendored rust dependencies
-Source2:       %{url}/releases/download/v%{version}/vendor-rs-%{version}.tar.gz
+Source2:       %{url}/releases/download/v%{version}/vendor-rs-%{version}.el9.tar.gz
 
 # Build-time python dependencies for setuptools-rust
 Source10:      %{pypi_source setuptools-rust 1.1.2}

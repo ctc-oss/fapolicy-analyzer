@@ -31,8 +31,8 @@ vendor_dest=vendor-rs/vendor
 id=$(. /etc/os-release && echo $ID)
 
 case $id in
-  fedora)
-    echo "fedora: vendoring packages"
+  fedora | rocky)
+    echo "$id: vendoring packages"
     mkdir -p ${vendor_dest}
     cp -r /usr/share/cargo/registry/* ${vendor_dest}
     ;;
@@ -51,7 +51,7 @@ esac
 
 uv run --only-group vendor scripts/srpm/lock2spec.py --epel "$1" --vendor_dir=${vendor_dest}
 
-vendor_tar=vendor-rs.tar.gz
+vendor_tar="vendor-rs.el${1}.tar.gz"
 vendor_root=$(dirname ${vendor_dest})
 tar czf ${vendor_tar} -C ${vendor_root} .
 du -sh ${vendor_tar}

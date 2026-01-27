@@ -126,6 +126,7 @@ jobs:
       - name: Tar crates
         run: |
           ls -l /usr/share/cargo/registry
+          scripts/srpm/vendor-rs.sh 9
           scripts/srpm/vendor-rs.sh 10
 
       - name: Upload tarball
@@ -133,11 +134,12 @@ jobs:
         with:
           name: crates0
           path: |
-            vendor-rs.tar.gz
+            vendor-rs.el9.tar.gz
+            vendor-rs.el10.tar.gz
 
       - name: Checksum
         run: |
-          sha256sum vendor-rs.tar.gz
+          sha256sum vendor-rs.el*.tar.gz
 
   docs0:
     name: Vendor Docs0
@@ -289,7 +291,7 @@ jobs:
           name: docs0
           path: /tmp/rpmbuild/SOURCES/
 
-      - name: Fetch Crates0 tarball
+      - name: Fetch Crates0 tarballs
         uses: actions/download-artifact@v4
         with:
           name: crates0
@@ -302,12 +304,18 @@ jobs:
           name: python0
           path: /tmp/rpmbuild/SOURCES/
 
-      - name: Tag 0 tarballs
+      - name: Tag doc tarballs
         run: |
           spec_version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
           cd /tmp/rpmbuild/SOURCES/
           mv vendor-docs.tar.gz vendor-docs-${spec_version}.tar.gz
-          mv vendor-rs.tar.gz vendor-rs-${spec_version}.tar.gz | true
+
+      - name: Tag crates0 tarballs
+        if: startsWith(matrix.props.dist, 'el')
+        run: |
+          spec_version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
+          cd /tmp/rpmbuild/SOURCES/
+          mv vendor-rs.${{ matrix.props.dist }}.tar.gz vendor-rs-${spec_version}.${{ matrix.props.dist }}.tar.gz
 
       - name: Create container
         run: |
@@ -355,7 +363,7 @@ jobs:
         if: startsWith(matrix.props.dist, 'el')
         run: |
           version=$(grep "Version:" ${{ matrix.props.spec }} | tr -s ' ' | cut -d' ' -f2)
-          mv /tmp/rpmbuild/SOURCES/vendor-rs-${version}.tar.gz /tmp/archives/
+          mv /tmp/rpmbuild/SOURCES/vendor-rs-${version}.${{ matrix.props.dist }}.tar.gz /tmp/archives/
 
       - name: Upload Tarballs
         uses: actions/upload-artifact@v4
@@ -547,11 +555,6 @@ jobs:
         run: |
           dnf install -y epel-release
 
-      - name: Enable EPEL Testing Repo
-        if: startsWith(matrix.props.dist, 'el10')
-        run: |
-          dnf config-manager --set-enabled epel-testing
-
       - name: Install RPM
         run: |
           dnf install -y /tmp/src/fapolicy-analyzer-*.${{ matrix.props.dist }}.x86_64.rpm
@@ -586,11 +589,10 @@ jobs:
           tag_name: ${{ steps.tag_name.outputs.VERSION }}
           prerelease: ${{ startsWith(github.ref, 'refs/tags/v0') || contains(github.ref, 'rc') }}
           draft: true
-          # the tarball-artifacts are only published from el9 to prevent duplicates and capture vendor-rs
-          # el9 is also beneficial because it is always present, unlike the fc versions that are evolving
           files: |
             fapolicy-analyzer.spec
             /tmp/archives/source0/*.tar.gz
             /tmp/archives/rpm-artifacts-*/*.rpm
             /tmp/archives/srpm-artifacts-*/*.src.rpm
             /tmp/archives/tarball-artifacts-el9/*.tar.gz
+            /tmp/archives/tarball-artifacts-el10/*.tar.gz

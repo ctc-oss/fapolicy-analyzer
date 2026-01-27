@@ -13,7 +13,7 @@ Source0:       %{url}/releases/download/v%{version}/%{name}-%{version}.tar.gz
 Source1:       %{url}/releases/download/v%{version}/vendor-docs-%{version}.tar.gz
 
 # vendored rust dependencies
-Source2:       %{url}/releases/download/v%{version}/vendor-rs-%{version}.tar.gz
+Source2:       %{url}/releases/download/v%{version}/vendor-rs-%{version}.el10.tar.gz
 
 BuildRequires: python3-devel
 BuildRequires: python3dist(pip)
