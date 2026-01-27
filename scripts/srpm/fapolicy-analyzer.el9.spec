@@ -177,6 +177,8 @@ tar -xzf %{SOURCE12} -C %{_builddir}/setuptools --strip-components=1
 ln -sf  %{python3_sitelib}/pytz* %{venv_lib}
 ln -sf  %{python3_sitelib}/{Babel*,babel} %{venv_lib}
 
+%endif
+
 # An unprivileged user cannot write to the default registry location of
 # /usr/share/cargo/registry so we work around this by linking the contents
 # of the default registry into a new writable location, and then extract
@@ -188,7 +190,6 @@ CARGO_REG_DIR=%{_builddir}/vendor-rs
 mkdir -p ${CARGO_REG_DIR}
 for d in %{cargo_registry}/*; do ln -sf ${d} ${CARGO_REG_DIR} || true; done
 tar -xzf %{SOURCE2} -C ${CARGO_REG_DIR} --skip-old-files --strip-components=2
-%endif
 
 %cargo_prep -v ${CARGO_REG_DIR}
 
@@ -210,7 +211,7 @@ echo %{module_version} > VERSION
 
 # capture build info
 scripts/build-info.py --os --time
-x
+
 %build
 # ensure standard Rust compiler flags are set
 export RUSTFLAGS="%{build_rustflags}"
@@ -227,6 +228,8 @@ cargo build --bin rulec --release
 %{venv_py3} setup.py bdist_wheel
 %endif
 
+%{cargo_license_summary}
+%{cargo_license} > LICENSE.dependencies
 
 %install
 
@@ -249,9 +252,6 @@ find locale -name %{name}.mo -exec cp --parents -rv {} %{buildroot}/%{_datadir} 
 # remove gui entrypoint
 rm %{buildroot}/%{_bindir}/gui
 %endif
-
-%{cargo_license_summary}
-%{cargo_license} > LICENSE.dependencies
 
 %check
 %if %{with gui}
