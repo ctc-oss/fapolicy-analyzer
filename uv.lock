@@ -471,11 +471,11 @@ vendor = [
 
 [package.metadata]
 requires-dist = [
-    { name = "configargparse", specifier = "==1.7.1" },
-    { name = "matplotlib", specifier = "~=3.9.1" },
-    { name = "more-itertools", specifier = "==10.1.0" },
-    { name = "rx", specifier = "==3.2" },
-    { name = "tomli", specifier = "==2.0.1" },
+    { name = "configargparse" },
+    { name = "matplotlib" },
+    { name = "more-itertools" },
+    { name = "rx" },
+    { name = "tomli" },
 ]
 
 [package.metadata.requires-dev]
