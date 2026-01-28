@@ -27,7 +27,7 @@ from logging import getLogger
 from typing import Any, Callable, Iterable, Optional
 
 import reactivex.operators as op
-from reactivex import Observable, pipe
+from reactivex import Observable
 from reactivex.typing import Mapper, Predicate
 
 from .action import is_by_selector, is_type, select_action_payload
