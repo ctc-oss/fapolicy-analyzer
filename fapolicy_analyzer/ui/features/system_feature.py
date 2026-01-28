@@ -21,9 +21,11 @@ from threading import Event
 from typing import Callable, Dict, Sequence
 
 import gi
-from rx import of
-from rx.core.pipe import pipe
-from rx.operators import catch, filter, map
+from reactivex import of, Observable
+from reactivex.abc import ObservableBase
+from reactivex.pipe import pipe
+from reactivex import operators as ops
+from reactivex.operators import catch, filter, map
 
 from fapolicy_analyzer import (
     System,
@@ -38,7 +40,7 @@ from fapolicy_analyzer.redux import (
     combine_epics,
     create_feature_module,
     of_init_feature,
-    of_type,
+    of_type, Epic,
 )
 from fapolicy_analyzer.ui.actions import (
     APPLY_CHANGESETS,
@@ -315,93 +317,109 @@ def create_system_feature(
         text = _system.trust_filter_text()
         return received_trust_filter_text(text)
 
-    init_epic = pipe(
-        of_init_feature(SYSTEM_FEATURE),
-        map(lambda _: _init_system()),
-    )
+    def request_init_epic(actions):
+        return actions.pipe(
+            of_init_feature(SYSTEM_FEATURE),
+            ops.map(lambda _: _init_system()),
+            catch(lambda ex, source: print("==============")),
+        )
 
-    apply_changesets_epic = pipe(
-        of_type(APPLY_CHANGESETS),
-        map(_apply_changesets),
-        catch(lambda ex, source: of(error_apply_changesets(str(ex)))),
-    )
+    def request_apply_changesets_epic(actions):
+        return actions.pipe(
+            of_type(APPLY_CHANGESETS),
+            map(_apply_changesets),
+            catch(lambda ex, source: of(error_apply_changesets(str(ex)))),
+        )
 
-    request_ancillary_trust_epic = pipe(
-        of_type(REQUEST_ANCILLARY_TRUST),
-        map(_get_ancillary_trust),
-        filter(lambda a: a.type != REQUEST_ANCILLARY_TRUST),
-        catch(lambda ex, source: of(error_ancillary_trust(str(ex)))),
-    )
+    def request_ancillary_trust_epic(actions):
+        return actions.pipe(
+            of_type(REQUEST_ANCILLARY_TRUST),
+            map(_get_ancillary_trust),
+            filter(lambda a: a.type != REQUEST_ANCILLARY_TRUST),
+            catch(lambda ex, source: of(error_ancillary_trust(str(ex)))),
+        )
 
-    request_system_trust_epic = pipe(
-        of_type(REQUEST_SYSTEM_TRUST),
-        map(_get_system_trust),
-        filter(lambda a: a.type != REQUEST_SYSTEM_TRUST),
-        catch(lambda ex, source: of(error_system_trust(str(ex)))),
-    )
+    def request_system_trust_epic(actions):
+        return actions.pipe(
+            of_type(REQUEST_SYSTEM_TRUST),
+            map(_get_system_trust),
+            filter(lambda a: a.type != REQUEST_SYSTEM_TRUST),
+            catch(lambda ex, source: of(error_system_trust(str(ex)))),
+        )
 
-    deploy_system_epic = pipe(
-        of_type(DEPLOY_SYSTEM),
-        map(_deploy_system),
-        catch(lambda ex, source: of(error_deploying_system(str(ex)))),
-    )
+    def request_deploy_system_epic(actions):
+        return actions.pipe(
+            of_type(DEPLOY_SYSTEM),
+            map(_deploy_system),
+            catch(lambda ex, source: of(error_deploying_system(str(ex)))),
+        )
 
-    set_system_checkpoint_epic = pipe(
-        of_type(SET_SYSTEM_CHECKPOINT), map(_set_checkpoint)
-    )
+    def request_set_system_checkpoint_epic(actions):
+        return actions.pipe(
+            of_type(SET_SYSTEM_CHECKPOINT), map(_set_checkpoint)
+        )
 
-    restore_system_checkpoint_epic = pipe(
-        of_type(RESTORE_SYSTEM_CHECKPOINT),
-        map(_restore_checkpoint),
-        catch(lambda ex, source: of(error_deploying_system(str(ex)))),
-    )
+    def request_restore_system_checkpoint_epic(actions):
+        return actions.pipe(
+            of_type(RESTORE_SYSTEM_CHECKPOINT),
+            map(_restore_checkpoint),
+            catch(lambda ex, source: of(error_deploying_system(str(ex)))),
+        )
 
-    request_events_epic = pipe(
-        of_type(REQUEST_EVENTS),
-        map(_get_events),
-        catch(lambda ex, source: of(error_events(str(ex)))),
-    )
+    def request_events_epic(actions):
+        return actions.pipe(
+            of_type(REQUEST_EVENTS),
+            map(_get_events),
+            catch(lambda ex, source: of(error_events(str(ex)))),
+        )
 
-    request_users_epic = pipe(
-        of_type(REQUEST_USERS),
-        map(_get_users),
-        catch(lambda ex, source: of(error_users(str(ex)))),
-    )
+    def request_users_epic(actions):
+        return actions.pipe(
+            of_type(REQUEST_USERS),
+            map(_get_users),
+            catch(lambda ex, source: of(error_users(str(ex)))),
+        )
 
-    request_groups_epic = pipe(
-        of_type(REQUEST_GROUPS),
-        map(_get_groups),
-        catch(lambda ex, source: of(error_groups(str(ex)))),
-    )
+    def request_groups_epic(actions):
+        return actions.pipe(
+            of_type(REQUEST_GROUPS),
+            map(_get_groups),
+            catch(lambda ex, source: of(error_groups(str(ex)))),
+        )
 
-    request_rules_epic = pipe(
-        of_type(REQUEST_RULES),
-        map(_get_rules),
-        catch(lambda ex, source: of(error_rules(str(ex)))),
-    )
+    def request_rules_epic(actions):
+        return actions.pipe(
+            of_type(REQUEST_RULES),
+            map(_get_rules),
+            catch(lambda ex, source: of(error_rules(str(ex)))),
+        )
 
-    request_rules_text_epic = pipe(
-        of_type(REQUEST_RULES_TEXT),
-        map(_get_rules_text),
-        catch(lambda ex, source: of(error_rules_text(str(ex)))),
-    )
+    def request_rules_text_epic(actions):
+        return actions.pipe(
+            of_type(REQUEST_RULES_TEXT),
+            map(_get_rules_text),
+            catch(lambda ex, source: of(error_rules_text(str(ex)))),
+        )
 
-    request_config_text_epic = pipe(
-        of_type(REQUEST_CONFIG_TEXT),
-        map(_get_config_text),
-        catch(lambda ex, source: of(error_config_text(str(ex)))),
-    )
+    def request_config_text_epic(actions):
+        return actions.pipe(
+            of_type(REQUEST_CONFIG_TEXT),
+            map(_get_config_text),
+            catch(lambda ex, source: of(error_config_text(str(ex)))),
+        )
 
-    request_trust_filter_text_epic = pipe(
-        of_type(REQUEST_TRUST_FILTER_TEXT),
-        map(_get_trust_filter_text),
-        catch(lambda ex, source: of(error_trust_filter_text(str(ex)))),
-    )
+    def request_trust_filter_text_epic(actions):
+        return actions.pipe(
+            of_type(REQUEST_TRUST_FILTER_TEXT),
+            map(_get_trust_filter_text),
+            catch(lambda ex, source: of(error_trust_filter_text(str(ex)))),
+        )
 
+    print(callable(request_init_epic), type(request_init_epic))
     system_epic = combine_epics(
-        init_epic,
-        apply_changesets_epic,
-        deploy_system_epic,
+        request_init_epic,
+        request_apply_changesets_epic,
+        request_deploy_system_epic,
         request_ancillary_trust_epic,
         request_config_text_epic,
         request_trust_filter_text_epic,
@@ -411,8 +429,8 @@ def create_system_feature(
         request_rules_text_epic,
         request_system_trust_epic,
         request_users_epic,
-        restore_system_checkpoint_epic,
-        set_system_checkpoint_epic,
+        request_restore_system_checkpoint_epic,
+        request_set_system_checkpoint_epic,
     )
 
     return create_feature_module(SYSTEM_FEATURE, system_reducer, epic=system_epic)

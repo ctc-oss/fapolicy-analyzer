@@ -27,8 +27,8 @@ from inspect import getfullargspec
 from logging import getLogger
 from typing import Iterable, cast
 
-from rx import Observable, merge
-from rx.core.typing import Mapper
+from reactivex import Observable, merge
+from reactivex.typing import Mapper
 
 from .types import Epic
 
@@ -91,7 +91,7 @@ def _combine_epics(
     return merge(*map(run_epic(action_, state_), norm_epics))
 
 
-def combine_epics(*epics: Iterable[Epic]) -> Epic:
+def combine_epics(*epics: Epic) -> Epic:
     """Combines a sequence of epics into one single epic by merging them
 
     Args:

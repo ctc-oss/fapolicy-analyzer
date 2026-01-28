@@ -24,9 +24,9 @@
 from operator import is_
 from typing import Callable, TypeVar
 
-import rx.operators as op
-from rx import Observable, pipe
-from rx.subject import ReplaySubject
+import reactivex.operators as op
+from reactivex import Observable, pipe
+from reactivex.subject import ReplaySubject
 
 T1 = TypeVar("T1")
 T2 = TypeVar("T2")

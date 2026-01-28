@@ -17,13 +17,13 @@ from typing import Callable, Dict
 
 import gi
 import logging
-from rx import of
-from rx.core.pipe import pipe
-from rx.operators import catch, map
+from reactivex import of
+from reactivex.pipe import pipe
+from reactivex.operators import catch, map
 
 from fapolicy_analyzer import Profiler, ExecHandle, ProcHandle
 from fapolicy_analyzer.redux import (
-    Action,
+    Action, Epic,
 )
 from fapolicy_analyzer.redux import (
     create_feature_module,
@@ -147,21 +147,23 @@ def create_profiler_feature(dispatch: Callable) -> ReduxFeatureModule:
 
         return terminating_profiler()
 
-    start_profiling_epic = pipe(
-        of_type(START_PROFILING_REQUEST),
-        map(_start_profiling),
-        catch(lambda e, source: of(profiler_initialization_error(str(e)))),
-    )
+    def request_start_profiling_epic(actions):
+        return actions.pipe(
+            of_type(START_PROFILING_REQUEST),
+            map(_start_profiling),
+            catch(lambda e, source: of(profiler_initialization_error(str(e)))),
+        )
 
-    kill_profiler_epic = pipe(
-        of_type(PROFILING_KILL_REQUEST),
-        map(_kill_profiler),
-        catch(lambda e, source: of(profiler_termination_error(str(e)))),
-    )
+    def request_kill_profiler_epic(actions):
+        return actions.pipe(
+            of_type(PROFILING_KILL_REQUEST),
+            map(_kill_profiler),
+            catch(lambda e, source: of(profiler_termination_error(str(e)))),
+        )
 
     profiler_epic = combine_epics(
-        start_profiling_epic,
-        kill_profiler_epic,
+        request_start_profiling_epic,
+        request_kill_profiler_epic,
     )
 
     return create_feature_module(

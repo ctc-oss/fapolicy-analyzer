@@ -9,7 +9,7 @@ version = "0.0.0"
 requires-python = ">=3.9"
 dependencies = [
     "configargparse",
-    "rx",
+    "reactivex",
     "more-itertools",
     "matplotlib",
     "tomli",

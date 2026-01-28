@@ -14,9 +14,9 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import tomli
-from rx import of
-from rx.core.pipe import pipe
-from rx.operators import catch, map
+from reactivex import of
+from reactivex.pipe import pipe
+from reactivex.operators import catch, map
 
 from fapolicy_analyzer import config_file_path
 from fapolicy_analyzer.redux import (
@@ -47,15 +47,15 @@ def create_application_feature() -> ReduxFeatureModule:
             config = tomli.load(f)
         return received_app_config(config.get("ui", {}))
 
-    request_app_config_epic = pipe(
-        of_type(REQUEST_APP_CONFIG),
-        map(_get_app_config),
-        catch(lambda ex, source: of(error_app_config(str(ex)))),
-    )
+    def request_app_config_epic(actions, state):
+        return actions.pipe(
+            of_type(REQUEST_APP_CONFIG),
+            map(_get_app_config),
+            catch(lambda ex, source: of(error_app_config(str(ex)))),
+        )
 
-    application_epic = combine_epics(
-        request_app_config_epic,
-    )
+    application_epic = combine_epics(request_app_config_epic)
+
     return create_feature_module(
         APPLICATION_FEATURE, application_reducer, application_epic
     )

@@ -16,7 +16,7 @@
 from importlib import reload
 
 import pytest
-from rx.core.typing import Observable
+from reactivex import Observable
 
 from fapolicy_analyzer.tests.mocks import mock_System
 from fapolicy_analyzer.ui import store
