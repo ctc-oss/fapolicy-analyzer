@@ -21,9 +21,7 @@ from threading import Event
 from typing import Callable, Dict, Sequence
 
 import gi
-from reactivex import of, Observable
-from reactivex.abc import ObservableBase
-from reactivex.pipe import pipe
+from reactivex import of
 from reactivex import operators as ops
 from reactivex.operators import catch, filter, map
 
@@ -40,7 +38,7 @@ from fapolicy_analyzer.redux import (
     combine_epics,
     create_feature_module,
     of_init_feature,
-    of_type, Epic,
+    of_type,
 )
 from fapolicy_analyzer.ui.actions import (
     APPLY_CHANGESETS,
@@ -415,7 +413,6 @@ def create_system_feature(
             catch(lambda ex, source: of(error_trust_filter_text(str(ex)))),
         )
 
-    print(callable(request_init_epic), type(request_init_epic))
     system_epic = combine_epics(
         request_init_epic,
         request_apply_changesets_epic,

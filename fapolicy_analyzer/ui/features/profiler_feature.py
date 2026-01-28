@@ -18,12 +18,11 @@ from typing import Callable, Dict
 import gi
 import logging
 from reactivex import of
-from reactivex.pipe import pipe
 from reactivex.operators import catch, map
 
 from fapolicy_analyzer import Profiler, ExecHandle, ProcHandle
 from fapolicy_analyzer.redux import (
-    Action, Epic,
+    Action,
 )
 from fapolicy_analyzer.redux import (
     create_feature_module,

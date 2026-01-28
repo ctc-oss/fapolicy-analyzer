@@ -15,7 +15,6 @@
 
 import tomli
 from reactivex import of
-from reactivex.pipe import pipe
 from reactivex.operators import catch, map
 
 from fapolicy_analyzer import config_file_path

@@ -17,7 +17,6 @@ from typing import Callable
 
 import gi
 from reactivex import of
-from reactivex.pipe import pipe
 from reactivex.operators import catch, map
 
 from fapolicy_analyzer import (start_stat_stream, StatStream)
