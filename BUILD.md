@@ -19,7 +19,7 @@ See the [pyproject.toml](pyproject.toml) for project dependencies.
 
 ## Rust Requirements
 
-The minimum supported Rust version is 1.84.1
+The minimum supported Rust version is 1.88
 
 See the Cargo.toml files in each individual [crate](crates) for detailed Rust dependencies.
 
