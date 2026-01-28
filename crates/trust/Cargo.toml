@@ -13,7 +13,7 @@ assert_matches = "1.5"
 lmdb = "0.8"
 rayon = "1.5"
 serde = { version = "1.0", features = ["derive"] }
-thiserror = "1.0"
+thiserror = "2"
 nom = "7.1"
 log = "0.4"
 

@@ -32,10 +32,49 @@ import re
 import subprocess
 import sys
 from typing import Callable, Dict
+import argparse
+
+def find_version():
+    if "VERSION" in os.environ:
+        return os.getenv("VERSION")
+    if os.path.exists("VERSION"):
+        with open("VERSION", "r") as version:
+            v = version.readline().strip()
+            if len(v):
+                return v
+    return get_versions()['version']
 
 
 def main(*argv):
-    print(get_versions()['version'])
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--patch", action="store_true", help="Patch pyproject.toml version field")
+    parser.add_argument("--toml", type=str, default="../pyproject.toml", help="Patch pyproject.toml version field")
+    parser.add_argument("--version", type=str, required=False, help="Patch pyproject.toml version field")
+    args = parser.parse_args(argv)
+
+    if args.version:
+        version = args.version
+    else:
+        version = find_version()
+    print(version)
+
+    if args.patch:
+        lines = list()
+        with open(args.toml, "r") as cfg:
+            for line in cfg.readlines():
+                splits = line.split("=", 1)
+                if len(splits) == 2:
+                    lhs, rhs = splits
+                    lhs = lhs.strip()
+                    if lhs == "version":
+                        rhs = f'"{version}"\n'
+                        lines.append(f"{lhs} = {rhs}")
+                    else:
+                        lines.append(line)
+                else:
+                    lines.append(line)
+        with open(args.toml, "w") as cfg:
+            cfg.writelines(lines)
 
 
 def get_keywords():

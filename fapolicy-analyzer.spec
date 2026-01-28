@@ -28,20 +28,22 @@ Source0:       %{url}/releases/download/v%{version}/%{name}-%{version}.tar.gz
 Source1:       %{url}/releases/download/v%{version}/vendor-docs-%{version}.tar.gz
 
 BuildRequires: python3-devel
-BuildRequires: python3dist(setuptools)
 BuildRequires: python3dist(pip)
 BuildRequires: python3dist(wheel)
-BuildRequires: python3dist(babel)
-BuildRequires: dbus-devel
+
+BuildRequires: babel
 BuildRequires: gettext
 BuildRequires: itstool
 BuildRequires: desktop-file-utils
 
 BuildRequires: clang
 BuildRequires: audit-libs-devel
+BuildRequires: dbus-devel
+BuildRequires: lmdb-devel
 
+BuildRequires: uv
+BuildRequires: maturin
 BuildRequires: cargo-rpm-macros
-BuildRequires: python3dist(setuptools-rust)
 
 Requires:      %{name}-cli
 Requires:      %{name}-gui
@@ -63,10 +65,12 @@ Requires:      python3
 Requires:      python3-gobject
 Requires:      python3-configargparse
 Requires:      python3-more-itertools
-Requires:      python3-rx
 Requires:      python3-importlib-metadata
-Requires:      python3-toml
+Requires:      python3-tomli
 Requires:      python3-matplotlib-gtk3
+
+%global __requires_exclude ^python3\.[0-9]+dist\\(rx\\)
+Requires:      python3-rx
 
 Requires:      gtk3
 Requires:      gtksourceview3
@@ -105,9 +109,8 @@ sed -i '/pyo3/d' Cargo.toml
 # extract our doc sourcs
 tar xvzf %{SOURCE1}
 
-# our setup.py looks up the version from git describe
-# this overrides that check to use the RPM version
-echo %{module_version} > VERSION
+# patch pyproject.toml version
+scripts/version.py --patch --toml pyproject.toml --version %{module_version}
 
 # capture build info
 scripts/build-info.py --os --time
@@ -121,24 +124,22 @@ echo "audit" > FEATURES
 %cargo_generate_buildrequires -a
 
 %build
-
-%if %{with cli}
-cargo build --bin tdb --release
-cargo build --bin faprofiler --release
-cargo build --bin rulec --release --features pretty
-%endif
-
-%if %{with gui}
 # ensure standard Rust compiler flags are set
 export RUSTFLAGS="%{build_rustflags}"
 
-%{python3} setup.py compile_catalog -f
+%if %{with cli}
+cargo build --release -p fapolicy-tools --bin tdb
+cargo build --release -p fapolicy-tools --bin faprofiler
+cargo build --release -p fapolicy-tools --bin rulec --features pretty
+%endif
+
+%if %{with gui}
+pybabel compile -f -d locale -D fapolicy-analyzer
 %{python3} help build
-%{python3} setup.py bdist_wheel
+maturin build --release --skip-auditwheel -o dist
 
 %{cargo_license_summary}
 %{cargo_license} > LICENSE.dependencies
-%endif
 
 %install
 
@@ -149,7 +150,8 @@ install -D target/release/rulec %{buildroot}/%{_sbindir}/%{name}-cli-rules
 %endif
 
 %if %{with gui}
-%{py3_install_wheel %{module}-%{module_version}*%{_target_cpu}.whl}
+wheel=$(basename dist/*.whl)
+%{py3_install_wheel $wheel}
 %{python3} help install --dest %{buildroot}/%{_datadir}/help
 install -D bin/%{name} %{buildroot}/%{_sbindir}/%{name}
 install -D data/%{name}.8 -t %{buildroot}/%{_mandir}/man8/
@@ -158,6 +160,10 @@ install -D data/config.toml -t %{buildroot}%{_sysconfdir}/%{name}/
 desktop-file-install data/%{name}.desktop
 find locale -name %{name}.mo -exec cp --parents -rv {} %{buildroot}/%{_datadir} \;
 %find_lang %{name} --with-gnome
+%endif
+
+# remove gui entrypoint
+rm %{buildroot}/%{_bindir}/gui
 %endif
 
 %check

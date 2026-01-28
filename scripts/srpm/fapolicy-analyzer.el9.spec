@@ -13,7 +13,7 @@ Source0:       %{url}/releases/download/v%{version}/%{name}-%{version}.tar.gz
 Source1:       %{url}/releases/download/v%{version}/vendor-docs-%{version}.tar.gz
 
 # vendored rust dependencies
-Source2:       %{url}/releases/download/v%{version}/vendor-rs-%{version}.tar.gz
+Source2:       %{url}/releases/download/v%{version}/vendor-rs-%{version}.el9.tar.gz
 
 # Build-time python dependencies for setuptools-rust
 Source10:      %{pypi_source setuptools-rust 1.1.2}
@@ -45,6 +45,9 @@ BuildRequires: lmdb-devel
 
 BuildRequires: rust-packaging
 
+BuildRequires: rust-anstream-devel
+BuildRequires: rust-anstyle-query-devel
+BuildRequires: rust-ariadne-devel
 BuildRequires: rust-arc-swap-devel
 BuildRequires: rust-assert_matches-devel
 BuildRequires: rust-autocfg-devel
@@ -56,6 +59,8 @@ BuildRequires: rust-cexpr-devel
 BuildRequires: rust-cfg-if-devel
 BuildRequires: rust-chrono-devel
 BuildRequires: rust-clang-sys-devel
+BuildRequires: rust-clap-devel
+BuildRequires: rust-clap_derive-devel
 BuildRequires: rust-confy-devel
 BuildRequires: rust-cpufeatures-devel
 BuildRequires: rust-crossbeam-epoch-devel
@@ -65,13 +70,17 @@ BuildRequires: rust-digest-devel
 BuildRequires: rust-directories-devel
 BuildRequires: rust-dirs-sys-devel
 BuildRequires: rust-either-devel
+BuildRequires: rust-env_logger-devel
 BuildRequires: rust-generic-array-devel
 BuildRequires: rust-getrandom-devel
 BuildRequires: rust-glob-devel
 BuildRequires: rust-heck-devel
+BuildRequires: rust-human-panic-devel
+BuildRequires: rust-iana-time-zone-devel
 BuildRequires: rust-indoc-devel
 BuildRequires: rust-instant-devel
 BuildRequires: rust-is_executable-devel
+BuildRequires: rust-jiff-devel
 BuildRequires: rust-lazy_static-devel
 BuildRequires: rust-libc-devel
 BuildRequires: rust-libloading-devel
@@ -80,13 +89,17 @@ BuildRequires: rust-log-devel
 BuildRequires: rust-memchr-devel
 BuildRequires: rust-memoffset-devel
 BuildRequires: rust-nom-devel
+BuildRequires: rust-notify-devel
 BuildRequires: rust-num-integer-devel
 BuildRequires: rust-num-traits-devel
 BuildRequires: rust-num_cpus-devel
 BuildRequires: rust-option-ext-devel
 BuildRequires: rust-parking_lot-devel
 BuildRequires: rust-pkg-config-devel
+BuildRequires: rust-prettyplease-devel
 BuildRequires: rust-proc-macro2-devel
+BuildRequires: rust-pyo3-devel
+BuildRequires: rust-pyo3-macros-devel
 BuildRequires: rust-rayon-devel
 BuildRequires: rust-regex-devel
 BuildRequires: rust-regex-syntax-devel
@@ -95,8 +108,11 @@ BuildRequires: rust-sha2-devel
 BuildRequires: rust-shlex-devel
 BuildRequires: rust-similar-devel
 BuildRequires: rust-smallvec-devel
+BuildRequires: rust-strip-ansi-escapes-devel
+BuildRequires: rust-strsim-devel
 BuildRequires: rust-syn-devel
 BuildRequires: rust-target-lexicon-devel
+BuildRequires: rust-tempfile-devel
 BuildRequires: rust-thiserror-devel
 BuildRequires: rust-typenum-devel
 BuildRequires: rust-unicode-ident-devel
@@ -177,6 +193,8 @@ tar -xzf %{SOURCE12} -C %{_builddir}/setuptools --strip-components=1
 ln -sf  %{python3_sitelib}/pytz* %{venv_lib}
 ln -sf  %{python3_sitelib}/{Babel*,babel} %{venv_lib}
 
+%endif
+
 # An unprivileged user cannot write to the default registry location of
 # /usr/share/cargo/registry so we work around this by linking the contents
 # of the default registry into a new writable location, and then extract
@@ -186,24 +204,17 @@ ln -sf  %{python3_sitelib}/{Babel*,babel} %{venv_lib}
 # The crates in the vendor tarball are collected from Rawhide.
 CARGO_REG_DIR=%{_builddir}/vendor-rs
 mkdir -p ${CARGO_REG_DIR}
-for d in %{cargo_registry}/*; do ln -sf ${d} ${CARGO_REG_DIR} || true; done
-tar -xzf %{SOURCE2} -C ${CARGO_REG_DIR} --skip-old-files --strip-components=2
-%endif
+for d in %{cargo_registry}/*; do cp -r ${d} ${CARGO_REG_DIR} || true; done
+tar -xzf %{SOURCE2} -C ${CARGO_REG_DIR} --no-same-owner --skip-old-files --strip-components=2
 
 %cargo_prep -v ${CARGO_REG_DIR}
-
 %autosetup -n %{name}
 
-rm Cargo.lock
+rm -f Cargo.lock
 
 %if %{without cli}
 # disable the dev-tools crate
 sed -i '/tools/d' Cargo.toml
-%endif
-
-%if %{with cli}
-# disable ariadne
-sed -i '/ariadne/d' crates/tools/Cargo.toml
 %endif
 
 # extract our doc sourcs
@@ -227,11 +238,14 @@ cargo build --bin rulec --release
 %endif
 
 %if %{with gui}
+mv scripts/{setup.cfg,setup.py,version.py} .
 %{venv_py3} setup.py compile_catalog -f
 %{venv_py3} help build
 %{venv_py3} setup.py bdist_wheel
 %endif
 
+%{cargo_license_summary}
+%{cargo_license} > LICENSE.dependencies
 
 %install
 
