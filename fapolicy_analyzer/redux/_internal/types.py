@@ -23,8 +23,8 @@
 """
 from typing import Any, Callable, Iterable, Mapping, NamedTuple, Optional, TypeVar
 
-from rx import Observable
-from rx.core.typing import OnCompleted
+from reactivex import Observable
+from reactivex.typing import OnCompleted
 
 StateType = TypeVar("StateType")
 

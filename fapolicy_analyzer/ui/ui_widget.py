@@ -19,7 +19,7 @@ from dataclasses import dataclass
 from typing import Callable, Dict, Optional, Sequence
 
 import gi
-from rx.core.typing import Observable
+from reactivex import Observable
 
 from fapolicy_analyzer.ui import DOMAIN, get_resource
 from fapolicy_analyzer.util.format import snake_to_camelcase

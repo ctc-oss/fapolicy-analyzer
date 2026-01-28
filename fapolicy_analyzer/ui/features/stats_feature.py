@@ -16,16 +16,15 @@
 from typing import Callable
 
 import gi
-from rx import of
-from rx.core.pipe import pipe
-from rx.operators import catch, map
+from reactivex import of
+from reactivex.operators import catch, map
 
 from fapolicy_analyzer import (start_stat_stream, StatStream)
 from fapolicy_analyzer.redux import (
     Action,
     ReduxFeatureModule,
         combine_epics,
-        of_type, create_feature_module,
+        of_type, create_feature_module, Epic,
 )
 from fapolicy_analyzer.ui.actions import  stats_started, terminating_stats, START_STATS_REQUEST, stats_initialization_error, STATS_KILL_REQUEST, stats_termination_error, stats_update
 from fapolicy_analyzer.ui.reducers import stats_reducer
@@ -74,21 +73,23 @@ def create_stats_feature(dispatch: Callable) -> ReduxFeatureModule:
 
         return terminating_stats()
 
-    start_stats_epic = pipe(
-        of_type(START_STATS_REQUEST),
-        map(_start_stat_stream),
-        catch(lambda e, source: of(stats_initialization_error(str(e)))),
-    )
+    def request_start_stats_epic(actions) -> Epic:
+        return actions.pipe(
+            of_type(START_STATS_REQUEST),
+            map(_start_stat_stream),
+            catch(lambda e, source: of(stats_initialization_error(str(e)))),
+        )
 
-    kill_stats_epic = pipe(
-        of_type(STATS_KILL_REQUEST),
-        map(_kill_stat_stream),
-        catch(lambda e, source: of(stats_termination_error(str(e)))),
-    )
+    def request_kill_stats_epic(actions) -> Epic:
+        return actions.pipe(
+            of_type(STATS_KILL_REQUEST),
+            map(_kill_stat_stream),
+            catch(lambda e, source: of(stats_termination_error(str(e)))),
+        )
 
     stats_epic = combine_epics(
-        start_stats_epic,
-        kill_stats_epic,
+        request_start_stats_epic,
+        request_kill_stats_epic,
     )
 
     return create_feature_module(

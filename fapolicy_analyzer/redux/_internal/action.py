@@ -25,9 +25,9 @@
 from functools import partial
 from typing import Any
 
-import rx.operators as op
-from rx import Observable
-from rx.core.typing import Mapper, Predicate
+import reactivex.operators as op
+from reactivex import Observable
+from reactivex.typing import Mapper, Predicate
 
 from .types import Action, PayloadType
 

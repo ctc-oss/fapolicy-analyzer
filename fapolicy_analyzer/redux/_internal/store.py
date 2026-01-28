@@ -25,9 +25,9 @@
 from logging import getLogger
 from typing import Iterable, Mapping, MutableMapping, Optional, cast
 
-import rx.operators as op
-from rx import Observable, merge
-from rx.subject import BehaviorSubject, Subject
+import reactivex.operators as op
+from reactivex import Observable, merge
+from reactivex.subject import BehaviorSubject, Subject
 
 from .action import create_action
 from .constants import INIT_ACTION
