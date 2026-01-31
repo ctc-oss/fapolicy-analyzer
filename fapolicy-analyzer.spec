@@ -8,18 +8,35 @@ Version:       1.5.0
 Release:       1%{?dist}
 
 SourceLicense: GPL-3.0-or-later
+# (MIT OR Apache-2.0) AND Unicode-DFS-2016
+# 0BSD OR MIT OR Apache-2.0
 # Apache-2.0
 # Apache-2.0 OR MIT
 # Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT
-# BSD-3-Clause
+# CC0-1.0
+# GPL-3.0-or-later
 # ISC
-# ISC AND OpenSSL AND MIT
 # MIT
 # MIT OR Apache-2.0
 # MIT OR X11 OR Apache-2.0
+# MIT OR Zlib OR Apache-2.0
 # MPL-2.0
 # Unlicense OR MIT
-License:       GPL-3.0-or-later AND Apache-2.0 AND BSD-3-Clause AND ISC AND MIT AND MPL-2.0 AND OpenSSL AND (Apache-2.0 OR MIT) AND (Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT) AND (MIT OR X11 OR Apache-2.0) AND (Unlicense OR MIT)
+License:       %{shrink:
+    GPL-3.0-or-later AND
+    Apache-2.0 AND
+    CC0-1.0 AND
+    ISC AND
+    MIT AND
+    MPL-2.0 AND
+    Unicode-DFS-2016 AND
+    (0BSD OR MIT OR Apache-2.0) AND
+    (Apache-2.0 OR MIT) AND
+    (Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT) AND
+    (MIT OR X11 OR Apache-2.0) AND
+    (MIT OR Zlib OR Apache-2.0) AND
+    (Unlicense OR MIT)
+    }
 
 URL:           https://github.com/ctc-oss/fapolicy-analyzer
 Source0:       %{url}/releases/download/v%{version}/%{name}-%{version}.tar.gz
@@ -137,6 +154,7 @@ cargo build --release -p fapolicy-tools --bin rulec --features pretty
 pybabel compile -f -d locale -D fapolicy-analyzer
 %{python3} help build
 maturin build --release --skip-auditwheel -o dist
+%endif
 
 %{cargo_license_summary}
 %{cargo_license} > LICENSE.dependencies
@@ -160,7 +178,6 @@ install -D data/config.toml -t %{buildroot}%{_sysconfdir}/%{name}/
 desktop-file-install data/%{name}.desktop
 find locale -name %{name}.mo -exec cp --parents -rv {} %{buildroot}/%{_datadir} \;
 %find_lang %{name} --with-gnome
-%endif
 
 # remove gui entrypoint
 rm %{buildroot}/%{_bindir}/gui
