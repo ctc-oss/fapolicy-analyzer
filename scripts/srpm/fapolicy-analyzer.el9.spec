@@ -37,7 +37,6 @@ License:       %{shrink:
     (Unlicense OR MIT)
     }
 
-License:       GPL-3.0-or-later
 URL:           https://github.com/ctc-oss/fapolicy-analyzer
 Source0:       %{url}/releases/download/v%{version}/%{name}-%{version}.tar.gz
 
