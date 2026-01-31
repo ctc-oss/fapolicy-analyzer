@@ -42,7 +42,7 @@ impl All {
 
 #[cfg(not(feature = "xdg"))]
 pub fn data_dir() -> String {
-    format!("/var/lib/{}", PROJECT_NAME)
+    format!("/var/lib/{PROJECT_NAME}")
 }
 
 #[cfg(feature = "xdg")]
@@ -57,7 +57,7 @@ pub fn data_dir() -> String {
 
 #[cfg(not(feature = "xdg"))]
 pub fn config_dir() -> String {
-    format!("/etc/{}", PROJECT_NAME)
+    format!("/etc/{PROJECT_NAME}")
 }
 
 #[cfg(feature = "xdg")]
@@ -72,7 +72,7 @@ pub fn config_dir() -> String {
 
 #[cfg(not(feature = "xdg"))]
 pub fn log_dir() -> String {
-    format!("/var/log/{}", PROJECT_NAME)
+    format!("/var/log/{PROJECT_NAME}")
 }
 
 #[cfg(feature = "xdg")]
@@ -98,6 +98,6 @@ mod tests {
     #[test]
     fn check_config_dir() {
         let path = All::config_file().expect("conf path");
-        assert!(path.ends_with(format!("{}/config.toml", PROJECT_NAME)));
+        assert!(path.ends_with(format!("{PROJECT_NAME}/config.toml")));
     }
 }

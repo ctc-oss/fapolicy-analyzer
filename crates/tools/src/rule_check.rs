@@ -145,7 +145,7 @@ fn report_for_file(path: PathBuf) -> Result<usize, Box<dyn Error>> {
                     println!("[EE] {filename}:{} {}", lineno + 1, e.0);
                 }
                 res => {
-                    log::warn!("unhandled err {:?}", res);
+                    log::warn!("unhandled err {res:?}");
                 }
             }
             errors += 1;

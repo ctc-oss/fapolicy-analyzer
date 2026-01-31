@@ -146,13 +146,12 @@ impl PyChangeset {
         match self.rs.set(text.trim()) {
             Ok(_) => Ok(()),
             Err(MalformedFileMarker(lnum, txt)) => Err(exceptions::PyRuntimeError::new_err(
-                format!("{}:malformed-file-marker:{}", lnum, txt),
+                format!("{lnum}:malformed-file-marker:{txt}"),
             )),
             Err(ZeroRulesDefined) => Err(exceptions::PyRuntimeError::new_err(format!(
-                "{:?}",
-                ZeroRulesDefined
+                "{ZeroRulesDefined:?}"
             ))),
-            Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{:?}", e))),
+            Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{e:?}"))),
         }
     }
 
@@ -163,10 +162,7 @@ impl PyChangeset {
 
 #[pyfunction]
 fn rule_text_error_check(txt: &str) -> Option<String> {
-    match parse_with_error_message(StrTrace::new(txt)) {
-        Ok(_) => None,
-        Err(s) => Some(s),
-    }
+    parse_with_error_message(StrTrace::new(txt)).err()
 }
 
 pub(crate) fn to_vec(db: &DB) -> Vec<PyRule> {

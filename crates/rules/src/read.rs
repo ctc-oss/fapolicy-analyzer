@@ -50,7 +50,7 @@ impl<I> ParseError<I> for LineError<I> {
     }
 }
 
-fn parser(i: &str) -> nom::IResult<StrTrace, Line, LineError<&str>> {
+fn parser(i: &str) -> nom::IResult<StrTrace<'_>, Line, LineError<&str>> {
     alt((
         map(blank_line, |_| Blank),
         map(comment::parse, Comment),
@@ -60,7 +60,7 @@ fn parser(i: &str) -> nom::IResult<StrTrace, Line, LineError<&str>> {
     .map_err(|e| {
         let details = match e {
             nom::Err::Error(e) => e.to_string(),
-            e => format!("{:?}", e),
+            e => format!("{e:?}"),
         };
         // todo;; guess set or rule here based on the line start char?
         let f = if i.starts_with('%') {

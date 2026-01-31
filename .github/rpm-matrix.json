@@ -5,7 +5,7 @@
       "dist": "fc44",
       "spec": "fapolicy-analyzer.spec",
       "image": "registry.fedoraproject.org/fedora:44",
-      "chroot": "fedora-44-x86_64",
+      "chroot": "fedora-rawhide-x86_64",
       "prerelease": true
     },
     {

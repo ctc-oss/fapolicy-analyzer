@@ -21,7 +21,7 @@ import pytest
 from callee import InstanceOf
 from callee.attributes import Attrs
 from mocks import mock_System
-from rx.subject import Subject
+from reactivex.subject import Subject
 
 from fapolicy_analyzer.redux import Action
 from fapolicy_analyzer.ui.actions import (

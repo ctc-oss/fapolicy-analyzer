@@ -22,7 +22,7 @@ from callee import Attrs, InstanceOf
 
 from fapolicy_analyzer.ui.types import LogType
 from mocks import mock_events, mock_groups, mock_log, mock_System, mock_users
-from rx.subject import Subject
+from reactivex.subject import Subject
 
 from fapolicy_analyzer.redux import Action
 from fapolicy_analyzer.ui.actions import (

@@ -39,32 +39,32 @@ where
 }
 
 #[pyfunction]
-fn check_ancillary_trust(system: &PySystem, update: PyObject, done: PyObject) -> PyResult<usize> {
+fn check_ancillary_trust(system: &PySystem, update: Py<PyAny>, done: Py<PyAny>) -> PyResult<usize> {
     let recs = filter_db(&system.rs.trust_db, |r| r.is_ancillary());
     check_disk_trust(recs, update, done)
 }
 
 #[pyfunction]
-fn check_system_trust(system: &PySystem, update: PyObject, done: PyObject) -> PyResult<usize> {
+fn check_system_trust(system: &PySystem, update: Py<PyAny>, done: Py<PyAny>) -> PyResult<usize> {
     let recs = filter_db(&system.rs.trust_db, |r| r.is_system());
     check_disk_trust(recs, update, done)
 }
 
 #[pyfunction]
-fn check_all_trust(system: &PySystem, update: PyObject, done: PyObject) -> PyResult<usize> {
+fn check_all_trust(system: &PySystem, update: Py<PyAny>, done: Py<PyAny>) -> PyResult<usize> {
     let recs: Vec<_> = system.rs.trust_db.values().into_iter().cloned().collect();
     check_disk_trust(recs, update, done)
 }
 
-fn callback_on_done(done: PyObject) {
-    Python::with_gil(|py| {
+fn callback_on_done(done: Py<PyAny>) {
+    Python::attach(|py| {
         if done.call0(py).is_err() {
             log::error!("failed to make 'done' callback");
         }
     })
 }
 
-fn check_disk_trust(recs: Vec<Rec>, update: PyObject, done: PyObject) -> PyResult<usize> {
+fn check_disk_trust(recs: Vec<Rec>, update: Py<PyAny>, done: Py<PyAny>) -> PyResult<usize> {
     if recs.is_empty() {
         thread::spawn(move || {
             callback_on_done(done);
@@ -111,7 +111,7 @@ fn check_disk_trust(recs: Vec<Rec>, update: PyObject, done: PyObject) -> PyResul
                     Update::Items(i) => {
                         cnt += i.len();
                         let r: Vec<_> = i.into_iter().map(PyTrust::from).collect();
-                        Python::with_gil(|py| {
+                        Python::attach(|py| {
                             if update.call1(py, (r, cnt)).is_err() {
                                 log::error!("failed make 'update' callback");
                             }

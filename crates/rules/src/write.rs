@@ -43,7 +43,7 @@ fn rules_dir(db: &DB, dir: &Path, compiled: &Path) -> Result<(), io::Error> {
     for (k, v) in files {
         let mut rf = File::create(dir.join(k))?;
         for l in v {
-            rf.write_all(format!("{}\n", l).as_bytes())?;
+            rf.write_all(format!("{l}\n").as_bytes())?;
         }
     }
 
@@ -59,7 +59,7 @@ pub fn compiled_rules(db: &DB, path: &Path) -> Result<(), io::Error> {
     // todo;; get this from config or constants
     let mut rf = File::create(path)?;
     for (_, (_, e)) in db.iter() {
-        rf.write_all(format!("{}\n", e).as_bytes())?;
+        rf.write_all(format!("{e}\n").as_bytes())?;
     }
 
     Ok(())
@@ -68,7 +68,7 @@ pub fn compiled_rules(db: &DB, path: &Path) -> Result<(), io::Error> {
 fn rules_file(db: &DB, to: &Path) -> Result<(), io::Error> {
     let mut rf = File::create(to)?;
     for (_, (_, e)) in db.iter() {
-        rf.write_all(format!("{}\n", e).as_bytes())?;
+        rf.write_all(format!("{e}\n").as_bytes())?;
     }
     Ok(())
 }

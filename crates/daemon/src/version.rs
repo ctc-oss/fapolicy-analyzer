@@ -26,13 +26,10 @@ pub enum Error {
 }
 
 pub fn fapolicyd_version() -> fapolicyd::Version {
-    match rpm_q_fapolicyd() {
-        Ok(v) => v,
-        Err(e) => {
-            log::debug!("Unable to detect fapolicyd version: {:?}", e);
-            fapolicyd::Version::Unknown
-        }
-    }
+    rpm_q_fapolicyd().unwrap_or_else(|e| {
+        log::debug!("Unable to detect fapolicyd version: {e:?}");
+        fapolicyd::Version::Unknown
+    })
 }
 
 fn rpm_q_fapolicyd() -> Result<fapolicyd::Version, Error> {

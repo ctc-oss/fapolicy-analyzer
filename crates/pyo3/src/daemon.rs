@@ -50,32 +50,32 @@ impl PyHandle {
     pub fn start(&self) -> PyResult<()> {
         self.rs
             .start()
-            .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
+            .map_err(|e| PyRuntimeError::new_err(format!("{e:?}")))
     }
 
     pub fn stop(&self) -> PyResult<()> {
         self.rs
             .stop()
-            .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
+            .map_err(|e| PyRuntimeError::new_err(format!("{e:?}")))
     }
 
     pub fn enable(&self) -> PyResult<()> {
         self.rs
             .enable()
-            .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
+            .map_err(|e| PyRuntimeError::new_err(format!("{e:?}")))
     }
 
     pub fn disable(&self) -> PyResult<()> {
         self.rs
             .disable()
-            .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
+            .map_err(|e| PyRuntimeError::new_err(format!("{e:?}")))
     }
 
     /// returns the unit status, throws if invalid unit
     pub fn is_active(&self) -> PyResult<bool> {
         self.rs
             .active()
-            .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
+            .map_err(|e| PyRuntimeError::new_err(format!("{e:?}")))
     }
 
     /// returns true if the unit is valid, false otherwise
@@ -86,13 +86,13 @@ impl PyHandle {
     #[pyo3(signature = (timeout = 15))]
     pub fn wait_until_active(&self, timeout: usize) -> PyResult<()> {
         wait_for_service(&self.rs, Active, timeout)
-            .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
+            .map_err(|e| PyRuntimeError::new_err(format!("{e:?}")))
     }
 
     #[pyo3(signature = (timeout = 15))]
     pub fn wait_until_inactive(&self, timeout: usize) -> PyResult<()> {
         wait_for_service(&self.rs, Inactive, timeout)
-            .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
+            .map_err(|e| PyRuntimeError::new_err(format!("{e:?}")))
     }
 }
 
@@ -116,7 +116,7 @@ fn fapolicyd_version() -> Option<String> {
             major,
             minor,
             patch,
-        } => Some(format!("{}.{}.{}", major, minor, patch)),
+        } => Some(format!("{major}.{minor}.{patch}")),
     }
 }
 
@@ -142,7 +142,7 @@ fn rollback_fapolicyd(to: PySystem) -> PyResult<()> {
 fn is_fapolicyd_active() -> PyResult<bool> {
     Handle::default()
         .active()
-        .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
+        .map_err(|e| PyRuntimeError::new_err(format!("{e:?}")))
 }
 
 pub(crate) fn conf_to_text(db: &conf::DB) -> String {
@@ -220,7 +220,7 @@ impl PyChangeset {
     fn parse(&mut self, text: &str) -> PyResult<()> {
         match self.rs.set(text.trim()) {
             Ok(_) => Ok(()),
-            Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{:?}", e))),
+            Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{e:?}"))),
         }
     }
 
@@ -239,10 +239,7 @@ impl PyChangeset {
 
 #[pyfunction]
 fn conf_text_error_check(txt: &str) -> Option<String> {
-    match with_error_message(txt) {
-        Ok(_) => None,
-        Err(s) => Some(s),
-    }
+    with_error_message(txt).err()
 }
 
 #[pyclass(module = "stats", name = "StatStream")]
@@ -395,13 +392,13 @@ impl PyRecTs {
 }
 
 #[pyfunction]
-fn start_stat_stream(path: &str, f: PyObject) -> PyResult<PyStatStream> {
+fn start_stat_stream(path: &str, f: Py<PyAny>) -> PyResult<PyStatStream> {
     let kill_flag = Arc::new(AtomicBool::new(false));
     let rx = stats::read(path, kill_flag.clone()).expect("failed to read stats");
 
     thread::spawn(move || {
         for (rec, ts) in rx.iter() {
-            Python::with_gil(|py| {
+            Python::attach(|py| {
                 if f.call1(py, ((PyRec { rs: rec }, PyRecTs { rs: ts }),))
                     .is_err()
                 {
@@ -418,7 +415,7 @@ fn start_stat_stream(path: &str, f: PyObject) -> PyResult<PyStatStream> {
 #[pyfunction]
 fn signal_flush_cache() -> PyResult<()> {
     pipe::flush_cache()
-        .map_err(|e| PyRuntimeError::new_err(format!("failed to signal cache flush: {:?}", e)))
+        .map_err(|e| PyRuntimeError::new_err(format!("failed to signal cache flush: {e:?}")))
 }
 
 pub fn init_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {

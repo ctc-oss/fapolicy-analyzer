@@ -68,9 +68,9 @@ impl Display for Entry {
             ValidSet(r) | SetWithWarning(r, _) => r.to_string(),
             Invalid { text, .. } => text.clone(),
             InvalidSet { text, .. } => text.clone(),
-            Comment(text) => format!("#{}", text),
+            Comment(text) => format!("#{text}"),
         };
-        f.write_fmt(format_args!("{}", txt))
+        f.write_fmt(format_args!("{txt}"))
     }
 }
 

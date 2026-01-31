@@ -58,8 +58,14 @@ name = "Packaging"
 
 [dependency-groups]
 dev = [
-    "pytest>=8.4.2",
     "ruff>=0.14.3",
+    "pytest>=8.4.2",
+    "pytest-cov",
+    "pytest-mock",
+    "pytest-testmon",
+    "pytest-watch",
+    "pytest-lazy-fixture",
+    "callee",
 ]
 
 # generating translations

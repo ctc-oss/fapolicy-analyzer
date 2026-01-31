@@ -25,8 +25,8 @@ fn test_dir_single_file() -> Result<(), Box<dyn Error>> {
     rec.source = Some(DFile("test-00.trust".to_string()));
     db.put(rec);
 
-    let etc_fapolicyd = tempfile::tempdir()?.into_path();
-    let trust_d = tempfile::tempdir_in(&etc_fapolicyd)?.into_path();
+    let etc_fapolicyd = tempfile::tempdir()?.keep();
+    let trust_d = tempfile::tempdir_in(&etc_fapolicyd)?.keep();
     let trust_f = etc_fapolicyd.join("fapolicyd.trust");
     write::db(&db, &trust_d, Some(&trust_f))?;
 
@@ -48,8 +48,8 @@ fn test_dir_and_file() -> Result<(), Box<dyn Error>> {
     db.put(rec1);
     db.put(expected2.parse()?);
 
-    let etc_fapolicyd = tempfile::tempdir()?.into_path();
-    let trust_d = tempfile::tempdir_in(&etc_fapolicyd)?.into_path();
+    let etc_fapolicyd = tempfile::tempdir()?.keep();
+    let trust_d = tempfile::tempdir_in(&etc_fapolicyd)?.keep();
     let trust_f = etc_fapolicyd.join("fapolicyd.trust");
     write::db(&db, &trust_d, Some(&trust_f))?;
 
@@ -79,8 +79,8 @@ fn proper_file_count() -> Result<(), Box<dyn Error>> {
     rec.source = Some(DFile("00.trust".to_string()));
     db.put(rec);
 
-    let etc_fapolicyd = tempfile::tempdir()?.into_path();
-    let trust_d = tempfile::tempdir_in(&etc_fapolicyd)?.into_path();
+    let etc_fapolicyd = tempfile::tempdir()?.keep();
+    let trust_d = tempfile::tempdir_in(&etc_fapolicyd)?.keep();
     let trust_f = etc_fapolicyd.join("fapolicyd.trust");
     write::db(&db, &trust_d, Some(&trust_f))?;
 
@@ -105,8 +105,8 @@ fn test_dir_and_file_overwrite_1() -> Result<(), Box<dyn Error>> {
     rec.source = None;
     db.put(rec);
 
-    let etc_fapolicyd = tempfile::tempdir()?.into_path();
-    let trust_d = tempfile::tempdir_in(&etc_fapolicyd)?.into_path();
+    let etc_fapolicyd = tempfile::tempdir()?.keep();
+    let trust_d = tempfile::tempdir_in(&etc_fapolicyd)?.keep();
     let trust_f = etc_fapolicyd.join("fapolicyd.trust");
     write::db(&db, &trust_d, Some(&trust_f))?;
 
@@ -137,8 +137,8 @@ fn test_dir_and_file_overwrite_2() -> Result<(), Box<dyn Error>> {
     rec.source = Some(DFile("00.trust".to_string()));
     db.put(rec);
 
-    let etc_fapolicyd = tempfile::tempdir()?.into_path();
-    let trust_d = tempfile::tempdir_in(&etc_fapolicyd)?.into_path();
+    let etc_fapolicyd = tempfile::tempdir()?.keep();
+    let trust_d = tempfile::tempdir_in(&etc_fapolicyd)?.keep();
     let trust_f = NamedTempFile::new_in(&etc_fapolicyd)?;
     write::db(&db, &trust_d, Some(trust_f.path()))?;
 

@@ -54,12 +54,12 @@ impl PySystem {
     /// allowing the member accessors on the System to return non-result objects.
     #[new]
     fn new(py: Python) -> PyResult<PySystem> {
-        py.allow_threads(|| {
+        py.detach(|| {
             let conf = cfg::All::load()
-                .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))?;
+                .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{e:?}")))?;
             match State::load(&conf) {
                 Ok(state) => Ok(state.into()),
-                Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{:?}", e))),
+                Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{e:?}"))),
             }
         })
     }
@@ -120,14 +120,14 @@ impl PySystem {
     /// Update the host system with this state of this System and signal fapolicyd to reload trust
     pub fn deploy(&self) -> PyResult<()> {
         log::debug!("deploy");
-        daemon::deploy(self).map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))
+        daemon::deploy(self).map_err(|e| exceptions::PyRuntimeError::new_err(format!("{e:?}")))
     }
 
     /// Update the host system with this state of this System
     pub fn deploy_only(&self) -> PyResult<()> {
         log::debug!("deploy_only");
         deploy_app_state(&self.rs)
-            .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))
+            .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{e:?}")))
     }
 
     /// Check the host system state against the state of this System
@@ -152,7 +152,7 @@ impl PySystem {
     fn load_debuglog(&self, log: &str) -> PyResult<PyEventLog> {
         log::debug!("load_debuglog");
         let xs = events::read::from_debug(log)
-            .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))?;
+            .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{e:?}")))?;
         Ok(PyEventLog::new(EventDB::from(xs), self.rs.trust_db.clone()))
     }
 
@@ -160,7 +160,7 @@ impl PySystem {
     fn load_syslog(&self) -> PyResult<PyEventLog> {
         log::debug!("load_syslog");
         let xs = events::read::from_syslog(&self.rs.config.system.syslog_file_path)
-            .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))?;
+            .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{e:?}")))?;
         Ok(PyEventLog::new(EventDB::from(xs), self.rs.trust_db.clone()))
     }
 
@@ -168,7 +168,7 @@ impl PySystem {
     fn load_auditlog(&self) -> PyResult<PyEventLog> {
         log::debug!("load_auditlog");
         let xs = events::read::from_auditlog()
-            .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))?;
+            .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{e:?}")))?;
         Ok(PyEventLog::new(EventDB::from(xs), self.rs.trust_db.clone()))
     }
 
@@ -234,7 +234,7 @@ fn config_difference(lhs: &PySystem, rhs: &PySystem) -> String {
             ChangeTag::Insert => "+",
             ChangeTag::Equal => " ",
         };
-        diff_lines.push(format!("{}{}", sign, line));
+        diff_lines.push(format!("{sign}{line}"));
     }
     diff_lines.join("")
 }
@@ -255,7 +255,7 @@ fn trust_filter_difference(lhs: &PySystem, rhs: &PySystem) -> String {
             ChangeTag::Insert => "+",
             ChangeTag::Equal => " ",
         };
-        diff_lines.push(format!("{}{}", sign, line));
+        diff_lines.push(format!("{sign}{line}"));
     }
     diff_lines.join("")
 }
@@ -276,7 +276,7 @@ fn rules_difference(lhs: &PySystem, rhs: &PySystem) -> String {
             ChangeTag::Insert => "+",
             ChangeTag::Equal => " ",
         };
-        diff_lines.push(format!("{}{}", sign, line));
+        diff_lines.push(format!("{sign}{line}"));
     }
     diff_lines.join("")
 }
@@ -284,12 +284,12 @@ fn rules_difference(lhs: &PySystem, rhs: &PySystem) -> String {
 /// Creates a [PySystem] that has all trust entries checked against disk
 #[pyfunction]
 fn checked_system(py: Python) -> PyResult<PySystem> {
-    py.allow_threads(|| {
-        let conf = cfg::All::load()
-            .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))?;
+    py.detach(|| {
+        let conf =
+            cfg::All::load().map_err(|e| exceptions::PyRuntimeError::new_err(format!("{e:?}")))?;
         match State::load_checked(&conf) {
             Ok(state) => Ok(state.into()),
-            Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{:?}", e))),
+            Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{e:?}"))),
         }
     })
 }
@@ -307,8 +307,7 @@ pub fn rule_identity(system: &PySystem) -> PyResult<String> {
             Comment(_) => acc,
             e => format!("{}\n{}\n", acc, crate::rules::text_for_entry(e)),
         });
-    sha256_digest(txt.as_bytes())
-        .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))
+    sha256_digest(txt.as_bytes()).map_err(|e| exceptions::PyRuntimeError::new_err(format!("{e:?}")))
 }
 
 pub fn init_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {

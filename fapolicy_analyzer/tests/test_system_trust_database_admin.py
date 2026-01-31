@@ -24,7 +24,7 @@ from callee import Attrs, InstanceOf
 from callee.strings import Regex
 from gi.repository import Gtk
 from mocks import mock_System
-from rx.subject import Subject
+from reactivex.subject import Subject
 
 from fapolicy_analyzer.redux import Action
 from fapolicy_analyzer.ui.actions import ADD_NOTIFICATION, NotificationType

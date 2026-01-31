@@ -303,7 +303,7 @@ fn load(opts: LoadOpts, verbose: bool, _: &cfg::All, env: &Environment) -> Resul
         let v = format!("{} {} {}", 2, t.size, t.hash);
         tx.put(db, &t.path, &v, WriteFlags::APPEND_DUP)?;
         if verbose {
-            println!("{} {}", o, t);
+            println!("{o} {t}");
         }
     }
     tx.commit()?;
@@ -402,7 +402,7 @@ fn count(_: CountOpts, _: &cfg::All, env: &Environment) -> Result<(), Error> {
     let tx = env.begin_ro_txn()?;
     let mut c = tx.open_ro_cursor(db)?;
     let cnt = c.iter().count();
-    println!("{}", cnt);
+    println!("{cnt}");
 
     Ok(())
 }

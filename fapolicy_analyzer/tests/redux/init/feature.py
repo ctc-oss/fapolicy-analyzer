@@ -19,8 +19,8 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 from typing import Any
-from rx import pipe
-from rx.operators import map, ignore_elements
+from reactivex import pipe
+from reactivex.operators import map, ignore_elements
 
 from fapolicy_analyzer.redux import (
     ReduxFeatureModule,

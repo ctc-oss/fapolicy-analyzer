@@ -24,7 +24,7 @@ pub fn sha256_digest<R: Read>(mut src: R) -> Result<String, Error> {
     let mut hasher = Sha256::new();
     io::copy(&mut src, &mut hasher)?;
     let hash = hasher.finalize();
-    Ok(format!("{:x}", hash))
+    Ok(format!("{hash:x}"))
 }
 
 // tested with integration tests

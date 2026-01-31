@@ -387,14 +387,14 @@ jobs:
     needs: [ config, srpm ]
     name: Copr Build ${{ matrix.props.dist }}
     if: needs.config.outputs.is-copr-enabled == 'true'
-    container: 'rockylinux:8.6'
+    container: 'rockylinux:9'
     runs-on: ubuntu-22.04
     strategy:
       matrix: ${{ fromJson(needs.config.outputs.matrix) }}
     steps:
       - name: Install Copr CLI
         run: |
-          dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+          dnf install -y epel-release
           dnf install -y copr-cli
 
       - name: Download srpm artifacts
@@ -409,16 +409,13 @@ jobs:
 
       - name: Install Config
         run: |
-          mkdir -p $HOME/.config
-          echo "[copr-cli]" > $HOME/.config/copr 
-          echo "username = ${COPR_USER}" >> $HOME/.config/copr
-          echo "login = ${COPR_LOGIN}" >> $HOME/.config/copr
-          echo "token = ${COPR_TOKEN}" >> $HOME/.config/copr
-          echo "copr_url = https://copr.fedorainfracloud.org" >> $HOME/.config/copr
-        env:
-          COPR_USER: ${{ secrets.COPR_API_USER }}
-          COPR_LOGIN: ${{ secrets.COPR_API_LOGIN }}
-          COPR_TOKEN: ${{ secrets.COPR_API_TOKEN }}
+          install -d -m 0700 "$HOME/.config"
+          umask 077
+          printf '%s' "${{ secrets.COPR_CONFIG }}" > "$HOME/.config/copr"
+          chmod 0600 "$HOME/.config/copr"
+
+      - name: Check auth
+        run: copr-cli whoami
 
       - name: build
         run: |
@@ -436,21 +433,11 @@ jobs:
         with:
           ref: ${{ github.ref }}
 
-      - name: Check free space
-        run: |
-          echo "Free space:"
-          df -h
-
       - name: Download srpm artifacts
         uses: actions/download-artifact@v4
         with:
           name: srpm-artifacts-${{ matrix.props.dist }}
           path: /tmp/src/
-
-      - name: Check free space
-        run: |
-          echo "Free space:"
-          df -h
 
       - name: Download tarball artifacts
         if: startsWith(matrix.props.dist, 'el')
@@ -458,11 +445,6 @@ jobs:
         with:
           name: tarball-artifacts-${{ matrix.props.dist }}
           path: /tmp/src/
-
-      - name: Check free space
-        run: |
-          echo "Free space:"
-          df -h
 
       - name: Checksum artifacts
         run: |
@@ -479,11 +461,6 @@ jobs:
           cid="${{ matrix.props.dist }}-${{ github.run_id }}"
           podman exec $cid dnf install -y mock
           podman exec $cid mock -r ${{ matrix.props.chroot }} --init
-
-      - name: Check free space
-        run: |
-          echo "Free space:"
-          df -h
 
       - name: Build for FC with Mock
         if: startsWith(matrix.props.dist, 'fc')
@@ -509,12 +486,6 @@ jobs:
           cid="${{ matrix.props.dist }}-${{ github.run_id }}"
           podman exec $cid ls -R /tmp/rpmbuild
           podman exec $cid cat /tmp/rpmbuild/build.log
-
-      - name: Show free space
-        if: always()
-        run: |
-          echo "Free space:"
-          df -h
 
       - name: Export RPMs
         run: |

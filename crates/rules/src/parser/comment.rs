@@ -29,7 +29,7 @@ mod tests {
         let expected = "im a comment".to_string();
         assert_eq!(
             expected,
-            parse(format!("#{}", expected).as_str().into())
+            parse(format!("#{expected}").as_str().into())
                 .ok()
                 .unwrap()
                 .1

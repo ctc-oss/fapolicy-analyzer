@@ -6,11 +6,15 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+use crate::system::PySystem;
 use chrono::Utc;
 use fapolicy_analyzer::users::read_users;
 use fapolicy_app::sys::Error::WriteRulesFail;
 use fapolicy_daemon::fapolicyd::wait_until_ready;
 use fapolicy_daemon::pipe;
+use fapolicy_daemon::profiler::Profiler;
+use fapolicy_rules::read::load_rules_db;
+use fapolicy_util::tokenize;
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
 use pyo3::{exceptions, PyResult, Python};
@@ -25,11 +29,6 @@ use std::sync::Arc;
 use std::time::{Duration, SystemTime};
 use std::{io, thread};
 
-use crate::system::PySystem;
-use fapolicy_daemon::profiler::Profiler;
-use fapolicy_rules::read::load_rules_db;
-use fapolicy_util::tokenize;
-
 type EnvVars = HashMap<String, String>;
 type CmdArgs = (Command, String);
 
@@ -42,9 +41,9 @@ pub struct PyProfiler {
     env: Option<EnvVars>,
     rules: Option<String>,
     log_dir: Option<String>,
-    callback_exec: Option<PyObject>,
-    callback_tick: Option<PyObject>,
-    callback_done: Option<PyObject>,
+    callback_exec: Option<Py<PyAny>>,
+    callback_tick: Option<Py<PyAny>>,
+    callback_done: Option<Py<PyAny>>,
 }
 
 #[pymethods]
@@ -69,14 +68,13 @@ impl PyProfiler {
                 log::debug!("set_user: looking up username {uid_or_uname}");
                 Some(
                     read_users()
-                        .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))?
+                        .map_err(|e| PyRuntimeError::new_err(format!("{e:?}")))?
                         .iter()
                         .find(|x| x.name == uid_or_uname)
                         .map(|u| u.uid)
                         .ok_or_else(|| {
                             PyRuntimeError::new_err(format!(
-                                "unable to lookup uid by uname {}",
-                                uid_or_uname
+                                "unable to lookup uid by uname {uid_or_uname}"
                             ))
                         })?,
                 )
@@ -117,17 +115,17 @@ impl PyProfiler {
     }
 
     #[setter]
-    fn set_exec_callback(&mut self, f: PyObject) {
+    fn set_exec_callback(&mut self, f: Py<PyAny>) {
         self.callback_exec = Some(f);
     }
 
     #[setter]
-    fn set_tick_callback(&mut self, f: PyObject) {
+    fn set_tick_callback(&mut self, f: Py<PyAny>) {
         self.callback_tick = Some(f);
     }
 
     #[setter]
-    fn set_done_callback(&mut self, f: PyObject) {
+    fn set_done_callback(&mut self, f: Py<PyAny>) {
         self.callback_done = Some(f);
     }
 
@@ -159,7 +157,7 @@ impl PyProfiler {
 
         // generate the daemon and target logs
         let (events_log, mut stdout_log, mut stderr_log) = create_log_files(self.log_dir.as_ref())
-            .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))?;
+            .map_err(|e| PyRuntimeError::new_err(format!("{e:?}")))?;
 
         // set the daemon stdout log, aka the events log
         if let Some((_, path)) = events_log.as_ref() {
@@ -215,7 +213,7 @@ impl PyProfiler {
                         let start = SystemTime::now();
 
                         if let Some(cb) = cb_exec.as_ref() {
-                            Python::with_gil(|py| {
+                            Python::attach(|py| {
                                 if cb.call1(py, (handle.clone(),)).is_err() {
                                     log::warn!("'exec' callback failed");
                                 }
@@ -234,7 +232,7 @@ impl PyProfiler {
                                     .duration_since(start)
                                     .expect("system time")
                                     .as_secs();
-                                Python::with_gil(|py| {
+                                Python::attach(|py| {
                                     if cb.call1(py, (handle.clone(), t)).is_err() {
                                         log::warn!("'tick' callback failed");
                                     }
@@ -268,7 +266,7 @@ impl PyProfiler {
                 });
 
                 // outer thread waits on the target thread to complete
-                target_thread.join().map_err(|e| format!("{:?}", e))
+                target_thread.join().map_err(|e| format!("{e:?}"))
             } else {
                 start_profiling_daemon
             };
@@ -280,7 +278,7 @@ impl PyProfiler {
 
             // done; all targets are completed / cancelled / failed
             if let Some(cb) = cb_done.as_ref() {
-                if Python::with_gil(|py| cb.call0(py)).is_err() {
+                if Python::attach(|py| cb.call0(py)).is_err() {
                     log::warn!("'done' callback failed");
                 }
             }
@@ -427,7 +425,7 @@ impl Execd {
         match self.proc.as_mut().unwrap().try_wait() {
             Ok(Some(_)) => Ok(false),
             Ok(None) => Ok(true),
-            Err(e) => Err(PyRuntimeError::new_err(format!("{:?}", e))),
+            Err(e) => Err(PyRuntimeError::new_err(format!("{e:?}"))),
         }
     }
 
@@ -437,7 +435,7 @@ impl Execd {
             .as_mut()
             .unwrap()
             .kill()
-            .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
+            .map_err(|e| PyRuntimeError::new_err(format!("{e:?}")))
     }
 
     /// Kill more
@@ -489,10 +487,10 @@ fn reload_profiler_rules(system: &PySystem) -> PyResult<()> {
 
     fapolicy_rules::write::compiled_rules(&system.rs.rules_db, &compiled_rules_path)
         .map_err(WriteRulesFail)
-        .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))?;
+        .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{e:?}")))?;
 
     pipe::reload_rules()
-        .map_err(|e| exceptions::PyRuntimeError::new_err(format!("Reload failed: {:?}", e)))
+        .map_err(|e| exceptions::PyRuntimeError::new_err(format!("Reload failed: {e:?}")))
 }
 
 pub fn init_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {

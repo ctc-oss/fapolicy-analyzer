@@ -104,7 +104,7 @@ fn int_to_bool(i: &str) -> bool {
     match i {
         "0" => false,
         "1" => true,
-        v => panic!("invalid bool value {}", v),
+        v => panic!("invalid bool value {v}"),
     }
 }
 
@@ -162,10 +162,7 @@ mod tests {
 
     #[test]
     fn with_contains_no_files_lines() {
-        let full = format!(
-            "{}\n,{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n",
-            NF, A, NF, B, NF, C, NF, D, NF
-        );
+        let full = format!("{NF}\n,{A}\n{NF}\n{B}\n{NF}\n{C}\n{NF}\n{D}\n{NF}\n");
         let r = rpm_db_entry(&full);
         assert_eq!(2, r.len());
     }
@@ -217,7 +214,7 @@ mod tests {
 
     #[test]
     fn parse_db() {
-        let abc = format!("{}\n{}\n{}\n{}\n", A, B, C, D);
+        let abc = format!("{A}\n{B}\n{C}\n{D}\n");
         let files: Vec<Trust> = rpm_db_entry(&abc);
         assert_eq!(files.len(), 2);
     }

@@ -110,7 +110,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 if let Some((_, rhs)) = line.split_once("]: ") {
                     println!("{rhs}");
                 } else {
-                    log::warn!("failed to split output line \"{}\", ignoring", line);
+                    log::warn!("failed to split output line \"{line}\", ignoring");
                 }
             }
         }

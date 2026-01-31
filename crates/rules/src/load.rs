@@ -112,7 +112,6 @@ fn rules_text(rules_text: String) -> Result<Vec<RuleSource>, Error> {
                 let r = origin
                     .as_ref()
                     .map(|p| (p.clone(), line.to_string()))
-                    .map(RuleSource::from)
                     .unwrap();
                 lines.push(r);
             }

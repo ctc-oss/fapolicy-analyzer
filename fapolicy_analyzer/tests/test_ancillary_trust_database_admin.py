@@ -23,7 +23,7 @@ from callee import InstanceOf
 from callee.attributes import Attrs
 from callee.collections import Sequence
 from mocks import mock_System
-from rx.subject import Subject
+from reactivex.subject import Subject
 
 from fapolicy_analyzer import Trust
 from fapolicy_analyzer.redux import Action
