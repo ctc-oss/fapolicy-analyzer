@@ -64,6 +64,7 @@ dev = [
     "pytest-mock",
     "pytest-testmon",
     "pytest-watch",
+    "pytest-lazy-fixture",
     "callee",
 ]
 
