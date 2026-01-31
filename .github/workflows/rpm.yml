@@ -419,6 +419,9 @@ jobs:
           COPR_LOGIN: ${{ secrets.COPR_API_LOGIN }}
           COPR_TOKEN: ${{ secrets.COPR_API_TOKEN }}
 
+      - name: Check auth
+        run: copr-cli whoami
+
       - name: build
         run: |
           chroot=$(echo ${{ matrix.props.chroot }} | cut -d+ -f2)
