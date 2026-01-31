@@ -420,7 +420,7 @@ jobs:
           COPR_TOKEN: ${{ secrets.COPR_API_TOKEN }}
 
       - name: Check auth
-        run: copr-cli whoami
+        run: copr-cli --config "$HOME/.config/copr" whoami
 
       - name: build
         run: |
