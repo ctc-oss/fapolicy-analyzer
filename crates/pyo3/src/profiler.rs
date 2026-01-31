@@ -6,14 +6,19 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+use crate::system::PySystem;
 use chrono::Utc;
 use fapolicy_analyzer::users::read_users;
 use fapolicy_app::sys::Error::WriteRulesFail;
 use fapolicy_daemon::fapolicyd::wait_until_ready;
 use fapolicy_daemon::pipe;
+use fapolicy_daemon::profiler::Profiler;
+use fapolicy_rules::read::load_rules_db;
+use fapolicy_util::tokenize;
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
 use pyo3::{exceptions, PyResult, Python};
+use std::any::Any;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
@@ -24,11 +29,6 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::{Duration, SystemTime};
 use std::{io, thread};
-
-use crate::system::PySystem;
-use fapolicy_daemon::profiler::Profiler;
-use fapolicy_rules::read::load_rules_db;
-use fapolicy_util::tokenize;
 
 type EnvVars = HashMap<String, String>;
 type CmdArgs = (Command, String);
@@ -42,9 +42,9 @@ pub struct PyProfiler {
     env: Option<EnvVars>,
     rules: Option<String>,
     log_dir: Option<String>,
-    callback_exec: Option<PyObject>,
-    callback_tick: Option<PyObject>,
-    callback_done: Option<PyObject>,
+    callback_exec: Option<Py<PyAny>>,
+    callback_tick: Option<Py<PyAny>>,
+    callback_done: Option<Py<PyAny>>,
 }
 
 #[pymethods]
@@ -117,17 +117,17 @@ impl PyProfiler {
     }
 
     #[setter]
-    fn set_exec_callback(&mut self, f: PyObject) {
+    fn set_exec_callback(&mut self, f: Py<PyAny>) {
         self.callback_exec = Some(f);
     }
 
     #[setter]
-    fn set_tick_callback(&mut self, f: PyObject) {
+    fn set_tick_callback(&mut self, f: Py<PyAny>) {
         self.callback_tick = Some(f);
     }
 
     #[setter]
-    fn set_done_callback(&mut self, f: PyObject) {
+    fn set_done_callback(&mut self, f: Py<PyAny>) {
         self.callback_done = Some(f);
     }
 
@@ -215,7 +215,7 @@ impl PyProfiler {
                         let start = SystemTime::now();
 
                         if let Some(cb) = cb_exec.as_ref() {
-                            Python::with_gil(|py| {
+                            Python::attach(|py| {
                                 if cb.call1(py, (handle.clone(),)).is_err() {
                                     log::warn!("'exec' callback failed");
                                 }
@@ -234,7 +234,7 @@ impl PyProfiler {
                                     .duration_since(start)
                                     .expect("system time")
                                     .as_secs();
-                                Python::with_gil(|py| {
+                                Python::attach(|py| {
                                     if cb.call1(py, (handle.clone(), t)).is_err() {
                                         log::warn!("'tick' callback failed");
                                     }
@@ -280,7 +280,7 @@ impl PyProfiler {
 
             // done; all targets are completed / cancelled / failed
             if let Some(cb) = cb_done.as_ref() {
-                if Python::with_gil(|py| cb.call0(py)).is_err() {
+                if Python::attach(|py| cb.call0(py)).is_err() {
                     log::warn!("'done' callback failed");
                 }
             }

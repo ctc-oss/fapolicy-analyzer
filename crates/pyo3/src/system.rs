@@ -54,7 +54,7 @@ impl PySystem {
     /// allowing the member accessors on the System to return non-result objects.
     #[new]
     fn new(py: Python) -> PyResult<PySystem> {
-        py.allow_threads(|| {
+        py.detach(|| {
             let conf = cfg::All::load()
                 .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))?;
             match State::load(&conf) {
@@ -284,7 +284,7 @@ fn rules_difference(lhs: &PySystem, rhs: &PySystem) -> String {
 /// Creates a [PySystem] that has all trust entries checked against disk
 #[pyfunction]
 fn checked_system(py: Python) -> PyResult<PySystem> {
-    py.allow_threads(|| {
+    py.detach(|| {
         let conf = cfg::All::load()
             .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))?;
         match State::load_checked(&conf) {

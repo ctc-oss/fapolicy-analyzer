@@ -50,7 +50,7 @@ impl<I> ParseError<I> for LineError<I> {
     }
 }
 
-fn parser(i: &str) -> nom::IResult<StrTrace, Line, LineError<&str>> {
+fn parser(i: &str) -> nom::IResult<StrTrace<'_>, Line, LineError<&str>> {
     alt((
         map(blank_line, |_| Blank),
         map(comment::parse, Comment),

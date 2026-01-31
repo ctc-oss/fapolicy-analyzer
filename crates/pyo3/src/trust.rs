@@ -300,10 +300,7 @@ impl PyFilterChangeset {
 
 #[pyfunction]
 fn filter_text_error_check(txt: &str) -> Option<String> {
-    match with_error_message(txt) {
-        Ok(_) => None,
-        Err(s) => Some(s),
-    }
+    with_error_message(txt).err()
 }
 
 pub fn init_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {

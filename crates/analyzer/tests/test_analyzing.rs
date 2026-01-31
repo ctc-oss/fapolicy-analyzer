@@ -140,7 +140,7 @@ fn user_subj_apd_status() {
     let e2 = bash_allowed("/foo/bin", uid, 1003);
     let e3 = bash_allowed("/foo/baz", uid, 1003);
 
-    let a1 = analyze_from_user(&[e1.clone()], uid, &trust);
+    let a1 = analyze_from_user(std::slice::from_ref(&e1), uid, &trust);
 
     assert_eq!(a1.subject.access, "D");
 

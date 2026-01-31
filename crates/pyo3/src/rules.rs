@@ -163,10 +163,7 @@ impl PyChangeset {
 
 #[pyfunction]
 fn rule_text_error_check(txt: &str) -> Option<String> {
-    match parse_with_error_message(StrTrace::new(txt)) {
-        Ok(_) => None,
-        Err(s) => Some(s),
-    }
+    parse_with_error_message(StrTrace::new(txt)).err()
 }
 
 pub(crate) fn to_vec(db: &DB) -> Vec<PyRule> {

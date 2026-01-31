@@ -239,10 +239,7 @@ impl PyChangeset {
 
 #[pyfunction]
 fn conf_text_error_check(txt: &str) -> Option<String> {
-    match with_error_message(txt) {
-        Ok(_) => None,
-        Err(s) => Some(s),
-    }
+    with_error_message(txt).err()
 }
 
 #[pyclass(module = "stats", name = "StatStream")]
@@ -395,13 +392,13 @@ impl PyRecTs {
 }
 
 #[pyfunction]
-fn start_stat_stream(path: &str, f: PyObject) -> PyResult<PyStatStream> {
+fn start_stat_stream(path: &str, f: Py<PyAny>) -> PyResult<PyStatStream> {
     let kill_flag = Arc::new(AtomicBool::new(false));
     let rx = stats::read(path, kill_flag.clone()).expect("failed to read stats");
 
     thread::spawn(move || {
         for (rec, ts) in rx.iter() {
-            Python::with_gil(|py| {
+            Python::attach(|py| {
                 if f.call1(py, ((PyRec { rs: rec }, PyRecTs { rs: ts }),))
                     .is_err()
                 {
