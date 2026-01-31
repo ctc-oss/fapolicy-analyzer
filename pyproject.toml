@@ -59,6 +59,7 @@ name = "Packaging"
 [dependency-groups]
 dev = [
     "pytest>=8.4.2",
+    "pytest-cov",
     "ruff>=0.14.3",
 ]
 
