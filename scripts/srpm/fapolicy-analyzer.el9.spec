@@ -256,7 +256,8 @@ install -D target/release/rulec %{buildroot}/%{_sbindir}/%{name}-cli-rules
 %endif
 
 %if %{with gui}
-%{py3_install_wheel %{module}-%{module_version}*%{_target_cpu}.whl}
+wheel=$(basename dist/*.whl)
+%{py3_install_wheel $wheel}
 %{python3} help install --dest %{buildroot}/%{_datadir}/help
 install -D bin/%{name} %{buildroot}/%{_sbindir}/%{name}
 install -D data/%{name}.8 -t %{buildroot}/%{_mandir}/man8/
