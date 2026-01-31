@@ -18,7 +18,7 @@ import sys
 import threading
 import time
 
-from rx import operators
+from reactivex import operators
 from fapolicy_analyzer import *
 
 from fapolicy_analyzer.redux import (

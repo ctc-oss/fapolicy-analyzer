@@ -21,7 +21,7 @@ import gi
 import pytest
 from fapolicy_analyzer.ui.splash_screen import SplashScreen
 from fapolicy_analyzer.ui.store import init_store
-from rx.subject import Subject
+from reactivex.subject import Subject
 
 from mocks import mock_System
 

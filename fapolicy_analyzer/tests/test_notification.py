@@ -19,7 +19,7 @@ from time import sleep
 import gi
 import pytest
 from callee import Attrs, InstanceOf
-from rx.subject import Subject
+from reactivex.subject import Subject
 
 from fapolicy_analyzer.redux import Action
 from fapolicy_analyzer.ui.actions import REMOVE_NOTIFICATION

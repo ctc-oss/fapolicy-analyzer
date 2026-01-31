@@ -21,8 +21,8 @@
 from typing import Iterable
 from unittest.case import TestCase
 
-from rx import Observable, operators
-from rx.subject import BehaviorSubject
+from reactivex import Observable, operators
+from reactivex.subject import BehaviorSubject
 
 from fapolicy_analyzer.redux import ReduxRootStore, create_store
 

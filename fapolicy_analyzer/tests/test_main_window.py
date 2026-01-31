@@ -23,8 +23,8 @@ import gi
 import pytest
 from callee import Attrs, InstanceOf
 from mocks import mock_System
-from rx import create
-from rx.subject import Subject
+from reactivex import create
+from reactivex.subject import Subject
 
 import fapolicy_analyzer.ui
 from fapolicy_analyzer.redux import Action
