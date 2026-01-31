@@ -178,7 +178,6 @@ install -D data/config.toml -t %{buildroot}%{_sysconfdir}/%{name}/
 desktop-file-install data/%{name}.desktop
 find locale -name %{name}.mo -exec cp --parents -rv {} %{buildroot}/%{_datadir} \;
 %find_lang %{name} --with-gnome
-%endif
 
 # remove gui entrypoint
 rm %{buildroot}/%{_bindir}/gui
