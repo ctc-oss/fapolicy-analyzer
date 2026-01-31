@@ -59,7 +59,7 @@ fn collect_actual(file: &File) -> Result<Actual, Error> {
         hash: sha,
         last_modified: meta
             .modified()
-            .map_err(|e| MetaError(format!("{}", e)))?
+            .map_err(|e| MetaError(format!("{e}")))?
             .duration_since(UNIX_EPOCH)
             .map_err(|_| MetaError("failed to convert to epoch seconds".into()))?
             .as_secs(),

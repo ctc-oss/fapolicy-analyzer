@@ -18,7 +18,6 @@ use fapolicy_util::tokenize;
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
 use pyo3::{exceptions, PyResult, Python};
-use std::any::Any;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
@@ -69,14 +68,13 @@ impl PyProfiler {
                 log::debug!("set_user: looking up username {uid_or_uname}");
                 Some(
                     read_users()
-                        .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))?
+                        .map_err(|e| PyRuntimeError::new_err(format!("{e:?}")))?
                         .iter()
                         .find(|x| x.name == uid_or_uname)
                         .map(|u| u.uid)
                         .ok_or_else(|| {
                             PyRuntimeError::new_err(format!(
-                                "unable to lookup uid by uname {}",
-                                uid_or_uname
+                                "unable to lookup uid by uname {uid_or_uname}"
                             ))
                         })?,
                 )
@@ -159,7 +157,7 @@ impl PyProfiler {
 
         // generate the daemon and target logs
         let (events_log, mut stdout_log, mut stderr_log) = create_log_files(self.log_dir.as_ref())
-            .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))?;
+            .map_err(|e| PyRuntimeError::new_err(format!("{e:?}")))?;
 
         // set the daemon stdout log, aka the events log
         if let Some((_, path)) = events_log.as_ref() {
@@ -268,7 +266,7 @@ impl PyProfiler {
                 });
 
                 // outer thread waits on the target thread to complete
-                target_thread.join().map_err(|e| format!("{:?}", e))
+                target_thread.join().map_err(|e| format!("{e:?}"))
             } else {
                 start_profiling_daemon
             };
@@ -427,7 +425,7 @@ impl Execd {
         match self.proc.as_mut().unwrap().try_wait() {
             Ok(Some(_)) => Ok(false),
             Ok(None) => Ok(true),
-            Err(e) => Err(PyRuntimeError::new_err(format!("{:?}", e))),
+            Err(e) => Err(PyRuntimeError::new_err(format!("{e:?}"))),
         }
     }
 
@@ -437,7 +435,7 @@ impl Execd {
             .as_mut()
             .unwrap()
             .kill()
-            .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
+            .map_err(|e| PyRuntimeError::new_err(format!("{e:?}")))
     }
 
     /// Kill more
@@ -489,10 +487,10 @@ fn reload_profiler_rules(system: &PySystem) -> PyResult<()> {
 
     fapolicy_rules::write::compiled_rules(&system.rs.rules_db, &compiled_rules_path)
         .map_err(WriteRulesFail)
-        .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{:?}", e)))?;
+        .map_err(|e| exceptions::PyRuntimeError::new_err(format!("{e:?}")))?;
 
     pipe::reload_rules()
-        .map_err(|e| exceptions::PyRuntimeError::new_err(format!("Reload failed: {:?}", e)))
+        .map_err(|e| exceptions::PyRuntimeError::new_err(format!("Reload failed: {e:?}")))
 }
 
 pub fn init_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {

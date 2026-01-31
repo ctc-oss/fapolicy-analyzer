@@ -50,7 +50,7 @@ impl Display for Event {
             "gid={} ",
             self.gid
                 .iter()
-                .map(|v| format!("{}", v))
+                .map(|v| format!("{v}"))
                 .collect::<Vec<String>>()
                 .join(",")
         ))?;
@@ -61,8 +61,8 @@ impl Display for Event {
             .obj
             .parts
             .iter()
-            .fold(String::new(), |x, p| format!("{} {}", x, p));
-        f.write_fmt(format_args!("{} ", o))?;
+            .fold(String::new(), |x, p| format!("{x} {p}"));
+        f.write_fmt(format_args!("{o} "))?;
 
         Ok(())
     }

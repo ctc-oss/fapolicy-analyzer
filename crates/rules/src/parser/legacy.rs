@@ -49,7 +49,7 @@ pub fn subject(i: &str) -> nom::IResult<&str, Subject> {
     match parser::subject::parse(ss) {
         Ok((_, s)) => Ok((r.current, s)),
         Err(e) => {
-            log::error!("{:?}", e);
+            log::error!("{e:?}");
             Err(nom::Err::Error(nom::error::Error {
                 input: i,
                 code: ErrorKind::Alpha,

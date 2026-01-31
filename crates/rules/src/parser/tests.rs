@@ -32,5 +32,5 @@ fn trace_tag() {
     });
     assert!(r.is_ok());
     let (x, y) = r.ok().unwrap();
-    println!("{:?} {:?}", x, y);
+    println!("{x:?} {y:?}");
 }

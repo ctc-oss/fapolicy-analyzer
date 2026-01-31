@@ -76,7 +76,7 @@ impl Display for RuleParseError<Trace<&str>> {
             ExpectedPattern(_) => f.write_str("Expected pattern"),
             ExpectedBoolean(_, _) => f.write_str("Expected boolean (0, 1) value"),
             ExpectedFileType(_) => f.write_str("Expected mime file type"),
-            e @ Nom(_, _) => f.write_fmt(format_args!("{:?}", e)),
+            e @ Nom(_, _) => f.write_fmt(format_args!("{e:?}")),
         }
     }
 }

@@ -71,7 +71,7 @@ fn dir(db: &DB, dir: &Path) -> Result<(), io::Error> {
     for (k, v) in files {
         let mut f = File::create(dir.join(k))?;
         for l in v {
-            f.write_all(format!("{}\n", l).as_bytes())?;
+            f.write_all(format!("{l}\n").as_bytes())?;
         }
     }
 

@@ -116,10 +116,10 @@ impl Display for Subject {
         let s: String = self
             .parts
             .iter()
-            .map(|p| format!("{}", p))
+            .map(|p| format!("{p}"))
             .collect::<Vec<String>>()
             .join(" ");
-        f.write_fmt(format_args!("{}", s))
+        f.write_fmt(format_args!("{s}"))
     }
 }
 
@@ -127,12 +127,12 @@ impl Display for Part {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Part::All => f.write_str("all"),
-            Part::Comm(cmd) => f.write_fmt(format_args!("comm={}", cmd)),
-            Part::Uid(id) => f.write_fmt(format_args!("uid={}", id)),
-            Part::Gid(id) => f.write_fmt(format_args!("gid={}", id)),
-            Part::Pid(id) => f.write_fmt(format_args!("pid={}", id)),
-            Part::Exe(id) => f.write_fmt(format_args!("exe={}", id)),
-            Part::Pattern(id) => f.write_fmt(format_args!("pattern={}", id)),
+            Part::Comm(cmd) => f.write_fmt(format_args!("comm={cmd}")),
+            Part::Uid(id) => f.write_fmt(format_args!("uid={id}")),
+            Part::Gid(id) => f.write_fmt(format_args!("gid={id}")),
+            Part::Pid(id) => f.write_fmt(format_args!("pid={id}")),
+            Part::Exe(id) => f.write_fmt(format_args!("exe={id}")),
+            Part::Pattern(id) => f.write_fmt(format_args!("pattern={id}")),
             Part::Trust(b) => f.write_fmt(format_args!("trust={}", bool_to_c(*b))),
         }
     }

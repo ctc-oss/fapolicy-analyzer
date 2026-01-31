@@ -60,7 +60,7 @@ fn parser(i: &str) -> nom::IResult<StrTrace<'_>, Line, LineError<&str>> {
     .map_err(|e| {
         let details = match e {
             nom::Err::Error(e) => e.to_string(),
-            e => format!("{:?}", e),
+            e => format!("{e:?}"),
         };
         // todo;; guess set or rule here based on the line start char?
         let f = if i.starts_with('%') {

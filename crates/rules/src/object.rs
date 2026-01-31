@@ -87,10 +87,10 @@ impl Display for Object {
         let s: String = self
             .parts
             .iter()
-            .map(|p| format!("{}", p))
+            .map(|p| format!("{p}"))
             .collect::<Vec<String>>()
             .join(" ");
-        f.write_fmt(format_args!("{}", s))
+        f.write_fmt(format_args!("{s}"))
     }
 }
 
@@ -98,10 +98,10 @@ impl Display for Part {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Part::All => f.write_str("all"),
-            Part::Device(p) => f.write_fmt(format_args!("device={}", p)),
-            Part::Dir(p) => f.write_fmt(format_args!("dir={}", p)),
-            Part::FileType(t) => f.write_fmt(format_args!("ftype={}", t)),
-            Part::Path(p) => f.write_fmt(format_args!("path={}", p)),
+            Part::Device(p) => f.write_fmt(format_args!("device={p}")),
+            Part::Dir(p) => f.write_fmt(format_args!("dir={p}")),
+            Part::FileType(t) => f.write_fmt(format_args!("ftype={t}")),
+            Part::Path(p) => f.write_fmt(format_args!("path={p}")),
             Part::Trust(b) => f.write_fmt(format_args!("trust={}", bool_to_c(*b))),
         }
     }

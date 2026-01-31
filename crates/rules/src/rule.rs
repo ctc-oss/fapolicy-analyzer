@@ -71,6 +71,6 @@ mod tests {
         );
         let expected = "deny_audit perm=open all : all";
 
-        assert_eq!(expected, format!("{}", r));
+        assert_eq!(expected, format!("{r}"));
     }
 }

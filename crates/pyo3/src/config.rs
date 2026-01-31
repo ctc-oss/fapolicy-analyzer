@@ -16,7 +16,7 @@ use fapolicy_app::cfg;
 fn config_file_path() -> PyResult<String> {
     cfg::All::config_file()
         .map(|p| p.display().to_string())
-        .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
+        .map_err(|e| PyRuntimeError::new_err(format!("{e:?}")))
 }
 
 /// log dir

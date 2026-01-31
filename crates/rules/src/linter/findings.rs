@@ -63,19 +63,19 @@ fn is_executable(p: &str) -> bool {
 }
 
 fn path_does_not_exist_message(t: &str, p: &str) -> String {
-    format!("{} {} {}", t, L003_MESSAGE_A, p)
+    format!("{L003_MESSAGE_A} {t} {p}")
 }
 
 fn exe_is_a_directory(p: &str) -> String {
-    format!("{} at {}", L006_MESSAGE, p)
+    format!("{L006_MESSAGE} at {p}")
 }
 
 fn exe_is_not_executable(p: &str) -> String {
-    format!("{} at {}", L007_MESSAGE, p)
+    format!("{L007_MESSAGE} at {p}")
 }
 
 fn wrong_type_message(t: &str) -> String {
-    format!("{} {}", L003_MESSAGE_B, t)
+    format!("{L003_MESSAGE_B} {t}")
 }
 
 pub fn l003_object_path_missing(_: usize, r: &Rule, _db: &DB) -> Option<String> {
@@ -104,7 +104,7 @@ pub fn l004_duplicate_rule(fk: usize, r: &Rule, db: &DB) -> Option<String> {
         .filter_map(|(&fk2, (_, e))| match e {
             Entry::ValidRule(other) if fk != fk2 && other == r => {
                 let dupe = db.rule_rev(fk2).map(|e| e.id).unwrap();
-                Some(format!("{} {}", L004_MESSAGE, dupe))
+                Some(format!("{L004_MESSAGE} {dupe}"))
             }
             _ => None,
         })

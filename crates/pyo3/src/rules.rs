@@ -146,13 +146,12 @@ impl PyChangeset {
         match self.rs.set(text.trim()) {
             Ok(_) => Ok(()),
             Err(MalformedFileMarker(lnum, txt)) => Err(exceptions::PyRuntimeError::new_err(
-                format!("{}:malformed-file-marker:{}", lnum, txt),
+                format!("{lnum}:malformed-file-marker:{txt}"),
             )),
             Err(ZeroRulesDefined) => Err(exceptions::PyRuntimeError::new_err(format!(
-                "{:?}",
-                ZeroRulesDefined
+                "{ZeroRulesDefined:?}"
             ))),
-            Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{:?}", e))),
+            Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{e:?}"))),
         }
     }
 

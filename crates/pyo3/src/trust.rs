@@ -194,14 +194,14 @@ impl PyChangeset {
 #[pyfunction]
 fn signal_trust_reload() -> PyResult<()> {
     pipe::reload_trust()
-        .map_err(|e| PyRuntimeError::new_err(format!("failed to signal trust reload: {:?}", e)))
+        .map_err(|e| PyRuntimeError::new_err(format!("failed to signal trust reload: {e:?}")))
 }
 
 /// send signal to fapolicyd FIFO pipe to reload rules
 #[pyfunction]
 fn signal_rule_reload() -> PyResult<()> {
     pipe::reload_rules()
-        .map_err(|e| PyRuntimeError::new_err(format!("failed to signal rules reload: {:?}", e)))
+        .map_err(|e| PyRuntimeError::new_err(format!("failed to signal rules reload: {e:?}")))
 }
 
 pub(crate) fn filter_to_text(db: &filter::DB) -> String {
@@ -281,7 +281,7 @@ impl PyFilterChangeset {
     fn parse(&mut self, text: &str) -> PyResult<()> {
         match self.rs.set(text.trim()) {
             Ok(_) => Ok(()),
-            Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{:?}", e))),
+            Err(e) => Err(exceptions::PyRuntimeError::new_err(format!("{e:?}"))),
         }
     }
 

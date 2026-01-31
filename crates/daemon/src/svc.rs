@@ -94,7 +94,7 @@ impl Handle {
     pub fn new(name: &str) -> Handle {
         Handle {
             name: name.to_string(),
-            unit: format!("{}.service", name),
+            unit: format!("{name}.service"),
         }
     }
 
