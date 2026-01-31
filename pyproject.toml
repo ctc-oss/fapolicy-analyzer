@@ -61,6 +61,9 @@ dev = [
     "ruff>=0.14.3",
     "pytest>=8.4.2",
     "pytest-cov",
+    "pytest-mock",
+    "pytest-testmon",
+    "pytest-watch",
     "callee",
 ]
 
