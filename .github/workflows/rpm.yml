@@ -386,6 +386,7 @@ jobs:
   copr:
     needs: [ config, srpm ]
     name: Copr Build ${{ matrix.props.dist }}
+    if: needs.config.outputs.is-copr-enabled == 'true'
     container: 'rockylinux:9'
     runs-on: ubuntu-22.04
     strategy:
@@ -412,7 +413,6 @@ jobs:
           umask 077
           printf '%s' "${{ secrets.COPR_CONFIG }}" > "$HOME/.config/copr"
           chmod 0600 "$HOME/.config/copr"
-          copr-cli --config "$HOME/.config/copr" whoami
 
       - name: Check auth
         run: copr-cli whoami
