@@ -408,19 +408,14 @@ jobs:
 
       - name: Install Config
         run: |
-          mkdir -p $HOME/.config
-          echo "[copr-cli]" > $HOME/.config/copr 
-          echo "username = ${COPR_USER}" >> $HOME/.config/copr
-          echo "login = ${COPR_LOGIN}" >> $HOME/.config/copr
-          echo "token = ${COPR_TOKEN}" >> $HOME/.config/copr
-          echo "copr_url = https://copr.fedorainfracloud.org" >> $HOME/.config/copr
-        env:
-          COPR_USER: ${{ secrets.COPR_API_USER }}
-          COPR_LOGIN: ${{ secrets.COPR_API_LOGIN }}
-          COPR_TOKEN: ${{ secrets.COPR_API_TOKEN }}
+          install -d -m 0700 "$HOME/.config"
+          umask 077
+          printf '%s' "${{ secrets.COPR_CONFIG }}" > "$HOME/.config/copr"
+          chmod 0600 "$HOME/.config/copr"
+          copr-cli --config "$HOME/.config/copr" whoami
 
       - name: Check auth
-        run: copr-cli --config "$HOME/.config/copr" whoami
+        run: copr-cli whoami
 
       - name: build
         run: |
