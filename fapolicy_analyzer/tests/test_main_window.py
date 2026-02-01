@@ -102,8 +102,7 @@ def mock_dispatches(mocker):
 
 
 @pytest.fixture
-@pytest.mark.usefixtures("mock_system_feature")
-def mainWindow(mock_init_store, mock_dispatches, mock_application_feature):
+def mainWindow(mock_init_store, mock_dispatches, mock_application_feature, mock_system_feature):
     return MainWindow()
 
 
