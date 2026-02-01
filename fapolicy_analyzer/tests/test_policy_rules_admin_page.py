@@ -23,6 +23,7 @@ from callee import Attrs, InstanceOf
 from fapolicy_analyzer.ui.types import LogType
 from mocks import mock_events, mock_groups, mock_log, mock_System, mock_users
 from reactivex.subject import Subject
+from pytest_lazy_fixtures import lf
 
 from fapolicy_analyzer.redux import Action
 from fapolicy_analyzer.ui.actions import (
@@ -243,7 +244,7 @@ def test_loads_subjects_primary(subjectListView, activeSwitcherButton, mock_disp
 
 
 @pytest.mark.parametrize(
-    "view", [pytest.lazy_fixture("userListView"), pytest.lazy_fixture("groupListView")]
+    "view", [lf("userListView"), lf("groupListView")]
 )
 def test_loads_subjects_secondary(view, subjectListView, mock_dispatch):
     view.get_selection().select_path(Gtk.TreePath.new_first())
@@ -291,7 +292,7 @@ def test_loads_groups_secondary(
 
 
 @pytest.mark.parametrize(
-    "view", [pytest.lazy_fixture("userListView"), pytest.lazy_fixture("groupListView")]
+    "view", [lf("userListView"), lf("groupListView")]
 )
 def test_loads_objects_from_subject(view, subjectListView, objectListView):
     view.get_selection().select_path(Gtk.TreePath.new_first())
@@ -308,7 +309,7 @@ def test_loads_objects_from_subject(view, subjectListView, objectListView):
 
 
 @pytest.mark.parametrize(
-    "view", [pytest.lazy_fixture("userListView"), pytest.lazy_fixture("groupListView")]
+    "view", [lf("userListView"), lf("groupListView")]
 )
 def test_loads_objects_from_acl(
     view, subjectListView, objectListView, activeSwitcherButton
@@ -329,7 +330,7 @@ def test_loads_objects_from_acl(
 
 @pytest.mark.parametrize(
     "aclListView",
-    [pytest.lazy_fixture("userListView")],  # , pytest.lazy_fixture("groupListView")],
+    [lf("userListView")],  # , lf("groupListView")],
 )
 def test_reloads_views_after_refresh(
     aclListView,
@@ -393,7 +394,7 @@ def test_reloads_views_after_refresh(
 
 @pytest.mark.parametrize(
     "aclListView",
-    [pytest.lazy_fixture("userListView"), pytest.lazy_fixture("groupListView")],
+    [lf("userListView"), lf("groupListView")],
 )
 def test_handles_data_changed_after_refresh(
     aclListView,
@@ -455,7 +456,7 @@ def test_handles_data_changed_after_refresh(
 
 @pytest.mark.parametrize(
     "aclListView",
-    [pytest.lazy_fixture("userListView")],  # , pytest.lazy_fixture("groupListView")],
+    [lf("userListView")],  # , lf("groupListView")],
 )
 def test_refresh_with_multi_select(
     aclListView, subjectListView, objectListView, widget, mock_system_features
@@ -500,8 +501,8 @@ def test_refresh_with_multi_select(
 @pytest.mark.parametrize(
     "view, mockFnName",
     [
-        (pytest.lazy_fixture("userListView"), "get_user_details"),
-        (pytest.lazy_fixture("groupListView"), "get_group_details"),
+        (lf("userListView"), "get_user_details"),
+        (lf("groupListView"), "get_group_details"),
     ],
 )
 def test_updates_acl_details(widget, view, mockFnName, mocker):
@@ -550,7 +551,7 @@ def test_updates_object_details(widget, mocker):
 
 
 @pytest.mark.parametrize(
-    "view", [pytest.lazy_fixture("userListView"), pytest.lazy_fixture("groupListView")]
+    "view", [lf("userListView"), lf("groupListView")]
 )
 def test_handles_empty_acl_select(widget, view, subjectListView):
     view.get_selection().select_path(Gtk.TreePath.new_first())
