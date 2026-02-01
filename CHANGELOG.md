@@ -8,6 +8,18 @@ Release notes
 
 <!-- towncrier release notes start -->
 
+## [v1.5.1](https://github.com/ctc-oss/fapolicy-analyzer/releases/tag/v1.5.1) - 2026-01-31
+### Packaging
+
+- Add RPM build for EPEL-10. [#1065](https://github.com/ctc-oss/fapolicy-analyzer/pull/1065)
+- Builds are now performed with Maturin, setuptools usage has been removed (execpt el9). [#1079](https://github.com/ctc-oss/fapolicy-analyzer/pull/1079)
+- Updated Python Reactive Extensions (PyRx) to v4 to support upstream Fedora packaging changes. [#1082](https://github.com/ctc-oss/fapolicy-analyzer/pull/1082)_
+
+### Fixed
+
+- Fixed use of quotes in profiler args allowing commands like bash -c "echo 'hello world'". [#1066](https://github.com/ctc-oss/fapolicy-analyzer/pull/1066)
+- Preserve daemon state on deploy. [#1078](https://github.com/ctc-oss/fapolicy-analyzer/pull/1078)
+    
 ## [v1.5.0](https://github.com/ctc-oss/fapolicy-analyzer/releases/tag/v1.5.0) - 2024-12-31
 
 ### Added
