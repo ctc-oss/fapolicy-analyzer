@@ -18,7 +18,7 @@ Release notes
 ### Fixed
 
 - Fixed use of quotes in profiler args allowing commands like bash -c "echo 'hello world'". [#1066](https://github.com/ctc-oss/fapolicy-analyzer/pull/1066)
-  - Preserve daemon state on deploy. [#1078](https://github.com/ctc-oss/fapolicy-analyzer/pull/1078)
+- Preserve daemon state on deploy. [#1078](https://github.com/ctc-oss/fapolicy-analyzer/pull/1078)
     
 ## [v1.5.0](https://github.com/ctc-oss/fapolicy-analyzer/releases/tag/v1.5.0) - 2024-12-31
 
