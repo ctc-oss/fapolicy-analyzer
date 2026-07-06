@@ -29,7 +29,7 @@ use crate::{daemon, rules};
 
 use super::trust::{PyFilterChangeset, PyFilterInfo, PyTrust};
 
-#[pyclass(module = "app", name = "System")]
+#[pyclass(module = "app", name = "System", from_py_object)]
 #[derive(Clone)]
 /// An immutable view of host system state.
 /// This only a container for state, it has to be applied to the host system.

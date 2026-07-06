@@ -16,7 +16,7 @@ use fapolicy_analyzer::events::event::{Event, Perspective};
 use fapolicy_trust::db::DB as TrustDB;
 
 /// An Event parsed from a fapolicyd log
-#[pyclass(module = "log", name = "Event")]
+#[pyclass(module = "log", name = "Event", skip_from_py_object)]
 #[derive(Clone, Debug)]
 pub struct PyEvent {
     rs: Analysis,
@@ -88,7 +88,7 @@ impl PyEvent {
 }
 
 /// Subject metadata
-#[pyclass(module = "log", name = "Subject")]
+#[pyclass(module = "log", name = "Subject", skip_from_py_object)]
 #[derive(Clone)]
 pub struct PySubject {
     rs: SubjAnalysis,
@@ -133,7 +133,7 @@ impl PySubject {
 }
 
 /// Object metadata
-#[pyclass(module = "log", name = "Object")]
+#[pyclass(module = "log", name = "Object", skip_from_py_object)]
 #[derive(Clone)]
 pub struct PyObject {
     rs: ObjAnalysis,
@@ -183,7 +183,7 @@ impl PyObject {
     }
 }
 
-#[pyclass(module = "log", name = "EventLog")]
+#[pyclass(module = "log", name = "EventLog", skip_from_py_object)]
 #[derive(Clone)]
 pub struct PyEventLog {
     pub(crate) rs: EventDB,
