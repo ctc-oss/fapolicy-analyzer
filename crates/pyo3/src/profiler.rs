@@ -312,7 +312,7 @@ fn make_log_path(log_dir: &str, t: i64, suffix: &str) -> Result<LogPath, io::Err
 
 /// Terminable process handle returned to python after starting profiling
 #[derive(Default, Debug, Clone)]
-#[pyclass(module = "daemon", name = "ProcHandle")]
+#[pyclass(module = "daemon", name = "ProcHandle", skip_from_py_object)]
 struct ProcHandle {
     kill_flag: Arc<AtomicBool>,
     alive_flag: Arc<AtomicBool>,
@@ -331,7 +331,7 @@ impl ProcHandle {
 }
 
 #[derive(Debug, Clone)]
-#[pyclass(module = "daemon", name = "ExecHandle")]
+#[pyclass(module = "daemon", name = "ExecHandle", skip_from_py_object)]
 struct ExecHandle {
     pid: u32,
     command: String,

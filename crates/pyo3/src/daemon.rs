@@ -21,7 +21,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::thread;
 
-#[pyclass(module = "svc", name = "Handle")]
+#[pyclass(module = "svc", name = "Handle", skip_from_py_object)]
 #[derive(Clone, Default)]
 /// A handle to a systemd service.
 pub struct PyHandle {
@@ -152,7 +152,7 @@ pub(crate) fn conf_to_text(db: &conf::DB) -> String {
         .to_owned()
 }
 
-#[pyclass(module = "daemon", name = "ConfigInfo")]
+#[pyclass(module = "daemon", name = "ConfigInfo", skip_from_py_object)]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PyConfigInfo {
     pub category: String,
@@ -192,7 +192,7 @@ pub(crate) fn conf_info(db: &conf::DB) -> Vec<PyConfigInfo> {
 }
 
 /// A mutable collection of config changes
-#[pyclass(module = "daemon", name = "ConfigChangeset")]
+#[pyclass(module = "daemon", name = "ConfigChangeset", from_py_object)]
 #[derive(Default, Clone)]
 pub struct PyChangeset {
     rs: Changeset,

@@ -11,7 +11,7 @@ use pyo3::prelude::*;
 use fapolicy_analyzer::users::{Group, User};
 
 /// Represents a host system user parsed from /etc/passwd
-#[pyclass(module = "acl", name = "User")]
+#[pyclass(module = "acl", name = "User", skip_from_py_object)]
 #[derive(Clone)]
 pub struct PyUser {
     rs: User,
@@ -49,7 +49,7 @@ impl PyUser {
 }
 
 /// Represents a host system group parsed from /etc/group
-#[pyclass(module = "acl", name = "Group")]
+#[pyclass(module = "acl", name = "Group", skip_from_py_object)]
 #[derive(Clone)]
 pub struct PyGroup {
     rs: Group,
