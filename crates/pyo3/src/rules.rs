@@ -16,7 +16,7 @@ use fapolicy_rules::ops::Changeset;
 use fapolicy_rules::parser::parse::StrTrace;
 use fapolicy_rules::parser::rule::parse_with_error_message;
 
-#[pyclass(module = "rules", name = "Rule")]
+#[pyclass(module = "rules", name = "Rule", skip_from_py_object)]
 #[derive(Clone)]
 pub struct PyRule {
     pub id: usize,
@@ -88,7 +88,7 @@ impl PyRule {
     }
 }
 
-#[pyclass(module = "rules", name = "Info")]
+#[pyclass(module = "rules", name = "Info", skip_from_py_object)]
 #[derive(Clone)]
 pub struct PyRuleInfo {
     pub category: String,
@@ -109,7 +109,7 @@ impl PyRuleInfo {
 }
 
 /// A mutable collection of rule changes
-#[pyclass(module = "rules", name = "RuleChangeset")]
+#[pyclass(module = "rules", name = "RuleChangeset", from_py_object)]
 #[derive(Default, Clone)]
 pub struct PyChangeset {
     rs: Changeset,

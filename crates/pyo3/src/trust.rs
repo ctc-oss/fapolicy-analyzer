@@ -21,7 +21,7 @@ use std::collections::HashMap;
 /// Trust entry
 ///
 /// Includes the path, size, and sha256 hash
-#[pyclass(module = "trust", name = "Trust")]
+#[pyclass(module = "trust", name = "Trust", from_py_object)]
 #[derive(Clone)]
 pub struct PyTrust {
     pub rs_trust: Trust,
@@ -138,7 +138,7 @@ impl PyActual {
 }
 
 /// A mutable collection of changes
-#[pyclass(module = "trust", name = "Changeset")]
+#[pyclass(module = "trust", name = "Changeset", from_py_object)]
 #[derive(Clone)]
 pub struct PyChangeset {
     rs: Changeset,
@@ -211,7 +211,7 @@ pub(crate) fn filter_to_text(db: &filter::DB) -> String {
         .to_owned()
 }
 
-#[pyclass(module = "trust", name = "FilterInfo")]
+#[pyclass(module = "trust", name = "FilterInfo", skip_from_py_object)]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PyFilterInfo {
     pub category: String,
@@ -253,7 +253,7 @@ pub(crate) fn filter_info(db: &filter::DB) -> Vec<PyFilterInfo> {
 }
 
 /// A mutable collection of trust filter changes
-#[pyclass(module = "trust", name = "TrustFilterChangeset")]
+#[pyclass(module = "trust", name = "TrustFilterChangeset", from_py_object)]
 #[derive(Default, Clone)]
 pub struct PyFilterChangeset {
     rs: FilterChangeset,
